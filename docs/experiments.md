@@ -4,6 +4,16 @@ Newest first. Each entry: the question, how it is judged, then the outcome: what
 
 ---
 
+## LT3: the street through the years
+
+**Status:** planned, after LT2. The question and the rest of the entry are written when it starts.
+
+**The bar:** a cold reader, shown each frame of a house through the years, can date it to within a decade and say what happened to it.
+
+**Before it, a research pass:** what owners did to houses from 1900 to 1989, decade by decade: recladding, stripped ornament, new windows and doors, extensions, roofs, add-ons, signs and ageing. It becomes the diary's event vocabulary (`docs/building-system.md`, The diary) and the era shelves.
+
+---
+
 ## LT1: the harbour street, 1989
 
 **Status:** open.
