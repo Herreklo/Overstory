@@ -13,15 +13,15 @@ Newest first. Each entry: the question, how it is judged, then the outcome: what
 **The setting:** a fictional harbour town rooted in the Norwegian west coast, in 1989: three years after the oil-price crash, a boom town in a slump. White timber houses, quay warehouses, cobbles, 1980s shopfronts and streetlamps, some shops empty.
 
 **What is built:**
-- Two Blender generators: a timber house (1 to 2½ storeys, gable roof, clapboard, windows, door, trims) and a quay warehouse (tall gable to the water, loading doors). Stylisation (proportions, lean, sag, irregularity, bevels, trim size) is a set of parameters.
-- A street in Unity from a fixture: about eight houses and two warehouses on a quay, cobbles, streetlamps and simple harbour water.
-- Three looks on the same geometry: A painted (soft light ramps and gradients), B soft toon (stepped light, flat colour), C graphic (outlines, flat shapes).
+- The building system's first version (`docs/building-system.md`): building diaries from fixtures, a resolver, and era shelves of parts for timber houses and a quay warehouse. Stylisation (proportions, lean, sag, irregularity, bevels, trim size) is a set of parameters.
+- A street in Unity from fixture diaries: about eight houses and two warehouses on a quay, cobbles, street lamps and simple harbour water.
+- Four looks on the same geometry, differing only in the shading function and lines: A plain URP Lit (control), B painted ramp, C soft toon, D graphic (hard steps and fading edge lines). Everything else is shared: palette, light rig per weather, shadows, ambient occlusion, fog, Neutral tonemapping, one grade, bright window emissives.
 - Three lights: grey drizzle with wet ground, low winter sun, blue hour with lit windows.
 - Two cameras: street level and the raised neighbourhood view.
 
 **How it is judged:**
-1. *Shape checkpoint, in Blender:* the house at three strengths of stylisation (straight, gentle, strong). Øystein picks one; it becomes the shape language for the street.
-2. *Contact sheet, in Unity:* 18 frames (3 looks × 3 lights × 2 cameras), seed 1, plus the scene to fly through. A yes is one look Øystein wants to keep looking at in grey drizzle, that reads at both distances.
-3. *Variety check:* the house generator on 30 fresh seeds. No two alike; the same seed gives the same house after a reload.
+1. *Shape step, in Blender:* houses resolved from diaries at three strengths of stylisation (gentle, strong, wild), and one building shown in three years. Øystein picks a strength; it becomes the shape language for the street.
+2. *Contact sheet, in Unity:* 24 frames (4 looks × 3 lights × 2 cameras), each also in greyscale and at one-eighth size, plus a five-second camera move per look. Judged blind, labelled A to D, with drizzle counting most. A yes is one look Øystein wants to keep looking at in grey drizzle, that reads at both distances and can go from moody to cozy on the same street.
+3. *Variety check:* the generator on 30 fresh diaries. No two alike; every visible difference traces to a diary entry; the same diary gives the same building after a reload.
 
 **What it does not test:** people, interiors, history over time, snow and seasons, the final palette.

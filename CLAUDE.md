@@ -40,6 +40,7 @@ One experiment per session, on its own branch (`lt/1-first-street`), following t
 | --- | --- |
 | `docs/visual-direction.md` | The current visual direction |
 | `docs/living-world.md` | How places, people and history are shown |
+| `docs/building-system.md` | How buildings are generated from dated diaries |
 | `docs/experiments.md` | Every experiment: question, outcome, what we keep and drop |
 | `docs/engine-contract.md` | The draft format of the engine's data for the game |
 | `docs/engine-requests.md` | What the game needs from the engine |
