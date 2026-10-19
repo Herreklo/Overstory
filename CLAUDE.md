@@ -28,7 +28,7 @@ One experiment per session, on its own branch (`lt/1-first-street`), following t
 - **Understory is never changed from here.** It is a work in progress run from its own project. Never clone it, push to it, or open branches, issues or pull requests on it. Read it only through the GitHub API (`engine-bridge` skill). What the game needs from it goes in `docs/engine-requests.md`.
 - **Generators, not single assets** (`blender-generators` skill).
 - **Seeded and deterministic** (`unity-conventions` skill): the same building looks the same until its history changes it.
-- **Variety must be readable:** every visual difference carries something true.
+- **Visuals may elaborate world facts, but may not contradict them or falsely claim a causal history.** Five kinds of thing are on screen: canonical facts (from the engine), visual interpretations of facts (a shabby front from age and upkeep), non-semantic texture (stable, seeded, claims no history: woodgrain, a lean, minor clutter), perceived information (a person's account, which may be wrong), and local scene state (committed back to the engine only when it matters). Anything that reads as history must be a fact.
 - **Judged in the engine,** never on concept images.
 - **Rule 8:** no homophobic, sexist or racial content.
 

@@ -4,7 +4,7 @@ The current direction for how the world looks. Look tests decide the open points
 
 ## Identity
 
-The world is a fictional **North Atlantic timber harbour town**: the family that includes the Norwegian west coast, New England, the Maritimes and the Faroes. Painted clapboard, steep gables, white trim, quays with warehouses, wet maritime light, long dusks. It could be several places and is clearly not just anywhere: no Mediterranean stucco, no brick-terrace Britain. Features that pin it to one country are accents, not the identity. The first town is rooted in Stavanger and first shown in 1989; the region is data, so New England is a cheap alternative.
+The world is a fictional **North Atlantic timber harbour town**: the family that includes the Norwegian west coast, New England, the Maritimes and the Faroes. Painted clapboard, steep gables, white trim, quays with warehouses, wet maritime light, long dusks. It could be several places and is clearly not just anywhere: no Mediterranean stucco, no brick-terrace Britain. Features that pin it to one country are accents, not the identity. The first town is rooted in Stavanger and first shown in 1989. The rules engine is reusable across regions, but each region still needs real work on its own assets and data: building eras, regulations, geography, clothes, vehicles and signage.
 
 The style is ours. It does not follow the cosy stylised-Unity look or AI-art trends. It is found in look tests, judged in Unity, never on concept images.
 

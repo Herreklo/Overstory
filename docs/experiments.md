@@ -22,6 +22,6 @@ Newest first. Each entry: the question, how it is judged, then the outcome: what
 **How it is judged:**
 1. *Shape step, in Blender:* houses resolved from diaries at three strengths of stylisation (gentle, strong, wild), and one building shown in three years. Øystein picks a strength; it becomes the shape language for the street.
 2. *Contact sheet, in Unity:* 24 frames (4 looks × 3 lights × 2 cameras), each also in greyscale and at one-eighth size, plus a five-second camera move per look. Judged blind, labelled A to D, with drizzle counting most. A yes is one look Øystein wants to keep looking at in grey drizzle, that reads at both distances and can go from moody to cozy on the same street.
-3. *Variety check:* the generator on 30 fresh diaries. No two alike; every visible difference traces to a diary entry; the same diary gives the same building after a reload.
+3. *Variety check:* the generator on 30 fresh diaries. No two alike; everything that reads as history traces to a diary entry, and seeded texture claims none; the same diary gives the same building after a reload.
 
 **What it does not test:** people, interiors, history over time, snow and seasons, the final palette.

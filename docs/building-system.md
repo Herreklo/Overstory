@@ -4,7 +4,7 @@ How buildings are generated, change over time and show their history. The resear
 
 ## In short
 
-A building is a diary of dated events. The engine writes the diary. A resolver turns the diary, read up to a given year, into a plan. Unity builds the plan from plain walls and roofs it generates itself and from detailed kit parts made in Blender. The same diary always gives the same building, and every visible difference is a true fact.
+A building is a diary of dated events. The engine writes the diary. A resolver turns the diary, read up to a given year, into a plan. Unity builds the plan from plain walls and roofs it generates itself and from detailed kit parts made in Blender. The same diary always gives the same building. Anything that reads as history (a later window, a ghost sign, a porch added in another era) is a fact from the diary; small seeded variation (a lean, a board width) is texture that claims no history.
 
 ## The diary
 

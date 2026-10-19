@@ -47,4 +47,4 @@ The engine does not yet export data for the game. Until it does:
 
 ## How the game will run with the engine
 
-The engine runs beside Unity as its own process. Unity asks for a snapshot of a neighbourhood and recent events, and sends player actions back as events. A save is a world seed plus the player's actions. Unity never holds the truth about the world.
+The engine runs beside Unity as its own process. Unity asks for a snapshot of a neighbourhood and recent events, and sends player actions back as commands the engine can accept or refuse. A save holds the engine and ruleset version, checkpoints and the player's commands. Unity never holds the truth about the world.

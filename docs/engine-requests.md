@@ -2,6 +2,14 @@
 
 Each request: what is needed, why the game needs it, and what the player would see. Øystein takes these to the engine project; this repo never changes the engine.
 
+These are wishes, not dependencies. Together they amount to much of a new spatial, economic and material simulation, competing with the engine's own work. Overstory does not wait for them: it prototypes with fixtures whose records carry their provenance (`historical`, `scenario-authored`, `simulated`), so nothing pretends to come from the engine.
+
+## Product decisions to make first
+
+- **The time origin.** The engine's history starts in 1996 (`YEAR0`); LT1 is set in 1989. Generated buildings can reach 1989, but people, relationships and witnessed events in 1989 cannot come from today's engine. The options are different products: decouple look tests from the playable simulation (look tests use scenario-authored fixtures; playable games start where the engine can); generalise the engine's time origin; simulate an earlier population; or set the first playable game after 1996. Until decided, LT1 to LT3 are look tests on scenario-authored data.
+- **Two clocks.** The engine moves social life monthly; scenes need hours and minutes. Which side owns scene schedules, what is ephemeral and what is committed, and what happens when a scene crosses a month boundary.
+- **Player commands.** How the game asks the engine to change something (preconditions, acceptance or refusal with a reason, stable event ids, who owns the clock), and how saves survive rule changes (versioned rulesets, checkpoints).
+
 ## Open
 
 1. **Places that come and go.** Ventures already open new places with an owner (a café in the old bank). The game needs every kind of place to work that way: born from someone's venture, changing over time, closing, and reopening as something else. The player would see a street with its own history: a bar that became a café, a ghost sign above a new shopfront.
