@@ -52,6 +52,7 @@ Shader "Overstory/Street"
             #pragma fragment Frag
 
             #pragma shader_feature_local _OS_WATER
+            #pragma multi_compile_fragment _ _OS_LOOK_B
 
             // the same pipeline keywords as URP Lit, less lightmaps, decals and debug views
             #pragma multi_compile _ _MAIN_LIGHT_SHADOWS _MAIN_LIGHT_SHADOWS_CASCADE
@@ -70,12 +71,14 @@ Shader "Overstory/Street"
             #pragma multi_compile_instancing
 
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
+            #include "StreetLooks.hlsl"
 
             struct Attributes
             {
                 float4 positionOS : POSITION;
                 float3 normalOS : NORMAL;
                 float2 uv : TEXCOORD0;
+                half4 bake : COLOR; // what the face sees: sky, ground, openness (blender/generators/bake.py)
                 UNITY_VERTEX_INPUT_INSTANCE_ID
             };
 
@@ -85,6 +88,7 @@ Shader "Overstory/Street"
                 float2 uv : TEXCOORD0;
                 float3 positionWS : TEXCOORD1;
                 half3 normalWS : TEXCOORD2;
+                half4 bake : TEXCOORD3;
                 UNITY_VERTEX_INPUT_INSTANCE_ID
                 UNITY_VERTEX_OUTPUT_STEREO
             };
@@ -100,6 +104,7 @@ Shader "Overstory/Street"
                 o.positionWS = p.positionWS;
                 o.normalWS = TransformObjectToWorldNormal(input.normalOS);
                 o.uv = input.uv;
+                o.bake = input.bake;
                 return o;
             }
 
@@ -123,22 +128,20 @@ Shader "Overstory/Street"
                 id.shadowCoord = TransformWorldToShadowCoord(input.positionWS);
             #endif
                 id.normalizedScreenSpaceUV = GetNormalizedScreenSpaceUV(input.positionCS);
-                id.bakedGI = SampleSH(s.normalWS);
                 id.shadowMask = half4(1, 1, 1, 1);
+            #if defined(_OS_WATER)
+                OSBake b = OS_ReadBake(half4(1, 0, 1, 1));
+            #else
+                OSBake b = OS_ReadBake(input.bake);
+            #endif
 
-                SurfaceData sd = (SurfaceData)0;
-                sd.albedo = s.albedo;
-                sd.metallic = s.metallic;
-                sd.smoothness = s.smoothness;
-                sd.normalTS = half3(0, 0, 1);
-                sd.occlusion = 1;
-                sd.emission = s.emission;
-                sd.alpha = 1;
-
-                // Look A: plain URP Lit
-                half4 colour = UniversalFragmentPBR(id, sd);
-                colour.rgb = OS_Atmosphere(colour.rgb, input.positionWS);
-                outColor = half4(colour.rgb, 1);
+            #if defined(_OS_LOOK_B)
+                half3 colour = OS_ShadeB(id, s, b, input.positionWS);
+            #else
+                half3 colour = OS_ShadeA(id, s, b);
+            #endif
+                colour = OS_Atmosphere(colour, input.positionWS);
+                outColor = half4(colour, 1);
             #ifdef _WRITE_RENDERING_LAYERS
                 outRenderingLayers = EncodeMeshRenderingLayer();
             #endif

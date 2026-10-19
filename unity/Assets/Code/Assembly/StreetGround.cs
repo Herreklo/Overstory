@@ -316,7 +316,9 @@ namespace Overstory.Assembly
             readonly List<Vector3> verts = new List<Vector3>();
             readonly List<Vector3> normals = new List<Vector3>();
             readonly List<Vector2> uvs = new List<Vector2>();
+            readonly List<Color> colours = new List<Color>();
             readonly List<int> tris = new List<int>();
+
 
             public MeshWriter(Palette pal) { this.pal = pal; }
 
@@ -339,7 +341,9 @@ namespace Overstory.Assembly
                 Vector2 uv = pal.UV(swatch);
                 int i = verts.Count;
                 verts.Add(ua); verts.Add(ub); verts.Add(uc); verts.Add(ud);
-                for (int k = 0; k < 4; k++) { normals.Add(nrm); uvs.Add(uv); }
+                // what generated ground sees: open sky above it, open ground below; walls see half of each
+                var seen = new Color(0.5f + 0.5f * nrm.y, 0.5f - 0.5f * nrm.y, 1f, 1f);
+                for (int k = 0; k < 4; k++) { normals.Add(nrm); uvs.Add(uv); colours.Add(seen); }
                 tris.Add(i); tris.Add(i + 1); tris.Add(i + 2);
                 tris.Add(i); tris.Add(i + 2); tris.Add(i + 3);
             }
@@ -372,6 +376,7 @@ namespace Overstory.Assembly
                 m.SetVertices(verts);
                 m.SetNormals(normals);
                 m.SetUVs(0, uvs);
+                m.SetColors(colours);
                 m.SetTriangles(tris, 0, true);
                 return m;
             }

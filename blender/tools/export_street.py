@@ -35,6 +35,7 @@ import palette  # noqa: E402
 import building  # noqa: E402
 import validate  # noqa: E402
 import lamp  # noqa: E402
+import bake  # noqa: E402
 import bollard  # noqa: E402
 from resolve import resolve  # noqa: E402
 from eras import DEFAULT_STYLE  # noqa: E402
@@ -58,6 +59,7 @@ def export_fbx(obj, path):
         apply_unit_scale=True,
         apply_scale_options="FBX_SCALE_ALL",
         mesh_smooth_type="OFF",
+        colors_type="LINEAR",
         use_mesh_modifiers=True,
         add_leaf_bones=False,
         bake_anim=False,
@@ -170,6 +172,7 @@ def main(argv):
     palette.save_maps(os.path.join(assets, "Art", "Palette"))
     buildings = []
     for p in placed:
+        bake.bake(p["obj"])  # what each face sees: sky, ground, openness (the faked bounce)
         fname = f"bld_{p['id']}_{year}.fbx"
         export_fbx(p["obj"], os.path.join(out_bld, fname))
         buildings.append(dict(id=p["id"], type=p["type"], file=f"Assets/Art/Buildings/{sid}/{fname}", position=xyz(*p["pos"]), lit=p["lit"], tris=p["tris"]))
@@ -177,10 +180,12 @@ def main(argv):
     kit = []
     for v in lamp.VARIANTS:
         ob, light = lamp.build(v)
+        bake.bake(ob)
         rel = f"Assets/Art/Kit/lamp/{ob.name}.fbx"
         export_fbx(ob, os.path.join(unity, rel))
         kit.append(dict(name=v, file=rel, light=xyz(*light), glow=lamp.VARIANTS[v]["light"]))
     ob = bollard.build("cast-iron")
+    bake.bake(ob)
     rel = f"Assets/Art/Kit/bollard/{ob.name}.fbx"
     export_fbx(ob, os.path.join(unity, rel))
     kit.append(dict(name="bollard-cast-iron", file=rel, light=xyz(0, 0, 0), glow=""))
