@@ -38,11 +38,11 @@ def snap(x, step):
 def wall(b, fr, panels, openings, band, t, lap, swatch, vertical=False):
     """Clad a wall. panels: convex regions dict(lo, hi, b_lo, b_hi, below=[(m, c)], above=[(m, c)]).
     openings: list of (a0, a1, b0, b1) holes. Horizontal lapped boards, or vertical boards."""
-    b.role = 1
+    outer, b.role = b.role, 1
     try:
         _clad(b, fr, panels, openings, band, t, lap, swatch, vertical)
     finally:
-        b.role = 0
+        b.role = outer
 
 
 def _clad(b, fr, panels, openings, band, t, lap, swatch, vertical):
@@ -162,11 +162,11 @@ class Roof:
         return (lo + hi) / 2
 
     def build(self, b, roof_col, trim, cuts=(), cham=0.0, ridge_col="roof_ridge"):
-        b.role = 2
+        outer, b.role = b.role, 2
         try:
             self._build(b, roof_col, trim, cuts, cham, ridge_col)
         finally:
-            b.role = 0
+            b.role = outer
 
     def _build(self, b, roof_col, trim, cuts, cham, ridge_col):
         for s in (-1, 1):
@@ -195,7 +195,8 @@ class Roof:
                         b.strip(fr, [(lo, c0), (hi, c0), (hi, c1), (lo, c1)], c0, c1, self.rt, self.lap, roof_col, side_swatch=self.edge or roof_col)
                 run_from_eave += abs(dx)
         rw = self.rt * math.sin(self.last_pitch) + 0.12
-        ridge_z = self.ridge + self.rt / max(0.2, math.cos(self.last_pitch)) - 0.02
+        # the courses end square to the slope, so their top corners meet at rt*cos above the ridge line
+        ridge_z = self.ridge + self.rt * math.cos(self.last_pitch) + 0.09 - 0.05
         fr = Frame(self.point(0, 0, 0), self.U, UP, self.vec(1, 0))
         b.box(fr, (self.a0 + self.a1) / 2, ridge_z, 0, (self.a1 - self.a0) / 2 + 0.02, 0.09, rw, ridge_col, chamfer=cham)
 
@@ -221,11 +222,12 @@ class Roof:
                     d = math.hypot(x1 - x0, z1 - z0)
                     x1, z1 = x1 + (x1 - x0) / d * 0.45, z1 + (z1 - z0) / d * 0.45
                 top0, top1 = z0 - 0.02, z1 - 0.02
-                poly = [(x0, top0 - bb), (x1, top1 - bb), (x1, top1), (x0, top0)]
+                bb0 = min(bb, 0.09) if i == 0 else bb  # the board tapers to its end at the eave
+                poly = [(x0, top0 - bb0), (x1, top1 - bb), (x1, top1), (x0, top0)]
                 if x1 < x0:
-                    poly = [(x1, top1 - bb), (x0, top0 - bb), (x0, top0), (x1, top1)]
+                    poly = [(x1, top1 - bb), (x0, top0 - bb0), (x0, top0), (x1, top1)]
                 b.strip(fr, poly, min(top0, top1) - bb, max(top0, top1), 0.05, 0.0, c.trim)
-                if fret:
+                if fret and i > 0:
                     seg = math.hypot(x1 - x0, z1 - z0)
                     nt = max(1, int(seg / 0.24))
                     for k in range(nt):
@@ -346,6 +348,10 @@ def build(plan, style="strong", name=None, material=None):
                     if min(edges) < ark_reach - aw / 2:
                         d_far = min(max(edges), e * 0.8)
                         limit = min(limit, H - max(0.0, d_far) * math.tan(ark_roof.pe) - 0.1)
+            if row == 0 and local == "front":
+                for add_ in plan["additions"]:
+                    if add_["kind"] == "bay" and "x" in add_ and a1 + fw * 1.6 > mm(add_["x"]) - mm(add_["w"]) / 2 and a0 - fw * 1.6 < mm(add_["x"]) + mm(add_["w"]) / 2:
+                        limit = min(limit, S - 0.25 - 0.16 - BAY_BRACKET - 0.06)
             reach = lambda b1_, crown_: b1_ + parts.reach_above(kind, style, crown_, a0, a1, fw)
             shortest = {"window": max(0.9, 2 * band), "door": 1.95, "shopfront": 1.0}[kind]
             for smaller in ("flat", None):
@@ -361,6 +367,14 @@ def build(plan, style="strong", name=None, material=None):
             if kind == "window":
                 while reach(b1, crown) > limit and b0 - band >= row * S + 0.45:
                     b0, b1 = b0 - band, b1 - band
+                # soft: on the top storey of an eave wall, the head stays below the eave's lip so it
+                # reads from the street; shrink, then lower, but never leave the window out for it
+                if row + 1 >= m["full"] and local in ("front", "back"):
+                    lip = H - min(e * math.tan(roof.pe), 0.7) - 0.05
+                    while b1 + fw > lip and b1 - b0 - band >= shortest:
+                        b1 -= band
+                    while b1 + fw > lip and b0 - band >= row * S + 0.45:
+                        b0, b1 = b0 - band, b1 - band
             if kind == "shopfront":
                 while reach(b1, crown) > limit and b0 - band >= 0.3:
                     b0, b1 = b0 - band, b1 - band
@@ -529,16 +543,25 @@ def build(plan, style="strong", name=None, material=None):
 
     # -- chimneys --------------------------------------------------------------------------------
     cs = (0.55 + fw * 0.8) * s["chimney"] / 1000.0
-    for i, chm in enumerate(plan["chimneys"]):
+    # flues close enough to touch are built as one stack, as real double stacks are
+    stacks = []
+    for i, chm in sorted(enumerate(plan["chimneys"]), key=lambda ic: (ic[1]["y"], ic[1]["x"])):
         cx, cy = mm(chm["x"]), mm(chm["y"])
+        last = stacks[-1] if stacks else None
+        if last and abs(cy - last["y"]) < 0.3 and cx - last["x1"] < cs + 0.25:
+            last["x1"] = cx
+        else:
+            stacks.append(dict(i=i, x0=cx, x1=cx, y=cy, era=chm["era"]))
+    for st in stacks:
+        cx, cy, half = (st["x0"] + st["x1"]) / 2, st["y"], (st["x1"] - st["x0"] + cs) / 2
         top = roof.ridge + 0.9 * s["chimney"] / 1000.0
-        col = "render_white" if chm["era"] in ("classical", "functionalist") else "brick"
-        ang = math.radians((unit(key("chim", i)) - 0.5) * s["lean"] / 10.0 * 1.6)
+        col = "render_white" if st["era"] in ("classical", "functionalist") else "brick"
+        ang = math.radians((unit(key("chim", st["i"])) - 0.5) * s["lean"] / 10.0 * 1.6)
         cf = parts.tilted(Frame((0, cy, 0), (1, 0, 0), UP, (0, -1, 0)), cx, (P + H + top) / 2, ang)
-        b.box(cf, 0, 0, 0, cs / 2, (top - P - H) / 2, cs / 2, col, chamfer=cham)
-        b.box(cf, 0, (top - P - H) / 2 + 0.05, 0, cs / 2 + 0.07, 0.05, cs / 2 + 0.07, "stone_dark", chamfer=cham)
-        if chm["era"] in ("chalet", "jugend"):
-            b.box(cf, 0, (top - P - H) / 2 - 0.18, 0, cs / 2 + 0.04, 0.05, cs / 2 + 0.04, col, chamfer=cham)
+        b.box(cf, 0, 0, 0, half, (top - P - H) / 2, cs / 2, col, chamfer=cham)
+        b.box(cf, 0, (top - P - H) / 2 + 0.05, 0, half + 0.07, 0.05, cs / 2 + 0.07, "stone_dark", chamfer=cham)
+        if st["era"] in ("chalet", "jugend"):
+            b.box(cf, 0, (top - P - H) / 2 - 0.18, 0, half + 0.04, 0.05, cs / 2 + 0.04, col, chamfer=cham)
 
     # -- additions --------------------------------------------------------------------------------
     for add in plan["additions"]:
@@ -552,7 +575,9 @@ def build(plan, style="strong", name=None, material=None):
         elif k == "veranda":
             _veranda(b, plan, add, ctx, coat, W, D, P, S, cham)
         elif k == "bay":
-            _bay(b, plan, add, ctx, coat, W, D, P, S, band, t, lap, cham, win_scale, vertical, key, curtain_col, curtain_kind)
+            b.role = 4
+            _bay(b, plan, add, ctx, coat, W, D, P, S, band, t, lap, cham, win_scale, vertical, key, curtain_col, curtain_kind, roof, H)
+            b.role = 0
         elif k == "dormers":
             for i, x in enumerate(add["xs"]):
                 _dormer(b, plan, add, ctx, coat, mm(x), roof, band, t, lap, rt, ch, cham, s, kick, win_scale, orn, key, i)
@@ -763,21 +788,40 @@ def _veranda(b, plan, add, c, coat, W, D, P, S, cham):
                 b.box(fr2, lo + k * (hi - lo) / n, 0.45, 0.0, 0.018 if k % 6 else 0.04, 0.45, 0.018 if k % 6 else 0.04, coat["trim"])
 
 
-def _bay(b, plan, add, c, coat, W, D, P, S, band, t, lap, cham, win_scale, vertical, key, curtain_col, curtain_kind):
+BAY_ROOF = math.radians(24)  # the bay's own roof, rising to the wall
+BAY_BRACKET = 0.35  # how far the brackets under a bay reach down
+
+
+def _bay_top(plan, add, S, H, roof):
+    """The top of a bay's walls: under its storey's top, with its roof clear of the main eave."""
+    bd = mm(add["d"])
+    rise = (bd + 0.14) * math.tan(BAY_ROOF)
+    under_eave = H - (bd + 0.25) * math.tan(roof.pe) - 0.12  # the main roof's underside at the bay's front
+    return min(plan["main"]["full"] * S - 0.45, under_eave - 0.1, H - 0.15 - rise)
+
+
+def _bay(b, plan, add, c, coat, W, D, P, S, band, t, lap, cham, win_scale, vertical, key, curtain_col, curtain_kind, main_roof, H):
     bx, bw, bd = mm(add["x"]), mm(add["w"]), mm(add["d"])
     m = plan["main"]
-    z0, z1 = S - 0.25, m["full"] * S - 0.45
+    z0, z1 = S - 0.25, _bay_top(plan, add, S, H, main_roof)
     front = Frame((bx, -D / 2 - bd, P), (1, 0, 0), UP, (0, -1, 0))
     sides = {sx: Frame((bx + sx * bw / 2, -D / 2 - bd / 2, P), (0, 1, 0), UP, (sx, 0, 0)) for sx in (-1, 1)}
     cells = [cc for cc in plan["cells"] if cc["facade"].startswith("bay_")]
     holes = {"bay_front": [], "bay_left": [], "bay_right": []}
     for cc in cells:
+        # bay windows fit inside the bay's own walls, or are left out
         w = mm(cc["w"]) * win_scale
-        b0 = snap(mm(cc["b0"]), band)
-        b1 = b0 + snap(mm(cc["b1"] - cc["b0"]) * win_scale, band)
+        if cc["facade"] != "bay_front":
+            w = min(w, bd - 0.25)
         crown = "flat" if cc["facade"] == "bay_front" else None
-        while b1 + parts.crown_height(crown, -w / 2, w / 2, c.fw) > z1 - 0.08 and b1 - b0 > 2.5 * band:
-            b1 -= band
+        lo, hi = z0 + 0.35, z1 - 0.08 - parts.crown_height(crown, -w / 2, w / 2, c.fw)
+        h_ = snap(mm(cc["b1"] - cc["b0"]) * win_scale, band)
+        while h_ > hi - lo and h_ - band >= max(0.6, band):
+            h_ -= band
+        b0 = math.ceil((lo - 1e-6) / band) * band
+        b1 = b0 + h_
+        if b1 > hi + 1e-6 or w < 0.35:
+            continue
         holes[cc["facade"]].append((-w / 2, w / 2, b0, b1, cc))
     wall(b, front, [dict(lo=-bw / 2, hi=bw / 2, b_lo=z0, b_hi=z1)], [hh[:4] for hh in holes["bay_front"]], band, t, lap, coat["wall"], vertical)
     for sx, name_ in ((-1, "bay_left"), (1, "bay_right")):
@@ -789,8 +833,16 @@ def _bay(b, plan, add, c, coat, W, D, P, S, band, t, lap, cham, win_scale, verti
     b.box(world, bx, P + z0 - 0.08, D / 2 + bd / 2, bw / 2 + 0.06, 0.08, bd / 2 + 0.06, coat["trim"], chamfer=cham)
     for sx in (-1, 1):
         fr = Frame((bx + sx * (bw / 2 - 0.15) - 0.03, -D / 2, P + z0 - 0.16), (0, -1, 0), UP, (1, 0, 0))
-        b.strip(fr, [(0, 0), (bd, 0), (0, -0.6)], -0.6, 0, 0.06, 0.0, coat["trim"])
-    b.box(world, bx, P + z1 + 0.1, D / 2 + bd / 2 - 0.02, bw / 2 + 0.14, 0.1, bd / 2 + 0.14, {"default": coat["trim"], "v+": plan["main"]["roof"]["swatch"]}, chamfer=cham)
+        b.strip(fr, [(0, 0), (bd, 0), (0, -BAY_BRACKET)], -BAY_BRACKET, 0, 0.06, 0.0, coat["trim"])
+    # a fascia on the wall tops, and a roof rising from the front to the wall
+    b.box(world, bx, P + z1 + 0.06, D / 2 + bd / 2, bw / 2 + 0.08, 0.06, bd / 2 + 0.08, coat["trim"], chamfer=cham)
+    th = BAY_ROOF
+    run = bd + 0.14
+    slope_len = run / math.cos(th)
+    up = (0.0, math.cos(th), math.sin(th))  # up the slope, towards the wall
+    out = (0.0, -math.sin(th), math.cos(th))
+    rf = Frame((bx, -D / 2 - run / 2, P + z1 + 0.12 + (run / 2) * math.tan(th)), (1, 0, 0), up, out)
+    b.box(rf, 0, 0, 0, bw / 2 + 0.14, slope_len / 2, 0.05, {"default": coat["trim"], "n+": plan["main"]["roof"]["swatch"]}, chamfer=cham)
 
 
 def _dormer(b, plan, add, c, coat, dx, roof, band, t, lap, rt, ch, cham, s, kick, win_scale, orn, key, i):

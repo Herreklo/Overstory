@@ -1,26 +1,38 @@
 # What the game needs from the engine
 
-Each request: what is needed, why the game needs it, and what the player would see. Øystein takes these to the engine project; this repo never changes the engine.
+Each request: what is needed, why the game needs it, and what the player would see. Øystein takes these to the engine project; this repo never changes the engine. Engine issues labelled `overstory` track the filed ones.
 
-These are wishes, not dependencies. Together they amount to much of a new spatial, economic and material simulation, competing with the engine's own work. Overstory does not wait for them: it prototypes with fixtures whose records carry their provenance (`historical`, `scenario-authored`, `simulated`), so nothing pretends to come from the engine.
+## What we can use now
 
-## Product decisions to make first
+- **Tag `rH28`**, the engine's front door (`src/boundary.ts`). Its reads show the truth, so they serve debugging tools such as the diary inspector and the bridge schema, never anything a player sees. It has no player command.
+- Until the items below land, LT1 and LT2 run on fixtures labelled `authored`.
 
-- **The time origin.** The engine's history starts in 1996 (`YEAR0`); LT1 is set in 1989. Generated buildings can reach 1989, but people, relationships and witnessed events in 1989 cannot come from today's engine. The options are different products: decouple look tests from the playable simulation (look tests use scenario-authored fixtures; playable games start where the engine can); generalise the engine's time origin; simulate an earlier population; or set the first playable game after 1996. Until decided, LT1 to LT3 are look tests on scenario-authored data.
-- **Two clocks.** The engine moves social life monthly; scenes need hours and minutes. Which side owns scene schedules, what is ephemeral and what is committed, and what happens when a scene crosses a month boundary.
-- **Player commands.** How the game asks the engine to change something (preconditions, acceptance or refusal with a reason, stable event ids, who owns the clock), and how saves survive rule changes (versioned rulesets, checkpoints).
+## Filed
 
-## Open
+1. **The front door, part two (#22).**
+   - The places of a neighbourhood at a month. Today places never close, and the export says so rather than inventing closings.
+   - Two people as the player could know them: what a witness could know, not the truth.
+   - People's habits as data, so the game can show who is at the bar tonight, whose car is outside and which windows are lit.
+   - The first player command: inviting a musician to a rehearsal in the quay warehouse loft, which the engine accepts or refuses. It depends on the accounts arc (#20), because "she remembers being asked" is an account.
+2. **The start year from the setting pack (#23).** A world shown in 1989 starts its people in 1959, so play begins with thirty years of lived history.
 
-1. **Places that come and go.** Ventures already open new places with an owner (a café in the old bank). The game needs every kind of place to work that way: born from someone's venture, changing over time, closing, and reopening as something else. The player would see a street with its own history: a bar that became a café, a ghost sign above a new shopfront.
-2. **Buildings separate from businesses.** A building with its construction era, extensions and condition, and a business that occupies it for a time. The player would see the same building across owners.
-3. **A building diary with reasons.** Every change to a building is a dated event (built, extended, repainted, reclad, windows replaced, converted, opened, closed, boarded, neglected, restored, demolished) that names who decided it and why. The game shows only what the diary says, and the player can always ask "why does it look like this?" and get a true answer.
-4. **A fabric pass for the past.** The engine's history starts in 1996, but a street is mostly older. Before the people simulation starts, a coarser pass generates the town's fabric from about 1850: street growth by era, plots and their life cycles (built, filled in, decline, cleared, empty lot, rebuilt), building diaries, fires that reset plans, plans that are only partly carried out, booms and busts, protected districts. It writes into the same diaries the people simulation continues. The player would see 1890s houses next to a 1970s infill, a street widened at one end, the scars of a fire, before the story starts.
-5. **A calendar each game can set.** One world, many games, each a window onto it: a murder mystery may span a year, a band's story decades. Every window lies between the past and the present; the world never runs into the future. A game needs to set the year its story starts (LT1 uses 1989), with the generated past before it. The player would see the era they are in.
-6. **Vacancy, rent and cheap space.** How long a building has stood empty, what it costs to rent, and who takes cheap space (bands, artists, bars) and who pushes them out when the area changes. The player would see a rehearsal room in an old warehouse, and the venue that closes when flats go up next door.
-7. **Trips and footfall.** Each person's planned trips (where, when, by what), and from them the footfall per street segment and who stays where. The player would see worn steps and paths where people really walk, parked cars outside the homes of people who are in, traffic that is always someone's journey.
-8. **Vehicles and boats with owners.** Who owns which car or boat, when they bought it, new or used, whether it is kept in a garage. The player would read wealth, age and routine from the cars on a street.
-9. **Weather, heating and occupancy.** Hourly weather (wind direction and strength, rain, temperature), each household's heating type, and which rooms are occupied when. The player would see chimney smoke only where a stove is lit, lit windows only where someone is home, and weather that matters to the story because the engine decided it.
-10. **An export for the game.** A snapshot of a neighbourhood (places, buildings with their diaries, the people present, recent events) with stable ids and a schema version, and a way to send player actions back as events.
-11. **Story sifting.** Patterns over the event log that find storyful sequences while they unfold (on the engine's own list). The game uses them to choose where the camera goes and which scenes are worth playing: simulate the few, show the many. The player would see the evenings that matter, not random ones.
-12. **The band, as a shared milestone.** The engine's planned experiment of five people forming a band for a year, shown by Overstory in the rehearsal loft of a quay warehouse, with the first player command (an invitation to a rehearsal) between them. It tests both projects on the origin they share.
+## Proposed on #23, for the setting timeline that follows it
+
+3. **One timeline for the economy and the fabric.** The setting pack's timeline is one dated list of world events, each with a cause: the canning years, the arrival of oil, the 1986 crash. The economy reads it, and so does the fabric pass that generates streets, plots and building diaries. One list means the buildings on screen can never disagree with the economy. Our era tables feed it. The player would see a cannery built, emptied and converted for the same reasons that cost its workers their jobs.
+4. **Places that close, arriving with the timeline.** Ventures open places; closing is the other half of the same lifecycle. The player would see the crash as empty shops and fallow lots, and cheap old buildings taken over by new uses, such as the band's rehearsal loft above a closed business.
+
+## Open, not yet filed
+
+5. **Buildings separate from businesses.** A building with its construction era, extensions and condition, and a business that occupies it for a time. The player would see the same building across owners.
+6. **The fabric pass.** Streets, plots and building diaries generated from the seed and the timeline, older than the people and running alongside them. The player would see 1890s houses next to 1970s infill before the story starts, and every change after that with its cause. Nobody owns this yet; until it exists, Overstory writes building diaries by hand.
+7. **Story sifting.** Patterns over the event log that find storyful sequences while they unfold (on the engine's own list). The game uses them to choose where the camera goes and which scenes are worth playing: simulate the few, show the many. The player would see the evenings that matter, not random ones.
+8. **The band, as a shared milestone.** The engine's planned experiment of five people forming a band for a year, shown by Overstory in the rehearsal loft of a quay warehouse, with the first player command (#22) between them. It tests both projects on the origin they share.
+
+## Later, for the engine
+
+9. **Vacancy, rent and cheap space.** How long a building has stood empty, what it costs to rent, and who takes cheap space (bands, artists, bars) and who pushes them out when the area changes. The player would see a rehearsal room in an old warehouse, and the venue that closes when flats go up next door.
+10. **Vehicles and boats with owners.** Who owns which car or boat, when they bought it, new or used. The player would read wealth, age and routine from the cars on a street.
+
+## Overstory's own
+
+These are presentation, built here from the engine's facts: how a building diary looks, trips and footfall at street level (worn steps, parked cars outside homes where people are in), and hourly weather, heating and lit rooms inside a scene. What they need from the engine is in the front door's habits (#22).
