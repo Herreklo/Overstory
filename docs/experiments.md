@@ -18,23 +18,26 @@ Newest first. Each entry: the question, how it is judged, then the outcome: what
 
 **Status:** open.
 
-**The question:** which of four looks makes a west-coast harbour street beautiful in ordinary light, at street level and from above?
+**The question:** what makes a west-coast harbour town stunning from the city view, and does it hold up in ordinary light?
 
-**The setting:** a fictional harbour town rooted in the Norwegian west coast, in 1989: three years after the oil-price crash, a boom town in a slump. White timber houses, quay warehouses, cobbles, 1980s shopfronts and streetlamps, some shops empty.
+**The setting:** a fictional harbour town rooted in the Norwegian west coast, in 1989: three years after the oil-price crash, a boom town in a slump. White timber houses, quay warehouses, cobbles, 1980s shopfronts and streetlamps, some shops empty. The town in its landscape: it steps up from the quay, with hills, mountains and the fjord behind.
 
 **What is built:**
-- The building system's first version (`docs/building-system.md`): building diaries from fixtures, a resolver, and era shelves of parts for timber houses and a quay warehouse. Stylisation (proportions, lean, sag, irregularity, bevels, trim size) is a set of parameters.
-- A street in Unity from fixture diaries: about eight houses and two warehouses on a quay, cobbles, street lamps and simple harbour water.
-- Four looks on the same geometry, differing only in the shading function and lines: A plain URP Lit (control), B painted ramp, C soft toon, D graphic (hard steps and fading edge lines). Everything else is shared: palette, light rig per weather, shadows, ambient occlusion, fog, Neutral tonemapping, one grade, bright window emissives.
-- Three lights: grey drizzle with wet ground, low winter sun, blue hour with lit windows.
-- Two cameras: street level and the raised neighbourhood view.
+- The building system's first version (`docs/building-system.md`): building diaries from fixtures, a resolver, and era shelves of parts for timber houses and a quay warehouse. Stylisation is a set of parameters; the strength is stronger.
+- A hero slice, authored in the fixture for one camera: the quay with the Anchor and the oxred warehouse, the town stepping up behind in two or three levels with a stepped lane, and hills, mountains and the fjord mouth as layered landforms.
+- The city camera: perspective, not isometric, free to orbit. Its tilt follows its zoom: steep and map-like far out, the horizon in frame at the middle stop, just over the rooftops close in.
+- Light as a colour script keyed to facts (date, hour, weather, so sun height and cloud): one mood manager blends sun, sky, shadow colour, the colour of the air by distance, ambient light and grade.
+- Two looks on the same geometry: A plain URP Lit (control) and B painted ramp (shadow colour from the light, flat wet colour). C soft toon and D graphic only if B disappoints. Everything else is shared: palette, wetness, glow, atmosphere, grade.
 
 **How it is judged:**
-1. *Shape step, in Blender:* houses resolved from diaries at several strengths of stylisation, and one building shown in three years. Øystein picks a strength; it becomes the shape language for the street.
-2. *Contact sheet, in Unity:* 24 frames (4 looks × 3 lights × 2 cameras), each also in greyscale and at one-eighth size, plus a five-second camera move per look. Judged blind, labelled A to D, with drizzle counting most. A yes is one look Øystein wants to keep looking at in grey drizzle, that reads at both distances and can go from moody to cozy on the same street.
-3. *Variety check:* the generator on 30 fresh diaries. No two alike; everything that reads as history traces to a diary entry, and seeded texture claims none; the same diary gives the same building after a reload.
+1. *Shape step, in Blender:* done; the strength is stronger.
+2. *Clay pass:* the hero slice in grey clay from the city camera at its middle stop, with a few variants of height and angle. Judged on composition, silhouette and layering only. A yes is a frame that has its bones in grey.
+3. *Hero frame:* blue hour at the middle stop, look B against A, side by side with a north-star reference Øystein picks. A yes is a frame Øystein finds stunning.
+4. *Colour script:* the hero frame across one October day (low morning sun, grey noon, golden late afternoon, blue hour, night) and the same hour through the year (December, March, June, October), each also in greyscale. A yes is a town beautiful because of its light, with ordinary light holding up.
+5. *Robustness:* the hero frame in grey drizzle, and at the far and close zoom stops.
+6. *Variety check:* the generator on 30 fresh diaries. No two alike; everything that reads as history traces to a diary entry, and seeded texture claims none; the same diary gives the same building after a reload.
 
-**What it does not test:** people, interiors, history over time, snow and seasons, the final palette.
+**What it does not test:** people, interiors and scenes, history over time, snow cover, the final palette, and surface texture and wear (until a look is chosen).
 
 **Shape step, so far (19 October):**
 - Øystein picked strong over gentle.
@@ -51,3 +54,12 @@ Newest first. Each entry: the question, how it is judged, then the outcome: what
 - Look A is URP's own lighting on a surface every look shares: palette, wetness by porosity, puddles on paving, window and lamp glow, our own height fog. Screen-space reflections are on.
 - Checkpoint (`reviews/lt1/checkpoint/`): look A in drizzle from both cameras, exposed for the white walls, with greyscale copies. A fresh reviewer's findings were fixed at the cause: doors differ from their walls in lightness (a resolver rule), puddles lie only on paving, distant setts average to one tone instead of speckle, bollards stand on the coping, and the world carries on past the street's ends.
 - Open: every surface is one flat colour per face, so everything reads as plastic. Also warehouse roofs without tile courses, steps the same value as their plinths, and the empty hillside behind the row (the fixture has nothing there).
+
+**Plan revised (19 October):**
+- The look A checkpoint showed the street's bones, not a look. Flat colour under physical lighting reads as plastic; one row on an empty plane makes no picture; and grey drizzle is the light to prove a look in, not to find one. The plan narrows: find stunning first in one composed frame in the most favourable light, then test it in ordinary light.
+- The street-level camera leaves LT1. Eye level is closer than the city view, and scenes are their own subject, not yet discussed.
+- References that came up:
+  - *Overland:* take the high camera, flat colour, a strong colour script and the world dimmed outside the area in play; leave the cut-earth board edge.
+  - *A lit cutaway of a warehouse home:* take warm interior light against a dark outside. Whether the closest zoom ever opens buildings stays open.
+  - *A Coober Pedy overview:* take the density of props and the soft contact shadows; leave realistic ground textures for now.
+  - *Firewatch:* take a colour script per hour and the air coloured by distance; leave saturating everything, since our base stays muted.

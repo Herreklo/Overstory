@@ -4,14 +4,14 @@ The current direction for how the world looks. Look tests decide the open points
 
 ## Identity
 
-The world is a fictional **North Atlantic timber harbour town**: the family that includes the Norwegian west coast, New England, the Maritimes and the Faroes. Painted clapboard, steep gables, white trim, quays with warehouses, wet maritime light, long dusks. It could be several places and is clearly not just anywhere: no Mediterranean stucco, no brick-terrace Britain. Features that pin it to one country are accents, not the identity. The first town is rooted in Stavanger and first shown in 1989. The rules engine is reusable across regions, but each region still needs real work on its own assets and data: building eras, regulations, geography, clothes, vehicles and signage.
+The world is a fictional **North Atlantic timber harbour town**: the family that includes the Norwegian west coast, New England, the Maritimes and the Faroes. Painted clapboard, steep gables, white trim, quays with warehouses, wet maritime light, long dusks. It could be several places and is clearly not just anywhere: no Mediterranean stucco, no brick-terrace Britain. Features that pin it to one country are accents, not the identity. The first town is rooted in Stavanger and first shown in 1989. The town is seen in its landscape: it steps up from the quay, with hills, mountains and the fjord behind, and the setting is part of every wide picture. The rules engine is reusable across regions, but each region still needs real work on its own assets and data: building eras, regulations, geography, clothes, vehicles and signage.
 
 The style is ours. It does not follow the cosy stylised-Unity look or AI-art trends. It is found in look tests, judged in Unity, never on concept images.
 
 ## Shape
 
 - Shapes carry the style; shading finishes it. Silhouettes first: every building has its own outline from its volumes, roofs, chimneys and additions.
-- Pushed proportions: steeper roofs, deeper eaves, oversized chimneys, tall-and-narrow next to low-and-wide. How far to push is decided in the LT1 shape step.
+- Pushed proportions: steeper roofs, deeper eaves, oversized chimneys, tall-and-narrow next to low-and-wide, at the strength called stronger. Proportions carry the boldness; deformation (lean, sag, bow) stays small, because it is what reads as caricature.
 - A handmade feel from the seed: a lean, a sagging ridge, windows slightly out of line, soft bevels. The wobble lives inside each piece; edges stay on the grid.
 - Detail where history is. Calm walls; rich junctions, signs, trims and traces of change. Human scale, never miniature.
 
@@ -22,6 +22,7 @@ Mostly painted timber, with brick, stone and concrete where era, purpose, wealth
 ## Light and colour
 
 - Light is the identity. Northern daylight (grey drizzle, low winter sun, a blue hour that lasts) and the light of the night (warm windows, street lamps by era, neon, stage light in haze).
+- Light follows a colour script keyed to facts: the date and hour set the sun's height and colour, the weather sets the cloud. The west coast's year is part of the identity: December's short blue days, June's light nights, October's low gold under cloud. Strong colour is for the moments that earn it; ordinary light must stand on its own.
 - Drizzle is the default and the hardest test. The town must be beautiful in flat grey light, where the sky is the key light.
 - Shadow and ambient colour come from the light, never from the object. Shadows go cool, not black.
 - Value first: every frame reads in greyscale; extreme lights and darks are kept for edges, highlights and windows.
@@ -37,13 +38,14 @@ One style carries a range of moods: moody, cozy, alive, glam. The mood comes fro
 
 ## Views
 
-- The neighbourhood view: a raised camera over a live neighbourhood. Silhouettes, Lynch's paths, edges, districts, nodes and landmarks must read from it. The camera is designed early; it is part of the style.
+- The city view: a free perspective camera over the live town, navigated rather than staged. Its tilt follows its zoom: steep and map-like far out, the horizon and the landscape in frame in the middle, just over the rooftops close in. Silhouettes, Lynch's paths, edges, districts, nodes and landmarks must read from it. The camera is designed early; it is part of the style.
 - Scene views: bounded, walkable, staged like a film or theatre set, every light motivated by a real source. Moving between views is a cut or a short move through a doorway.
 
 ## Open, decided by look tests
 
-- How far to push the shapes (LT1 shape step).
-- The shading model: painted ramp, soft toon or graphic, against plain URP Lit as a control (LT1).
+- The city camera: its zoom stops, tilt and lens (LT1).
+- The shading model: painted ramp against plain URP Lit as a control, soft toon and graphic if needed (LT1).
+- The colour script through the day and the year (LT1).
 - How visible history should be: ghost signs, wear, mismatched additions (LT3).
 - People: stylisation, faces, animation (LT2 and the people deep dive).
 
