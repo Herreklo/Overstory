@@ -110,6 +110,7 @@ namespace Overstory.EditorTools
             Asset<LightRig>(LT1 + "/Light/LT1_Clay.asset", Clay);
             Asset<LightRig>(LT1 + "/Light/LT1_BlueHour.asset", BlueHour);
             Asset<LightRig>(LT1 + "/Light/LT1_SummerEvening.asset", SummerEvening);
+            Asset<LightRig>(LT1 + "/Light/LT1_ClearDay.asset", ClearDay);
             foreach (var (name, pos, target) in CityShots)
                 Asset<CameraShot>($"{LT1}/Views/LT1_City_{name}.asset", s =>
                 {
@@ -281,6 +282,10 @@ namespace Overstory.EditorTools
             r.fogSunPower = 6f;
 
             r.wetness = 0.7f;
+            r.cloudCover = 0.32f;
+            r.cloudSize = 600f;
+            r.cloudSoftness = 0.1f;
+            r.cloudHeight = 1800f;
             r.windowGlow = 2.4f; // warm, not bleached: the tonemapper keeps a lamp-lit room's colour
             r.lampsOn = true;
             r.lampGlow = 9f;
@@ -335,10 +340,10 @@ namespace Overstory.EditorTools
             r.fogSunPower = 5f;
 
             r.wetness = 0f;
-            r.cloudCover = 0.5f;       // broken cloud: the low sun falls on the town in pools
-            r.cloudSize = 85f;
+            r.cloudCover = 0.44f;      // broken cloud: the low sun falls on the town in pools
+            r.cloudSize = 380f;
             r.cloudSoftness = 0.05f;
-            r.cloudHeight = 900f;
+            r.cloudHeight = 1200f;
             r.windowGlow = 0f;
             r.lampsOn = false;
             r.lampGlow = 0f;
@@ -352,6 +357,63 @@ namespace Overstory.EditorTools
             r.colourFilter = Color.white;
             r.bloomIntensity = 0.25f;
             r.bloomThreshold = 1.1f;
+            r.reflectionStrength = 1f;
+            r.clock = 0f;
+        }
+
+        /// <summary>
+        /// A clear afternoon after rain: deep blue sky, big cumulus with lit tops, sun high in the south-west,
+        /// colour at full strength, the air clean and only blue far off.
+        /// </summary>
+        static void ClearDay(LightRig r)
+        {
+            r.sunBearing = 228f;
+            r.sunElevation = 36f;
+            r.sunColour = C(255, 242, 218);
+            r.sunIntensity = 3.0f;
+            r.shadowStrength = 1f;
+
+            r.zenith = C(34, 104, 206);
+            r.horizon = C(168, 204, 236);
+            r.belowHorizon = C(80, 90, 96);
+            r.skyCurve = 0.5f;
+            r.sunGlow = C(60, 50, 30);
+            r.sunGlowPower = 10f;
+
+            r.ambientSky = C(118, 158, 222);
+            r.ambientEquator = C(168, 170, 160);
+            r.ambientGround = C(112, 100, 78);
+            r.ambientIntensity = 1f;
+
+            r.fogColour = C(176, 196, 214);
+            r.fogMidColour = C(170, 198, 228);
+            r.fogMidDistance = 500f;
+            r.fogFarColour = C(198, 220, 242);
+            r.fogFarDistance = 4000f;
+            r.fogDensity = 0.0008f;
+            r.fogHeightFalloff = 0.01f;
+            r.fogBaseHeight = 0f;
+            r.fogMaxOpacity = 0.8f;
+            r.fogSunColour = Color.black;
+
+            r.wetness = 0f;
+            r.cloudCover = 0.38f;
+            r.cloudSize = 520f;
+            r.cloudSoftness = 0.06f;
+            r.cloudHeight = 1300f;
+            r.windowGlow = 0f;
+            r.lampsOn = false;
+            r.lampGlow = 0f;
+            r.lampIntensity = 0f;
+
+            r.postExposure = -0.2f;
+            r.contrast = 10f;
+            r.saturation = 14f;
+            r.temperature = 0f;
+            r.tint = 0f;
+            r.colourFilter = Color.white;
+            r.bloomIntensity = 0.15f;
+            r.bloomThreshold = 1.2f;
             r.reflectionStrength = 1f;
             r.clock = 0f;
         }

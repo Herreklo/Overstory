@@ -54,10 +54,10 @@ namespace Overstory.EditorTools
             var stage = Object.FindAnyObjectByType<StreetStage>();
             stage.clay = false;
             stage.shot = AssetDatabase.LoadAssetAtPath<CameraShot>("Assets/Experiments/LT1/Views/LT1_City_Quay.asset");
-            foreach (var light in new[] { "BlueHour", "SummerEvening" })
+            foreach (var light in new[] { "ClearDay", "SummerEvening", "BlueHour" })
             {
                 stage.rig = AssetDatabase.LoadAssetAtPath<LightRig>($"Assets/Experiments/LT1/Light/LT1_{light}.asset");
-                foreach (var look in new[] { "B", "D" })
+                foreach (var look in new[] { "D" })
                 {
                     stage.look = look;
                     stage.Apply();

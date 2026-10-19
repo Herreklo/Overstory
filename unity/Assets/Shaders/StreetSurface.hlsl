@@ -138,6 +138,25 @@ StreetSurface OS_WaterSurface(float3 positionWS, half4 colour, half smoothness, 
     return s;
 }
 
+// The weather's cloud layer, one pattern for the sky and for the shadows it casts on the town.
+float4 _OS_Clouds;      // x cover (0 none, 1 overcast), y feature size (m), z softness, w layer height (m)
+float4 _OS_CloudDrift;  // xy how far the wind has moved the layer (m), from the scene's clock
+
+// Cloud density at a point on the layer (world xz, metres), 0..1, before cover is applied.
+float OS_CloudField(float2 layerXZ, float detail)
+{
+    float2 q = (layerXZ + _OS_CloudDrift.xy) / max(_OS_Clouds.y, 1.0);
+    float c = 0.55 * OS_Noise(q) + 0.3 * OS_Noise(q * 2.13 + 7.7) + 0.15 * OS_Noise(q * 4.7 - 3.1);
+    return c + detail * (OS_Noise(q * 11.3 + 1.9) - 0.5) * 0.05;
+}
+
+// How much cloud there is at a point on the layer, 0 clear to 1 cloud, with the rig's cover and softness.
+half OS_CloudCover(float c, float extraSoft)
+{
+    float soft = _OS_Clouds.z + extraSoft;
+    return (half)smoothstep(1.0 - _OS_Clouds.x - soft, 1.0 - _OS_Clouds.x + soft, c);
+}
+
 // Aerial perspective and height fog: the air thickens with distance and thins with height, and glows
 // towards the sun. Applied the same way to every look, to water and to emissive light.
 half3 OS_Atmosphere(half3 colour, float3 positionWS)

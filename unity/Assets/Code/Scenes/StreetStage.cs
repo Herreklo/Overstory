@@ -151,6 +151,7 @@ namespace Overstory.Scenes
             DynamicGI.UpdateEnvironment();
 
             Shader.SetGlobalVector("_OS_SunDir", toSun);
+            Shader.SetGlobalVector("_OS_SunCol", Linear(r.sunColour) * Mathf.Clamp(r.sunIntensity, 0.45f, 1.4f));
             // the shared sky term: the rig's hemisphere light, in linear light
             Shader.SetGlobalVector("_OS_SkyAmb", Linear(r.ambientSky) * r.ambientIntensity);
             Shader.SetGlobalVector("_OS_HorizonAmb", Linear(r.ambientEquator) * r.ambientIntensity);
