@@ -30,6 +30,11 @@ namespace Overstory.World
         public PaletteInfo palette;
         public Slope slope;
         public TreeRef[] trees;
+        public Town town;
+        public P3[] spill; // where lit rooms spill light: in front of each lit floor's windows
+
+        /// <summary>Whether the street has a grown town above it, with its own ground.</summary>
+        public bool HasTown => town != null && town.fine != null && town.fine.nx > 1;
 
         /// <summary>Whether the town climbs above the street (levels, stairs, hillside, ridges).</summary>
         public bool HasSlope => slope != null && slope.levels != null && slope.levels.Length > 0;
@@ -107,6 +112,7 @@ namespace Overstory.World
         public string type;
         public string file;
         public P3 position;
+        public float yaw; // degrees, turning the building in the street's plane (counter-clockwise seen from above)
         public string[] lit;
         public int tris;
     }
@@ -121,6 +127,49 @@ namespace Overstory.World
     }
 
     [Serializable] public class Bollards { public string variant; public P3[] positions; }
+
+    /// <summary>The town grown above the street (blender/tools/grow_town.py), resolved: its ground and stonework.</summary>
+    [Serializable]
+    public class Town
+    {
+        public HeightGrid fine, coarse;
+        public Path[] lanes, stairs, steps, squares;
+        public Wall[] walls;
+        public Foundation[] foundations;
+    }
+
+    /// <summary>A height grid in street metres: z[j * nx + i] at (x0 + i * step, y0 + j * step).</summary>
+    [Serializable]
+    public class HeightGrid
+    {
+        public float x0, y0, step;
+        public int nx, ny;
+        public float[] z;
+
+        public float At(int i, int j) => z[Mathf.Clamp(j, 0, ny - 1) * nx + Mathf.Clamp(i, 0, nx - 1)];
+
+        public bool Contains(float x, float y) => x >= x0 && y >= y0 && x <= x0 + (nx - 1) * step && y <= y0 + (ny - 1) * step;
+
+        public float Sample(float x, float y)
+        {
+            float u = (x - x0) / step, v = (y - y0) / step;
+            int i = Mathf.Clamp(Mathf.FloorToInt(u), 0, nx - 2), j = Mathf.Clamp(Mathf.FloorToInt(v), 0, ny - 2);
+            float fu = u - i, fv = v - j;
+            float a = Mathf.Lerp(At(i, j), At(i + 1, j), fu), b = Mathf.Lerp(At(i, j + 1), At(i + 1, j + 1), fu);
+            return Mathf.Lerp(a, b, fv);
+        }
+    }
+
+    /// <summary>A lane, stepped lane, steps or square: points in street metres, a width, a surface.</summary>
+    [Serializable] public class Path { public string name; public float width; public string surface; public float z; public P3[] points; public P3[] corners; }
+
+    [Serializable] public class WallPoint { public float x, y, zb, zt; }
+
+    /// <summary>A wall along a line: dry stone holding a cut, or a garden wall along a lane.</summary>
+    [Serializable] public class Wall { public string kind; public WallPoint[] points; }
+
+    /// <summary>A house's stone basement: its footprint, from the floor down into the ground.</summary>
+    [Serializable] public class Foundation { public int id; public float top, bottom; public P3[] corners; }
 
     /// <summary>A tree: its species' kit piece, where it stands, its size from its age, a seeded turn.</summary>
     [Serializable] public class TreeRef { public string id; public string variant; public P3 position; public float scale; public float turn; }

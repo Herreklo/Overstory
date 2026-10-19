@@ -78,27 +78,30 @@ namespace Overstory.Assembly
                 Carriageway(w, seed, road, s);
                 QuaySurface(w, seed, quay, L.quay.edge, s);
                 QuayWall(w, seed, L.quay.edge, L.water.level, s);
-                if (L.HasSlope)
+                if (L.HasSlope && !L.HasTown)
                     RetainingWalls(w, seed, L, s);
                 parts.Add(new Part { name = $"ground {s.a:0}-{s.b:0} m", mesh = w.ToMesh($"ground_{ci:00}") });
             }
 
             var plain = new MeshWriter(pal);
             PlainEnds(plain, L, pave);
-            if (L.HasSlope)
+            if (L.HasTown)
+                TownParts(parts, pal, seed, L);
+            else if (L.HasSlope)
                 Levels(plain, L);
             else
                 Backland(plain, L);
             parts.Add(new Part { name = "ground beyond and behind", mesh = plain.ToMesh("ground_plain") });
 
-            if (L.HasSlope)
+            if (L.slope != null && L.slope.ridges != null)
+                foreach (var r in L.slope.ridges)
+                    parts.Add(new Part { name = r.name, mesh = RidgeMesh(pal, seed, r) });
+            if (L.HasSlope && !L.HasTown)
             {
                 var stairs = new MeshWriter(pal);
                 foreach (var st in L.slope.stairs)
                     Stairs(stairs, seed, st);
                 parts.Add(new Part { name = "stairs", mesh = stairs.ToMesh("stairs") });
-                foreach (var r in L.slope.ridges)
-                    parts.Add(new Part { name = r.name, mesh = RidgeMesh(pal, seed, r) });
                 if (L.slope.HasSite)
                     parts.Add(new Part { name = "site terrain", mesh = SiteTerrain(pal, seed, L) });
             }
@@ -298,6 +301,9 @@ namespace Overstory.Assembly
             public readonly Vector3 u, v, n;
 
             Frame(Vector3 o, Vector3 u, Vector3 v, Vector3 n) { this.o = o; this.u = u; this.v = v; this.n = n; }
+
+            /// <summary>Any plane: origin, the two directions that span it, and its outward normal (street axes).</summary>
+            public static Frame Of(Vector3 origin, Vector3 u, Vector3 v, Vector3 n) => new Frame(origin, u, v, n);
 
             /// <summary>The ground: u along the street, v back from the building line, n up.</summary>
             public static readonly Frame Ground = new Frame(Vector3.zero, new Vector3(1, 0, 0), new Vector3(0, 1, 0), new Vector3(0, 0, 1));

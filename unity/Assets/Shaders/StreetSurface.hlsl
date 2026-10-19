@@ -138,6 +138,19 @@ StreetSurface OS_WaterSurface(float3 positionWS, half4 colour, half smoothness, 
     return s;
 }
 
+// Leaf cards (blender/generators/tree.py): a tree's crown is cards whose second UV carries their own
+// coordinates offset by one. Each is cut into a soft, ragged cluster of leaves, fixed to the world so
+// it never swims; walls and roofs carry zero there and are never cut.
+void OS_CardClip(float2 card, float3 positionWS)
+{
+    if (card.x < 0.5)
+        return;
+    float2 c = card - 1.0;
+    float r = length(c - 0.5) * 2.0;
+    float n = OS_Noise(c * 4.5 + positionWS.xz * 0.31) * 0.6 + OS_Noise(c * 10.0 - positionWS.y * 0.43) * 0.4;
+    clip(1.0 - r + (n - 0.5) * 0.9 - 0.18);
+}
+
 // The weather's cloud layer, one pattern for the sky and for the shadows it casts on the town.
 float4 _OS_Clouds;      // x cover (0 none, 1 overcast), y feature size (m), z softness, w layer height (m)
 float4 _OS_CloudDrift;  // xy how far the wind has moved the layer (m), from the scene's clock

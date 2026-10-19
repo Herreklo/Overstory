@@ -269,7 +269,7 @@ namespace Overstory.EditorTools
             r.ambientSky = C(78, 96, 150);
             r.ambientEquator = C(52, 62, 102);
             r.ambientGround = C(30, 32, 46);
-            r.ambientIntensity = 1f;
+            r.ambientIntensity = 0.5f; // darker: the town's own lights carry the frame
 
             r.fogColour = C(44, 52, 92);
             r.fogMidColour = C(76, 80, 136);
@@ -288,10 +288,11 @@ namespace Overstory.EditorTools
             r.cloudSize = 600f;
             r.cloudSoftness = 0.1f;
             r.cloudHeight = 1800f;
-            r.windowGlow = 2.4f; // warm, not bleached: the tonemapper keeps a lamp-lit room's colour
+            r.windowGlow = 3.2f; // warm, not bleached: the tonemapper keeps a lamp-lit room's colour
             r.lampsOn = true;
-            r.lampGlow = 9f;
-            r.lampIntensity = 7f;
+            r.lampGlow = 14f;
+            r.lampIntensity = 18f;
+            r.windowSpill = 2.2f;
 
             r.postExposure = 1.1f;
             r.contrast = 12f;
@@ -313,8 +314,12 @@ namespace Overstory.EditorTools
         {
             r.sunBearing = 232f; // low over the harbour, full on the fronts that face it
             r.sunElevation = 10f;
-            r.sunColour = C(255, 196, 128);
-            r.sunIntensity = 2.6f;
+            r.sunColour = C(255, 190, 118);
+            r.sunIntensity = 3.4f;
+            r.shafts = 1.3f;
+            r.shaftReach = 0.65f;
+            r.shaftDecay = 0.968f;
+            r.shaftThreshold = 0.55f;
             r.shadowStrength = 1f;
 
             r.zenith = C(92, 136, 196);
@@ -327,7 +332,7 @@ namespace Overstory.EditorTools
             r.ambientSky = C(112, 146, 200);
             r.ambientEquator = C(168, 148, 126);
             r.ambientGround = C(96, 82, 68);
-            r.ambientIntensity = 1f;
+            r.ambientIntensity = 0.58f; // little fill: shadow is deep, and coloured by the sky
 
             r.fogColour = C(150, 112, 92);
             r.fogMidColour = C(204, 156, 128);
@@ -338,8 +343,8 @@ namespace Overstory.EditorTools
             r.fogHeightFalloff = 0.014f; // haze lies low: a hill grades from a hazy foot to a clearer crest
             r.fogBaseHeight = 0f;
             r.fogMaxOpacity = 0.85f;
-            r.fogSunColour = C(140, 80, 30);
-            r.fogSunPower = 5f;
+            r.fogSunColour = C(210, 120, 46);
+            r.fogSunPower = 4f;
 
             r.wetness = 0f;
             r.cloudCover = 0.4f;       // broken cloud: the low sun falls on the town in pools
@@ -510,8 +515,30 @@ namespace Overstory.EditorTools
 #else
             Debug.LogWarning("[LT1Setup] URP_SCREEN_SPACE_REFLECTION is not defined yet: run LT1Setup.Project first");
 #endif
+            // light rays: a full-screen pass over the sky, before post-processing
+            if (!data.rendererFeatures.Exists(f => f != null && f.name == "LightShafts"))
+            {
+                var mat = MaterialAt(Materials + "/M_LightShafts.mat", "Overstory/LightShafts", m => { });
+                var ls = ScriptableObject.CreateInstance<FullScreenPassRendererFeature>();
+                ls.name = "LightShafts";
+                ls.passMaterial = mat;
+                ls.injectionPoint = FullScreenPassRendererFeature.InjectionPoint.BeforeRenderingPostProcessing;
+                ls.requirements = ScriptableRenderPassInput.Depth;
+                ls.fetchColorBuffer = true;
+                AssetDatabase.AddObjectToAsset(ls, data);
+                AssetDatabase.TryGetGUIDAndLocalFileIdentifier(ls, out string _, out long lid);
+                var so3 = new SerializedObject(data);
+                var list3 = so3.FindProperty("m_RendererFeatures");
+                list3.arraySize++;
+                list3.GetArrayElementAtIndex(list3.arraySize - 1).objectReferenceValue = ls;
+                var map3 = so3.FindProperty("m_RendererFeatureMap");
+                map3.arraySize++;
+                map3.GetArrayElementAtIndex(map3.arraySize - 1).longValue = lid;
+                so3.ApplyModifiedPropertiesWithoutUndo();
+                Debug.Log("[LT1Setup] light rays added to the renderer");
+            }
             // the key block of look D: a full-screen pass over depth and normals, before post-processing
-            if (!data.rendererFeatures.Exists(f => f is FullScreenPassRendererFeature))
+            if (!data.rendererFeatures.Exists(f => f != null && f.name == "KeyBlock"))
             {
                 var mat = MaterialAt(Materials + "/M_KeyBlock.mat", "Overstory/KeyBlock", m => { });
                 var kb = ScriptableObject.CreateInstance<FullScreenPassRendererFeature>();

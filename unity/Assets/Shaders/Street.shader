@@ -78,6 +78,7 @@ Shader "Overstory/Street"
                 float4 positionOS : POSITION;
                 float3 normalOS : NORMAL;
                 float2 uv : TEXCOORD0;
+                float2 card : TEXCOORD1; // a leaf card's own coordinates, offset by one (zero for everything else)
                 half4 bake : COLOR; // what the face sees: sky, ground, openness (blender/generators/bake.py)
                 UNITY_VERTEX_INPUT_INSTANCE_ID
             };
@@ -89,6 +90,7 @@ Shader "Overstory/Street"
                 float3 positionWS : TEXCOORD1;
                 half3 normalWS : TEXCOORD2;
                 half4 bake : TEXCOORD3;
+                float2 card : TEXCOORD4;
                 UNITY_VERTEX_INPUT_INSTANCE_ID
                 UNITY_VERTEX_OUTPUT_STEREO
             };
@@ -105,6 +107,7 @@ Shader "Overstory/Street"
                 o.normalWS = TransformObjectToWorldNormal(input.normalOS);
                 o.uv = input.uv;
                 o.bake = input.bake;
+                o.card = input.card;
                 return o;
             }
 
@@ -116,6 +119,7 @@ Shader "Overstory/Street"
             {
                 UNITY_SETUP_INSTANCE_ID(input);
                 UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(input);
+                OS_CardClip(input.card, input.positionWS);
 
                 StreetSurface s = OS_Surface(input.uv, input.positionWS, NormalizeNormalPerPixel(input.normalWS));
 
@@ -174,14 +178,24 @@ Shader "Overstory/Street"
             float3 _LightDirection;
             float3 _LightPosition;
 
+            #include "StreetSurface.hlsl"
+
             struct Attributes
             {
                 float4 positionOS : POSITION;
                 float3 normalOS : NORMAL;
+                float2 card : TEXCOORD1;
                 UNITY_VERTEX_INPUT_INSTANCE_ID
             };
 
-            float4 Vert(Attributes input) : SV_POSITION
+            struct ShadowVaryings
+            {
+                float4 positionCS : SV_POSITION;
+                float2 card : TEXCOORD0;
+                float3 positionWS : TEXCOORD1;
+            };
+
+            ShadowVaryings Vert(Attributes input)
             {
                 UNITY_SETUP_INSTANCE_ID(input);
                 float3 positionWS = TransformObjectToWorld(input.positionOS.xyz);
@@ -197,10 +211,18 @@ Shader "Overstory/Street"
             #else
                 positionCS.z = max(positionCS.z, UNITY_NEAR_CLIP_VALUE);
             #endif
-                return positionCS;
+                ShadowVaryings o;
+                o.positionCS = positionCS;
+                o.card = input.card;
+                o.positionWS = positionWS;
+                return o;
             }
 
-            half4 Frag() : SV_Target { return 0; }
+            half4 Frag(ShadowVaryings input) : SV_Target
+            {
+                OS_CardClip(input.card, input.positionWS);
+                return 0;
+            }
             ENDHLSL
         }
 
@@ -218,15 +240,20 @@ Shader "Overstory/Street"
             #pragma fragment Frag
             #pragma multi_compile_instancing
 
+            #include "StreetSurface.hlsl"
+
             struct Attributes
             {
                 float4 positionOS : POSITION;
+                float2 card : TEXCOORD1;
                 UNITY_VERTEX_INPUT_INSTANCE_ID
             };
 
             struct Varyings
             {
                 float4 positionCS : SV_POSITION;
+                float2 card : TEXCOORD0;
+                float3 positionWS : TEXCOORD1;
                 UNITY_VERTEX_OUTPUT_STEREO
             };
 
@@ -235,11 +262,17 @@ Shader "Overstory/Street"
                 Varyings o = (Varyings)0;
                 UNITY_SETUP_INSTANCE_ID(input);
                 UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(o);
-                o.positionCS = TransformObjectToHClip(input.positionOS.xyz);
+                o.positionWS = TransformObjectToWorld(input.positionOS.xyz);
+                o.positionCS = TransformWorldToHClip(o.positionWS);
+                o.card = input.card;
                 return o;
             }
 
-            half Frag(Varyings input) : SV_Target { return input.positionCS.z; }
+            half Frag(Varyings input) : SV_Target
+            {
+                OS_CardClip(input.card, input.positionWS);
+                return input.positionCS.z;
+            }
             ENDHLSL
         }
 
@@ -271,6 +304,7 @@ Shader "Overstory/Street"
                 float4 positionOS : POSITION;
                 float3 normalOS : NORMAL;
                 float2 uv : TEXCOORD0;
+                float2 card : TEXCOORD1;
                 UNITY_VERTEX_INPUT_INSTANCE_ID
             };
 
@@ -280,6 +314,7 @@ Shader "Overstory/Street"
                 float2 uv : TEXCOORD0;
                 float3 positionWS : TEXCOORD1;
                 half3 normalWS : TEXCOORD2;
+                float2 card : TEXCOORD3;
                 UNITY_VERTEX_OUTPUT_STEREO
             };
 
@@ -292,6 +327,7 @@ Shader "Overstory/Street"
                 o.positionCS = TransformWorldToHClip(o.positionWS);
                 o.normalWS = TransformObjectToWorldNormal(input.normalOS);
                 o.uv = input.uv;
+                o.card = input.card;
                 return o;
             }
 
@@ -301,6 +337,7 @@ Shader "Overstory/Street"
             #endif
             )
             {
+                OS_CardClip(input.card, input.positionWS);
                 StreetSurface s = OS_Surface(input.uv, input.positionWS, normalize(input.normalWS));
             #if defined(_GBUFFER_NORMALS_OCT)
                 float2 oct = PackNormalOctQuadEncode(s.normalWS);

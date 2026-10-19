@@ -118,6 +118,21 @@ namespace Overstory.Scenes
                 SetLight(rig);
             if (shot != null && view != null)
                 shot.Apply(view);
+            SetShafts();
+        }
+
+        /// <summary>Where the sun stands on screen, for the light rays; they are off when it is behind the camera.</summary>
+        void SetShafts()
+        {
+            if (rig == null || view == null)
+                return;
+            Vector3 toSun = StreetSpace.ToUnity(rig.SunDirectionStreet).normalized;
+            Vector3 vp = view.WorldToViewportPoint(view.transform.position + toSun * 5000f);
+            bool ahead = vp.z > 0f && rig.shafts > 0f;
+            Shader.SetGlobalVector("_OS_SunScreen", new Vector4(vp.x, vp.y, ahead ? 1f : 0f, 0f));
+            Shader.SetGlobalVector("_OS_Shafts", new Vector4(rig.shafts, rig.shaftReach, rig.shaftDecay, rig.shaftThreshold));
+            var c = Linear(rig.sunColour);
+            Shader.SetGlobalVector("_OS_ShaftColour", new Vector4(c.x, c.y, c.z, 1f));
         }
 
         void SetPalette()
@@ -199,6 +214,12 @@ namespace Overstory.Scenes
                     light.enabled = r.lampsOn;
                     light.intensity = r.lampIntensity;
                     light.color = kind == "sodium" ? Sodium : kind == "mercury" ? Mercury : Warm;
+                }
+                foreach (var light in street.SpillLights)
+                {
+                    light.enabled = r.windowSpill > 0f;
+                    light.intensity = r.windowSpill;
+                    light.color = new Color(1.0f, 0.72f, 0.42f);
                 }
             }
 

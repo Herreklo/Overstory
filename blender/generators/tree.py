@@ -1,12 +1,15 @@
-"""Trees, by species, built as a painter would simplify them.
+"""Trees, by species, built the way painted game trees are: a trunk with a few branches, and a crown
+of leaf-cluster cards.
 
-build(params, seed) makes one tree at its mature size, pivot at the foot of the trunk. A crown is a
-few soft masses, not leaves; every vertex of a crown carries a normal pointing out from the crown's
-centre, so light models the whole crown as one rounded form (the soft-foliage method in
-docs/research/nature.md). Unity scales each tree by its age: planting is a fact, size follows from it.
+build(params, seed) makes one tree at its mature size, pivot at the foot of the trunk. The crown is
+about a hundred cards, each a soft, ragged cluster of leaves cut out by the shader (the card's
+coordinates ride in a second UV layer, offset by one so the shader knows a card from a wall). Every
+card's normals point out from the crown's centre, so light models the whole crown as one rounded mass
+(the soft-foliage method in docs/research/nature.md), and cards deep inside the crown see less sky and
+come out darker (bake.py). Unity scales each tree by its age: planting is a fact, size follows from it.
 
 Species (mature height, metres):
-- birch: tall and narrow, loose, light; October yellow.
+- birch: tall, narrow, loose, light; October yellow.
 - rowan: small, rounded; October red.
 - sycamore: broad, dense, the big garden tree; October amber.
 - spruce: a dark cone in tiers, the same all year.
@@ -17,14 +20,14 @@ import random
 
 from mathutils import Vector
 
-from kit import Builder, WORLD
+from kit import Builder, Frame, WORLD
 
 SPECIES = {
-    # crown: (bottom, top) as shares of the height; width: the crown's half-width as a share of the height
-    "birch": dict(height=14.0, trunk=0.2, crown=(0.3, 1.0), width=0.2, lumps=22, lump=0.16, leaf="leaf_birch"),
-    "rowan": dict(height=8.0, trunk=0.16, crown=(0.28, 0.98), width=0.3, lumps=18, lump=0.2, leaf="leaf_rowan"),
-    "sycamore": dict(height=15.0, trunk=0.34, crown=(0.24, 1.0), width=0.38, lumps=30, lump=0.17, leaf="leaf_sycamore"),
-    "spruce": dict(height=17.0, trunk=0.24, crown=(0.06, 1.0), width=0.2, lumps=0, lump=0, leaf="leaf_spruce"),
+    # crown: (bottom, top) as shares of the height; width: crown half-width as a share of the height
+    "birch": dict(height=14.0, trunk=0.19, crown=(0.32, 1.0), width=0.2, cards=90, card=1.9, branches=4, leaf="leaf_birch"),
+    "rowan": dict(height=8.0, trunk=0.15, crown=(0.3, 0.98), width=0.3, cards=70, card=1.5, branches=4, leaf="leaf_rowan"),
+    "sycamore": dict(height=15.0, trunk=0.33, crown=(0.26, 1.0), width=0.38, cards=130, card=2.6, branches=5, leaf="leaf_sycamore"),
+    "spruce": dict(height=17.0, trunk=0.24, crown=(0.06, 1.0), width=0.21, cards=0, card=0, branches=0, leaf="leaf_spruce"),
 }
 
 
@@ -32,35 +35,16 @@ def name(variant):
     return f"kit_tree_{variant}_lod0"
 
 
-def _icosphere(subdiv):
-    """Unit icosphere: vertices and triangles."""
-    t = (1 + math.sqrt(5)) / 2
-    vs = [Vector(v).normalized() for v in ((-1, t, 0), (1, t, 0), (-1, -t, 0), (1, -t, 0), (0, -1, t), (0, 1, t),
-                                           (0, -1, -t), (0, 1, -t), (t, 0, -1), (t, 0, 1), (-t, 0, -1), (-t, 0, 1))]
-    fs = [(0, 11, 5), (0, 5, 1), (0, 1, 7), (0, 7, 10), (0, 10, 11), (1, 5, 9), (5, 11, 4), (11, 10, 2), (10, 7, 6), (7, 1, 8),
-          (3, 9, 4), (3, 4, 2), (3, 2, 6), (3, 6, 8), (3, 8, 9), (4, 9, 5), (2, 4, 11), (6, 2, 10), (8, 6, 7), (9, 8, 1)]
-    for _ in range(subdiv):
-        cache, out = {}, []
-
-        def mid(a, b):
-            k = (min(a, b), max(a, b))
-            if k not in cache:
-                vs.append(((vs[a] + vs[b]) / 2).normalized())
-                cache[k] = len(vs) - 1
-            return cache[k]
-
-        for a, b, c in fs:
-            ab, bc, ca = mid(a, b), mid(b, c), mid(c, a)
-            out += [(a, ab, ca), (b, bc, ab), (c, ca, bc), (ab, bc, ca)]
-        fs = out
-    return vs, fs
-
-
-SPHERE = _icosphere(1)
+def _branch(b, base, direction, length, r0, r1):
+    d = direction.normalized()
+    t = Vector((0, 0, 1)) if abs(d.z) < 0.95 else Vector((1, 0, 0))
+    u = d.cross(t).normalized()
+    n = d.cross(u).normalized()
+    b.prism(Frame(base, u, d, n), 0, 0, 0.0, length, r0, r1, 6, "bark")
 
 
 def build(params, seed=0):
-    """params: a species from SPECIES. Returns the tree object; its crown's normals are soft."""
+    """params: a species from SPECIES. Returns the tree object."""
     import palette
 
     sp = SPECIES[params]
@@ -70,10 +54,19 @@ def build(params, seed=0):
     c0, c1 = sp["crown"][0] * H, sp["crown"][1] * H
     half = H * sp["width"]
     centre = Vector((0, 0, (c0 + c1) / 2))
-    axes = Vector((half, half, (c1 - c0) / 2))  # the crown's envelope, an ellipsoid
-    # the trunk, tapering, well up into the crown
-    b.prism(WORLD, 0, 0, 0.0, c0 + (c1 - c0) * 0.6, sp["trunk"], sp["trunk"] * 0.35, 8, "bark")
+    axes = Vector((half, half, (c1 - c0) / 2))
+
+    # trunk, and a few branches reaching into the crown
+    trunk_top = c0 + (c1 - c0) * 0.55
+    b.prism(WORLD, 0, 0, 0.0, trunk_top, sp["trunk"], sp["trunk"] * 0.4, 8, "bark")
+    for k in range(sp["branches"]):
+        z = c0 + (trunk_top - c0) * (0.15 + 0.7 * k / max(1, sp["branches"] - 1))
+        ang = k * 2.4 + rng.uniform(-0.4, 0.4)
+        d = Vector((math.cos(ang), math.sin(ang), rng.uniform(0.7, 1.3)))
+        _branch(b, Vector((0, 0, z)), d, half * rng.uniform(0.7, 1.0), sp["trunk"] * 0.45, sp["trunk"] * 0.12)
+
     first_leaf = len(b.faces)
+    cards = []  # (face index, centre) for the second UV layer
     if params == "spruce":
         tiers = 7
         for i in range(tiers):
@@ -83,24 +76,38 @@ def build(params, seed=0):
             r = half * (1.0 - t0 * 0.85) * rng.uniform(0.92, 1.08)
             b.prism(WORLD, 0, 0, z0, z1, r, 0.0, 14, sp["leaf"], phase=rng.random())
     else:
-        vs, fs = SPHERE
-        for i in range(sp["lumps"]):
-            # a point inside the envelope, pushed towards its surface so the outline is full
+        for i in range(sp["cards"]):
             while True:
                 q = Vector((rng.uniform(-1, 1), rng.uniform(-1, 1), rng.uniform(-1, 1)))
                 if q.length <= 1.0:
                     break
-            q = q.normalized() * (0.55 + 0.4 * q.length)
-            lc = centre + Vector((q.x * axes.x, q.y * axes.y, q.z * axes.z)) * 0.8
-            r = H * sp["lump"] * rng.uniform(0.75, 1.25)
-            jitter = [rng.uniform(0.82, 1.15) for _ in vs]  # each lump irregular, so the silhouette breaks
-            for f in fs:
-                pts = [lc + vs[k] * r * jitter[k] for k in f]
-                b.face(pts, sp["leaf"], outward=lc)
+            q = q.normalized() * (0.35 + 0.65 * q.length ** 0.5)  # most cards near the crown's surface
+            c = centre + Vector((q.x * axes.x, q.y * axes.y, q.z * axes.z))
+            # each card faces roughly out of the crown, turned at random about that direction
+            out = (c - centre).normalized() if (c - centre).length > 1e-3 else Vector((0, 0, 1))
+            out = (out + Vector((rng.uniform(-0.6, 0.6), rng.uniform(-0.6, 0.6), rng.uniform(-0.3, 0.6)))).normalized()
+            t = Vector((0, 0, 1)) if abs(out.z) < 0.9 else Vector((1, 0, 0))
+            u = out.cross(t).normalized()
+            v = out.cross(u).normalized()
+            spin = rng.uniform(0, math.pi)
+            u, v = u * math.cos(spin) + v * math.sin(spin), v * math.cos(spin) - u * math.sin(spin)
+            s = sp["card"] * rng.uniform(0.75, 1.25) / 2
+            quad = [c - u * s - v * s, c + u * s - v * s, c + u * s + v * s, c - u * s + v * s]
+            b.face(quad, sp["leaf"], outward=c - out)          # the face towards the outside
+            cards.append(len(b.faces) - 1)
+            b.face(list(reversed(quad)), sp["leaf"], outward=c + out)  # and the face towards the inside
+            cards.append(len(b.faces) - 1)
     obj = b.build(name(params), palette.material())
-    # soft foliage: crown normals are the envelope's own, blended a little with the face's, so light
-    # models the whole crown as one rounded form while its edge stays broken
     mesh = obj.data
+
+    # card coordinates in a second UV layer, offset by one (walls and roofs read zero there)
+    cardlayer = mesh.uv_layers.new(name="Card")
+    corner_uv = [(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0)]
+    for p in mesh.polygons:
+        for k, li in enumerate(p.loop_indices):
+            cardlayer.data[li].uv = (corner_uv[k % 4][0] + 1.0, corner_uv[k % 4][1] + 1.0) if p.index >= first_leaf and params != "spruce" else (0.0, 0.0)
+
+    # soft foliage: crown normals point out of the crown's envelope
     normals = []
     for p in mesh.polygons:
         for li in p.loop_indices:
@@ -109,7 +116,7 @@ def build(params, seed=0):
                 continue
             v = mesh.vertices[mesh.loops[li].vertex_index].co
             e = Vector(((v.x - centre.x) / axes.x ** 2, (v.y - centre.y) / axes.y ** 2, (v.z - centre.z) / axes.z ** 2))
-            n = (e.normalized() * 0.85 + p.normal * 0.15).normalized()
+            n = (e.normalized() * 0.9 + p.normal * 0.1).normalized() if params != "spruce" else (e.normalized() * 0.6 + p.normal * 0.4).normalized()
             normals.append(tuple(n))
     for p in mesh.polygons:
         p.use_smooth = True

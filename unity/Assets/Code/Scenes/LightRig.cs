@@ -51,6 +51,14 @@ namespace Overstory.Scenes
         public Color fogSunColour = Color.black;
         public float fogSunPower = 8f;
 
+        [Header("Light rays")]
+        [Tooltip("How strongly the sky's light streams past what stands against it, looking towards the sun.")]
+        public float shafts = 0f;
+        [Range(0.1f, 1f)] public float shaftReach = 0.6f;
+        [Range(0.9f, 1f)] public float shaftDecay = 0.965f;
+        [Tooltip("How bright the sky must be to cast rays.")]
+        public float shaftThreshold = 0.5f;
+
         [Header("Weather")]
         [Range(0, 1)] public float wetness = 0f;
         [Tooltip("How much of the sky the clouds cover, as their shadows on the town: 0 none, 1 overcast.")]
@@ -68,6 +76,8 @@ namespace Overstory.Scenes
         public float lampGlow = 0f;
         [Tooltip("Intensity of the light each lamp casts while on.")]
         public float lampIntensity = 0f;
+        [Tooltip("Intensity of the warm light a lit room spills through its windows onto what is in front.")]
+        public float windowSpill = 0f;
 
         [Header("Grade")]
         public float postExposure = 0f;

@@ -145,6 +145,8 @@ def era_for(year, key=0):
 # Stylisation: how far shapes are pushed. Per mille, millimetres, tenths of a degree.
 STYLES = {
     "gentle": dict(band=300, lap=22, pitch=1050, eave=1100, win=1050, frame=130, lean=6, sag=60, bow=0, jitter=35, tilt=6, chamfer=12, chimney=1000, kick=600),
+    # realistically exaggerated: a little taller, steeper and deeper-eaved than life, never a toy
+    "measured": dict(band=340, lap=28, pitch=1110, eave=1250, win=1080, frame=150, lean=10, sag=110, bow=30, jitter=50, tilt=9, chamfer=18, chimney=1180, kick=800),
     "strong": dict(band=375, lap=32, pitch=1160, eave=1350, win=1120, frame=170, lean=22, sag=220, bow=60, jitter=70, tilt=14, chamfer=22, chimney=1300, kick=1000),
     "stronger": dict(band=500, lap=46, pitch=1300, eave=1700, win=1220, frame=230, lean=26, sag=260, bow=60, jitter=80, tilt=16, chamfer=30, chimney=1600, kick=1000),
     "wild": dict(band=500, lap=46, pitch=1300, eave=1700, win=1220, frame=230, lean=45, sag=480, bow=140, jitter=120, tilt=26, chamfer=35, chimney=1600, kick=1000),

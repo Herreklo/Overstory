@@ -34,6 +34,9 @@ namespace Overstory.Assembly
         /// <summary>Each lamp's light, with the kind of light it gives (warm, mercury, sodium).</summary>
         public readonly List<(Light light, string kind)> LampLights = new List<(Light, string)>();
 
+        /// <summary>The warm light lit rooms spill through their windows, one in front of each lit floor.</summary>
+        public readonly List<Light> SpillLights = new List<Light>();
+
         /// <summary>Whether the street stands: its generated objects are under this one.</summary>
         public bool Built => Layout != null && transform.childCount > 0;
 
@@ -58,6 +61,7 @@ namespace Overstory.Assembly
             {
                 var go = Place(b.file, buildings.transform, StreetSpace.ToUnity(b.position));
                 go.name = $"building {b.id}";
+                go.transform.localRotation = Quaternion.Euler(0f, -b.yaw, 0f); // the street's counter-clockwise is Unity's turn to the left
             }
 
             var lamps = Make(new GameObject("lamps"), root.transform);
@@ -65,7 +69,8 @@ namespace Overstory.Assembly
             {
                 var kit = Layout.Kit(l.variant);
                 var p = l.position;
-                p.z = StreetGround.SurfaceZ(Layout, p.y);
+                if (p.z == 0f)
+                    p.z = StreetGround.SurfaceZ(Layout, p.y); // on the quay street; the town's lamps carry their height
                 var go = Place(kit.file, lamps.transform, StreetSpace.ToUnity(p));
                 go.name = $"{l.id} ({l.variant})";
                 var lightGo = Make(new GameObject("light"), go.transform);
@@ -83,6 +88,19 @@ namespace Overstory.Assembly
                 light.shadows = LightShadows.Soft;
                 light.enabled = false; // the scene's light turns lamps on
                 LampLights.Add((light, l.light));
+            }
+
+            var spill = Make(new GameObject("window light"), root.transform);
+            foreach (var sp in Layout.spill ?? new P3[0])
+            {
+                var go = Make(new GameObject("spill"), spill.transform);
+                go.transform.localPosition = StreetSpace.ToUnity(sp);
+                var light = go.AddComponent<Light>();
+                light.type = LightType.Point;
+                light.range = 7f;
+                light.shadows = LightShadows.None;
+                light.enabled = false;
+                SpillLights.Add(light);
             }
 
             var bollards = Make(new GameObject("bollards"), root.transform);
@@ -149,6 +167,7 @@ namespace Overstory.Assembly
         void Clear()
         {
             LampLights.Clear();
+            SpillLights.Clear();
             for (int i = transform.childCount - 1; i >= 0; i--)
             {
                 var child = transform.GetChild(i).gameObject;
