@@ -157,12 +157,12 @@ namespace Overstory.Assembly
 
         /// <summary>
         /// A ridge of hills or mountains: a crest running from a to b, rising from its ends, wandering in
-        /// height and line, with shoulders down to the ground on both sides. One surface of shared
-        /// vertices with smooth normals, so a hill reads as a landform, not as facets. Seeded from its name.
+        /// height and line, with shoulders down to the ground on both sides, built as crisp facets that
+        /// catch the light plane by plane. Seeded from its name.
         /// </summary>
         static Mesh RidgeMesh(Palette pal, ulong seed, Ridge r)
         {
-            const int N = 220, K = 9; // samples along the ridge, and across it
+            const int N = 70, K = 7; // samples along the ridge, and across it: few, so the faces read
             var A = new Vector2(r.ax, r.ay);
             var B = new Vector2(r.bx, r.by);
             Vector2 d = (B - A).normalized;
@@ -197,30 +197,12 @@ namespace Overstory.Assembly
                     tris.Add(a); tris.Add(b); tris.Add(a + 1);
                     tris.Add(a + 1); tris.Add(b); tris.Add(b + 1);
                 }
-            var m = new Mesh { name = r.name, hideFlags = HideFlags.DontSave };
-            m.SetVertices(verts);
-            m.SetTriangles(tris, 0, true);
             // wind the surface to face up, whichever way the ridge runs
-            m.RecalculateNormals();
-            var normals = m.normals;
-            if (normals[(N / 2) * K + K / 2].y < 0f)
-            {
+            Vector3 ca = verts[(N / 2) * K + K / 2], cb = verts[(N / 2 + 1) * K + K / 2], cc = verts[(N / 2) * K + K / 2 + 1];
+            if (Vector3.Cross(cb - ca, cc - ca).y < 0f)
                 for (int i = 0; i < tris.Count; i += 3)
                     (tris[i + 1], tris[i + 2]) = (tris[i + 2], tris[i + 1]);
-                m.SetTriangles(tris, 0, true);
-                m.RecalculateNormals();
-                normals = m.normals;
-            }
-            var uv = pal.UV(string.IsNullOrEmpty(r.surface) ? "rock" : r.surface);
-            var uvs = new List<Vector2>(verts.Count);
-            var colours = new List<Color>(verts.Count);
-            foreach (var n in normals)
-            {
-                uvs.Add(uv);
-                colours.Add(new Color(0.5f + 0.5f * n.y, 0.5f - 0.5f * n.y, 1f, 1f)); // open slopes: sky above, ground below
-            }
-            m.SetUVs(0, uvs);
-            m.SetColors(colours);
+            var m = Faceted(r.name, verts, tris, pal.UV(string.IsNullOrEmpty(r.surface) ? "rock" : r.surface));
             return m;
         }
 
@@ -237,7 +219,7 @@ namespace Overstory.Assembly
             var levels = L.slope.levels;
             var hill = L.slope.hillside;
             float edge = L.quay.edge, townBack = levels[levels.Length - 1].y1;
-            const float Cell = 8f;
+            const float Cell = 14f; // facets large enough to read as planes
             float x0 = site.bayX0 - 1300f, x1 = site.bayX1 + 1300f, y0 = edge - 900f, y1 = 1100f;
             int nx = Mathf.CeilToInt((x1 - x0) / Cell), ny = Mathf.CeilToInt((y1 - y0) / Cell);
             ulong rs = Hash.Of(seed, "site");
@@ -300,21 +282,7 @@ namespace Overstory.Assembly
                     tris.Add(a); tris.Add(c); tris.Add(b);
                     tris.Add(b); tris.Add(c); tris.Add(e);
                 }
-            var m = new Mesh { name = "site terrain", hideFlags = HideFlags.DontSave, indexFormat = UnityEngine.Rendering.IndexFormat.UInt32 };
-            m.SetVertices(verts);
-            m.SetTriangles(tris, 0, true);
-            m.RecalculateNormals();
-            var normals = m.normals;
-            var uv = pal.UV(SurfaceSwatch(string.IsNullOrEmpty(site.surface) ? "heath" : site.surface));
-            var uvs = new List<Vector2>(verts.Count);
-            var colours = new List<Color>(verts.Count);
-            foreach (var n in normals)
-            {
-                uvs.Add(uv);
-                colours.Add(new Color(0.5f + 0.5f * n.y, 0.5f - 0.5f * n.y, 1f, 1f));
-            }
-            m.SetUVs(0, uvs);
-            m.SetColors(colours);
+            var m = Faceted("site terrain", verts, tris, pal.UV(SurfaceSwatch(string.IsNullOrEmpty(site.surface) ? "heath" : site.surface)));
             return m;
         }
 
@@ -327,6 +295,39 @@ namespace Overstory.Assembly
             fv = fv * fv * (3f - 2f * fv);
             float H(int a, int b) => Hash.Unit(Hash.Of(h, Hash.Key(a), Hash.Key(b)));
             return Mathf.Lerp(Mathf.Lerp(H(i, j), H(i + 1, j), fu), Mathf.Lerp(H(i, j + 1), H(i + 1, j + 1), fu), fv);
+        }
+
+        /// <summary>
+        /// Land as crisp planes: every triangle its own flat face, so a slope catches the low sun or
+        /// loses it as a whole, like a carved or painted landform, not a smooth blob.
+        /// </summary>
+        static Mesh Faceted(string name, List<Vector3> verts, List<int> tris, Vector2 uv)
+        {
+            var fv = new List<Vector3>(tris.Count);
+            var fn = new List<Vector3>(tris.Count);
+            var fc = new List<Color>(tris.Count);
+            var fu = new List<Vector2>(tris.Count);
+            var ft = new List<int>(tris.Count);
+            for (int i = 0; i < tris.Count; i += 3)
+            {
+                Vector3 a = verts[tris[i]], b = verts[tris[i + 1]], c = verts[tris[i + 2]];
+                Vector3 n = Vector3.Cross(b - a, c - a);
+                if (n.sqrMagnitude < 1e-10f)
+                    continue;
+                n.Normalize();
+                var seen = new Color(0.5f + 0.5f * n.y, 0.5f - 0.5f * n.y, 1f, 1f); // open slopes: sky above, ground below
+                int k = fv.Count;
+                fv.Add(a); fv.Add(b); fv.Add(c);
+                for (int j = 0; j < 3; j++) { fn.Add(n); fc.Add(seen); fu.Add(uv); }
+                ft.Add(k); ft.Add(k + 1); ft.Add(k + 2);
+            }
+            var m = new Mesh { name = name, hideFlags = HideFlags.DontSave, indexFormat = UnityEngine.Rendering.IndexFormat.UInt32 };
+            m.SetVertices(fv);
+            m.SetNormals(fn);
+            m.SetColors(fc);
+            m.SetUVs(0, fu);
+            m.SetTriangles(ft, 0, true);
+            return m;
         }
 
         /// <summary>Smooth seeded value noise along one dimension, 0..1.</summary>

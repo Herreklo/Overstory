@@ -327,7 +327,7 @@ namespace Overstory.EditorTools
             r.fogMidDistance = 350f;
             r.fogFarColour = C(240, 206, 174);
             r.fogFarDistance = 3000f;
-            r.fogDensity = 0.0032f;
+            r.fogDensity = 0.0018f;
             r.fogHeightFalloff = 0.014f; // haze lies low: a hill grades from a hazy foot to a clearer crest
             r.fogBaseHeight = 0f;
             r.fogMaxOpacity = 0.85f;
@@ -335,6 +335,10 @@ namespace Overstory.EditorTools
             r.fogSunPower = 5f;
 
             r.wetness = 0f;
+            r.cloudCover = 0.5f;       // broken cloud: the low sun falls on the town in pools
+            r.cloudSize = 85f;
+            r.cloudSoftness = 0.05f;
+            r.cloudHeight = 900f;
             r.windowGlow = 0f;
             r.lampsOn = false;
             r.lampGlow = 0f;

@@ -12,6 +12,25 @@ float4 _OS_SkyAmb;      // what the open sky gives a face that looks straight up
 float4 _OS_HorizonAmb;  // what it gives a face that looks at the horizon
 float4 _OS_GroundAmb;   // what the ground bounces back up
 
+// the weather's clouds: their shadows on the town, cast along the sun from a layer overhead
+float4 _OS_Clouds;      // x cover (0 none, 1 overcast), y feature size (m), z softness, w layer height (m)
+float4 _OS_CloudDrift;  // xy how far the wind has moved the layer (m), from the scene's clock
+float _OS_ShadowChroma; // look D: how strongly shade takes the sky's colour (1 as the light gives it)
+
+// How much sun reaches a point through the clouds: 1 in a break, low under a cloud.
+half OS_CloudLight(float3 positionWS, half3 toSun)
+{
+    if (_OS_Clouds.x <= 0.001)
+        return 1.0h;
+    // follow the sun's ray up to the cloud layer
+    float up = max(toSun.y, 0.05);
+    float2 p = positionWS.xz + toSun.xz * ((_OS_Clouds.w - positionWS.y) / up) + _OS_CloudDrift.xy;
+    float2 q = p / max(_OS_Clouds.y, 1.0);
+    float c = 0.55 * OS_Noise(q) + 0.3 * OS_Noise(q * 2.13 + 7.7) + 0.15 * OS_Noise(q * 4.7 - 3.1);
+    half shade = smoothstep(1.0 - _OS_Clouds.x - _OS_Clouds.z, 1.0 - _OS_Clouds.x + _OS_Clouds.z, (half)c);
+    return lerp(1.0h, 0.12h, shade);
+}
+
 // look B, the painted ramp
 float4 _OS_Ramp;        // x edge, y softness, z shadow floor, w stroke (how far the world-fixed stroke nudges the ramp)
 float4 _OS_EdgeTint;    // rgb extra colour at the shadow edge, a its strength
@@ -105,6 +124,7 @@ half3 OS_ShadeB(InputData id, StreetSurface s, OSBake b, float3 positionWS)
 
     // the sun (or the brightest sky at dusk): half-Lambert through the ramp, times the light's colour
     Light main = GetMainLight(id.shadowCoord, id.positionWS, shadowMask);
+    main.shadowAttenuation *= OS_CloudLight(positionWS, main.direction);
     half lit = (dot(n, main.direction) * 0.5h + 0.5h) * lerp(0.5h, 1.0h, main.shadowAttenuation) + stroke;
     lit = lit * lerp(0.35h, 1.0h, main.shadowAttenuation); // a cast shadow always reads as shadow
     half r = OS_Ramp(lit);
@@ -177,9 +197,12 @@ half3 OS_ShadeD(InputData id, StreetSurface s, OSBake b, float3 positionWS)
     half4 shadowMask = half4(1, 1, 1, 1);
 
     // all the light a point receives, unshaped: sky term, sun, lamps
-    half3 light = OS_SkyTerm(b, n) * ao.indirectAmbientOcclusion;
+    // shade takes the sky's colour, pushed: violet, teal and deep blue, never grey
+    half3 sky = OS_SkyTerm(b, n) * ao.indirectAmbientOcclusion;
+    half skyLum = dot(sky, half3(0.2126h, 0.7152h, 0.0722h));
+    half3 light = max(skyLum + (sky - skyLum) * _OS_ShadowChroma, 0.0h);
     Light main = GetMainLight(id.shadowCoord, id.positionWS, shadowMask);
-    light += main.color * saturate(dot(n, main.direction)) * main.shadowAttenuation;
+    light += main.color * saturate(dot(n, main.direction)) * main.shadowAttenuation * OS_CloudLight(positionWS, main.direction);
     half3 specular = 0;
     #if defined(_ADDITIONAL_LIGHTS)
     uint count = GetAdditionalLightsCount();

@@ -32,13 +32,17 @@ MonoBehaviour:
   fogMidDistance: 350
   fogFarColour: {r: 0.9411765, g: 0.80784315, b: 0.68235296, a: 1}
   fogFarDistance: 3000
-  fogDensity: 0.0032
+  fogDensity: 0.0018
   fogHeightFalloff: 0.014
   fogBaseHeight: 0
   fogMaxOpacity: 0.85
   fogSunColour: {r: 0.54901963, g: 0.3137255, b: 0.11764706, a: 1}
   fogSunPower: 5
   wetness: 0
+  cloudCover: 0.5
+  cloudSize: 85
+  cloudSoftness: 0.05
+  cloudHeight: 900
   windowGlow: 0
   lampsOn: 0
   lampGlow: 0

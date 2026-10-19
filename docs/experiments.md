@@ -76,4 +76,5 @@ Newest first. Each entry: the question, how it is judged, then the outcome: what
 - Look D, the most promising: light cut into flat plates in the light's own colour (each plate one exposure step), thin indigo key lines on real edges, fading with distance. Carving and white-line engraving were tried and dropped: they read as pattern laid over the picture.
 - The camera moved into the village, over the quay at roof height. From a distance the town read as a model; close, it reads as a place.
 - Two lights carry it: blue hour (indigo air, warm windows) and a hot summer evening (low sun on the harbour fronts, warm haze). Frames in `reviews/lt1/looks/`.
-- Open: the land is underworked (it reads as dunes in warm light); the shore is a straight line; both wait until the look is found.
+- Cloud light: the weather's clouds cast their shadows along the sun from a layer overhead, so the low sun falls on the town and the land in pools (after a SEASON harbour still). Shade in look D takes a richer version of the sky's colour. Land and mountains are crisp facets that catch the light plane by plane.
+- Open: the sky is still a plain gradient, where the references put half their drama (clouds with volume, light breaking through); the land is underworked; the shore is a straight line.

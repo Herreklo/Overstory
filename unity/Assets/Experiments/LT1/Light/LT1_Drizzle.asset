@@ -39,6 +39,10 @@ MonoBehaviour:
   fogSunColour: {r: 0, g: 0, b: 0, a: 1}
   fogSunPower: 8
   wetness: 1
+  cloudCover: 0
+  cloudSize: 160
+  cloudSoftness: 0.08
+  cloudHeight: 900
   windowGlow: 0
   lampsOn: 0
   lampGlow: 0

@@ -54,6 +54,8 @@ namespace Overstory.Scenes
         public Color ink = new Color(0.11f, 0.12f, 0.22f, 0.85f);
         public float inkFadeStart = 60f, inkFadeEnd = 450f;
         public float airBands = 5f, skyBands = 7f;
+        [Tooltip("How strongly shade takes the sky's colour in look D: 1 as the light gives it, more is richer.")]
+        public float shadowChroma = 1.7f;
 
         VolumeProfile profile;
 
@@ -93,6 +95,7 @@ namespace Overstory.Scenes
             var inkLinear = ink.linear;
             Shader.SetGlobalVector("_OS_Ink", new Vector4(inkLinear.r, inkLinear.g, inkLinear.b, ink.a));
             Shader.SetGlobalVector("_OS_InkFade", new Vector4(inkFadeStart, inkFadeEnd, 0, 0));
+            Shader.SetGlobalFloat("_OS_ShadowChroma", shadowChroma);
             Shader.SetGlobalVector("_OS_Ramp", new Vector4(rampEdge, rampSoftness, shadowFloor, stroke));
             Shader.SetGlobalVector("_OS_EdgeTint", new Vector4(edgeTint.linear.r, edgeTint.linear.g, edgeTint.linear.b, edgeTint.a));
             if (rig != null)
@@ -165,6 +168,8 @@ namespace Overstory.Scenes
             Shader.SetGlobalFloat("_OS_WindowGlow", r.windowGlow);
             Shader.SetGlobalFloat("_OS_LampGlow", r.lampsOn ? r.lampGlow : 0f);
             Shader.SetGlobalFloat("_OS_Time", r.clock);
+            Shader.SetGlobalVector("_OS_Clouds", new Vector4(r.cloudCover, r.cloudSize, r.cloudSoftness, r.cloudHeight));
+            Shader.SetGlobalVector("_OS_CloudDrift", Vector4.zero); // the wind will move it, from the clock
             Shader.SetGlobalVector("_OS_FogColor", Linear(r.fogColour));
             Shader.SetGlobalVector("_OS_FogParams", new Vector4(r.fogDensity, r.fogHeightFalloff, r.fogBaseHeight, r.fogMaxOpacity));
             var fs = Linear(r.fogSunColour);

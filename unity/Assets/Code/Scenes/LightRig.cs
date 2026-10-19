@@ -53,6 +53,12 @@ namespace Overstory.Scenes
 
         [Header("Weather")]
         [Range(0, 1)] public float wetness = 0f;
+        [Tooltip("How much of the sky the clouds cover, as their shadows on the town: 0 none, 1 overcast.")]
+        [Range(0, 1)] public float cloudCover = 0f;
+        [Tooltip("The size of a cloud's shadow, in metres.")]
+        public float cloudSize = 160f;
+        [Range(0.01f, 0.5f)] public float cloudSoftness = 0.08f;
+        public float cloudHeight = 900f;
 
         [Header("Lit windows and lamps")]
         [Tooltip("Brightness of lit windows, open shopfronts and light-box signs. 0 by day.")]
