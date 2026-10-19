@@ -1,43 +1,43 @@
 # Engine contract (draft)
 
-The data the game reads from the engine. A draft: the engine does not export it yet, so fixtures in `fixtures/` follow it. Keep it to what experiments actually use; add fields only when an experiment needs them, and list each new field in `engine-requests.md`.
+The data the game reads from the engine. The engine owns the contract: its front door (`src/boundary.ts`) publishes a version, a schema and fixtures exported from real seeds, and Overstory pins to a version. This page is Overstory's side of it: what our experiments read, in the shape our fixtures use until the front door's second part (#22) lands. Keep it to what experiments actually use; add fields only when an experiment needs them, and list each new field in `engine-requests.md`.
 
 ## A neighbourhood snapshot
 
 ```json
 {
-  "worldSeed": 1234,
-  "month": 372,
-  "neighbourhood": { "id": 7, "name": "Harbour Row" },
+  "schemaVersion": 1,
+  "rulesetVersion": "fixture",
+  "worldSeed": 1989,
+  "at": { "year": 1989, "month": 10 },
+  "neighbourhood": { "id": "harbour-row", "name": "Harbour Row" },
   "buildings": [
     {
-      "id": 101,
-      "version": 3,
-      "footprint": { "x": 0, "y": 0, "w": 3, "d": 2 },
-      "storeys": 2,
-      "built": 1931,
-      "extensions": [{ "year": 1978, "side": "back", "storeys": 1 }],
-      "condition": 0.4,
-      "business": {
-        "id": 55,
-        "kind": "bar",
-        "name": "the Anchor",
-        "owner": 812,
-        "opened": 2031,
-        "state": "struggling"
-      },
-      "past": [{ "kind": "cafe", "name": "Mo's", "from": 2012, "to": 2029 }]
+      "id": "bld-101",
+      "plot": "plot-101",
+      "provenance": "authored",
+      "events": [
+        { "id": "bld-101/1", "year": 1893, "kind": "built", "params": { "era": "chalet", "storeys": 2000, "wealth": 850 }, "cause": "a herring merchant builds his house", "provenance": "authored" },
+        { "id": "bld-101/13", "year": 1988, "kind": "business_opened", "params": { "business": "anchor", "kind": "bar", "name": "the Anchor" }, "cause": "Ruth opens a bar", "provenance": "authored" }
+      ]
     }
   ],
+  "businesses": [
+    { "id": "anchor", "kind": "bar", "building": "bld-101", "from": 1988, "to": null, "owner": "p-812", "state": "struggling", "provenance": "authored" },
+    { "id": "mos", "kind": "cafe", "building": "bld-101", "from": 1975, "to": 1986, "provenance": "authored" }
+  ],
   "people": [
-    { "id": 812, "name": "Ruth Hale", "age": 58, "at": 101, "mood": -0.3 }
+    { "id": "p-812", "name": "Ruth Hale", "born": 1931, "at": "anchor", "provenance": "authored" }
   ]
 }
 ```
 
 ## Rules
 
-- Ids never change and are never reused.
-- `version` increases whenever the building's look should change (a new business, a renovation, an extension, a closure).
-- `condition` runs from 0 (falling apart) to 1 (as new).
-- Everything here is a fact the engine decided. The game may not fill a gap with its own invention, except in fixtures, where each such field is marked in `engine-requests.md`.
+- **Ids are strings, typed by prefix,** never reused and never changed. The engine's place ids are already strings (`'mill'`, `'harbour'`); buildings, plots, businesses, people and events follow the same rule.
+- **Time is absolute.** `at` gives the calendar year and month of the snapshot. Every dated field is a calendar year (and month where it matters), never an engine-internal month index.
+- **Validity intervals.** Things that exist for a time carry `from` and `to` (`to: null` while current). Nothing in a snapshot may start after the snapshot's `at`; a fixture that breaks this fails validation.
+- **Buildings and businesses are separate.** A building is a physical thing with a diary; a business occupies a building for an interval.
+- **Provenance on every record:** `simulated` (decided by the engine), `authored` (written by hand for an experiment, for anything the engine does not model yet) or `generated-past` (written by the fabric pass, before the people begin). The game draws all three the same way; tests and tools can tell them apart.
+- **Lengths in millimetres, chances and amounts per mille,** as in the resolver.
+- **Everything here is a fact the game may not contradict.** The game may elaborate it visually, but may not invent history.

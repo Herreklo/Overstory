@@ -25,3 +25,14 @@ Each request: what is needed, why the game needs it, and what the player would s
 
 5. **Buildings separate from businesses.** A building with its construction era, extensions and condition, and a business that occupies it for a time. The player would see the same building across owners.
 6. **The fabric pass.** Streets, plots and building diaries generated from the seed and the timeline, older than the people and running alongside them. The player would see 1890s houses next to 1970s infill before the story starts, and every change after that with its cause. Nobody owns this yet; until it exists, Overstory writes building diaries by hand.
+7. **Story sifting.** Patterns over the event log that find storyful sequences while they unfold (on the engine's own list). The game uses them to choose where the camera goes and which scenes are worth playing: simulate the few, show the many. The player would see the evenings that matter, not random ones.
+8. **The band, as a shared milestone.** The engine's planned experiment of five people forming a band for a year, shown by Overstory in the rehearsal loft of a quay warehouse, with the first player command (#22) between them. It tests both projects on the origin they share.
+
+## Later, for the engine
+
+9. **Vacancy, rent and cheap space.** How long a building has stood empty, what it costs to rent, and who takes cheap space (bands, artists, bars) and who pushes them out when the area changes. The player would see a rehearsal room in an old warehouse, and the venue that closes when flats go up next door.
+10. **Vehicles and boats with owners.** Who owns which car or boat, when they bought it, new or used. The player would read wealth, age and routine from the cars on a street.
+
+## Overstory's own
+
+These are presentation, built here from the engine's facts: how a building diary looks, trips and footfall at street level (worn steps, parked cars outside homes where people are in), and hourly weather, heating and lit rooms inside a scene. What they need from the engine is in the front door's habits (#22).

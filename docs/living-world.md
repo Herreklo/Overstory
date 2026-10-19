@@ -16,7 +16,9 @@ Two things keep the loop alive:
 - **Unity draws.** It reads the engine's facts and shows them. It never invents one.
 - **Blender builds the parts.** Generators make families of kit pieces before the game ships. Nothing is modelled at runtime.
 
-The engine runs beside Unity as its own process. A save is a seed plus the player's actions.
+The engine runs beside Unity as its own process. Player actions go to the engine as commands it can accept or refuse; what it accepts becomes events. A save holds the engine and ruleset version, checkpoints and the player's commands, so a save survives changes to the rules.
+
+**Two clocks.** The engine moves social life month by month. Scenes run in minutes and hours: who walks where, who is in the bar tonight, the weather this evening. Scene detail is scheduled deterministically from the engine's facts; only consequential outcomes (a promise, a meeting, a booking) are committed back as events. Which side owns what, and what happens when a scene crosses a month boundary, is an open design question to settle with the engine project.
 
 ## Places
 

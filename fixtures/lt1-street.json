@@ -1,0 +1,544 @@
+{
+  "schemaVersion": 1,
+  "note": "Fixture for LT1, authored by hand. Building diaries will come from the fabric pass (engine-requests: open items); until then these hand-written diaries stand in. They are look-test data, not simulated history.",
+  "worldSeed": 1989,
+  "street": "Harbour Row",
+  "buildings": [
+    {
+      "id": 101,
+      "type": "house",
+      "character": "high_road",
+      "plot": {
+        "x": 0,
+        "w": 10000,
+        "d": 8000
+      },
+      "events": [
+        {
+          "id": 1,
+          "year": 1893,
+          "kind": "built",
+          "params": {
+            "era": "chalet",
+            "storeys": 2000,
+            "wealth": 850,
+            "with": [
+              "ark",
+              "veranda"
+            ]
+          },
+          "cause": "a herring merchant builds his house"
+        },
+        {
+          "id": 2,
+          "year": 1931,
+          "kind": "shop_fitted",
+          "params": {
+            "cols": 2
+          },
+          "cause": "the merchant's son turns the ground floor into a shop"
+        },
+        {
+          "id": 3,
+          "year": 1931,
+          "kind": "business_opened",
+          "params": {
+            "kind": "grocer",
+            "name": "Larsen Kolonial"
+          },
+          "cause": "the son opens a grocery"
+        },
+        {
+          "id": 4,
+          "year": 1952,
+          "kind": "repainted",
+          "params": {},
+          "cause": "upkeep"
+        },
+        {
+          "id": 5,
+          "year": 1968,
+          "kind": "windows_replaced",
+          "params": {
+            "scope": "upper"
+          },
+          "cause": "the flat upstairs is let; the landlord fits new windows"
+        },
+        {
+          "id": 6,
+          "year": 1974,
+          "kind": "business_closed",
+          "params": {},
+          "cause": "the grocer retires; the supermarket took his trade"
+        },
+        {
+          "id": 7,
+          "year": 1975,
+          "kind": "business_opened",
+          "params": {
+            "kind": "cafe",
+            "name": "Mo's"
+          },
+          "cause": "Mo opens a caf\u00e9"
+        },
+        {
+          "id": 8,
+          "year": 1979,
+          "kind": "repainted",
+          "params": {},
+          "cause": "Mo repaints"
+        },
+        {
+          "id": 9,
+          "year": 1986,
+          "kind": "business_closed",
+          "params": {},
+          "cause": "the crash empties the caf\u00e9"
+        },
+        {
+          "id": 10,
+          "year": 1986,
+          "kind": "boarded",
+          "params": {
+            "scope": "ground"
+          },
+          "cause": "empty"
+        },
+        {
+          "id": 11,
+          "year": 1987,
+          "kind": "neglected",
+          "params": {
+            "amount": 300
+          },
+          "cause": "nobody maintains it"
+        },
+        {
+          "id": 12,
+          "year": 1988,
+          "kind": "unboarded",
+          "params": {
+            "scope": "ground"
+          },
+          "cause": "Ruth Hale takes the lease"
+        },
+        {
+          "id": 13,
+          "year": 1988,
+          "kind": "business_opened",
+          "params": {
+            "kind": "bar",
+            "name": "the Anchor"
+          },
+          "cause": "Ruth opens a bar"
+        }
+      ],
+      "provenance": "authored"
+    },
+    {
+      "id": 102,
+      "type": "house",
+      "character": "high_road",
+      "plot": {
+        "x": 12000,
+        "w": 8000,
+        "d": 7000
+      },
+      "events": [
+        {
+          "id": 1,
+          "year": 1846,
+          "kind": "built",
+          "params": {
+            "era": "classical",
+            "storeys": 1500,
+            "wealth": 300
+          },
+          "cause": "a cooper builds"
+        },
+        {
+          "id": 2,
+          "year": 1902,
+          "kind": "extended",
+          "params": {
+            "kind": "bislag"
+          },
+          "cause": "a porch against the wind"
+        },
+        {
+          "id": 3,
+          "year": 1960,
+          "kind": "repainted",
+          "params": {},
+          "cause": "upkeep"
+        },
+        {
+          "id": 4,
+          "year": 1971,
+          "kind": "windows_replaced",
+          "params": {
+            "scope": "all"
+          },
+          "cause": "draughty windows replaced cheaply"
+        },
+        {
+          "id": 5,
+          "year": 1983,
+          "kind": "neglected",
+          "params": {
+            "amount": 250
+          },
+          "cause": "the widow can't keep it up"
+        }
+      ],
+      "provenance": "authored"
+    },
+    {
+      "id": 103,
+      "type": "house",
+      "character": "high_road",
+      "plot": {
+        "x": 22000,
+        "w": 9000,
+        "d": 8000
+      },
+      "events": [
+        {
+          "id": 1,
+          "year": 1899,
+          "kind": "built",
+          "params": {
+            "era": "chalet",
+            "storeys": 2500,
+            "wealth": 650,
+            "with": [
+              "bislag",
+              "bay"
+            ]
+          },
+          "cause": "a ship's captain builds"
+        },
+        {
+          "id": 2,
+          "year": 1924,
+          "kind": "repainted",
+          "params": {},
+          "cause": "upkeep"
+        },
+        {
+          "id": 3,
+          "year": 1958,
+          "kind": "extended",
+          "params": {
+            "kind": "lean_to",
+            "side": "back"
+          },
+          "cause": "a wash house at the back"
+        },
+        {
+          "id": 4,
+          "year": 1977,
+          "kind": "roof_retiled",
+          "params": {
+            "swatch": "roof_slate"
+          },
+          "cause": "concrete tiles replace the slate"
+        },
+        {
+          "id": 5,
+          "year": 1984,
+          "kind": "repainted",
+          "params": {},
+          "cause": "upkeep"
+        }
+      ],
+      "provenance": "authored"
+    },
+    {
+      "id": 104,
+      "type": "house",
+      "character": "high_road",
+      "plot": {
+        "x": 33000,
+        "w": 9000,
+        "d": 9000
+      },
+      "events": [
+        {
+          "id": 1,
+          "year": 1912,
+          "kind": "built",
+          "params": {
+            "era": "jugend",
+            "storeys": 2000,
+            "wealth": 750,
+            "roof": "mansard"
+          },
+          "cause": "a cannery owner builds"
+        },
+        {
+          "id": 2,
+          "year": 1949,
+          "kind": "repainted",
+          "params": {},
+          "cause": "upkeep"
+        }
+      ],
+      "provenance": "authored"
+    },
+    {
+      "id": 105,
+      "type": "house",
+      "character": "high_road",
+      "plot": {
+        "x": 44000,
+        "w": 9000,
+        "d": 8000
+      },
+      "events": [
+        {
+          "id": 1,
+          "year": 1936,
+          "kind": "built",
+          "params": {
+            "era": "functionalist",
+            "storeys": 2000,
+            "wealth": 500
+          },
+          "cause": "built after the old house burned"
+        },
+        {
+          "id": 2,
+          "year": 1987,
+          "kind": "repainted",
+          "params": {},
+          "cause": "new owners"
+        }
+      ],
+      "provenance": "authored"
+    },
+    {
+      "id": 106,
+      "type": "house",
+      "character": "low_road",
+      "plot": {
+        "x": 55000,
+        "w": 10000,
+        "d": 8000
+      },
+      "events": [
+        {
+          "id": 1,
+          "year": 1974,
+          "kind": "built",
+          "params": {
+            "era": "seventies",
+            "storeys": 2000,
+            "wealth": 400
+          },
+          "cause": "infill after the old house was cleared for the road plan"
+        }
+      ],
+      "provenance": "authored"
+    },
+    {
+      "id": 107,
+      "type": "house",
+      "character": "low_road",
+      "plot": {
+        "x": 67000,
+        "w": 7000,
+        "d": 7000
+      },
+      "events": [
+        {
+          "id": 1,
+          "year": 1828,
+          "kind": "built",
+          "params": {
+            "era": "classical",
+            "storeys": 1500,
+            "wealth": 200
+          },
+          "cause": "a fisherman builds"
+        },
+        {
+          "id": 2,
+          "year": 1950,
+          "kind": "extended",
+          "params": {
+            "kind": "lean_to",
+            "side": "back"
+          },
+          "cause": "a shed"
+        },
+        {
+          "id": 3,
+          "year": 1965,
+          "kind": "windows_replaced",
+          "params": {
+            "scope": "street"
+          },
+          "cause": "new windows to the street"
+        },
+        {
+          "id": 4,
+          "year": 1986,
+          "kind": "boarded",
+          "params": {
+            "scope": "all"
+          },
+          "cause": "the owner dies; the heirs live in Oslo"
+        },
+        {
+          "id": 5,
+          "year": 1986,
+          "kind": "neglected",
+          "params": {
+            "amount": 600
+          },
+          "cause": "empty"
+        }
+      ],
+      "provenance": "authored"
+    },
+    {
+      "id": 108,
+      "type": "house",
+      "character": "high_road",
+      "plot": {
+        "x": 76000,
+        "w": 8000,
+        "d": 7000
+      },
+      "events": [
+        {
+          "id": 1,
+          "year": 1901,
+          "kind": "built",
+          "params": {
+            "era": "chalet",
+            "storeys": 1500,
+            "wealth": 450
+          },
+          "cause": "a canning foreman builds"
+        },
+        {
+          "id": 2,
+          "year": 1969,
+          "kind": "windows_replaced",
+          "params": {
+            "scope": "all"
+          },
+          "cause": "modern windows"
+        },
+        {
+          "id": 3,
+          "year": 1985,
+          "kind": "restored",
+          "params": {
+            "windows": "original",
+            "amount": 300
+          },
+          "cause": "a young couple restore it"
+        },
+        {
+          "id": 4,
+          "year": 1985,
+          "kind": "repainted",
+          "params": {
+            "wall": "wall_white"
+          },
+          "cause": "restored in white"
+        }
+      ],
+      "provenance": "authored"
+    },
+    {
+      "id": 109,
+      "type": "warehouse",
+      "character": "low_road",
+      "plot": {
+        "x": 86000,
+        "w": 9000,
+        "d": 14000
+      },
+      "events": [
+        {
+          "id": 1,
+          "year": 1850,
+          "kind": "built",
+          "params": {
+            "era": "classical",
+            "storeys": 2500,
+            "wealth": 500
+          },
+          "cause": "a herring salter builds on the quay"
+        },
+        {
+          "id": 2,
+          "year": 1960,
+          "kind": "repainted",
+          "params": {
+            "wall": "wall_oxred"
+          },
+          "cause": "upkeep"
+        },
+        {
+          "id": 3,
+          "year": 1987,
+          "kind": "business_opened",
+          "params": {
+            "kind": "rehearsal",
+            "name": ""
+          },
+          "cause": "a band rents the loft cheap"
+        }
+      ],
+      "provenance": "authored"
+    },
+    {
+      "id": 110,
+      "type": "warehouse",
+      "character": "low_road",
+      "plot": {
+        "x": 97000,
+        "w": 8000,
+        "d": 13000
+      },
+      "events": [
+        {
+          "id": 1,
+          "year": 1862,
+          "kind": "built",
+          "params": {
+            "era": "classical",
+            "storeys": 2500,
+            "wealth": 400
+          },
+          "cause": "a rope maker builds on the quay"
+        },
+        {
+          "id": 2,
+          "year": 1972,
+          "kind": "repainted",
+          "params": {
+            "wall": "wall_white"
+          },
+          "cause": "an oil supply firm takes it as a store"
+        },
+        {
+          "id": 3,
+          "year": 1987,
+          "kind": "boarded",
+          "params": {
+            "scope": "all"
+          },
+          "cause": "the firm leaves after the crash"
+        }
+      ],
+      "provenance": "authored"
+    }
+  ],
+  "provenance": "authored"
+}

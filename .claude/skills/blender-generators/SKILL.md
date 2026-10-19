@@ -44,6 +44,8 @@ A validation script in `blender/validate.py` checks every exported piece:
 
 Report failures; do not export a failing piece.
 
+Buildings have their own checks (`blender/generators/validate.py`: uncovered walls, parts through roofs, degenerate faces, budget) and a stress test (`blender/tools/stress.py --n 300 --styles strong,stronger`). Before any sheet goes to Øystein: the stress test passes, the street fixtures pass, every building is inspected in full-resolution crops, and at a checkpoint a fresh reviewer agent that has not seen the work looks for defects. A failure is fixed at its cause (a rule in the resolver or builder), never hidden with a special case.
+
 ## Export to Unity
 
 - Export FBX to `Assets/Art/Kit/<family>/` in the Unity project: apply transforms, forward −Z, up Y, scale 1.0, no animation for static pieces.
