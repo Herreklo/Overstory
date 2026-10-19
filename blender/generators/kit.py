@@ -148,6 +148,33 @@ class Builder:
                     tri = [vert(k, 0), vert(k, 1), vert(k, 2)]
                     self.face(tri, edge or name(keys[1][(sy + 1) // 2]), outward=centre)
 
+    # -- turned and cast shapes (posts, poles, bollards) --------------------
+
+    def prism(self, frame, a, c, b0, b1, r0, r1, sides, swatch, top=None, bottom=None, phase=None):
+        """A tapered prism standing along v, centred at local (a, c): radius r0 at b0, r1 at b1.
+
+        sides 4 makes a square post, 8 an octagon, 12 or more reads as round. swatch is the
+        side colour; top and bottom colour the end caps (no cap when r is 0 there).
+        """
+        if phase is None:
+            phase = math.pi / sides  # a flat face to the front
+        ring = [(math.cos(phase + 2 * math.pi * i / sides), math.sin(phase + 2 * math.pi * i / sides)) for i in range(sides)]
+        lo = [frame.point(a + r0 * x, b0, c + r0 * y) for x, y in ring]
+        hi = [frame.point(a + r1 * x, b1, c + r1 * y) for x, y in ring]
+        centre = frame.point(a, (b0 + b1) / 2, c)
+        for i in range(sides):
+            j = (i + 1) % sides
+            if r0 <= 1e-6:
+                self.face([frame.point(a, b0, c), hi[j], hi[i]], swatch, outward=centre)
+            elif r1 <= 1e-6:
+                self.face([lo[i], lo[j], frame.point(a, b1, c)], swatch, outward=centre)
+            else:
+                self.face([lo[i], lo[j], hi[j], hi[i]], swatch, outward=centre)
+        if r1 > 1e-6:
+            self.face(hi, top or swatch, outward=centre)
+        if r0 > 1e-6:
+            self.face(lo, bottom or swatch, outward=centre)
+
     # -- lapped strips (clapboard, roof courses) ---------------------------
 
     def strip(self, frame, poly, b0, b1, depth, lap, swatch, side_swatch=None):

@@ -43,3 +43,11 @@ Newest first. Each entry: the question, how it is judged, then the outcome: what
 - The first wild sheet went out with a known fault. Since then, building checks and a stress test gate every sheet: 1,564 random buildings at strong and stronger pass, and the street fixtures pass in every year.
 - A blind reviewer found what the checks could not see: floating ridge caps, merged double chimneys, window heads hidden by deep eaves, dangling barge ends, and bays that hit porches, cross-gables and the eave. Each became a rule (`docs/building-system.md`, Fitting), and bays became checked parts.
 - Øystein picked stronger over strong. It is the default strength (`blender/resolver/eras.py`) and the shape language for the street. This ends the shape step.
+
+**Unity step, so far (19 October):**
+- The Unity 6 URP project is set up from code (`unity/Assets/Code/Editor/LT1Setup.cs`). Blender exports the street at 1989 (`blender/tools/export_street.py`); Unity places it and generates the ground. An axis check guards the hand-over: Unity's x, y, z is the street's x, z, y.
+- The fixture has an authored street block (bands, lamps of three eras, bollards, the ground behind) and the lit floors at blue hour.
+- At stronger proportions neighbours overlapped and porches stood in the road. The plots are re-spaced with at least 1.2 m clear, and the building line now holds what stands on the ground (steps, porches, bays), as a real building line does.
+- Look A is URP's own lighting on a surface every look shares: palette, wetness by porosity, puddles on paving, window and lamp glow, our own height fog. Screen-space reflections are on.
+- Checkpoint (`reviews/lt1/checkpoint/`): look A in drizzle from both cameras, exposed for the white walls, with greyscale copies. A fresh reviewer's findings were fixed at the cause: doors differ from their walls in lightness (a resolver rule), puddles lie only on paving, distant setts average to one tone instead of speckle, bollards stand on the coping, and the world carries on past the street's ends.
+- Open: every surface is one flat colour per face, so everything reads as plastic. Also warehouse roofs without tile courses, steps the same value as their plinths, and the empty hillside behind the row (the fixture has nothing there).

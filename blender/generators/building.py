@@ -255,7 +255,9 @@ class Roof:
 # -- the building ----------------------------------------------------------------------------
 
 
-def build(plan, style=DEFAULT_STYLE, name=None, material=None):
+def build(plan, style=DEFAULT_STYLE, name=None, material=None, lit=()):
+    """lit names the floors where someone is in: "ground", "upper" (every floor above it). Their
+    windows, and an open business's shopfront, get glass that can glow."""
     s = STYLES[style]
     m = plan["main"]
     ws, bid = plan["seed"], plan["id"]
@@ -609,9 +611,9 @@ def build(plan, style=DEFAULT_STYLE, name=None, material=None):
         ang = (unit(key("tilt", c["facade"], c["a"], c["b0"])) - 0.5) * 2 * tilt
         boarded = "boarded" in c
         if part["type"] == "window":
-            lit = False
+            lit_here = ("ground" if c.get("row", 0) == 0 else "upper") in lit and not boarded
             curt = (curtain_col, curtain_kind) if occupied else None
-            parts.window(b, fr, a0, a1, b0, b1, ctx, part["style"], angle=ang, crown=crown, boarded=boarded, reduced=c.get("reduced", False), curtain=curt, lit=lit)
+            parts.window(b, fr, a0, a1, b0, b1, ctx, part["style"], angle=ang, crown=crown, boarded=boarded, reduced=c.get("reduced", False), curtain=curt, lit=lit_here)
             if flowers and local == "front" and c.get("row", 0) in (0, 1) and not boarded:
                 parts.flower_box(b, fr, a0, a1, b0, ctx, key("fb", c["a"], c["b0"]))
         elif part["type"] == "door":
@@ -621,7 +623,7 @@ def build(plan, style=DEFAULT_STYLE, name=None, material=None):
         elif part["type"] == "inner_door":
             pass  # hidden inside the porch; the wall behind it stays open
         elif part["type"] == "shopfront":
-            parts.shopfront(b, fr, a0, a1, b0, b1, ctx, part["style"], sign=business, ghost=ghost, boarded=boarded)
+            parts.shopfront(b, fr, a0, a1, b0, b1, ctx, part["style"], sign=business, ghost=ghost, boarded=boarded, lit=bool(business) and "ground" in lit and not boarded)
         elif part["type"] == "loading_door":
             parts.loading_door(b, fr, a0, a1, b0, b1, ctx, boarded=boarded)
     b.role = 0

@@ -264,7 +264,7 @@ def shopfront(b, fr, a0, a1, b0, b1, c, style, sign=None, ghost=False, boarded=F
     """The shop window and its sign band. sign: the current business, or None."""
     ac, hw = (a0 + a1) / 2, (a1 - a0) / 2
     reveal(b, fr, a0, a1, b0, b1, c)
-    glass = "glass_lit" if lit else "glass_shop"
+    glass = "glass_shop_lit" if lit else "glass_shop"
     if style == "shop_1900":
         tb = b1 - (b1 - b0) * 0.2
         glass_and_bars(b, fr, a0, a1, b0, b1, c, cols=3, transom=(tb - b0) / (b1 - b0), top_grid=6, glass=glass)
@@ -305,8 +305,9 @@ def shopfront(b, fr, a0, a1, b0, b1, c, style, sign=None, ghost=False, boarded=F
         b.box(fr, ac, band[1] + 0.05, c.face / 2 + 0.08, hw + 0.3, 0.05, c.face / 2 + 0.08, c.trim, chamfer=c.cham)
     if sign and style in ("shop_1960", "shop_1980"):
         # a projecting box sign
+        face = "sign_lit" if lit and style == "shop_1980" else "sign"  # a light box, on while the bar is open
         sf = Frame(fr.point(a1 + 0.4, band[1] + 0.3, 0.0), fr.n, fr.v, fr.u)
-        b.box(sf, 0.45, 0, 0, 0.4, 0.3, 0.06, {"default": "metal_dark", "n+": "glass_lit" if style == "shop_1980" else "sign", "n-": "glass_lit" if style == "shop_1980" else "sign"})
+        b.box(sf, 0.45, 0, 0, 0.4, 0.3, 0.06, {"default": "metal_dark", "n+": face, "n-": face})
         b.box(sf, 0.05, 0, 0, 0.05, 0.03, 0.03, "metal_dark")
     if sign and style == "shop_1900":
         # a hanging bracket sign

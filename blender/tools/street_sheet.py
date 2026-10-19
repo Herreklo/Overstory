@@ -166,7 +166,7 @@ def main(argv):
             p = render_row(fx, items, style, f"{tmp}-{style}.png", res, samples)
             paths.append(p)
             labels.append(f"{style}")
-        title = f"{fx.get('street', 'Street')} in {year}: buildings {', '.join(str(i) for i in ids)}"
+        title = f"{fx.get('street', {}).get('name', 'Street')} in {year}: buildings {', '.join(str(i) for i in ids)}"
     return tile(paths, labels, out, title)
 
 

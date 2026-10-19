@@ -10,9 +10,40 @@ event, purpose, ...), so a new event re-picks only what it touches.
 """
 
 import copy
+import os
+import sys
 
 from hashing import h, between, weighted, unit
 from eras import ERAS, era_for
+
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "generators"))
+from palette import SWATCHES  # noqa: E402
+
+# A door differs from its wall by at least this much lightness (CIE L*), so it reads without
+# colour: in grey light, in greyscale, and for colour-blind players.
+DOOR_CONTRAST = 15
+
+
+def lightness(swatch):
+    """CIE L* (0-100) of a palette swatch."""
+    def lin(c):
+        c /= 255.0
+        return c / 12.92 if c <= 0.04045 else ((c + 0.055) / 1.055) ** 2.4
+    r, g, b = SWATCHES[swatch]
+    y = 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b)
+    f = y ** (1 / 3) if y > 0.008856 else 7.787 * y + 16 / 116
+    return 116 * f - 16
+
+
+def door_colour(key, choices, wall, trim):
+    """A door from the era's colours that stands apart from its wall; if none does, the door is
+    painted like the trim (a white door on a dark house), or failing that the most distinct choice."""
+    apart = [(d, w) for d, w in choices if abs(lightness(d) - lightness(wall)) >= DOOR_CONTRAST]
+    if apart:
+        return weighted(key, apart)
+    if abs(lightness(trim) - lightness(wall)) >= DOOR_CONTRAST:
+        return trim
+    return max((d for d, _ in choices), key=lambda d: abs(lightness(d) - lightness(wall)))
 
 BAY = {"classical": 2000, "chalet": 2300, "jugend": 2300, "functionalist": 2600, "postwar": 2600, "seventies": 2600, "eighties": 2400}
 
@@ -110,7 +141,7 @@ def _built(b, ev, ws):
     if kind == "warehouse":
         walls = weighted(key("wall"), [("wall_oxred", 45), ("wall_white", 35), ("wall_ochre", 20)])
         trim = "trim_white"
-    door = weighted(key("door"), E["doors"])
+    door = door_colour(key("door"), E["doors"], walls, trim)
     plan = dict(id=bid, type=kind, seed=ws, main=main, additions=[], cells=[], chimneys=[],
                 coats=[dict(year=ev["year"], wall=walls, trim=trim, door=door, event=ev["id"])],
                 business=None, ghosts=[], condition=1000, built=ev["year"])
@@ -373,10 +404,12 @@ def _repainted(plan, ev, ws, bid):
     E = ERAS[era]
     last = plan["coats"][-1]
     key = lambda purpose: h(ws, bid, ev["id"], purpose)
-    plan["coats"].append(dict(year=ev["year"], event=ev["id"],
-                              wall=ev["params"].get("wall") or weighted(key("wall"), E["walls"]),
-                              trim=ev["params"].get("trim") or weighted(key("trim"), E["trims"]),
-                              door=ev["params"].get("door") or last["door"]))
+    wall = ev["params"].get("wall") or weighted(key("wall"), E["walls"])
+    trim = ev["params"].get("trim") or weighted(key("trim"), E["trims"])
+    door = ev["params"].get("door") or last["door"]
+    if "door" not in ev["params"] and abs(lightness(door) - lightness(wall)) < DOOR_CONTRAST:
+        door = door_colour(key("door"), E["doors"], wall, trim)  # the old door would be lost in the new wall
+    plan["coats"].append(dict(year=ev["year"], event=ev["id"], wall=wall, trim=trim, door=door))
 
 
 def _shop_fitted(plan, ev, ws, bid):

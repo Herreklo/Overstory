@@ -2,7 +2,127 @@
   "schemaVersion": 1,
   "note": "Fixture for LT1, authored by hand. Building diaries will come from the fabric pass (engine-requests: open items); until then these hand-written diaries stand in. They are look-test data, not simulated history.",
   "worldSeed": 1989,
-  "street": "Harbour Row",
+  "street": {
+    "id": "harbour-row",
+    "name": "Harbour Row",
+    "note": "The street in front of the plots, authored for LT1. Lengths in millimetres. x runs along the street as in the plots; y is 0 at the building line (the plot fronts) and negative towards the harbour. Streets and quays will come from the fabric pass (engine-requests: open items).",
+    "x0": -40000,
+    "x1": 175000,
+    "pavement": {
+      "width": 1800,
+      "surface": "flags",
+      "kerb": "granite",
+      "laid": 1958,
+      "cause": "concrete flags replace the gravel walk"
+    },
+    "carriageway": {
+      "width": 6400,
+      "surface": "setts",
+      "laid": 1904,
+      "cause": "the harbour board paves the quay road in granite setts"
+    },
+    "quay": {
+      "width": 7200,
+      "surface": "setts",
+      "coping": "granite",
+      "height": 2100,
+      "built": 1878,
+      "cause": "the stone quay replaces the timber wharf"
+    },
+    "water": {
+      "level": -2100
+    },
+    "backland": {
+      "depth": 26000,
+      "surface": "ground",
+      "note": "The ground behind the plots, as a profile of height (z) against distance from the building line (y), in millimetres: flat under the plots, then the town climbs away from the harbour.",
+      "profile": [
+        {
+          "y": 0,
+          "z": 0
+        },
+        {
+          "y": 18000,
+          "z": 0
+        },
+        {
+          "y": 30000,
+          "z": 3000
+        },
+        {
+          "y": 60000,
+          "z": 14000
+        },
+        {
+          "y": 120000,
+          "z": 26000
+        },
+        {
+          "y": 300000,
+          "z": 34000
+        },
+        {
+          "y": 5000000,
+          "z": 40000
+        }
+      ]
+    },
+    "bollards": {
+      "kind": "cast_iron",
+      "installed": 1878,
+      "spacing": 9000,
+      "inset": 250,
+      "cause": "set with the stone quay"
+    },
+    "lamps": [
+      {
+        "id": "lamp-1",
+        "x": 6000,
+        "y": -1450,
+        "kind": "post",
+        "installed": 1934,
+        "light": "warm",
+        "cause": "the town's first electric lamps on the quay road"
+      },
+      {
+        "id": "lamp-2",
+        "x": 36000,
+        "y": -1450,
+        "kind": "pole",
+        "installed": 1965,
+        "light": "mercury",
+        "cause": "the council replaces the old posts along the road"
+      },
+      {
+        "id": "lamp-3",
+        "x": 59000,
+        "y": -1450,
+        "kind": "pole",
+        "installed": 1983,
+        "light": "sodium",
+        "cause": "a delivery lorry knocks down the 1965 pole; the replacement is the new sodium type"
+      },
+      {
+        "id": "lamp-4",
+        "x": 82000,
+        "y": -1450,
+        "kind": "post",
+        "installed": 1934,
+        "light": "warm",
+        "cause": "one of the 1934 posts, never replaced"
+      },
+      {
+        "id": "lamp-5",
+        "x": 106500,
+        "y": -1450,
+        "kind": "pole",
+        "installed": 1965,
+        "light": "mercury",
+        "cause": "the council replaces the old posts along the road"
+      }
+    ],
+    "provenance": "authored"
+  },
   "buildings": [
     {
       "id": 101,
@@ -140,7 +260,7 @@
       "type": "house",
       "character": "high_road",
       "plot": {
-        "x": 12000,
+        "x": 14500,
         "w": 8000,
         "d": 7000
       },
@@ -198,7 +318,7 @@
       "type": "house",
       "character": "high_road",
       "plot": {
-        "x": 22000,
+        "x": 25000,
         "w": 9000,
         "d": 8000
       },
@@ -259,7 +379,7 @@
       "type": "house",
       "character": "high_road",
       "plot": {
-        "x": 33000,
+        "x": 38000,
         "w": 9000,
         "d": 9000
       },
@@ -291,7 +411,7 @@
       "type": "house",
       "character": "high_road",
       "plot": {
-        "x": 44000,
+        "x": 49000,
         "w": 9000,
         "d": 8000
       },
@@ -322,7 +442,7 @@
       "type": "house",
       "character": "low_road",
       "plot": {
-        "x": 55000,
+        "x": 60500,
         "w": 10000,
         "d": 8000
       },
@@ -346,7 +466,7 @@
       "type": "house",
       "character": "low_road",
       "plot": {
-        "x": 67000,
+        "x": 73000,
         "w": 7000,
         "d": 7000
       },
@@ -407,7 +527,7 @@
       "type": "house",
       "character": "high_road",
       "plot": {
-        "x": 76000,
+        "x": 84000,
         "w": 8000,
         "d": 7000
       },
@@ -459,7 +579,7 @@
       "type": "warehouse",
       "character": "low_road",
       "plot": {
-        "x": 86000,
+        "x": 95500,
         "w": 9000,
         "d": 14000
       },
@@ -502,7 +622,7 @@
       "type": "warehouse",
       "character": "low_road",
       "plot": {
-        "x": 97000,
+        "x": 107500,
         "w": 8000,
         "d": 13000
       },
@@ -540,5 +660,82 @@
       "provenance": "authored"
     }
   ],
+  "lit": {
+    "at": {
+      "year": 1989,
+      "month": 10,
+      "hour": "blue"
+    },
+    "note": "Who is in at blue hour on a weekday in October 1989, authored for LT1. A floor is lit when someone is on it: ground, or upper (every floor above). It stands in for people's habits from the front door (engine-requests: #22).",
+    "floors": [
+      {
+        "building": 101,
+        "floors": [
+          "ground",
+          "upper"
+        ],
+        "cause": "the Anchor is open; the tenant upstairs is home"
+      },
+      {
+        "building": 102,
+        "floors": [
+          "ground"
+        ],
+        "cause": "the widow is in her kitchen"
+      },
+      {
+        "building": 103,
+        "floors": [
+          "upper"
+        ],
+        "cause": "the family is upstairs"
+      },
+      {
+        "building": 104,
+        "floors": [
+          "ground"
+        ],
+        "cause": "someone is in the kitchen"
+      },
+      {
+        "building": 105,
+        "floors": [],
+        "cause": "the new owners are not home from work yet"
+      },
+      {
+        "building": 106,
+        "floors": [
+          "ground",
+          "upper"
+        ],
+        "cause": "a family with children, all home"
+      },
+      {
+        "building": 107,
+        "floors": [],
+        "cause": "boarded and empty since 1986"
+      },
+      {
+        "building": 108,
+        "floors": [
+          "ground"
+        ],
+        "cause": "the young couple are home"
+      },
+      {
+        "building": 109,
+        "floors": [
+          "upper"
+        ],
+        "cause": "the band is rehearsing in the loft"
+      },
+      {
+        "building": 110,
+        "floors": [],
+        "cause": "boarded since the firm left"
+      }
+    ],
+    "provenance": "authored"
+  },
   "provenance": "authored"
 }

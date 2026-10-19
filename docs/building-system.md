@@ -38,6 +38,8 @@ Each part on a shelf carries a year range. A part is chosen in two steps: first 
 
 Material is chosen per volume from era, purpose, wealth and local rules (a masonry rule after a fire, brick for canneries, stone for banks). Each material has its own parts (stone lintels and brick arches for brick) and its own ageing: wood peels and is repainted, brick takes soot and salt bloom, concrete streaks and spalls, render cracks and is patched.
 
+Every colour difference also shows in value. A door differs from its wall by at least 15 in lightness (CIE L\*); when no door colour of its era does, it is painted like the trim, and a repaint that would lose the old door in a new wall repaints the door too.
+
 ## Rules
 
 - Hard rules keep everything buildable: a storey stands on a storey, an overhang has support, a window has a room behind it, every gutter has a downpipe, every door a path to a street. A plan that breaks one is rejected and reported.
@@ -85,3 +87,5 @@ The engine decides every fact in the diary, including why. The resolver decides 
 ## Where it lives
 
 The resolver is prototyped in Python (`blender/resolver/`) so it can run in Blender, headless or interactive. Once its rules settle it is ported to C# for Unity, and the plan hasher proves both give the same plans.
+
+Until then a street goes to Unity through `blender/tools/export_street.py`: it resolves every building at one year and strength, checks each one and the street as a whole (no two buildings closer than a metre), and writes the buildings and street kit (lamps by era, bollards) as FBX, the palette as maps, and the street resolved as `street.json`. A building stands with the front of whatever is on the ground (steps, porch, bay) on the building line; eaves may overhang the pavement. Unity places what `street.json` says and generates the ground from the fixture's street block (`unity/Assets/Code/Assembly/StreetGround.cs`): flags, kerb, setts in courses with a gutter and binding stones, coping, the quay wall and the ground behind. How each stone sits is seeded texture and claims no history.

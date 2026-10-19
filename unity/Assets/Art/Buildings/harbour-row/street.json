@@ -1,0 +1,517 @@
+{
+  "street": "Harbour Row",
+  "year": 1989,
+  "style": "stronger",
+  "worldSeed": 1989,
+  "fixture": "../fixtures/lt1-street.json",
+  "x0": -40.0,
+  "x1": 175.0,
+  "bands": [
+    {
+      "name": "pavement",
+      "y0": -1.8,
+      "y1": 0.0,
+      "surface": "flags"
+    },
+    {
+      "name": "carriageway",
+      "y0": -8.2,
+      "y1": -1.8,
+      "surface": "setts"
+    },
+    {
+      "name": "quay",
+      "y0": -15.4,
+      "y1": -8.2,
+      "surface": "setts"
+    }
+  ],
+  "quay": {
+    "edge": -15.4,
+    "height": 2.1,
+    "coping": "granite"
+  },
+  "water": {
+    "level": -2.1
+  },
+  "backland": {
+    "depth": 26.0,
+    "surface": "ground",
+    "profile": [
+      {
+        "y": 0.0,
+        "z": 0.0
+      },
+      {
+        "y": 18.0,
+        "z": 0.0
+      },
+      {
+        "y": 30.0,
+        "z": 3.0
+      },
+      {
+        "y": 60.0,
+        "z": 14.0
+      },
+      {
+        "y": 120.0,
+        "z": 26.0
+      },
+      {
+        "y": 300.0,
+        "z": 34.0
+      },
+      {
+        "y": 5000.0,
+        "z": 40.0
+      }
+    ]
+  },
+  "buildings": [
+    {
+      "id": 101,
+      "type": "house",
+      "file": "Assets/Art/Buildings/harbour-row/bld_101_1989.fbx",
+      "position": {
+        "x": 5.0,
+        "y": 5.5548,
+        "z": 0.0
+      },
+      "lit": [
+        "ground",
+        "upper"
+      ],
+      "tris": 16056
+    },
+    {
+      "id": 102,
+      "type": "house",
+      "file": "Assets/Art/Buildings/harbour-row/bld_102_1989.fbx",
+      "position": {
+        "x": 18.5,
+        "y": 6.0699,
+        "z": 0.0
+      },
+      "lit": [
+        "ground"
+      ],
+      "tris": 9532
+    },
+    {
+      "id": 103,
+      "type": "house",
+      "file": "Assets/Art/Buildings/harbour-row/bld_103_1989.fbx",
+      "position": {
+        "x": 29.5,
+        "y": 7.7382,
+        "z": 0.0
+      },
+      "lit": [
+        "upper"
+      ],
+      "tris": 20060
+    },
+    {
+      "id": 104,
+      "type": "house",
+      "file": "Assets/Art/Buildings/harbour-row/bld_104_1989.fbx",
+      "position": {
+        "x": 42.5,
+        "y": 5.7597,
+        "z": 0.0
+      },
+      "lit": [
+        "ground"
+      ],
+      "tris": 14480
+    },
+    {
+      "id": 105,
+      "type": "house",
+      "file": "Assets/Art/Buildings/harbour-row/bld_105_1989.fbx",
+      "position": {
+        "x": 53.5,
+        "y": 4.5997,
+        "z": 0.0
+      },
+      "lit": [],
+      "tris": 11652
+    },
+    {
+      "id": 106,
+      "type": "house",
+      "file": "Assets/Art/Buildings/harbour-row/bld_106_1989.fbx",
+      "position": {
+        "x": 65.5,
+        "y": 4.6005,
+        "z": 0.0
+      },
+      "lit": [
+        "ground",
+        "upper"
+      ],
+      "tris": 15224
+    },
+    {
+      "id": 107,
+      "type": "house",
+      "file": "Assets/Art/Buildings/harbour-row/bld_107_1989.fbx",
+      "position": {
+        "x": 76.5,
+        "y": 4.7644,
+        "z": 0.0
+      },
+      "lit": [],
+      "tris": 11728
+    },
+    {
+      "id": 108,
+      "type": "house",
+      "file": "Assets/Art/Buildings/harbour-row/bld_108_1989.fbx",
+      "position": {
+        "x": 88.0,
+        "y": 7.174,
+        "z": 0.0
+      },
+      "lit": [
+        "ground"
+      ],
+      "tris": 11568
+    },
+    {
+      "id": 109,
+      "type": "warehouse",
+      "file": "Assets/Art/Buildings/harbour-row/bld_109_1989.fbx",
+      "position": {
+        "x": 100.0,
+        "y": 7.179,
+        "z": 0.0
+      },
+      "lit": [
+        "upper"
+      ],
+      "tris": 4812
+    },
+    {
+      "id": 110,
+      "type": "warehouse",
+      "file": "Assets/Art/Buildings/harbour-row/bld_110_1989.fbx",
+      "position": {
+        "x": 111.5,
+        "y": 6.6501,
+        "z": 0.0
+      },
+      "lit": [],
+      "tris": 5572
+    }
+  ],
+  "lamps": [
+    {
+      "id": "lamp-1",
+      "variant": "post-1934",
+      "position": {
+        "x": 6.0,
+        "y": -1.45,
+        "z": 0.0
+      },
+      "light": "warm"
+    },
+    {
+      "id": "lamp-2",
+      "variant": "pole-1965",
+      "position": {
+        "x": 36.0,
+        "y": -1.45,
+        "z": 0.0
+      },
+      "light": "mercury"
+    },
+    {
+      "id": "lamp-3",
+      "variant": "pole-1983",
+      "position": {
+        "x": 59.0,
+        "y": -1.45,
+        "z": 0.0
+      },
+      "light": "sodium"
+    },
+    {
+      "id": "lamp-4",
+      "variant": "post-1934",
+      "position": {
+        "x": 82.0,
+        "y": -1.45,
+        "z": 0.0
+      },
+      "light": "warm"
+    },
+    {
+      "id": "lamp-5",
+      "variant": "pole-1965",
+      "position": {
+        "x": 106.5,
+        "y": -1.45,
+        "z": 0.0
+      },
+      "light": "mercury"
+    }
+  ],
+  "bollards": {
+    "variant": "bollard-cast-iron",
+    "positions": [
+      {
+        "x": -31.5,
+        "y": -15.15,
+        "z": 0.0
+      },
+      {
+        "x": -22.5,
+        "y": -15.15,
+        "z": 0.0
+      },
+      {
+        "x": -13.5,
+        "y": -15.15,
+        "z": 0.0
+      },
+      {
+        "x": -4.5,
+        "y": -15.15,
+        "z": 0.0
+      },
+      {
+        "x": 4.5,
+        "y": -15.15,
+        "z": 0.0
+      },
+      {
+        "x": 13.5,
+        "y": -15.15,
+        "z": 0.0
+      },
+      {
+        "x": 22.5,
+        "y": -15.15,
+        "z": 0.0
+      },
+      {
+        "x": 31.5,
+        "y": -15.15,
+        "z": 0.0
+      },
+      {
+        "x": 40.5,
+        "y": -15.15,
+        "z": 0.0
+      },
+      {
+        "x": 49.5,
+        "y": -15.15,
+        "z": 0.0
+      },
+      {
+        "x": 58.5,
+        "y": -15.15,
+        "z": 0.0
+      },
+      {
+        "x": 67.5,
+        "y": -15.15,
+        "z": 0.0
+      },
+      {
+        "x": 76.5,
+        "y": -15.15,
+        "z": 0.0
+      },
+      {
+        "x": 85.5,
+        "y": -15.15,
+        "z": 0.0
+      },
+      {
+        "x": 94.5,
+        "y": -15.15,
+        "z": 0.0
+      },
+      {
+        "x": 103.5,
+        "y": -15.15,
+        "z": 0.0
+      },
+      {
+        "x": 112.5,
+        "y": -15.15,
+        "z": 0.0
+      },
+      {
+        "x": 121.5,
+        "y": -15.15,
+        "z": 0.0
+      },
+      {
+        "x": 130.5,
+        "y": -15.15,
+        "z": 0.0
+      },
+      {
+        "x": 139.5,
+        "y": -15.15,
+        "z": 0.0
+      },
+      {
+        "x": 148.5,
+        "y": -15.15,
+        "z": 0.0
+      },
+      {
+        "x": 157.5,
+        "y": -15.15,
+        "z": 0.0
+      },
+      {
+        "x": 166.5,
+        "y": -15.15,
+        "z": 0.0
+      }
+    ]
+  },
+  "kit": [
+    {
+      "name": "post-1934",
+      "file": "Assets/Art/Kit/lamp/kit_lamp_post-1934_lod0.fbx",
+      "light": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 3.91
+      },
+      "glow": "lamp_warm"
+    },
+    {
+      "name": "pole-1965",
+      "file": "Assets/Art/Kit/lamp/kit_lamp_pole-1965_lod0.fbx",
+      "light": {
+        "x": 0.0,
+        "y": -1.55,
+        "z": 7.0
+      },
+      "glow": "lamp_mercury"
+    },
+    {
+      "name": "pole-1983",
+      "file": "Assets/Art/Kit/lamp/kit_lamp_pole-1983_lod0.fbx",
+      "light": {
+        "x": 0.0,
+        "y": -2.09,
+        "z": 7.68
+      },
+      "glow": "lamp_sodium"
+    },
+    {
+      "name": "bollard-cast-iron",
+      "file": "Assets/Art/Kit/bollard/kit_bollard_cast-iron_lod0.fbx",
+      "light": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "glow": ""
+    }
+  ],
+  "emissive": [
+    {
+      "swatch": "glass_lit",
+      "off": "glass",
+      "group": "window"
+    },
+    {
+      "swatch": "glass_shop_lit",
+      "off": "glass_shop",
+      "group": "window"
+    },
+    {
+      "swatch": "sign_lit",
+      "off": "sign",
+      "group": "window"
+    },
+    {
+      "swatch": "lamp_warm",
+      "off": "lamp_off",
+      "group": "lamp"
+    },
+    {
+      "swatch": "lamp_mercury",
+      "off": "lamp_off",
+      "group": "lamp"
+    },
+    {
+      "swatch": "lamp_sodium",
+      "off": "lamp_off",
+      "group": "lamp"
+    }
+  ],
+  "palette": {
+    "grid": 8,
+    "names": [
+      "wall_white",
+      "wall_cream",
+      "wall_yellow",
+      "wall_ochre",
+      "wall_grey",
+      "wall_green",
+      "wall_oxred",
+      "wall_blue",
+      "trim_white",
+      "trim_cream",
+      "trim_dark",
+      "door_green",
+      "door_blue",
+      "door_brown",
+      "door_red",
+      "door_grey",
+      "roof_red",
+      "roof_red_dark",
+      "roof_black",
+      "roof_slate",
+      "roof_ridge",
+      "stone",
+      "stone_dark",
+      "brick",
+      "render_white",
+      "glass",
+      "glass_shop",
+      "metal_dark",
+      "sign",
+      "wood",
+      "ground",
+      "shadow",
+      "wall_brown",
+      "glass_lit",
+      "curtain",
+      "curtain_warm",
+      "flowers_red",
+      "flowers_yellow",
+      "leaf",
+      "metal_gutter",
+      "metal_post",
+      "metal_galv",
+      "lamp_off",
+      "lamp_warm",
+      "lamp_mercury",
+      "lamp_sodium",
+      "glass_shop_lit",
+      "sign_lit",
+      "setts_light",
+      "setts_mid",
+      "setts_dark",
+      "joint",
+      "flags",
+      "kerb",
+      "quay_wall",
+      "setts_mean",
+      "grass"
+    ]
+  }
+}
