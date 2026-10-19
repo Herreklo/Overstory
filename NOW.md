@@ -2,9 +2,12 @@
 
 What is open and what is next. Update this block when an experiment starts or ends.
 
-- **Open:** LT1, the harbour street in 1989 (`docs/experiments.md`). First step: the building system's resolver and the shape step.
+- **Open:** LT1, the harbour street in 1989 (`docs/experiments.md`), on branch `lt/1-harbour-street`.
+  - *Done:* the building system's Python prototype (`blender/resolver`, `blender/generators`): diaries resolve to plans and plans to meshes, at strengths gentle, strong and stronger. Every building is checked (`validate.py`), and the stress test (`blender/tools/stress.py`) passes on 1,564 random buildings at strong and stronger.
+  - *Waiting on Øystein:* strong or stronger, from `reviews/lt1/` (the strong-against-stronger sheet). The choice becomes the default in `blender/resolver/eras.py` and is recorded in `docs/experiments.md`.
+  - *Next step:* LT1's Unity part. Create the Unity 6 URP project in `unity/`, import the street (export each fixture building at 1989 as FBX from Blender with the chosen strength), lay the street on a quay with cobbles, lamps and simple water, then build the four looks (A–D), three lights and two cameras described in `docs/experiments.md`. Run it from Claude Code on Øystein's Mac, where Unity and Blender run.
+- **First command for a new session:** read this file, `CLAUDE.md` and `docs/experiments.md`, run `blender/tools/stress.py --n 50 --styles strong,stronger` with Blender's Python to confirm the generator works, then start the next step.
 - **Next:** the people deep dive, before LT2 (one person, three stylisations; decide on commissioning a stylised base). LT2, a small venue at night with two people talking. LT3, the street through the years, with seasons and weather.
 - **Research:** the Project's `research/` docs, including the reality check that sets the order of bets.
-- **Waits for:** Blender running with its MCP server, and Unity 6 on Øystein's Mac (`~/code/Overstory`).
-- **Engine:** Understory is in its scale step S12. Places are workplaces, one of each kind per neighbourhood, plus ventures that open new ones; buildings are not modelled. The game uses fixtures.
-- **Review (19 Oct):** an external review is folded in: the rule is now "visuals may elaborate facts, never contradict them or falsely claim history"; the contract uses string ids, absolute dates, intervals and provenance; the time origin (1989 against the engine's 1996), the two clocks and player commands are product decisions listed in `docs/engine-requests.md`. Added to the test plan: a cold reader on the time series, 100 hard footprints, one two-way interaction, one two-clock test.
+- **Engine:** Understory is at `s12`. Places are workplaces, one of each kind per neighbourhood, plus ventures that open new ones; buildings are not modelled. Its proposals on working together (one contract owned by the engine, start year from the setting pack, viewer reads, refusable commands, two clocks) are accepted in principle; our answers are with Øystein to send. Until the engine changes, the game uses fixtures labelled as authored.
+- **Shared goal:** `CLAUDE.md` ("What it is for") states Overstory's question and draft exit criteria, to agree with Øystein. The band is proposed as a shared milestone with the engine (`docs/engine-requests.md`, request 12).

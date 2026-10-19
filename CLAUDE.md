@@ -6,6 +6,19 @@ Every session that works here reads this first, then `NOW.md`.
 
 Overstory: the game and visual lab built on the Understory engine (`Herreklo/Understory`). It finds out what the simulated world should look like and how it should be played. The engine decides what happens; this repo only shows it.
 
+## What it is for
+
+Understory asks what a persistent world of developing people makes possible (its `WHY.md`). Overstory's part of that question: **can someone read people and history better from the world on screen than from the engine's page?** Beauty serves that. A look that is stunning but tells nothing true has failed; a world that is consistent but feels empty has failed too.
+
+When Overstory is good enough to build a game on (draft, to agree with Øystein):
+1. A building's history reads at a glance: a viewer can say which parts are old, changed or neglected, and is right.
+2. A person is recognisable across scenes and years.
+3. A scene shows a consequence the page does not make obvious.
+4. In a blind test, viewers prefer the scene to the page for understanding what happened, and are not misled by it.
+5. A street at city scale holds its look and its frame rate.
+
+Each experiment moves one of these, or it does not run. Its question, how it is judged and what would change our minds are written before it is built.
+
 ## Start of every session
 
     git fetch origin && git switch main && git pull --ff-only
@@ -30,6 +43,8 @@ One experiment per session, on its own branch (`lt/1-first-street`), following t
 - **Seeded and deterministic** (`unity-conventions` skill): the same building looks the same until its history changes it.
 - **Visuals may elaborate world facts, but may not contradict them or falsely claim a causal history.** Five kinds of thing are on screen: canonical facts (from the engine), visual interpretations of facts (a shabby front from age and upkeep), non-semantic texture (stable, seeded, claims no history: woodgrain, a lean, minor clutter), perceived information (a person's account, which may be wrong), and local scene state (committed back to the engine only when it matters). Anything that reads as history must be a fact.
 - **Judged in the engine,** never on concept images.
+- **Evidence, not verdicts.** The screen shows what was seen and heard. A read of someone's character is someone's opinion, shown as fallible, never as the game's truth: a vivid act read as a whole character makes readers worse (Understory's human test).
+- **The setting is a pack.** The harbour town, its era content and its look sit on top of the engine; the engine stays general and assumes no country.
 - **Rule 8:** no homophobic, sexist or racial content.
 
 ## Docs

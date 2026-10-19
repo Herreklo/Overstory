@@ -20,8 +20,14 @@ Newest first. Each entry: the question, how it is judged, then the outcome: what
 - Two cameras: street level and the raised neighbourhood view.
 
 **How it is judged:**
-1. *Shape step, in Blender:* houses resolved from diaries at three strengths of stylisation (gentle, strong, wild), and one building shown in three years. Øystein picks a strength; it becomes the shape language for the street.
+1. *Shape step, in Blender:* houses resolved from diaries at several strengths of stylisation, and one building shown in three years. Øystein picks a strength; it becomes the shape language for the street.
 2. *Contact sheet, in Unity:* 24 frames (4 looks × 3 lights × 2 cameras), each also in greyscale and at one-eighth size, plus a five-second camera move per look. Judged blind, labelled A to D, with drizzle counting most. A yes is one look Øystein wants to keep looking at in grey drizzle, that reads at both distances and can go from moody to cozy on the same street.
 3. *Variety check:* the generator on 30 fresh diaries. No two alike; everything that reads as history traces to a diary entry, and seeded texture claims none; the same diary gives the same building after a reload.
 
 **What it does not test:** people, interiors, history over time, snow and seasons, the final palette.
+
+**Shape step, so far (19 October):**
+- Øystein picked strong over gentle.
+- Wild is dropped. Its proportions were the attraction; its deformation (a lean of up to 4.5°, up to half a metre of sag, bowing walls) read as caricature and broke construction: walls stood outside roofs.
+- Stronger is added: wild's proportions with strong's deformation. Strong and stronger are compared on the same street.
+- The first wild sheet went out with a known fault. Since then, building checks and a stress test gate every sheet: 1,564 random buildings at strong and stronger pass, and the street fixtures pass in every year.

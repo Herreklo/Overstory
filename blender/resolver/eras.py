@@ -146,5 +146,6 @@ def era_for(year, key=0):
 STYLES = {
     "gentle": dict(band=300, lap=22, pitch=1050, eave=1100, win=1050, frame=130, lean=6, sag=60, bow=0, jitter=35, tilt=6, chamfer=12, chimney=1000, kick=600),
     "strong": dict(band=375, lap=32, pitch=1160, eave=1350, win=1120, frame=170, lean=22, sag=220, bow=60, jitter=70, tilt=14, chamfer=22, chimney=1300, kick=1000),
+    "stronger": dict(band=500, lap=46, pitch=1300, eave=1700, win=1220, frame=230, lean=26, sag=260, bow=60, jitter=80, tilt=16, chamfer=30, chimney=1600, kick=1000),
     "wild": dict(band=500, lap=46, pitch=1300, eave=1700, win=1220, frame=230, lean=45, sag=480, bow=140, jitter=120, tilt=26, chamfer=35, chimney=1600, kick=1000),
 }

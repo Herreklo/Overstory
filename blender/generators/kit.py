@@ -47,6 +47,10 @@ class Builder:
         self.verts = []  # Vector
         self.faces = []  # list of vertex indices
         self.swatch = []  # swatch name per face
+        self.roles = []  # what each face is: 0 part, 1 wall cladding, 2 roof
+        self.role = 0
+        self.parts = []  # which placed part each face belongs to, -1 for none
+        self.part = -1
 
     # -- low level --------------------------------------------------------
 
@@ -61,6 +65,8 @@ class Builder:
         self.verts.extend(pts)
         self.faces.append(list(range(base, base + len(pts))))
         self.swatch.append(swatch)
+        self.roles.append(self.role)
+        self.parts.append(self.part)
 
     # -- boxes ------------------------------------------------------------
 
@@ -151,6 +157,9 @@ class Builder:
         """
         if len(poly) < 3:
             return
+        area = 0.5 * abs(sum(poly[i][0] * poly[(i + 1) % len(poly)][1] - poly[(i + 1) % len(poly)][0] * poly[i][1] for i in range(len(poly))))
+        if area < 1e-5:
+            return  # a sliver left by clipping
         span = max(b1 - b0, 1e-6)
 
         def front(a, b):
@@ -181,6 +190,10 @@ class Builder:
             u, v = swatch_uv(sw)
             for li in poly.loop_indices:
                 layer.data[li].uv = (u, v)
+        role = mesh.attributes.new("role", "INT", "FACE")
+        role.data.foreach_set("value", self.roles[: len(mesh.polygons)])
+        part = mesh.attributes.new("part", "INT", "FACE")
+        part.data.foreach_set("value", self.parts[: len(mesh.polygons)])
         mesh.validate(clean_customdata=False)
         mesh.materials.append(material)
         for p in mesh.polygons:

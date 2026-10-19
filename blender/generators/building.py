@@ -6,6 +6,7 @@ the plan is in millimetres. The street side faces -Y; the pivot is the bottom
 centre of the main footprint.
 """
 
+import json
 import math
 import os
 import sys
@@ -37,6 +38,14 @@ def snap(x, step):
 def wall(b, fr, panels, openings, band, t, lap, swatch, vertical=False):
     """Clad a wall. panels: convex regions dict(lo, hi, b_lo, b_hi, below=[(m, c)], above=[(m, c)]).
     openings: list of (a0, a1, b0, b1) holes. Horizontal lapped boards, or vertical boards."""
+    b.role = 1
+    try:
+        _clad(b, fr, panels, openings, band, t, lap, swatch, vertical)
+    finally:
+        b.role = 0
+
+
+def _clad(b, fr, panels, openings, band, t, lap, swatch, vertical):
     for p in panels:
         if vertical:
             _vertical(b, fr, p, openings, band, t, swatch)
@@ -102,7 +111,9 @@ class Roof:
         self.a0, self.a1, self.hw, self.z0 = a0, a1, hw, z0
         self.rt, self.ch, self.lap = rt, ch, lap
         first = segs[0][0]
-        pe = first * (1 - 0.45 * kick)
+        # the overhang flares out on steep roofs, as a mansard's does
+        pe = min(first * (1 - 0.45 * kick), math.radians(50))
+        self.pe = pe
         self.profile = {}
         for s in (-1, 1):
             pts = [(s * (hw + e), z0 - e * math.tan(pe)), (s * hw, z0)]
@@ -151,6 +162,13 @@ class Roof:
         return (lo + hi) / 2
 
     def build(self, b, roof_col, trim, cuts=(), cham=0.0, ridge_col="roof_ridge"):
+        b.role = 2
+        try:
+            self._build(b, roof_col, trim, cuts, cham, ridge_col)
+        finally:
+            b.role = 0
+
+    def _build(self, b, roof_col, trim, cuts, cham, ridge_col):
         for s in (-1, 1):
             pts = self.profile[s]
             run_from_eave = 0.0
@@ -280,9 +298,28 @@ def build(plan, style="strong", name=None, material=None):
 
     # -- openings, snapped to the cladding bands ----------------------------------------
     openings = {k: [] for k in ("front", "back", "left", "right")}
-    placed = []  # (facade_local, cell, a0, a1, b0, b1)
+    placed = []  # (facade_local, cell, a0, a1, b0, b1, crown)
+    S = mm(m["storey_h"])
+    ark = next((x for x in plan["additions"] if x["kind"] == "ark"), None)
+    ark_roof = None
+    ax = aw = ark_reach = 0.0
+    if ark:
+        ax, aw = mm(ark["x"]), mm(ark["w"])
+        pa = min(math.radians(64), segs[-1][0] * 1.12)
+        apex = P + H + (aw / 2) * math.tan(pa)
+        y_back = -roof.at_height(apex + 2.5 * rt)
+        if apex + 2 * rt < roof.ridge - 0.4 and y_back > -D / 2 + 0.4:
+            ark_roof = Roof((ax, 0), (0, 1, 0), (1, 0, 0), -(D / 2 + g * 0.8), y_back, aw / 2, P + H, [(pa, aw / 2)], e * 0.8, kick, rt, ch, lap * 2.5)
+            # how far the ark's roof reaches sideways: its eave, plus the thickness of its courses on the slope
+            ark_reach = aw / 2 + e * 0.8 + (rt + lap * 2.5) * math.sin(pa) + 0.08
+    # the roof lines a window in a gable must stay under, per wall
+    gables = {"left": roof.gable_lines(P), "right": roof.gable_lines(P)}
+    if ark_roof:
+        gables["ark"] = [(mm_, c_ - mm_ * ax) for mm_, c_ in ark_roof.gable_lines(P)]
     for c in plan["cells"]:
         if c["facade"] not in openings:
+            continue
+        if c.get("col") == 98 and not ark_roof:
             continue
         local = orient_map[c["facade"]]
         w = mm(c["w"]) * (win_scale if c["part"]["type"] == "window" else 1.0)
@@ -292,21 +329,108 @@ def build(plan, style="strong", name=None, material=None):
         if c["part"]["type"] in ("door", "inner_door", "loading_door") and c["b0"] == 0:
             b1 = snap(mm(c["b1"]), band)
         a0, a1 = a - w / 2, a + w / 2
+        crown = _crown(c["part"], ERAS[c["part"]["era"]]["ornament"], orn, plan, c["part"]["era"])
+        kind, style = c["part"]["type"], c["part"].get("style")
+        if kind in ("window", "door", "shopfront") and c.get("row", 0) < m["full"]:
+            # a part, with its crown or sign, fits inside its own storey, under the belt or the eave
+            row = c.get("row", 0)
+            limit = min(H, (row + 1) * S) - 0.18
+            depth = ctx.face + (0.2 if kind == "shopfront" else 0.08)  # how far the part stands out
+            if row + 1 >= m["full"] and local in ("front", "back"):
+                drop = depth * math.tan(roof.pe)
+                limit = min(limit, H - drop - (0.32 if orn.get("cornice") else 0.06))
+                if ark_roof and local == "front":
+                    # beside the cross-gable, under its side eaves
+                    # the eave falls away from the ark, so the far edge of the part is where it is lowest
+                    edges = (abs(a0 - fw * 1.6 - ax) - aw / 2, abs(a1 + fw * 1.6 - ax) - aw / 2)
+                    if min(edges) < ark_reach - aw / 2:
+                        d_far = min(max(edges), e * 0.8)
+                        limit = min(limit, H - max(0.0, d_far) * math.tan(ark_roof.pe) - 0.1)
+            reach = lambda b1_, crown_: b1_ + parts.reach_above(kind, style, crown_, a0, a1, fw)
+            shortest = {"window": max(0.9, 2 * band), "door": 1.95, "shopfront": 1.0}[kind]
+            for smaller in ("flat", None):
+                if reach(b1, crown) <= limit:
+                    break
+                if kind == "window":
+                    while reach(b1, crown) > limit and b1 - b0 - band >= shortest:
+                        b1 -= band
+                if reach(b1, crown) > limit:
+                    crown = smaller
+            while reach(b1, crown) > limit and b1 - b0 - band >= shortest:
+                b1 -= band
+            if kind == "window":
+                while reach(b1, crown) > limit and b0 - band >= row * S + 0.45:
+                    b0, b1 = b0 - band, b1 - band
+            if kind == "shopfront":
+                while reach(b1, crown) > limit and b0 - band >= 0.3:
+                    b0, b1 = b0 - band, b1 - band
+        lines = gables.get("ark" if c.get("col") == 98 else local)
+        if c["part"]["type"] == "window" and lines and (c.get("col") == 98 or b1 > H - 0.3):
+            # under the gable's roof: shrink, lose the crown, move down, or leave the window out
+            floor_ = H + 0.25 if c.get("col") == 98 or c.get("row", 0) >= m["full"] else 0.0
+
+            def room(b1_, crown_):
+                top = b1_ + parts.crown_height(crown_, a0, a1, fw) + 0.1
+                return all(top <= mline * x + cline for mline, cline in lines for x in (a0 - fw * 1.6, a1 + fw * 1.6))
+
+            while not room(b1, crown) and b1 - b0 > 2.5 * band:
+                b1 -= band
+            for smaller in ("flat", None):
+                if room(b1, crown):
+                    break
+                crown = smaller
+            while not room(b1, crown) and b0 - band >= floor_:
+                b0, b1 = b0 - band, b1 - band
+            if not room(b1, crown):
+                continue
         openings[local].append((a0, a1, b0, b1))
-        placed.append((local, c, a0, a1, b0, b1))
+        placed.append((local, c, a0, a1, b0, b1, crown))
+
+    # -- porches are solved before the walls: windows beside one fit under its eave -------------
+    porches = {}
+    for add in plan["additions"]:
+        if add["kind"] != "bislag" or "x" not in add:
+            continue
+        def tops(cc, a0, a1, b1, cr):
+            kind_ = cc["part"]["type"]
+            full_ = b1 + parts.reach_above(kind_, cc["part"].get("style"), cr, a0, a1, fw)
+            return full_, (full_ if kind_ == "shopfront" else b1 + fw)
+
+        above = [(a0, a1, b0, *tops(cc, a0, a1, b1, cr)) for lc, cc, a0, a1, b0, b1, cr in placed if lc == "front" and cc["part"]["type"] in ("window", "shopfront")]
+        sol = porches[id(add)] = _bislag_solve(plan, add, ctx, W, D, P, H, band, t, lap, rt, s, roof, above)
+        for k, (lc, cc, a0, a1, b0, b1, cr) in enumerate(placed):
+            kind_ = cc["part"]["type"]
+            if lc != "front" or kind_ not in ("window", "shopfront") or b0 >= 1.5:
+                continue
+            if a1 + fw * 1.6 <= sol["bx"] - sol["half"] or a0 - fw * 1.6 >= sol["bx"] + sol["half"]:
+                continue
+            fits = lambda b1_, cr_: b1_ + parts.reach_above(kind_, cc["part"].get("style"), cr_, a0, a1, fw) <= sol["eave"] - 0.04
+            for smaller in ("flat", None):
+                if fits(b1, cr):
+                    break
+                cr = smaller
+            while not fits(b1, cr) and b1 - b0 - band >= (1.0 if kind_ == "shopfront" else max(0.9, 2 * band)):
+                b1 -= band
+            while not fits(b1, cr) and b0 - band >= (0.3 if kind_ == "shopfront" else 0.45):
+                b0, b1 = b0 - band, b1 - band
+            placed[k] = (lc, cc, a0, a1, b0, b1, cr)
+        # windows over the porch: shortened from below to clear its roof, or left out
+        keep = []
+        for lc, cc, a0, a1, b0, b1, cr in placed:
+            over_ = lc == "front" and b0 >= 1.5 and a1 + fw * 1.6 > sol["bx"] - sol["bw"] / 2 - sol["gb"] and a0 - fw * 1.6 < sol["bx"] + sol["bw"] / 2 + sol["gb"]
+            if over_ and cc["part"]["type"] == "window":
+                while b0 - fw - 0.2 < sol["apex"] and b1 - b0 - band >= max(0.9, 2 * band) - 1e-6:
+                    b0 += band
+                if b0 - fw - 0.2 < sol["apex"]:
+                    continue
+            keep.append((lc, cc, a0, a1, b0, b1, cr))
+        placed[:] = keep
+    for k in openings:
+        openings[k] = [(a0, a1, b0, b1) for lc, cc, a0, a1, b0, b1, cr in placed if lc == k]
 
     # -- main walls --------------------------------------------------------------------------
-    ark = next((x for x in plan["additions"] if x["kind"] == "ark"), None)
     long_panel = dict(lo=-W / 2, hi=W / 2, b_lo=0.0, b_hi=H)
     gable_panel = dict(lo=-D / 2, hi=D / 2, b_lo=0.0, b_hi=roof.ridge - P + 0.01, below=roof.gable_lines(P))
-    ark_roof = None
-    if ark:
-        ax, aw = mm(ark["x"]), mm(ark["w"])
-        pa = min(math.radians(64), segs[-1][0] * 1.12)
-        apex = P + H + (aw / 2) * math.tan(pa)
-        if apex + 2 * rt < roof.ridge - 0.4:
-            y_back = -roof.at_height(apex + 2.5 * rt)
-            ark_roof = Roof((ax, 0), (0, 1, 0), (1, 0, 0), -(D / 2 + g * 0.8), y_back, aw / 2, P + H, [(pa, aw / 2)], e * 0.8, kick, rt, ch, lap * 2.5)
     wall_panels = {"front": [long_panel], "back": [long_panel], "left": [gable_panel], "right": [gable_panel]}
     if ark_roof:
         lines = [(mm_, c_ - mm_ * ax) for mm_, c_ in ark_roof.gable_lines(P)]
@@ -328,18 +452,35 @@ def build(plan, style="strong", name=None, material=None):
                     b.box(world, cx, P + H - 0.12, -cy, cb / 2 + 0.05, 0.12, cb / 2 + 0.05, coat["trim"], chamfer=cham)
                     b.box(world, cx, P + 0.15, -cy, cb / 2 + 0.04, 0.15, cb / 2 + 0.04, coat["trim"], chamfer=cham)
     # belt courses between storeys
+    b.role = 4
     if orn.get("belt") and m["full"] >= 2:
-        S = mm(m["storey_h"])
         for st in range(1, m["full"]):
             z = st * S - 0.05
             for name_, fr in frames.items():
                 lo, hi = (-W / 2, W / 2) if name_ in ("front", "back") else (-D / 2, D / 2)
-                b.box(fr, 0, z, out / 2 + 0.02, (hi - lo) / 2 + out, 0.07, out / 2 + 0.02, coat["trim"], chamfer=cham)
+                runs = [(lo - out, hi + out)]
+                for add in plan["additions"]:
+                    if add["kind"] != "bislag" or "x" not in add:
+                        continue
+                    px, ph = mm(add["x"]), mm(add["w"]) / 2 + 0.6
+                    if name_ == "front":
+                        runs = subtract(runs, (px - ph, px + ph))
+                    elif (name_ == "right" and px + ph > W / 2) or (name_ == "left" and px - ph < -W / 2):
+                        # a porch at the corner: its roof reaches round onto the side wall
+                        runs = subtract(runs, (-D / 2 - out - 0.1, -D / 2 + 0.45))
+                for r0, r1 in runs:
+                    b.box(fr, (r0 + r1) / 2, z, out / 2 + 0.02, (r1 - r0) / 2, 0.07, out / 2 + 0.02, coat["trim"], chamfer=cham)
     # cornice under the eaves
     if orn.get("cornice"):
         for name_ in ("front", "back"):
             fr = frames[name_]
-            b.box(fr, 0, H - 0.12, out / 2 + 0.06, W / 2 + out + 0.05, 0.12, out / 2 + 0.06, coat["trim"], chamfer=cham)
+            ztop = H - (out + 0.12) * math.tan(roof.pe) - 0.015
+            runs = [(-W / 2 - out - 0.05, W / 2 + out + 0.05)]
+            if name_ == "front" and ark_roof:
+                runs = subtract(runs, (ax - ark_reach, ax + ark_reach))
+            for r0, r1 in runs:
+                b.box(fr, (r0 + r1) / 2, ztop - 0.12, out / 2 + 0.06, (r1 - r0) / 2, 0.12, out / 2 + 0.06, coat["trim"], chamfer=cham)
+    b.role = 0
 
     # -- plinth -------------------------------------------------------------------------------
     pe = t + lap + 0.05
@@ -358,21 +499,27 @@ def build(plan, style="strong", name=None, material=None):
     # brackets under the eaves
     if orn.get("brackets"):
         n = max(3, int(W / 1.25))
-        pe_ = segs[0][0] * (1 - 0.45 * kick)
+        pe_ = roof.pe
         for side in (-1, 1):
             for k in range(n + 1):
                 x = -W / 2 + k * W / n
+                if side == -1 and ark_roof and abs(x - ax) < ark_reach:
+                    continue
                 fr = Frame((x - 0.03, side * (D / 2 + t), P + H), (0, side, 0), UP, (1, 0, 0))
                 om = e * 0.85
                 tri = [(0, -0.02), (om, -om * math.tan(pe_) - 0.02), (0, -0.55)]
                 b.strip(fr, tri, -0.55, -0.02, 0.06, 0.0, coat["trim"])
     # gutters and downpipes
     gutter = "metal_gutter" if plan["year"] >= 1950 else "metal_dark"
-    pe_ = segs[0][0] * (1 - 0.45 * kick)
+    pe_ = roof.pe
     for side in (-1, 1):
         y = side * (D / 2 + e + 0.04)
         z = P + H - e * math.tan(pe_) - 0.06
-        b.box(world, 0, z, -y, W / 2 + g * 0.6, 0.06, 0.07, gutter)
+        runs = [(-W / 2 - g * 0.6, W / 2 + g * 0.6)]
+        if side == -1 and ark_roof:
+            runs = subtract(runs, (ax - ark_reach, ax + ark_reach))
+        for x0, x1 in runs:
+            b.box(world, (x0 + x1) / 2, z, -y, (x1 - x0) / 2, 0.06, 0.07, gutter)
     for sx in (-1, 1):
         x = sx * (W / 2 - 0.25)
         y = -(D / 2 + 0.12)
@@ -394,12 +541,14 @@ def build(plan, style="strong", name=None, material=None):
             b.box(cf, 0, (top - P - H) / 2 - 0.18, 0, cs / 2 + 0.04, 0.05, cs / 2 + 0.04, col, chamfer=cham)
 
     # -- additions --------------------------------------------------------------------------------
-    S = mm(m["storey_h"])
     for add in plan["additions"]:
         k = add["kind"]
         E_add = ERAS[add["era"]]
+        needs = {"bislag": ("x", "w", "d"), "veranda": ("w", "d", "y", "side"), "bay": ("x", "w", "d"), "dormers": ("xs",)}
+        if any(f not in add for f in needs.get(k, ())):
+            continue
         if k == "bislag":
-            _bislag(b, plan, add, ctx, coat, W, D, P, H, band, t, lap, rt, ch, cham, s, key, roof)
+            _bislag(b, plan, add, ctx, coat, W, D, P, H, band, t, lap, rt, ch, cham, s, key, porches[id(add)])
         elif k == "veranda":
             _veranda(b, plan, add, ctx, coat, W, D, P, S, cham)
         elif k == "bay":
@@ -415,12 +564,13 @@ def build(plan, style="strong", name=None, material=None):
     # -- parts in the cells ------------------------------------------------------------------------
     business = plan.get("business")
     ghost = bool(plan.get("ghosts")) and not business
-    for local, c, a0, a1, b0, b1 in placed:
+    b.role = 4
+    for idx, (local, c, a0, a1, b0, b1, crown) in enumerate(placed):
+        b.part = idx
         fr = frames[local]
         part = c["part"]
         ang = (unit(key("tilt", c["facade"], c["a"], c["b0"])) - 0.5) * 2 * tilt
         boarded = "boarded" in c
-        crown = _crown(part, ERAS[part["era"]]["ornament"], orn, plan, part["era"])
         if part["type"] == "window":
             lit = False
             curt = (curtain_col, curtain_kind) if occupied else None
@@ -437,7 +587,9 @@ def build(plan, style="strong", name=None, material=None):
             parts.shopfront(b, fr, a0, a1, b0, b1, ctx, part["style"], sign=business, ghost=ghost, boarded=boarded)
         elif part["type"] == "loading_door":
             parts.loading_door(b, fr, a0, a1, b0, b1, ctx, boarded=boarded)
+    b.role = 0
 
+    b.part = -1
     # -- the hand: lean, sag and bow ------------------------------------------------------------------
     # the lean always shows: at least half the style's amount, in a seeded direction
     lx = unit(key("lx"))
@@ -458,7 +610,7 @@ def build(plan, style="strong", name=None, material=None):
             f = q * q * (3 - 2 * q)
         shape = max(0.0, 1.0 - (x / span) ** 2)
         z2 = z - sag * f * shape
-        if P < z < P + H:
+        if P < z < P + H and abs(x) < W / 2 + 0.15 and abs(y) < D / 2 + 0.15:
             tt = (z - P) / H
             bulge = bow * math.sin(math.pi * tt)
             fx = max(-1.0, min(1.0, x / (W / 2)))
@@ -475,6 +627,7 @@ def build(plan, style="strong", name=None, material=None):
     obj = b.build(name, material or palette.material())
     obj["triangles"] = b.triangles()
     obj["plan_year"] = plan["year"]
+    obj["placed"] = json.dumps([(lc, c["facade"], c.get("row"), c.get("col"), c["part"]["type"], c["part"].get("style"), round(a0, 2), round(a1, 2), round(b0, 2), round(b1, 2), cr) for lc, c, a0, a1, b0, b1, cr in placed])
     return obj
 
 
@@ -499,22 +652,58 @@ def _crown(part, part_orn, host_orn, plan, era):
 # -- additions ------------------------------------------------------------------------------------
 
 
-def _bislag(b, plan, add, c, coat, W, D, P, H, band, t, lap, rt, ch, cham, s, key, main_roof):
+def _bislag_solve(plan, add, c, W, D, P, H, band, t, lap, rt, s, main_roof, above):
+    """above: windows (a0, a1, b0, top, plain) on the wall behind the porch; top includes the crown, plain only the casing.
+
+    The porch's roof stays under the sills of the windows over it and above the crowns of the
+    windows beside it. Solved before any wall is built, so windows still in its way can be fitted under its eave.
+    """
     bx, bw, bd = mm(add["x"]), mm(add["w"]), mm(add["d"])
-    Hb = snap(2.5, band)
-    pb = math.radians(min(62, 50 * s["pitch"] / 1000.0))
-    while P + Hb + (bw / 2) * math.tan(pb) + rt > P + H - 0.2 and pb > math.radians(25):
-        pb -= math.radians(3)
     gb = 0.2 + band * 0.3
+    door = next(cc for cc in plan["cells"] if cc["facade"] == "bislag")
+    dh = snap(mm(door["b1"]), band)
+    reach = gb + 0.22 + 0.1
+    # narrow the porch first, down to the door and a little wall
+    for a0, a1, b0, top, plain in above:
+        if b0 < 1.5 and not (a0 < bx < a1):
+            edge = min(abs(a0 - c.fw * 1.6 - bx), abs(a1 + c.fw * 1.6 - bx))
+            bw = max(mm(door["w"]) + 0.6, min(bw, 2 * (edge - reach)))
+    over = lambda a0, a1: a1 + c.fw * 1.6 > bx - bw / 2 - reach and a0 - c.fw * 1.6 < bx + bw / 2 + reach
+    eave_under = main_roof.profile[1][0][1] - P  # the main roof's lowest edge, above the plinth
+    cornice_under = H - (t + lap + 0.012 + 0.12) * math.tan(main_roof.pe) - 0.27 if plan["main"]["ornament"].get("cornice") else H
+    ceiling = min([H - 0.2, eave_under - 0.12, cornice_under - 0.05] + [b0 - c.fw - 0.2 for a0, a1, b0, top, plain in above if b0 > 1.5 and over(a0, a1)])
+    beside = [(top, plain) for a0, a1, b0, top, plain in above if b0 < 1.5 and over(a0, a1)]
+    need = max([0.0] + [top + 0.06 for top, plain in beside])  # clear of their crowns
+    need_plain = max([0.0] + [plain + 0.06 for top, plain in beside])  # clear of their casings
+
+    def apex(Hb, pb):
+        return Hb + (bw / 2) * math.tan(pb) + rt / math.cos(pb) + 0.12  # with the barge and its finial base
+
+    def eave(Hb, pb):
+        return Hb - 0.22 * math.tan(pb)
+
+    p_max = math.radians(min(62, 50 * s["pitch"] / 1000.0))
+    pitches = [p_max - math.radians(2) * i for i in range(int((p_max - math.radians(5)) / math.radians(2)) + 1)]
+    heights = [snap(2.5, band) + band * i for i in range(-3, 5)]
+    heights = [hb for hb in heights if hb >= dh + 0.2]
+    fits = [(hb, pb) for hb in heights for pb in pitches if apex(hb, pb) <= ceiling]
+    good = [f for f in fits if eave(*f) >= need] or [f for f in fits if eave(*f) >= need_plain]
+    if good:
+        Hb, pb = min(good, key=lambda f: (abs(f[0] - 2.5), -f[1]))
+    elif fits:
+        Hb, pb = max(fits, key=lambda f: eave(*f))
+    else:
+        Hb, pb = min(heights), math.radians(5)
+    return dict(bx=bx, bw=bw, bd=bd, gb=gb, dh=dh, Hb=Hb, pb=pb, eave=eave(Hb, pb), apex=apex(Hb, pb), half=bw / 2 + reach, door=door)
+
+
+def _bislag(b, plan, add, c, coat, W, D, P, H, band, t, lap, rt, ch, cham, s, key, sol):
+    bx, bw, bd, gb, dh, Hb, pb, door = (sol[k] for k in ("bx", "bw", "bd", "gb", "dh", "Hb", "pb", "door"))
     roof = Roof((bx, 0), (0, 1, 0), (1, 0, 0), -(D / 2 + bd + gb), -D / 2 + 0.25, bw / 2, P + Hb, [(pb, bw / 2)], 0.22, 0.0, rt, ch, lap * 2.5)
     front = Frame((bx, -D / 2 - bd, P), (1, 0, 0), UP, (0, -1, 0))
-    door = next(cc for cc in plan["cells"] if cc["facade"] == "bislag")
     dw = mm(door["w"])
-    dh = snap(mm(door["b1"]), band)
     holes = [(-dw / 2, dw / 2, 0.0, dh)]
-    lines = [(m_, c_ - m_ * 0.0) for m_, c_ in roof.gable_lines(P)]
-    lines = [(m_, c_ + m_ * bx) for m_, c_ in lines]
-    lines = [(m_, c_ - m_ * bx) for m_, c_ in lines]
+    lines = roof.gable_lines(P)
     wall(b, front, [dict(lo=-bw / 2, hi=bw / 2, b_lo=0.0, b_hi=Hb), dict(lo=-bw / 2, hi=bw / 2, b_lo=Hb, b_hi=roof.ridge - P + 0.01, below=lines)], holes, band, t, lap, coat["wall"])
     side_win = key("bislag_win") % 2 == 0
     for sx in (-1, 1):
@@ -577,7 +766,7 @@ def _veranda(b, plan, add, c, coat, W, D, P, S, cham):
 def _bay(b, plan, add, c, coat, W, D, P, S, band, t, lap, cham, win_scale, vertical, key, curtain_col, curtain_kind):
     bx, bw, bd = mm(add["x"]), mm(add["w"]), mm(add["d"])
     m = plan["main"]
-    z0, z1 = S - 0.25, m["full"] * S
+    z0, z1 = S - 0.25, m["full"] * S - 0.45
     front = Frame((bx, -D / 2 - bd, P), (1, 0, 0), UP, (0, -1, 0))
     sides = {sx: Frame((bx + sx * bw / 2, -D / 2 - bd / 2, P), (0, 1, 0), UP, (sx, 0, 0)) for sx in (-1, 1)}
     cells = [cc for cc in plan["cells"] if cc["facade"].startswith("bay_")]
@@ -586,6 +775,9 @@ def _bay(b, plan, add, c, coat, W, D, P, S, band, t, lap, cham, win_scale, verti
         w = mm(cc["w"]) * win_scale
         b0 = snap(mm(cc["b0"]), band)
         b1 = b0 + snap(mm(cc["b1"] - cc["b0"]) * win_scale, band)
+        crown = "flat" if cc["facade"] == "bay_front" else None
+        while b1 + parts.crown_height(crown, -w / 2, w / 2, c.fw) > z1 - 0.08 and b1 - b0 > 2.5 * band:
+            b1 -= band
         holes[cc["facade"]].append((-w / 2, w / 2, b0, b1, cc))
     wall(b, front, [dict(lo=-bw / 2, hi=bw / 2, b_lo=z0, b_hi=z1)], [hh[:4] for hh in holes["bay_front"]], band, t, lap, coat["wall"], vertical)
     for sx, name_ in ((-1, "bay_left"), (1, "bay_right")):
@@ -617,6 +809,8 @@ def _dormer(b, plan, add, c, coat, dx, roof, band, t, lap, rt, ch, cham, s, kick
         if apex + 2 * rt > roof.ridge - 0.25:
             return
     d_end = roof.at_height(apex + 2.5 * rt)
+    if d_end > d0 - 0.4:
+        return  # no room on this roof: the dormer is dropped whole, never half-built
     droof = Roof((dx, 0), (0, 1, 0), (1, 0, 0), -(d0 + 0.25), -d_end, dw / 2, z_base + hd, [(pd, dw / 2)], 0.2, kick * 0.5, rt, ch, lap * 2.5)
     front = Frame((dx, -d0, z_base), (1, 0, 0), UP, (0, -1, 0))
     era_win = ERAS[add["era"]]["window"]

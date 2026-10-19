@@ -125,7 +125,7 @@ def _built(b, ev, ws):
         add[name] = 100000
     if storeys >= 1500 and W >= 7000 and roof_type == "gable" and rich(add["ark"], "ark"):
         plan["additions"].append(dict(kind="ark", era=era, event=ev["id"]))
-    if storeys >= 1500 and rich(add["bislag"], "bislag"):
+    if full * E["storey"] + knee >= 3600 and rich(add["bislag"], "bislag"):
         plan["additions"].append(dict(kind="bislag", era=era, event=ev["id"]))
     if rich(add["veranda"], "veranda"):
         plan["additions"].append(dict(kind="veranda", era=era, event=ev["id"], side=1 if key("vside") % 2 else -1))
@@ -291,6 +291,9 @@ def _warehouse_cells(plan, ev, ws):
 
 def _extended(plan, ev, ws, bid):
     p = ev["params"]
+    if plan["type"] == "warehouse" and p["kind"] != "lean_to":
+        plan.setdefault("unplaced", []).append(ev["id"])
+        return
     era = era_for(ev["year"], h(ws, bid, ev["id"], "era"))
     add = dict(kind=p["kind"], era=era, event=ev["id"])
     add.update({k: v for k, v in p.items() if k != "kind"})
@@ -300,6 +303,13 @@ def _extended(plan, ev, ws, bid):
         add.setdefault("d", 2400)
         add.setdefault("w", m["W"] * 6 // 10)
     plan["additions"].append(add)
+    if add["kind"] == "bislag" and m["H"] < 3600:
+        plan["additions"].remove(add)
+        plan.setdefault("unplaced", []).append(ev["id"])
+        return
+    if add["kind"] == "bislag" and any(a["kind"] == "bislag" for a in plan["additions"][:-1]):
+        plan["additions"].remove(add)  # one porch to a door
+        return
     if add["kind"] in ("ark", "bislag", "bay", "veranda", "dormers") and "cols" in m:
         if add["kind"] == "veranda":
             add.setdefault("side", 1 if h(ws, bid, ev["id"], "vside") % 2 else -1)

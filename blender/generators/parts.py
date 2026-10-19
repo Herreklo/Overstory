@@ -71,6 +71,26 @@ def curtains(b, fr, a0, a1, b0, b1, colour, kind):
         b.box(fr, a1 - cw / 2 - 0.03, (b0 + b1) / 2, z, cw / 2, (b1 - b0) / 2 - 0.03, 0.005, colour)
 
 
+def crown_height(crown, a0, a1, width):
+    """How far a casing and its crown reach above the top of the opening."""
+    hw, fw = (a1 - a0) / 2, width
+    extra = {"flat": fw * 0.7, "cornice": fw * 0.9 + 0.07, "pediment": 0.06 + (hw + fw * 1.5) * 0.45, "arch": (hw + fw) * 0.35}
+    return fw + extra.get(crown, 0.0)
+
+
+def reach_above(kind, style, crown, a0, a1, fw):
+    """How far a part reaches above the top of its opening: casing, crown, sign band or canopy."""
+    if kind == "shopfront":
+        return 0.72
+    if kind == "door":
+        if style == "funkis_canopy":
+            return 0.3
+        return crown_height(crown, a0, a1, fw * (0.5 if style in ("teak_strip", "eighties") else 1.0))
+    if kind == "window":
+        return crown_height(crown, a0, a1, fw)
+    return fw
+
+
 def casing(b, fr, a0, a1, b0, b1, c, width, angle=0.0, crown=None, sill=True):
     """The frame around an opening, its sill and its crown (none, flat, cornice, pediment, arch)."""
     ac, bc, hw, hh = (a0 + a1) / 2, (b0 + b1) / 2, (a1 - a0) / 2, (b1 - b0) / 2
