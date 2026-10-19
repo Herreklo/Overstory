@@ -16,7 +16,7 @@ The game only shows what the engine decides. The engine never depends on the gam
 Understory is a work in progress run from its own project. From here:
 
 - **Never clone it.** A local copy loads the engine's own instructions into the session and gives something to push from.
-- **Never push, branch, or open issues or pull requests on it.** Never run its rounds or scripts.
+- **Never push, branch, or open issues or pull requests on it.** Never run its rounds or scripts. Comments on its issues labelled `overstory` are allowed when Øystein asks.
 - **Read it only through the GitHub API**, which cannot write:
 
       gh api repos/Herreklo/Understory/contents/NOW.md -H "Accept: application/vnd.github.raw"
@@ -32,17 +32,17 @@ Understory is a work in progress run from its own project. From here:
 
 ## What it knows today
 
-- **Time** runs in months (`t`). The simulated past starts in 1996 (`YEAR0`); the present begins thirty years later. Anything older, such as a building from 1931, does not exist in the engine.
+- **Time** runs in months (`t`). Today the simulated past starts in 1996 (`YEAR0`); the present begins thirty years later. The start year is to come from the setting pack (#23), so a world shown in 1989 starts its people in 1959. Buildings older than the people come from the fabric pass, not from the engine.
 - **Places** are workplaces with string ids (`'mill'`, `'harbour'`), each with a kind, capacity, staff and a leader. Every neighbourhood has one of each kind the setting has. A venture (a café in the old bank) opens a new place in its founder's neighbourhood.
 - **Buildings** are not modelled: a place has no building, era, extensions or condition.
 - **The setting** is a placeholder coastal town with English names. Names and kinds of place are setting content and can be swapped.
 
-## The export (not built yet)
+## The front door
 
-The engine does not yet export data for the game. Until it does:
-
+- **Tag `rH28`** has the engine's read-only front door (`src/boundary.ts`). Its reads show the truth, so they serve our tools (the diary inspector, the bridge schema), never anything a player sees.
+- **Part two (#22)** will add the places of a neighbourhood at a month, people as the player could know them, habits, and the first player command. Until it lands:
 - The draft format lives in `docs/engine-contract.md`: places (building and business), people present, and recent events, each with ids that stay stable.
-- Fixtures in `fixtures/*.json` follow the draft exactly. Every field in a fixture that the engine does not produce today is listed in `docs/engine-requests.md`.
+- Fixtures in `fixtures/*.json` follow the draft exactly, with every record labelled `authored`. Every field in a fixture that the engine does not produce today is listed in `docs/engine-requests.md`.
 - Keep the draft small: only what an experiment actually uses.
 
 ## How the game will run with the engine

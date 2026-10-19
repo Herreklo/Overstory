@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "note": "Fixture for LT1, scenario-authored. Building diaries are engine requests 3 and 4; until the engine writes them, these hand-written diaries stand in. 1989 predates the engine's 1996 start, so these are look-test data, not simulated history.",
+  "note": "Fixture for LT1, authored by hand. Building diaries will come from the fabric pass (engine-requests: open items); until then these hand-written diaries stand in. They are look-test data, not simulated history.",
   "worldSeed": 1989,
   "street": "Harbour Row",
   "buildings": [
@@ -133,7 +133,7 @@
           "cause": "Ruth opens a bar"
         }
       ],
-      "provenance": "scenario-authored"
+      "provenance": "authored"
     },
     {
       "id": 102,
@@ -191,7 +191,7 @@
           "cause": "the widow can't keep it up"
         }
       ],
-      "provenance": "scenario-authored"
+      "provenance": "authored"
     },
     {
       "id": 103,
@@ -252,7 +252,7 @@
           "cause": "upkeep"
         }
       ],
-      "provenance": "scenario-authored"
+      "provenance": "authored"
     },
     {
       "id": 104,
@@ -284,7 +284,7 @@
           "cause": "upkeep"
         }
       ],
-      "provenance": "scenario-authored"
+      "provenance": "authored"
     },
     {
       "id": 105,
@@ -315,7 +315,7 @@
           "cause": "new owners"
         }
       ],
-      "provenance": "scenario-authored"
+      "provenance": "authored"
     },
     {
       "id": 106,
@@ -339,7 +339,7 @@
           "cause": "infill after the old house was cleared for the road plan"
         }
       ],
-      "provenance": "scenario-authored"
+      "provenance": "authored"
     },
     {
       "id": 107,
@@ -400,7 +400,7 @@
           "cause": "empty"
         }
       ],
-      "provenance": "scenario-authored"
+      "provenance": "authored"
     },
     {
       "id": 108,
@@ -452,7 +452,7 @@
           "cause": "restored in white"
         }
       ],
-      "provenance": "scenario-authored"
+      "provenance": "authored"
     },
     {
       "id": 109,
@@ -495,7 +495,7 @@
           "cause": "a band rents the loft cheap"
         }
       ],
-      "provenance": "scenario-authored"
+      "provenance": "authored"
     },
     {
       "id": 110,
@@ -537,8 +537,8 @@
           "cause": "the firm leaves after the crash"
         }
       ],
-      "provenance": "scenario-authored"
+      "provenance": "authored"
     }
   ],
-  "provenance": "scenario-authored"
+  "provenance": "authored"
 }
