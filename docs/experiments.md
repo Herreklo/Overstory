@@ -18,7 +18,7 @@ Newest first. Each entry: the question, how it is judged, then the outcome: what
 
 **Status:** open.
 
-**The question:** which of three looks makes a west-coast harbour street beautiful in ordinary light, at street level and from above?
+**The question:** which of four looks makes a west-coast harbour street beautiful in ordinary light, at street level and from above?
 
 **The setting:** a fictional harbour town rooted in the Norwegian west coast, in 1989: three years after the oil-price crash, a boom town in a slump. White timber houses, quay warehouses, cobbles, 1980s shopfronts and streetlamps, some shops empty.
 
@@ -42,3 +42,4 @@ Newest first. Each entry: the question, how it is judged, then the outcome: what
 - Stronger is added: wild's proportions with strong's deformation. Strong and stronger are compared on the same street.
 - The first wild sheet went out with a known fault. Since then, building checks and a stress test gate every sheet: 1,564 random buildings at strong and stronger pass, and the street fixtures pass in every year.
 - A blind reviewer found what the checks could not see: floating ridge caps, merged double chimneys, window heads hidden by deep eaves, dangling barge ends, and bays that hit porches, cross-gables and the eave. Each became a rule (`docs/building-system.md`, Fitting), and bays became checked parts.
+- Øystein picked stronger over strong. It is the default strength (`blender/resolver/eras.py`) and the shape language for the street. This ends the shape step.

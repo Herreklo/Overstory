@@ -19,7 +19,7 @@ import palette  # noqa: E402
 import parts  # noqa: E402
 from parts import Ctx  # noqa: E402
 from hashing import h, unit  # noqa: E402
-from eras import ERAS, STYLES  # noqa: E402
+from eras import DEFAULT_STYLE, ERAS, STYLES  # noqa: E402
 
 UP = (0, 0, 1)
 
@@ -255,7 +255,7 @@ class Roof:
 # -- the building ----------------------------------------------------------------------------
 
 
-def build(plan, style="strong", name=None, material=None):
+def build(plan, style=DEFAULT_STYLE, name=None, material=None):
     s = STYLES[style]
     m = plan["main"]
     ws, bid = plan["seed"], plan["id"]

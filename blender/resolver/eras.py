@@ -149,3 +149,6 @@ STYLES = {
     "stronger": dict(band=500, lap=46, pitch=1300, eave=1700, win=1220, frame=230, lean=26, sag=260, bow=60, jitter=80, tilt=16, chamfer=30, chimney=1600, kick=1000),
     "wild": dict(band=500, lap=46, pitch=1300, eave=1700, win=1220, frame=230, lean=45, sag=480, bow=140, jitter=120, tilt=26, chamfer=35, chimney=1600, kick=1000),
 }
+
+# The street's shape language, picked at LT1's shape step.
+DEFAULT_STYLE = "stronger"

@@ -18,7 +18,7 @@ import building  # noqa: E402
 import validate  # noqa: E402
 from hashing import h, between, pick  # noqa: E402
 from resolve import resolve  # noqa: E402
-from eras import ORDER, ERAS  # noqa: E402
+from eras import DEFAULT_STYLE, ORDER, ERAS  # noqa: E402
 
 ADDITIONS = ["ark", "bislag", "veranda", "bay", "dormer"]
 LATER = ["extended_lean_to", "extended_bislag", "extended_dormers", "extended_veranda", "windows_replaced", "repainted", "shop_fitted", "boarded", "neglected", "restored"]
@@ -89,4 +89,4 @@ def main(n, styles, years=(1900, 1935, 1960, 1989)):
 if __name__ == "__main__":
     argv = sys.argv[sys.argv.index("--") + 1 :] if "--" in sys.argv else sys.argv[1:]
     opts = dict(zip(argv[0::2], argv[1::2]))
-    sys.exit(1 if main(int(opts.get("--n", 100)), opts.get("--styles", "strong").split(",")) else 0)
+    sys.exit(1 if main(int(opts.get("--n", 100)), opts.get("--styles", DEFAULT_STYLE).split(",")) else 0)

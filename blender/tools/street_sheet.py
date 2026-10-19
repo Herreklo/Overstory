@@ -22,6 +22,7 @@ from mathutils import Vector  # noqa: E402
 import palette  # noqa: E402
 import building  # noqa: E402
 from resolve import resolve  # noqa: E402
+from eras import DEFAULT_STYLE  # noqa: E402
 
 
 def fresh_scene(name):
@@ -145,7 +146,7 @@ def main(argv):
     fx = json.load(open(fixture_path))
     ids = [int(x) for x in opts.get("--ids", ",".join(str(b["id"]) for b in fx["buildings"])).split(",")]
     by_id = {b["id"]: b for b in fx["buildings"]}
-    styles = opts.get("--styles", "strong").split(",")
+    styles = opts.get("--styles", DEFAULT_STYLE).split(",")
     res = tuple(int(v) for v in opts.get("--res", "2400x900").split("x"))
     samples = int(opts.get("--samples", 24))
     tmp = os.path.splitext(out)[0]
