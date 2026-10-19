@@ -25,7 +25,7 @@ One experiment per session, on its own branch (`lt/1-first-street`), following t
 ## Standing rules
 
 - **The engine decides, Unity draws, Blender builds the parts.** Unity never invents a fact about the world.
-- **Understory is never changed from here.** It is a work in progress run from its own project. Never clone it, push to it, or open branches, issues or pull requests on it. Read it only through the GitHub API (`engine-bridge` skill). What the game needs from it goes in `docs/engine-requests.md`.
+- **Understory is never changed from here.** It is a work in progress run from its own project. Never clone it, push to it, or open branches, issues or pull requests on it. Read it only through the GitHub API (`engine-bridge` skill). What the game needs from it goes in `docs/engine-requests.md`. Comments on engine issues labelled `overstory` are allowed when Øystein asks.
 - **Generators, not single assets** (`blender-generators` skill).
 - **Seeded and deterministic** (`unity-conventions` skill): the same building looks the same until its history changes it.
 - **Variety must be readable:** every visual difference carries something true.
