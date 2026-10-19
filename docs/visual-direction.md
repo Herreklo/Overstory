@@ -16,6 +16,8 @@ The direction is painterly realism. Simon Stålenhag leads: real proportions, mu
 - Pushed proportions: steeper roofs, deeper eaves, oversized chimneys, tall-and-narrow next to low-and-wide, at the strength called stronger. Proportions carry the boldness; deformation (lean, sag, bow) stays small, because it is what reads as caricature.
 - A handmade feel from the seed: a lean, a sagging ridge, windows slightly out of line, soft bevels. The wobble lives inside each piece; edges stay on the grid.
 - Detail where history is. Calm walls; rich junctions, signs, trims and traces of change. Human scale, never miniature.
+- No round blobs. Shapes are considered and structured: planes, edges and silhouettes with intent, as a painter builds a tree or a roof, never a soft ball standing in for a form. Rounded, puffy shapes are the generic stylised look, not ours.
+- Fewer things, each done well, beat many things done roughly.
 
 ## Materials
 
