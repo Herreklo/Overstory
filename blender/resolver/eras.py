@@ -4,7 +4,7 @@ Each era lists what was built and installed in its years: proportions, roofs,
 windows, doors, shopfronts, ornament and colours. A part is always taken from the
 shelf of the year it was installed. Lengths are millimetres, angles tenths of a
 degree, chances per mille. Values are provisional until look tests settle them.
-Sources: Stavanger's wooden-town guidance and the research docs in the Project.
+Sources: Stavanger's wooden-town guidance and docs/research/world-that-remembers.md.
 """
 
 from hashing import weighted

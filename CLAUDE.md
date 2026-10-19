@@ -56,7 +56,7 @@ Choose the model by the kind of work, and say in one line when a step calls for 
 
 ## Docs
 
-`docs/` describes the current design: how it works and why. History lives in `docs/experiments.md` and git. No rejected alternatives.
+`docs/` describes the current design: how it works and why. History lives in `docs/experiments.md` and git. No rejected alternatives. Research and ideas are inputs to the design, kept in `docs/research/` and `docs/ideas/`; when a look test changes a rating or a rule, update them.
 
 | File | What it holds |
 | --- | --- |
@@ -66,6 +66,8 @@ Choose the model by the kind of work, and say in one line when a step calls for 
 | `docs/experiments.md` | Every experiment: question, outcome, what we keep and drop |
 | `docs/engine-contract.md` | The draft format of the engine's data for the game |
 | `docs/engine-requests.md` | What the game needs from the engine |
+| `docs/research/` | The research behind the design: one synthesis (`world-that-remembers.md`), topic docs, and the reality check that sets the order of bets |
+| `docs/ideas/` | Game-layer ideas, not yet decisions |
 
 Skills for this repo live in `.claude/skills/` and change with the design: `game-lab-workflow`, `blender-generators`, `unity-conventions`, `engine-bridge`.
 
