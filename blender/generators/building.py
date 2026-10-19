@@ -95,8 +95,11 @@ def _vertical(b, fr, p, openings, band, t, swatch):
                 poly = clip_above(poly, m, c) if poly else poly
             if poly:
                 b.strip(fr, poly, r0, r1, t, 0.0, swatch)
+                # the batten runs up to the roof line where it stands, not to the board's highest corner
                 ys = [q[1] for q in poly]
-                b.box(fr, a0, (min(ys) + max(ys)) / 2, t + 0.012, 0.022, (max(ys) - min(ys)) / 2, 0.012, swatch)
+                top = min([max(ys)] + [m * xa + c for m, c in p.get("below", []) for xa in (a0 - 0.022, a0 + 0.022)]) - 0.01
+                if top - min(ys) > 0.02:
+                    b.box(fr, a0, (min(ys) + top) / 2, t + 0.012, 0.022, (top - min(ys)) / 2, 0.012, swatch)
 
 
 # -- roofs -------------------------------------------------------------------------------
@@ -200,7 +203,7 @@ class Roof:
                     for lo, hi in spans:
                         b.strip(fr, [(lo, c0), (hi, c0), (hi, c1), (lo, c1)], c0, c1, self.rt, self.lap, roof_col, side_swatch=self.edge or roof_col)
                 run_from_eave += abs(dx)
-        rw = self.rt * math.sin(self.last_pitch) + 0.12 * self.k
+        rw = self.rt * math.sin(self.last_pitch) + max(0.09, 0.12 * self.k)
         rh = 0.09 * self.k
         # the courses end square to the slope, so their top corners meet at rt*cos above the ridge line
         ridge_z = self.ridge + self.rt * math.cos(self.last_pitch) + rh - 0.05 * self.k
