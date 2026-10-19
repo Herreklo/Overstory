@@ -1,6 +1,6 @@
 # The building system
 
-How buildings are generated, change over time and show their history. The research behind it is in the Project docs ("A world that remembers" and the topic docs).
+How buildings are generated, change over time and show their history. The research behind it is in `docs/research/` (`world-that-remembers.md` and the topic docs).
 
 ## In short
 
