@@ -109,6 +109,12 @@ class Roof:
         self.base = (base[0], base[1])
         self.U, self.X = U, X
         self.a0, self.a1, self.hw, self.z0 = a0, a1, hw, z0
+        # a small roof keeps the tiles in proportion: at least four courses on a slope,
+        # thinner courses and a smaller ridge cap
+        slope = sum(run / max(0.2, math.cos(p_)) for p_, run in segs)
+        self.k = min(1.0, max(0.5, hw / 2.5))
+        rt, lap = min(rt, rt * self.k + 0.02), lap * self.k
+        ch = min(ch, max(0.14, slope / 4))
         self.rt, self.ch, self.lap = rt, ch, lap
         first = segs[0][0]
         # the overhang flares out on steep roofs, as a mansard's does
@@ -194,11 +200,12 @@ class Roof:
                     for lo, hi in spans:
                         b.strip(fr, [(lo, c0), (hi, c0), (hi, c1), (lo, c1)], c0, c1, self.rt, self.lap, roof_col, side_swatch=self.edge or roof_col)
                 run_from_eave += abs(dx)
-        rw = self.rt * math.sin(self.last_pitch) + 0.12
+        rw = self.rt * math.sin(self.last_pitch) + 0.12 * self.k
+        rh = 0.09 * self.k
         # the courses end square to the slope, so their top corners meet at rt*cos above the ridge line
-        ridge_z = self.ridge + self.rt * math.cos(self.last_pitch) + 0.09 - 0.05
+        ridge_z = self.ridge + self.rt * math.cos(self.last_pitch) + rh - 0.05 * self.k
         fr = Frame(self.point(0, 0, 0), self.U, UP, self.vec(1, 0))
-        b.box(fr, (self.a0 + self.a1) / 2, ridge_z, 0, (self.a1 - self.a0) / 2 + 0.02, 0.09, rw, ridge_col, chamfer=cham)
+        b.box(fr, (self.a0 + self.a1) / 2, ridge_z, 0, (self.a1 - self.a0) / 2 + 0.02, rh, rw, ridge_col, chamfer=cham * self.k)
 
     def gable_lines(self, zb):
         """Half-planes b <= m*a + c (a across, b height above zb) that a gable wall must stay under."""
@@ -379,7 +386,7 @@ def build(plan, style="strong", name=None, material=None):
                 while reach(b1, crown) > limit and b0 - band >= 0.3:
                     b0, b1 = b0 - band, b1 - band
         lines = gables.get("ark" if c.get("col") == 98 else local)
-        if c["part"]["type"] == "window" and lines and (c.get("col") == 98 or b1 > H - 0.3):
+        if c["part"]["type"] in ("window", "loading_door") and lines and (c.get("col") == 98 or b1 + 0.6 > H):
             # under the gable's roof: shrink, lose the crown, move down, or leave the window out
             floor_ = H + 0.25 if c.get("col") == 98 or c.get("row", 0) >= m["full"] else 0.0
 
@@ -530,7 +537,7 @@ def build(plan, style="strong", name=None, material=None):
     for side in (-1, 1):
         y = side * (D / 2 + e + 0.04)
         z = P + H - e * math.tan(pe_) - 0.06
-        runs = [(-W / 2 - g * 0.6, W / 2 + g * 0.6)]
+        runs = [(-W / 2 - g + 0.08, W / 2 + g - 0.08)]  # the ends hide behind the barge boards
         if side == -1 and ark_roof:
             runs = subtract(runs, (ax - ark_reach, ax + ark_reach))
         for x0, x1 in runs:
@@ -585,7 +592,8 @@ def build(plan, style="strong", name=None, material=None):
         elif k == "lean_to":
             _lean_to(b, plan, add, ctx, coat, W, D, P, H, band, t, lap, rt, ch, cham, E_add, roof)
         elif k == "hoist":
-            _hoist(b, plan, ctx, coat, W, D, P, H, roof, r, cham)
+            door_top = max([b1 + fw for lc, cc, a0, a1, b0, b1, cr in placed if lc == "left" and abs((a0 + a1) / 2) < 1.2] + [0.0])
+            _hoist(b, plan, ctx, coat, W, D, P, H, roof, r, cham, door_top)
 
     # -- parts in the cells ------------------------------------------------------------------------
     business = plan.get("business")
@@ -924,11 +932,12 @@ def _lean_to(b, plan, add, c, coat, W, D, P, H, band, t, lap, rt, ch, cham, E_ad
     b.box(world, 0, P / 2, -(D / 2 + ld / 2), lw / 2 + 0.05, P / 2, ld / 2 + 0.05, "stone", chamfer=cham)
 
 
-def _hoist(b, plan, c, coat, W, D, P, H, roof, r, cham):
-    """The Stavanger-ark on a quay warehouse: a hoist housing over the loft door, with its beam."""
+def _hoist(b, plan, c, coat, W, D, P, H, roof, r, cham, door_top=0.0):
+    """The Stavanger-ark on a quay warehouse: a hoist housing over the loft door, with its beam.
+    door_top: the top of the highest opening under it, casing included, above the plinth."""
     # built before rotation: the quay gable is the local left gable (x = -W/2)
     hw, hd = 0.9, 1.0
-    zb = P + H + 1.8
+    zb = max(P + H + 1.8, P + door_top + 0.12)
     x0 = -W / 2
     hb = Frame((x0 - hd / 2, 0, zb), (0, 1, 0), UP, (-1, 0, 0))
     b.box(hb, 0, 0.6, 0, hw, 0.6, hd / 2, coat["wall"], chamfer=cham)
