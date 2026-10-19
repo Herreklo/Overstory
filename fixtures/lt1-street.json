@@ -305,6 +305,156 @@
         },
         "surface": "heath"
       }
+    },
+    "trees": {
+      "note": "Trees, authored for LT1: where each stands (street mm), its species and the year it was planted or seeded. Size follows from age; colour from the season.",
+      "list": [
+        {
+          "id": "tree-1",
+          "species": "sycamore",
+          "x": 11000,
+          "y": 16500,
+          "planted": 1902,
+          "cause": "the merchant plants a sycamore behind the house"
+        },
+        {
+          "id": "tree-2",
+          "species": "birch",
+          "x": 36000,
+          "y": 17500,
+          "planted": 1952,
+          "cause": "self-seeded in the yard"
+        },
+        {
+          "id": "tree-3",
+          "species": "rowan",
+          "x": 63500,
+          "y": 17000,
+          "planted": 1968,
+          "cause": "planted for the berries"
+        },
+        {
+          "id": "tree-4",
+          "species": "birch",
+          "x": 90000,
+          "y": 18000,
+          "planted": 1934,
+          "cause": "self-seeded by the warehouse yard"
+        },
+        {
+          "id": "tree-5",
+          "species": "sycamore",
+          "x": 8000,
+          "y": 40500,
+          "planted": 1889,
+          "cause": "an old garden tree above the quay"
+        },
+        {
+          "id": "tree-6",
+          "species": "rowan",
+          "x": 21000,
+          "y": 40000,
+          "planted": 1975,
+          "cause": "planted by the clerk's family"
+        },
+        {
+          "id": "tree-7",
+          "species": "birch",
+          "x": 45500,
+          "y": 41000,
+          "planted": 1940,
+          "cause": "beside the stepped lane"
+        },
+        {
+          "id": "tree-8",
+          "species": "spruce",
+          "x": 66000,
+          "y": 41500,
+          "planted": 1958,
+          "cause": "a Christmas tree planted out"
+        },
+        {
+          "id": "tree-9",
+          "species": "sycamore",
+          "x": 92000,
+          "y": 40500,
+          "planted": 1910,
+          "cause": "the skipper's garden tree"
+        },
+        {
+          "id": "tree-10",
+          "species": "birch",
+          "x": 10000,
+          "y": 59500,
+          "planted": 1925,
+          "cause": "self-seeded on the hill"
+        },
+        {
+          "id": "tree-11",
+          "species": "rowan",
+          "x": 33000,
+          "y": 59000,
+          "planted": 1960,
+          "cause": "planted by the boatbuilder"
+        },
+        {
+          "id": "tree-12",
+          "species": "birch",
+          "x": 56000,
+          "y": 60000,
+          "planted": 1948,
+          "cause": "self-seeded on the hill"
+        },
+        {
+          "id": "tree-13",
+          "species": "spruce",
+          "x": 78000,
+          "y": 60500,
+          "planted": 1955,
+          "cause": "planted for shelter"
+        },
+        {
+          "id": "tree-14",
+          "species": "birch",
+          "x": 20000,
+          "y": 70000,
+          "planted": 1930,
+          "cause": "birch coming up on the hillside as grazing stopped"
+        },
+        {
+          "id": "tree-15",
+          "species": "birch",
+          "x": 42000,
+          "y": 72000,
+          "planted": 1945,
+          "cause": "birch coming up on the hillside as grazing stopped"
+        },
+        {
+          "id": "tree-16",
+          "species": "spruce",
+          "x": 64000,
+          "y": 75000,
+          "planted": 1957,
+          "cause": "the spruce planting on the hill"
+        },
+        {
+          "id": "tree-17",
+          "species": "spruce",
+          "x": 72000,
+          "y": 78000,
+          "planted": 1957,
+          "cause": "the spruce planting on the hill"
+        },
+        {
+          "id": "tree-18",
+          "species": "birch",
+          "x": 95000,
+          "y": 70000,
+          "planted": 1938,
+          "cause": "birch coming up on the hillside as grazing stopped"
+        }
+      ],
+      "provenance": "authored"
     }
   },
   "buildings": [

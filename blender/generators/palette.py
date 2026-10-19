@@ -7,7 +7,7 @@ The colours are provisional until the art bible fixes them.
 
 import os
 
-GRID = 8  # swatches per row and column
+GRID = 16  # swatches per row and column
 CELL = 16  # pixels per swatch
 
 # name: (r, g, b) in sRGB 0-255. Order fixes each swatch's place in the texture.
@@ -80,6 +80,11 @@ SWATCHES = {
     "drystone": (116, 112, 104),
     "rock": (106, 105, 101),
     "heath": (68, 74, 56),
+    "bark": (74, 66, 58),
+    "leaf_birch": (200, 172, 72),
+    "leaf_rowan": (172, 70, 42),
+    "leaf_sycamore": (196, 128, 54),
+    "leaf_spruce": (46, 64, 50),
     "grass": (62, 74, 50),
 }
 
@@ -120,7 +125,8 @@ SURFACE = {
     "stone": (0.18, 0.0, 0.45), "stone_dark": (0.18, 0.0, 0.45), "kerb": (0.2, 0.0, 0.45),
     "setts_light": (0.2, 0.0, 0.65), "setts_mid": (0.2, 0.0, 0.65), "setts_dark": (0.2, 0.0, 0.65),
     "joint": (0.1, 0.0, 0.6), "setts_mean": (0.2, 0.0, 0.65), "asphalt": (0.3, 0.0, 0.3),
-    "gravel": (0.08, 0.0, 0.7), "drystone": (0.15, 0.0, 0.55), "rock": (0.15, 0.0, 0.85), "heath": (0.06, 0.0, 1.0), "flags": (0.12, 0.0, 0.65), "quay_wall": (0.15, 0.0, 0.55),
+    "gravel": (0.08, 0.0, 0.7), "drystone": (0.15, 0.0, 0.55), "rock": (0.15, 0.0, 0.85), "heath": (0.06, 0.0, 1.0), "bark": (0.12, 0.0, 0.6),
+    "leaf_birch": (0.15, 0.0, 0.9), "leaf_rowan": (0.15, 0.0, 0.9), "leaf_sycamore": (0.15, 0.0, 0.9), "leaf_spruce": (0.12, 0.0, 0.9), "flags": (0.12, 0.0, 0.65), "quay_wall": (0.15, 0.0, 0.55),
     "brick": (0.12, 0.0, 0.6), "render_white": (0.1, 0.0, 0.55), "ground": (0.08, 0.0, 0.7),
     "grass": (0.05, 0.0, 1.0), "wood": (0.15, 0.0, 0.6), "shadow": (0.05, 0.0, 0.5),
     "curtain": (0.1, 0.0, 0.0), "curtain_warm": (0.1, 0.0, 0.0),

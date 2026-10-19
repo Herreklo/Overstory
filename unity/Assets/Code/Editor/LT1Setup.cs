@@ -197,6 +197,8 @@ namespace Overstory.EditorTools
             ("OrbitEast", new Vector3(135f, -150f, 40f), new Vector3(52f, 60f, 32f)),
             // inside the town: over the quay by the warehouses, looking west along Harbour Row to the harbour mouth
             ("Quay", new Vector3(104f, -34f, 14f), new Vector3(46f, 22f, 10f)),
+            // over the roofs of the upper town towards the light (west, over the harbour): roofs and chimneys against the glow
+            ("Roofs", new Vector3(96f, 60f, 30f), new Vector3(12f, -28f, 8f)),
         };
 
         /// <summary>
@@ -340,8 +342,8 @@ namespace Overstory.EditorTools
             r.fogSunPower = 5f;
 
             r.wetness = 0f;
-            r.cloudCover = 0.44f;      // broken cloud: the low sun falls on the town in pools
-            r.cloudSize = 380f;
+            r.cloudCover = 0.4f;       // broken cloud: the low sun falls on the town in pools
+            r.cloudSize = 900f;
             r.cloudSoftness = 0.05f;
             r.cloudHeight = 1200f;
             r.windowGlow = 0f;

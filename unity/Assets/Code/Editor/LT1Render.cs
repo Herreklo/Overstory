@@ -53,15 +53,16 @@ namespace Overstory.EditorTools
             EditorSceneManager.OpenScene(ScenePath, OpenSceneMode.Single);
             var stage = Object.FindAnyObjectByType<StreetStage>();
             stage.clay = false;
-            stage.shot = AssetDatabase.LoadAssetAtPath<CameraShot>("Assets/Experiments/LT1/Views/LT1_City_Quay.asset");
-            foreach (var light in new[] { "ClearDay", "SummerEvening", "BlueHour" })
+            foreach (var shot in new[] { "Quay", "Roofs" })
+            foreach (var light in new[] { "SummerEvening", "BlueHour", "Drizzle" })
             {
+                stage.shot = AssetDatabase.LoadAssetAtPath<CameraShot>($"Assets/Experiments/LT1/Views/LT1_City_{shot}.asset");
                 stage.rig = AssetDatabase.LoadAssetAtPath<LightRig>($"Assets/Experiments/LT1/Light/LT1_{light}.asset");
-                foreach (var look in new[] { "D" })
+                foreach (var look in new[] { "P" })
                 {
                     stage.look = look;
                     stage.Apply();
-                    string file = Path.Combine(dir, $"lt1-{light.ToLowerInvariant()}-{look}.png");
+                    string file = Path.Combine(dir, $"lt1-{shot.ToLowerInvariant()}-{light.ToLowerInvariant()}-{look}.png");
                     Still(stage.view, file, grey: true, eighth: true);
                     Debug.Log($"[LT1Render] {file}");
                 }

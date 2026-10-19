@@ -29,6 +29,7 @@ namespace Overstory.World
         public Emissive[] emissive;
         public PaletteInfo palette;
         public Slope slope;
+        public TreeRef[] trees;
 
         /// <summary>Whether the town climbs above the street (levels, stairs, hillside, ridges).</summary>
         public bool HasSlope => slope != null && slope.levels != null && slope.levels.Length > 0;
@@ -120,6 +121,9 @@ namespace Overstory.World
     }
 
     [Serializable] public class Bollards { public string variant; public P3[] positions; }
+
+    /// <summary>A tree: its species' kit piece, where it stands, its size from its age, a seeded turn.</summary>
+    [Serializable] public class TreeRef { public string id; public string variant; public P3 position; public float scale; public float turn; }
 
     [Serializable]
     public class KitPiece

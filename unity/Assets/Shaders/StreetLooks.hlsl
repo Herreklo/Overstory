@@ -246,4 +246,95 @@ half3 OS_ShadeD(InputData id, StreetSurface s, OSBake b, float3 positionWS)
     return ink + s.emission;
 }
 
+
+// -- look P: painterly realism ------------------------------------------------------------------------
+// Stålenhag, Hopper, Hammershøi, Disco Elysium: a real place painted by someone who leaves out what
+// doesn't matter. Light wraps softly round forms; shade takes the sky's colour; a gentle warm-to-cool
+// turn where light becomes shade gives form without lines; the base colours are muted so the light
+// carries the colour; grime gathers where a surface sees the ground; and a brush texture fixed to the
+// world breaks colour and light a little, as brushwork does. No outlines, no plates.
+
+float4 _OS_Paint;      // x wrap (how far light wraps round a form), y muting (0 none, 1 grey), z grime, w brush strength
+float4 _OS_Grime;      // rgb the colour dirt and damp lend a wall near the ground (linear)
+
+// Brushwork fixed to the world: in each patch, strokes in one seeded direction, so a wall reads as
+// laid-in paint, not noise. Returns -0.5..0.5.
+half OS_Brush(float3 p, half3 n)
+{
+    half3 a = abs(n);
+    float2 q = a.y > max(a.x, a.z) ? p.xz : (a.x > a.z ? p.zy : p.xy);
+    q *= 1.4; // strokes about 70 cm long close by
+    float2 cell = floor(q);
+    float ang = OS_Hash(cell) * 3.14159;
+    float2 dir = float2(cos(ang), sin(ang));
+    float2 local = float2(dot(q, dir), dot(q, float2(-dir.y, dir.x)));
+    float s = OS_Noise(local * float2(1.2, 7.0) + cell * 3.7);           // long strokes across the patch
+    float t = OS_Noise(q * 0.35 + 11.0);                                 // patches of a slightly different mix
+    return (half)(s * 0.65 + t * 0.35) - 0.5h;
+}
+
+half3 OS_ShadeP(InputData id, StreetSurface s, OSBake b, float3 positionWS)
+{
+    InputData inputData = id; // URP's Forward+ light loop looks lights up through a variable of this name
+    half3 n = id.normalWS;
+    half3 v = id.viewDirectionWS;
+    AmbientOcclusionFactor ao = CreateAmbientOcclusionFactor(id.normalizedScreenSpaceUV, 1.0h);
+    half4 shadowMask = half4(1, 1, 1, 1);
+    half brush = OS_Brush(positionWS, n) * _OS_Paint.w;
+
+    // the base: muted so light carries the colour, broken a little by the brush, darker and damper
+    // where a surface looks at the ground
+    half3 albedo = s.albedo;
+    half lumA = dot(albedo, half3(0.2126h, 0.7152h, 0.0722h));
+    albedo = lerp(albedo, lumA.xxx, _OS_Paint.y);
+    albedo *= 1.0h + brush * 0.35h;
+    half grime = saturate((b.ground - 0.25h) * 2.2h) * _OS_Paint.z;
+    albedo = lerp(albedo, albedo * _OS_Grime.rgb * 2.0h, grime);
+
+    // the sky term, shade in the sky's colour
+    half3 sky = OS_SkyTerm(b, n) * ao.indirectAmbientOcclusion;
+    half skyLum = dot(sky, half3(0.2126h, 0.7152h, 0.0722h));
+    sky = max(skyLum + (sky - skyLum) * _OS_ShadowChroma, 0.0h);
+    half3 colour = albedo * sky;
+
+    // the sun: wrapped softly, through the clouds; a warm band where it turns to shade
+    Light main = GetMainLight(id.shadowCoord, id.positionWS, shadowMask);
+    half w = _OS_Paint.x;
+    half ndl = dot(n, main.direction);
+    half wrapped = saturate((ndl + w) / (1.0h + w) + brush * 0.12h);
+    half shadow = main.shadowAttenuation * OS_CloudLight(positionWS, main.direction);
+    half lit = wrapped * wrapped * shadow;
+    colour += albedo * main.color * lit * ao.directAmbientOcclusion;
+    half turn = saturate(1.0h - abs(ndl) * 3.0h) * shadow;            // the edge between light and shade
+    colour += albedo * main.color * _OS_EdgeTint.rgb * _OS_EdgeTint.a * turn;
+
+    // lamps and lit rooms: soft pools, and their glints in wet stone
+    half3 specular = 0;
+    #if defined(_ADDITIONAL_LIGHTS)
+    uint count = GetAdditionalLightsCount();
+    #if USE_CLUSTER_LIGHT_LOOP
+    [loop] for (uint lightIndex = 0; lightIndex < min(URP_FP_DIRECTIONAL_LIGHTS_COUNT, MAX_VISIBLE_LIGHTS); lightIndex++)
+    {
+        CLUSTER_LIGHT_LOOP_SUBTRACTIVE_LIGHT_CHECK
+        Light l = GetAdditionalLight(lightIndex, id.positionWS, shadowMask);
+        colour += albedo * l.color * l.distanceAttenuation * l.shadowAttenuation * saturate((dot(n, l.direction) + w) / (1.0h + w));
+    }
+    #endif
+    LIGHT_LOOP_BEGIN(count)
+        Light l = GetAdditionalLight(lightIndex, id.positionWS, shadowMask);
+        half3 radiance = l.color * l.distanceAttenuation * l.shadowAttenuation;
+        colour += albedo * radiance * saturate((dot(n, l.direction) + w) / (1.0h + w));
+        half3 h = normalize(l.direction + v);
+        specular += radiance * pow(saturate(dot(n, h)), exp2(3.0h + 8.0h * s.smoothness)) * s.smoothness * s.smoothness * s.smoothness;
+    LIGHT_LOOP_END
+    #endif
+
+    // reflections where it is wet or glazed, softened like paint
+    half3 reflection = GlossyEnvironmentReflection(reflect(-v, n), id.positionWS, 1.0h - s.smoothness, ao.indirectAmbientOcclusion, id.normalizedScreenSpaceUV);
+    half fresnel = 0.04h + 0.96h * pow(1.0h - saturate(dot(n, v)), 5.0h);
+    colour += reflection * fresnel * s.smoothness * s.smoothness * 0.85h + specular;
+
+    return colour + s.emission;
+}
+
 #endif

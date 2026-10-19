@@ -78,3 +78,8 @@ Newest first. Each entry: the question, how it is judged, then the outcome: what
 - Two lights carry it: blue hour (indigo air, warm windows) and a hot summer evening (low sun on the harbour fronts, warm haze). Frames in `reviews/lt1/looks/`.
 - Cloud light: the weather's clouds cast their shadows along the sun from a layer overhead, so the low sun falls on the town and the land in pools (after a SEASON harbour still). Shade in look D takes a richer version of the sky's colour. Land and mountains are crisp facets that catch the light plane by plane.
 - Open: the sky is still a plain gradient, where the references put half their drama (clouds with volume, light breaking through); the land is underworked; the shore is a straight line.
+
+**Direction chosen, and where it stands (20 October):**
+- Øystein chose painterly realism, with Simon Stålenhag leading (`docs/visual-direction.md`). Look P is its first version: soft wrapped light, shade in the sky's colour, a warm turn at the shadow's edge, muted base colours, world-fixed brushwork, grime where surfaces see the ground. The town was exported at real proportions (gentle) for it; real proportions read as a place where stronger read as a toy village.
+- Trees: a first Blender generator (four species, autumn colours, size from planting year). Judged poor: made quickly, without the care the houses had.
+- Øystein's verdict: the scene is now the limit, not the shading. The town's structure is weird and boring (rows on flat terraces), it has no logic and no places where light can do something (lanes, squares, gaps, overhangs), and the nature is a placeholder. Next: give the town a believable structure and the trees the same care as the houses, then judge look P again.

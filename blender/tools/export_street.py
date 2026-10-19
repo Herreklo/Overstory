@@ -36,6 +36,8 @@ import building  # noqa: E402
 import validate  # noqa: E402
 import lamp  # noqa: E402
 import bake  # noqa: E402
+import tree  # noqa: E402
+from hashing import h  # noqa: E402
 import bollard  # noqa: E402
 from resolve import resolve  # noqa: E402
 from eras import DEFAULT_STYLE  # noqa: E402
@@ -70,6 +72,32 @@ def export_fbx(obj, path):
 
 def xyz(x, y, z):
     return dict(x=round(x, 4), y=round(y, 4), z=round(z, 4))
+
+
+def ground_z(st, y):
+    """The ground's height at street y: the street, a level of the town above it, or the hillside."""
+    sl = st.get("slope")
+    if not sl or y < 0:
+        return 0.0
+    z = 0.0
+    for L in sl["levels"]:
+        if y >= L["y0"]:
+            z = L["z"] / 1000.0
+    hill = sl.get("hillside", [])
+    if hill and y >= hill[0]["y"]:
+        for a, b in zip(hill, hill[1:]):
+            if a["y"] <= y <= b["y"]:
+                t = (y - a["y"]) / (b["y"] - a["y"])
+                t = t * t * (3 - 2 * t)
+                return (a["z"] + (b["z"] - a["z"]) * t) / 1000.0
+        return hill[-1]["z"] / 1000.0
+    return z
+
+
+def tree_scale(age):
+    """A tree's size as a share of its mature size: fast when young, slowing (time constant 22 years)."""
+    import math
+    return max(0.12, 1.0 - math.exp(-max(age, 0) / 22.0))
 
 
 def lamp_variant(kind, installed):
@@ -187,6 +215,20 @@ def main(argv):
         rel = f"Assets/Art/Kit/lamp/{ob.name}.fbx"
         export_fbx(ob, os.path.join(unity, rel))
         kit.append(dict(name=v, file=rel, light=xyz(*light), glow=lamp.VARIANTS[v]["light"]))
+    for sp in tree.SPECIES:
+        ob = tree.build(sp, h(ws, "tree", sp) % 1000)
+        bake.bake(ob)
+        rel = f"Assets/Art/Kit/tree/{ob.name}.fbx"
+        export_fbx(ob, os.path.join(unity, rel))
+        kit.append(dict(name=f"tree-{sp}", file=rel, light=xyz(0, 0, 0), glow=""))
+    trees = []
+    for t in st.get("trees", {}).get("list", []):
+        if t["planted"] > year:
+            continue
+        x, y = t["x"] / 1000.0, t["y"] / 1000.0
+        k = h(ws, "tree", t["id"])
+        trees.append(dict(id=t["id"], variant=f"tree-{t['species']}", position=xyz(x, y, ground_z(st, t["y"])),
+                          scale=round(tree_scale(year - t["planted"]) * (0.9 + (k % 200) / 1000.0), 3), turn=k % 360))
     ob = bollard.build("cast-iron")
     bake.bake(ob)
     rel = f"Assets/Art/Kit/bollard/{ob.name}.fbx"
@@ -228,6 +270,7 @@ def main(argv):
         emissive=[dict(swatch=k, off=v[0], group=v[1]) for k, v in palette.EMISSIVE.items()],
         palette=dict(grid=palette.GRID, names=palette.NAMES),
         slope=slope(st.get("slope")),
+        trees=trees,
     )
     os.makedirs(out_bld, exist_ok=True)
     with open(os.path.join(out_bld, "street.json"), "w") as f:

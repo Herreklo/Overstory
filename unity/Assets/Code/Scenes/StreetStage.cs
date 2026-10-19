@@ -57,6 +57,18 @@ namespace Overstory.Scenes
         [Tooltip("How strongly shade takes the sky's colour in look D: 1 as the light gives it, more is richer.")]
         public float shadowChroma = 1.7f;
 
+        [Header("Look P, painterly realism")]
+        [Tooltip("How far light wraps round a form: soft as a painter models it.")]
+        public float wrap = 0.4f;
+        [Tooltip("How far the base colours are muted towards grey, so the light carries the colour.")]
+        public float muting = 0.3f;
+        [Tooltip("How much dirt and damp gather where a surface sees the ground.")]
+        public float grime = 0.6f;
+        public Color grimeColour = new Color(0.62f, 0.58f, 0.5f);
+        [Tooltip("How strongly the world-fixed brushwork breaks colour and light.")]
+        public float brush = 0.5f;
+        public float paintShadowChroma = 1.3f;
+
         VolumeProfile profile;
 
         // the light each kind of lamp gives (sRGB): incandescent, mercury vapour, high-pressure sodium
@@ -87,6 +99,10 @@ namespace Overstory.Scenes
             Shader.SetGlobalFloat("_OS_Clay", clay ? 1f : 0f);
             if (look == "B") Shader.EnableKeyword("_OS_LOOK_B"); else Shader.DisableKeyword("_OS_LOOK_B");
             if (look == "D") Shader.EnableKeyword("_OS_LOOK_D"); else Shader.DisableKeyword("_OS_LOOK_D");
+            if (look == "P") Shader.EnableKeyword("_OS_LOOK_P"); else Shader.DisableKeyword("_OS_LOOK_P");
+            Shader.SetGlobalVector("_OS_Paint", new Vector4(wrap, muting, grime, brush));
+            var g = grimeColour.linear;
+            Shader.SetGlobalVector("_OS_Grime", new Vector4(g.r, g.g, g.b, 1f));
             bool print = look == "D";
             Shader.SetGlobalFloat("_OS_KeyBlock", print ? 1f : 0f);
             Shader.SetGlobalFloat("_OS_AirBands", print ? airBands : 0f);
@@ -95,7 +111,7 @@ namespace Overstory.Scenes
             var inkLinear = ink.linear;
             Shader.SetGlobalVector("_OS_Ink", new Vector4(inkLinear.r, inkLinear.g, inkLinear.b, ink.a));
             Shader.SetGlobalVector("_OS_InkFade", new Vector4(inkFadeStart, inkFadeEnd, 0, 0));
-            Shader.SetGlobalFloat("_OS_ShadowChroma", shadowChroma);
+            Shader.SetGlobalFloat("_OS_ShadowChroma", look == "P" ? paintShadowChroma : shadowChroma);
             Shader.SetGlobalVector("_OS_Ramp", new Vector4(rampEdge, rampSoftness, shadowFloor, stroke));
             Shader.SetGlobalVector("_OS_EdgeTint", new Vector4(edgeTint.linear.r, edgeTint.linear.g, edgeTint.linear.b, edgeTint.a));
             if (rig != null)

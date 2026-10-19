@@ -1,7 +1,7 @@
 {
   "street": "Harbour Row",
   "year": 1989,
-  "style": "stronger",
+  "style": "gentle",
   "worldSeed": 1989,
   "fixture": "../fixtures/lt1-street.json",
   "x0": -30.0,
@@ -75,14 +75,14 @@
       "file": "Assets/Art/Buildings/harbour-row/bld_101_1989.fbx",
       "position": {
         "x": 5.0,
-        "y": 5.5548,
+        "y": 5.5538,
         "z": 0.0
       },
       "lit": [
         "ground",
         "upper"
       ],
-      "tris": 16056
+      "tris": 17124
     },
     {
       "id": 102,
@@ -90,13 +90,13 @@
       "file": "Assets/Art/Buildings/harbour-row/bld_102_1989.fbx",
       "position": {
         "x": 18.5,
-        "y": 6.0699,
+        "y": 6.0729,
         "z": 0.0
       },
       "lit": [
         "ground"
       ],
-      "tris": 9532
+      "tris": 10540
     },
     {
       "id": 103,
@@ -104,13 +104,13 @@
       "file": "Assets/Art/Buildings/harbour-row/bld_103_1989.fbx",
       "position": {
         "x": 29.5,
-        "y": 7.7382,
+        "y": 7.7424,
         "z": 0.0
       },
       "lit": [
         "upper"
       ],
-      "tris": 20060
+      "tris": 21300
     },
     {
       "id": 104,
@@ -118,13 +118,13 @@
       "file": "Assets/Art/Buildings/harbour-row/bld_104_1989.fbx",
       "position": {
         "x": 42.5,
-        "y": 5.7597,
+        "y": 5.7549,
         "z": 0.0
       },
       "lit": [
         "ground"
       ],
-      "tris": 14480
+      "tris": 16160
     },
     {
       "id": 105,
@@ -132,11 +132,11 @@
       "file": "Assets/Art/Buildings/harbour-row/bld_105_1989.fbx",
       "position": {
         "x": 57.0,
-        "y": 4.5997,
+        "y": 4.6,
         "z": 0.0
       },
       "lit": [],
-      "tris": 11652
+      "tris": 11804
     },
     {
       "id": 106,
@@ -144,14 +144,14 @@
       "file": "Assets/Art/Buildings/harbour-row/bld_106_1989.fbx",
       "position": {
         "x": 69.0,
-        "y": 4.6005,
+        "y": 4.6001,
         "z": 0.0
       },
       "lit": [
         "ground",
         "upper"
       ],
-      "tris": 15224
+      "tris": 19160
     },
     {
       "id": 107,
@@ -159,11 +159,11 @@
       "file": "Assets/Art/Buildings/harbour-row/bld_107_1989.fbx",
       "position": {
         "x": 80.0,
-        "y": 4.7644,
+        "y": 4.7561,
         "z": 0.0
       },
       "lit": [],
-      "tris": 11728
+      "tris": 11864
     },
     {
       "id": 108,
@@ -171,13 +171,13 @@
       "file": "Assets/Art/Buildings/harbour-row/bld_108_1989.fbx",
       "position": {
         "x": 91.5,
-        "y": 7.174,
+        "y": 7.1768,
         "z": 0.0
       },
       "lit": [
         "ground"
       ],
-      "tris": 11568
+      "tris": 11972
     },
     {
       "id": 109,
@@ -185,13 +185,13 @@
       "file": "Assets/Art/Buildings/harbour-row/bld_109_1989.fbx",
       "position": {
         "x": 103.5,
-        "y": 7.179,
+        "y": 7.1276,
         "z": 0.0
       },
       "lit": [
         "upper"
       ],
-      "tris": 4812
+      "tris": 5396
     },
     {
       "id": 110,
@@ -199,11 +199,11 @@
       "file": "Assets/Art/Buildings/harbour-row/bld_110_1989.fbx",
       "position": {
         "x": 115.0,
-        "y": 6.6501,
+        "y": 6.6219,
         "z": 0.0
       },
       "lit": [],
-      "tris": 5572
+      "tris": 5780
     },
     {
       "id": 201,
@@ -211,13 +211,13 @@
       "file": "Assets/Art/Buildings/harbour-row/bld_201_1989.fbx",
       "position": {
         "x": 2.0,
-        "y": 30.4413,
+        "y": 30.4506,
         "z": 6.0
       },
       "lit": [
         "ground"
       ],
-      "tris": 7644
+      "tris": 8280
     },
     {
       "id": 202,
@@ -225,14 +225,14 @@
       "file": "Assets/Art/Buildings/harbour-row/bld_202_1989.fbx",
       "position": {
         "x": 14.5,
-        "y": 33.3199,
+        "y": 33.3205,
         "z": 6.0
       },
       "lit": [
         "ground",
         "upper"
       ],
-      "tris": 13976
+      "tris": 15156
     },
     {
       "id": 203,
@@ -240,13 +240,13 @@
       "file": "Assets/Art/Buildings/harbour-row/bld_203_1989.fbx",
       "position": {
         "x": 27.0,
-        "y": 32.1132,
+        "y": 32.1094,
         "z": 6.0
       },
       "lit": [
         "ground"
       ],
-      "tris": 10836
+      "tris": 11328
     },
     {
       "id": 204,
@@ -254,13 +254,13 @@
       "file": "Assets/Art/Buildings/harbour-row/bld_204_1989.fbx",
       "position": {
         "x": 39.5,
-        "y": 30.5997,
+        "y": 30.6,
         "z": 6.0
       },
       "lit": [
         "upper"
       ],
-      "tris": 8708
+      "tris": 9616
     },
     {
       "id": 205,
@@ -268,14 +268,14 @@
       "file": "Assets/Art/Buildings/harbour-row/bld_205_1989.fbx",
       "position": {
         "x": 59.0,
-        "y": 32.9697,
+        "y": 32.9681,
         "z": 6.0
       },
       "lit": [
         "ground",
         "upper"
       ],
-      "tris": 18492
+      "tris": 20024
     },
     {
       "id": 206,
@@ -283,11 +283,11 @@
       "file": "Assets/Art/Buildings/harbour-row/bld_206_1989.fbx",
       "position": {
         "x": 73.0,
-        "y": 32.6581,
+        "y": 32.6539,
         "z": 6.0
       },
       "lit": [],
-      "tris": 13696
+      "tris": 14268
     },
     {
       "id": 207,
@@ -295,14 +295,14 @@
       "file": "Assets/Art/Buildings/harbour-row/bld_207_1989.fbx",
       "position": {
         "x": 85.5,
-        "y": 32.2974,
+        "y": 32.3057,
         "z": 6.0
       },
       "lit": [
         "ground",
         "upper"
       ],
-      "tris": 6516
+      "tris": 6936
     },
     {
       "id": 208,
@@ -310,13 +310,13 @@
       "file": "Assets/Art/Buildings/harbour-row/bld_208_1989.fbx",
       "position": {
         "x": 99.0,
-        "y": 33.0542,
+        "y": 33.0522,
         "z": 6.0
       },
       "lit": [
         "ground"
       ],
-      "tris": 12480
+      "tris": 13328
     },
     {
       "id": 301,
@@ -324,13 +324,13 @@
       "file": "Assets/Art/Buildings/harbour-row/bld_301_1989.fbx",
       "position": {
         "x": 4.5,
-        "y": 52.9595,
+        "y": 52.9546,
         "z": 13.0
       },
       "lit": [
         "ground"
       ],
-      "tris": 6080
+      "tris": 6776
     },
     {
       "id": 302,
@@ -338,11 +338,11 @@
       "file": "Assets/Art/Buildings/harbour-row/bld_302_1989.fbx",
       "position": {
         "x": 17.5,
-        "y": 54.6097,
+        "y": 54.61,
         "z": 13.0
       },
       "lit": [],
-      "tris": 6824
+      "tris": 7592
     },
     {
       "id": 303,
@@ -350,13 +350,13 @@
       "file": "Assets/Art/Buildings/harbour-row/bld_303_1989.fbx",
       "position": {
         "x": 30.0,
-        "y": 52.9606,
+        "y": 52.9552,
         "z": 13.0
       },
       "lit": [
         "ground"
       ],
-      "tris": 9640
+      "tris": 10052
     },
     {
       "id": 304,
@@ -364,13 +364,13 @@
       "file": "Assets/Art/Buildings/harbour-row/bld_304_1989.fbx",
       "position": {
         "x": 41.0,
-        "y": 52.8996,
+        "y": 52.9,
         "z": 13.0
       },
       "lit": [
         "ground"
       ],
-      "tris": 5272
+      "tris": 5816
     },
     {
       "id": 305,
@@ -378,13 +378,13 @@
       "file": "Assets/Art/Buildings/harbour-row/bld_305_1989.fbx",
       "position": {
         "x": 59.0,
-        "y": 53.5447,
+        "y": 53.5516,
         "z": 13.0
       },
       "lit": [
         "upper"
       ],
-      "tris": 11864
+      "tris": 12348
     },
     {
       "id": 306,
@@ -392,13 +392,13 @@
       "file": "Assets/Art/Buildings/harbour-row/bld_306_1989.fbx",
       "position": {
         "x": 71.5,
-        "y": 53.5642,
+        "y": 53.5557,
         "z": 13.0
       },
       "lit": [
         "ground"
       ],
-      "tris": 7500
+      "tris": 8020
     },
     {
       "id": 307,
@@ -406,11 +406,11 @@
       "file": "Assets/Art/Buildings/harbour-row/bld_307_1989.fbx",
       "position": {
         "x": 85.0,
-        "y": 53.2593,
+        "y": 53.255,
         "z": 13.0
       },
       "lit": [],
-      "tris": 7692
+      "tris": 8812
     }
   ],
   "lamps": [
@@ -597,6 +597,46 @@
       "glow": "lamp_sodium"
     },
     {
+      "name": "tree-birch",
+      "file": "Assets/Art/Kit/tree/kit_tree_birch_lod0.fbx",
+      "light": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "glow": ""
+    },
+    {
+      "name": "tree-rowan",
+      "file": "Assets/Art/Kit/tree/kit_tree_rowan_lod0.fbx",
+      "light": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "glow": ""
+    },
+    {
+      "name": "tree-sycamore",
+      "file": "Assets/Art/Kit/tree/kit_tree_sycamore_lod0.fbx",
+      "light": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "glow": ""
+    },
+    {
+      "name": "tree-spruce",
+      "file": "Assets/Art/Kit/tree/kit_tree_spruce_lod0.fbx",
+      "light": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "glow": ""
+    },
+    {
       "name": "bollard-cast-iron",
       "file": "Assets/Art/Kit/bollard/kit_bollard_cast-iron_lod0.fbx",
       "light": {
@@ -640,7 +680,7 @@
     }
   ],
   "palette": {
-    "grid": 8,
+    "grid": 16,
     "names": [
       "wall_white",
       "wall_cream",
@@ -703,6 +743,11 @@
       "drystone",
       "rock",
       "heath",
+      "bark",
+      "leaf_birch",
+      "leaf_rowan",
+      "leaf_sycamore",
+      "leaf_spruce",
       "grass"
     ]
   },
@@ -864,5 +909,205 @@
       "roughScale": 150.0,
       "surface": "heath"
     }
-  }
+  },
+  "trees": [
+    {
+      "id": "tree-1",
+      "variant": "tree-sycamore",
+      "position": {
+        "x": 11.0,
+        "y": 16.5,
+        "z": 0.0
+      },
+      "scale": 1.065,
+      "turn": 226
+    },
+    {
+      "id": "tree-2",
+      "variant": "tree-birch",
+      "position": {
+        "x": 36.0,
+        "y": 17.5,
+        "z": 0.0
+      },
+      "scale": 0.785,
+      "turn": 145
+    },
+    {
+      "id": "tree-3",
+      "variant": "tree-rowan",
+      "position": {
+        "x": 63.5,
+        "y": 17.0,
+        "z": 0.0
+      },
+      "scale": 0.615,
+      "turn": 300
+    },
+    {
+      "id": "tree-4",
+      "variant": "tree-birch",
+      "position": {
+        "x": 90.0,
+        "y": 18.0,
+        "z": 0.0
+      },
+      "scale": 0.979,
+      "turn": 287
+    },
+    {
+      "id": "tree-5",
+      "variant": "tree-sycamore",
+      "position": {
+        "x": 8.0,
+        "y": 40.5,
+        "z": 6.0
+      },
+      "scale": 0.979,
+      "turn": 330
+    },
+    {
+      "id": "tree-6",
+      "variant": "tree-rowan",
+      "position": {
+        "x": 21.0,
+        "y": 40.0,
+        "z": 6.0
+      },
+      "scale": 0.439,
+      "turn": 193
+    },
+    {
+      "id": "tree-7",
+      "variant": "tree-birch",
+      "position": {
+        "x": 45.5,
+        "y": 41.0,
+        "z": 6.0
+      },
+      "scale": 0.88,
+      "turn": 126
+    },
+    {
+      "id": "tree-8",
+      "variant": "tree-spruce",
+      "position": {
+        "x": 66.0,
+        "y": 41.5,
+        "z": 6.0
+      },
+      "scale": 0.771,
+      "turn": 160
+    },
+    {
+      "id": "tree-9",
+      "variant": "tree-sycamore",
+      "position": {
+        "x": 92.0,
+        "y": 40.5,
+        "z": 6.0
+      },
+      "scale": 0.967,
+      "turn": 334
+    },
+    {
+      "id": "tree-10",
+      "variant": "tree-birch",
+      "position": {
+        "x": 10.0,
+        "y": 59.5,
+        "z": 13.0
+      },
+      "scale": 0.925,
+      "turn": 78
+    },
+    {
+      "id": "tree-11",
+      "variant": "tree-rowan",
+      "position": {
+        "x": 33.0,
+        "y": 59.0,
+        "z": 13.0
+      },
+      "scale": 0.699,
+      "turn": 14
+    },
+    {
+      "id": "tree-12",
+      "variant": "tree-birch",
+      "position": {
+        "x": 56.0,
+        "y": 60.0,
+        "z": 13.0
+      },
+      "scale": 0.894,
+      "turn": 38
+    },
+    {
+      "id": "tree-13",
+      "variant": "tree-spruce",
+      "position": {
+        "x": 78.0,
+        "y": 60.5,
+        "z": 13.0
+      },
+      "scale": 0.786,
+      "turn": 299
+    },
+    {
+      "id": "tree-14",
+      "variant": "tree-birch",
+      "position": {
+        "x": 20.0,
+        "y": 70.0,
+        "z": 14.2593
+      },
+      "scale": 0.957,
+      "turn": 87
+    },
+    {
+      "id": "tree-15",
+      "variant": "tree-birch",
+      "position": {
+        "x": 42.0,
+        "y": 72.0,
+        "z": 14.9061
+      },
+      "scale": 0.902,
+      "turn": 343
+    },
+    {
+      "id": "tree-16",
+      "variant": "tree-spruce",
+      "position": {
+        "x": 64.0,
+        "y": 75.0,
+        "z": 16.0654
+      },
+      "scale": 0.799,
+      "turn": 183
+    },
+    {
+      "id": "tree-17",
+      "variant": "tree-spruce",
+      "position": {
+        "x": 72.0,
+        "y": 78.0,
+        "z": 17.4074
+      },
+      "scale": 0.809,
+      "turn": 196
+    },
+    {
+      "id": "tree-18",
+      "variant": "tree-birch",
+      "position": {
+        "x": 95.0,
+        "y": 70.0,
+        "z": 14.2593
+      },
+      "scale": 0.818,
+      "turn": 127
+    }
+  ]
 }

@@ -94,6 +94,17 @@ namespace Overstory.Assembly
                 Place(bollard.file, bollards.transform, StreetSpace.ToUnity(p)).name = $"bollard {i + 1}";
             }
 
+            var trees = Make(new GameObject("trees"), root.transform);
+            foreach (var t in Layout.trees ?? new TreeRef[0])
+            {
+                var p = t.position;
+                p.z -= 0.25f; // the trunk stands in the ground, never on it
+                var go = Place(Layout.Kit(t.variant).file, trees.transform, StreetSpace.ToUnity(p));
+                go.name = $"{t.id} ({t.variant})";
+                go.transform.localRotation = Quaternion.Euler(0f, t.turn, 0f);
+                go.transform.localScale = Vector3.one * t.scale;
+            }
+
             var ground = Make(new GameObject("ground"), root.transform);
             foreach (var part in StreetGround.Build(Layout))
             {
