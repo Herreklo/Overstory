@@ -8,6 +8,8 @@ The world is a fictional **North Atlantic timber harbour town**: the family that
 
 The style is ours. It does not follow the cosy stylised-Unity look or AI-art trends. It is found in look tests, judged in Unity, never on concept images.
 
+The direction is painterly realism. Simon Stålenhag leads: real proportions, muted natural colour with one accent, heavy atmosphere, loose painted edges, the mundane made beautiful, grey days and dusk. Alongside him: Hopper (hard low sun on simple planes, lit rooms at night), Hammershøi (quiet grey light, few colours), Disco Elysium (a painted city in decline, visible brushwork) and Kawase Hasui's Tokyo prints (night, rain, lamplight in wet streets). It must hold from a small town to a large city, so it lives in light, air and generated surfaces, never in per-asset cartoon art. Not a cartoon village.
+
 ## Shape
 
 - Shapes carry the style; shading finishes it. Silhouettes first: every building has its own outline from its volumes, roofs, chimneys and additions.
@@ -55,6 +57,7 @@ What we take and leave from each is recorded in `docs/experiments.md` as look te
 
 | Reference | What interests us |
 | --- | --- |
+| Simon Stålenhag (lead) | Painterly realism, muted colour, atmosphere, the mundane 1980s Scandinavia |
 | SEASON: A letter to the future | Light-derived shadow colour, authored atmosphere |
 | Firewatch | Colour in depth layers, an artist-driven sky |
 | Sable | Fog as the first readability tool, outlines that fade |
