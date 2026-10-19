@@ -195,6 +195,9 @@ def _house_cells(plan, ev, ws):
             cells.append(_cell(side, 0, ww * 9 // 10, m["H"] + 450, m["H"] + 450 + wh * 8 // 10, "window", win, m["era"], ev["id"], col=99, row=99))
     for add in plan["additions"]:
         _layout_addition(plan, add, key, win, ww, wh, sill)
+    # an addition the resolver chose, with no room for it, is simply not there; one the diary names stays, unplaced
+    named = ev["params"].get("with", [])
+    plan["additions"] = [a for a in plan["additions"] if not (a.get("unplaced") and a["kind"] not in named)]
 
 
 def _layout_addition(plan, add, key, win, ww, wh, sill):
@@ -208,8 +211,12 @@ def _layout_addition(plan, add, key, win, ww, wh, sill):
     ev_id = add["event"]
     if True:
             if add["kind"] == "ark":
-                add["x"] = cols[nb // 2] if nb % 2 else 0
-                add["w"] = min(W * 45 // 100, max(2600, W * 13 // (10 * nb)))
+                x = cols[nb // 2] if nb % 2 else 0
+                w = min(W * 45 // 100, max(2600, W * 13 // (10 * nb)))
+                if any(a["kind"] == "bay" and "x" in a and abs(a["x"] - x) < w // 2 + a["w"] // 2 + 1200 for a in plan["additions"]):
+                    add["unplaced"] = True  # an older bay stands where its eaves would come down
+                    return
+                add["x"], add["w"] = x, w
                 cells.append(_cell("front", add["x"], ww * 9 // 10, m["H"] + 300, m["H"] + 300 + wh * 8 // 10, "window", win, add["era"], ev_id, col=98, row=98))
             if add["kind"] == "bislag":
                 add["x"] = cols[door_i]
@@ -220,9 +227,17 @@ def _layout_addition(plan, add, key, win, ww, wh, sill):
                         c["part"]["type"] = "inner_door"
                 cells.append(_cell("bislag", 0, 950, 0, 2200, "door", E["door"], add["era"], ev_id))
             if add["kind"] == "bay":
-                choices = [i for i in range(nb) if i != door_i]
+                # a bay keeps a clear column from the door (where a porch stands or may come)
+                # and stays out from under a cross-gable's eaves
+                arks = [a for a in plan["additions"] if a["kind"] == "ark" and "x" in a]
+                bay_w = min(2400, W // nb + 600)
+                choices = [i for i in range(nb) if abs(i - door_i) >= 2
+                           and all(abs(cols[i] - a["x"]) >= a["w"] // 2 + bay_w // 2 + 1200 for a in arks)]
+                if not choices:
+                    add["unplaced"] = True
+                    return
                 i = choices[key("bay_i") % len(choices)]
-                add["x"], add["w"], add["d"] = cols[i], min(2400, W // nb + 600), 650
+                add["x"], add["w"], add["d"] = cols[i], min(bay_w, 2 * (W // 2 - abs(cols[i])) - 600), 650  # wall on both sides
                 add["col"] = i
                 # windows behind the bay are replaced by the bay's own
                 plan["cells"] = cells = [c for c in cells if not (c["facade"] == "front" and c.get("col") == i and c.get("row", 0) >= 1)]

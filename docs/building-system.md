@@ -53,8 +53,11 @@ Every part fits where it is placed, or it changes until it does. A part never cu
 - A steep roof's overhang flares out at the eave (at most 50°), as a mansard's does, so the eave never swallows the top storey.
 - Beside a cross-gable, parts stay under its side eaves; the eave falls away from the cross-gable, so a part's far edge is the one that counts. Gutters, brackets and cornices stop where the cross-gable's roof begins.
 - A window in a gable stays under the gable's roof lines.
+- On the top storey of an eave wall, a window's head stays below the eave's lip where it can, so it reads from the street.
+- A bay is placed a clear column away from the door, where a porch stands or may come, and out from under a cross-gable's eaves, with wall on both sides. Its walls stop under the main eave, it has its own sloped roof, and its windows fit inside it. A bay with no window that fits is not built.
+- Flues close enough to touch are built as one stack. The ridge cap sits on the top corners of the courses. Barge boards taper to their end at the eave.
 - A porch is solved before any wall is built. It narrows, lowers its pitch (down to nearly flat) and changes height until its roof stays under the sills above it, under the main eave and cornice, and clear of the windows beside it. The windows beside it then fit under its eave. Belt courses stop at a porch.
-- When something still does not fit, it gives way in this order: it shrinks to two boards, its crown becomes simpler, it moves down within its storey, and last it is left out, which leaves plain wall. A diary fact (the porch) wins over a part the resolver chose (a window over it).
+- When something still does not fit, it gives way in this order: it shrinks to two boards, its crown becomes simpler, it moves down within its storey, and last it is left out, which leaves plain wall. A diary fact (the porch) wins over a part the resolver chose (a window over it). An addition the resolver chose with no room for it is simply not there; one the diary names is kept as unplaced.
 
 ## Checks
 

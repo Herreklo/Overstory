@@ -302,7 +302,7 @@ def build(plan, style="strong", name=None, material=None):
     openings = {k: [] for k in ("front", "back", "left", "right")}
     placed = []  # (facade_local, cell, a0, a1, b0, b1, crown)
     S = mm(m["storey_h"])
-    ark = next((x for x in plan["additions"] if x["kind"] == "ark"), None)
+    ark = next((x for x in plan["additions"] if x["kind"] == "ark" and "x" in x), None)
     ark_roof = None
     ax = aw = ark_reach = 0.0
     if ark:
@@ -411,7 +411,8 @@ def build(plan, style="strong", name=None, material=None):
             return full_, (full_ if kind_ == "shopfront" else b1 + fw)
 
         above = [(a0, a1, b0, *tops(cc, a0, a1, b1, cr)) for lc, cc, a0, a1, b0, b1, cr in placed if lc == "front" and cc["part"]["type"] in ("window", "shopfront")]
-        sol = porches[id(add)] = _bislag_solve(plan, add, ctx, W, D, P, H, band, t, lap, rt, s, roof, above)
+        bays = [(mm(a_["x"]) - mm(a_["w"]) / 2 - 0.2, mm(a_["x"]) + mm(a_["w"]) / 2 + 0.2, S - 0.25 - 0.16 - BAY_BRACKET) for a_ in plan["additions"] if a_["kind"] == "bay" and "x" in a_]
+        sol = porches[id(add)] = _bislag_solve(plan, add, ctx, W, D, P, H, band, t, lap, rt, s, roof, above, bays)
         for k, (lc, cc, a0, a1, b0, b1, cr) in enumerate(placed):
             kind_ = cc["part"]["type"]
             if lc != "front" or kind_ not in ("window", "shopfront") or b0 >= 1.5:
@@ -576,7 +577,7 @@ def build(plan, style="strong", name=None, material=None):
             _veranda(b, plan, add, ctx, coat, W, D, P, S, cham)
         elif k == "bay":
             b.role = 4
-            _bay(b, plan, add, ctx, coat, W, D, P, S, band, t, lap, cham, win_scale, vertical, key, curtain_col, curtain_kind, roof, H)
+            _bay(b, plan, add, ctx, coat, W, D, P, S, band, t, lap, cham, win_scale, vertical, key, curtain_col, curtain_kind, roof, H, (ax, aw / 2, e * 0.8, ark_roof) if ark_roof else None)
             b.role = 0
         elif k == "dormers":
             for i, x in enumerate(add["xs"]):
@@ -677,7 +678,7 @@ def _crown(part, part_orn, host_orn, plan, era):
 # -- additions ------------------------------------------------------------------------------------
 
 
-def _bislag_solve(plan, add, c, W, D, P, H, band, t, lap, rt, s, main_roof, above):
+def _bislag_solve(plan, add, c, W, D, P, H, band, t, lap, rt, s, main_roof, above, bays=()):
     """above: windows (a0, a1, b0, top, plain) on the wall behind the porch; top includes the crown, plain only the casing.
 
     The porch's roof stays under the sills of the windows over it and above the crowns of the
@@ -693,7 +694,12 @@ def _bislag_solve(plan, add, c, W, D, P, H, band, t, lap, rt, s, main_roof, abov
         if b0 < 1.5 and not (a0 < bx < a1):
             edge = min(abs(a0 - c.fw * 1.6 - bx), abs(a1 + c.fw * 1.6 - bx))
             bw = max(mm(door["w"]) + 0.6, min(bw, 2 * (edge - reach)))
+    for a0, a1, low in bays:
+        if not (a0 < bx < a1):
+            edge = min(abs(a0 - bx), abs(a1 - bx))
+            bw = max(mm(door["w"]) + 0.6, min(bw, 2 * (edge - reach)))
     over = lambda a0, a1: a1 + c.fw * 1.6 > bx - bw / 2 - reach and a0 - c.fw * 1.6 < bx + bw / 2 + reach
+    above = list(above) + [(a0 + c.fw * 1.6, a1 - c.fw * 1.6, low + c.fw + 0.2, low, low) for a0, a1, low in bays]
     eave_under = main_roof.profile[1][0][1] - P  # the main roof's lowest edge, above the plinth
     cornice_under = H - (t + lap + 0.012 + 0.12) * math.tan(main_roof.pe) - 0.27 if plan["main"]["ornament"].get("cornice") else H
     ceiling = min([H - 0.2, eave_under - 0.12, cornice_under - 0.05] + [b0 - c.fw - 0.2 for a0, a1, b0, top, plain in above if b0 > 1.5 and over(a0, a1)])
@@ -792,18 +798,26 @@ BAY_ROOF = math.radians(24)  # the bay's own roof, rising to the wall
 BAY_BRACKET = 0.35  # how far the brackets under a bay reach down
 
 
-def _bay_top(plan, add, S, H, roof):
-    """The top of a bay's walls: under its storey's top, with its roof clear of the main eave."""
-    bd = mm(add["d"])
+def _bay_top(plan, add, S, H, roof, ark=None):
+    """The top of a bay's walls: under its storey's top, with its roof clear of the main eave
+    and of a cross-gable's side eave. ark: (x, half width, eave depth, roof) or None."""
+    bx, bw, bd = mm(add["x"]), mm(add["w"]), mm(add["d"])
     rise = (bd + 0.14) * math.tan(BAY_ROOF)
     under_eave = H - (bd + 0.25) * math.tan(roof.pe) - 0.12  # the main roof's underside at the bay's front
-    return min(plan["main"]["full"] * S - 0.45, under_eave - 0.1, H - 0.15 - rise)
+    top = min(plan["main"]["full"] * S - 0.45, under_eave - 0.1, H - 0.35 - rise)  # its roof sits 0.12 up and is 0.1 thick
+    if ark:
+        ax, ahw, ae, aroof = ark
+        edges = (abs(bx - bw / 2 - 0.14 - ax) - ahw, abs(bx + bw / 2 + 0.14 - ax) - ahw)
+        if min(edges) < ae + 0.3:
+            d_far = max(0.0, min(max(edges), ae))
+            top = min(top, H - d_far * math.tan(aroof.pe) - 0.35 - rise)
+    return top
 
 
-def _bay(b, plan, add, c, coat, W, D, P, S, band, t, lap, cham, win_scale, vertical, key, curtain_col, curtain_kind, main_roof, H):
+def _bay(b, plan, add, c, coat, W, D, P, S, band, t, lap, cham, win_scale, vertical, key, curtain_col, curtain_kind, main_roof, H, ark=None):
     bx, bw, bd = mm(add["x"]), mm(add["w"]), mm(add["d"])
     m = plan["main"]
-    z0, z1 = S - 0.25, _bay_top(plan, add, S, H, main_roof)
+    z0, z1 = S - 0.25, _bay_top(plan, add, S, H, main_roof, ark)
     front = Frame((bx, -D / 2 - bd, P), (1, 0, 0), UP, (0, -1, 0))
     sides = {sx: Frame((bx + sx * bw / 2, -D / 2 - bd / 2, P), (0, 1, 0), UP, (sx, 0, 0)) for sx in (-1, 1)}
     cells = [cc for cc in plan["cells"] if cc["facade"].startswith("bay_")]
@@ -816,13 +830,15 @@ def _bay(b, plan, add, c, coat, W, D, P, S, band, t, lap, cham, win_scale, verti
         crown = "flat" if cc["facade"] == "bay_front" else None
         lo, hi = z0 + 0.35, z1 - 0.08 - parts.crown_height(crown, -w / 2, w / 2, c.fw)
         h_ = snap(mm(cc["b1"] - cc["b0"]) * win_scale, band)
-        while h_ > hi - lo and h_ - band >= max(0.6, band):
+        b1 = math.floor((hi + 1e-6) / band) * band  # the head on a board line, as high as fits
+        while b1 - h_ < lo - 1e-6 and h_ - band >= max(0.6, band) - 1e-6:
             h_ -= band
-        b0 = math.ceil((lo - 1e-6) / band) * band
-        b1 = b0 + h_
-        if b1 > hi + 1e-6 or w < 0.35:
+        b0 = b1 - h_
+        if b0 < lo - 0.1 or w < 0.35:
             continue
         holes[cc["facade"]].append((-w / 2, w / 2, b0, b1, cc))
+    if not holes["bay_front"]:
+        return  # no window fits: a bay is a window, so it is not built
     wall(b, front, [dict(lo=-bw / 2, hi=bw / 2, b_lo=z0, b_hi=z1)], [hh[:4] for hh in holes["bay_front"]], band, t, lap, coat["wall"], vertical)
     for sx, name_ in ((-1, "bay_left"), (1, "bay_right")):
         wall(b, sides[sx], [dict(lo=-bd / 2, hi=bd / 2, b_lo=z0, b_hi=z1)], [hh[:4] for hh in holes[name_]], band, t, lap, coat["wall"], vertical)

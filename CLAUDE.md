@@ -23,7 +23,7 @@ Each experiment moves one of these, or it does not run. Its question, how it is 
 
     git fetch origin && git switch main && git pull --ff-only
 
-Read `NOW.md`. Read `docs/visual-direction.md` before any visual work.
+Read `NOW.md`. If it names an open experiment's branch, switch to that branch and pull it: an experiment's work lives there until it is merged. Read `docs/visual-direction.md` before any visual work.
 
 ## How work runs
 
@@ -46,6 +46,13 @@ One experiment per session, on its own branch (`lt/1-first-street`), following t
 - **Evidence, not verdicts.** The screen shows what was seen and heard. A read of someone's character is someone's opinion, shown as fallible, never as the game's truth: a vivid act read as a whole character makes readers worse (Understory's human test).
 - **The setting is a pack.** The harbour town, its era content and its look sit on top of the engine; the engine stays general and assumes no country.
 - **Rule 8:** no homophobic, sexist or racial content.
+
+## Models
+
+Choose the model by the kind of work, and say in one line when a step calls for a different one. Helper agents get the model their job needs.
+- **Fable 5.1:** decisions that shape the project, and judgement: what an experiment proves, system and fitting rules, art direction, judging renders, checking reviews against the code.
+- **Opus 5.5:** building once designed: generators, the Unity side, debugging, docs.
+- **Sonnet 5.5:** mechanical work with a check behind it: batch renders, moves, exports and status that the stress test or a hash proves unchanged.
 
 ## Docs
 
