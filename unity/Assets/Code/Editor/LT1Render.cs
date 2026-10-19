@@ -41,6 +41,33 @@ namespace Overstory.EditorTools
             }
         }
 
+        /// <summary>
+        /// The look sketch: looks A and B on the oblique city view, at blue hour and in grey drizzle, each
+        /// in colour, in greyscale and at one-eighth size (value and silhouette), as the research's first
+        /// look test asks (docs/research/colour-and-shading.md).
+        /// </summary>
+        public static void Looks()
+        {
+            string dir = Path.GetFullPath(Path.Combine(Application.dataPath, "..", "..", "reviews", "lt1", "looks"));
+            Directory.CreateDirectory(dir);
+            EditorSceneManager.OpenScene(ScenePath, OpenSceneMode.Single);
+            var stage = Object.FindAnyObjectByType<StreetStage>();
+            stage.clay = false;
+            stage.shot = AssetDatabase.LoadAssetAtPath<CameraShot>("Assets/Experiments/LT1/Views/LT1_City_Quay.asset");
+            foreach (var light in new[] { "BlueHour", "SummerEvening" })
+            {
+                stage.rig = AssetDatabase.LoadAssetAtPath<LightRig>($"Assets/Experiments/LT1/Light/LT1_{light}.asset");
+                foreach (var look in new[] { "B", "D" })
+                {
+                    stage.look = look;
+                    stage.Apply();
+                    string file = Path.Combine(dir, $"lt1-{light.ToLowerInvariant()}-{look}.png");
+                    Still(stage.view, file, grey: true, eighth: true);
+                    Debug.Log($"[LT1Render] {file}");
+                }
+            }
+        }
+
         /// <summary>The clay pass: the hero slice in grey from the city view's middle stop and its variants.</summary>
         public static void Clay()
         {
@@ -60,7 +87,7 @@ namespace Overstory.EditorTools
             }
         }
 
-        public static void Still(Camera cam, string file, bool grey = true)
+        public static void Still(Camera cam, string file, bool grey = true, bool eighth = false)
         {
             var big = new RenderTexture(Width * Super, Height * Super, 24, RenderTextureFormat.ARGB32, RenderTextureReadWrite.sRGB);
             var small = new RenderTexture(Width, Height, 0, RenderTextureFormat.ARGB32, RenderTextureReadWrite.sRGB);
@@ -82,6 +109,8 @@ namespace Overstory.EditorTools
                 tex.Apply();
                 RenderTexture.active = prev;
                 File.WriteAllBytes(file, tex.EncodeToPNG());
+                if (eighth)
+                    File.WriteAllBytes(Path.ChangeExtension(file, null) + "-eighth.png", Shrink(tex, 8).EncodeToPNG());
                 if (!grey)
                 {
                     Object.DestroyImmediate(tex);
@@ -109,6 +138,27 @@ namespace Overstory.EditorTools
                 Object.DestroyImmediate(big);
                 Object.DestroyImmediate(small);
             }
+        }
+
+        /// <summary>A copy at 1/k size, each pixel the mean of a k x k block in linear light.</summary>
+        static Texture2D Shrink(Texture2D src, int k)
+        {
+            int w = src.width / k, h = src.height / k;
+            var px = src.GetPixels();
+            var out_ = new Color[w * h];
+            for (int y = 0; y < h; y++)
+                for (int x = 0; x < w; x++)
+                {
+                    Color acc = Color.clear;
+                    for (int j = 0; j < k; j++)
+                        for (int i = 0; i < k; i++)
+                            acc += px[(y * k + j) * src.width + x * k + i].linear;
+                    out_[y * w + x] = (acc / (k * k)).gamma;
+                }
+            var t = new Texture2D(w, h, TextureFormat.RGB24, false, false);
+            t.SetPixels(out_);
+            t.Apply();
+            return t;
         }
 
         static void Render(Camera cam, RenderTexture rt)

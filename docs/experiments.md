@@ -69,3 +69,11 @@ Newest first. Each entry: the question, how it is judged, then the outcome: what
 - First frames (`reviews/lt1/clay/`): the frontal middle stop is dull. Views along the shore, oblique, read in layers and are far stronger.
 - Straight parallel terraces with houses in rows read as a stage. A bay with hills close on both sides gives the town a setting.
 - Ridges built as extruded strips read as curtains, not rock: landforms need a real terrain generator.
+
+**Look sketch, so far (20 October):**
+- The research's shared foundations are in: what each face sees (sky, open ground, openness) is baked into every part by the generator; a sky term built from it; air in a designed colour ramp by distance (near, middle, far, as Firewatch's fog), thicker low down so hills grade from a hazy foot to a clearer crest.
+- The ground is a height field generated from a few site facts (the bay, the hills beside it, the hillside behind, seeded roughness); the terraces fill the bay.
+- Look D, the most promising: light cut into flat plates in the light's own colour (each plate one exposure step), thin indigo key lines on real edges, fading with distance. Carving and white-line engraving were tried and dropped: they read as pattern laid over the picture.
+- The camera moved into the village, over the quay at roof height. From a distance the town read as a model; close, it reads as a place.
+- Two lights carry it: blue hour (indigo air, warm windows) and a hot summer evening (low sun on the harbour fronts, warm haze). Frames in `reviews/lt1/looks/`.
+- Open: the land is underworked (it reads as dunes in warm light); the shore is a straight line; both wait until the look is found.

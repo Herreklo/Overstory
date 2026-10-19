@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9430b3d92f28c4e4fabf058ea4520f7d, type: 3}
   m_Name: LT1_City_OrbitEast
   m_EditorClassIdentifier: Assembly-CSharp::Overstory.Scenes.CameraShot
-  position: {x: 185, y: -115, z: 42}
-  target: {x: 55, y: 35, z: 8}
+  position: {x: 135, y: -150, z: 40}
+  target: {x: 52, y: 60, z: 32}
   verticalFov: 42
   near: 0.5
   far: 25000

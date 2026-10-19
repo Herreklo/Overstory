@@ -31,6 +31,7 @@ Shader "Overstory/Sky"
                 half _Curve, _SunGlowPower;
             CBUFFER_END
             float4 _OS_SunDir;
+            float _OS_SkyBands; // 0: a smooth gradient; n: n graded bands, the printer's bokashi (look D)
 
             struct Attributes { float4 positionOS : POSITION; };
             struct Varyings { float4 positionCS : SV_POSITION; float3 dir : TEXCOORD0; };
@@ -46,7 +47,13 @@ Shader "Overstory/Sky"
             half4 Frag(Varyings input) : SV_Target
             {
                 float3 d = normalize(input.dir);
-                half3 c = d.y >= 0 ? lerp(_Horizon.rgb, _Zenith.rgb, pow(saturate(d.y), _Curve))
+                float t = pow(saturate(d.y), _Curve);
+                if (_OS_SkyBands > 0.5)
+                {
+                    float tb = t * _OS_SkyBands;
+                    t = (floor(tb) + smoothstep(0.7, 1.0, frac(tb))) / _OS_SkyBands;
+                }
+                half3 c = d.y >= 0 ? lerp(_Horizon.rgb, _Zenith.rgb, t)
                                    : lerp(_Horizon.rgb, _Below.rgb, saturate(-d.y * 6.0));
                 c += _SunGlow.rgb * pow(saturate(dot(d, _OS_SunDir.xyz)), max(_SunGlowPower, 1.0));
                 return half4(c, 1);

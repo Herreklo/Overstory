@@ -108,6 +108,8 @@ namespace Overstory.EditorTools
             });
 
             Asset<LightRig>(LT1 + "/Light/LT1_Clay.asset", Clay);
+            Asset<LightRig>(LT1 + "/Light/LT1_BlueHour.asset", BlueHour);
+            Asset<LightRig>(LT1 + "/Light/LT1_SummerEvening.asset", SummerEvening);
             foreach (var (name, pos, target) in CityShots)
                 Asset<CameraShot>($"{LT1}/Views/LT1_City_{name}.asset", s =>
                 {
@@ -191,7 +193,9 @@ namespace Overstory.EditorTools
             ("MidLow", new Vector3(52f, -115f, 22f), new Vector3(55f, 40f, 10f)),
             ("MidHigh", new Vector3(52f, -150f, 75f), new Vector3(55f, 30f, 4f)),
             ("OrbitWest", new Vector3(-75f, -115f, 42f), new Vector3(50f, 35f, 8f)),
-            ("OrbitEast", new Vector3(185f, -115f, 42f), new Vector3(55f, 35f, 8f)),
+            ("OrbitEast", new Vector3(135f, -150f, 40f), new Vector3(52f, 60f, 32f)),
+            // inside the town: over the quay by the warehouses, looking west along Harbour Row to the harbour mouth
+            ("Quay", new Vector3(104f, -34f, 14f), new Vector3(46f, 22f, 10f)),
         };
 
         /// <summary>
@@ -238,6 +242,116 @@ namespace Overstory.EditorTools
             r.clock = 0f;
         }
 
+        /// <summary>
+        /// Blue hour in October, after rain: the sun just down behind the harbour mouth to the west, the
+        /// sky one cold hue at low value (Sohlberg's blue night), a last warm glow low in the west, the
+        /// air turning lighter and bluer with distance, and the warm light of the rooms where people are
+        /// home and of the lamps, each in its era's colour, doubled in the wet stone and the water.
+        /// </summary>
+        static void BlueHour(LightRig r)
+        {
+            r.sunBearing = 196f;
+            r.sunElevation = 7f;
+            r.sunColour = C(150, 140, 200);
+            r.sunIntensity = 0.35f;
+            r.shadowStrength = 0.5f;
+
+            r.zenith = C(24, 36, 74);
+            r.horizon = C(86, 98, 146);
+            r.belowHorizon = C(18, 22, 34);
+            r.skyCurve = 0.55f;
+            r.sunGlow = C(120, 74, 70);
+            r.sunGlowPower = 5f;
+
+            r.ambientSky = C(78, 96, 150);
+            r.ambientEquator = C(52, 62, 102);
+            r.ambientGround = C(30, 32, 46);
+            r.ambientIntensity = 1f;
+
+            r.fogColour = C(44, 52, 92);
+            r.fogMidColour = C(76, 80, 136);
+            r.fogMidDistance = 400f;
+            r.fogFarColour = C(150, 132, 178);
+            r.fogFarDistance = 3000f;
+            r.fogDensity = 0.0034f;
+            r.fogHeightFalloff = 0.014f;
+            r.fogBaseHeight = 0f;
+            r.fogMaxOpacity = 0.88f;
+            r.fogSunColour = C(70, 40, 44);
+            r.fogSunPower = 6f;
+
+            r.wetness = 0.7f;
+            r.windowGlow = 2.4f; // warm, not bleached: the tonemapper keeps a lamp-lit room's colour
+            r.lampsOn = true;
+            r.lampGlow = 9f;
+            r.lampIntensity = 7f;
+
+            r.postExposure = 1.1f;
+            r.contrast = 12f;
+            r.saturation = 0f;
+            r.temperature = 0f;
+            r.tint = 0f;
+            r.colourFilter = Color.white;
+            r.bloomIntensity = 0.45f;
+            r.bloomThreshold = 0.95f;
+            r.reflectionStrength = 1f;
+            r.clock = 0f;
+        }
+
+        /// <summary>
+        /// A hot summer evening: 28 degrees, the sun low in the west over the harbour mouth, gold on every
+        /// west wall, long warm shadows filled with blue from the sky, a dry street, windows dark.
+        /// </summary>
+        static void SummerEvening(LightRig r)
+        {
+            r.sunBearing = 232f; // low over the harbour, full on the fronts that face it
+            r.sunElevation = 10f;
+            r.sunColour = C(255, 196, 128);
+            r.sunIntensity = 2.6f;
+            r.shadowStrength = 1f;
+
+            r.zenith = C(92, 136, 196);
+            r.horizon = C(250, 206, 150);
+            r.belowHorizon = C(70, 62, 60);
+            r.skyCurve = 0.45f;
+            r.sunGlow = C(255, 150, 70);
+            r.sunGlowPower = 6f;
+
+            r.ambientSky = C(112, 146, 200);
+            r.ambientEquator = C(168, 148, 126);
+            r.ambientGround = C(96, 82, 68);
+            r.ambientIntensity = 1f;
+
+            r.fogColour = C(150, 112, 92);
+            r.fogMidColour = C(204, 156, 128);
+            r.fogMidDistance = 350f;
+            r.fogFarColour = C(240, 206, 174);
+            r.fogFarDistance = 3000f;
+            r.fogDensity = 0.0032f;
+            r.fogHeightFalloff = 0.014f; // haze lies low: a hill grades from a hazy foot to a clearer crest
+            r.fogBaseHeight = 0f;
+            r.fogMaxOpacity = 0.85f;
+            r.fogSunColour = C(140, 80, 30);
+            r.fogSunPower = 5f;
+
+            r.wetness = 0f;
+            r.windowGlow = 0f;
+            r.lampsOn = false;
+            r.lampGlow = 0f;
+            r.lampIntensity = 0f;
+
+            r.postExposure = 0.2f;
+            r.contrast = 14f;
+            r.saturation = 4f;
+            r.temperature = 0f;
+            r.tint = 0f;
+            r.colourFilter = Color.white;
+            r.bloomIntensity = 0.25f;
+            r.bloomThreshold = 1.1f;
+            r.reflectionStrength = 1f;
+            r.clock = 0f;
+        }
+
         /// <summary>Grey drizzle with wet ground: the default light and the hardest test.</summary>
         static void Drizzle(LightRig r)
         {
@@ -263,7 +377,7 @@ namespace Overstory.EditorTools
             // the air is a shade darker than the sky behind it, so distance lays things in soft grey
             // layers against a lighter sky instead of washing them out; drizzle haze hugs the ground
             r.fogColour = C(152, 157, 162);
-            r.fogDensity = 0.0036f;
+            r.fogDensity = 0.0028f;
             r.fogHeightFalloff = 0.065f;
             r.fogBaseHeight = 0f;
             r.fogMaxOpacity = 0.85f;
@@ -294,6 +408,8 @@ namespace Overstory.EditorTools
 
         static void SetRenderer()
         {
+            Directory.CreateDirectory(Materials);
+            AssetDatabase.Refresh();
             var data = AssetDatabase.LoadAssetAtPath<UniversalRendererData>(Renderer);
             foreach (var f in data.rendererFeatures)
             {
@@ -326,6 +442,28 @@ namespace Overstory.EditorTools
 #else
             Debug.LogWarning("[LT1Setup] URP_SCREEN_SPACE_REFLECTION is not defined yet: run LT1Setup.Project first");
 #endif
+            // the key block of look D: a full-screen pass over depth and normals, before post-processing
+            if (!data.rendererFeatures.Exists(f => f is FullScreenPassRendererFeature))
+            {
+                var mat = MaterialAt(Materials + "/M_KeyBlock.mat", "Overstory/KeyBlock", m => { });
+                var kb = ScriptableObject.CreateInstance<FullScreenPassRendererFeature>();
+                kb.name = "KeyBlock";
+                kb.passMaterial = mat;
+                kb.injectionPoint = FullScreenPassRendererFeature.InjectionPoint.BeforeRenderingPostProcessing;
+                kb.requirements = ScriptableRenderPassInput.Depth | ScriptableRenderPassInput.Normal;
+                kb.fetchColorBuffer = true;
+                AssetDatabase.AddObjectToAsset(kb, data);
+                AssetDatabase.TryGetGUIDAndLocalFileIdentifier(kb, out string _, out long kid);
+                var so2 = new SerializedObject(data);
+                var list2 = so2.FindProperty("m_RendererFeatures");
+                list2.arraySize++;
+                list2.GetArrayElementAtIndex(list2.arraySize - 1).objectReferenceValue = kb;
+                var map2 = so2.FindProperty("m_RendererFeatureMap");
+                map2.arraySize++;
+                map2.GetArrayElementAtIndex(map2.arraySize - 1).longValue = kid;
+                so2.ApplyModifiedPropertiesWithoutUndo();
+                Debug.Log("[LT1Setup] the key block added to the renderer");
+            }
             EditorUtility.SetDirty(data);
             AssetDatabase.SaveAssets();
         }

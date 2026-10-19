@@ -52,7 +52,7 @@ Shader "Overstory/Street"
             #pragma fragment Frag
 
             #pragma shader_feature_local _OS_WATER
-            #pragma multi_compile_fragment _ _OS_LOOK_B
+            #pragma multi_compile_fragment _ _OS_LOOK_B _OS_LOOK_D
 
             // the same pipeline keywords as URP Lit, less lightmaps, decals and debug views
             #pragma multi_compile _ _MAIN_LIGHT_SHADOWS _MAIN_LIGHT_SHADOWS_CASCADE
@@ -137,6 +137,8 @@ Shader "Overstory/Street"
 
             #if defined(_OS_LOOK_B)
                 half3 colour = OS_ShadeB(id, s, b, input.positionWS);
+            #elif defined(_OS_LOOK_D)
+                half3 colour = OS_ShadeD(id, s, b, input.positionWS);
             #else
                 half3 colour = OS_ShadeA(id, s, b);
             #endif

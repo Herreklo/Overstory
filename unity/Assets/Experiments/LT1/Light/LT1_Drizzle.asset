@@ -28,7 +28,11 @@ MonoBehaviour:
   ambientGround: {r: 0.28235295, g: 0.2901961, b: 0.28235295, a: 1}
   ambientIntensity: 1
   fogColour: {r: 0.59607846, g: 0.6156863, b: 0.63529414, a: 1}
-  fogDensity: 0.0036
+  fogMidColour: {r: 0.7, g: 0.73, b: 0.76, a: 1}
+  fogMidDistance: 0
+  fogFarColour: {r: 0.7, g: 0.73, b: 0.76, a: 1}
+  fogFarDistance: 0
+  fogDensity: 0.0028
   fogHeightFalloff: 0.065
   fogBaseHeight: 0
   fogMaxOpacity: 0.85

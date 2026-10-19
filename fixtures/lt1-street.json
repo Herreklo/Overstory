@@ -6,8 +6,8 @@
     "id": "harbour-row",
     "name": "Harbour Row",
     "note": "The street in front of the plots, authored for LT1. Lengths in millimetres. x runs along the street as in the plots; y is 0 at the building line (the plot fronts) and negative towards the harbour. Streets and quays will come from the fabric pass (engine-requests: open items).",
-    "x0": -40000,
-    "x1": 180000,
+    "x0": -30000,
+    "x1": 146000,
     "pavement": {
       "width": 1800,
       "surface": "flags",
@@ -209,20 +209,24 @@
           "z": 13000
         },
         {
-          "y": 90000,
-          "z": 24000
+          "y": 110000,
+          "z": 30000
         },
         {
-          "y": 140000,
-          "z": 45000
+          "y": 200000,
+          "z": 56000
         },
         {
-          "y": 300000,
-          "z": 62000
+          "y": 350000,
+          "z": 92000
         },
         {
-          "y": 1300000,
-          "z": 70000
+          "y": 600000,
+          "z": 135000
+        },
+        {
+          "y": 950000,
+          "z": 165000
         }
       ],
       "ridges": [
@@ -237,33 +241,8 @@
             "y": -260000
           },
           "height": 45000,
-          "width": 320000
-        },
-        {
-          "name": "the hill west of the bay",
-          "from": {
-            "x": -90000,
-            "y": 120000
-          },
-          "to": {
-            "x": -420000,
-            "y": -170000
-          },
-          "height": 130000,
-          "width": 260000
-        },
-        {
-          "name": "the hill east of the bay",
-          "from": {
-            "x": 270000,
-            "y": 140000
-          },
-          "to": {
-            "x": 620000,
-            "y": -140000
-          },
-          "height": 160000,
-          "width": 300000
+          "width": 320000,
+          "surface": "heath"
         },
         {
           "name": "the near mountains",
@@ -276,7 +255,8 @@
             "y": 1050000
           },
           "height": 420000,
-          "width": 1100000
+          "width": 1100000,
+          "surface": "rock"
         },
         {
           "name": "the fells",
@@ -289,7 +269,8 @@
             "y": 2700000
           },
           "height": 760000,
-          "width": 2200000
+          "width": 2200000,
+          "surface": "rock"
         },
         {
           "name": "the high mountains",
@@ -302,10 +283,28 @@
             "y": 5600000
           },
           "height": 1250000,
-          "width": 4500000
+          "width": 4500000,
+          "surface": "rock"
         }
       ],
-      "provenance": "authored"
+      "provenance": "authored",
+      "hillside_surface": "heath",
+      "site": {
+        "note": "The ground the town stands on, as a few facts the terrain is generated from: the bay the town fills, the hills rising beside it to the water, and how rough the land is. Seeded roughness claims nothing.",
+        "bay": {
+          "x0": -22000,
+          "x1": 138000
+        },
+        "sides": {
+          "height": 110000,
+          "reach": 230000
+        },
+        "rough": {
+          "height": 12000,
+          "scale": 150000
+        },
+        "surface": "heath"
+      }
     }
   },
   "buildings": [
@@ -1353,6 +1352,108 @@
         "building": 110,
         "floors": [],
         "cause": "boarded since the firm left"
+      },
+      {
+        "building": 201,
+        "floors": [
+          "ground"
+        ],
+        "cause": "the carpenter's widow is in her kitchen"
+      },
+      {
+        "building": 202,
+        "floors": [
+          "ground",
+          "upper"
+        ],
+        "cause": "the clerk's family, all home"
+      },
+      {
+        "building": 203,
+        "floors": [
+          "ground"
+        ],
+        "cause": "someone is reading by the window"
+      },
+      {
+        "building": 204,
+        "floors": [
+          "upper"
+        ],
+        "cause": "the teacher marks books upstairs"
+      },
+      {
+        "building": 205,
+        "floors": [
+          "ground",
+          "upper"
+        ],
+        "cause": "the manager's house, lit throughout"
+      },
+      {
+        "building": 206,
+        "floors": [],
+        "cause": "the fish merchant's heirs are away"
+      },
+      {
+        "building": 207,
+        "floors": [
+          "ground",
+          "upper"
+        ],
+        "cause": "a family with small children"
+      },
+      {
+        "building": 208,
+        "floors": [
+          "ground"
+        ],
+        "cause": "the skipper is home from sea"
+      },
+      {
+        "building": 301,
+        "floors": [
+          "ground"
+        ],
+        "cause": "an old fisherman by the stove"
+      },
+      {
+        "building": 302,
+        "floors": [],
+        "cause": "empty since the winter"
+      },
+      {
+        "building": 303,
+        "floors": [
+          "ground"
+        ],
+        "cause": "the boatbuilder's daughter lives here now"
+      },
+      {
+        "building": 304,
+        "floors": [
+          "ground"
+        ],
+        "cause": "a pensioner, in early"
+      },
+      {
+        "building": 305,
+        "floors": [
+          "upper"
+        ],
+        "cause": "the pilot's family upstairs"
+      },
+      {
+        "building": 306,
+        "floors": [
+          "ground"
+        ],
+        "cause": "the shoemaker's flat"
+      },
+      {
+        "building": 307,
+        "floors": [],
+        "cause": "a summer house, shut"
       }
     ],
     "provenance": "authored"

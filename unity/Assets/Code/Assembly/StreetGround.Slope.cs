@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using Overstory.Core;
 using Overstory.World;
@@ -35,6 +36,14 @@ namespace Overstory.Assembly
         static void RetainingWalls(MeshWriter w, ulong seed, StreetLayout L, Span s)
         {
             var levels = L.slope.levels;
+            if (L.slope.HasSite)
+            {
+                // the terraces fill the bay; beside it the hills rise
+                float a = Mathf.Max(s.a, L.slope.site.bayX0), b = Mathf.Min(s.b, L.slope.site.bayX1);
+                if (b <= a)
+                    return;
+                s = new Span(Mathf.Max(s.x0, L.slope.site.bayX0), Mathf.Min(s.x1, L.slope.site.bayX1), a, b);
+            }
             for (int i = 1; i < levels.Length; i++)
             {
                 float face = levels[i].y0, bottom = levels[i - 1].z, top = levels[i].z;
@@ -61,7 +70,8 @@ namespace Overstory.Assembly
         /// <summary>The levels' ground and lanes, plain walls past the street's ends, and the hillside.</summary>
         static void Levels(MeshWriter w, StreetLayout L)
         {
-            float a = L.x0 - Beyond, b = L.x1 + Beyond;
+            bool site = L.slope.HasSite;
+            float a = site ? L.slope.site.bayX0 : L.x0 - Beyond, b = site ? L.slope.site.bayX1 : L.x1 + Beyond;
             var levels = L.slope.levels;
             for (int i = 0; i < levels.Length; i++)
             {
@@ -78,7 +88,7 @@ namespace Overstory.Assembly
                 {
                     Flat(w, a, b, lv.y0, lv.y1, lv.z, ground);
                 }
-                if (i > 0 && lv.z > levels[i - 1].z)
+                if (!site && i > 0 && lv.z > levels[i - 1].z)
                 {
                     // past the detailed street the walls are plain, far enough out to dissolve in the air
                     float bottom = levels[i - 1].z, top = lv.z;
@@ -91,9 +101,10 @@ namespace Overstory.Assembly
                 }
             }
             var hill = L.slope.hillside;
-            for (int i = 0; hill != null && i < hill.Length - 1; i++)
+            for (int i = 0; !site && hill != null && i < hill.Length - 1; i++)
                 w.Quad(new Vector3(-HillsWide, hill[i].y, hill[i].z), new Vector3(HillsWide, hill[i].y, hill[i].z),
-                       new Vector3(HillsWide, hill[i + 1].y, hill[i + 1].z), new Vector3(-HillsWide, hill[i + 1].y, hill[i + 1].z), "grass", Up);
+                       new Vector3(HillsWide, hill[i + 1].y, hill[i + 1].z), new Vector3(-HillsWide, hill[i + 1].y, hill[i + 1].z),
+                       SurfaceSwatch(string.IsNullOrEmpty(L.slope.hillsideSurface) ? "grass" : L.slope.hillsideSurface), Up);
         }
 
         static void Flat(MeshWriter w, float a, float b, float y0, float y1, float z, string swatch)
@@ -146,18 +157,19 @@ namespace Overstory.Assembly
 
         /// <summary>
         /// A ridge of hills or mountains: a crest running from a to b, rising from its ends, wandering in
-        /// height and line, with shoulders down to the ground on both sides. Seeded from its name.
+        /// height and line, with shoulders down to the ground on both sides. One surface of shared
+        /// vertices with smooth normals, so a hill reads as a landform, not as facets. Seeded from its name.
         /// </summary>
-        static void RidgeMesh(MeshWriter w, ulong seed, Ridge r)
+        static Mesh RidgeMesh(Palette pal, ulong seed, Ridge r)
         {
-            const int N = 220;
+            const int N = 220, K = 9; // samples along the ridge, and across it
             var A = new Vector2(r.ax, r.ay);
             var B = new Vector2(r.bx, r.by);
             Vector2 d = (B - A).normalized;
-            Vector2 side = new Vector2(-d.y, d.x); // the ridge's back
+            Vector2 side = new Vector2(-d.y, d.x);
             ulong rs = Hash.Of(seed, r.name);
             float foot = -12f, half = r.width * 0.5f;
-            Vector3[] prev = null;
+            var verts = new List<Vector3>((N + 1) * K);
             for (int i = 0; i <= N; i++)
             {
                 float t = i / (float)N;
@@ -165,27 +177,156 @@ namespace Overstory.Assembly
                 float rough = 0.55f * Noise1(rs, t * 7f) + 0.3f * Noise1(Hash.Of(rs, 1), t * 17f) + 0.15f * Noise1(Hash.Of(rs, 2), t * 41f);
                 float h = r.height * envelope * (0.55f + 0.45f * rough);
                 float crest = half * 0.18f * (Noise1(Hash.Of(rs, 3), t * 5f) - 0.5f);
-                float sf = 0.4f + 0.25f * Noise1(Hash.Of(rs, 4), t * 9f), sb = 0.4f + 0.25f * Noise1(Hash.Of(rs, 5), t * 11f);
+                float sf = 0.75f + 0.5f * Noise1(Hash.Of(rs, 4), t * 9f), sb = 0.75f + 0.5f * Noise1(Hash.Of(rs, 5), t * 11f);
                 Vector2 c = Vector2.Lerp(A, B, t);
-                Vector3 P(float off, float z)
+                for (int k = 0; k < K; k++)
                 {
+                    // across the ridge: a convex-then-concave profile from foot to crest to foot
+                    float u = k / (float)(K - 1) * 2f - 1f; // -1 front foot, 0 crest, 1 back foot
+                    float shape = Mathf.Pow(1f - Mathf.Abs(u), u < 0 ? sf : sb);
+                    float off = Mathf.Lerp(crest, u < 0 ? -half : half, Mathf.Abs(u));
                     Vector2 q = c + side * off;
-                    return new Vector3(q.x, q.y, z);
+                    verts.Add(StreetSpace.ToUnity(q.x, q.y, Mathf.Lerp(foot, h, shape)));
                 }
-                var cur = new[]
-                {
-                    P(-half, foot), P(-half * 0.45f + crest * 0.5f, h * sf), P(crest, h), P(half * 0.45f + crest * 0.5f, h * sb), P(half, foot),
-                };
-                if (prev != null)
-                {
-                    for (int k = 0; k < 4; k++)
-                    {
-                        Vector3 outward = new Vector3((k < 2 ? -side : side).x, (k < 2 ? -side : side).y, 1.2f);
-                        w.Quad(prev[k], cur[k], cur[k + 1], prev[k + 1], "rock", outward);
-                    }
-                }
-                prev = cur;
             }
+            var tris = new List<int>(N * (K - 1) * 6);
+            for (int i = 0; i < N; i++)
+                for (int k = 0; k < K - 1; k++)
+                {
+                    int a = i * K + k, b = (i + 1) * K + k;
+                    tris.Add(a); tris.Add(b); tris.Add(a + 1);
+                    tris.Add(a + 1); tris.Add(b); tris.Add(b + 1);
+                }
+            var m = new Mesh { name = r.name, hideFlags = HideFlags.DontSave };
+            m.SetVertices(verts);
+            m.SetTriangles(tris, 0, true);
+            // wind the surface to face up, whichever way the ridge runs
+            m.RecalculateNormals();
+            var normals = m.normals;
+            if (normals[(N / 2) * K + K / 2].y < 0f)
+            {
+                for (int i = 0; i < tris.Count; i += 3)
+                    (tris[i + 1], tris[i + 2]) = (tris[i + 2], tris[i + 1]);
+                m.SetTriangles(tris, 0, true);
+                m.RecalculateNormals();
+                normals = m.normals;
+            }
+            var uv = pal.UV(string.IsNullOrEmpty(r.surface) ? "rock" : r.surface);
+            var uvs = new List<Vector2>(verts.Count);
+            var colours = new List<Color>(verts.Count);
+            foreach (var n in normals)
+            {
+                uvs.Add(uv);
+                colours.Add(new Color(0.5f + 0.5f * n.y, 0.5f - 0.5f * n.y, 1f, 1f)); // open slopes: sky above, ground below
+            }
+            m.SetUVs(0, uvs);
+            m.SetColors(colours);
+            return m;
+        }
+
+        /// <summary>
+        /// The ground around the town, as a height field generated from the site's facts: the bay the
+        /// town fills, the hills that rise beside it (and run out into the sea as headlands), the
+        /// hillside climbing behind it, and seeded roughness that fades out near the town. Inside the
+        /// bay the terraces and walls are drawn by Levels and RetainingWalls, so the field leaves a hole
+        /// there; at the bay's edges it meets them at their own heights.
+        /// </summary>
+        static Mesh SiteTerrain(Palette pal, ulong seed, StreetLayout L)
+        {
+            var site = L.slope.site;
+            var levels = L.slope.levels;
+            var hill = L.slope.hillside;
+            float edge = L.quay.edge, townBack = levels[levels.Length - 1].y1;
+            const float Cell = 8f;
+            float x0 = site.bayX0 - 1300f, x1 = site.bayX1 + 1300f, y0 = edge - 900f, y1 = 1100f;
+            int nx = Mathf.CeilToInt((x1 - x0) / Cell), ny = Mathf.CeilToInt((y1 - y0) / Cell);
+            ulong rs = Hash.Of(seed, "site");
+
+            float LevelZ(float y)
+            {
+                float z = 0f;
+                foreach (var lv in levels)
+                    if (y >= lv.y0)
+                        z = lv.z;
+                return z;
+            }
+            float Profile(float y)
+            {
+                if (y <= hill[0].y)
+                    return Mathf.Lerp(0f, hill[0].z, Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(y / hill[0].y)));
+                for (int i = 0; i < hill.Length - 1; i++)
+                    if (y <= hill[i + 1].y)
+                        return Mathf.Lerp(hill[i].z, hill[i + 1].z, Mathf.SmoothStep(0f, 1f, (y - hill[i].y) / (hill[i + 1].y - hill[i].y)));
+                return hill[hill.Length - 1].z;
+            }
+            float Height(float x, float y)
+            {
+                float d = Mathf.Max(site.bayX0 - x, x - site.bayX1, 0f);           // how far outside the bay
+                float t = Mathf.Clamp01(d / site.sideReach);
+                float side = site.sideHeight * (1f - (1f - t) * (1f - t));         // rising fast, then easing
+                float back = y < townBack ? Mathf.Lerp(LevelZ(y), Profile(y), Mathf.SmoothStep(0f, 1f, d / 40f)) : Profile(y);
+                float h;
+                if (y >= edge)
+                    h = Mathf.Max(back, side);
+                else
+                {
+                    // the sea: the bay's floor; beside it the hills run out as headlands, then drop under the water
+                    float out_ = Mathf.Clamp01((edge - y) / (site.sideReach * 1.2f));
+                    h = Mathf.Lerp(side, -14f, Mathf.SmoothStep(0f, 1f, out_)) - (d <= 0f ? 14f : 0f);
+                }
+                float near = Mathf.Sqrt(d * d + Mathf.Max(0f, y - townBack) * Mathf.Max(0f, y - townBack));
+                float fade = Mathf.SmoothStep(0f, 1f, near / 80f);
+                float rough = 0.6f * Noise2(rs, x / site.roughScale, y / site.roughScale) + 0.4f * Noise2(Hash.Of(rs, 1), x / (site.roughScale * 0.35f), y / (site.roughScale * 0.35f));
+                return h + site.roughHeight * (rough - 0.5f) * 2f * fade;
+            }
+            bool InTown(float x, float y) => x > site.bayX0 + 0.5f && x < site.bayX1 - 0.5f && y > edge - 0.5f && y < townBack - 0.5f;
+
+            var verts = new List<Vector3>((nx + 1) * (ny + 1));
+            for (int j = 0; j <= ny; j++)
+                for (int i = 0; i <= nx; i++)
+                {
+                    float x = x0 + i * Cell, y = y0 + j * Cell;
+                    verts.Add(StreetSpace.ToUnity(x, y, Height(x, y)));
+                }
+            var tris = new List<int>(nx * ny * 6);
+            for (int j = 0; j < ny; j++)
+                for (int i = 0; i < nx; i++)
+                {
+                    float xa = x0 + i * Cell, ya = y0 + j * Cell;
+                    if (InTown(xa, ya) && InTown(xa + Cell, ya + Cell) && InTown(xa + Cell, ya) && InTown(xa, ya + Cell))
+                        continue;
+                    int a = j * (nx + 1) + i, b = a + 1, c = a + nx + 1, e = c + 1;
+                    // wound so the surface faces up in Unity's left-handed space
+                    tris.Add(a); tris.Add(c); tris.Add(b);
+                    tris.Add(b); tris.Add(c); tris.Add(e);
+                }
+            var m = new Mesh { name = "site terrain", hideFlags = HideFlags.DontSave, indexFormat = UnityEngine.Rendering.IndexFormat.UInt32 };
+            m.SetVertices(verts);
+            m.SetTriangles(tris, 0, true);
+            m.RecalculateNormals();
+            var normals = m.normals;
+            var uv = pal.UV(SurfaceSwatch(string.IsNullOrEmpty(site.surface) ? "heath" : site.surface));
+            var uvs = new List<Vector2>(verts.Count);
+            var colours = new List<Color>(verts.Count);
+            foreach (var n in normals)
+            {
+                uvs.Add(uv);
+                colours.Add(new Color(0.5f + 0.5f * n.y, 0.5f - 0.5f * n.y, 1f, 1f));
+            }
+            m.SetUVs(0, uvs);
+            m.SetColors(colours);
+            return m;
+        }
+
+        /// <summary>Smooth seeded value noise over a plane, 0..1.</summary>
+        static float Noise2(ulong h, float u, float v)
+        {
+            int i = Mathf.FloorToInt(u), j = Mathf.FloorToInt(v);
+            float fu = u - i, fv = v - j;
+            fu = fu * fu * (3f - 2f * fu);
+            fv = fv * fv * (3f - 2f * fv);
+            float H(int a, int b) => Hash.Unit(Hash.Of(h, Hash.Key(a), Hash.Key(b)));
+            return Mathf.Lerp(Mathf.Lerp(H(i, j), H(i + 1, j), fu), Mathf.Lerp(H(i, j + 1), H(i + 1, j + 1), fu), fv);
         }
 
         /// <summary>Smooth seeded value noise along one dimension, 0..1.</summary>

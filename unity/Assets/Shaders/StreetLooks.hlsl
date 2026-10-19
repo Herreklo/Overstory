@@ -90,6 +90,7 @@ half OS_Stroke(float3 p, half3 n)
 
 half3 OS_ShadeB(InputData id, StreetSurface s, OSBake b, float3 positionWS)
 {
+    InputData inputData = id; // URP's Forward+ light loop looks lights up through a variable of this name
     half3 n = id.normalWS;
     half3 v = id.viewDirectionWS;
     half stroke = OS_Stroke(positionWS, n) * _OS_Ramp.w;
@@ -146,6 +147,86 @@ half3 OS_ShadeB(InputData id, StreetSurface s, OSBake b, float3 positionWS)
     colour += _OS_Rim.rgb * _OS_Rim.a * rim * s.albedo;
 
     return colour + s.emission;
+}
+
+
+// -- look D: the woodblock print ---------------------------------------------------------------------
+// Light is cut into a few flat ink plates in the light's own colour (each plate one exposure step),
+// their edges broken by a carving fixed to the world; the darkest plate is opened up by white-line
+// carving that follows the land and the courses of the walls, wider where more light falls. The key
+// block's lines are drawn after, in a full-screen pass (KeyBlock.shader). Everything is driven by light
+// or fixed to the world: nothing swims, nothing is painted per object.
+
+float4 _OS_Plates;   // x stops per plate, y carving amount (stops), z white-line spacing (m), w white-line strength
+
+// A gouge pattern fixed to the world: stretched along the surface, like the grain a carver follows.
+half OS_Carve(float3 p, half3 n)
+{
+    half3 a = abs(n);
+    float2 q = a.y > max(a.x, a.z) ? p.xz : (a.x > a.z ? p.zy : p.xy);
+    float2 g = a.y > max(a.x, a.z) ? q * float2(0.25, 0.8) : q * float2(0.35, 1.6);
+    return (half)(OS_Noise(g) * 0.75 + OS_Noise(g * 2.3 + 3.1) * 0.25) - 0.5h;
+}
+
+half3 OS_ShadeD(InputData id, StreetSurface s, OSBake b, float3 positionWS)
+{
+    InputData inputData = id; // URP's Forward+ light loop looks lights up through a variable of this name
+    half3 n = id.normalWS;
+    half3 v = id.viewDirectionWS;
+    AmbientOcclusionFactor ao = CreateAmbientOcclusionFactor(id.normalizedScreenSpaceUV, 1.0h);
+    half4 shadowMask = half4(1, 1, 1, 1);
+
+    // all the light a point receives, unshaped: sky term, sun, lamps
+    half3 light = OS_SkyTerm(b, n) * ao.indirectAmbientOcclusion;
+    Light main = GetMainLight(id.shadowCoord, id.positionWS, shadowMask);
+    light += main.color * saturate(dot(n, main.direction)) * main.shadowAttenuation;
+    half3 specular = 0;
+    #if defined(_ADDITIONAL_LIGHTS)
+    uint count = GetAdditionalLightsCount();
+    #if USE_CLUSTER_LIGHT_LOOP
+    [loop] for (uint lightIndex = 0; lightIndex < min(URP_FP_DIRECTIONAL_LIGHTS_COUNT, MAX_VISIBLE_LIGHTS); lightIndex++)
+    {
+        CLUSTER_LIGHT_LOOP_SUBTRACTIVE_LIGHT_CHECK
+        Light l = GetAdditionalLight(lightIndex, id.positionWS, shadowMask);
+        light += l.color * l.distanceAttenuation * saturate(dot(n, l.direction)) * l.shadowAttenuation;
+    }
+    #endif
+    LIGHT_LOOP_BEGIN(count)
+        Light l = GetAdditionalLight(lightIndex, id.positionWS, shadowMask);
+        half3 radiance = l.color * l.distanceAttenuation * l.shadowAttenuation;
+        light += radiance * saturate(dot(n, l.direction));
+        half3 h = normalize(l.direction + v);
+        specular += radiance * pow(saturate(dot(n, h)), exp2(3.0h + 8.0h * s.smoothness)) * s.smoothness * s.smoothness * s.smoothness;
+    LIGHT_LOOP_END
+    #endif
+    half3 reflection = GlossyEnvironmentReflection(reflect(-v, n), id.positionWS, 1.0h - s.smoothness, ao.indirectAmbientOcclusion, id.normalizedScreenSpaceUV);
+    half fresnel = 0.04h + 0.96h * pow(1.0h - saturate(dot(n, v)), 5.0h);
+    half3 colour = s.albedo * light + reflection * fresnel * s.smoothness * s.smoothness + specular;
+
+    // the ink plates: cut the light into exposure steps, hue kept, edges carved
+    half lum = max(dot(colour, half3(0.2126h, 0.7152h, 0.0722h)), 1e-5h);
+    half carve = OS_Carve(positionWS, n) * _OS_Plates.y;
+    float e = log2(lum) / _OS_Plates.x + carve;
+    float plate = floor(e);
+    float within = e - plate;                      // where the point lies inside its plate, 0..1
+    float aa = max(fwidth(e) * 0.75, 1e-3);
+    float stepped = plate + smoothstep(1.0 - aa, 1.0, within); // a hard cut, antialiased at the edge
+    half plated = exp2(stepped * _OS_Plates.x + _OS_Plates.x * 0.5h);
+    half3 ink = colour * (plated / lum);
+
+    // white-line carving in the darks: lines that follow height (contours on the land, courses on the
+    // walls), wider where more light falls inside the plate, opening the dark to the next plate's colour
+    float spacing = _OS_Plates.z * exp2(round(log2(max(1.0, fwidth(positionWS.y) * 22.0 / _OS_Plates.z))));
+    float t = positionWS.y / spacing + carve * 2.0;
+    float distToLine = abs(frac(t) - 0.5) * 2.0;   // 0 on the line's centre, 1 between lines
+    float width = saturate(within) * 0.3;
+    float lineAA = fwidth(t) * 2.0;
+    half cut = (1.0h - smoothstep(width - lineAA, width + lineAA, 1.0 - distToLine)) * step(0.01, width);
+    half darkest = 1.0h - smoothstep(0.0h, 0.12h, plated / max(dot(_OS_SkyAmb.rgb, half3(0.2126h, 0.7152h, 0.0722h)), 1e-4h) - 0.25h);
+    half3 paper = s.albedo * OS_SkyFor(n) * 0.9h + OS_SkyFor(n) * 0.15h;
+    ink = lerp(ink, max(ink * exp2(_OS_Plates.x * 2.0h), paper), cut * darkest * _OS_Plates.w);
+
+    return ink + s.emission;
 }
 
 #endif

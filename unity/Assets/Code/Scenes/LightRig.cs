@@ -35,6 +35,13 @@ namespace Overstory.Scenes
         [Header("Air")]
         [Tooltip("The colour of the air. Usually the horizon's.")]
         public Color fogColour = new Color(0.7f, 0.73f, 0.76f);
+        [Tooltip("The colour of the air at middle distance (a layer of its own, as in Firewatch). Used when the middle distance is set.")]
+        public Color fogMidColour = new Color(0.7f, 0.73f, 0.76f);
+        public float fogMidDistance = 0f;
+        [Tooltip("The colour the air turns to far off, so distance reads in layers. Used when the far distance is set.")]
+        public Color fogFarColour = new Color(0.7f, 0.73f, 0.76f);
+        [Tooltip("The distance in metres at which the far colour has taken over. 0 keeps one colour of air.")]
+        public float fogFarDistance = 0f;
         [Tooltip("Optical density per metre at the base height.")]
         public float fogDensity = 0.003f;
         [Tooltip("How fast the air thins with height, per metre.")]

@@ -98,7 +98,7 @@ def ground_bands(st):
 def slope(sl):
     """The town above the street, in metres; empty when the street has none."""
     if not sl:
-        return dict(levels=[], stairs=[], hillside=[], ridges=[], walls="")
+        return dict(levels=[], stairs=[], hillside=[], hillsideSurface="grass", ridges=[], walls="")
     m = lambda v: round(v / 1000.0, 4)
     levels = []
     for L in sl["levels"]:
@@ -107,9 +107,12 @@ def slope(sl):
                            lane=dict(y0=m(lane["y0"]), y1=m(lane["y1"]), surface=lane["surface"])))
     stairs = [dict(name=s["name"], x=m(s["x"]), width=m(s["width"]), path=[dict(y=m(q["y"]), z=m(q["z"])) for q in s["path"]]) for s in sl["stairs"]]
     ridges = [dict(name=r["name"], ax=m(r["from"]["x"]), ay=m(r["from"]["y"]), bx=m(r["to"]["x"]), by=m(r["to"]["y"]),
-                   height=m(r["height"]), width=m(r["width"])) for r in sl["ridges"]]
+                   height=m(r["height"]), width=m(r["width"]), surface=r.get("surface", "rock")) for r in sl["ridges"]]
+    site = sl.get("site")
+    site = dict(bayX0=m(site["bay"]["x0"]), bayX1=m(site["bay"]["x1"]), sideHeight=m(site["sides"]["height"]), sideReach=m(site["sides"]["reach"]),
+                roughHeight=m(site["rough"]["height"]), roughScale=m(site["rough"]["scale"]), surface=site["surface"]) if site else None
     return dict(levels=levels, stairs=stairs, hillside=[dict(y=m(q["y"]), z=m(q["z"])) for q in sl["hillside"]],
-                ridges=ridges, walls=sl["walls"]["kind"])
+                hillsideSurface=sl.get("hillside_surface", "grass"), ridges=ridges, walls=sl["walls"]["kind"], site=site)
 
 
 def main(argv):

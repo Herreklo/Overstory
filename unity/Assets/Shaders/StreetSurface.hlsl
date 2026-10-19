@@ -20,12 +20,14 @@ float _OS_WindowGlow;    // how bright lit windows are (0 by day)
 float _OS_LampGlow;      // how bright lamp glass is (0 while the lamps are off)
 float _OS_Time;          // the scene's own clock, in seconds: never frame time, so a still is repeatable
 float4 _OS_FogColor;     // rgb: the colour of the air close by (linear)
+float4 _OS_FogMid;       // rgb: the colour of the air at middle distance (linear), a: that distance
 float4 _OS_FogFar;       // rgb: the colour of the air far off (linear), a: the distance at which it takes over
 float4 _OS_FogParams;    // x density per metre at the base height, y falloff per metre of height, z base height, w most it may hide
 float4 _OS_FogSun;       // rgb: extra colour towards the sun (linear), w: how tight that glow is
 float4 _OS_SunDir;       // xyz: towards the sun
 float4 _OS_PavingMeanUV; // xy: the palette UV of setts_mean, the tone a sett pavement averages to
 float _OS_Clay;          // 1: every surface one matte grey, to judge shape and composition alone
+float _OS_AirBands;      // 0: the air thickens smoothly; n: in n flat bands, a printer's graded wipe (look D)
 
 struct StreetSurface
 {
@@ -77,7 +79,8 @@ StreetSurface OS_StreetSurface(float2 uv, float3 positionWS, half3 normalWS)
     half up = n.y;
     half wet = _OS_Wetness * saturate((up + 0.1h) / 0.6h);
     albedo *= lerp(1.0h, 1.0h - 0.5h * porosity, wet);
-    smoothness = lerp(smoothness, max(smoothness, lerp(0.85h, 0.45h, porosity)), wet);
+    // wet shine falls with the square of porosity: stone glistens, heath and grass stay matt
+    smoothness = lerp(smoothness, max(smoothness, lerp(0.85h, 0.2h, porosity * porosity)), wet);
 
     // Puddles lie in the hollows of the paving. Where they lie is weather, seeded by place, and
     // claims nothing about the street's history.
@@ -146,9 +149,17 @@ half3 OS_Atmosphere(half3 colour, float3 positionWS)
     float kdh = k * v.y;
     float meanDensity = abs(kdh) > 1e-3 ? a * (1.0 - exp(-kdh)) / kdh : a;
     float hidden = min(1.0 - exp(-_OS_FogParams.x * d * meanDensity), _OS_FogParams.w);
+    if (_OS_AirBands > 0.5)
+    {
+        // distance laid in flat layers, each a step of air, the edges soft like a wiped block
+        float hb = hidden * _OS_AirBands;
+        hidden = (floor(hb) + smoothstep(0.8, 1.0, frac(hb))) / _OS_AirBands;
+    }
     half sun = pow(saturate(dot(v / max(d, 1e-4), _OS_SunDir.xyz)), max(_OS_FogSun.w, 1.0));
     // the air changes colour with distance, in layers, never one grey (Firewatch, Sable)
-    half3 air = lerp(_OS_FogColor.rgb, _OS_FogFar.rgb, saturate(d / max(_OS_FogFar.a, 1.0))) + _OS_FogSun.rgb * sun;
+    // a designed ramp, as Firewatch's fog: near, middle and far each the colour the hour gives them
+    half3 air = lerp(_OS_FogColor.rgb, _OS_FogMid.rgb, smoothstep(0.0, max(_OS_FogMid.a, 1.0), d));
+    air = lerp(air, _OS_FogFar.rgb, smoothstep(_OS_FogMid.a, max(_OS_FogFar.a, _OS_FogMid.a + 1.0), d)) + _OS_FogSun.rgb * sun;
     return lerp(colour, air, hidden);
 }
 

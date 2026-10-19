@@ -98,11 +98,9 @@ namespace Overstory.Assembly
                     Stairs(stairs, seed, st);
                 parts.Add(new Part { name = "stairs", mesh = stairs.ToMesh("stairs") });
                 foreach (var r in L.slope.ridges)
-                {
-                    var rw = new MeshWriter(pal);
-                    RidgeMesh(rw, seed, r);
-                    parts.Add(new Part { name = r.name, mesh = rw.ToMesh(r.name) });
-                }
+                    parts.Add(new Part { name = r.name, mesh = RidgeMesh(pal, seed, r) });
+                if (L.slope.HasSite)
+                    parts.Add(new Part { name = "site terrain", mesh = SiteTerrain(pal, seed, L) });
             }
 
             var water = new MeshWriter(pal);

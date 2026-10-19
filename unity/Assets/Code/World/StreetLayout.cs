@@ -72,8 +72,20 @@ namespace Overstory.World
         public Level[] levels;
         public Stair[] stairs;
         public YZ[] hillside;
+        public string hillsideSurface;
         public Ridge[] ridges;
         public string walls;
+        public Site site;
+
+        public bool HasSite => site != null && site.bayX1 > site.bayX0;
+    }
+
+    /// <summary>The ground the town stands on: the bay it fills, the hills beside it, how rough the land is.</summary>
+    [Serializable]
+    public class Site
+    {
+        public float bayX0, bayX1, sideHeight, sideReach, roughHeight, roughScale;
+        public string surface;
     }
 
     /// <summary>A level of the town: ground at height z from y0 to y1, a retaining wall at y0, a lane along it.</summary>
@@ -85,7 +97,7 @@ namespace Overstory.World
     [Serializable] public class Stair { public string name; public float x, width; public YZ[] path; }
 
     /// <summary>A ridge of hills or mountains from a to b on the ground plane, its crest at height.</summary>
-    [Serializable] public class Ridge { public string name; public float ax, ay, bx, by, height, width; }
+    [Serializable] public class Ridge { public string name; public float ax, ay, bx, by, height, width; public string surface; }
 
     [Serializable]
     public class BuildingRef

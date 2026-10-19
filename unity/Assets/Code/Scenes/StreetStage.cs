@@ -42,6 +42,19 @@ namespace Overstory.Scenes
         public Color edgeTint = new Color(0.9f, 0.45f, 0.25f, 0.25f);
         public float rim = 0.25f;
 
+        [Header("Look D, the woodblock print")]
+        [Tooltip("Exposure stops per ink plate: larger is fewer, broader plates.")]
+        public float stopsPerPlate = 1.1f;
+        [Tooltip("How far the world-fixed carving breaks a plate's edge, in plates.")]
+        public float carving = 0f;
+        [Tooltip("Spacing of the white-line carving in the darks, in metres, close by.")]
+        public float whiteLineSpacing = 0.45f;
+        public float whiteLines = 0f;
+        [Tooltip("The key block's ink: indigo, never black.")]
+        public Color ink = new Color(0.11f, 0.12f, 0.22f, 0.85f);
+        public float inkFadeStart = 60f, inkFadeEnd = 450f;
+        public float airBands = 5f, skyBands = 7f;
+
         VolumeProfile profile;
 
         // the light each kind of lamp gives (sRGB): incandescent, mercury vapour, high-pressure sodium
@@ -71,6 +84,15 @@ namespace Overstory.Scenes
             SetPalette();
             Shader.SetGlobalFloat("_OS_Clay", clay ? 1f : 0f);
             if (look == "B") Shader.EnableKeyword("_OS_LOOK_B"); else Shader.DisableKeyword("_OS_LOOK_B");
+            if (look == "D") Shader.EnableKeyword("_OS_LOOK_D"); else Shader.DisableKeyword("_OS_LOOK_D");
+            bool print = look == "D";
+            Shader.SetGlobalFloat("_OS_KeyBlock", print ? 1f : 0f);
+            Shader.SetGlobalFloat("_OS_AirBands", print ? airBands : 0f);
+            Shader.SetGlobalFloat("_OS_SkyBands", print ? skyBands : 0f);
+            Shader.SetGlobalVector("_OS_Plates", new Vector4(stopsPerPlate, carving, whiteLineSpacing, whiteLines));
+            var inkLinear = ink.linear;
+            Shader.SetGlobalVector("_OS_Ink", new Vector4(inkLinear.r, inkLinear.g, inkLinear.b, ink.a));
+            Shader.SetGlobalVector("_OS_InkFade", new Vector4(inkFadeStart, inkFadeEnd, 0, 0));
             Shader.SetGlobalVector("_OS_Ramp", new Vector4(rampEdge, rampSoftness, shadowFloor, stroke));
             Shader.SetGlobalVector("_OS_EdgeTint", new Vector4(edgeTint.linear.r, edgeTint.linear.g, edgeTint.linear.b, edgeTint.a));
             if (rig != null)
@@ -130,11 +152,15 @@ namespace Overstory.Scenes
             Shader.SetGlobalVector("_OS_SkyAmb", Linear(r.ambientSky) * r.ambientIntensity);
             Shader.SetGlobalVector("_OS_HorizonAmb", Linear(r.ambientEquator) * r.ambientIntensity);
             Shader.SetGlobalVector("_OS_GroundAmb", Linear(r.ambientGround) * r.ambientIntensity);
-            var sky = Linear(r.ambientSky);
-            Shader.SetGlobalVector("_OS_Rim", new Vector4(sky.x, sky.y, sky.z, rim));
-            // until rigs carry a far air colour, the far air is the near air
-            var near = Linear(r.fogColour);
-            Shader.SetGlobalVector("_OS_FogFar", new Vector4(near.x, near.y, near.z, 1e6f));
+            var skyLight = Linear(r.ambientSky);
+            Shader.SetGlobalVector("_OS_Rim", new Vector4(skyLight.x, skyLight.y, skyLight.z, rim));
+            // the air far off; a rig without a far distance keeps one colour of air
+            bool layered = r.fogFarDistance > 0f;
+            var far = Linear(layered ? r.fogFarColour : r.fogColour);
+            Shader.SetGlobalVector("_OS_FogFar", new Vector4(far.x, far.y, far.z, layered ? r.fogFarDistance : 1e6f));
+            bool middle = r.fogMidDistance > 0f;
+            var mid = Linear(middle ? r.fogMidColour : r.fogColour);
+            Shader.SetGlobalVector("_OS_FogMid", new Vector4(mid.x, mid.y, mid.z, middle ? r.fogMidDistance : 1f));
             Shader.SetGlobalFloat("_OS_Wetness", r.wetness);
             Shader.SetGlobalFloat("_OS_WindowGlow", r.windowGlow);
             Shader.SetGlobalFloat("_OS_LampGlow", r.lampsOn ? r.lampGlow : 0f);
