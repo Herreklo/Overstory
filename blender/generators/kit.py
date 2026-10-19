@@ -218,6 +218,29 @@ def clip_x(poly, lo, hi):
     return pts if len(pts) >= 3 else []
 
 
+def clip_below(poly, m, c):
+    """Clip a convex polygon to the half-plane b <= m*a + c."""
+    out = []
+    n = len(poly)
+    for i in range(n):
+        p, q = poly[i], poly[(i + 1) % n]
+        fp = p[1] - (m * p[0] + c)
+        fq = q[1] - (m * q[0] + c)
+        if fp <= 1e-9:
+            out.append(p)
+        if (fp < -1e-9 and fq > 1e-9) or (fp > 1e-9 and fq < -1e-9):
+            t = fp / (fp - fq)
+            out.append((p[0] + t * (q[0] - p[0]), p[1] + t * (q[1] - p[1])))
+    return out if len(out) >= 3 else []
+
+
+def clip_above(poly, m, c):
+    """Clip a convex polygon to the half-plane b >= m*a + c."""
+    flipped = [(a, -b) for a, b in poly]
+    res = clip_below(flipped, -m, -c)
+    return [(a, -b) for a, b in res]
+
+
 def subtract(intervals, cut):
     """Remove (lo, hi) from a list of (lo, hi) intervals."""
     out = []

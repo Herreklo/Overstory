@@ -48,6 +48,15 @@ SWATCHES = {
     "wood": (120, 92, 66),
     "ground": (120, 122, 118),
     "shadow": (20, 20, 22),
+    # added for life and the later eras
+    "wall_brown": (92, 64, 46),
+    "glass_lit": (236, 186, 108),
+    "curtain": (232, 226, 210),
+    "curtain_warm": (206, 168, 120),
+    "flowers_red": (196, 58, 52),
+    "flowers_yellow": (230, 190, 70),
+    "leaf": (78, 110, 62),
+    "metal_gutter": (92, 96, 98),
 }
 
 NAMES = list(SWATCHES)
