@@ -107,6 +107,17 @@ namespace Overstory.EditorTools
                 s.verticalFov = 40f;
             });
 
+            Asset<LightRig>(LT1 + "/Light/LT1_Clay.asset", Clay);
+            foreach (var (name, pos, target) in CityShots)
+                Asset<CameraShot>($"{LT1}/Views/LT1_City_{name}.asset", s =>
+                {
+                    s.position = pos;
+                    s.target = target;
+                    s.verticalFov = 42f;
+                    s.near = 0.5f;
+                    s.far = 25000f;
+                });
+
             var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
 
             var camGo = new GameObject("Camera") { tag = "MainCamera" };
@@ -168,6 +179,63 @@ namespace Overstory.EditorTools
             EditorBuildSettings.scenes = new[] { new EditorBuildSettingsScene(ScenePath, true) };
             AssetDatabase.SaveAssets();
             Debug.Log($"[LT1Setup] scene saved: {ScenePath} ({layout.buildings.Length} buildings, {layout.lamps.Length} lamps)");
+        }
+
+        /// <summary>
+        /// The city view's middle stop and its variants: from the harbour, the town climbing behind the
+        /// quay, the ridges and the sky in frame. Street coordinates in metres.
+        /// </summary>
+        public static readonly (string name, Vector3 pos, Vector3 target)[] CityShots =
+        {
+            ("Mid", new Vector3(55f, -115f, 46f), new Vector3(58f, 45f, 15f)),
+            ("MidLow", new Vector3(52f, -115f, 22f), new Vector3(55f, 40f, 10f)),
+            ("MidHigh", new Vector3(52f, -150f, 75f), new Vector3(55f, 30f, 4f)),
+            ("OrbitWest", new Vector3(-75f, -115f, 42f), new Vector3(50f, 35f, 8f)),
+            ("OrbitEast", new Vector3(185f, -115f, 42f), new Vector3(55f, 35f, 8f)),
+        };
+
+        /// <summary>
+        /// Clay: one soft, neutral light to judge shape alone. A sky dome and a key from the front left,
+        /// high enough to model every roof, and thin air that lays the ridges back in layers.
+        /// </summary>
+        static void Clay(LightRig r)
+        {
+            r.sunBearing = 235f;
+            r.sunElevation = 34f;
+            r.sunColour = Color.white;
+            r.sunIntensity = 2.4f;
+            r.shadowStrength = 1f;
+            r.zenith = C(168, 172, 176);
+            r.horizon = C(208, 210, 212);
+            r.belowHorizon = C(120, 122, 122);
+            r.skyCurve = 0.6f;
+            r.sunGlow = Color.black;
+            // a weak fill, so the key models every form: lit faces near white, shade a mid grey
+            r.ambientSky = C(128, 130, 134);
+            r.ambientEquator = C(96, 98, 100);
+            r.ambientGround = C(62, 62, 62);
+            r.ambientIntensity = 1f;
+            r.fogColour = C(196, 198, 200);
+            r.fogDensity = 0.00025f;
+            r.fogHeightFalloff = 0.002f;
+            r.fogBaseHeight = 0f;
+            r.fogMaxOpacity = 0.92f;
+            r.fogSunColour = Color.black;
+            r.wetness = 0f;
+            r.windowGlow = 0f;
+            r.lampsOn = false;
+            r.lampGlow = 0f;
+            r.lampIntensity = 0f;
+            r.postExposure = 0f;
+            r.contrast = 0f;
+            r.saturation = -100f;
+            r.temperature = 0f;
+            r.tint = 0f;
+            r.colourFilter = Color.white;
+            r.bloomIntensity = 0f;
+            r.bloomThreshold = 1.1f;
+            r.reflectionStrength = 0f;
+            r.clock = 0f;
         }
 
         /// <summary>Grey drizzle with wet ground: the default light and the hardest test.</summary>

@@ -1,0 +1,51 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 786fea6a47b704eeeab3813c905b0577, type: 3}
+  m_Name: LT1_Clay
+  m_EditorClassIdentifier: Assembly-CSharp::Overstory.Scenes.LightRig
+  sunBearing: 235
+  sunElevation: 34
+  sunColour: {r: 1, g: 1, b: 1, a: 1}
+  sunIntensity: 2.4
+  shadowStrength: 1
+  zenith: {r: 0.65882355, g: 0.6745098, b: 0.6901961, a: 1}
+  horizon: {r: 0.8156863, g: 0.8235294, b: 0.83137256, a: 1}
+  belowHorizon: {r: 0.47058824, g: 0.47843137, b: 0.47843137, a: 1}
+  skyCurve: 0.6
+  sunGlow: {r: 0, g: 0, b: 0, a: 1}
+  sunGlowPower: 8
+  ambientSky: {r: 0.5019608, g: 0.50980395, b: 0.5254902, a: 1}
+  ambientEquator: {r: 0.3764706, g: 0.38431373, b: 0.39215687, a: 1}
+  ambientGround: {r: 0.24313726, g: 0.24313726, b: 0.24313726, a: 1}
+  ambientIntensity: 1
+  fogColour: {r: 0.76862746, g: 0.7764706, b: 0.78431374, a: 1}
+  fogDensity: 0.00025
+  fogHeightFalloff: 0.002
+  fogBaseHeight: 0
+  fogMaxOpacity: 0.92
+  fogSunColour: {r: 0, g: 0, b: 0, a: 1}
+  fogSunPower: 8
+  wetness: 0
+  windowGlow: 0
+  lampsOn: 0
+  lampGlow: 0
+  lampIntensity: 0
+  postExposure: 0
+  contrast: 0
+  saturation: -100
+  temperature: 0
+  tint: 0
+  colourFilter: {r: 1, g: 1, b: 1, a: 1}
+  bloomIntensity: 0
+  bloomThreshold: 1.1
+  reflectionStrength: 0
+  clock: 0

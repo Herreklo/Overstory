@@ -28,6 +28,10 @@ namespace Overstory.World
         public KitPiece[] kit;
         public Emissive[] emissive;
         public PaletteInfo palette;
+        public Slope slope;
+
+        /// <summary>Whether the town climbs above the street (levels, stairs, hillside, ridges).</summary>
+        public bool HasSlope => slope != null && slope.levels != null && slope.levels.Length > 0;
 
         public static StreetLayout Parse(string json) => JsonUtility.FromJson<StreetLayout>(json);
 
@@ -60,6 +64,28 @@ namespace Overstory.World
 
     /// <summary>A point of a ground profile: height z at distance y from the building line.</summary>
     [Serializable] public struct YZ { public float y, z; }
+
+    /// <summary>The town above the street: levels held by retaining walls, stairs, the hillside, distant ridges.</summary>
+    [Serializable]
+    public class Slope
+    {
+        public Level[] levels;
+        public Stair[] stairs;
+        public YZ[] hillside;
+        public Ridge[] ridges;
+        public string walls;
+    }
+
+    /// <summary>A level of the town: ground at height z from y0 to y1, a retaining wall at y0, a lane along it.</summary>
+    [Serializable] public class Level { public string name; public float y0, y1, z; public string surface; public Lane lane; }
+
+    [Serializable] public class Lane { public float y0, y1; public string surface; }
+
+    /// <summary>A stepped lane at x: flat where its path is level, steps where it climbs.</summary>
+    [Serializable] public class Stair { public string name; public float x, width; public YZ[] path; }
+
+    /// <summary>A ridge of hills or mountains from a to b on the ground plane, its crest at height.</summary>
+    [Serializable] public class Ridge { public string name; public float ax, ay, bx, by, height, width; }
 
     [Serializable]
     public class BuildingRef

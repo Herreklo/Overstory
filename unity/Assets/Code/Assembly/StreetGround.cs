@@ -20,7 +20,7 @@ namespace Overstory.Assembly
     /// z up); the mesh writer turns them into Unity's. The pavement is at z 0, level with the plots;
     /// the carriageway and quay are a kerb lower.
     /// </summary>
-    public static class StreetGround
+    public static partial class StreetGround
     {
         public const float Road = -0.12f;   // the carriageway and quay surface, a kerb below the pavement
         const float KerbWidth = 0.25f;
@@ -30,7 +30,7 @@ namespace Overstory.Assembly
         const float CopingWidth = 0.5f, CopingRise = 0.03f, CopingDepth = 0.25f;
         const float WallSetBack = 0.05f;    // the coping overhangs the wall face by this much
         const float Joint = 0.035f;         // how far joints lie below the stone tops
-        const float Beyond = 300f;          // how far plain ground carries on past the street's ends
+        const float Beyond = 2500f;         // how far plain ground carries on past the street's ends, into the haze
         const float Chunk = 12f;            // metres of street per mesh, so meshes stay small and cull
 
         static readonly Vector3 Up = new Vector3(0, 0, 1);
@@ -78,16 +78,35 @@ namespace Overstory.Assembly
                 Carriageway(w, seed, road, s);
                 QuaySurface(w, seed, quay, L.quay.edge, s);
                 QuayWall(w, seed, L.quay.edge, L.water.level, s);
+                if (L.HasSlope)
+                    RetainingWalls(w, seed, L, s);
                 parts.Add(new Part { name = $"ground {s.a:0}-{s.b:0} m", mesh = w.ToMesh($"ground_{ci:00}") });
             }
 
             var plain = new MeshWriter(pal);
             PlainEnds(plain, L, pave);
-            Backland(plain, L);
+            if (L.HasSlope)
+                Levels(plain, L);
+            else
+                Backland(plain, L);
             parts.Add(new Part { name = "ground beyond and behind", mesh = plain.ToMesh("ground_plain") });
 
+            if (L.HasSlope)
+            {
+                var stairs = new MeshWriter(pal);
+                foreach (var st in L.slope.stairs)
+                    Stairs(stairs, seed, st);
+                parts.Add(new Part { name = "stairs", mesh = stairs.ToMesh("stairs") });
+                foreach (var r in L.slope.ridges)
+                {
+                    var rw = new MeshWriter(pal);
+                    RidgeMesh(rw, seed, r);
+                    parts.Add(new Part { name = r.name, mesh = rw.ToMesh(r.name) });
+                }
+            }
+
             var water = new MeshWriter(pal);
-            float wy = L.quay.edge + WallSetBack, wz = L.water.level, far = Beyond * 2;
+            float wy = L.quay.edge + WallSetBack, wz = L.water.level, far = 12000f;
             water.Quad(new Vector3(L.x0 - far, wy, wz), new Vector3(L.x1 + far, wy, wz),
                        new Vector3(L.x1 + far, wy - far, wz), new Vector3(L.x0 - far, wy - far, wz), "ground", Up);
             parts.Add(new Part { name = "harbour water", mesh = water.ToMesh("water"), water = true });

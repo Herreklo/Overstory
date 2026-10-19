@@ -63,3 +63,9 @@ Newest first. Each entry: the question, how it is judged, then the outcome: what
   - *A lit cutaway of a warehouse home:* take warm interior light against a dark outside. Whether the closest zoom ever opens buildings stays open.
   - *A Coober Pedy overview:* take the density of props and the soft contact shadows; leave realistic ground textures for now.
   - *Firewatch:* take a colour script per hour and the air coloured by distance; leave saturating everything, since our base stays muted.
+
+**Clay pass, so far (19 October):**
+- The hero slice is authored in the fixture: two levels above Harbour Row with fifteen houses (older and smaller higher up), dry-stone retaining walls, lanes, a stepped lane from the quay, the hillside, hills on both sides of the bay and mountain ridges. The export checks gaps per level and keeps the stepped lane clear. Unity generates the terrain; a clay switch turns every surface one matte grey.
+- First frames (`reviews/lt1/clay/`): the frontal middle stop is dull. Views along the shore, oblique, read in layers and are far stronger.
+- Straight parallel terraces with houses in rows read as a stage. A bay with hills close on both sides gives the town a setting.
+- Ridges built as extruded strips read as curtains, not rock: landforms need a real terrain generator.

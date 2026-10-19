@@ -29,6 +29,8 @@ namespace Overstory.Scenes
         [Header("What is shown")]
         public LightRig rig;
         public CameraShot shot;
+        [Tooltip("Every surface one matte grey: shape, light and composition alone.")]
+        public bool clay;
 
         VolumeProfile profile;
 
@@ -57,6 +59,7 @@ namespace Overstory.Scenes
             if (street != null && !street.Built)
                 street.Build();
             SetPalette();
+            Shader.SetGlobalFloat("_OS_Clay", clay ? 1f : 0f);
             if (rig != null)
                 SetLight(rig);
             if (shot != null && view != null)

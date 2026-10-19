@@ -5,7 +5,7 @@
   "worldSeed": 1989,
   "fixture": "../fixtures/lt1-street.json",
   "x0": -40.0,
-  "x1": 175.0,
+  "x1": 180.0,
   "bands": [
     {
       "name": "pavement",
@@ -131,7 +131,7 @@
       "type": "house",
       "file": "Assets/Art/Buildings/harbour-row/bld_105_1989.fbx",
       "position": {
-        "x": 53.5,
+        "x": 57.0,
         "y": 4.5997,
         "z": 0.0
       },
@@ -143,7 +143,7 @@
       "type": "house",
       "file": "Assets/Art/Buildings/harbour-row/bld_106_1989.fbx",
       "position": {
-        "x": 65.5,
+        "x": 69.0,
         "y": 4.6005,
         "z": 0.0
       },
@@ -158,7 +158,7 @@
       "type": "house",
       "file": "Assets/Art/Buildings/harbour-row/bld_107_1989.fbx",
       "position": {
-        "x": 76.5,
+        "x": 80.0,
         "y": 4.7644,
         "z": 0.0
       },
@@ -170,7 +170,7 @@
       "type": "house",
       "file": "Assets/Art/Buildings/harbour-row/bld_108_1989.fbx",
       "position": {
-        "x": 88.0,
+        "x": 91.5,
         "y": 7.174,
         "z": 0.0
       },
@@ -184,7 +184,7 @@
       "type": "warehouse",
       "file": "Assets/Art/Buildings/harbour-row/bld_109_1989.fbx",
       "position": {
-        "x": 100.0,
+        "x": 103.5,
         "y": 7.179,
         "z": 0.0
       },
@@ -198,12 +198,192 @@
       "type": "warehouse",
       "file": "Assets/Art/Buildings/harbour-row/bld_110_1989.fbx",
       "position": {
-        "x": 111.5,
+        "x": 115.0,
         "y": 6.6501,
         "z": 0.0
       },
       "lit": [],
       "tris": 5572
+    },
+    {
+      "id": 201,
+      "type": "house",
+      "file": "Assets/Art/Buildings/harbour-row/bld_201_1989.fbx",
+      "position": {
+        "x": 2.0,
+        "y": 30.4413,
+        "z": 6.0
+      },
+      "lit": [],
+      "tris": 7644
+    },
+    {
+      "id": 202,
+      "type": "house",
+      "file": "Assets/Art/Buildings/harbour-row/bld_202_1989.fbx",
+      "position": {
+        "x": 14.5,
+        "y": 33.3199,
+        "z": 6.0
+      },
+      "lit": [],
+      "tris": 13976
+    },
+    {
+      "id": 203,
+      "type": "house",
+      "file": "Assets/Art/Buildings/harbour-row/bld_203_1989.fbx",
+      "position": {
+        "x": 27.0,
+        "y": 32.1132,
+        "z": 6.0
+      },
+      "lit": [],
+      "tris": 10836
+    },
+    {
+      "id": 204,
+      "type": "house",
+      "file": "Assets/Art/Buildings/harbour-row/bld_204_1989.fbx",
+      "position": {
+        "x": 39.5,
+        "y": 30.5997,
+        "z": 6.0
+      },
+      "lit": [],
+      "tris": 8708
+    },
+    {
+      "id": 205,
+      "type": "house",
+      "file": "Assets/Art/Buildings/harbour-row/bld_205_1989.fbx",
+      "position": {
+        "x": 59.0,
+        "y": 32.9697,
+        "z": 6.0
+      },
+      "lit": [],
+      "tris": 18492
+    },
+    {
+      "id": 206,
+      "type": "house",
+      "file": "Assets/Art/Buildings/harbour-row/bld_206_1989.fbx",
+      "position": {
+        "x": 73.0,
+        "y": 32.6581,
+        "z": 6.0
+      },
+      "lit": [],
+      "tris": 13696
+    },
+    {
+      "id": 207,
+      "type": "house",
+      "file": "Assets/Art/Buildings/harbour-row/bld_207_1989.fbx",
+      "position": {
+        "x": 85.5,
+        "y": 32.2974,
+        "z": 6.0
+      },
+      "lit": [],
+      "tris": 6516
+    },
+    {
+      "id": 208,
+      "type": "house",
+      "file": "Assets/Art/Buildings/harbour-row/bld_208_1989.fbx",
+      "position": {
+        "x": 99.0,
+        "y": 33.0542,
+        "z": 6.0
+      },
+      "lit": [],
+      "tris": 12480
+    },
+    {
+      "id": 301,
+      "type": "house",
+      "file": "Assets/Art/Buildings/harbour-row/bld_301_1989.fbx",
+      "position": {
+        "x": 4.5,
+        "y": 52.9595,
+        "z": 13.0
+      },
+      "lit": [],
+      "tris": 6080
+    },
+    {
+      "id": 302,
+      "type": "house",
+      "file": "Assets/Art/Buildings/harbour-row/bld_302_1989.fbx",
+      "position": {
+        "x": 17.5,
+        "y": 54.6097,
+        "z": 13.0
+      },
+      "lit": [],
+      "tris": 6824
+    },
+    {
+      "id": 303,
+      "type": "house",
+      "file": "Assets/Art/Buildings/harbour-row/bld_303_1989.fbx",
+      "position": {
+        "x": 30.0,
+        "y": 52.9606,
+        "z": 13.0
+      },
+      "lit": [],
+      "tris": 9640
+    },
+    {
+      "id": 304,
+      "type": "house",
+      "file": "Assets/Art/Buildings/harbour-row/bld_304_1989.fbx",
+      "position": {
+        "x": 41.0,
+        "y": 52.8996,
+        "z": 13.0
+      },
+      "lit": [],
+      "tris": 5272
+    },
+    {
+      "id": 305,
+      "type": "house",
+      "file": "Assets/Art/Buildings/harbour-row/bld_305_1989.fbx",
+      "position": {
+        "x": 59.0,
+        "y": 53.5447,
+        "z": 13.0
+      },
+      "lit": [],
+      "tris": 11864
+    },
+    {
+      "id": 306,
+      "type": "house",
+      "file": "Assets/Art/Buildings/harbour-row/bld_306_1989.fbx",
+      "position": {
+        "x": 71.5,
+        "y": 53.5642,
+        "z": 13.0
+      },
+      "lit": [],
+      "tris": 7500
+    },
+    {
+      "id": 307,
+      "type": "house",
+      "file": "Assets/Art/Buildings/harbour-row/bld_307_1989.fbx",
+      "position": {
+        "x": 85.0,
+        "y": 53.2593,
+        "z": 13.0
+      },
+      "lit": [],
+      "tris": 7692
     }
   ],
   "lamps": [
@@ -231,7 +411,7 @@
       "id": "lamp-3",
       "variant": "pole-1983",
       "position": {
-        "x": 59.0,
+        "x": 62.5,
         "y": -1.45,
         "z": 0.0
       },
@@ -241,7 +421,7 @@
       "id": "lamp-4",
       "variant": "post-1934",
       "position": {
-        "x": 82.0,
+        "x": 85.5,
         "y": -1.45,
         "z": 0.0
       },
@@ -251,7 +431,7 @@
       "id": "lamp-5",
       "variant": "pole-1965",
       "position": {
-        "x": 106.5,
+        "x": 110.0,
         "y": -1.45,
         "z": 0.0
       },
@@ -262,117 +442,122 @@
     "variant": "bollard-cast-iron",
     "positions": [
       {
-        "x": -31.5,
+        "x": -33.5,
         "y": -15.15,
         "z": 0.0
       },
       {
-        "x": -22.5,
+        "x": -24.5,
         "y": -15.15,
         "z": 0.0
       },
       {
-        "x": -13.5,
+        "x": -15.5,
         "y": -15.15,
         "z": 0.0
       },
       {
-        "x": -4.5,
+        "x": -6.5,
         "y": -15.15,
         "z": 0.0
       },
       {
-        "x": 4.5,
+        "x": 2.5,
         "y": -15.15,
         "z": 0.0
       },
       {
-        "x": 13.5,
+        "x": 11.5,
         "y": -15.15,
         "z": 0.0
       },
       {
-        "x": 22.5,
+        "x": 20.5,
         "y": -15.15,
         "z": 0.0
       },
       {
-        "x": 31.5,
+        "x": 29.5,
         "y": -15.15,
         "z": 0.0
       },
       {
-        "x": 40.5,
+        "x": 38.5,
         "y": -15.15,
         "z": 0.0
       },
       {
-        "x": 49.5,
+        "x": 47.5,
         "y": -15.15,
         "z": 0.0
       },
       {
-        "x": 58.5,
+        "x": 56.5,
         "y": -15.15,
         "z": 0.0
       },
       {
-        "x": 67.5,
+        "x": 65.5,
         "y": -15.15,
         "z": 0.0
       },
       {
-        "x": 76.5,
+        "x": 74.5,
         "y": -15.15,
         "z": 0.0
       },
       {
-        "x": 85.5,
+        "x": 83.5,
         "y": -15.15,
         "z": 0.0
       },
       {
-        "x": 94.5,
+        "x": 92.5,
         "y": -15.15,
         "z": 0.0
       },
       {
-        "x": 103.5,
+        "x": 101.5,
         "y": -15.15,
         "z": 0.0
       },
       {
-        "x": 112.5,
+        "x": 110.5,
         "y": -15.15,
         "z": 0.0
       },
       {
-        "x": 121.5,
+        "x": 119.5,
         "y": -15.15,
         "z": 0.0
       },
       {
-        "x": 130.5,
+        "x": 128.5,
         "y": -15.15,
         "z": 0.0
       },
       {
-        "x": 139.5,
+        "x": 137.5,
         "y": -15.15,
         "z": 0.0
       },
       {
-        "x": 148.5,
+        "x": 146.5,
         "y": -15.15,
         "z": 0.0
       },
       {
-        "x": 157.5,
+        "x": 155.5,
         "y": -15.15,
         "z": 0.0
       },
       {
-        "x": 166.5,
+        "x": 164.5,
+        "y": -15.15,
+        "z": 0.0
+      },
+      {
+        "x": 173.5,
         "y": -15.15,
         "z": 0.0
       }
@@ -511,7 +696,170 @@
       "kerb",
       "quay_wall",
       "setts_mean",
+      "asphalt",
+      "gravel",
+      "drystone",
+      "rock",
       "grass"
     ]
+  },
+  "slope": {
+    "levels": [
+      {
+        "name": "Harbour Row yards",
+        "y0": 0.0,
+        "y1": 21.0,
+        "z": 0.0,
+        "surface": "grass",
+        "lane": {
+          "y0": 0.0,
+          "y1": 0.0,
+          "surface": ""
+        }
+      },
+      {
+        "name": "\u00d8vre gate",
+        "y0": 21.0,
+        "y1": 44.0,
+        "z": 6.0,
+        "surface": "grass",
+        "lane": {
+          "y0": 21.5,
+          "y1": 25.5,
+          "surface": "asphalt"
+        }
+      },
+      {
+        "name": "Bakken",
+        "y0": 44.0,
+        "y1": 62.0,
+        "z": 13.0,
+        "surface": "grass",
+        "lane": {
+          "y0": 44.5,
+          "y1": 48.0,
+          "surface": "gravel"
+        }
+      }
+    ],
+    "stairs": [
+      {
+        "name": "Smauet",
+        "x": 49.7,
+        "width": 2.4,
+        "path": [
+          {
+            "y": 0.0,
+            "z": 0.0
+          },
+          {
+            "y": 9.5,
+            "z": 0.0
+          },
+          {
+            "y": 21.0,
+            "z": 6.0
+          }
+        ]
+      },
+      {
+        "name": "Smauet, upper",
+        "x": 49.7,
+        "width": 2.2,
+        "path": [
+          {
+            "y": 25.5,
+            "z": 6.0
+          },
+          {
+            "y": 27.0,
+            "z": 6.0
+          },
+          {
+            "y": 44.0,
+            "z": 13.0
+          }
+        ]
+      }
+    ],
+    "hillside": [
+      {
+        "y": 62.0,
+        "z": 13.0
+      },
+      {
+        "y": 90.0,
+        "z": 24.0
+      },
+      {
+        "y": 140.0,
+        "z": 45.0
+      },
+      {
+        "y": 300.0,
+        "z": 62.0
+      },
+      {
+        "y": 1300.0,
+        "z": 70.0
+      }
+    ],
+    "ridges": [
+      {
+        "name": "the headland across the harbour mouth",
+        "ax": -1600.0,
+        "ay": -700.0,
+        "bx": -350.0,
+        "by": -260.0,
+        "height": 45.0,
+        "width": 320.0
+      },
+      {
+        "name": "the hill west of the bay",
+        "ax": -90.0,
+        "ay": 120.0,
+        "bx": -420.0,
+        "by": -170.0,
+        "height": 130.0,
+        "width": 260.0
+      },
+      {
+        "name": "the hill east of the bay",
+        "ax": 270.0,
+        "ay": 140.0,
+        "bx": 620.0,
+        "by": -140.0,
+        "height": 160.0,
+        "width": 300.0
+      },
+      {
+        "name": "the near mountains",
+        "ax": -1800.0,
+        "ay": 900.0,
+        "bx": 2200.0,
+        "by": 1050.0,
+        "height": 420.0,
+        "width": 1100.0
+      },
+      {
+        "name": "the fells",
+        "ax": -4500.0,
+        "ay": 2400.0,
+        "bx": 5000.0,
+        "by": 2700.0,
+        "height": 760.0,
+        "width": 2200.0
+      },
+      {
+        "name": "the high mountains",
+        "ax": -10000.0,
+        "ay": 6000.0,
+        "bx": 11000.0,
+        "by": 5600.0,
+        "height": 1250.0,
+        "width": 4500.0
+      }
+    ],
+    "walls": "dry_stone"
   }
 }

@@ -41,7 +41,26 @@ namespace Overstory.EditorTools
             }
         }
 
-        public static void Still(Camera cam, string file)
+        /// <summary>The clay pass: the hero slice in grey from the city view's middle stop and its variants.</summary>
+        public static void Clay()
+        {
+            string dir = Path.GetFullPath(Path.Combine(Application.dataPath, "..", "..", "reviews", "lt1", "clay"));
+            Directory.CreateDirectory(dir);
+            EditorSceneManager.OpenScene(ScenePath, OpenSceneMode.Single);
+            var stage = Object.FindAnyObjectByType<StreetStage>();
+            stage.rig = AssetDatabase.LoadAssetAtPath<LightRig>("Assets/Experiments/LT1/Light/LT1_Clay.asset");
+            stage.clay = true;
+            foreach (var (name, _, _) in LT1Setup.CityShots)
+            {
+                stage.shot = AssetDatabase.LoadAssetAtPath<CameraShot>($"Assets/Experiments/LT1/Views/LT1_City_{name}.asset");
+                stage.Apply();
+                string file = Path.Combine(dir, $"lt1-clay-{name.ToLowerInvariant()}.png");
+                Still(stage.view, file, grey: false);
+                Debug.Log($"[LT1Render] {file}");
+            }
+        }
+
+        public static void Still(Camera cam, string file, bool grey = true)
         {
             var big = new RenderTexture(Width * Super, Height * Super, 24, RenderTextureFormat.ARGB32, RenderTextureReadWrite.sRGB);
             var small = new RenderTexture(Width, Height, 0, RenderTextureFormat.ARGB32, RenderTextureReadWrite.sRGB);
@@ -63,6 +82,11 @@ namespace Overstory.EditorTools
                 tex.Apply();
                 RenderTexture.active = prev;
                 File.WriteAllBytes(file, tex.EncodeToPNG());
+                if (!grey)
+                {
+                    Object.DestroyImmediate(tex);
+                    return;
+                }
 
                 // the value check: luminance from linear light, written back as sRGB
                 var px = tex.GetPixels32();

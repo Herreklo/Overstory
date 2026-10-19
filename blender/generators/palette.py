@@ -75,6 +75,10 @@ SWATCHES = {
     "kerb": (126, 126, 122),
     "quay_wall": (102, 98, 92),
     "setts_mean": (103, 101, 97),
+    "asphalt": (74, 75, 77),
+    "gravel": (128, 124, 116),
+    "drystone": (116, 112, 104),
+    "rock": (106, 105, 101),
     "grass": (62, 74, 50),
 }
 
@@ -97,7 +101,7 @@ GROUPS = ("window", "lamp")
 
 # Paving: where puddles lie (0.5), and sett paving whose stones and joints a distant camera sees
 # as one tone, setts_mean (1.0). Written to palette_glow.png's blue channel.
-PAVING = {"flags": 0.5, "setts_light": 1.0, "setts_mid": 1.0, "setts_dark": 1.0, "joint": 1.0, "setts_mean": 1.0}
+PAVING = {"flags": 0.5, "asphalt": 0.5, "gravel": 0.5, "setts_light": 1.0, "setts_mid": 1.0, "setts_dark": 1.0, "joint": 1.0, "setts_mean": 1.0}
 
 # How each swatch's surface behaves: (smoothness, metallic, porosity), 0-1. Porosity is how
 # much rain darkens it and how little it shines when wet: stone and flags soak, glazed tiles
@@ -114,7 +118,8 @@ SURFACE = {
     "roof_slate": (0.35, 0.0, 0.1), "roof_ridge": (0.3, 0.0, 0.3),
     "stone": (0.18, 0.0, 0.45), "stone_dark": (0.18, 0.0, 0.45), "kerb": (0.2, 0.0, 0.45),
     "setts_light": (0.2, 0.0, 0.65), "setts_mid": (0.2, 0.0, 0.65), "setts_dark": (0.2, 0.0, 0.65),
-    "joint": (0.1, 0.0, 0.6), "setts_mean": (0.2, 0.0, 0.65), "flags": (0.12, 0.0, 0.65), "quay_wall": (0.15, 0.0, 0.55),
+    "joint": (0.1, 0.0, 0.6), "setts_mean": (0.2, 0.0, 0.65), "asphalt": (0.3, 0.0, 0.3),
+    "gravel": (0.08, 0.0, 0.7), "drystone": (0.15, 0.0, 0.55), "rock": (0.2, 0.0, 0.4), "flags": (0.12, 0.0, 0.65), "quay_wall": (0.15, 0.0, 0.55),
     "brick": (0.12, 0.0, 0.6), "render_white": (0.1, 0.0, 0.55), "ground": (0.08, 0.0, 0.7),
     "grass": (0.05, 0.0, 0.4), "wood": (0.15, 0.0, 0.6), "shadow": (0.05, 0.0, 0.5),
     "curtain": (0.1, 0.0, 0.0), "curtain_warm": (0.1, 0.0, 0.0),

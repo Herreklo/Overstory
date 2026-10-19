@@ -7,7 +7,7 @@
     "name": "Harbour Row",
     "note": "The street in front of the plots, authored for LT1. Lengths in millimetres. x runs along the street as in the plots; y is 0 at the building line (the plot fronts) and negative towards the harbour. Streets and quays will come from the fabric pass (engine-requests: open items).",
     "x0": -40000,
-    "x1": 175000,
+    "x1": 180000,
     "pavement": {
       "width": 1800,
       "surface": "flags",
@@ -95,7 +95,7 @@
       },
       {
         "id": "lamp-3",
-        "x": 59000,
+        "x": 62500,
         "y": -1450,
         "kind": "pole",
         "installed": 1983,
@@ -104,7 +104,7 @@
       },
       {
         "id": "lamp-4",
-        "x": 82000,
+        "x": 85500,
         "y": -1450,
         "kind": "post",
         "installed": 1934,
@@ -113,7 +113,7 @@
       },
       {
         "id": "lamp-5",
-        "x": 106500,
+        "x": 110000,
         "y": -1450,
         "kind": "pole",
         "installed": 1965,
@@ -121,7 +121,192 @@
         "cause": "the council replaces the old posts along the road"
       }
     ],
-    "provenance": "authored"
+    "provenance": "authored",
+    "slope": {
+      "note": "The town above Harbour Row, authored for LT1's hero frame. Levels stand behind each other, each held by a dry-stone retaining wall at its front edge (y0); a lane runs along each. The stepped lane climbs from the quay between 104 and 105. Beyond the last level the hillside climbs to a plateau, and ridges stand in the distance. Lengths in millimetres. Terrain will come from the fabric pass (engine-requests: open items).",
+      "levels": [
+        {
+          "name": "Harbour Row yards",
+          "y0": 0,
+          "y1": 21000,
+          "z": 0,
+          "surface": "grass"
+        },
+        {
+          "name": "\u00d8vre gate",
+          "y0": 21000,
+          "y1": 44000,
+          "z": 6000,
+          "surface": "grass",
+          "lane": {
+            "y0": 21500,
+            "y1": 25500,
+            "surface": "asphalt",
+            "laid": 1968,
+            "cause": "the lane is asphalted with the new water main"
+          }
+        },
+        {
+          "name": "Bakken",
+          "y0": 44000,
+          "y1": 62000,
+          "z": 13000,
+          "surface": "grass",
+          "lane": {
+            "y0": 44500,
+            "y1": 48000,
+            "surface": "gravel"
+          }
+        }
+      ],
+      "walls": {
+        "kind": "dry_stone",
+        "cause": "terraced as the town climbed the hill"
+      },
+      "stairs": [
+        {
+          "name": "Smauet",
+          "x": 49700,
+          "width": 2400,
+          "path": [
+            {
+              "y": 0,
+              "z": 0
+            },
+            {
+              "y": 9500,
+              "z": 0
+            },
+            {
+              "y": 21000,
+              "z": 6000
+            }
+          ]
+        },
+        {
+          "name": "Smauet, upper",
+          "x": 49700,
+          "width": 2200,
+          "path": [
+            {
+              "y": 25500,
+              "z": 6000
+            },
+            {
+              "y": 27000,
+              "z": 6000
+            },
+            {
+              "y": 44000,
+              "z": 13000
+            }
+          ]
+        }
+      ],
+      "hillside": [
+        {
+          "y": 62000,
+          "z": 13000
+        },
+        {
+          "y": 90000,
+          "z": 24000
+        },
+        {
+          "y": 140000,
+          "z": 45000
+        },
+        {
+          "y": 300000,
+          "z": 62000
+        },
+        {
+          "y": 1300000,
+          "z": 70000
+        }
+      ],
+      "ridges": [
+        {
+          "name": "the headland across the harbour mouth",
+          "from": {
+            "x": -1600000,
+            "y": -700000
+          },
+          "to": {
+            "x": -350000,
+            "y": -260000
+          },
+          "height": 45000,
+          "width": 320000
+        },
+        {
+          "name": "the hill west of the bay",
+          "from": {
+            "x": -90000,
+            "y": 120000
+          },
+          "to": {
+            "x": -420000,
+            "y": -170000
+          },
+          "height": 130000,
+          "width": 260000
+        },
+        {
+          "name": "the hill east of the bay",
+          "from": {
+            "x": 270000,
+            "y": 140000
+          },
+          "to": {
+            "x": 620000,
+            "y": -140000
+          },
+          "height": 160000,
+          "width": 300000
+        },
+        {
+          "name": "the near mountains",
+          "from": {
+            "x": -1800000,
+            "y": 900000
+          },
+          "to": {
+            "x": 2200000,
+            "y": 1050000
+          },
+          "height": 420000,
+          "width": 1100000
+        },
+        {
+          "name": "the fells",
+          "from": {
+            "x": -4500000,
+            "y": 2400000
+          },
+          "to": {
+            "x": 5000000,
+            "y": 2700000
+          },
+          "height": 760000,
+          "width": 2200000
+        },
+        {
+          "name": "the high mountains",
+          "from": {
+            "x": -10000000,
+            "y": 6000000
+          },
+          "to": {
+            "x": 11000000,
+            "y": 5600000
+          },
+          "height": 1250000,
+          "width": 4500000
+        }
+      ],
+      "provenance": "authored"
+    }
   },
   "buildings": [
     {
@@ -411,7 +596,7 @@
       "type": "house",
       "character": "high_road",
       "plot": {
-        "x": 49000,
+        "x": 52500,
         "w": 9000,
         "d": 8000
       },
@@ -442,7 +627,7 @@
       "type": "house",
       "character": "low_road",
       "plot": {
-        "x": 60500,
+        "x": 64000,
         "w": 10000,
         "d": 8000
       },
@@ -466,7 +651,7 @@
       "type": "house",
       "character": "low_road",
       "plot": {
-        "x": 73000,
+        "x": 76500,
         "w": 7000,
         "d": 7000
       },
@@ -527,7 +712,7 @@
       "type": "house",
       "character": "high_road",
       "plot": {
-        "x": 84000,
+        "x": 87500,
         "w": 8000,
         "d": 7000
       },
@@ -579,7 +764,7 @@
       "type": "warehouse",
       "character": "low_road",
       "plot": {
-        "x": 95500,
+        "x": 99000,
         "w": 9000,
         "d": 14000
       },
@@ -622,7 +807,7 @@
       "type": "warehouse",
       "character": "low_road",
       "plot": {
-        "x": 107500,
+        "x": 111000,
         "w": 8000,
         "d": 13000
       },
@@ -655,6 +840,441 @@
             "scope": "all"
           },
           "cause": "the firm leaves after the crash"
+        }
+      ],
+      "provenance": "authored"
+    },
+    {
+      "id": 201,
+      "type": "house",
+      "character": "high_road",
+      "plot": {
+        "x": -2000,
+        "w": 8000,
+        "d": 7000,
+        "y": 26000,
+        "z": 6000
+      },
+      "events": [
+        {
+          "id": 1,
+          "year": 1868,
+          "kind": "built",
+          "params": {
+            "era": "classical",
+            "storeys": 1500,
+            "wealth": 300
+          },
+          "cause": "a ship's carpenter builds above the quay"
+        },
+        {
+          "id": 2,
+          "year": 1958,
+          "kind": "repainted",
+          "params": {},
+          "cause": "upkeep"
+        }
+      ],
+      "provenance": "authored"
+    },
+    {
+      "id": 202,
+      "type": "house",
+      "character": "high_road",
+      "plot": {
+        "x": 10000,
+        "w": 9000,
+        "d": 8000,
+        "y": 26000,
+        "z": 6000
+      },
+      "events": [
+        {
+          "id": 1,
+          "year": 1902,
+          "kind": "built",
+          "params": {
+            "era": "chalet",
+            "storeys": 2000,
+            "wealth": 600,
+            "with": [
+              "bay"
+            ]
+          },
+          "cause": "a shipping clerk builds in the new style"
+        }
+      ],
+      "provenance": "authored"
+    },
+    {
+      "id": 203,
+      "type": "house",
+      "character": "high_road",
+      "plot": {
+        "x": 23000,
+        "w": 8000,
+        "d": 7000,
+        "y": 26000,
+        "z": 6000
+      },
+      "events": [
+        {
+          "id": 1,
+          "year": 1879,
+          "kind": "built",
+          "params": {
+            "era": "chalet",
+            "storeys": 1500,
+            "wealth": 350,
+            "with": [
+              "bislag"
+            ]
+          },
+          "cause": "a cooper builds"
+        },
+        {
+          "id": 2,
+          "year": 1971,
+          "kind": "windows_replaced",
+          "params": {
+            "scope": "all"
+          },
+          "cause": "new windows, cheaply"
+        }
+      ],
+      "provenance": "authored"
+    },
+    {
+      "id": 204,
+      "type": "house",
+      "character": "high_road",
+      "plot": {
+        "x": 35000,
+        "w": 9000,
+        "d": 8000,
+        "y": 26000,
+        "z": 6000
+      },
+      "events": [
+        {
+          "id": 1,
+          "year": 1934,
+          "kind": "built",
+          "params": {
+            "era": "functionalist",
+            "storeys": 2000,
+            "wealth": 450
+          },
+          "cause": "a teacher builds after the old house burned"
+        }
+      ],
+      "provenance": "authored"
+    },
+    {
+      "id": 205,
+      "type": "house",
+      "character": "high_road",
+      "plot": {
+        "x": 55000,
+        "w": 8000,
+        "d": 8000,
+        "y": 26000,
+        "z": 6000
+      },
+      "events": [
+        {
+          "id": 1,
+          "year": 1911,
+          "kind": "built",
+          "params": {
+            "era": "jugend",
+            "storeys": 2000,
+            "wealth": 700,
+            "roof": "mansard"
+          },
+          "cause": "the cannery's manager builds"
+        }
+      ],
+      "provenance": "authored"
+    },
+    {
+      "id": 206,
+      "type": "house",
+      "character": "high_road",
+      "plot": {
+        "x": 68500,
+        "w": 9000,
+        "d": 7000,
+        "y": 26000,
+        "z": 6000
+      },
+      "events": [
+        {
+          "id": 1,
+          "year": 1897,
+          "kind": "built",
+          "params": {
+            "era": "chalet",
+            "storeys": 1500,
+            "wealth": 400,
+            "with": [
+              "ark"
+            ]
+          },
+          "cause": "a fish merchant builds"
+        }
+      ],
+      "provenance": "authored"
+    },
+    {
+      "id": 207,
+      "type": "house",
+      "character": "low_road",
+      "plot": {
+        "x": 81500,
+        "w": 8000,
+        "d": 7000,
+        "y": 26000,
+        "z": 6000
+      },
+      "events": [
+        {
+          "id": 1,
+          "year": 1956,
+          "kind": "built",
+          "params": {
+            "era": "postwar",
+            "storeys": 1500,
+            "wealth": 350
+          },
+          "cause": "a young family builds on a cleared plot"
+        }
+      ],
+      "provenance": "authored"
+    },
+    {
+      "id": 208,
+      "type": "house",
+      "character": "high_road",
+      "plot": {
+        "x": 94500,
+        "w": 9000,
+        "d": 8000,
+        "y": 26000,
+        "z": 6000
+      },
+      "events": [
+        {
+          "id": 1,
+          "year": 1888,
+          "kind": "built",
+          "params": {
+            "era": "chalet",
+            "storeys": 2000,
+            "wealth": 500
+          },
+          "cause": "a skipper builds"
+        },
+        {
+          "id": 2,
+          "year": 1979,
+          "kind": "repainted",
+          "params": {},
+          "cause": "new owners"
+        }
+      ],
+      "provenance": "authored"
+    },
+    {
+      "id": 301,
+      "type": "house",
+      "character": "high_road",
+      "plot": {
+        "x": 1000,
+        "w": 7000,
+        "d": 7000,
+        "y": 48500,
+        "z": 13000
+      },
+      "events": [
+        {
+          "id": 1,
+          "year": 1832,
+          "kind": "built",
+          "params": {
+            "era": "classical",
+            "storeys": 1500,
+            "wealth": 200
+          },
+          "cause": "a fisherman builds on the hill"
+        }
+      ],
+      "provenance": "authored"
+    },
+    {
+      "id": 302,
+      "type": "house",
+      "character": "high_road",
+      "plot": {
+        "x": 14000,
+        "w": 7000,
+        "d": 7000,
+        "y": 48500,
+        "z": 13000
+      },
+      "events": [
+        {
+          "id": 1,
+          "year": 1847,
+          "kind": "built",
+          "params": {
+            "era": "classical",
+            "storeys": 1500,
+            "wealth": 250,
+            "with": [
+              "bislag"
+            ]
+          },
+          "cause": "a net maker builds"
+        }
+      ],
+      "provenance": "authored"
+    },
+    {
+      "id": 303,
+      "type": "house",
+      "character": "high_road",
+      "plot": {
+        "x": 26000,
+        "w": 8000,
+        "d": 7000,
+        "y": 48500,
+        "z": 13000
+      },
+      "events": [
+        {
+          "id": 1,
+          "year": 1861,
+          "kind": "built",
+          "params": {
+            "era": "classical",
+            "storeys": 1500,
+            "wealth": 300
+          },
+          "cause": "a boatbuilder builds"
+        }
+      ],
+      "provenance": "authored"
+    },
+    {
+      "id": 304,
+      "type": "house",
+      "character": "low_road",
+      "plot": {
+        "x": 37500,
+        "w": 7000,
+        "d": 7000,
+        "y": 48500,
+        "z": 13000
+      },
+      "events": [
+        {
+          "id": 1,
+          "year": 1826,
+          "kind": "built",
+          "params": {
+            "era": "classical",
+            "storeys": 1500,
+            "wealth": 200
+          },
+          "cause": "a fisherman builds"
+        },
+        {
+          "id": 2,
+          "year": 1965,
+          "kind": "windows_replaced",
+          "params": {
+            "scope": "street"
+          },
+          "cause": "new windows to the street"
+        }
+      ],
+      "provenance": "authored"
+    },
+    {
+      "id": 305,
+      "type": "house",
+      "character": "high_road",
+      "plot": {
+        "x": 55000,
+        "w": 8000,
+        "d": 7000,
+        "y": 48500,
+        "z": 13000
+      },
+      "events": [
+        {
+          "id": 1,
+          "year": 1874,
+          "kind": "built",
+          "params": {
+            "era": "chalet",
+            "storeys": 1500,
+            "wealth": 300
+          },
+          "cause": "a pilot builds"
+        }
+      ],
+      "provenance": "authored"
+    },
+    {
+      "id": 306,
+      "type": "house",
+      "character": "high_road",
+      "plot": {
+        "x": 68000,
+        "w": 7000,
+        "d": 7000,
+        "y": 48500,
+        "z": 13000
+      },
+      "events": [
+        {
+          "id": 1,
+          "year": 1890,
+          "kind": "built",
+          "params": {
+            "era": "chalet",
+            "storeys": 1500,
+            "wealth": 350
+          },
+          "cause": "a shoemaker builds"
+        }
+      ],
+      "provenance": "authored"
+    },
+    {
+      "id": 307,
+      "type": "house",
+      "character": "high_road",
+      "plot": {
+        "x": 81000,
+        "w": 8000,
+        "d": 7000,
+        "y": 48500,
+        "z": 13000
+      },
+      "events": [
+        {
+          "id": 1,
+          "year": 1853,
+          "kind": "built",
+          "params": {
+            "era": "classical",
+            "storeys": 1500,
+            "wealth": 250
+          },
+          "cause": "a sailmaker builds"
         }
       ],
       "provenance": "authored"

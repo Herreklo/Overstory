@@ -37,7 +37,7 @@ RenderSettings:
   m_ReflectionBounces: 1
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
-  m_Sun: {fileID: 1021528110}
+  m_Sun: {fileID: 921425863}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -119,7 +119,7 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
---- !u!1 &103980288
+--- !u!1 &253782087
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -127,173 +127,39 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 103980291}
-  - component: {fileID: 103980289}
-  - component: {fileID: 103980290}
+  - component: {fileID: 253782089}
+  - component: {fileID: 253782088}
   m_Layer: 0
-  m_Name: Camera
-  m_TagString: MainCamera
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!20 &103980289
-Camera:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 103980288}
-  m_Enabled: 1
-  serializedVersion: 2
-  m_ClearFlags: 1
-  m_BackGroundColor: {r: 0.19215687, g: 0.3019608, b: 0.4745098, a: 0}
-  m_projectionMatrixMode: 1
-  m_GateFitMode: 2
-  m_FOVAxisMode: 0
-  m_Iso: 200
-  m_ShutterSpeed: 0.005
-  m_Aperture: 16
-  m_FocusDistance: 10
-  m_FocalLength: 50
-  m_BladeCount: 5
-  m_Curvature: {x: 2, y: 11}
-  m_BarrelClipping: 0.25
-  m_Anamorphism: 0
-  m_SensorSize: {x: 36, y: 24}
-  m_LensShift: {x: 0, y: 0}
-  m_NormalizedViewPortRect:
-    serializedVersion: 2
-    x: 0
-    y: 0
-    width: 1
-    height: 1
-  near clip plane: 0.2
-  far clip plane: 1500
-  field of view: 42
-  orthographic: 0
-  orthographic size: 5
-  m_Depth: 0
-  m_CullingMask:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_RenderingPath: -1
-  m_TargetTexture: {fileID: 0}
-  m_TargetDisplay: 0
-  m_TargetEye: 3
-  m_HDR: 1
-  m_AllowMSAA: 1
-  m_AllowDynamicResolution: 0
-  m_ForceIntoRT: 0
-  m_OcclusionCulling: 1
-  m_StereoConvergence: 10
-  m_StereoSeparation: 0.022
---- !u!114 &103980290
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 103980288}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a79441f348de89743a2939f4d699eac1, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Unity.RenderPipelines.Universal.Runtime::UnityEngine.Rendering.Universal.UniversalAdditionalCameraData
-  m_RenderShadows: 1
-  m_RequiresDepthTextureOption: 2
-  m_RequiresOpaqueTextureOption: 2
-  m_CameraType: 0
-  m_Cameras: []
-  m_RendererIndex: -1
-  m_VolumeLayerMask:
-    serializedVersion: 2
-    m_Bits: 1
-  m_VolumeTrigger: {fileID: 0}
-  m_VolumeFrameworkUpdateModeOption: 2
-  m_RenderPostProcessing: 1
-  m_Antialiasing: 0
-  m_AntialiasingQuality: 2
-  m_StopNaN: 0
-  m_Dithering: 1
-  m_ClearDepth: 1
-  m_AllowXRRendering: 1
-  m_AllowHDROutput: 1
-  m_UseScreenCoordOverride: 0
-  m_ScreenSizeOverride: {x: 0, y: 0, z: 0, w: 0}
-  m_ScreenCoordScaleBias: {x: 0, y: 0, z: 0, w: 0}
-  m_RequiresDepthTexture: 0
-  m_RequiresColorTexture: 0
-  m_TaaSettings:
-    m_Quality: 3
-    m_FrameInfluence: 0.1
-    m_JitterScale: 1
-    m_MipBias: 0
-    m_VarianceClampScale: 0.9
-    m_ContrastAdaptiveSharpening: 0
-  m_Version: 2
---- !u!4 &103980291
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 103980288}
-  serializedVersion: 2
-  m_LocalRotation: {x: -0.014092096, y: 0.6362558, z: 0.011625336, w: 0.7712619}
-  m_LocalPosition: {x: -7, y: 1.65, z: -8.6}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &555968792
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 555968794}
-  - component: {fileID: 555968793}
-  m_Layer: 0
-  m_Name: Stage
+  m_Name: Grade
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &555968793
+--- !u!114 &253782088
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 555968792}
+  m_GameObject: {fileID: 253782087}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7d66c5e7f4ed240e7be02785e23cc042, type: 3}
+  m_Script: {fileID: 11500000, guid: 172515602e62fb746b5d573b38a5fe58, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Overstory.Scenes.StreetStage
-  street: {fileID: 1625943414}
-  sun: {fileID: 1021528110}
-  view: {fileID: 103980289}
-  volume: {fileID: 1680667489}
-  sky: {fileID: 2100000, guid: b64962f4757bf4444b0088795b6c46cd, type: 2}
-  paletteAlbedo: {fileID: 2800000, guid: 8b6fc81fe3c704040a30ebb7cf05b827, type: 3}
-  paletteEmit: {fileID: 2800000, guid: 9be05642766824d5b9fbf3875ca21cb9, type: 3}
-  paletteGlow: {fileID: 2800000, guid: 448a19048fa4340f09b442cfc79ed877, type: 3}
-  paletteSurface: {fileID: 2800000, guid: a85ed79538091476e98702328be573db, type: 3}
-  rig: {fileID: 11400000, guid: 6974305bdc08f49df988833a81a1b58d, type: 2}
-  shot: {fileID: 11400000, guid: f6172603931fa4015b5eb1379a80d148, type: 2}
---- !u!4 &555968794
+  m_EditorClassIdentifier: Unity.RenderPipelines.Core.Runtime::UnityEngine.Rendering.Volume
+  m_IsGlobal: 1
+  priority: 0
+  blendDistance: 0
+  weight: 1
+  sharedProfile: {fileID: 0}
+--- !u!4 &253782089
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 555968792}
+  m_GameObject: {fileID: 253782087}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
@@ -302,7 +168,7 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &1021528109
+--- !u!1 &671317194
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -310,8 +176,114 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 1021528111}
-  - component: {fileID: 1021528110}
+  - component: {fileID: 671317196}
+  - component: {fileID: 671317195}
+  m_Layer: 0
+  m_Name: Harbour Row
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &671317195
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 671317194}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d18a332108d394267a2ccdf5b72f908d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Overstory.Assembly.StreetBuilder
+  layout: {fileID: 4900000, guid: 01d3fffcd7f7c4f38ba941f97572e3da, type: 3}
+  streetMaterial: {fileID: 2100000, guid: e5e6503c51dd54de58e12d71cb1db695, type: 2}
+  waterMaterial: {fileID: 2100000, guid: c805df57f5bc9401e82bd76dfb353eea, type: 2}
+  models:
+  - file: Assets/Art/Buildings/harbour-row/bld_101_1989.fbx
+    model: {fileID: 919132149155446097, guid: 42033f379daa04b9385875f4f47c3b32, type: 3}
+  - file: Assets/Art/Buildings/harbour-row/bld_102_1989.fbx
+    model: {fileID: 919132149155446097, guid: 80ca9a4bee59442408c459e50d8e5c8d, type: 3}
+  - file: Assets/Art/Buildings/harbour-row/bld_103_1989.fbx
+    model: {fileID: 919132149155446097, guid: 28ac6506c4cb441ecb1b6e4590ffe273, type: 3}
+  - file: Assets/Art/Buildings/harbour-row/bld_104_1989.fbx
+    model: {fileID: 919132149155446097, guid: b11d553a694ba4f4d9bad29e03f6de9b, type: 3}
+  - file: Assets/Art/Buildings/harbour-row/bld_105_1989.fbx
+    model: {fileID: 919132149155446097, guid: 77685703b17bd4d8ba41d39eccdbd57a, type: 3}
+  - file: Assets/Art/Buildings/harbour-row/bld_106_1989.fbx
+    model: {fileID: 919132149155446097, guid: 5d4dab68a3e9c4cf091f86cac3c49d93, type: 3}
+  - file: Assets/Art/Buildings/harbour-row/bld_107_1989.fbx
+    model: {fileID: 919132149155446097, guid: b58e949b5039c4072acd1a0424bfd70c, type: 3}
+  - file: Assets/Art/Buildings/harbour-row/bld_108_1989.fbx
+    model: {fileID: 919132149155446097, guid: 89bfac9c13a994a2eb55a1677a8ff067, type: 3}
+  - file: Assets/Art/Buildings/harbour-row/bld_109_1989.fbx
+    model: {fileID: 919132149155446097, guid: 417054e4c40a64d58bea44686ed71ee0, type: 3}
+  - file: Assets/Art/Buildings/harbour-row/bld_110_1989.fbx
+    model: {fileID: 919132149155446097, guid: c02f076820cec453989221c7ab0391f9, type: 3}
+  - file: Assets/Art/Buildings/harbour-row/bld_201_1989.fbx
+    model: {fileID: 919132149155446097, guid: 73f841fd800ba4d6b82d13e9ee9bd216, type: 3}
+  - file: Assets/Art/Buildings/harbour-row/bld_202_1989.fbx
+    model: {fileID: 919132149155446097, guid: 8daa1ccd4085b417d9e1a129c4833f4d, type: 3}
+  - file: Assets/Art/Buildings/harbour-row/bld_203_1989.fbx
+    model: {fileID: 919132149155446097, guid: d6ad3b9aa068246628a4f533a2f2b283, type: 3}
+  - file: Assets/Art/Buildings/harbour-row/bld_204_1989.fbx
+    model: {fileID: 919132149155446097, guid: d1d0a2efe48ae478799dba4353661d5a, type: 3}
+  - file: Assets/Art/Buildings/harbour-row/bld_205_1989.fbx
+    model: {fileID: 919132149155446097, guid: 76783533f982f4ad9b6e3975738d6626, type: 3}
+  - file: Assets/Art/Buildings/harbour-row/bld_206_1989.fbx
+    model: {fileID: 919132149155446097, guid: 6a5d22c81f0f54cbd89abb4ec3455214, type: 3}
+  - file: Assets/Art/Buildings/harbour-row/bld_207_1989.fbx
+    model: {fileID: 919132149155446097, guid: 57999806aee794fbfb23adb4e6186110, type: 3}
+  - file: Assets/Art/Buildings/harbour-row/bld_208_1989.fbx
+    model: {fileID: 919132149155446097, guid: 9d12fea84a6884f47b6da253ffb8a0ca, type: 3}
+  - file: Assets/Art/Buildings/harbour-row/bld_301_1989.fbx
+    model: {fileID: 919132149155446097, guid: 79468c02d04f34c8a87dedd32d882f5d, type: 3}
+  - file: Assets/Art/Buildings/harbour-row/bld_302_1989.fbx
+    model: {fileID: 919132149155446097, guid: ccc870ecbb11a499a81d9a001c2038fd, type: 3}
+  - file: Assets/Art/Buildings/harbour-row/bld_303_1989.fbx
+    model: {fileID: 919132149155446097, guid: 870f0f66f35d34fb2b6f0bae2515819a, type: 3}
+  - file: Assets/Art/Buildings/harbour-row/bld_304_1989.fbx
+    model: {fileID: 919132149155446097, guid: a8058ff0585e34459bbf44ffbf912bdc, type: 3}
+  - file: Assets/Art/Buildings/harbour-row/bld_305_1989.fbx
+    model: {fileID: 919132149155446097, guid: 14654b5dac37448748e312350e32a258, type: 3}
+  - file: Assets/Art/Buildings/harbour-row/bld_306_1989.fbx
+    model: {fileID: 919132149155446097, guid: 97eafb0edae3949ab9d1b52d4a5e34f9, type: 3}
+  - file: Assets/Art/Buildings/harbour-row/bld_307_1989.fbx
+    model: {fileID: 919132149155446097, guid: 64bad5eb1031a4e8c8d99e997b1dec0a, type: 3}
+  - file: Assets/Art/Kit/lamp/kit_lamp_post-1934_lod0.fbx
+    model: {fileID: 919132149155446097, guid: 8636bc9b5ebf7486fa03b15ebae87a30, type: 3}
+  - file: Assets/Art/Kit/lamp/kit_lamp_pole-1965_lod0.fbx
+    model: {fileID: 919132149155446097, guid: e97d9a3507cea456bbbd1a8ba46ed5d1, type: 3}
+  - file: Assets/Art/Kit/lamp/kit_lamp_pole-1983_lod0.fbx
+    model: {fileID: 919132149155446097, guid: f8b28d4dacea14621b2f828f34e8d4f5, type: 3}
+  - file: Assets/Art/Kit/bollard/kit_bollard_cast-iron_lod0.fbx
+    model: {fileID: 919132149155446097, guid: c8ad444029db4412aae5ddd104b0cc5c, type: 3}
+--- !u!4 &671317196
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 671317194}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &921425862
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 921425864}
+  - component: {fileID: 921425863}
   m_Layer: 0
   m_Name: Sun
   m_TagString: Untagged
@@ -319,13 +291,13 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!108 &1021528110
+--- !u!108 &921425863
 Light:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1021528109}
+  m_GameObject: {fileID: 921425862}
   m_Enabled: 1
   serializedVersion: 13
   m_Type: 1
@@ -384,13 +356,13 @@ Light:
   m_LightUnit: 1
   m_LuxAtDistance: 1
   m_EnableSpotReflector: 1
---- !u!4 &1021528111
+--- !u!4 &921425864
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1021528109}
+  m_GameObject: {fileID: 921425862}
   serializedVersion: 2
   m_LocalRotation: {x: 0.03313363, y: 0.9667141, z: -0.18791017, w: 0.17045778}
   m_LocalPosition: {x: 0, y: 0, z: 0}
@@ -399,7 +371,7 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &1625943413
+--- !u!1 &1260760631
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -407,75 +379,127 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 1625943415}
-  - component: {fileID: 1625943414}
+  - component: {fileID: 1260760634}
+  - component: {fileID: 1260760632}
+  - component: {fileID: 1260760633}
   m_Layer: 0
-  m_Name: Harbour Row
-  m_TagString: Untagged
+  m_Name: Camera
+  m_TagString: MainCamera
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &1625943414
+--- !u!20 &1260760632
+Camera:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1260760631}
+  m_Enabled: 1
+  serializedVersion: 2
+  m_ClearFlags: 1
+  m_BackGroundColor: {r: 0.19215687, g: 0.3019608, b: 0.4745098, a: 0}
+  m_projectionMatrixMode: 1
+  m_GateFitMode: 2
+  m_FOVAxisMode: 0
+  m_Iso: 200
+  m_ShutterSpeed: 0.005
+  m_Aperture: 16
+  m_FocusDistance: 10
+  m_FocalLength: 50
+  m_BladeCount: 5
+  m_Curvature: {x: 2, y: 11}
+  m_BarrelClipping: 0.25
+  m_Anamorphism: 0
+  m_SensorSize: {x: 36, y: 24}
+  m_LensShift: {x: 0, y: 0}
+  m_NormalizedViewPortRect:
+    serializedVersion: 2
+    x: 0
+    y: 0
+    width: 1
+    height: 1
+  near clip plane: 0.2
+  far clip plane: 1500
+  field of view: 42
+  orthographic: 0
+  orthographic size: 5
+  m_Depth: 0
+  m_CullingMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_RenderingPath: -1
+  m_TargetTexture: {fileID: 0}
+  m_TargetDisplay: 0
+  m_TargetEye: 3
+  m_HDR: 1
+  m_AllowMSAA: 1
+  m_AllowDynamicResolution: 0
+  m_ForceIntoRT: 0
+  m_OcclusionCulling: 1
+  m_StereoConvergence: 10
+  m_StereoSeparation: 0.022
+--- !u!114 &1260760633
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1625943413}
+  m_GameObject: {fileID: 1260760631}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d18a332108d394267a2ccdf5b72f908d, type: 3}
+  m_Script: {fileID: 11500000, guid: a79441f348de89743a2939f4d699eac1, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Overstory.Assembly.StreetBuilder
-  layout: {fileID: 4900000, guid: 01d3fffcd7f7c4f38ba941f97572e3da, type: 3}
-  streetMaterial: {fileID: 2100000, guid: e5e6503c51dd54de58e12d71cb1db695, type: 2}
-  waterMaterial: {fileID: 2100000, guid: c805df57f5bc9401e82bd76dfb353eea, type: 2}
-  models:
-  - file: Assets/Art/Buildings/harbour-row/bld_101_1989.fbx
-    model: {fileID: 919132149155446097, guid: 42033f379daa04b9385875f4f47c3b32, type: 3}
-  - file: Assets/Art/Buildings/harbour-row/bld_102_1989.fbx
-    model: {fileID: 919132149155446097, guid: 80ca9a4bee59442408c459e50d8e5c8d, type: 3}
-  - file: Assets/Art/Buildings/harbour-row/bld_103_1989.fbx
-    model: {fileID: 919132149155446097, guid: 28ac6506c4cb441ecb1b6e4590ffe273, type: 3}
-  - file: Assets/Art/Buildings/harbour-row/bld_104_1989.fbx
-    model: {fileID: 919132149155446097, guid: b11d553a694ba4f4d9bad29e03f6de9b, type: 3}
-  - file: Assets/Art/Buildings/harbour-row/bld_105_1989.fbx
-    model: {fileID: 919132149155446097, guid: 77685703b17bd4d8ba41d39eccdbd57a, type: 3}
-  - file: Assets/Art/Buildings/harbour-row/bld_106_1989.fbx
-    model: {fileID: 919132149155446097, guid: 5d4dab68a3e9c4cf091f86cac3c49d93, type: 3}
-  - file: Assets/Art/Buildings/harbour-row/bld_107_1989.fbx
-    model: {fileID: 919132149155446097, guid: b58e949b5039c4072acd1a0424bfd70c, type: 3}
-  - file: Assets/Art/Buildings/harbour-row/bld_108_1989.fbx
-    model: {fileID: 919132149155446097, guid: 89bfac9c13a994a2eb55a1677a8ff067, type: 3}
-  - file: Assets/Art/Buildings/harbour-row/bld_109_1989.fbx
-    model: {fileID: 919132149155446097, guid: 417054e4c40a64d58bea44686ed71ee0, type: 3}
-  - file: Assets/Art/Buildings/harbour-row/bld_110_1989.fbx
-    model: {fileID: 919132149155446097, guid: c02f076820cec453989221c7ab0391f9, type: 3}
-  - file: Assets/Art/Kit/lamp/kit_lamp_post-1934_lod0.fbx
-    model: {fileID: 919132149155446097, guid: 8636bc9b5ebf7486fa03b15ebae87a30, type: 3}
-  - file: Assets/Art/Kit/lamp/kit_lamp_pole-1965_lod0.fbx
-    model: {fileID: 919132149155446097, guid: e97d9a3507cea456bbbd1a8ba46ed5d1, type: 3}
-  - file: Assets/Art/Kit/lamp/kit_lamp_pole-1983_lod0.fbx
-    model: {fileID: 919132149155446097, guid: f8b28d4dacea14621b2f828f34e8d4f5, type: 3}
-  - file: Assets/Art/Kit/bollard/kit_bollard_cast-iron_lod0.fbx
-    model: {fileID: 919132149155446097, guid: c8ad444029db4412aae5ddd104b0cc5c, type: 3}
---- !u!4 &1625943415
+  m_EditorClassIdentifier: Unity.RenderPipelines.Universal.Runtime::UnityEngine.Rendering.Universal.UniversalAdditionalCameraData
+  m_RenderShadows: 1
+  m_RequiresDepthTextureOption: 2
+  m_RequiresOpaqueTextureOption: 2
+  m_CameraType: 0
+  m_Cameras: []
+  m_RendererIndex: -1
+  m_VolumeLayerMask:
+    serializedVersion: 2
+    m_Bits: 1
+  m_VolumeTrigger: {fileID: 0}
+  m_VolumeFrameworkUpdateModeOption: 2
+  m_RenderPostProcessing: 1
+  m_Antialiasing: 0
+  m_AntialiasingQuality: 2
+  m_StopNaN: 0
+  m_Dithering: 1
+  m_ClearDepth: 1
+  m_AllowXRRendering: 1
+  m_AllowHDROutput: 1
+  m_UseScreenCoordOverride: 0
+  m_ScreenSizeOverride: {x: 0, y: 0, z: 0, w: 0}
+  m_ScreenCoordScaleBias: {x: 0, y: 0, z: 0, w: 0}
+  m_RequiresDepthTexture: 0
+  m_RequiresColorTexture: 0
+  m_TaaSettings:
+    m_Quality: 3
+    m_FrameInfluence: 0.1
+    m_JitterScale: 1
+    m_MipBias: 0
+    m_VarianceClampScale: 0.9
+    m_ContrastAdaptiveSharpening: 0
+  m_Version: 2
+--- !u!4 &1260760634
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1625943413}
+  m_GameObject: {fileID: 1260760631}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalRotation: {x: -0.014092096, y: 0.6362558, z: 0.011625336, w: 0.7712619}
+  m_LocalPosition: {x: -7, y: 1.65, z: -8.6}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &1680667488
+--- !u!1 &2135968864
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -483,39 +507,46 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 1680667490}
-  - component: {fileID: 1680667489}
+  - component: {fileID: 2135968866}
+  - component: {fileID: 2135968865}
   m_Layer: 0
-  m_Name: Grade
+  m_Name: Stage
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &1680667489
+--- !u!114 &2135968865
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1680667488}
+  m_GameObject: {fileID: 2135968864}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 172515602e62fb746b5d573b38a5fe58, type: 3}
+  m_Script: {fileID: 11500000, guid: 7d66c5e7f4ed240e7be02785e23cc042, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Unity.RenderPipelines.Core.Runtime::UnityEngine.Rendering.Volume
-  m_IsGlobal: 1
-  priority: 0
-  blendDistance: 0
-  weight: 1
-  sharedProfile: {fileID: 0}
---- !u!4 &1680667490
+  m_EditorClassIdentifier: Assembly-CSharp::Overstory.Scenes.StreetStage
+  street: {fileID: 671317195}
+  sun: {fileID: 921425863}
+  view: {fileID: 1260760632}
+  volume: {fileID: 253782088}
+  sky: {fileID: 2100000, guid: b64962f4757bf4444b0088795b6c46cd, type: 2}
+  paletteAlbedo: {fileID: 2800000, guid: 8b6fc81fe3c704040a30ebb7cf05b827, type: 3}
+  paletteEmit: {fileID: 2800000, guid: 9be05642766824d5b9fbf3875ca21cb9, type: 3}
+  paletteGlow: {fileID: 2800000, guid: 448a19048fa4340f09b442cfc79ed877, type: 3}
+  paletteSurface: {fileID: 2800000, guid: a85ed79538091476e98702328be573db, type: 3}
+  rig: {fileID: 11400000, guid: 6974305bdc08f49df988833a81a1b58d, type: 2}
+  shot: {fileID: 11400000, guid: f6172603931fa4015b5eb1379a80d148, type: 2}
+  clay: 0
+--- !u!4 &2135968866
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1680667488}
+  m_GameObject: {fileID: 2135968864}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
@@ -528,8 +559,8 @@ Transform:
 SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
-  - {fileID: 103980291}
-  - {fileID: 1021528111}
-  - {fileID: 1680667490}
-  - {fileID: 1625943415}
-  - {fileID: 555968794}
+  - {fileID: 1260760634}
+  - {fileID: 921425864}
+  - {fileID: 253782089}
+  - {fileID: 671317196}
+  - {fileID: 2135968866}

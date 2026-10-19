@@ -24,6 +24,7 @@ float4 _OS_FogParams;    // x density per metre at the base height, y falloff pe
 float4 _OS_FogSun;       // rgb: extra colour towards the sun (linear), w: how tight that glow is
 float4 _OS_SunDir;       // xyz: towards the sun
 float4 _OS_PavingMeanUV; // xy: the palette UV of setts_mean, the tone a sett pavement averages to
+float _OS_Clay;          // 1: every surface one matte grey, to judge shape and composition alone
 
 struct StreetSurface
 {
@@ -95,6 +96,14 @@ StreetSurface OS_StreetSurface(float2 uv, float3 positionWS, half3 normalWS)
     s.smoothness = smoothness;
     s.metallic = metallic;
     s.normalWS = n;
+    if (_OS_Clay > 0.5)
+    {
+        s.albedo = 0.42;
+        s.emission = 0;
+        s.smoothness = 0.12;
+        s.metallic = 0;
+        s.normalWS = normalWS;
+    }
     return s;
 }
 
@@ -117,6 +126,11 @@ StreetSurface OS_WaterSurface(float3 positionWS, half4 colour, half smoothness, 
     s.smoothness = smoothness;
     s.metallic = 0;
     s.normalWS = normalize(half3(-hx * strength, 2.0 * e, -hz * strength));
+    if (_OS_Clay > 0.5)
+    {
+        s.albedo = 0.16;
+        s.smoothness = 0.55;
+    }
     return s;
 }
 
