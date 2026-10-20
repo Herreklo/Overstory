@@ -101,6 +101,18 @@ What each scenario needs from the town, all on one map:
 
 **During play: change on many clocks.** Each layer changes at its own speed (Brand): crowds, posters and cars by the hour and the week; businesses by the year; paint and cladding by the decade; buildings and streets by the generation; the land by the century. What drives it is the engine's facts: the economy (a boom builds, a bust empties), people (families grow and move out, the young move in), ventures (cheap old space draws artists, then bars, then offices), plans (a bridge opens an island, a road cuts a district), accidents (a fire, a storm) and nature (trees grow, an abandoned yard grows over, the forest takes back pasture).
 
+**Expansion.** The town grows outward into a region that exists before it: farms with their walls and lanes, a fishing village, forest, heath, coast. The land is never spawned when the town reaches it; it is already there, with its own history, and the town grows over it. What it grows over survives as traces: a farm lane becomes a street and keeps its bend, a field wall becomes a garden boundary, the farmhouse stands among the villas, the fishing village's harbour and chapel become a district's heart. The ways a town expands, each a dated event:
+- *along roads:* houses strung out along the road out of town, then filled in behind;
+- *as one planned estate:* a whole district laid out at once by a plan, often only partly built;
+- *by infrastructure:* a railway's station seeds a suburb, a bridge opens an island, a motorway draws offices to the edge;
+- *by absorbing villages:* the town reaches a village and takes it in, and the village keeps its centre;
+- *by new land:* quays pushed out, land filled into the water, forest cleared;
+- *inward:* infill, taller buildings near the centre, plots merged for big blocks in booms.
+
+Expansion stalls at barriers and leaves fringe belts, and the edge is always the newest and rawest place: half-built streets, fields with surveyors' stakes, a farm waiting to be sold. Who grows and how fast comes from the engine (people needing homes, jobs moving, booms and busts); the layout of a new district is generated once, at the event, from rules learned from the hand-made heart and from real places, and stored as facts, so it is the same on every load. Research behind it: growing in eras (Emilien et al. 2012), road networks that grow (Beneš et al. 2014), cities in four dimensions (Weber et al. 2009), parcels (Vanegas et al. 2012), Conzen's fringe belts (`docs/research/generating-the-past.md`).
+
+**From town to metropolis.** A city is the same process run longer and on more seeds: a region of villages and farms that a town grows over, until the villages are districts and each keeps its heart. So later cities are planned as regions first, their hearts are the old villages laid out by hand, and their bodies are grown.
+
 **What the player sees.** The same views across the years: a scenario set in 1960 and one in 2010 meet the same quay, the same corner, the same view from the knoll, each changed by what happened in between.
 
 **Who decides.** These are facts, so the engine's fabric pass owns them (`docs/engine-requests.md`); the plan supplies the setting pack's land and its script of eras. The same machinery grows other towns and, later, cities, each with its own land and script.
@@ -120,7 +132,7 @@ Change is cheap as long as one rule holds: everything that can change is a dated
 
 What keeps change local: layout is data in the setting pack, buildings are assembled from parts, the ground is computed from the land and its cuts, and the world is cut into chunks by plot. What would make it hard, and is avoided: geometry placed by hand in the shipped game (hand block-ins are references, then turned into facts), baked lighting, and meshes that span many plots. Until the engine's fabric pass models buildings and land, the dated facts come from fixtures.
 
-**An early test, before the town grows:** the corner across four dates, rebuilt live in Unity from its facts, including a house demolished and replaced, two plots merged, and the quay pushed out into the basin. It proves runtime assembly and local rebuilds on a small scale.
+**Early tests, before the town grows:** the corner across four dates, rebuilt live in Unity from its facts, including a house demolished and replaced, two plots merged, and the quay pushed out into the basin; it proves runtime assembly and local rebuilds. Then the town's edge from the far stop in 1935, 1960, 1989 and 2020, in clay: farms becoming a garden suburb, the estate laid out, the bridge opening the island; it proves expansion and the traces it leaves.
 
 ## The town around the centre
 
