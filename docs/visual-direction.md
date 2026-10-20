@@ -61,13 +61,13 @@ One style carries a range of moods: moody, cozy, alive, glam. The mood comes fro
 
 ## Views
 
-- The city view: a free perspective camera over the live town, navigated rather than staged. It belongs inside the town: most of the time at roof height among the houses, looking along lanes and streets, not at the town from a distance. Its tilt follows its zoom: steep and map-like when pulled out to navigate, the horizon in frame in the middle, just over the rooftops close in. Shots are composed: a near frame, a lit middle ground, a glimpse beyond (Another World, Cullen's here and there). Silhouettes, Lynch's paths, edges, districts, nodes and landmarks must read from it. The camera is designed early; it is part of the style.
+- The city view: a free perspective camera over the live town, navigated rather than staged. It belongs inside the town, close enough to see the details and feel the place: it runs continuously from just above head height in a lane, where the player moves through the town, up past the roofs to the map. It follows the space under it: low along lanes, over quays and squares, higher over roofs. Most of the time it is among the houses, looking along lanes and streets, not at the town from a distance. Its tilt follows its zoom: steep and map-like when pulled out to navigate, the horizon in frame in the middle, just over the rooftops close in. Shots are composed: a near frame, a lit middle ground, a glimpse beyond (Another World, Cullen's here and there). Silhouettes, Lynch's paths, edges, districts, nodes and landmarks must read from it. The camera is designed early; it is part of the style.
 - Every look is judged from the game's camera. Target frames and sheets use the city view's own stops, lens and tilt, never a place the player cannot put the camera. The player turns the camera any way, so a place is finished in the round as far as the camera can see, and a composed frame is checked against a strip of headings. Close in, the camera sees fronts and ground as much as roofs, because that is where history is read.
 - Scene views: bounded, walkable, staged like a film or theatre set, every light motivated by a real source. Moving between views is a cut or a short move through a doorway.
 
 ## Open, decided by look tests
 
-- The city camera: its zoom stops, tilt and lens (LT1). First values, judged in the beauty corner: the close stop 12 to 15 m above the ground, just over the ridges, with the horizon in frame; the middle stop about 35 m; the far stop about 120 m, steep and map-like; a 35 mm lens close in (about 38° vertical), longer when pulled out, so the town flattens towards a map.
+- The city camera: its zoom stops, tilt and lens (LT1). First values, judged in the beauty corner: the street stop 2.5 to 4 m over a lane or square, gliding along it; the close stop 12 to 15 m above the ground, just over the ridges, with the horizon in frame; the middle stop about 35 m; the far stop about 120 m, steep and map-like; a 35 mm lens close in (about 38° vertical), longer when pulled out, so the town flattens towards a map.
 - The shading model: painted ramp against plain URP Lit as a control, soft toon and graphic if needed (LT1).
 - The colour script through the day and the year (LT1).
 - How visible history should be: ghost signs, wear, mismatched additions (LT3).
@@ -102,6 +102,8 @@ One style, its rules shared by every element; each element learned from its own 
 | Moss and ground cover | Kazuo Oga | Firewatch |
 | Buildings | Stålenhag, Hopper | the house generator |
 | The town at night | Hasui, Hopper | Stålenhag |
+
+**Final quality holds at the street stop.** A part is superb only if it holds up a few metres away, in a lane, as well as from the roofs; parts are judged at both distances.
 
 **Final quality is defined before it is built.** Three to five target frames, painted over clay renders of the beauty corner (one matte grey, from the game's cameras), show what final looks like. A frame shown for judgement holds clay or approved parts, never placeholders: a frame full of placeholders cannot be judged. A paintover may change light, air, surfaces, detail and the forms of parts; it may not change a fact (which houses stand there, their eras and histories). Everything built so far, the house generator included, is test quality: programmer art, boxes from Python. Final quality is a render that holds up beside its target frame from the same camera.
 
