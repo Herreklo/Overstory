@@ -370,6 +370,74 @@ namespace Overstory.EditorTools
                 }
         }
 
+        /// <summary>
+        /// The character sheet (reviews/lt1/trees/character/): old self-seeded birches from an exposed knoll (60 years),
+        /// in October at 16:00 and bare in January, so their wind-shaped, painterly forms show.
+        ///     Unity -batchmode -quit -projectPath unity -executeMethod Overstory.EditorTools.LT1Trees.Character
+        /// (after: blender ... tree.py -- birch SEED 60 0.6 - exposure:1.0 self-seeded, for seeds 7 to 10)
+        /// </summary>
+        public static void Character()
+        {
+            LT1Heart.Rigs();
+            LT1Heart.WriteStyles();
+            AssetDatabase.SaveAssets();
+            EditorSceneManager.OpenScene(HeartScene, OpenSceneMode.Single);
+            var stage = Object.FindAnyObjectByType<StreetStage>();
+            stage.clay = true;
+            stage.look = "P";
+            stage.style = AssetDatabase.LoadAssetAtPath<Style>($"{Lights}/Styles/Style_game.asset");
+            if (stage.skyMap != null)
+                stage.skyMap.Build();
+            stage.rig = AssetDatabase.LoadAssetAtPath<LightRig>($"{Lights}/Heart_1600-low-sun.asset");
+            var urp = (UniversalRenderPipelineAsset)GraphicsSettings.currentRenderPipeline;
+            float reach = urp.shadowDistance;
+            Vector3 sunStreet = stage.rig.SunDirectionStreet;
+            var spot = SunlitSpot(Near, StreetSpace.ToUnity(sunStreet).normalized, 17f);
+            var sunFlat = new Vector2(sunStreet.x, sunStreet.y).normalized;
+            var side = new Vector2(-sunFlat.y, sunFlat.x);
+            var root = new GameObject("Trees (character)").transform;
+            var shot = ScriptableObject.CreateInstance<CameraShot>();
+            string dir = Path.GetFullPath(Path.Combine(Application.dataPath, "..", "..", "reviews", "lt1", "trees", "character"));
+            Directory.CreateDirectory(dir);
+            var (bark, leaves) = Materials("birch");
+            var october = leaves.GetVector("_Season");
+            try
+            {
+                using var rays = new Rays();
+                for (int seed = 7; seed <= 10; seed++)
+                {
+                    ModelSuffix = "_x10_wild";
+                    var tree = Place(root, "birch", seed, 60, spot, 0f);
+                    ModelSuffix = "";
+                    float d = 10f * 1.6f;
+                    var off = sunFlat * d * 0.5f + side * d * 0.87f;
+                    shot.position = new Vector3(spot.x + off.x, spot.y + off.y, spot.z + 2.2f);
+                    shot.target = new Vector3(spot.x, spot.y, spot.z + 4.6f);
+                    shot.verticalFov = Lens28;
+                    shot.near = 0.3f;
+                    shot.far = 9000f;
+                    foreach (var (name, season) in new[] { ("10-october-20", october), ("01-january", new Vector4(1f, 1.3f, 0f, 0f)) })
+                    {
+                        leaves.SetVector("_Season", season);
+                        urp.shadowDistance = 160f;
+                        stage.shot = shot;
+                        stage.Apply();
+                        string file = Path.Combine(dir, $"birch-s{seed}-a60-knoll-{name}.png");
+                        LT1Render.Still(stage.view, file, grey: false, eighth: true, msaa: 4);
+                        Debug.Log($"[LT1Trees] {file}");
+                    }
+                    Object.DestroyImmediate(tree);
+                }
+            }
+            finally
+            {
+                urp.shadowDistance = reach;
+                Materials("birch");
+                Object.DestroyImmediate(root.gameObject);
+                Object.DestroyImmediate(shot);
+            }
+        }
+
         /// <summary>A command-line filter: -moments 1600-low-sun, -ages 30,60, -views street (prefixes match).</summary>
         static bool Wanted(string flag, string value)
         {
