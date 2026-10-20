@@ -49,12 +49,14 @@ import tree_growth as G  # noqa: E402
 # masses: "limbs" makes the crown's masses from its main limbs' foliage (else from where the foliage lies); seam: how
 # wide the seam of sky between two masses is (cards nearly as deep in a neighbour as in their own), and seam_cut the
 # share of the cards there taken out; core_depth, core_keep: how deep in its mass a card is core, and the share of the
-# core kept. places: for each place in the crown (top: above top_z of its height; core; low; high skin), the pairs of
+# core kept (under a mass's middle only). lobe_size, lobe_weight: each mass cut into lobes about so many metres
+# across (on a grown tree), whose own volumes shade the cards by so much of their normal. places: for each place in the crown (top: above top_z of its height; core; low; high skin), the pairs of
 # atlas cells its two crossed cards may carry. top_tilt: how far one card of each pair on a mass's top tilts to the sky (degrees), for steep views.
 PARTS = {
     "birch": dict(sag=0.08, taper=0.55, occlusion=0.05, seam=0.5, atlas="clusters", lobe=0.8, lobe_gap=0.36,
                   cluster_size=(1.3, 1.15, 1.05, 0.85), crossed=True, edge_gap=0.22, edge_depth=0.2,
                   masses="limbs", seam_cut=0.95, core_depth=0.45, core_keep=0.55, top_tilt=50.0,
+                  lobe_size=2.2, lobe_weight=0.7,
                   places=dict(core=((0, 1), (1, 0)), top=((0, 1), (1, 0)), low=((2, 3),), high=((3, 2),)), lose_tips=40, hang=False, card=(0.50, 0.48), card_u=(0.03, 0.97), cells=4,
                   per_node=2, along=1, droop=0.7, leaf_years=999, leaf_tips=24, draw_tips=2.5, draw_tips_per_m=0.9, winter_tips=3.0, reach=99.0, hang_reach=0.3,
                   bark=(0.30, 0.60), max_cards=4200, grow_to=80),
@@ -325,6 +327,12 @@ def branch_mesh(tl, parts, H, vols=None, needed=None):
                 # the limbs come out of a mass
                 base_appear[c[k - 1]] = appear[k]
                 appear[k] = max(appear[k], cover[c[k - 1]])
+            # wood shows no earlier than the wood it grows from: a twig end never pokes out of the foliage cut off
+            # from its hidden base (a dash in the air)
+            if k > 0:
+                appear[k] = max(appear[k], appear[k - 1])
+            elif c[0] > 0 and int(parent[c[0]]) in node_appear:
+                appear[0] = max(appear[0], node_appear[int(parent[c[0]])])
             if k > 0:
                 node_appear[c[k - 1]] = appear[k]
         pts, rad, appear = pts[:stop], rad[:stop], appear[:stop]
@@ -689,10 +697,29 @@ def lobe_mesh(tl, parts, age, seed, H):
         keep = np.array(keep)
         ids, centres, which, edge = ids[keep], centres[keep], which[keep], edge[keep]
     if parts.get("core_keep") is not None:
-        # a mass's core only adds weight: thinned hard, so the mass is its skin, and limbs and sky show through it
-        keep = np.array([vols[w] is None or volume_depth(vols[w], c) < parts["core_depth"]
+        # a mass's core under its middle only adds weight: thinned hard, so limbs and sky show up through the mass's
+        # underside, as under a real birch; above its middle it stays full, so the city camera looking down sees a
+        # crown, not a hole
+        keep = np.array([vols[w] is None or volume_depth(vols[w], c) < parts["core_depth"] or c[2] > vols[w][0][2]
                          or h01(seed, i, 23) < parts["core_keep"] for i, c, w in zip(ids, centres, which)])
         ids, centres, which, edge = ids[keep], centres[keep], which[keep], edge[keep]
+    # lobes: each mass cut into lobes about lobe_size across, each a smooth volume of its own, so every lobe has its
+    # lit top and its shaded underside (Oga's shade follows each lobe's outline, never a band across the mass)
+    lobe_of = np.zeros(len(ids), dtype=int)
+    lobe_vols = []
+    if parts.get("lobe_size"):
+        for m_ in range(k):
+            idx = np.nonzero(which == m_)[0]
+            if len(idx) == 0:
+                continue
+            pts_ = centres[idx]
+            extent = float(np.ptp(pts_, axis=0).max()) if len(pts_) > 1 else 0.0
+            n_ = int(np.clip(round(extent / (parts["lobe_size"] * scale)), 1, max(len(idx) // 12, 1)))
+            sub = spatial_masses(pts_, n_, seed + m_) if n_ > 1 else np.zeros(len(idx), dtype=int)
+            subv = volumes(pts_, sub, n_)
+            base = len(lobe_vols)
+            lobe_vols.extend(subv)
+            lobe_of[idx] = base + sub
     V, F, UV0, UV1, NR, COL = [], [], [], [], [], []
     ATTACH = []                                         # per card: where it hangs from, how deep, when it falls
     EXTENT = []                                         # per card: its spray's middle and reach (what it hides)
@@ -785,8 +812,14 @@ def lobe_mesh(tl, parts, age, seed, H):
             # a thin outer spray sees a little more of the sky round it: its normal lifts a little towards up (its
             # lightness comes from the light through it; a mass's underside stays in shade)
             lift = 0.25 + (0.2 * (1.0 - min(depth_j / 0.3, 1.0)) if anchor is not None else 0.0)
+            lv = lobe_vols[lobe_of[j]] if lobe_vols else None
             for p in corners:
                 n = volume_normal(vol, p, lift) if vol is not None else face
+                if lv is not None:
+                    # the lobe's own turn from the sky, set in its mass's
+                    nl = volume_normal(lv, p, lift)
+                    n = nl * parts["lobe_weight"] + n * (1.0 - parts["lobe_weight"])
+                    n /= max(np.linalg.norm(n), 1e-9)
                 dep = volume_depth(vol, p) if vol is not None else 0.0
                 NR.append(n)
                 # what the corner sees of the sky: less deep in its mass, and less low in the crown (the whole crown
@@ -992,7 +1025,8 @@ def hung(attach, tl, parts):
         if np.linalg.norm(p - (a + t * (b - a))) > reach:
             continue
         # while the card shows, its wood shows or is hidden inside a spray that still hangs; once its leaves fall,
-        # its wood shows soon after (unless another spray still hides it)
+        # its wood shows soon after, unless it lies inside a spray further in that still hangs (wood shows no earlier
+        # than the wood it grows from)
         base = tl.get("base_appear", {}).get(j, na[j])
         cov = tl["cover"][j] if tl.get("cover") is not None else 0.0
         on_ok = depth > 0.3 or base <= 0.0 or base <= cov or fall <= cov
