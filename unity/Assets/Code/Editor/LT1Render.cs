@@ -88,6 +88,37 @@ namespace Overstory.EditorTools
             }
         }
 
+        /// <summary>
+        /// A raw pass for painting over a frame: one sample a pixel, no supersampling (an edge between two materials
+        /// must not blend into a third), linear, written as it is.
+        /// </summary>
+        public static void Raw(Camera cam, string file)
+        {
+            var rt = new RenderTexture(Width, Height, 24, RenderTextureFormat.ARGB32, RenderTextureReadWrite.Linear) { antiAliasing = 1 };
+            rt.Create();
+            var target = cam.targetTexture;
+            try
+            {
+                cam.targetTexture = rt;
+                for (int i = 0; i < 3; i++)
+                    Render(cam, rt);
+                var prev = RenderTexture.active;
+                RenderTexture.active = rt;
+                var tex = new Texture2D(Width, Height, TextureFormat.RGB24, false, true);
+                tex.ReadPixels(new Rect(0, 0, Width, Height), 0, 0);
+                tex.Apply();
+                RenderTexture.active = prev;
+                File.WriteAllBytes(file, tex.EncodeToPNG());
+                Object.DestroyImmediate(tex);
+            }
+            finally
+            {
+                cam.targetTexture = target;
+                rt.Release();
+                Object.DestroyImmediate(rt);
+            }
+        }
+
         public static void Still(Camera cam, string file, bool grey = true, bool eighth = false)
         {
             var big = new RenderTexture(Width * Super, Height * Super, 24, RenderTextureFormat.ARGB32, RenderTextureReadWrite.sRGB);

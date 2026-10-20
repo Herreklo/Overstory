@@ -159,6 +159,27 @@ Shader "Overstory/Street"
             #endif
                 colour = OS_Atmosphere(colour, input.positionWS);
                 outColor = half4(colour, 1);
+                // passes for painting over a frame (LT1Heart.TargetPasses): what each pixel is made of, which way it
+                // faces, where it is and how far, written raw, before light, air and grade
+                if (_OS_Debug > 0.5)
+                {
+                    float dist = distance(input.positionWS, _WorldSpaceCameraPos);
+                    float v = saturate(dist / 4096.0);
+                    if (_OS_Debug < 1.5)
+                    #if defined(_OS_WATER)
+                        outColor = half4(0, 0, 1, 1);
+                    #else
+                        outColor = half4(input.uv, 0, 1);
+                    #endif
+                    else if (_OS_Debug < 2.5)
+                        outColor = half4(input.normalWS * 0.5h + 0.5h, 1);
+                    else if (_OS_Debug < 3.5)
+                        outColor = half4(frac(input.positionWS / 8.0), 1);
+                    else if (_OS_Debug < 4.5)
+                        outColor = half4(v, frac(v * 256.0), frac(v * 65536.0), 1);
+                    else
+                        outColor = half4(s.smoothness, 0, 0, 1);   // how much of what is seen there is reflection
+                }
             #ifdef _WRITE_RENDERING_LAYERS
                 outRenderingLayers = EncodeMeshRenderingLayer();
             #endif

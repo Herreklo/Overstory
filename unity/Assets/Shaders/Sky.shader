@@ -126,6 +126,8 @@ Shader "Overstory/Sky"
                     half sun = (half)pow(saturate(dot(d, _OS_SunDir.xyz)), max(_OS_FogSun.w, 1.0));
                     c = lerp(c, _OS_HazeColor.rgb + _OS_FogSun.rgb * sun, (half)(1.0 - exp(-min(tau, 8.0)))) + (half3)glow;
                 }
+                if (_OS_Debug > 0.5)
+                    return half4(0, 0, 0, 1); // the passes: the sky is nothing, and far
                 return half4(c, 1);
             }
             ENDHLSL

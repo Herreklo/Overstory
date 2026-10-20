@@ -692,8 +692,8 @@ def build(unity=None):
     lake.box(ccw([(p[0], p[1]) for p in L.LAKE_LINE]), L.LAKE_LEVEL - 0.5, L.LAKE_LEVEL)
 
     # stairs as steps; walls where a lane is cut into the slope or stands over it
-    steps = Mesh("steps")
-    walls = Mesh("walls")
+    steps = Mesh("steps", swatch="stone")
+    walls = Mesh("walls", swatch="drystone")
     for lane in H.LANES:
         pts = lane["pts"]
         hw = lane["width"] / 2

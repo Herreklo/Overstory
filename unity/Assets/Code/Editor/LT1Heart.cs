@@ -764,6 +764,74 @@ namespace Overstory.EditorTools
             Debug.Log($"[LT1Heart] {name} added to the renderer");
         }
 
+        /// <summary>
+        /// The passes a target frame is painted over (reviews/lt1/heart/target/): the frame itself in the game's style,
+        /// then, raw, what each pixel is made of (its palette UV; water marked blue), which way it faces, where it is
+        /// (modulo 8 m, for patterns that stay on the surface) and how far it is.
+        /// </summary>
+        public static void TargetPasses()
+        {
+            NightRig();
+            WriteStyles();
+            EditorSceneManager.OpenScene(ScenePath, OpenSceneMode.Single);
+            var stage = Object.FindAnyObjectByType<StreetStage>();
+            stage.clay = true;
+            stage.look = "P";
+            stage.rig = AssetDatabase.LoadAssetAtPath<LightRig>($"{Lights}/Heart_{Night}.asset");
+            stage.style = AssetDatabase.LoadAssetAtPath<Style>($"{Lights}/Styles/Style_game.asset");
+            stage.skyMap?.Build();
+            stage.townLights?.Build();
+            var urp = (UniversalRenderPipelineAsset)GraphicsSettings.currentRenderPipeline;
+            float reach = urp.shadowDistance;
+            string dir = Path.GetFullPath(Path.Combine(Application.dataPath, "..", "..", "reviews", "lt1", "heart", "target"));
+            Directory.CreateDirectory(dir);
+            var data = stage.view.GetComponent<UniversalAdditionalCameraData>();
+            try
+            {
+                foreach (var (name, pos, target, _) in Shots)
+                {
+                    if (!Wanted(name) || System.Array.IndexOf(new[] { "3" }, name.Split('-')[0]) < 0 && !System.Environment.CommandLine.Contains("-frames"))
+                        continue;
+                    urp.shadowDistance = Mathf.Clamp(Vector3.Distance(pos, target) * 2.2f, 150f, 2000f);
+                    stage.shot = AssetDatabase.LoadAssetAtPath<CameraShot>($"{Dir}/Views/Heart_{name}.asset");
+                    Shader.SetGlobalFloat("_OS_Debug", 0f);
+                    data.renderPostProcessing = true;
+                    stage.Apply();
+                    LT1Render.Still(stage.view, Path.Combine(dir, $"{name}-render.png"), grey: true, eighth: false);
+                    // the same frame without the light in the air (the lamps' halos, the sun's beams, the town's glow),
+                    // so the paintover can re-light surfaces and give the air back untouched
+                    Shader.SetGlobalFloat("_OS_FogLampStrength", 0f);
+                    Shader.SetGlobalVector("_OS_SunBeams", Vector4.zero);
+                    Shader.SetGlobalVector("_OS_GlowParams", Vector4.zero);
+                    LT1Render.Still(stage.view, Path.Combine(dir, $"{name}-render-noair.png"), grey: false, eighth: false);
+                    stage.Apply();
+                    // the raw passes: no post, no style, no lamps' or sun's light in the air
+                    data.renderPostProcessing = false;
+                    var style = stage.style;
+                    stage.style = null;
+                    stage.Apply();
+                    Shader.SetGlobalFloat("_OS_FogLampStrength", 0f);
+                    Shader.SetGlobalVector("_OS_SunBeams", Vector4.zero);
+                    Shader.SetGlobalFloat("_OS_PaletteOn", 0f);
+                    foreach (var (k, pass) in new[] { (1f, "material"), (2f, "normal"), (3f, "position"), (4f, "distance"), (5f, "gloss") })
+                    {
+                        Shader.SetGlobalFloat("_OS_Debug", k);
+                        LT1Render.Raw(stage.view, Path.Combine(dir, $"{name}-{pass}.png"));
+                    }
+                    Shader.SetGlobalFloat("_OS_Debug", 0f);
+                    stage.style = style;
+                    data.renderPostProcessing = true;
+                    Debug.Log($"[LT1Heart] target passes for {name}");
+                }
+            }
+            finally
+            {
+                Shader.SetGlobalFloat("_OS_Debug", 0f);
+                data.renderPostProcessing = true;
+                urp.shadowDistance = reach;
+            }
+        }
+
         /// <summary>A check: every model in the heart's scene, with its size, place and material.</summary>
         public static void Inventory()
         {

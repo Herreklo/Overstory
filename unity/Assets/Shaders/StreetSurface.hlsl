@@ -29,6 +29,7 @@ float4 _OS_HazeColor;    // rgb: its colour (linear)
 float4 _OS_SunDir;       // xyz: towards the sun
 float4 _OS_PavingMeanUV; // xy: the palette UV of setts_mean, the tone a sett pavement averages to
 float _OS_Clay;          // 1: every surface one matte grey, to judge shape and composition alone
+float _OS_Debug;         // passes for a paintover: 1 palette UV, 2 normal, 3 position mod 8 m, 4 distance; 0 the picture
 float _OS_AirBands;      // 0: the air thickens smoothly; n: in n flat bands (look D's graded wipe, or a style's layers)
 float _OS_AirBandSoft;   // how soft each band's edge is (0 hard, 1 smooth); 0 reads as look D's 0.2
 
