@@ -32,8 +32,8 @@ COAST = [
     (-240, -660, "n"), (-150, -722, "n"), (-40, -724, "n"), (40, -684, "n"), (80, -620, "b"), (104, -520, "b"),
     (96, -430, "n"), (70, -360, "n"), (54, -300, "q"),
     # the sund's east bank, then Vågen's west quay to the head, the head, and Harbour Row back to the point
-    (54, -150, "q"), (150, -140, "q"), (250, -124, "q"), (302, -112, "q"), (302, -62, "q"), (270, -40, "q"),
-    (220, -24, "q"), (150, -15, "q"),
+    (54, -150, "q"), (150, -140, "q"), (240, -130, "q"), (300, -124, "q"), (332, -106, "q"), (344, -80, "q"),
+    (334, -50, "q"), (300, -32, "q"), (250, -22, "q"), (150, -15, "q"),
     # the old town's point: rock round its tip below the bluff
     (-250, -15, "n"), (-280, 10, "n"), (-322, 60, "n"), (-348, 120, "n"), (-342, 190, "n"), (-312, 260, "n"),
     (-292, 330, "n"), (-262, 390, "n"),
@@ -58,8 +58,8 @@ SMALL_ISLAND = [
     (-640, -300, "n"), (-590, -310, "n"), (-552, -370, "n"),
 ]
 ISLANDS = [(HOLMEN, 8.0), (ISLAND_SUBURB, 26.0), (SMALL_ISLAND, 12.0)]
-LAKE = [(420, -122, "n"), (470, -140, "n"), (520, -132, "n"), (570, -116, "n"), (600, -92, "n"), (612, -40, "n"),
-        (612, -10, "n"), (590, 18, "n"), (560, 30, "n"), (510, 34, "n"), (470, 26, "n"), (436, 4, "n"), (420, -30, "n")]
+LAKE = [(540, -122, "n"), (590, -140, "n"), (640, -132, "n"), (690, -116, "n"), (720, -92, "n"), (732, -40, "n"),
+        (732, -10, "n"), (710, 18, "n"), (680, 30, "n"), (630, 34, "n"), (590, 26, "n"), (556, 4, "n"), (540, -30, "n")]
 LAKE_LEVEL = 5.0
 # the mountains far off to the east and south-east, seen over the upland: (compass bearing in degrees from the
 # old town's summit, height in metres, distance in metres). Too far for the ground; drawn as the backdrop.
@@ -143,7 +143,7 @@ CONTOURS = [
     (6.0, [(-300, -660), (-150, -660), (0, -660)]),
     (16.0, [(-300, -860), (-100, -860), (100, -860)]),
     # the head: flat made ground round the square, rising gently south past the lake
-    (3.5, [(300, -150), (330, -60), (330, 40), (300, 110)]),
+    (3.0, [(350, -170), (380, -80), (370, 20), (330, 110)]),  # the square's ground, open to the head
     (12.0, [(680, -300), (700, -60), (680, 200)]),
     (24.0, [(880, -300), (900, 0), (880, 300)]),
     # Storhaug, east of the east harbour
@@ -163,10 +163,12 @@ CONTOURS = [
     (82.0, [(360, 770), (420, 830), (470, 880)]),
     (74.0, [(540, 960), (600, 1020)]),
     (66.0, [(500, 920), (520, 940)]),
-    (60.0, [(300, 720), (340, 690), (420, 740), (520, 840), (640, 960), (660, 1060), (560, 1060), (440, 960), (330, 860), (290, 790)]),
-    (40.0, [(170, 690), (260, 560), (420, 600), (600, 760), (760, 960), (720, 1120), (480, 1140), (300, 1000), (190, 860)]),
-    (55.0, [(620, 1020), (720, 1120), (820, 1180)]),   # a spur running on south-east
-    (50.0, [(280, 980), (220, 1080)]),                 # a spur towards Storhaug
+    (62.0, [(330, 700), (260, 640)]),                  # a spur north-west, towards the stream valley
+    (64.0, [(520, 860), (600, 800), (680, 790)]),      # a spur east
+    (58.0, [(440, 960), (400, 1060), (420, 1160)]),    # a spur south, towards Storhaug's back
+    (60.0, [(620, 1060), (700, 1140), (800, 1180)]),   # the ridge running on south-east, lower
+    (40.0, [(200, 620), (300, 560)]), (36.0, [(700, 700), (800, 860)]), (42.0, [(300, 1100), (480, 1200)]),
+    (34.0, [(560, 1180), (700, 1260)]),
 ]
 SPOTS = [
     (42.0, (40, 210)),     # the top of the old town's hill, the villas' plateau
@@ -180,9 +182,9 @@ SPOTS = [
 
 ]
 OUTCROPS = [
-    dict(name="the knoll", x=150.0, y=-330.0, r=60.0, face=14.0, top=30.0, sx=1.0, sy=1.15),
+    dict(name="the knoll", x=150.0, y=-330.0, r=58.0, face=7.0, top=30.0, sx=1.0, sy=1.15),
     dict(name="the corner's knuckle", x=59.0, y=39.0, r=7.5, face=1.3, top=12.6, sx=1.0, sy=1.15),
-    dict(name="the cathedral's rise", x=380.0, y=-30.0, r=46.0, face=30.0, top=9.0, sx=1.0, sy=1.0),
+    dict(name="the cathedral's rise", x=470.0, y=-10.0, r=50.0, face=32.0, top=10.0, sx=1.0, sy=1.0),
     dict(name="Holmen's rock tip", x=-246.0, y=-246.0, r=26.0, face=10.0, top=7.0, sx=1.0, sy=1.4),
     dict(name="the beacon islet", x=-370.0, y=-60.0, r=16.0, face=8.0, top=6.0, sx=1.3, sy=1.0),
     dict(name="a skerry", x=-480.0, y=110.0, r=12.0, face=6.0, top=4.0, sx=1.0, sy=1.0),
@@ -193,9 +195,20 @@ VALLEYS = [
     # the stream from the forest hill's saddle down to the east harbour's head, in a green valley
     dict(name="the stream valley", depth=9.0, width=26.0, line=[(520, 640), (420, 650), (320, 630), (200, 590), (110, 560)]),
     # the lake's valley, carrying the railway south from the station
-    dict(name="the railway's valley", depth=7.0, width=40.0, line=[(600, -40), (760, 0), (920, 80), (1100, 160), (1300, 200)]),
+    dict(name="the railway's valley", depth=7.0, width=40.0, line=[(740, -40), (860, 0), (980, 80), (1100, 160), (1300, 200)]),
 ]
-RAILWAY = [(560, -150), (620, -60), (760, 0), (920, 80), (1100, 160), (1300, 200)]  # the station by the lake
+UPLAND_VALLEYS = [  # breaking the upland into ridges
+    dict(name="a valley in the upland", depth=30.0, width=60.0, line=[(1250, -560), (1500, -640), (1800, -700)]),
+    dict(name="a valley in the upland", depth=34.0, width=70.0, line=[(1200, 360), (1500, 330), (1800, 300)]),
+    dict(name="a valley in the upland", depth=26.0, width=55.0, line=[(1150, 980), (1450, 1050), (1750, 1080)]),
+]
+RAILWAY = [(700, -170), (780, -60), (860, 0), (980, 80), (1100, 160), (1300, 200)]  # the station by the lake
+CLIFFS = [
+    # the bluff: the old town hill's point, a rock face over the bay, about 20 m, high side inland
+    dict(name="the bluff", top=26.0, base=2.0, width=5.0, line=[(-250, 20), (-286, 46), (-316, 90), (-334, 140), (-328, 196), (-302, 252)]),
+    # the knoll's face over Holmegate, north-east side
+    dict(name="the knoll's face", top=24.0, base=9.0, width=4.0, line=[(104, -296), (128, -280), (160, -276), (190, -286)]),
+]
 GULLIES = [  # where the streams come down the old town's west slope to Vågen
     dict(x=49.3, depth=2.0, width=8.0, y0=10.0, y1=170.0),
     dict(x=-110.0, depth=2.6, width=9.0, y0=10.0, y1=170.0),
@@ -288,11 +301,31 @@ def heights(X, Y):
     for g in GULLIES:
         k = np.exp(-((X - g["x"]) / g["width"]) ** 2) * _smoothstep(g["y0"], g["y0"] + 25, Y) * (1 - _smoothstep(g["y1"] - 40, g["y1"], Y))
         Z -= g["depth"] * k * (Y > -15)
-    for v in VALLEYS:
+    for v in VALLEYS + UPLAND_VALLEYS:
         d = _poly_dist(X, Y, v["line"], closed=False)
         Z -= v["depth"] * np.exp(-(d / v["width"]) ** 2) * _smoothstep(2.0, 16.0, Z)
     rough = (_noise(X, Y, 60.0, 1989) * 0.65 + _noise(X + 500, Y, 23.0, 1990) * 0.35 - 0.5) * 2.0
     Z += rough * np.clip((Z - 4.0) / 10.0, 0.0, 1.0)
+
+    # cliffs: inside a band either side of the line the ground steps from base to top over the face's width
+    for c in CLIFFS:
+        line = c["line"]
+        best = np.full(X.shape, 1e9)
+        side = np.zeros(X.shape)
+        for (x1, y1), (x2, y2) in zip(line, line[1:]):
+            dxs, dys = x2 - x1, y2 - y1
+            L2 = dxs * dxs + dys * dys
+            t = np.clip(((X - x1) * dxs + (Y - y1) * dys) / L2, 0.0, 1.0)
+            dd = np.hypot(X - (x1 + dxs * t), Y - (y1 + dys * t))
+            sgn = np.sign(dxs * (Y - y1) - dys * (X - x1))  # > 0 to the left of the line's direction
+            closer = dd < best
+            best = np.where(closer, dd, best)
+            side = np.where(closer, sgn, side)
+        s_ = side * best
+        band = best < 24.0
+        face = c["base"] + (c["top"] - c["base"]) * _smoothstep(-c["width"] / 2, c["width"] / 2, s_)
+        blend = _smoothstep(24.0, 12.0, best)
+        Z = np.where(band, Z * (1 - blend) + np.where(s_ > 0, np.maximum(Z, face), np.minimum(Z, face)) * blend, Z)
 
     # the water and the lake first, then bedrock standing up out of land and sea alike
     W = water_mask(X, Y)

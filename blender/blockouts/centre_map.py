@@ -40,27 +40,18 @@ def line(pts, col, w, dash=False):
         for i in range(0, k, 2):
             dr.line([(a[0] + (b[0] - a[0]) * i / k, a[1] + (b[1] - a[1]) * i / k), (a[0] + (b[0] - a[0]) * (i + 1) / k, a[1] + (b[1] - a[1]) * (i + 1) / k)], fill=col, width=w)
 ROAD, LANE, STEP, WATERWAY = (80, 70, 60), (120, 100, 80), (190, 60, 40), (40, 70, 120)
-line([(-250, -6), (150, -6), (220, -14), (270, -30), (300, -50)], ROAD, 4)              # Harbour Row
-line([(-150, -176), (0, -166), (150, -150), (250, -134), (300, -124)], ROAD, 4)          # the pub quay
-line([(-230, -232), (0, -226), (34, -224)], LANE, 3)                                      # Holmegate on Holmen
-line([(60, -192), (150, -182), (300, -150)], LANE, 3)                                     # its upper street, south of the sund
-line([(47, -170), (47, -300)], (60, 60, 60), 6)                                           # the sund's bridge
-line([(60, -10), (60, -150)], WATERWAY, 2, dash=True)                                     # the harbour ferry
-line(L.BRIDGE, (50, 50, 50), 5)                                                           # the 1978 bridge
+# only what the land fixes: quays, the main roads, the bridges, the railway, the hundred steps, the ferry.
+# Streets and lanes are laid in clay.
+line([(-250, -6), (150, -6), (250, -14), (300, -24), (334, -42)], ROAD, 4)              # Harbour Row
+line([(-186, -176), (0, -166), (150, -150), (240, -140), (300, -134)], ROAD, 4)          # the pub quay
+line([(-210, 422), (-120, 444), (-30, 462)], ROAD, 4)                                    # the cannery's quay
+line([(28, -226), (66, -226)], (40, 40, 40), 6)                                         # the sund's bridge, across it
+line([(60, -10), (60, -158)], WATERWAY, 2, dash=True)                                   # the harbour ferry
+line(L.BRIDGE, (50, 50, 50), 5)                                                          # the 1978 bridge
 line(L.BREAKWATER, (100, 100, 100), 5)
-line([(-236, 120), (-230, 140), (-224, 150)], STEP, 3)                                    # the hundred steps
-line([(-206, 420), (-120, 440), (-20, 460)], ROAD, 3)
-line(L.RAILWAY, (40, 40, 40), 3, dash=True)                                       # the east harbour's quay, the cannery
-for off in (18, 34, 54):
-    line([(-200, off + 4), (60, off), (200, off - 6), (280, off - 30)], LANE, 2)          # contour lanes
-line([(49, -6), (49, 20), (47, 38), (46, 64), (60, 120), (60, 205)], STEP, 3)            # Bakkesmauet to the top
-line([(-110, -6), (-112, 40), (-108, 100), (-100, 190)], STEP, 3)                        # the other gully's lane
-line([(120, -420), (200, -300), (290, -160)], ROAD, 8)                                    # the fire-break street
-for k in range(7):
-    line([(110 + k * 60, -250), (130 + k * 60, -620)], LANE, 2)
-for k in range(5):
-    line([(100, -300 - k * 70), (640, -270 - k * 70)], LANE, 2)
-sq = [(305, -120), (350, -130), (352, -60), (306, -64)]
+line(L.RAILWAY, (40, 40, 40), 3, dash=True)
+line([(-240, 60), (-262, 80), (-276, 96)], STEP, 3)                                     # the hundred steps up the bluff
+sq = [(350, -120), (410, -128), (414, -40), (352, -36)]
 dr.polygon([P(x, y) for x, y in sq], fill=(214, 194, 166), outline=(80, 70, 60))
 font = ImageFont.load_default(size=20)
 FONT = "/System/Library/Fonts/Supplemental/Arial.ttf"
@@ -69,14 +60,16 @@ def label(x, y, t, big=False):
     sx, sy = P(x, y)
     dr.text((sx, sy), t, fill=(255, 255, 255), font=f, anchor="mm", stroke_width=3, stroke_fill=(255, 255, 255))
     dr.text((sx, sy), t, fill=(30, 30, 30), font=f, anchor="mm")
-for x, y, t, big in [(-620, 0, "THE BAY", True), (60, -86, "VÅGEN", True), (-140, 640, "EAST HARBOUR", True),
-                     (-180, -560, "WEST COVE", True), (60, -650, "beach", False), (250, 600, "stream valley", False), (900, 120, "railway", False), (820, -600, "ridge", False), (1350, 300, "upland", True), (20, 236, "summit park", False), (-110, -230, "Holmen", False), (150, -360, "knoll, tower", False),
-                     (360, -470, "FIRE GRID", True), (330, -95, "Torget", False), (395, 30, "cathedral", False),
-                     (520, -50, "lake", False), (100, 140, "OLD TOWN", True), (90, 300, "villas", False),
-                     (-300, 180, "bluff", False), (-200, 480, "cannery", False), (-200, 1180, "STORHAUG", True),
-                     (470, 980, "FOREST HILL", True), (-740, 390, "island suburb", False), (-620, -380, "island", False),
-                     (-560, 900, "bridge 1978", False), (-395, -110, "light", False), (-250, -760, "ferry quay, oil base", False),
-                     (760, -320, "NEWER TOWN", True), (90, 36, "corner", False), (-370, -60, "beacon", False)]:
+for x, y, t, big in [(-620, 0, "THE BAY", True), (210, -84, "VÅGEN", True), (-160, 680, "EAST HARBOUR", True),
+                     (-160, -520, "WEST COVE", True), (-100, -230, "Holmen", False), (190, -370, "knoll, tower", False),
+                     (360, -470, "FIRE GRID", True), (440, -84, "Torget", False), (470, 40, "cathedral", False),
+                     (640, -50, "lake", False), (60, 170, "OLD TOWN", True), (-20, 270, "villas, summit park", False),
+                     (-300, 230, "bluff", False), (-110, 380, "cannery streets", False), (-250, 520, "cannery", False),
+                     (-260, 1200, "STORHAUG", True), (520, 1000, "FOREST HILL", True), (-740, 390, "island suburb", False),
+                     (-620, -380, "island", False), (-580, 900, "bridge 1978", False), (-312, -150, "light", False),
+                     (-250, -780, "ferry quay, oil base", False), (800, -420, "NEWER TOWN", True), (80, 30, "corner", False),
+                     (-400, -60, "beacon", False), (40, -620, "beach", False), (250, 640, "stream valley", False),
+                     (980, 150, "railway", False), (800, -780, "ridge", False), (1350, 300, "upland", True), (30, -250, "sund", False)]:
     label(x, y, t, big)
 im.save(f"{sys.argv[1]}/centre-land-draft.png")
 print("done", round(time.time() - t0, 1), "s", im.size)
