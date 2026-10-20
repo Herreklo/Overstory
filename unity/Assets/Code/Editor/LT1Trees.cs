@@ -526,8 +526,10 @@ namespace Overstory.EditorTools
                         // the street stop: a person's eye a little raised, far enough to see the whole tree
                         float d = Mathf.Max(h * 1.55f, 9f);
                         var side = new Vector2(-sunFlat.y, sunFlat.x);
+                        var across = (sunFlat * 0.5f + side * 0.87f).normalized;   // the street stop's bearing, side-lit
                         Vector3 At(Vector2 off, float up) => new Vector3(Spot.x + off.x, Spot.y + off.y, ground + up);
                         var mid = new Vector3(Spot.x, Spot.y, ground + h * 0.48f);
+                        var crown = new Vector3(Spot.x, Spot.y, ground + h * 0.62f);
                         var views = new (string name, Vector3 pos, Vector3 target, float fov)[]
                         {
                             // the sun from the side and a little behind (about 60 degrees off the view), so the crown
@@ -537,6 +539,18 @@ namespace Overstory.EditorTools
                             ("into-the-sun", At(-sunFlat * d * 0.94f + side * d * 0.34f, 2.8f), mid, Lens28),
                             // from the roofs, across the light
                             ("roofs", At(side * d * 1.1f + sunFlat * d * 0.5f, 14f), new Vector3(Spot.x, Spot.y, ground + h * 0.45f), Lens35),
+                            // the city camera's middle stop: about 35 m up, looking down about 40 degrees
+                            ("middle", At(across * 33f, 35f), mid, Lens35),
+                            // pulled out and steep, on a long lens: near an isometric view of the town
+                            ("high", At(across * 52f, 81f), mid, 15f),
+                            // lower roaming heights, to choose from: just over the ridges, the close stop, between
+                            ("over18", At(across * 19.7f, 18f), mid, Lens28),
+                            ("over25", At(across * 25f, 25f), mid, Lens35),
+                            ("over40", At(across * 36f, 40f), mid, 25f),
+                            // lower still, looking into the crown: a first-floor window, just over the ridges, a roof
+                            ("into08", At(across * 14f, 8f), crown, Lens28),
+                            ("into12", At(across * 16f, 12f), crown, Lens28),
+                            ("into15", At(across * 18f, 15f), crown, Lens28),
                         };
                         foreach (var (view, pos0, target, fov) in views)
                         {
