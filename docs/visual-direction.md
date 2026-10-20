@@ -26,6 +26,7 @@ Mostly painted timber, with brick, stone and concrete where era, purpose, wealth
 ## Ground and nature
 
 - The town stands on rock and climbs. Height difference is everywhere: lanes in flights of steps, houses on plinths that take up the slope, walls holding yards, bedrock breaking through where it was too hard to cut. Level ground is made (quays, yards, terraces) and shows it.
+- Space between the houses is designed, not left over: lanes, alleys, gaps between neighbours, and small level places where lanes meet, even on the steepest ground. That is where light falls and people stop (Cullen's here and there).
 - Nature is in every frame, not decoration around the town: bedrock, heath, moss, grass in the joints, self-seeded trees.
 - Nature has a history, like a building, and changes with the years. Trees grow from their planting or seeding year; heath left ungrazed goes to juniper and birch; an empty yard grows over within a few summers; a busy step wears smooth while its quiet edge grows moss; lichen size shows how long stone has been bare (`docs/research/nature.md`). The same rule as for buildings holds: what reads as history must be a fact with a date.
 - Rock is built in deliberate planes (Another World); ground cover in clusters with edges, never noise.
