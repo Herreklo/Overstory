@@ -1,0 +1,2299 @@
+{
+ "schemaVersion": 1,
+ "note": "The beauty corner (docs/experiments.md, LT1, the reset), written by blender/tools/corner_fixture.py. Authored by hand: the lane, the five houses, the wall, the lantern, the trees and the ground's history. Context houses are placeholders round it. Lengths in millimetres.",
+ "worldSeed": 1989,
+ "provenance": "authored",
+ "fine": [
+  -40000,
+  -16000,
+  130000,
+  120000,
+  1000
+ ],
+ "coarse": [
+  -1100000,
+  -1300000,
+  1300000,
+  1000000,
+  10000
+ ],
+ "heath_above": 21000,
+ "ground_history": [
+  {
+   "what": "heath",
+   "where": "the hillside above E",
+   "year": 1958,
+   "cause": "the last sheep are sold; heather, juniper and birch come in"
+  },
+  {
+   "what": "weeds",
+   "where": "D's yard",
+   "year": 1986,
+   "cause": "the house stands empty; grass, rosebay willowherb, the first birch"
+  },
+  {
+   "what": "wear",
+   "where": "the lower flight",
+   "cause": "the busy middle worn smooth; moss in the joints on the shaded side"
+  },
+  {
+   "what": "lichen",
+   "where": "the knuckle and the wall",
+   "year": 1874,
+   "cause": "bare since the lane was cut past the rock"
+  }
+ ],
+ "lanes": [],
+ "stairs": [
+  {
+   "id": "stair-corner",
+   "name": "Bakkesmauet",
+   "width": 3400,
+   "points": [
+    [
+     49300,
+     -400,
+     0
+    ],
+    [
+     49300,
+     14000,
+     0
+    ],
+    [
+     49300,
+     32000,
+     8000
+    ],
+    [
+     46500,
+     38000,
+     8000
+    ],
+    [
+     46500,
+     44000,
+     8000
+    ],
+    [
+     46500,
+     61500,
+     18400
+    ],
+    [
+     46500,
+     64000,
+     18400
+    ]
+   ]
+  }
+ ],
+ "squares": [
+  {
+   "id": "landing",
+   "name": "the landing",
+   "z": 8000,
+   "surface": "setts",
+   "laid": 1874,
+   "corners": [
+    [
+     43000,
+     32000
+    ],
+    [
+     51300,
+     32000
+    ],
+    [
+     51300,
+     44500
+    ],
+    [
+     43000,
+     44500
+    ]
+   ]
+  }
+ ],
+ "pads": [],
+ "walls": [
+  {
+   "kind": "dry_stone",
+   "points": [
+    [
+     47350,
+     9600,
+     0,
+     1400
+    ],
+    [
+     47350,
+     14000,
+     0,
+     1400
+    ],
+    [
+     47350,
+     20000,
+     2667,
+     4067
+    ],
+    [
+     47350,
+     26000,
+     5333,
+     6733
+    ],
+    [
+     47350,
+     31800,
+     7911,
+     9311
+    ],
+    [
+     43000,
+     31800,
+     8000,
+     9400
+    ]
+   ],
+   "cause": "built with the lane's steps in the 1870s; holds the cooper's yard"
+  }
+ ],
+ "steps": [
+  {
+   "width": 1100,
+   "points": [
+    [
+     51000,
+     32300,
+     8000
+    ],
+    [
+     52500,
+     38400,
+     12550
+    ]
+   ]
+  },
+  {
+   "width": 1200,
+   "points": [
+    [
+     48400,
+     63000,
+     18400
+    ],
+    [
+     51400,
+     66600,
+     20600
+    ]
+   ]
+  },
+  {
+   "width": 1300,
+   "points": [
+    [
+     43200,
+     38200,
+     8000
+    ],
+    [
+     42900,
+     38200,
+     8400
+    ]
+   ]
+  }
+ ],
+ "buildings": [
+  {
+   "id": 104,
+   "type": "house",
+   "character": "high_road",
+   "plot": {
+    "x": 38000,
+    "w": 9000,
+    "d": 9000
+   },
+   "events": [
+    {
+     "id": 1,
+     "year": 1912,
+     "kind": "built",
+     "params": {
+      "era": "jugend",
+      "storeys": 2000,
+      "wealth": 750,
+      "roof": "mansard"
+     },
+     "cause": "a cannery owner builds"
+    },
+    {
+     "id": 2,
+     "year": 1931,
+     "kind": "shop_fitted",
+     "params": {
+      "cols": 2
+     },
+     "cause": "the cannery owner's widow lets the ground floor to the quay road as a shop"
+    },
+    {
+     "id": 3,
+     "year": 1931,
+     "kind": "business_opened",
+     "params": {
+      "kind": "ironmonger",
+      "name": "Vik Jernvare"
+     },
+     "cause": "an ironmonger opens"
+    },
+    {
+     "id": 4,
+     "year": 1949,
+     "kind": "repainted",
+     "params": {},
+     "cause": "upkeep"
+    },
+    {
+     "id": 5,
+     "year": 1974,
+     "kind": "business_closed",
+     "params": {},
+     "cause": "the ironmonger retires"
+    },
+    {
+     "id": 6,
+     "year": 1988,
+     "kind": "business_opened",
+     "params": {
+      "kind": "cafe",
+      "name": "Kaffebrenneriet"
+     },
+     "cause": "a young couple open a café in the empty shop; the rent is low after the crash"
+    }
+   ],
+   "provenance": "authored",
+   "note": "The corner's A: kept, but faded; a new café in its old shop."
+  },
+  {
+   "id": 1203,
+   "type": "house",
+   "character": "high_road",
+   "events": [
+    {
+     "id": 1,
+     "year": 1879,
+     "kind": "built",
+     "params": {
+      "era": "chalet",
+      "storeys": 1500,
+      "wealth": 350,
+      "with": [
+       "bislag"
+      ]
+     },
+     "cause": "a cooper builds"
+    },
+    {
+     "id": 2,
+     "year": 1971,
+     "kind": "windows_replaced",
+     "params": {
+      "scope": "all"
+     },
+     "cause": "new windows, cheaply"
+    }
+   ],
+   "provenance": "authored",
+   "plot": {
+    "x": 0,
+    "w": 8000,
+    "d": 7000
+   },
+   "note": "The corner's C: 203's diary (a cooper's house of 1879, cheap new windows in 1971), on the landing."
+  },
+  {
+   "id": 1107,
+   "type": "house",
+   "character": "low_road",
+   "events": [
+    {
+     "id": 1,
+     "year": 1828,
+     "kind": "built",
+     "params": {
+      "era": "classical",
+      "storeys": 1500,
+      "wealth": 200
+     },
+     "cause": "a fisherman builds"
+    },
+    {
+     "id": 2,
+     "year": 1950,
+     "kind": "extended",
+     "params": {
+      "kind": "lean_to",
+      "side": "back"
+     },
+     "cause": "a shed"
+    },
+    {
+     "id": 3,
+     "year": 1965,
+     "kind": "windows_replaced",
+     "params": {
+      "scope": "street"
+     },
+     "cause": "new windows to the street"
+    },
+    {
+     "id": 4,
+     "year": 1986,
+     "kind": "boarded",
+     "params": {
+      "scope": "all"
+     },
+     "cause": "the owner dies; the heirs live in Oslo"
+    },
+    {
+     "id": 5,
+     "year": 1986,
+     "kind": "neglected",
+     "params": {
+      "amount": 600
+     },
+     "cause": "empty"
+    }
+   ],
+   "provenance": "authored",
+   "plot": {
+    "x": 0,
+    "w": 7000,
+    "d": 7000
+   },
+   "note": "The corner's D: 107's diary (a fisherman's house of 1828, empty since 1986), on the rock."
+  },
+  {
+   "id": 304,
+   "type": "house",
+   "character": "low_road",
+   "events": [
+    {
+     "id": 1,
+     "year": 1826,
+     "kind": "built",
+     "params": {
+      "era": "classical",
+      "storeys": 1500,
+      "wealth": 200
+     },
+     "cause": "a fisherman builds"
+    },
+    {
+     "id": 2,
+     "year": 1965,
+     "kind": "windows_replaced",
+     "params": {
+      "scope": "street"
+     },
+     "cause": "new windows to the street"
+    }
+   ],
+   "provenance": "authored",
+   "plot": {
+    "x": 0,
+    "w": 7000,
+    "d": 7000
+   },
+   "note": "The corner's E: the oldest and smallest, closing the view up the lane."
+  },
+  {
+   "id": 2201,
+   "type": "house",
+   "character": "high_road",
+   "events": [
+    {
+     "id": 1,
+     "year": 1868,
+     "kind": "built",
+     "params": {
+      "era": "classical",
+      "storeys": 1500,
+      "wealth": 300
+     },
+     "cause": "a ship's carpenter builds above the quay"
+    },
+    {
+     "id": 2,
+     "year": 1958,
+     "kind": "repainted",
+     "params": {},
+     "cause": "upkeep"
+    }
+   ],
+   "provenance": "authored",
+   "plot": {
+    "x": 0,
+    "w": 8000,
+    "d": 7000
+   },
+   "note": "Context on the hill: 201's diary."
+  },
+  {
+   "id": 2202,
+   "type": "house",
+   "character": "high_road",
+   "events": [
+    {
+     "id": 1,
+     "year": 1902,
+     "kind": "built",
+     "params": {
+      "era": "chalet",
+      "storeys": 2000,
+      "wealth": 600,
+      "with": [
+       "bay"
+      ]
+     },
+     "cause": "a shipping clerk builds in the new style"
+    }
+   ],
+   "provenance": "authored",
+   "plot": {
+    "x": 0,
+    "w": 9000,
+    "d": 8000
+   },
+   "note": "Context on the hill: 202's diary."
+  },
+  {
+   "id": 2206,
+   "type": "house",
+   "character": "high_road",
+   "events": [
+    {
+     "id": 1,
+     "year": 1897,
+     "kind": "built",
+     "params": {
+      "era": "chalet",
+      "storeys": 1500,
+      "wealth": 400,
+      "with": [
+       "ark"
+      ]
+     },
+     "cause": "a fish merchant builds"
+    }
+   ],
+   "provenance": "authored",
+   "plot": {
+    "x": 0,
+    "w": 9000,
+    "d": 7000
+   },
+   "note": "Context on the hill: 206's diary."
+  },
+  {
+   "id": 2301,
+   "type": "house",
+   "character": "high_road",
+   "events": [
+    {
+     "id": 1,
+     "year": 1832,
+     "kind": "built",
+     "params": {
+      "era": "classical",
+      "storeys": 1500,
+      "wealth": 200
+     },
+     "cause": "a fisherman builds on the hill"
+    }
+   ],
+   "provenance": "authored",
+   "plot": {
+    "x": 0,
+    "w": 7000,
+    "d": 7000
+   },
+   "note": "Context on the hill: 301's diary."
+  },
+  {
+   "id": 2302,
+   "type": "house",
+   "character": "high_road",
+   "events": [
+    {
+     "id": 1,
+     "year": 1847,
+     "kind": "built",
+     "params": {
+      "era": "classical",
+      "storeys": 1500,
+      "wealth": 250,
+      "with": [
+       "bislag"
+      ]
+     },
+     "cause": "a net maker builds"
+    }
+   ],
+   "provenance": "authored",
+   "plot": {
+    "x": 0,
+    "w": 7000,
+    "d": 7000
+   },
+   "note": "Context on the hill: 302's diary."
+  },
+  {
+   "id": 2303,
+   "type": "house",
+   "character": "high_road",
+   "events": [
+    {
+     "id": 1,
+     "year": 1861,
+     "kind": "built",
+     "params": {
+      "era": "classical",
+      "storeys": 1500,
+      "wealth": 300
+     },
+     "cause": "a boatbuilder builds"
+    }
+   ],
+   "provenance": "authored",
+   "plot": {
+    "x": 0,
+    "w": 8000,
+    "d": 7000
+   },
+   "note": "Context on the hill: 303's diary."
+  },
+  {
+   "id": 2205,
+   "type": "house",
+   "character": "high_road",
+   "events": [
+    {
+     "id": 1,
+     "year": 1911,
+     "kind": "built",
+     "params": {
+      "era": "jugend",
+      "storeys": 2000,
+      "wealth": 700,
+      "roof": "mansard"
+     },
+     "cause": "the cannery's manager builds"
+    }
+   ],
+   "provenance": "authored",
+   "plot": {
+    "x": 0,
+    "w": 8000,
+    "d": 8000
+   },
+   "note": "Context on the hill: 205's diary."
+  },
+  {
+   "id": 2207,
+   "type": "house",
+   "character": "low_road",
+   "events": [
+    {
+     "id": 1,
+     "year": 1956,
+     "kind": "built",
+     "params": {
+      "era": "postwar",
+      "storeys": 1500,
+      "wealth": 350
+     },
+     "cause": "a young family builds on a cleared plot"
+    }
+   ],
+   "provenance": "authored",
+   "plot": {
+    "x": 0,
+    "w": 8000,
+    "d": 7000
+   },
+   "note": "Context on the hill: 207's diary."
+  },
+  {
+   "id": 2208,
+   "type": "house",
+   "character": "high_road",
+   "events": [
+    {
+     "id": 1,
+     "year": 1888,
+     "kind": "built",
+     "params": {
+      "era": "chalet",
+      "storeys": 2000,
+      "wealth": 500
+     },
+     "cause": "a skipper builds"
+    },
+    {
+     "id": 2,
+     "year": 1979,
+     "kind": "repainted",
+     "params": {},
+     "cause": "new owners"
+    }
+   ],
+   "provenance": "authored",
+   "plot": {
+    "x": 0,
+    "w": 9000,
+    "d": 8000
+   },
+   "note": "Context on the hill: 208's diary."
+  },
+  {
+   "id": 2305,
+   "type": "house",
+   "character": "high_road",
+   "events": [
+    {
+     "id": 1,
+     "year": 1874,
+     "kind": "built",
+     "params": {
+      "era": "chalet",
+      "storeys": 1500,
+      "wealth": 300
+     },
+     "cause": "a pilot builds"
+    }
+   ],
+   "provenance": "authored",
+   "plot": {
+    "x": 0,
+    "w": 8000,
+    "d": 7000
+   },
+   "note": "Context on the hill: 305's diary."
+  },
+  {
+   "id": 2306,
+   "type": "house",
+   "character": "high_road",
+   "events": [
+    {
+     "id": 1,
+     "year": 1890,
+     "kind": "built",
+     "params": {
+      "era": "chalet",
+      "storeys": 1500,
+      "wealth": 350
+     },
+     "cause": "a shoemaker builds"
+    }
+   ],
+   "provenance": "authored",
+   "plot": {
+    "x": 0,
+    "w": 7000,
+    "d": 7000
+   },
+   "note": "Context on the hill: 306's diary."
+  },
+  {
+   "id": 2307,
+   "type": "house",
+   "character": "high_road",
+   "events": [
+    {
+     "id": 1,
+     "year": 1853,
+     "kind": "built",
+     "params": {
+      "era": "classical",
+      "storeys": 1500,
+      "wealth": 250
+     },
+     "cause": "a sailmaker builds"
+    }
+   ],
+   "provenance": "authored",
+   "plot": {
+    "x": 0,
+    "w": 8000,
+    "d": 7000
+   },
+   "note": "Context on the hill: 307's diary."
+  },
+  {
+   "id": 3000,
+   "type": "house",
+   "character": "high_road",
+   "events": [
+    {
+     "id": 1,
+     "year": 1893,
+     "kind": "built",
+     "params": {
+      "era": "chalet",
+      "storeys": 2000,
+      "wealth": 850,
+      "with": [
+       "ark",
+       "veranda"
+      ]
+     },
+     "cause": "a herring merchant builds his house"
+    },
+    {
+     "id": 2,
+     "year": 1931,
+     "kind": "shop_fitted",
+     "params": {
+      "cols": 2
+     },
+     "cause": "the merchant's son turns the ground floor into a shop"
+    },
+    {
+     "id": 3,
+     "year": 1931,
+     "kind": "business_opened",
+     "params": {
+      "kind": "grocer",
+      "name": "Larsen Kolonial"
+     },
+     "cause": "the son opens a grocery"
+    },
+    {
+     "id": 4,
+     "year": 1952,
+     "kind": "repainted",
+     "params": {},
+     "cause": "upkeep"
+    },
+    {
+     "id": 5,
+     "year": 1968,
+     "kind": "windows_replaced",
+     "params": {
+      "scope": "upper"
+     },
+     "cause": "the flat upstairs is let; the landlord fits new windows"
+    },
+    {
+     "id": 6,
+     "year": 1974,
+     "kind": "business_closed",
+     "params": {},
+     "cause": "the grocer retires; the supermarket took his trade"
+    },
+    {
+     "id": 7,
+     "year": 1975,
+     "kind": "business_opened",
+     "params": {
+      "kind": "cafe",
+      "name": "Mo's"
+     },
+     "cause": "Mo opens a café"
+    },
+    {
+     "id": 8,
+     "year": 1979,
+     "kind": "repainted",
+     "params": {},
+     "cause": "Mo repaints"
+    },
+    {
+     "id": 9,
+     "year": 1986,
+     "kind": "business_closed",
+     "params": {},
+     "cause": "the crash empties the café"
+    },
+    {
+     "id": 10,
+     "year": 1986,
+     "kind": "boarded",
+     "params": {
+      "scope": "ground"
+     },
+     "cause": "empty"
+    },
+    {
+     "id": 11,
+     "year": 1987,
+     "kind": "neglected",
+     "params": {
+      "amount": 300
+     },
+     "cause": "nobody maintains it"
+    },
+    {
+     "id": 12,
+     "year": 1988,
+     "kind": "unboarded",
+     "params": {
+      "scope": "ground"
+     },
+     "cause": "Ruth Hale takes the lease"
+    },
+    {
+     "id": 13,
+     "year": 1988,
+     "kind": "business_opened",
+     "params": {
+      "kind": "bar",
+      "name": "the Anchor"
+     },
+     "cause": "Ruth opens a bar"
+    }
+   ],
+   "provenance": "authored",
+   "plot": {
+    "x": 0,
+    "w": 10000,
+    "d": 8000
+   },
+   "note": "Context across the basin: 101's diary."
+  },
+  {
+   "id": 3001,
+   "type": "house",
+   "character": "high_road",
+   "events": [
+    {
+     "id": 1,
+     "year": 1846,
+     "kind": "built",
+     "params": {
+      "era": "classical",
+      "storeys": 1500,
+      "wealth": 300
+     },
+     "cause": "a cooper builds"
+    },
+    {
+     "id": 2,
+     "year": 1902,
+     "kind": "extended",
+     "params": {
+      "kind": "bislag"
+     },
+     "cause": "a porch against the wind"
+    },
+    {
+     "id": 3,
+     "year": 1960,
+     "kind": "repainted",
+     "params": {},
+     "cause": "upkeep"
+    },
+    {
+     "id": 4,
+     "year": 1971,
+     "kind": "windows_replaced",
+     "params": {
+      "scope": "all"
+     },
+     "cause": "draughty windows replaced cheaply"
+    },
+    {
+     "id": 5,
+     "year": 1983,
+     "kind": "neglected",
+     "params": {
+      "amount": 250
+     },
+     "cause": "the widow can't keep it up"
+    }
+   ],
+   "provenance": "authored",
+   "plot": {
+    "x": 0,
+    "w": 8000,
+    "d": 7000
+   },
+   "note": "Context across the basin: 102's diary."
+  },
+  {
+   "id": 3002,
+   "type": "house",
+   "character": "high_road",
+   "events": [
+    {
+     "id": 1,
+     "year": 1899,
+     "kind": "built",
+     "params": {
+      "era": "chalet",
+      "storeys": 2500,
+      "wealth": 650,
+      "with": [
+       "bislag",
+       "bay"
+      ]
+     },
+     "cause": "a ship's captain builds"
+    },
+    {
+     "id": 2,
+     "year": 1924,
+     "kind": "repainted",
+     "params": {},
+     "cause": "upkeep"
+    },
+    {
+     "id": 3,
+     "year": 1958,
+     "kind": "extended",
+     "params": {
+      "kind": "lean_to",
+      "side": "back"
+     },
+     "cause": "a wash house at the back"
+    },
+    {
+     "id": 4,
+     "year": 1977,
+     "kind": "roof_retiled",
+     "params": {
+      "swatch": "roof_slate"
+     },
+     "cause": "concrete tiles replace the slate"
+    },
+    {
+     "id": 5,
+     "year": 1984,
+     "kind": "repainted",
+     "params": {},
+     "cause": "upkeep"
+    }
+   ],
+   "provenance": "authored",
+   "plot": {
+    "x": 0,
+    "w": 9000,
+    "d": 8000
+   },
+   "note": "Context across the basin: 103's diary."
+  },
+  {
+   "id": 3003,
+   "type": "warehouse",
+   "character": "low_road",
+   "events": [
+    {
+     "id": 1,
+     "year": 1850,
+     "kind": "built",
+     "params": {
+      "era": "classical",
+      "storeys": 2500,
+      "wealth": 500
+     },
+     "cause": "a herring salter builds on the quay"
+    },
+    {
+     "id": 2,
+     "year": 1960,
+     "kind": "repainted",
+     "params": {
+      "wall": "wall_oxred"
+     },
+     "cause": "upkeep"
+    },
+    {
+     "id": 3,
+     "year": 1987,
+     "kind": "business_opened",
+     "params": {
+      "kind": "rehearsal",
+      "name": ""
+     },
+     "cause": "a band rents the loft cheap"
+    }
+   ],
+   "provenance": "authored",
+   "plot": {
+    "x": 0,
+    "w": 9000,
+    "d": 14000
+   },
+   "note": "Context across the basin: 109's diary."
+  },
+  {
+   "id": 3004,
+   "type": "house",
+   "character": "high_road",
+   "events": [
+    {
+     "id": 1,
+     "year": 1936,
+     "kind": "built",
+     "params": {
+      "era": "functionalist",
+      "storeys": 2000,
+      "wealth": 500
+     },
+     "cause": "built after the old house burned"
+    },
+    {
+     "id": 2,
+     "year": 1987,
+     "kind": "repainted",
+     "params": {},
+     "cause": "new owners"
+    }
+   ],
+   "provenance": "authored",
+   "plot": {
+    "x": 0,
+    "w": 9000,
+    "d": 8000
+   },
+   "note": "Context across the basin: 105's diary."
+  },
+  {
+   "id": 3005,
+   "type": "house",
+   "character": "high_road",
+   "events": [
+    {
+     "id": 1,
+     "year": 1901,
+     "kind": "built",
+     "params": {
+      "era": "chalet",
+      "storeys": 1500,
+      "wealth": 450
+     },
+     "cause": "a canning foreman builds"
+    },
+    {
+     "id": 2,
+     "year": 1969,
+     "kind": "windows_replaced",
+     "params": {
+      "scope": "all"
+     },
+     "cause": "modern windows"
+    },
+    {
+     "id": 3,
+     "year": 1985,
+     "kind": "restored",
+     "params": {
+      "windows": "original",
+      "amount": 300
+     },
+     "cause": "a young couple restore it"
+    },
+    {
+     "id": 4,
+     "year": 1985,
+     "kind": "repainted",
+     "params": {
+      "wall": "wall_white"
+     },
+     "cause": "restored in white"
+    }
+   ],
+   "provenance": "authored",
+   "plot": {
+    "x": 0,
+    "w": 8000,
+    "d": 7000
+   },
+   "note": "Context across the basin: 108's diary."
+  },
+  {
+   "id": 3006,
+   "type": "house",
+   "character": "low_road",
+   "events": [
+    {
+     "id": 1,
+     "year": 1828,
+     "kind": "built",
+     "params": {
+      "era": "classical",
+      "storeys": 1500,
+      "wealth": 200
+     },
+     "cause": "a fisherman builds"
+    },
+    {
+     "id": 2,
+     "year": 1950,
+     "kind": "extended",
+     "params": {
+      "kind": "lean_to",
+      "side": "back"
+     },
+     "cause": "a shed"
+    },
+    {
+     "id": 3,
+     "year": 1965,
+     "kind": "windows_replaced",
+     "params": {
+      "scope": "street"
+     },
+     "cause": "new windows to the street"
+    },
+    {
+     "id": 4,
+     "year": 1986,
+     "kind": "boarded",
+     "params": {
+      "scope": "all"
+     },
+     "cause": "the owner dies; the heirs live in Oslo"
+    },
+    {
+     "id": 5,
+     "year": 1986,
+     "kind": "neglected",
+     "params": {
+      "amount": 600
+     },
+     "cause": "empty"
+    }
+   ],
+   "provenance": "authored",
+   "plot": {
+    "x": 0,
+    "w": 7000,
+    "d": 7000
+   },
+   "note": "Context across the basin: 107's diary."
+  },
+  {
+   "id": 3007,
+   "type": "house",
+   "character": "high_road",
+   "events": [
+    {
+     "id": 1,
+     "year": 1912,
+     "kind": "built",
+     "params": {
+      "era": "jugend",
+      "storeys": 2000,
+      "wealth": 750,
+      "roof": "mansard"
+     },
+     "cause": "a cannery owner builds"
+    },
+    {
+     "id": 2,
+     "year": 1949,
+     "kind": "repainted",
+     "params": {},
+     "cause": "upkeep"
+    }
+   ],
+   "provenance": "authored",
+   "plot": {
+    "x": 0,
+    "w": 9000,
+    "d": 9000
+   },
+   "note": "Context across the basin: 104's diary."
+  },
+  {
+   "id": 3008,
+   "type": "warehouse",
+   "character": "low_road",
+   "events": [
+    {
+     "id": 1,
+     "year": 1862,
+     "kind": "built",
+     "params": {
+      "era": "classical",
+      "storeys": 2500,
+      "wealth": 400
+     },
+     "cause": "a rope maker builds on the quay"
+    },
+    {
+     "id": 2,
+     "year": 1972,
+     "kind": "repainted",
+     "params": {
+      "wall": "wall_white"
+     },
+     "cause": "an oil supply firm takes it as a store"
+    },
+    {
+     "id": 3,
+     "year": 1987,
+     "kind": "boarded",
+     "params": {
+      "scope": "all"
+     },
+     "cause": "the firm leaves after the crash"
+    }
+   ],
+   "provenance": "authored",
+   "plot": {
+    "x": 0,
+    "w": 8000,
+    "d": 13000
+   },
+   "note": "Context across the basin: 110's diary."
+  },
+  {
+   "id": 3009,
+   "type": "house",
+   "character": "high_road",
+   "events": [
+    {
+     "id": 1,
+     "year": 1899,
+     "kind": "built",
+     "params": {
+      "era": "chalet",
+      "storeys": 2500,
+      "wealth": 650,
+      "with": [
+       "bislag",
+       "bay"
+      ]
+     },
+     "cause": "a ship's captain builds"
+    },
+    {
+     "id": 2,
+     "year": 1924,
+     "kind": "repainted",
+     "params": {},
+     "cause": "upkeep"
+    },
+    {
+     "id": 3,
+     "year": 1958,
+     "kind": "extended",
+     "params": {
+      "kind": "lean_to",
+      "side": "back"
+     },
+     "cause": "a wash house at the back"
+    },
+    {
+     "id": 4,
+     "year": 1977,
+     "kind": "roof_retiled",
+     "params": {
+      "swatch": "roof_slate"
+     },
+     "cause": "concrete tiles replace the slate"
+    },
+    {
+     "id": 5,
+     "year": 1984,
+     "kind": "repainted",
+     "params": {},
+     "cause": "upkeep"
+    }
+   ],
+   "provenance": "authored",
+   "plot": {
+    "x": 0,
+    "w": 9000,
+    "d": 8000
+   },
+   "note": "Context across the basin: 103's diary."
+  },
+  {
+   "id": 3010,
+   "type": "house",
+   "character": "high_road",
+   "events": [
+    {
+     "id": 1,
+     "year": 1846,
+     "kind": "built",
+     "params": {
+      "era": "classical",
+      "storeys": 1500,
+      "wealth": 300
+     },
+     "cause": "a cooper builds"
+    },
+    {
+     "id": 2,
+     "year": 1902,
+     "kind": "extended",
+     "params": {
+      "kind": "bislag"
+     },
+     "cause": "a porch against the wind"
+    },
+    {
+     "id": 3,
+     "year": 1960,
+     "kind": "repainted",
+     "params": {},
+     "cause": "upkeep"
+    },
+    {
+     "id": 4,
+     "year": 1971,
+     "kind": "windows_replaced",
+     "params": {
+      "scope": "all"
+     },
+     "cause": "draughty windows replaced cheaply"
+    },
+    {
+     "id": 5,
+     "year": 1983,
+     "kind": "neglected",
+     "params": {
+      "amount": 250
+     },
+     "cause": "the widow can't keep it up"
+    }
+   ],
+   "provenance": "authored",
+   "plot": {
+    "x": 0,
+    "w": 8000,
+    "d": 7000
+   },
+   "note": "Context across the basin: 102's diary."
+  },
+  {
+   "id": 3011,
+   "type": "house",
+   "character": "low_road",
+   "events": [
+    {
+     "id": 1,
+     "year": 1974,
+     "kind": "built",
+     "params": {
+      "era": "seventies",
+      "storeys": 2000,
+      "wealth": 400
+     },
+     "cause": "infill after the old house was cleared for the road plan"
+    }
+   ],
+   "provenance": "authored",
+   "plot": {
+    "x": 0,
+    "w": 10000,
+    "d": 8000
+   },
+   "note": "Context across the basin: 106's diary."
+  },
+  {
+   "id": 3012,
+   "type": "house",
+   "character": "high_road",
+   "events": [
+    {
+     "id": 1,
+     "year": 1893,
+     "kind": "built",
+     "params": {
+      "era": "chalet",
+      "storeys": 2000,
+      "wealth": 850,
+      "with": [
+       "ark",
+       "veranda"
+      ]
+     },
+     "cause": "a herring merchant builds his house"
+    },
+    {
+     "id": 2,
+     "year": 1931,
+     "kind": "shop_fitted",
+     "params": {
+      "cols": 2
+     },
+     "cause": "the merchant's son turns the ground floor into a shop"
+    },
+    {
+     "id": 3,
+     "year": 1931,
+     "kind": "business_opened",
+     "params": {
+      "kind": "grocer",
+      "name": "Larsen Kolonial"
+     },
+     "cause": "the son opens a grocery"
+    },
+    {
+     "id": 4,
+     "year": 1952,
+     "kind": "repainted",
+     "params": {},
+     "cause": "upkeep"
+    },
+    {
+     "id": 5,
+     "year": 1968,
+     "kind": "windows_replaced",
+     "params": {
+      "scope": "upper"
+     },
+     "cause": "the flat upstairs is let; the landlord fits new windows"
+    },
+    {
+     "id": 6,
+     "year": 1974,
+     "kind": "business_closed",
+     "params": {},
+     "cause": "the grocer retires; the supermarket took his trade"
+    },
+    {
+     "id": 7,
+     "year": 1975,
+     "kind": "business_opened",
+     "params": {
+      "kind": "cafe",
+      "name": "Mo's"
+     },
+     "cause": "Mo opens a café"
+    },
+    {
+     "id": 8,
+     "year": 1979,
+     "kind": "repainted",
+     "params": {},
+     "cause": "Mo repaints"
+    },
+    {
+     "id": 9,
+     "year": 1986,
+     "kind": "business_closed",
+     "params": {},
+     "cause": "the crash empties the café"
+    },
+    {
+     "id": 10,
+     "year": 1986,
+     "kind": "boarded",
+     "params": {
+      "scope": "ground"
+     },
+     "cause": "empty"
+    },
+    {
+     "id": 11,
+     "year": 1987,
+     "kind": "neglected",
+     "params": {
+      "amount": 300
+     },
+     "cause": "nobody maintains it"
+    },
+    {
+     "id": 12,
+     "year": 1988,
+     "kind": "unboarded",
+     "params": {
+      "scope": "ground"
+     },
+     "cause": "Ruth Hale takes the lease"
+    },
+    {
+     "id": 13,
+     "year": 1988,
+     "kind": "business_opened",
+     "params": {
+      "kind": "bar",
+      "name": "the Anchor"
+     },
+     "cause": "Ruth opens a bar"
+    }
+   ],
+   "provenance": "authored",
+   "plot": {
+    "x": 0,
+    "w": 10000,
+    "d": 8000
+   },
+   "note": "Context across the basin: 101's diary."
+  },
+  {
+   "id": 3100,
+   "type": "house",
+   "character": "low_road",
+   "events": [
+    {
+     "id": 1,
+     "year": 1974,
+     "kind": "built",
+     "params": {
+      "era": "seventies",
+      "storeys": 2000,
+      "wealth": 400
+     },
+     "cause": "infill after the old house was cleared for the road plan"
+    }
+   ],
+   "provenance": "authored",
+   "plot": {
+    "x": 0,
+    "w": 10000,
+    "d": 8000
+   },
+   "note": "Context, the newer town across the basin: 106's diary."
+  },
+  {
+   "id": 3101,
+   "type": "house",
+   "character": "low_road",
+   "events": [
+    {
+     "id": 1,
+     "year": 1956,
+     "kind": "built",
+     "params": {
+      "era": "postwar",
+      "storeys": 1500,
+      "wealth": 350
+     },
+     "cause": "a young family builds on a cleared plot"
+    }
+   ],
+   "provenance": "authored",
+   "plot": {
+    "x": 0,
+    "w": 8000,
+    "d": 7000
+   },
+   "note": "Context, the newer town across the basin: 207's diary."
+  },
+  {
+   "id": 3102,
+   "type": "house",
+   "character": "high_road",
+   "events": [
+    {
+     "id": 1,
+     "year": 1936,
+     "kind": "built",
+     "params": {
+      "era": "functionalist",
+      "storeys": 2000,
+      "wealth": 500
+     },
+     "cause": "built after the old house burned"
+    },
+    {
+     "id": 2,
+     "year": 1987,
+     "kind": "repainted",
+     "params": {},
+     "cause": "new owners"
+    }
+   ],
+   "provenance": "authored",
+   "plot": {
+    "x": 0,
+    "w": 9000,
+    "d": 8000
+   },
+   "note": "Context, the newer town across the basin: 105's diary."
+  },
+  {
+   "id": 3103,
+   "type": "house",
+   "character": "low_road",
+   "events": [
+    {
+     "id": 1,
+     "year": 1974,
+     "kind": "built",
+     "params": {
+      "era": "seventies",
+      "storeys": 2000,
+      "wealth": 400
+     },
+     "cause": "infill after the old house was cleared for the road plan"
+    }
+   ],
+   "provenance": "authored",
+   "plot": {
+    "x": 0,
+    "w": 10000,
+    "d": 8000
+   },
+   "note": "Context, the newer town across the basin: 106's diary."
+  },
+  {
+   "id": 3104,
+   "type": "house",
+   "character": "low_road",
+   "events": [
+    {
+     "id": 1,
+     "year": 1956,
+     "kind": "built",
+     "params": {
+      "era": "postwar",
+      "storeys": 1500,
+      "wealth": 350
+     },
+     "cause": "a young family builds on a cleared plot"
+    }
+   ],
+   "provenance": "authored",
+   "plot": {
+    "x": 0,
+    "w": 8000,
+    "d": 7000
+   },
+   "note": "Context, the newer town across the basin: 207's diary."
+  },
+  {
+   "id": 3105,
+   "type": "house",
+   "character": "high_road",
+   "events": [
+    {
+     "id": 1,
+     "year": 1936,
+     "kind": "built",
+     "params": {
+      "era": "functionalist",
+      "storeys": 2000,
+      "wealth": 500
+     },
+     "cause": "built after the old house burned"
+    },
+    {
+     "id": 2,
+     "year": 1987,
+     "kind": "repainted",
+     "params": {},
+     "cause": "new owners"
+    }
+   ],
+   "provenance": "authored",
+   "plot": {
+    "x": 0,
+    "w": 9000,
+    "d": 8000
+   },
+   "note": "Context, the newer town across the basin: 105's diary."
+  },
+  {
+   "id": 3106,
+   "type": "house",
+   "character": "low_road",
+   "events": [
+    {
+     "id": 1,
+     "year": 1974,
+     "kind": "built",
+     "params": {
+      "era": "seventies",
+      "storeys": 2000,
+      "wealth": 400
+     },
+     "cause": "infill after the old house was cleared for the road plan"
+    }
+   ],
+   "provenance": "authored",
+   "plot": {
+    "x": 0,
+    "w": 10000,
+    "d": 8000
+   },
+   "note": "Context, the newer town across the basin: 106's diary."
+  }
+ ],
+ "placements": [
+  {
+   "id": 1203,
+   "lane": "corner",
+   "anchor": [
+    42800,
+    38200
+   ],
+   "z": 8400,
+   "yaw": 900,
+   "context": false
+  },
+  {
+   "id": 1107,
+   "lane": "corner",
+   "anchor": [
+    53200,
+    40500
+   ],
+   "z": 12650,
+   "yaw": -900,
+   "context": false
+  },
+  {
+   "id": 304,
+   "lane": "corner",
+   "anchor": [
+    49600,
+    69000
+   ],
+   "z": 20600,
+   "yaw": 900,
+   "context": false
+  },
+  {
+   "id": 2201,
+   "lane": "hill",
+   "anchor": [
+    -6000,
+    24000
+   ],
+   "z": 6082,
+   "yaw": 0,
+   "context": true
+  },
+  {
+   "id": 2202,
+   "lane": "hill",
+   "anchor": [
+    8000,
+    26000
+   ],
+   "z": 6940,
+   "yaw": 0,
+   "context": true
+  },
+  {
+   "id": 2206,
+   "lane": "hill",
+   "anchor": [
+    22000,
+    24500
+   ],
+   "z": 6323,
+   "yaw": 0,
+   "context": true
+  },
+  {
+   "id": 2301,
+   "lane": "hill",
+   "anchor": [
+    -2000,
+    44000
+   ],
+   "z": 13561,
+   "yaw": 0,
+   "context": true
+  },
+  {
+   "id": 2302,
+   "lane": "hill",
+   "anchor": [
+    14000,
+    45000
+   ],
+   "z": 14397,
+   "yaw": 0,
+   "context": true
+  },
+  {
+   "id": 2303,
+   "lane": "hill",
+   "anchor": [
+    27000,
+    43000
+   ],
+   "z": 14021,
+   "yaw": 0,
+   "context": true
+  },
+  {
+   "id": 2205,
+   "lane": "hill",
+   "anchor": [
+    76000,
+    25000
+   ],
+   "z": 6242,
+   "yaw": 0,
+   "context": true
+  },
+  {
+   "id": 2207,
+   "lane": "hill",
+   "anchor": [
+    90000,
+    24000
+   ],
+   "z": 5568,
+   "yaw": 0,
+   "context": true
+  },
+  {
+   "id": 2208,
+   "lane": "hill",
+   "anchor": [
+    104000,
+    26000
+   ],
+   "z": 6377,
+   "yaw": 0,
+   "context": true
+  },
+  {
+   "id": 2305,
+   "lane": "hill",
+   "anchor": [
+    74000,
+    46000
+   ],
+   "z": 16078,
+   "yaw": 0,
+   "context": true
+  },
+  {
+   "id": 2306,
+   "lane": "hill",
+   "anchor": [
+    88000,
+    44000
+   ],
+   "z": 15024,
+   "yaw": 0,
+   "context": true
+  },
+  {
+   "id": 2307,
+   "lane": "hill",
+   "anchor": [
+    102000,
+    45500
+   ],
+   "z": 15232,
+   "yaw": 0,
+   "context": true
+  },
+  {
+   "id": 3000,
+   "lane": "far quay",
+   "anchor": [
+    -35000,
+    -131000
+   ],
+   "z": 2100,
+   "yaw": 1800,
+   "context": true
+  },
+  {
+   "id": 3001,
+   "lane": "far quay",
+   "anchor": [
+    -24400,
+    -131800
+   ],
+   "z": 2100,
+   "yaw": 1800,
+   "context": true
+  },
+  {
+   "id": 3002,
+   "lane": "far quay",
+   "anchor": [
+    -14700,
+    -131000
+   ],
+   "z": 2100,
+   "yaw": 1800,
+   "context": true
+  },
+  {
+   "id": 3003,
+   "lane": "far quay",
+   "anchor": [
+    -4300,
+    -132600
+   ],
+   "z": 2100,
+   "yaw": 1800,
+   "context": true
+  },
+  {
+   "id": 3004,
+   "lane": "far quay",
+   "anchor": [
+    13700,
+    -131400
+   ],
+   "z": 2100,
+   "yaw": 1800,
+   "context": true
+  },
+  {
+   "id": 3005,
+   "lane": "far quay",
+   "anchor": [
+    23300,
+    -131000
+   ],
+   "z": 2100,
+   "yaw": 1800,
+   "context": true
+  },
+  {
+   "id": 3006,
+   "lane": "far quay",
+   "anchor": [
+    32600,
+    -132200
+   ],
+   "z": 2100,
+   "yaw": 1800,
+   "context": true
+  },
+  {
+   "id": 3007,
+   "lane": "far quay",
+   "anchor": [
+    41600,
+    -131000
+   ],
+   "z": 2100,
+   "yaw": 1800,
+   "context": true
+  },
+  {
+   "id": 3008,
+   "lane": "far quay",
+   "anchor": [
+    51600,
+    -131600
+   ],
+   "z": 2100,
+   "yaw": 1800,
+   "context": true
+  },
+  {
+   "id": 3009,
+   "lane": "far quay",
+   "anchor": [
+    68100,
+    -131000
+   ],
+   "z": 2100,
+   "yaw": 1800,
+   "context": true
+  },
+  {
+   "id": 3010,
+   "lane": "far quay",
+   "anchor": [
+    77900,
+    -132400
+   ],
+   "z": 2100,
+   "yaw": 1800,
+   "context": true
+  },
+  {
+   "id": 3011,
+   "lane": "far quay",
+   "anchor": [
+    88100,
+    -131000
+   ],
+   "z": 2100,
+   "yaw": 1800,
+   "context": true
+  },
+  {
+   "id": 3012,
+   "lane": "far quay",
+   "anchor": [
+    100500,
+    -131500
+   ],
+   "z": 2100,
+   "yaw": 1800,
+   "context": true
+  },
+  {
+   "id": 3100,
+   "lane": "far town",
+   "anchor": [
+    -30000,
+    -158000
+   ],
+   "z": 2687,
+   "yaw": 1800,
+   "context": true
+  },
+  {
+   "id": 3101,
+   "lane": "far town",
+   "anchor": [
+    -8000,
+    -162000
+   ],
+   "z": 2998,
+   "yaw": 1800,
+   "context": true
+  },
+  {
+   "id": 3102,
+   "lane": "far town",
+   "anchor": [
+    16000,
+    -156000
+   ],
+   "z": 2546,
+   "yaw": 1800,
+   "context": true
+  },
+  {
+   "id": 3103,
+   "lane": "far town",
+   "anchor": [
+    44000,
+    -160000
+   ],
+   "z": 2837,
+   "yaw": 1800,
+   "context": true
+  },
+  {
+   "id": 3104,
+   "lane": "far town",
+   "anchor": [
+    70000,
+    -157000
+   ],
+   "z": 2615,
+   "yaw": 1800,
+   "context": true
+  },
+  {
+   "id": 3105,
+   "lane": "far town",
+   "anchor": [
+    98000,
+    -161000
+   ],
+   "z": 2916,
+   "yaw": 1800,
+   "context": true
+  },
+  {
+   "id": 3106,
+   "lane": "far town",
+   "anchor": [
+    124000,
+    -158000
+   ],
+   "z": 2687,
+   "yaw": 1800,
+   "context": true
+  }
+ ],
+ "lamps": [
+  {
+   "id": "lamp-landing",
+   "x": 44200,
+   "y": 33000,
+   "z": 8000,
+   "variant": "post-1934",
+   "light": "warm",
+   "installed": 1955,
+   "cause": "the council brings electric light to the lane"
+  }
+ ],
+ "trees": [
+  {
+   "id": "birch-yard",
+   "species": "birch",
+   "x": 43600,
+   "y": 22000,
+   "planted": 1950,
+   "cause": "self-seeded in the cooper's yard"
+  },
+  {
+   "id": "spruce-e",
+   "species": "spruce",
+   "x": 44000,
+   "y": 77000,
+   "planted": 1934,
+   "cause": "planted behind the house by the fisherman's son"
+  },
+  {
+   "id": "birch-heath-1",
+   "species": "birch",
+   "x": 53000,
+   "y": 80000,
+   "planted": 1962,
+   "cause": "seeded on the heath after the sheep went in 1958"
+  },
+  {
+   "id": "birch-heath-2",
+   "species": "birch",
+   "x": 37000,
+   "y": 84000,
+   "planted": 1966,
+   "cause": "seeded on the heath after the sheep went in 1958"
+  },
+  {
+   "id": "birch-heath-3",
+   "species": "birch",
+   "x": 58000,
+   "y": 91000,
+   "planted": 1971,
+   "cause": "seeded on the heath after the sheep went in 1958"
+  },
+  {
+   "id": "birch-heath-4",
+   "species": "birch",
+   "x": 46000,
+   "y": 96000,
+   "planted": 1976,
+   "cause": "seeded on the heath after the sheep went in 1958"
+  },
+  {
+   "id": "birch-d-yard",
+   "species": "birch",
+   "x": 62500,
+   "y": 45500,
+   "planted": 1987,
+   "cause": "the first seedling in the empty house's yard"
+  },
+  {
+   "id": "rowan-hill-1",
+   "species": "rowan",
+   "x": 1000,
+   "y": 31000,
+   "planted": 1938,
+   "cause": "planted in a garden"
+  },
+  {
+   "id": "sycamore-hill-1",
+   "species": "sycamore",
+   "x": 84000,
+   "y": 32000,
+   "planted": 1905,
+   "cause": "planted in a garden"
+  },
+  {
+   "id": "rowan-hill-2",
+   "species": "rowan",
+   "x": 96000,
+   "y": 51000,
+   "planted": 1951,
+   "cause": "planted in a garden"
+  }
+ ],
+ "lit": [],
+ "site": {
+  "edge": -15400,
+  "bay_x0": -260000,
+  "bay_x1": 420000,
+  "yard": 12000,
+  "slope": 420,
+  "steepen": 0,
+  "gully_x": 49300,
+  "gully_depth": 2000,
+  "gully_width": 8000,
+  "rough": 1400,
+  "side_height": 24000,
+  "side_reach": 300000,
+  "crest": {
+   "z": 30000,
+   "keep": 220
+  },
+  "seed": 1989,
+  "far_shore": {
+   "y": -125000,
+   "quay": 2100,
+   "yard": 14000,
+   "rise": 14000,
+   "reach": 150000,
+   "depth": 420000
+  },
+  "outcrops": [
+   {
+    "x": 59000,
+    "y": 39000,
+    "r": 7500,
+    "face": 1300,
+    "top": 12600,
+    "sx": 1000,
+    "sy": 1150
+   },
+   {
+    "x": 46500,
+    "y": 69000,
+    "r": 6500,
+    "face": 1400,
+    "top": 20600,
+    "sx": 1000,
+    "sy": 1000
+   },
+   {
+    "x": 125000,
+    "y": -215000,
+    "r": 34000,
+    "face": 14000,
+    "top": 24000,
+    "sx": 1300,
+    "sy": 1000
+   },
+   {
+    "x": -380000,
+    "y": -640000,
+    "r": 120000,
+    "face": 90000,
+    "top": 16000,
+    "sx": 1900,
+    "sy": 1000
+   },
+   {
+    "x": 160000,
+    "y": -760000,
+    "r": 85000,
+    "face": 65000,
+    "top": 12000,
+    "sx": 2300,
+    "sy": 1000
+   },
+   {
+    "x": 560000,
+    "y": -600000,
+    "r": 60000,
+    "face": 45000,
+    "top": 9000,
+    "sx": 1600,
+    "sy": 1000
+   },
+   {
+    "x": -80000,
+    "y": -1050000,
+    "r": 140000,
+    "face": 110000,
+    "top": 22000,
+    "sx": 2600,
+    "sy": 1000
+   }
+  ]
+ }
+}

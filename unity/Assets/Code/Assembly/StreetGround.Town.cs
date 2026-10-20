@@ -17,8 +17,8 @@ namespace Overstory.Assembly
         static void TownParts(List<Part> parts, Palette pal, ulong seed, StreetLayout L)
         {
             var t = L.town;
-            parts.Add(new Part { name = "the hill, close", mesh = TerrainMesh(pal, t.fine, null, "town ground", L.quay.edge) });
-            parts.Add(new Part { name = "the hill, around", mesh = TerrainMesh(pal, t.coarse, t.fine, "land", L.quay.edge) });
+            parts.Add(new Part { name = "the hill, close", mesh = TerrainMesh(pal, t.fine, null, "town ground", L.quay.edge, t.heathAbove) });
+            parts.Add(new Part { name = "the hill, around", mesh = TerrainMesh(pal, t.coarse, t.fine, "land", L.quay.edge, t.heathAbove) });
 
             var w = new MeshWriter(pal);
             foreach (var lane in t.lanes)
@@ -62,7 +62,7 @@ namespace Overstory.Assembly
         /// heath higher, rock where it is steep), each triangle its own vertices so swatches never blend.
         /// With a hole, the cells the finer grid covers are left out and the border is skirted down.
         /// </summary>
-        static Mesh TerrainMesh(Palette pal, HeightGrid g, HeightGrid hole, string name, float shore)
+        static Mesh TerrainMesh(Palette pal, HeightGrid g, HeightGrid hole, string name, float shore, float heathAbove)
         {
             var verts = new List<Vector3>();
             var normals = new List<Vector3>();
@@ -88,7 +88,7 @@ namespace Overstory.Assembly
                 float z = (a.y + b.y + c.y) / 3f;
                 Vector3 fn = Vector3.Cross(b - a, c - a).normalized;
                 // bare rock only on crags; heath above the town; grass within it
-                Vector2 uv = z < -1.2f ? bed : (fn.y < 0.42f ? rock : (z > 55f ? heath : grass));
+                Vector2 uv = z < -1.2f ? bed : (fn.y < 0.42f ? rock : (z > heathAbove ? heath : grass));
                 int n0 = verts.Count;
                 foreach (var (p, nn) in new[] { (a, N(ia, ja)), (b, N(ib, jb)), (c, N(ic, jc)) })
                 {

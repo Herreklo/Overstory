@@ -36,10 +36,43 @@ def noise2(seed, u, v):
     return top + (bot - top) * fv
 
 
+def outcrop_z(site, x, y, z):
+    """Bedrock standing out of the ground: a knuckle in a lane, a knoll, an island. Each is level on top
+    and falls at its edge over a band of its own width, so a narrow band makes a rock face."""
+    for o in site.get("outcrops", []):
+        d = math.hypot((x - o["x"]) / o.get("sx", 1.0), (y - o["y"]) / o.get("sy", 1.0))
+        if d < o["r"]:
+            k = smoothstep(o["r"], o["r"] - o["face"], d)
+            z = max(z, z + (o["top"] - z) * k)
+    return z
+
+
+def in_outcrop(site, x, y):
+    """Whether a point lies on one of the site's outcrops: rock that holds itself up, which no cut eases back."""
+    for o in site.get("outcrops", []):
+        if math.hypot((x - o["x"]) / o.get("sx", 1.0), (y - o["y"]) / o.get("sy", 1.0)) < o["r"] + 0.5:
+            return True
+    return False
+
+
 def natural_z(site, x, y):
-    """The ground before building, in metres."""
+    """The ground before building, in metres: the land as it lies, then the bedrock standing out of it."""
+    return outcrop_z(site, x, y, _land_z(site, x, y))
+
+
+def _land_z(site, x, y):
     s = site
     edge = s["edge"]
+    far = s.get("far_shore")
+    if far and y < far["y"] - far["depth"]:  # past the far side's land: the open fjord
+        return -9.0
+    if far and y < far["y"]:  # the basin's far side: its quay, then low land rising behind it, falling to the fjord
+        t = far["y"] - y
+        rise = far["rise"] * smoothstep(far["yard"], far["yard"] + far["reach"], t)
+        fall = smoothstep(far["depth"] - 60.0, far["depth"], t)
+        return far["quay"] + rise - (rise + far["quay"] + 9.0) * fall
+    if far and y < edge:  # the basin: its floor, deepest in the middle
+        return -4.0 - 3.0 * math.sin(math.pi * (edge - y) / (edge - far["y"]))
     if y < edge:  # the harbour: the bay's floor, or the hills running out as headlands
         d = max(s["bay_x0"] - x, x - s["bay_x1"], 0.0)
         side = s["side_height"] * (1 - (1 - min(1.0, d / s["side_reach"])) ** 2)
@@ -57,6 +90,10 @@ def natural_z(site, x, y):
     # unevenness, none near the quay street
     n = noise2(s["seed"], x / 60.0, y / 60.0) * 0.65 + noise2(s["seed"] + 7, x / 23.0, y / 23.0) * 0.35
     z += s["rough"] * (n - 0.5) * 2 * smoothstep(rise_y + 2, rise_y + 26, y)
+    # a low land: above its crest the hill rounds off instead of climbing on
+    crest = s.get("crest")
+    if crest and z > crest["z"]:
+        z = crest["z"] + (z - crest["z"]) * crest["keep"]
     # the bay's sides rise to the hills
     d = max(s["bay_x0"] - x, x - s["bay_x1"], 0.0)
     side = s["side_height"] * (1 - (1 - min(1.0, d / s["side_reach"])) ** 2)
@@ -131,6 +168,7 @@ def carve(field, town):
     from the town's walls), so the ground there stays as it was."""
     lanes = town["lanes"]
     stairs = town.get("stairs", [])
+    rock = town.get("site")  # the site, when it has outcrops: rock is not cut back
     for i, j, x, y in field.points():
         z = field.z[j][i]
         for st in stairs:  # stepped lanes: their own slope, banks on both sides
@@ -142,6 +180,8 @@ def carve(field, town):
             sz = pts[k][2] + (pts[k + 1][2] - pts[k][2]) * t
             if d <= hw:
                 z = sz
+            elif rock and in_outcrop(rock, x, y):
+                z = max(z, sz - (d - hw) * 0.7)  # a rock face beside the lane stands as it is
             else:
                 z = min(max(z, sz - (d - hw) * 0.7), sz + (d - hw) * 0.9)
         for lane in lanes:

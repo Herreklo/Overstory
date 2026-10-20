@@ -103,19 +103,32 @@ def town_m(town):
         stairs=[dict(width=m(s["width"]), points=[[m(a) for a in p] for p in s["points"]]) for s in town["stairs"]],
         squares=[dict(z=m(q["z"]), corners=[(m(x), m(y)) for x, y in q["corners"]]) for q in town["squares"]],
         pads=[dict(kind=p["kind"], z=m(p["z"]), corners=[(m(x), m(y)) for x, y in p["corners"]]) for p in town["pads"]],
+        site=town_site(town),
     )
 
 
 def town_site(town):
-    return {k: (v if k == "seed" else v / 1000.0) for k, v in town["site"].items()}
+    """The site in metres: every length (and every ratio, kept in thousandths) over 1000, the seed as it is."""
+    def m(k, v):
+        if k == "seed":
+            return v
+        if isinstance(v, dict):
+            return {kk: m(kk, vv) for kk, vv in v.items()}
+        if isinstance(v, list):
+            return [m(k, vv) for vv in v]
+        return v / 1000.0
+    return {k: m(k, v) for k, v in town["site"].items()}
 
 
 def town_ground(town):
     """The ground: a fine grid over the town, carved, and a coarse one over the land around it."""
     site = town_site(town)
-    fine = terrain.Field(site, -50.0, -22.0, 190.0, 176.0, 2.0)
+    m = lambda v: v / 1000.0
+    fx0, fy0, fx1, fy1, fs = [m(v) for v in town.get("fine", [-50000, -22000, 190000, 176000, 2000])]
+    fine = terrain.Field(site, fx0, fy0, fx1, fy1, fs)
     terrain.carve(fine, town_m(town))
-    coarse = terrain.Field(site, -1400.0, -900.0, 1600.0, 1500.0, 14.0)
+    cx0, cy0, cx1, cy1, cs = [m(v) for v in town.get("coarse", [-1400000, -900000, 1600000, 1500000, 14000])]
+    coarse = terrain.Field(site, cx0, cy0, cx1, cy1, cs)
     return dict(fine=fine, coarse=coarse)
 
 
@@ -136,7 +149,40 @@ def town_out(town, ground):
         squares=[dict(name=q["name"], z=m(q["z"]), surface=q["surface"], corners=[dict(x=m(x), y=m(y), z=m(q["z"])) for x, y in q["corners"]]) for q in town["squares"]],
         walls=[dict(kind=w["kind"], points=[dict(x=m(p[0]), y=m(p[1]), zb=m(p[2]), zt=m(p[3])) for p in w["points"]]) for w in town["walls"]],
         foundations=[dict(id=p["id"], top=m(p["z"]), bottom=m(p["low"]), corners=[dict(x=m(x), y=m(y), z=0.0) for x, y in p["foundation"]]) for p in town["placements"]],
+        heathAbove=m(town.get("heath_above", 55000)),
     )
+
+
+def anchor_placement(pl, vs):
+    """A placement given by where the house's front goes (its anchor: the middle of the front at the
+    ground, in street millimetres) and which way it faces: the origin, foundation and pad follow from the
+    house as built. Fills in the placement and returns the house's origin and yaw in metres and degrees."""
+    import math
+    g = [v for v in vs if v.z < GROUND_LINE]
+    x0, x1 = min(v.x for v in g), max(v.x for v in g)
+    y0, y1 = min(v.y for v in g), max(v.y for v in g)
+    yaw = pl["yaw"] / 10.0
+    c, s_ = math.cos(math.radians(yaw)), math.sin(math.radians(yaw))
+    ax, ay = pl["anchor"][0] / 1000.0, pl["anchor"][1] / 1000.0
+    lx, ly = (x0 + x1) / 2, y0
+    ox, oy = ax - (lx * c - ly * s_), ay - (lx * s_ + ly * c)
+    world = lambda x, y: (ox + x * c - y * s_, oy + x * s_ + y * c)
+    quad = [world(x, y) for x, y in ((x0, y0), (x1, y0), (x1, y1), (x0, y1))]
+    pl["x"], pl["y"] = round(ox * 1000), round(oy * 1000)
+    pl["foundation"] = [[round(x * 1000), round(y * 1000)] for x, y in quad]
+    return (ox, oy, pl["z"] / 1000.0), yaw
+
+
+def grown(quad, by):
+    """A quad grown outwards by `by` from its middle (corners in any units, `by` in the same)."""
+    import math
+    cx = sum(p[0] for p in quad) / 4
+    cy = sum(p[1] for p in quad) / 4
+    out = []
+    for x, y in quad:
+        d = math.hypot(x - cx, y - cy) or 1.0
+        out.append([round(x + (x - cx) / d * by), round(y + (y - cy) / d * by)])
+    return out
 
 
 def tree_scale(age):
@@ -197,11 +243,13 @@ def main(argv):
     town_path = opts.get("--town") or os.path.join(os.path.dirname(fixture_path), "lt1-town.json")
     town = json.load(open(town_path)) if os.path.exists(town_path) else None
     if town:
-        # the grown town replaces the hand-made one above the street: Harbour Row stays as authored
-        fx["buildings"] = [b for b in fx["buildings"] if b["id"] < 200] + town["buildings"]
-        fx["lit"]["floors"] = [f for f in fx["lit"]["floors"] if f["building"] < 200] + town["lit"]
+        # the town replaces the hand-made one above the street: Harbour Row stays as authored, except
+        # where the town gives one of its buildings a diary of its own
+        own = {b["id"] for b in town["buildings"]}
+        fx["buildings"] = [b for b in fx["buildings"] if b["id"] < 200 and b["id"] not in own] + town["buildings"]
+        fx["lit"]["floors"] = [f for f in fx["lit"]["floors"] if f["building"] < 200 and f["building"] not in own] + town["lit"]
     st = fx["street"]
-    sid = st["id"]
+    sid = opts.get("--out", st["id"])
     ws = fx["worldSeed"]
     lit = {f["building"]: f["floors"] for f in fx.get("lit", {}).get("floors", [])}
 
@@ -224,7 +272,12 @@ def main(argv):
             problems.append((bd["id"], probs))
         vs = [v.co for v in ob.data.vertices]
         yaw = 0.0
-        if bd["id"] in placements:
+        if bd["id"] in placements and "anchor" in placements[bd["id"]]:
+            pl = placements[bd["id"]]
+            pos, yaw = anchor_placement(pl, vs)
+            town["pads"].append(dict(kind="house", z=pl["z"] - 50, corners=grown(pl["foundation"], 600)))
+            span = (pos[0] - 1e6, pos[0] - 1e6 + 1)  # authored by hand, each where its front goes
+        elif bd["id"] in placements:
             pl = placements[bd["id"]]
             pos, yaw = (pl["x"] / 1000.0, pl["y"] / 1000.0, pl["z"] / 1000.0), pl["yaw"] / 10.0
             span = (pos[0] - 1e6, pos[0] - 1e6 + 1)  # grown houses were spaced as they grew
@@ -293,6 +346,13 @@ def main(argv):
         kit.append(dict(name=f"tree-{sp}", file=rel, light=xyz(0, 0, 0), glow=""))
     trees = []
     ground = town_ground(town) if town else None
+    if ground:
+        # an anchored house's basement reaches down to the lowest ground round it
+        f = ground["fine"]
+        for pl in town["placements"]:
+            if "anchor" in pl and "low" not in pl:
+                zs = [f.sample(x / 1000.0, y / 1000.0) for x, y in grown(pl["foundation"], 300)]
+                pl["low"] = round(min(min(zs), pl["z"] / 1000.0) * 1000 - 300)
     for t in (town["trees"] if town else st.get("trees", {}).get("list", [])):
         if t["planted"] > year:
             continue
@@ -348,7 +408,9 @@ def main(argv):
         kit=kit,
         emissive=[dict(swatch=k, off=v[0], group=v[1]) for k, v in palette.EMISSIVE.items()],
         palette=dict(grid=palette.GRID, names=palette.NAMES),
-        slope=slope(st.get("slope")) if not town else dict(slope(st.get("slope")), levels=[], stairs=[], site=None),
+        # a town with its own land (a far shore, islands) replaces the street's ridges, which were strips
+        slope=slope(st.get("slope")) if not town else dict(slope(st.get("slope")), levels=[], stairs=[], site=None,
+                                                           ridges=[] if "far_shore" in town.get("site", {}) else slope(st.get("slope"))["ridges"]),
         trees=trees,
         spill=spill,
         town=town_out(town, ground) if town else None,

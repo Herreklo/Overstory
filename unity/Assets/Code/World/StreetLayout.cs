@@ -136,6 +136,8 @@ namespace Overstory.World
         public Path[] lanes, stairs, steps, squares;
         public Wall[] walls;
         public Foundation[] foundations;
+        [Tooltip("Above this height (street metres) open ground is heath, below it grass.")]
+        public float heathAbove = 55f;
     }
 
     /// <summary>A height grid in street metres: z[j * nx + i] at (x0 + i * step, y0 + j * step).</summary>

@@ -1,0 +1,727 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!29 &1
+OcclusionCullingSettings:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_OcclusionBakeSettings:
+    smallestOccluder: 5
+    smallestHole: 0.25
+    backfaceThreshold: 100
+  m_SceneGUID: 00000000000000000000000000000000
+  m_OcclusionCullingData: {fileID: 0}
+--- !u!104 &2
+RenderSettings:
+  m_ObjectHideFlags: 0
+  serializedVersion: 10
+  m_Fog: 0
+  m_FogColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+  m_FogMode: 3
+  m_FogDensity: 0.01
+  m_LinearFogStart: 0
+  m_LinearFogEnd: 300
+  m_AmbientSkyColor: {r: 0.24941178, g: 0.3058824, b: 0.41411766, a: 0.6}
+  m_AmbientEquatorColor: {r: 0.35294122, g: 0.3294118, b: 0.3058824, a: 0.6}
+  m_AmbientGroundColor: {r: 0.18352942, g: 0.16941178, b: 0.15058824, a: 0.6}
+  m_AmbientIntensity: 1
+  m_AmbientMode: 1
+  m_SubtractiveShadowColor: {r: 0.42, g: 0.478, b: 0.627, a: 1}
+  m_SkyboxMaterial: {fileID: 2100000, guid: b64962f4757bf4444b0088795b6c46cd, type: 2}
+  m_HaloStrength: 0.5
+  m_FlareStrength: 1
+  m_FlareFadeSpeed: 3
+  m_HaloTexture: {fileID: 0}
+  m_SpotCookie: {fileID: 10001, guid: 0000000000000000e000000000000000, type: 0}
+  m_DefaultReflectionMode: 0
+  m_DefaultReflectionResolution: 128
+  m_ReflectionBounces: 1
+  m_ReflectionIntensity: 1
+  m_CustomReflection: {fileID: 0}
+  m_Sun: {fileID: 1305204730}
+  m_UseRadianceAmbientProbe: 0
+--- !u!157 &3
+LightmapSettings:
+  m_ObjectHideFlags: 0
+  serializedVersion: 13
+  m_BakeOnSceneLoad: 0
+  m_GISettings:
+    serializedVersion: 2
+    m_BounceScale: 1
+    m_IndirectOutputScale: 1
+    m_AlbedoBoost: 1
+    m_EnvironmentLightingMode: 0
+    m_EnableBakedLightmaps: 1
+    m_EnableRealtimeLightmaps: 0
+  m_LightmapEditorSettings:
+    serializedVersion: 12
+    m_Resolution: 2
+    m_BakeResolution: 40
+    m_AtlasSize: 1024
+    m_AO: 0
+    m_AOMaxDistance: 1
+    m_CompAOExponent: 1
+    m_CompAOExponentDirect: 0
+    m_ExtractAmbientOcclusion: 0
+    m_Padding: 2
+    m_LightmapParameters: {fileID: 0}
+    m_LightmapsBakeMode: 1
+    m_TextureCompression: 1
+    m_ReflectionCompression: 2
+    m_MixedBakeMode: 2
+    m_BakeBackend: 2
+    m_PVRSampling: 1
+    m_PVRDirectSampleCount: 32
+    m_PVRSampleCount: 512
+    m_PVRBounces: 2
+    m_PVREnvironmentSampleCount: 256
+    m_PVREnvironmentReferencePointCount: 2048
+    m_PVRFilteringMode: 1
+    m_PVRDenoiserTypeDirect: 2
+    m_PVRDenoiserTypeIndirect: 2
+    m_PVRDenoiserTypeAO: 2
+    m_PVRFilterTypeDirect: 0
+    m_PVRFilterTypeIndirect: 0
+    m_PVRFilterTypeAO: 0
+    m_PVREnvironmentMIS: 1
+    m_PVRCulling: 1
+    m_PVRFilteringGaussRadiusDirect: 1
+    m_PVRFilteringGaussRadiusIndirect: 1
+    m_PVRFilteringGaussRadiusAO: 1
+    m_PVRFilteringAtrousPositionSigmaDirect: 0.5
+    m_PVRFilteringAtrousPositionSigmaIndirect: 2
+    m_PVRFilteringAtrousPositionSigmaAO: 1
+    m_ExportTrainingData: 0
+    m_TrainingDataDestination: TrainingData
+    m_LightProbeSampleCountMultiplier: 4
+  m_LightingDataAsset: {fileID: 20201, guid: 0000000000000000f000000000000000, type: 0}
+  m_LightingSettings: {fileID: 0}
+--- !u!196 &4
+NavMeshSettings:
+  serializedVersion: 2
+  m_ObjectHideFlags: 0
+  m_BuildSettings:
+    serializedVersion: 3
+    agentTypeID: 0
+    agentRadius: 0.5
+    agentHeight: 2
+    agentSlope: 45
+    agentClimb: 0.4
+    ledgeDropHeight: 0
+    maxJumpAcrossDistance: 0
+    minRegionArea: 2
+    manualCellSize: 0
+    cellSize: 0.16666667
+    manualTileSize: 0
+    tileSize: 256
+    buildHeightMesh: 0
+    maxJobWorkers: 0
+    preserveTilesOutsideBounds: 0
+    debug:
+      m_Flags: 0
+  m_NavMeshData: {fileID: 0}
+--- !u!1 &63339510
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 63339512}
+  - component: {fileID: 63339511}
+  m_Layer: 0
+  m_Name: The corner
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &63339511
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 63339510}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d18a332108d394267a2ccdf5b72f908d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Overstory.Assembly.StreetBuilder
+  layout: {fileID: 4900000, guid: 4a48916d4329e482bbf319e4a3c36b0c, type: 3}
+  streetMaterial: {fileID: 2100000, guid: e5e6503c51dd54de58e12d71cb1db695, type: 2}
+  waterMaterial: {fileID: 2100000, guid: c805df57f5bc9401e82bd76dfb353eea, type: 2}
+  models:
+  - file: Assets/Art/Buildings/corner-gentle/bld_101_1989.fbx
+    model: {fileID: 919132149155446097, guid: f45d565a38f81400b90b96ef2bb5052d, type: 3}
+  - file: Assets/Art/Buildings/corner-gentle/bld_102_1989.fbx
+    model: {fileID: 919132149155446097, guid: 9da93e3f533f046729c964af611735b6, type: 3}
+  - file: Assets/Art/Buildings/corner-gentle/bld_103_1989.fbx
+    model: {fileID: 919132149155446097, guid: f20ed5c88ecf3435c8b91610f4cb4304, type: 3}
+  - file: Assets/Art/Buildings/corner-gentle/bld_105_1989.fbx
+    model: {fileID: 919132149155446097, guid: 1708678ecd1a64c6283d081bd2509fda, type: 3}
+  - file: Assets/Art/Buildings/corner-gentle/bld_106_1989.fbx
+    model: {fileID: 919132149155446097, guid: ff9004a3bc43444bf9c9a7340e47a815, type: 3}
+  - file: Assets/Art/Buildings/corner-gentle/bld_107_1989.fbx
+    model: {fileID: 919132149155446097, guid: e325b378f36e24344a36e633913e18df, type: 3}
+  - file: Assets/Art/Buildings/corner-gentle/bld_108_1989.fbx
+    model: {fileID: 919132149155446097, guid: dbe756509ebf64e3db3d64a981eac15b, type: 3}
+  - file: Assets/Art/Buildings/corner-gentle/bld_109_1989.fbx
+    model: {fileID: 919132149155446097, guid: 5c39e993f30e947f29e45f8abd83dd49, type: 3}
+  - file: Assets/Art/Buildings/corner-gentle/bld_110_1989.fbx
+    model: {fileID: 919132149155446097, guid: ae724193d4e4b4356a5d846a924c0a3a, type: 3}
+  - file: Assets/Art/Buildings/corner-gentle/bld_104_1989.fbx
+    model: {fileID: 919132149155446097, guid: 304ed7b38e2e24482acf1faa776a9254, type: 3}
+  - file: Assets/Art/Buildings/corner-gentle/bld_1203_1989.fbx
+    model: {fileID: 919132149155446097, guid: 448f563ae6a4942cb9fc297a4d7768b0, type: 3}
+  - file: Assets/Art/Buildings/corner-gentle/bld_1107_1989.fbx
+    model: {fileID: 919132149155446097, guid: c20d086c5826748a18d75633455785e2, type: 3}
+  - file: Assets/Art/Buildings/corner-gentle/bld_304_1989.fbx
+    model: {fileID: 919132149155446097, guid: 7fcedf1f335824a84832bd186e84b44a, type: 3}
+  - file: Assets/Art/Buildings/corner-gentle/bld_2201_1989.fbx
+    model: {fileID: 919132149155446097, guid: 5b88772ceee4344faadf1ee94f61d4ab, type: 3}
+  - file: Assets/Art/Buildings/corner-gentle/bld_2202_1989.fbx
+    model: {fileID: 919132149155446097, guid: 6c783599c95734ef18af16eaf31f92e4, type: 3}
+  - file: Assets/Art/Buildings/corner-gentle/bld_2206_1989.fbx
+    model: {fileID: 919132149155446097, guid: 3094431eb233c4e238b0e649a10a403d, type: 3}
+  - file: Assets/Art/Buildings/corner-gentle/bld_2301_1989.fbx
+    model: {fileID: 919132149155446097, guid: 5170c4aba8fdb47f48cff2e01651665f, type: 3}
+  - file: Assets/Art/Buildings/corner-gentle/bld_2302_1989.fbx
+    model: {fileID: 919132149155446097, guid: 27ef455536c9f4cc789048eb0b99d41a, type: 3}
+  - file: Assets/Art/Buildings/corner-gentle/bld_2303_1989.fbx
+    model: {fileID: 919132149155446097, guid: 29a7a7523ecf448f0aca190e7a7ca2a8, type: 3}
+  - file: Assets/Art/Buildings/corner-gentle/bld_2205_1989.fbx
+    model: {fileID: 919132149155446097, guid: d36a1ab6f8b3c4872b6ca6c8773b4457, type: 3}
+  - file: Assets/Art/Buildings/corner-gentle/bld_2207_1989.fbx
+    model: {fileID: 919132149155446097, guid: 0eee74e9156e54ae78f4a4c50d31bd6c, type: 3}
+  - file: Assets/Art/Buildings/corner-gentle/bld_2208_1989.fbx
+    model: {fileID: 919132149155446097, guid: b6e184b85ab604511ac857e727651f9c, type: 3}
+  - file: Assets/Art/Buildings/corner-gentle/bld_2305_1989.fbx
+    model: {fileID: 919132149155446097, guid: b69304506c1d641e48482cfaea8aebfa, type: 3}
+  - file: Assets/Art/Buildings/corner-gentle/bld_2306_1989.fbx
+    model: {fileID: 919132149155446097, guid: 11a2fed01c7b44c7e85b9fdbff01111f, type: 3}
+  - file: Assets/Art/Buildings/corner-gentle/bld_2307_1989.fbx
+    model: {fileID: 919132149155446097, guid: 35e83e2fa357045a7af9e43dc67dddbd, type: 3}
+  - file: Assets/Art/Buildings/corner-gentle/bld_3000_1989.fbx
+    model: {fileID: 919132149155446097, guid: 92c6ab53a3b9041478bd2c8bf5734ced, type: 3}
+  - file: Assets/Art/Buildings/corner-gentle/bld_3001_1989.fbx
+    model: {fileID: 919132149155446097, guid: fec5d94ca9def4558920dd8cd749e971, type: 3}
+  - file: Assets/Art/Buildings/corner-gentle/bld_3002_1989.fbx
+    model: {fileID: 919132149155446097, guid: 9ce02fa92b2a94d9e9298171b33c17d8, type: 3}
+  - file: Assets/Art/Buildings/corner-gentle/bld_3003_1989.fbx
+    model: {fileID: 919132149155446097, guid: 454560981e8af4b9d958ee305ea9a9fc, type: 3}
+  - file: Assets/Art/Buildings/corner-gentle/bld_3004_1989.fbx
+    model: {fileID: 919132149155446097, guid: b579f958608f34c049074128a794399b, type: 3}
+  - file: Assets/Art/Buildings/corner-gentle/bld_3005_1989.fbx
+    model: {fileID: 919132149155446097, guid: 651b5f0ff386a491e9b9741f4d68e4d6, type: 3}
+  - file: Assets/Art/Buildings/corner-gentle/bld_3006_1989.fbx
+    model: {fileID: 919132149155446097, guid: 4dc02225079cc470e8f02c9de2cf767d, type: 3}
+  - file: Assets/Art/Buildings/corner-gentle/bld_3007_1989.fbx
+    model: {fileID: 919132149155446097, guid: 2cfec44f834794cd6837ec1afbbc0bec, type: 3}
+  - file: Assets/Art/Buildings/corner-gentle/bld_3008_1989.fbx
+    model: {fileID: 919132149155446097, guid: 361f58b9dc3014c7b80af505af9e524c, type: 3}
+  - file: Assets/Art/Buildings/corner-gentle/bld_3009_1989.fbx
+    model: {fileID: 919132149155446097, guid: 9aab4eb794da14ecfbe3c3d6d05a4838, type: 3}
+  - file: Assets/Art/Buildings/corner-gentle/bld_3010_1989.fbx
+    model: {fileID: 919132149155446097, guid: 18c19b5a63c684e34a4c9196da4f7ef4, type: 3}
+  - file: Assets/Art/Buildings/corner-gentle/bld_3011_1989.fbx
+    model: {fileID: 919132149155446097, guid: 355b3aa1e87dc4a44a3d4f283fedb3b5, type: 3}
+  - file: Assets/Art/Buildings/corner-gentle/bld_3012_1989.fbx
+    model: {fileID: 919132149155446097, guid: c105031f7167c416da1e2c4bbd749b93, type: 3}
+  - file: Assets/Art/Buildings/corner-gentle/bld_3100_1989.fbx
+    model: {fileID: 919132149155446097, guid: 62a508fd7e1d542e0a86f3b117f9e5f9, type: 3}
+  - file: Assets/Art/Buildings/corner-gentle/bld_3101_1989.fbx
+    model: {fileID: 919132149155446097, guid: 25ca196cc010f466e92e844e7d2f18b0, type: 3}
+  - file: Assets/Art/Buildings/corner-gentle/bld_3102_1989.fbx
+    model: {fileID: 919132149155446097, guid: b29cbd30cfff74508924dcbce25904bd, type: 3}
+  - file: Assets/Art/Buildings/corner-gentle/bld_3103_1989.fbx
+    model: {fileID: 919132149155446097, guid: 7a2df9c573d5e48b6bb7869097454d4a, type: 3}
+  - file: Assets/Art/Buildings/corner-gentle/bld_3104_1989.fbx
+    model: {fileID: 919132149155446097, guid: 0c8bde84c8d554259b8e715e184f22a8, type: 3}
+  - file: Assets/Art/Buildings/corner-gentle/bld_3105_1989.fbx
+    model: {fileID: 919132149155446097, guid: 07d336112a4ff4c4caa3367f88656787, type: 3}
+  - file: Assets/Art/Buildings/corner-gentle/bld_3106_1989.fbx
+    model: {fileID: 919132149155446097, guid: 563c3c160475a4362befaadcd9f1fd87, type: 3}
+  - file: Assets/Art/Kit/lamp/kit_lamp_post-1934_lod0.fbx
+    model: {fileID: 919132149155446097, guid: 8636bc9b5ebf7486fa03b15ebae87a30, type: 3}
+  - file: Assets/Art/Kit/lamp/kit_lamp_pole-1965_lod0.fbx
+    model: {fileID: 919132149155446097, guid: e97d9a3507cea456bbbd1a8ba46ed5d1, type: 3}
+  - file: Assets/Art/Kit/lamp/kit_lamp_pole-1983_lod0.fbx
+    model: {fileID: 919132149155446097, guid: f8b28d4dacea14621b2f828f34e8d4f5, type: 3}
+  - file: Assets/Art/Kit/tree/kit_tree_birch_lod0.fbx
+    model: {fileID: 919132149155446097, guid: 1af25e9a96f80455db3f0b95c813f8f0, type: 3}
+  - file: Assets/Art/Kit/tree/kit_tree_rowan_lod0.fbx
+    model: {fileID: 919132149155446097, guid: 20eb8c92825f14d7786945abf59cd32f, type: 3}
+  - file: Assets/Art/Kit/tree/kit_tree_sycamore_lod0.fbx
+    model: {fileID: 919132149155446097, guid: f70fda8dafe184be78b29dce1722f6f5, type: 3}
+  - file: Assets/Art/Kit/tree/kit_tree_spruce_lod0.fbx
+    model: {fileID: 919132149155446097, guid: eeddec5c5f03445b09021b69b8072b20, type: 3}
+  - file: Assets/Art/Kit/bollard/kit_bollard_cast-iron_lod0.fbx
+    model: {fileID: 919132149155446097, guid: c8ad444029db4412aae5ddd104b0cc5c, type: 3}
+  - file: Assets/Art/Buildings/corner-strong/bld_101_1989.fbx
+    model: {fileID: 919132149155446097, guid: 62dd236c0ac494568ae9509dec690d20, type: 3}
+  - file: Assets/Art/Buildings/corner-strong/bld_102_1989.fbx
+    model: {fileID: 919132149155446097, guid: 9229a97d592d440948b719b7def5431b, type: 3}
+  - file: Assets/Art/Buildings/corner-strong/bld_103_1989.fbx
+    model: {fileID: 919132149155446097, guid: 951a4a1281b0b4b7199b3f41d10d0f4b, type: 3}
+  - file: Assets/Art/Buildings/corner-strong/bld_105_1989.fbx
+    model: {fileID: 919132149155446097, guid: 9a39a35884070408aa276d25ae35c45c, type: 3}
+  - file: Assets/Art/Buildings/corner-strong/bld_106_1989.fbx
+    model: {fileID: 919132149155446097, guid: 5774cca9ccdf341eeacb5e1e5d4e39e9, type: 3}
+  - file: Assets/Art/Buildings/corner-strong/bld_107_1989.fbx
+    model: {fileID: 919132149155446097, guid: 37d6d21b0c19b426fa808efb471ba527, type: 3}
+  - file: Assets/Art/Buildings/corner-strong/bld_108_1989.fbx
+    model: {fileID: 919132149155446097, guid: 9a1cdd8ccb6214d08a68d15f1f3ec79f, type: 3}
+  - file: Assets/Art/Buildings/corner-strong/bld_109_1989.fbx
+    model: {fileID: 919132149155446097, guid: daf607fdb79e54b9a89e3d87a5bfa53a, type: 3}
+  - file: Assets/Art/Buildings/corner-strong/bld_110_1989.fbx
+    model: {fileID: 919132149155446097, guid: c5d0ab36c7ef842c8b0f7fcc2dc1d5ec, type: 3}
+  - file: Assets/Art/Buildings/corner-strong/bld_104_1989.fbx
+    model: {fileID: 919132149155446097, guid: f29a12e66d2c94d64bd129a6ef1ac945, type: 3}
+  - file: Assets/Art/Buildings/corner-strong/bld_1203_1989.fbx
+    model: {fileID: 919132149155446097, guid: 39cde2b07441a4be6a8af391e2ba65ec, type: 3}
+  - file: Assets/Art/Buildings/corner-strong/bld_1107_1989.fbx
+    model: {fileID: 919132149155446097, guid: af5d780ee545b466d9bff4dbda95c1af, type: 3}
+  - file: Assets/Art/Buildings/corner-strong/bld_304_1989.fbx
+    model: {fileID: 919132149155446097, guid: 325f7c54e04f8482ea42151b3e595619, type: 3}
+  - file: Assets/Art/Buildings/corner-strong/bld_2201_1989.fbx
+    model: {fileID: 919132149155446097, guid: f5412a2df4a6b4528a977ffa640c4e13, type: 3}
+  - file: Assets/Art/Buildings/corner-strong/bld_2202_1989.fbx
+    model: {fileID: 919132149155446097, guid: 36950af36ee3e42ffade708da2c0cefb, type: 3}
+  - file: Assets/Art/Buildings/corner-strong/bld_2206_1989.fbx
+    model: {fileID: 919132149155446097, guid: a14389b302453420880ef459f26a8659, type: 3}
+  - file: Assets/Art/Buildings/corner-strong/bld_2301_1989.fbx
+    model: {fileID: 919132149155446097, guid: ae4a9a30daf04490d81664e6513e0c8d, type: 3}
+  - file: Assets/Art/Buildings/corner-strong/bld_2302_1989.fbx
+    model: {fileID: 919132149155446097, guid: 13377d3751bfa418aa0f80eeff4a680b, type: 3}
+  - file: Assets/Art/Buildings/corner-strong/bld_2303_1989.fbx
+    model: {fileID: 919132149155446097, guid: 8469e3cc55bea4ba9973fde02dd86038, type: 3}
+  - file: Assets/Art/Buildings/corner-strong/bld_2205_1989.fbx
+    model: {fileID: 919132149155446097, guid: 5a34dbfd429b84890ad50654af5e6f5e, type: 3}
+  - file: Assets/Art/Buildings/corner-strong/bld_2207_1989.fbx
+    model: {fileID: 919132149155446097, guid: 75149fa6f3e9a4f7f881a7518146b492, type: 3}
+  - file: Assets/Art/Buildings/corner-strong/bld_2208_1989.fbx
+    model: {fileID: 919132149155446097, guid: ce6e2d144ddce43f19a3576127762c72, type: 3}
+  - file: Assets/Art/Buildings/corner-strong/bld_2305_1989.fbx
+    model: {fileID: 919132149155446097, guid: 2521c38326a514cdb96ab5fbd32c3172, type: 3}
+  - file: Assets/Art/Buildings/corner-strong/bld_2306_1989.fbx
+    model: {fileID: 919132149155446097, guid: 38bad8927cf8c4f71838147a0a05faf3, type: 3}
+  - file: Assets/Art/Buildings/corner-strong/bld_2307_1989.fbx
+    model: {fileID: 919132149155446097, guid: b6a73df6f60e6490593abeea1a0b07d3, type: 3}
+  - file: Assets/Art/Buildings/corner-strong/bld_3000_1989.fbx
+    model: {fileID: 919132149155446097, guid: 3724a9f9d89904dae8c565b7f69b9edd, type: 3}
+  - file: Assets/Art/Buildings/corner-strong/bld_3001_1989.fbx
+    model: {fileID: 919132149155446097, guid: b20e768ffe21e4edd96c1408643f1569, type: 3}
+  - file: Assets/Art/Buildings/corner-strong/bld_3002_1989.fbx
+    model: {fileID: 919132149155446097, guid: 26e2555a6db2a4530a312574b6bca897, type: 3}
+  - file: Assets/Art/Buildings/corner-strong/bld_3003_1989.fbx
+    model: {fileID: 919132149155446097, guid: 3df7f87050eb94ae88bd6a3086f1323d, type: 3}
+  - file: Assets/Art/Buildings/corner-strong/bld_3004_1989.fbx
+    model: {fileID: 919132149155446097, guid: 8eda61b1cc3664a1c848190daa542954, type: 3}
+  - file: Assets/Art/Buildings/corner-strong/bld_3005_1989.fbx
+    model: {fileID: 919132149155446097, guid: 38b9c64dc2e23458291abe5e76f57a79, type: 3}
+  - file: Assets/Art/Buildings/corner-strong/bld_3006_1989.fbx
+    model: {fileID: 919132149155446097, guid: bbe070a9f860c47b0a04af3dd82e9229, type: 3}
+  - file: Assets/Art/Buildings/corner-strong/bld_3007_1989.fbx
+    model: {fileID: 919132149155446097, guid: 2bf62be16cd7d426cbd246ac8f5bdd6e, type: 3}
+  - file: Assets/Art/Buildings/corner-strong/bld_3008_1989.fbx
+    model: {fileID: 919132149155446097, guid: 1275c59c15e97429d8ef63007d1bf6e7, type: 3}
+  - file: Assets/Art/Buildings/corner-strong/bld_3009_1989.fbx
+    model: {fileID: 919132149155446097, guid: fa19e5cec58bf4e6c93f60e8fce0f24c, type: 3}
+  - file: Assets/Art/Buildings/corner-strong/bld_3010_1989.fbx
+    model: {fileID: 919132149155446097, guid: c3832033755f04168b6233fafea1412d, type: 3}
+  - file: Assets/Art/Buildings/corner-strong/bld_3011_1989.fbx
+    model: {fileID: 919132149155446097, guid: 57579c999febd4ba284a28549991328f, type: 3}
+  - file: Assets/Art/Buildings/corner-strong/bld_3012_1989.fbx
+    model: {fileID: 919132149155446097, guid: 276fe558f854d45c8a2ade0cad5a5d7f, type: 3}
+  - file: Assets/Art/Buildings/corner-strong/bld_3100_1989.fbx
+    model: {fileID: 919132149155446097, guid: cf68b80e8295c451d8b79cf05b9e5fb7, type: 3}
+  - file: Assets/Art/Buildings/corner-strong/bld_3101_1989.fbx
+    model: {fileID: 919132149155446097, guid: f629e6125afcb48edbb6cde8e3244aff, type: 3}
+  - file: Assets/Art/Buildings/corner-strong/bld_3102_1989.fbx
+    model: {fileID: 919132149155446097, guid: 642c0e7ceb89340e28c1bb80f46e336f, type: 3}
+  - file: Assets/Art/Buildings/corner-strong/bld_3103_1989.fbx
+    model: {fileID: 919132149155446097, guid: c45a99374a68c4e31834071b4e9194b4, type: 3}
+  - file: Assets/Art/Buildings/corner-strong/bld_3104_1989.fbx
+    model: {fileID: 919132149155446097, guid: 1ae1db989e8224ac488504576d0931a2, type: 3}
+  - file: Assets/Art/Buildings/corner-strong/bld_3105_1989.fbx
+    model: {fileID: 919132149155446097, guid: becae99d4a34e4aeb84f4f6226437f9a, type: 3}
+  - file: Assets/Art/Buildings/corner-strong/bld_3106_1989.fbx
+    model: {fileID: 919132149155446097, guid: 29696883b94304de9ac6a1b6afa9b113, type: 3}
+--- !u!4 &63339512
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 63339510}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &986044783
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 986044785}
+  - component: {fileID: 986044784}
+  m_Layer: 0
+  m_Name: Grade
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &986044784
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 986044783}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 172515602e62fb746b5d573b38a5fe58, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.RenderPipelines.Core.Runtime::UnityEngine.Rendering.Volume
+  m_IsGlobal: 1
+  priority: 0
+  blendDistance: 0
+  weight: 1
+  sharedProfile: {fileID: 0}
+--- !u!4 &986044785
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 986044783}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1107266386
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1107266388}
+  - component: {fileID: 1107266387}
+  m_Layer: 0
+  m_Name: Stage
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1107266387
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1107266386}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7d66c5e7f4ed240e7be02785e23cc042, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Overstory.Scenes.StreetStage
+  street: {fileID: 63339511}
+  sun: {fileID: 1305204730}
+  view: {fileID: 1892900874}
+  volume: {fileID: 986044784}
+  sky: {fileID: 2100000, guid: b64962f4757bf4444b0088795b6c46cd, type: 2}
+  paletteAlbedo: {fileID: 2800000, guid: 8b6fc81fe3c704040a30ebb7cf05b827, type: 3}
+  paletteEmit: {fileID: 2800000, guid: 9be05642766824d5b9fbf3875ca21cb9, type: 3}
+  paletteGlow: {fileID: 2800000, guid: 448a19048fa4340f09b442cfc79ed877, type: 3}
+  paletteSurface: {fileID: 2800000, guid: a85ed79538091476e98702328be573db, type: 3}
+  rig: {fileID: 11400000, guid: 0f879d17e17ea437490a7ea3eebaadcd, type: 2}
+  shot: {fileID: 11400000, guid: a51436b40307846dfa048f70bb40b8fe, type: 2}
+  clay: 0
+  look: P
+  rampEdge: 0.5
+  rampSoftness: 0.07
+  shadowFloor: 0
+  stroke: 0.06
+  edgeTint: {r: 0.9, g: 0.45, b: 0.25, a: 0.25}
+  rim: 0.25
+  stopsPerPlate: 1.1
+  carving: 0
+  whiteLineSpacing: 0.45
+  whiteLines: 0
+  ink: {r: 0.11, g: 0.12, b: 0.22, a: 0.85}
+  inkFadeStart: 60
+  inkFadeEnd: 450
+  airBands: 5
+  skyBands: 7
+  shadowChroma: 1.7
+  wrap: 0.4
+  muting: 0.3
+  grime: 0.6
+  grimeColour: {r: 0.62, g: 0.58, b: 0.5, a: 1}
+  brush: 0.5
+  paintShadowChroma: 1.3
+--- !u!4 &1107266388
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1107266386}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1305204729
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1305204731}
+  - component: {fileID: 1305204730}
+  m_Layer: 0
+  m_Name: Sun
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!108 &1305204730
+Light:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1305204729}
+  m_Enabled: 1
+  serializedVersion: 13
+  m_Type: 1
+  m_Color: {r: 1, g: 0.7607843, b: 0.5176471, a: 1}
+  m_Intensity: 3
+  m_Range: 10
+  m_SpotAngle: 30
+  m_InnerSpotAngle: 21.802082
+  m_CookieSize2D: {x: 0.5, y: 0.5}
+  m_Shadows:
+    m_Type: 2
+    m_Resolution: -1
+    m_CustomResolution: -1
+    m_Strength: 1
+    m_Bias: 0.05
+    m_NormalBias: 0.4
+    m_NearPlane: 0.2
+    m_CullingMatrixOverride:
+      e00: 1
+      e01: 0
+      e02: 0
+      e03: 0
+      e10: 0
+      e11: 1
+      e12: 0
+      e13: 0
+      e20: 0
+      e21: 0
+      e22: 1
+      e23: 0
+      e30: 0
+      e31: 0
+      e32: 0
+      e33: 1
+    m_UseCullingMatrixOverride: 0
+  m_Cookie: {fileID: 0}
+  m_DrawHalo: 0
+  m_Flare: {fileID: 0}
+  m_RenderMode: 0
+  m_CullingMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_RenderingLayerMask: 1
+  m_Lightmapping: 4
+  m_LightShadowCasterMode: 0
+  m_AreaSize: {x: 1, y: 1}
+  m_BounceIntensity: 1
+  m_ColorTemperature: 6570
+  m_UseColorTemperature: 0
+  m_BoundingSphereOverride: {x: 0, y: 0, z: 0, w: 0}
+  m_UseBoundingSphereOverride: 0
+  m_UseViewFrustumForShadowCasterCull: 1
+  m_ForceVisible: 0
+  m_ShapeRadius: 0.025
+  m_ShadowAngle: 0
+  m_LightUnit: 1
+  m_LuxAtDistance: 1
+  m_EnableSpotReflector: 1
+--- !u!4 &1305204731
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1305204729}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0.06661496, y: -0.38970652, z: 0.028276362, w: 0.91809136}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1892900873
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1892900876}
+  - component: {fileID: 1892900874}
+  - component: {fileID: 1892900875}
+  m_Layer: 0
+  m_Name: Camera
+  m_TagString: MainCamera
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!20 &1892900874
+Camera:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1892900873}
+  m_Enabled: 1
+  serializedVersion: 2
+  m_ClearFlags: 1
+  m_BackGroundColor: {r: 0.19215687, g: 0.3019608, b: 0.4745098, a: 0}
+  m_projectionMatrixMode: 1
+  m_GateFitMode: 2
+  m_FOVAxisMode: 0
+  m_Iso: 200
+  m_ShutterSpeed: 0.005
+  m_Aperture: 16
+  m_FocusDistance: 10
+  m_FocalLength: 50
+  m_BladeCount: 5
+  m_Curvature: {x: 2, y: 11}
+  m_BarrelClipping: 0.25
+  m_Anamorphism: 0
+  m_SensorSize: {x: 36, y: 24}
+  m_LensShift: {x: 0, y: 0}
+  m_NormalizedViewPortRect:
+    serializedVersion: 2
+    x: 0
+    y: 0
+    width: 1
+    height: 1
+  near clip plane: 0.3
+  far clip plane: 6000
+  field of view: 37.8
+  orthographic: 0
+  orthographic size: 5
+  m_Depth: 0
+  m_CullingMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_RenderingPath: -1
+  m_TargetTexture: {fileID: 0}
+  m_TargetDisplay: 0
+  m_TargetEye: 3
+  m_HDR: 1
+  m_AllowMSAA: 1
+  m_AllowDynamicResolution: 0
+  m_ForceIntoRT: 0
+  m_OcclusionCulling: 1
+  m_StereoConvergence: 10
+  m_StereoSeparation: 0.022
+--- !u!114 &1892900875
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1892900873}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a79441f348de89743a2939f4d699eac1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.RenderPipelines.Universal.Runtime::UnityEngine.Rendering.Universal.UniversalAdditionalCameraData
+  m_RenderShadows: 1
+  m_RequiresDepthTextureOption: 2
+  m_RequiresOpaqueTextureOption: 2
+  m_CameraType: 0
+  m_Cameras: []
+  m_RendererIndex: -1
+  m_VolumeLayerMask:
+    serializedVersion: 2
+    m_Bits: 1
+  m_VolumeTrigger: {fileID: 0}
+  m_VolumeFrameworkUpdateModeOption: 2
+  m_RenderPostProcessing: 1
+  m_Antialiasing: 0
+  m_AntialiasingQuality: 2
+  m_StopNaN: 0
+  m_Dithering: 1
+  m_ClearDepth: 1
+  m_AllowXRRendering: 1
+  m_AllowHDROutput: 1
+  m_UseScreenCoordOverride: 0
+  m_ScreenSizeOverride: {x: 0, y: 0, z: 0, w: 0}
+  m_ScreenCoordScaleBias: {x: 0, y: 0, z: 0, w: 0}
+  m_RequiresDepthTexture: 0
+  m_RequiresColorTexture: 0
+  m_TaaSettings:
+    m_Quality: 3
+    m_FrameInfluence: 0.1
+    m_JitterScale: 1
+    m_MipBias: 0
+    m_VarianceClampScale: 0.9
+    m_ContrastAdaptiveSharpening: 0
+  m_Version: 2
+--- !u!4 &1892900876
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1892900873}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0.048093878, y: -0.032170545, z: 0.0015498044, w: 0.99832344}
+  m_LocalPosition: {x: 51.5, y: 15, z: -16}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1660057539 &9223372036854775807
+SceneRoots:
+  m_ObjectHideFlags: 0
+  m_Roots:
+  - {fileID: 1892900876}
+  - {fileID: 1305204731}
+  - {fileID: 986044785}
+  - {fileID: 63339512}
+  - {fileID: 1107266388}
