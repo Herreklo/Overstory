@@ -16,8 +16,9 @@ Shader "Overstory/Tree"
         _Marks ("Bark marks (g lightness, a coverage)", 2D) = "white" {}
         _MarkDark ("Marks: their darkest", Color) = (0.07, 0.065, 0.06, 1)
         _MarkLight ("Marks: their lightest (old wood)", Color) = (0.42, 0.40, 0.37, 1)
+        _Relief ("Relief: x the bark's depth (m), y a mark's", Vector) = (0.008, 0.01, 0, 0)
         [Toggle] _AlphaToMask ("Leaves: alpha to coverage (smooth edges under MSAA)", Float) = 0
-        _Bark ("Bark (r lightness, g lenticels, b fissured foot)", 2D) = "white" {}
+        _Bark ("Bark (r lightness, g lenticels, a relief)", 2D) = "white" {}
         _BarkLight ("Bark: the white of the limbs", Color) = (0.86, 0.85, 0.82, 1)
         _BarkBand ("Bark: its grey bands and lenticels", Color) = (0.55, 0.53, 0.50, 1)
         _Twig ("Twigs", Color) = (0.20, 0.11, 0.09, 1)
@@ -70,6 +71,7 @@ Shader "Overstory/Tree"
         half _MassSplit;
         half4 _MarkDark;
         half4 _MarkLight;
+        float4 _Relief;
     CBUFFER_END
 
     TEXTURE2D(_Bark);  SAMPLER(sampler_Bark);
@@ -78,6 +80,33 @@ Shader "Overstory/Tree"
     TEXTURE2D(_Marks); SAMPLER(sampler_Marks);
 
     #include "StreetSurface.hlsl"
+
+    // The normal bent by a relief (height in metres) without tangents: Mikkelsen's surface gradient from the screen
+    // derivatives of the position and the height. The bark's rings and a mark's torn lip catch the light by it.
+    half3 OS_Bump(float3 positionWS, half3 n, float height)
+    {
+        float3 dpdx = ddx(positionWS), dpdy = ddy(positionWS);
+        float dhdx = ddx(height), dhdy = ddy(height);
+        float3 r1 = cross(dpdy, n), r2 = cross(n, dpdx);
+        float det = dot(dpdx, r1);
+        float3 grad = (det < 0 ? -1.0 : 1.0) * (dhdx * r1 + dhdy * r2);
+        return normalize(abs(det) * n - grad);
+    }
+
+    // An old trunk's dark foot (the silver birch's black, the downy's grey): how much of it at a point, and where its
+    // lighter islands lie. The pattern is noise anchored in the world round the trunk, never the bark's tile, so it
+    // never repeats round the stem; its top edge is ragged, as Firewatch draws an aspen's dark foot.
+    half2 OS_TreeFoot(float3 positionWS, float r, float z)
+    {
+        float2 q1 = float2(positionWS.x + positionWS.z, positionWS.y) * 3.0;
+        float2 q2 = float2(positionWS.x - positionWS.z, positionWS.y) * 5.7 + 7.1;
+        half blob = (half)(OS_Noise(q1) * 0.6 + OS_Noise(q2) * 0.4);
+        half up = saturate(1.0h - (half)(z / max(_Foot.y * r, 0.05)));          // 1 at the ground
+        half edge = smoothstep(0.38h, 0.46h, up + 0.5h * (blob - 0.5h));
+        half age = saturate((half)(r / _Foot.x));
+        half island = smoothstep(0.54h, 0.6h, blob) * (1.0h - smoothstep(0.75h, 0.95h, up));
+        return half2(edge * age * age * (half)_Foot.z, island);
+    }
 
     // A leaf's place in the season's colour: mostly its clump's rank, so a clump turns as one (as a painter sees it),
     // a little its own id; across the tree the most exposed clumps go first. The same leaves first every year.
@@ -126,7 +155,7 @@ Shader "Overstory/Tree"
         clip(max(OS_LeafCover(m, card), twig) - (0.08h + 0.84h * (half)OS_Hash(pixel)));
     }
 
-    StreetSurface OS_TreeSurface(float2 uv, float2 extra, half3 normalWS)
+    StreetSurface OS_TreeSurface(float2 uv, float2 extra, half3 normalWS, float3 positionWS)
     {
         StreetSurface s;
         s.emission = 0;
@@ -157,11 +186,10 @@ Shader "Overstory/Tree"
         bark = lerp(bark, _BarkBand.rgb * 0.2h, b.g * 0.9h);
         half twig = 1.0h - smoothstep((half)_TwigRadius.x, (half)_TwigRadius.y, (half)r);
         half3 c = lerp(bark, _Twig.rgb, twig);
-        // an old trunk's foot: cracked into plates and black fissures, higher on a thicker trunk
-        half age = saturate((half)(r / _Foot.x));
-        half foot = saturate(1.0h - (half)(z / max(_Foot.y * r, 0.05))) * age * age * (half)_Foot.z;
-        half3 footc = lerp(_FootPlate.rgb, _FootCrack.rgb, saturate(b.b * 1.4h));
-        c = lerp(c, footc, foot * saturate(0.35h + b.b));
+        // an old trunk's foot: dark, higher on a thicker trunk, its top edge ragged, a few lighter islands in it
+        half2 foot = OS_TreeFoot(positionWS, r, z);
+        // its islands the bark's own white showing between the black fissures
+        c = lerp(c, lerp(_FootCrack.rgb, lerp(_FootPlate.rgb, c, 0.6h), foot.y), foot.x);
         // a cut face: pale fresh wood weathering to grey over the years, the rings faintly, the callus rolling in
         // from the bark round its edge
         if (uv.x < -0.5)
@@ -178,7 +206,8 @@ Shader "Overstory/Tree"
         // a mark of the tree's history (a chevron over a branch, a shed branch's scar): its own pigment, lit as the
         // bark it lies on
         half4 mk = SAMPLE_TEXTURE2D(_Marks, sampler_Marks, uv);
-        s.albedo = lerp(_MarkDark.rgb, _MarkLight.rgb, mk.g);
+        // the dark under the torn bark, and the torn lip, the bark's own white
+        s.albedo = lerp(_MarkDark.rgb, _BarkLight.rgb * 1.04h, mk.g);
     #endif
         s.smoothness = 0.12h;
     #endif
@@ -302,13 +331,28 @@ Shader "Overstory/Tree"
             #else
             #if defined(_OS_MARKS)
                 clip(SAMPLE_TEXTURE2D(_Marks, sampler_Marks, input.uv).a - 0.5h);
+                // a mark on an old trunk's dark foot is lost in it
+                clip(0.4h - OS_TreeFoot(input.positionWS, input.extra.x, input.extra.y).x);
             #endif
                 // a twig deep in the foliage shows from the season its leaves fall (bake alpha; 0 always shown)
                 if (input.bake.a > 0.001h)
                     clip((half)_Season.y - input.bake.a - 0.04h * OS_Hash(input.positionCS.xy));
                 half3 n = normalize(front ? input.normalWS : -input.normalWS);
+                // nothing is flat: the bark's relief (its rings, its grain, the lenticels sunk in, an old foot's
+                // plates and fissures) and a mark's torn lip bend the light
+            #if defined(_OS_MARKS)
+                n = OS_Bump(input.positionWS, n, SAMPLE_TEXTURE2D(_Marks, sampler_Marks, input.uv).b * _Relief.y);
+            #else
+                if (input.extra.x > _TwigRadius.y)
+                {
+                    half4 bk = SAMPLE_TEXTURE2D(_Bark, sampler_Bark, input.uv);
+                    // the dark foot is rough: deeper relief, its islands raised
+                    half2 foot = OS_TreeFoot(input.positionWS, input.extra.x, input.extra.y);
+                    n = OS_Bump(input.positionWS, n, (bk.a * (1.0h + 1.5h * foot.x) + foot.y * foot.x) * _Relief.x);
+                }
             #endif
-                StreetSurface s = OS_TreeSurface(input.uv, input.extra, n);
+            #endif
+                StreetSurface s = OS_TreeSurface(input.uv, input.extra, n, input.positionWS);
 
                 InputData id = (InputData)0;
                 id.positionWS = input.positionWS;
@@ -449,6 +493,7 @@ Shader "Overstory/Tree"
             #pragma vertex Vert
             #pragma fragment Frag
             #pragma shader_feature_local _OS_LEAVES
+            #pragma shader_feature_local _OS_MARKS
             #pragma multi_compile_instancing
             #pragma multi_compile_vertex _ _CASTING_PUNCTUAL_LIGHT_SHADOW
 
@@ -519,6 +564,7 @@ Shader "Overstory/Tree"
             #pragma vertex Vert
             #pragma fragment Frag
             #pragma shader_feature_local _OS_LEAVES
+            #pragma shader_feature_local _OS_MARKS
             #pragma multi_compile_instancing
 
             struct Attributes
@@ -553,6 +599,10 @@ Shader "Overstory/Tree"
             #if defined(_OS_LEAVES)
                 OS_LeafClip(input.uv, input.extra);
             #endif
+            #if defined(_OS_MARKS)
+                // a mark's strip is cut to its shape here too, or its whole rectangle hides the bark behind it
+                clip(SAMPLE_TEXTURE2D(_Marks, sampler_Marks, input.uv).a - 0.5h);
+            #endif
                 return input.positionCS.z;
             }
             ENDHLSL
@@ -570,6 +620,7 @@ Shader "Overstory/Tree"
             #pragma vertex Vert
             #pragma fragment Frag
             #pragma shader_feature_local _OS_LEAVES
+            #pragma shader_feature_local _OS_MARKS
             #pragma multi_compile _ _WRITE_SMOOTHNESS
             #pragma multi_compile_fragment _ _GBUFFER_NORMALS_OCT
             #include_with_pragmas "Packages/com.unity.render-pipelines.universal/ShaderLibrary/RenderingLayers.hlsl"
@@ -619,6 +670,9 @@ Shader "Overstory/Tree"
                 OS_LeafClip(input.uv, input.extra);
                 half3 n = normalize(input.normalWS);
             #else
+            #if defined(_OS_MARKS)
+                clip(SAMPLE_TEXTURE2D(_Marks, sampler_Marks, input.uv).a - 0.5h);
+            #endif
                 half3 n = normalize(front ? input.normalWS : -input.normalWS);
             #endif
             #if defined(_GBUFFER_NORMALS_OCT)

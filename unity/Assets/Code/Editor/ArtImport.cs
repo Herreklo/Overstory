@@ -55,7 +55,8 @@ namespace Overstory.EditorTools
                 // coverage in every mip (Castano's coverage-preserving mips), so a crown does not thin with distance
                 var tt = (TextureImporter)assetImporter;
                 bool spray = assetPath.EndsWith("_leaves.png") || assetPath.EndsWith("_clumps.png") || assetPath.EndsWith("_lobes.png")
-                    || assetPath.EndsWith("_clusters.png");
+                    || assetPath.EndsWith("_clusters.png")
+                    || assetPath.EndsWith("_marks.png");      // the bark's marks: shapes cut by their coverage
                 // bare twigs: their distant mips average to a tone (a winter crown's haze), not kept as dashes
                 bool twigs = assetPath.EndsWith("_twigs.png");
                 tt.textureType = TextureImporterType.Default;
@@ -63,7 +64,9 @@ namespace Overstory.EditorTools
                 tt.mipmapEnabled = true;
                 tt.mipMapsPreserveCoverage = spray;
                 tt.alphaTestReferenceValue = 0.5f;
-                tt.alphaSource = spray || twigs ? TextureImporterAlphaSource.FromInput : TextureImporterAlphaSource.None;
+                // the bark keeps its alpha too: its relief
+                bool bark = assetPath.EndsWith("_bark.png");
+                tt.alphaSource = spray || twigs || bark ? TextureImporterAlphaSource.FromInput : TextureImporterAlphaSource.None;
                 tt.alphaIsTransparency = false;
                 tt.filterMode = UnityEngine.FilterMode.Trilinear;
                 tt.anisoLevel = 4;

@@ -112,9 +112,15 @@ namespace Overstory.EditorTools
                 m.SetColor("_BarkLight", silver ? new Color(0.86f, 0.85f, 0.82f) : new Color(0.74f, 0.73f, 0.70f));
                 m.SetColor("_BarkBand", silver ? new Color(0.60f, 0.58f, 0.55f) : new Color(0.52f, 0.50f, 0.48f));
                 // an old trunk's foot: the silver's breaks black and fissured; the downy's only greys and roughens
-                m.SetVector("_Foot", new Vector4(0.16f, 6.0f, silver ? 1.0f : 0.5f, 0f));
-                m.SetColor("_MarkDark", new Color(0.07f, 0.065f, 0.06f));
-                m.SetColor("_MarkLight", new Color(0.42f, 0.40f, 0.37f));
+                m.SetVector("_Foot", new Vector4(0.16f, 4.5f, silver ? 1.0f : 0.5f, 0f));
+                // the foot's dark: deep, never black, so its form still reads; its islands a grey the bark shows through
+                // (colours set here are sRGB, as the eye sees them: Unity takes them to linear)
+                m.SetColor("_FootCrack", new Color(0.30f, 0.29f, 0.28f));
+                m.SetColor("_FootPlate", new Color(0.58f, 0.57f, 0.55f));
+                m.SetVector("_Relief", new Vector4(0.008f, 0.01f, 0f, 0f));
+                // the marks' pigment a dark grey-brown, never black: lit as the bark, they take the shade's colour
+                m.SetColor("_MarkDark", new Color(0.24f, 0.22f, 0.21f));
+                m.SetColor("_MarkLight", new Color(0.42f, 0.40f, 0.38f));
                 // a birch's twigs are a purple-grey brown, and seen through the leaves they are lost in them: lighter
                 // than bark's dark marks, never black lines
                 m.SetColor("_Twig", new Color(0.42f, 0.34f, 0.34f));
@@ -143,13 +149,13 @@ namespace Overstory.EditorTools
             var (bark, leaves) = Materials(species);
             var go = (GameObject)PrefabUtility.InstantiatePrefab(model, parent);
             go.transform.SetPositionAndRotation(StreetSpace.ToUnity(street), Quaternion.Euler(0f, yaw, 0f));
-            // -only leaves|branches: draw one part alone (to find where a mark in a frame comes from)
+            // -only leaves|branches|marks: draw one part alone (to find where a mark in a frame comes from)
             string only = Arg("-only", "");
             foreach (var r in go.GetComponentsInChildren<MeshRenderer>())
             {
                 bool leafy = r.gameObject.name.EndsWith("_leaves");
                 bool marked = r.gameObject.name.EndsWith("_marks");
-                if ((only == "leaves" && !leafy) || (only == "branches" && leafy))
+                if ((only == "leaves" && !leafy) || (only == "branches" && leafy) || (only == "marks" && !marked))
                     r.enabled = false;
                 var markMat = AssetDatabase.LoadAssetAtPath<Material>($"{Art}/{species}/M_Tree_{species}_marks.mat");
                 var mats = new Material[r.sharedMaterials.Length];
@@ -587,6 +593,8 @@ namespace Overstory.EditorTools
                             ("over18", At(across * 19.7f, 18f), mid, Lens28),
                             ("over25", At(across * 25f, 25f), mid, Lens35),
                             ("over40", At(across * 36f, 40f), mid, 25f),
+                            // the trunk close, at a scene's distance: the bark judged where it is seen
+                            ("trunk", At(across * 5.5f, 1.7f), new Vector3(Spot.x, Spot.y, ground + 2.0f), Lens35),
                             // lower still, looking into the crown: a first-floor window, just over the ridges, a roof
                             ("into08", At(across * 14f, 8f), crown, Lens28),
                             ("into12", At(across * 16f, 12f), crown, Lens28),
