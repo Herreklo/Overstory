@@ -52,7 +52,8 @@ UP = np.array([0.0, 0.0, 1.0])
 # much an exposed crown's windward shoots are stunted. twig_len: how long a shoot of the last order the timeline grows
 # may get (m) before it stops (the finer twigs off it are the parts'); without it such shoots ran on for decades as
 # long bare whips. outward: how far a branch's heading round the trunk turns back to straight out each internode
-# (degrees), so limbs fan out of the crown and never wrap round it. hand: the share of trees that lose their leader young (browsed,
+# (degrees), so limbs fan out of the crown and never wrap round it. base_keep: how far along a branch (m) its turn to
+# its set-point comes in fully, so it leaves its parent at its own angle and never lies along it. hand: the share of trees that lose their leader young (browsed,
 # frost, a broken top) and grow on as a few stems spreading from low down like an open hand: (share, years, stems,
 # their spread from upright in degrees).
 # shed: a branch dies when its buds' mean light has been under this share of open sky for so many years running (the
@@ -96,7 +97,7 @@ SPECIES = {
         masses=dict(top=(0.86, 0.17, 0.13), sides=(3, 4), side_z=(0.36, 0.70), side_off=(0.20, 0.30),
                     side_r=(0.11, 0.15), outside=0.15, pull=0.6),
         shed=(0.40, 2), bud_life=10, tip_radius=0.0045, spurs=0.025, pipe=2.4, light=(0.15, 0.25, 2), ring=1.2e-6,
-        twig_len=1.2, outward=3.0,
+        twig_len=1.2, outward=3.0, base_keep=0.6,
         hand=(0.25, (4, 8), (3, 5), (16.0, 30.0)),
     ),
 }
@@ -714,7 +715,12 @@ def shoot(tl, sp, bd, n, length, year, crown_h, H_full, rng, exact=False, push=n
         jitter = np.array([rng.gauss(0, 1), rng.gauss(0, 1), rng.gauss(0, 1)]) * sp["jitter"]
         # steer towards the order's set-point angle for this height in the crown, then towards light, then a wobble
         set_to = lo + (hi - lo) * min(max(pos[2] / max(crown_h, 1e-3), 0.0), 1.0)
-        turn = (set_to - math.degrees(math.asin(max(-1.0, min(1.0, d[2]))))) * sp["steer"]
+        # a branch leaves its parent at its own angle and only then turns to its set-point: it never lies along the
+        # wood it grows from (base_keep: how far along it the turn comes in fully)
+        ax = nodes[parent_id].axis if nodes[parent_id].order == order else 0.0
+        keep = sp.get("base_keep", 0.0)
+        k_steer = min(1.0, ax / keep) if (keep > 0 and order >= 1) else 1.0
+        turn = (set_to - math.degrees(math.asin(max(-1.0, min(1.0, d[2]))))) * sp["steer"] * k_steer
         d2 = tilt(d, UP if turn > 0 else -UP, abs(turn)) if abs(turn) > 1e-3 else d
         d2 = rotate(d2, curl_axis, curl)
         d2 = unit(d2 + sp["light_pull"] * toward + jitter + push)

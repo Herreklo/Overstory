@@ -109,15 +109,18 @@ namespace Overstory.EditorTools
                 m.SetVector("_TwigRadius", new Vector4(0.012f, 0.045f, 0f, 0f));
                 // the bark's pigment: the downy's a grey white (weathered, lichen-dimmed), the silver's a clean white
                 bool silver = species == "silver_birch";
-                m.SetColor("_BarkLight", silver ? new Color(0.86f, 0.85f, 0.82f) : new Color(0.74f, 0.73f, 0.70f));
-                m.SetColor("_BarkBand", silver ? new Color(0.60f, 0.58f, 0.55f) : new Color(0.52f, 0.50f, 0.48f));
+                // white must stay white: the silver in drizzle the brightest thing under the sky, the downy a step
+                // lower
+                m.SetColor("_BarkLight", silver ? new Color(0.94f, 0.93f, 0.90f) : new Color(0.82f, 0.81f, 0.78f));
+                m.SetColor("_BarkBand", silver ? new Color(0.76f, 0.74f, 0.71f) : new Color(0.62f, 0.60f, 0.57f));
                 // an old trunk's foot: the silver's breaks black and fissured; the downy's only greys and roughens
                 m.SetVector("_Foot", new Vector4(0.16f, 4.5f, silver ? 1.0f : 0.35f, 0f));
                 // the foot's dark: deep, never black, so its form still reads; its islands a grey the bark shows through
                 // (colours set here are sRGB, as the eye sees them: Unity takes them to linear)
-                m.SetColor("_FootCrack", new Color(0.46f, 0.43f, 0.40f));     // a dark grey-brown, never black
-                m.SetColor("_FootPlate", new Color(0.70f, 0.69f, 0.66f));
-                m.SetVector("_Relief", new Vector4(0.008f, 0.01f, 0f, 0f));
+                // a dark grey-brown in its fissures, never black; its plates a mid grey that takes the light
+                m.SetColor("_FootCrack", new Color(0.30f, 0.28f, 0.26f));
+                m.SetColor("_FootPlate", new Color(0.54f, 0.52f, 0.49f));
+                m.SetVector("_Relief", new Vector4(0.006f, 0.01f, 0f, 0f));
                 // lichen: the downy birch on this damp coast carries it in grey-green patches; the silver little
                 m.SetColor("_Lichen", silver ? new Color(0.62f, 0.64f, 0.56f, 0.15f) : new Color(0.60f, 0.63f, 0.52f, 0.7f));
                 // the marks' pigment a dark grey-brown, never black: lit as the bark, they take the shade's colour

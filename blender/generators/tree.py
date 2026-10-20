@@ -56,8 +56,8 @@ import tree_growth as G  # noqa: E402
 # atlas cells its two crossed cards may carry. top_tilt: how far the cards inside a mass's top (deeper than top_tilt_depth) lean to the sky (degrees), for steep
 # views.
 PARTS = {
-    "birch": dict(sag=0.08, taper=0.55, flare=0.5, flare_branch=0.22, flare_min_radius=0.008, occlusion=0.05, seam=0.5, atlas="clusters", lobe=0.8, lobe_gap=0.36,
-                  marks=True, mark_min_radius=0.02, mark_scale=1.6, lenticel_spacing=0.45,
+    "birch": dict(sag=0.08, taper=0.55, flare=0.3, flare_branch=0.22, flare_min_radius=0.008, occlusion=0.05, seam=0.5, atlas="clusters", lobe=0.8, lobe_gap=0.36,
+                  marks=True, mark_min_radius=0.02, mark_scale=1.6, lenticel_spacing=0.6,
                   cluster_size=(1.3, 1.15, 1.05, 0.85), crossed=True, edge_gap=0.22, edge_depth=0.2,
                   masses="limbs", seam_cut=0.95, core_depth=0.45, core_keep=0.55, top_tilt=50.0,
                   lobe_size=2.2, lobe_weight=0.7, top_z=0.66, top_tilt_depth=0.15,
@@ -69,7 +69,7 @@ PARTS = {
 }
 # the silver birch: the birch's fitting, carrying its own drapes (blender/parts/trees/silver_birch; Øystein preferred
 # them, full and arching, to open strands with a rising top), its branches giving more under their weight
-PARTS["silver_birch"] = dict(PARTS["birch"], sag=0.12, lenticel_spacing=0.8)
+PARTS["silver_birch"] = dict(PARTS["birch"], sag=0.12, lenticel_spacing=1.0)
 
 
 def h01(*k):
@@ -638,10 +638,10 @@ def mark_mesh(tl, parts, seed):
         years = age - int(died[d])
         grown = min(years / 25.0, 1.5)
         w = min(6.0 * r_then * (1.0 + 0.7 * grown) * k_, 1.3 * nr[p])
-        kind = "scar" if years > 20 and w > 0.5 * nr[p] else ("broken" if h01(int(d), 55) < 0.3 else "slash")
-        # a fresh scar is dark; an old one greys towards the bark as it weathers
+        kind = "scar" if years > 30 and w > 0.5 * nr[p] else ("broken" if h01(int(d), 55) < 0.3 else "slash")
+        # a fresh scar is dark; an old one fades towards the bark as it weathers, low in contrast
         put(p, tl["end_grown"][d] - tl["start_grown"][d], w, pick(kind, int(d)), 0.0, int(d),
-            weather=min(years / 40.0, 0.7))
+            weather=min(years / 35.0, 0.85))
     # the lenticels: rows up the trunk and the limbs at irregular gaps, a few marks to a row round the wood, their
     # sizes drawn mostly small (log-normal), seeded
     spacing = parts.get("lenticel_spacing", 0.0)

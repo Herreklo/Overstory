@@ -361,11 +361,12 @@ half3 OS_ShadeP(InputData id, StreetSurface s, OSBake b, float3 positionWS)
     half wrapped = saturate((ndl + w) / (1.0h + w) + brush * 0.12h);
     half shadow = main.shadowAttenuation * OS_CloudLight(positionWS, main.direction);
     half lit = wrapped * wrapped * shadow;
-    colour += albedo * main.color * lit * ao.directAmbientOcclusion;
-    // the edge between light and shade: a painter's thin warm line where the form turns (wide, it is a stripe on
-    // every round surface: a trunk, a lamp post)
-    half turn = saturate(1.0h - abs(ndl) * 7.0h) * shadow;
-    colour += albedo * main.color * _OS_EdgeTint.rgb * _OS_EdgeTint.a * turn;
+    // the edge between light and shade: where the form turns from the light, the light itself goes warmer (a
+    // painter's warm turn), never colour added on top of it, which on every round surface (a trunk, a lamp post)
+    // makes a saturated stripe brighter than the light itself
+    half turn = saturate(1.0h - abs(ndl) * 4.0h) * shadow;
+    half3 warm = _OS_EdgeTint.rgb / max(dot(_OS_EdgeTint.rgb, half3(0.2126h, 0.7152h, 0.0722h)), 1e-3h);
+    colour += albedo * main.color * lerp(half3(1, 1, 1), warm, _OS_EdgeTint.a * turn) * lit * ao.directAmbientOcclusion;
 
     // lamps and lit rooms: soft pools, and their glints in wet stone
     half3 specular = 0;

@@ -16,7 +16,7 @@ Shader "Overstory/Tree"
         _Marks ("Bark marks (g lightness, a coverage)", 2D) = "white" {}
         _MarkDark ("Marks: their darkest", Color) = (0.07, 0.065, 0.06, 1)
         _MarkLight ("Marks: their lightest (old wood)", Color) = (0.42, 0.40, 0.37, 1)
-        _Relief ("Relief: x the bark's depth (m), y a mark's", Vector) = (0.008, 0.01, 0, 0)
+        _Relief ("Relief: x the bark's depth (m), y a mark's", Vector) = (0.006, 0.01, 0, 0)
         _Lichen ("Lichen on the bark (rgb its pigment, a how much)", Color) = (0.6, 0.63, 0.52, 0)
         [Toggle] _AlphaToMask ("Leaves: alpha to coverage (smooth edges under MSAA)", Float) = 0
         _Bark ("Bark (r lightness, g lenticels, a relief)", 2D) = "white" {}
@@ -95,21 +95,23 @@ Shader "Overstory/Tree"
         return normalize(abs(det) * n - grad);
     }
 
-    // An old trunk's dark foot (the silver birch's black, the downy's grey): how much of it at a point, and where its
-    // lighter islands lie. The pattern is noise anchored in the world round the trunk, never the bark's tile, so it
-    // never repeats round the stem; its top edge is ragged, as Firewatch draws an aspen's dark foot.
-    half2 OS_TreeFoot(float3 positionWS, float r, float z)
+    // An old trunk's dark foot (the silver birch's, the downy's only greyed): x how much of it at a point, y its
+    // plates (lighter, between dark vertical fissures), z where white bark is left in it. Noise anchored in the world
+    // round the trunk, never the bark's tile, so it never repeats round the stem; its top edge breaks into a few big
+    // jagged tongues and several small, as the white bark ends.
+    half3 OS_TreeFoot(float3 positionWS, float r, float z)
     {
-        // stretched up the stem: the white bark ends in jagged tongues, the dark in vertical fissures
-        float2 q1 = float2((positionWS.x + positionWS.z) * 7.0, positionWS.y * 2.2);
-        float2 q2 = float2((positionWS.x - positionWS.z) * 17.0 + 7.1, positionWS.y * 4.1);
-        float2 q3 = float2((positionWS.x * 0.7 + positionWS.z) * 3.0 + 2.3, positionWS.y * 1.1);
-        half blob = (half)(OS_Noise(q1) * 0.45 + OS_Noise(q2) * 0.3 + OS_Noise(q3) * 0.25);
+        float u = positionWS.x + positionWS.z;
+        half big = (half)OS_Noise(float2(u * 1.4, positionWS.y * 0.8));
+        half small = (half)OS_Noise(float2(u * 7.0 + 3.1, positionWS.y * 2.2));
         half up = saturate(1.0h - (half)(z / max(_Foot.y * r, 0.05)));          // 1 at the ground
-        half edge = smoothstep(0.43h, 0.47h, up + 0.6h * (blob - 0.5h));
+        half edge = smoothstep(0.44h, 0.47h, up + 0.75h * (big - 0.5h) + 0.3h * (small - 0.5h));
         half age = saturate((half)(r / _Foot.x));
-        half island = smoothstep(0.56h, 0.6h, blob) * (1.0h - smoothstep(0.7h, 0.95h, up));
-        return half2(edge * age * age * (half)_Foot.z, island);
+        // fissured plates: tall, narrow, broken across now and then (the reference's diamond plates)
+        half v = (half)(OS_Noise(float2(u * 26.0, positionWS.y * 2.0)) * 0.7 + OS_Noise(float2(u * 41.0 + 5.3, positionWS.y * 5.0)) * 0.3);
+        half plate = smoothstep(0.4h, 0.47h, v);
+        half island = smoothstep(0.64h, 0.7h, small) * (1.0h - smoothstep(0.55h, 0.85h, up));
+        return half3(edge * age * age * (half)_Foot.z, plate, island);
     }
 
     // A leaf's place in the season's colour: mostly its clump's rank, so a clump turns as one (as a painter sees it),
@@ -193,9 +195,10 @@ Shader "Overstory/Tree"
         half twig = 1.0h - smoothstep((half)_TwigRadius.x, (half)_TwigRadius.y, (half)r);
         half3 c = lerp(bark, _Twig.rgb, twig);
         // an old trunk's foot: dark, higher on a thicker trunk, its top edge ragged, a few lighter islands in it
-        half2 foot = OS_TreeFoot(positionWS, r, z);
-        // its islands the bark's own white showing between the black fissures
-        c = lerp(c, lerp(_FootCrack.rgb, lerp(_FootPlate.rgb, c, 0.6h), foot.y), foot.x);
+        half3 foot = OS_TreeFoot(positionWS, r, z);
+        // grey-brown plates between dark fissures; here and there the white bark left
+        half3 footc = lerp(_FootCrack.rgb, _FootPlate.rgb, foot.y);
+        c = lerp(c, lerp(footc, c, foot.z * 0.85h), foot.x);
         // a cut face: pale fresh wood weathering to grey over the years, the rings faintly, the callus rolling in
         // from the bark round its edge
         if (uv.x < -0.5)
@@ -356,19 +359,21 @@ Shader "Overstory/Tree"
                 {
                     half4 bk = SAMPLE_TEXTURE2D(_Bark, sampler_Bark, input.uv);
                     // the dark foot is rough: deeper relief, its islands (the white bark left) raised as plates
-                    half2 foot = OS_TreeFoot(input.positionWS, input.extra.x, input.extra.y);
-                    // the relief belongs to wide wood seen face on: on a thin limb the bark's rings at their real
-                    // spacing are ridges as big as the limb (a corrugated hose), and at the outline a bump steps it
-                    half wide = saturate((half)(input.extra.x / 0.12));
+                    half3 foot = OS_TreeFoot(input.positionWS, input.extra.x, input.extra.y);
+                    // the relief belongs to wide wood seen face on, its depth with the wood's width: on a limb the
+                    // bark's rings at their real spacing are ridges as big as the limb (a corrugated hose, a
+                    // herringbone), and at the outline a bump steps it
+                    half wide = saturate((half)(input.extra.x / 0.25));
                     half face = smoothstep(0.15h, 0.45h, abs(dot(n, GetWorldSpaceNormalizeViewDir(input.positionWS))));
-                    n = OS_Bump(input.positionWS, n, (bk.a * (1.0h + 1.5h * foot.x) + foot.y * foot.x) * _Relief.x * wide * face);
+                    half h = bk.a * (1.0h - foot.x) + (foot.y * 0.8h + bk.a * 0.4h) * foot.x * 2.0h;
+                    n = OS_Bump(input.positionWS, n, h * _Relief.x * wide * face);
                 }
             #endif
             #endif
                 StreetSurface s = OS_TreeSurface(input.uv, input.extra, n, input.positionWS);
             #if defined(_OS_MARKS)
                 // an old mark greys towards the bark as it weathers; a fresh one is dark
-                s.albedo = lerp(s.albedo, _BarkBand.rgb * 0.8h, (half)input.uv2.x);
+                s.albedo = lerp(s.albedo, _BarkBand.rgb * 0.92h, (half)input.uv2.x);
             #endif
 
                 InputData id = (InputData)0;
