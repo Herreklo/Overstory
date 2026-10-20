@@ -37,6 +37,7 @@ Material:
     - _Cutoff: 0.5
     - _Hold: 0.6
     - _InnerGlow: 0.9
+    - _LeafSkyTint: 0.35
     - _Leaves: 0
     - _MassShadow: 1.5
     m_Colors:
@@ -45,12 +46,12 @@ Material:
     - _Foot: {r: 0.16, g: 6, b: 1, a: 0}
     - _FootCrack: {r: 0.059999965, g: 0.054999977, b: 0.049999982, a: 1}
     - _FootPlate: {r: 0.35999998, g: 0.34999996, b: 0.32999998, a: 1}
-    - _Green: {r: 0.38, g: 0.41, b: 0.17, a: 1}
-    - _Late: {r: 0.46, g: 0.38, b: 0.23, a: 1}
+    - _Green: {r: 0.4, g: 0.42, b: 0.2, a: 1}
+    - _Late: {r: 0.46, g: 0.39, b: 0.25, a: 1}
     - _Season: {r: 0.78, g: 0.45, b: 0, a: 0}
     - _Through: {r: 1, g: 0.85, b: 0.45, a: 0.9}
-    - _Turned: {r: 0.74, g: 0.63, b: 0.3, a: 1}
-    - _Twig: {r: 0.19999996, g: 0.10999996, b: 0.089999996, a: 1}
+    - _Turned: {r: 0.72, g: 0.62, b: 0.3, a: 1}
+    - _Twig: {r: 0.36, g: 0.29, b: 0.27, a: 1}
     - _TwigRadius: {r: 0.012, g: 0.045, b: 0, a: 0}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

@@ -180,8 +180,10 @@ def paint_spray(rng, kind):
         lid = 0.06 + 0.94 * ((j * 0.6180339887 + rng.random() * 0.1) % 1.0)
         across = np.where(half > 0, np.abs(v) / np.maximum(half, 1e-3), 1.0)
         rib = np.exp(-(np.abs(v) / (0.012 * length)) ** 2) * (t > 0) * (t < 0.92)
-        g = 0.62 + 0.38 * (depth + 1) / len(order)            # deeper in the spray, darker
-        g = g * (1.0 - 0.18 * across ** 3) + 0.08 * rib       # darker edges, a lighter midrib
+        # calm inside: the spray's value comes from its mass, so its leaves differ only a little (the abstract
+        # inner detail of Moss's and Oga's foliage); a faint darkening behind, a faint edge to each leaf
+        g = 0.86 + 0.14 * (depth + 1) / len(order)
+        g = g * (1.0 - 0.06 * across ** 3) + 0.02 * rib
         sl = (slice(y0, y1), slice(x0, x1))
         leaf_id[sl][here] = lid
         light[sl][here] = np.clip(g, 0, 1)[here]

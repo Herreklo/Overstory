@@ -30,7 +30,8 @@ Shader "Overstory/Tree"
         _Cutoff ("Coverage cut", Range(0, 1)) = 0.5
         _Hold ("Leaves: how much of their own hue they hold in dim light (dusk)", Range(0, 1)) = 0.6
         _MassShadow ("Leaves: how far out towards the sun their shadow is read (m)", Float) = 3.0
-        _InnerGlow ("Leaves: the light bounced and passed inside a sunlit crown", Range(0, 2)) = 0.7
+        _InnerGlow ("Leaves: the light bounced and passed inside a sunlit crown", Range(0, 2)) = 0.0
+        _LeafSkyTint ("Leaves: how much of the sky's tint their shade takes", Range(0, 2)) = 0.35
     }
 
     HLSLINCLUDE
@@ -55,6 +56,7 @@ Shader "Overstory/Tree"
         half _Hold;
         float _MassShadow;
         half _InnerGlow;
+        half _LeafSkyTint;
     CBUFFER_END
 
     TEXTURE2D(_Bark);  SAMPLER(sampler_Bark);
@@ -247,11 +249,18 @@ Shader "Overstory/Tree"
                     Light sun = GetMainLight(id.shadowCoord, id.positionWS, half4(1, 1, 1, 1));
                     half ndl = dot(n, sun.direction);
                     half shadow = sun.shadowAttenuation * OS_CloudLight(input.positionWS, sun.direction);
-                    half lit = smoothstep(-0.12h, 0.3h, ndl) * shadow;
+                    // the mass's turn from the light stepped into three values, soft at their edges: shadow, a
+                    // half-tone, lit (a painter's planes on a volume)
+                    half lit = (smoothstep(-0.32h, -0.12h, ndl) * 0.42h + smoothstep(0.12h, 0.32h, ndl) * 0.58h) * shadow;
+                    // the sky's light on leaves keeps only a little of its tint: under an overcast sky a leaf's own
+                    // colour is at its truest (a yellow birch in the rain is yellow, not olive)
                     half3 sky = OS_SkyTerm(b, n);
                     half skyLum = dot(sky, half3(0.2126h, 0.7152h, 0.0722h));
-                    sky = max(skyLum + (sky - skyLum) * _OS_ShadowChroma, 0.0h);
-                    colour = s.albedo * sky + s.albedo * sun.color * lit;
+                    sky = max(skyLum + (sky - skyLum) * _LeafSkyTint, 0.0h);
+                    // the sky's light by what the card sees of the sky through the crown (baked); the sun's by its own
+                    // shadow, a little dimmed deep inside
+                    half seen = saturate(b.sky);
+                    colour = s.albedo * sky + s.albedo * sun.color * lit * lerp(0.75h, 1.0h, seen);
                     // the inside of a sunlit crown glows: light bounced leaf to leaf and through the leaves, warm with
                     // their colour, so its shade sits near half the lit side, not a hole (only while the crown has sun)
                     half3 glowc = lerp(s.albedo, dot(s.albedo, half3(0.2126h, 0.7152h, 0.0722h)).xxx, 0.45h);

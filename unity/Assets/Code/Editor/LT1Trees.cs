@@ -42,7 +42,7 @@ namespace Overstory.EditorTools
             // downy birch on the coast on 20 October: most leaves turned an ochre gold (greyed, never cadmium), the
             // last still olive, the first a dull brown, never orange or red; nearly half fallen, from the inside and
             // below, so the limbs show
-            ["birch"] = (new Color(0.38f, 0.41f, 0.17f), new Color(0.74f, 0.63f, 0.30f), new Color(0.46f, 0.38f, 0.23f),
+            ["birch"] = (new Color(0.40f, 0.42f, 0.20f), new Color(0.72f, 0.62f, 0.30f), new Color(0.46f, 0.39f, 0.25f),
                          new Vector4(0.78f, 0.45f, 0f, 0f)),
         };
 
@@ -81,6 +81,9 @@ namespace Overstory.EditorTools
                 // a birch's twigs and young branches are dark purple-brown up to two or three centimetres; the white
                 // bark comes with age on the limbs and the trunk
                 m.SetVector("_TwigRadius", new Vector4(0.012f, 0.045f, 0f, 0f));
+                // a birch's twigs are a purple-grey brown, and seen through the leaves they are lost in them: lighter
+                // than bark's dark marks, never black lines
+                m.SetColor("_Twig", new Color(0.36f, 0.29f, 0.27f));
                 m.enableInstancing = true;
                 EditorUtility.SetDirty(m);
                 return m;

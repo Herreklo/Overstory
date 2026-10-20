@@ -44,7 +44,7 @@ import tree_growth as G  # noqa: E402
 # species' sprays, or its clumps: a painter's blocking of its foliage); hang: clumps hang from their shoots' ends,
 # sized for a twig's foliage on a grown tree (clump_full: the height at which they reach full size).
 PARTS = {
-    "birch": dict(sag=0.05, taper=0.55, atlas="leaves", hang=False, card=(0.50, 0.48), card_u=(0.03, 0.97), cells=4,
+    "birch": dict(sag=0.05, taper=0.55, occlusion=0.05, seam=0.45, atlas="leaves", hang=False, card=(0.50, 0.48), card_u=(0.03, 0.97), cells=4,
                   per_node=2, along=1, droop=0.7, leaf_years=999, leaf_tips=24, draw_tips=2.5, draw_tips_per_m=0.45, reach=0.9,
                   bark=(0.30, 0.60), max_cards=4200, grow_to=80),
     "spruce": dict(card=(0.60, 0.40), cells=4, per_node=2, droop=0.25, leaf_years=7, leaf_tips=30, draw_tips=3.0, draw_tips_per_m=0.45,
@@ -385,6 +385,37 @@ def spatial_masses(points, k, seed, iters=25):
     return which
 
 
+def volumes(points, which, k):
+    """Each mass as an ellipsoid fitted to its foliage (centre, axes, radii along them), for smooth volume normals."""
+    out = []
+    for m in range(k):
+        pts = np.asarray(points)[which == m]
+        if len(pts) < 6:
+            out.append(None)
+            continue
+        c = pts.mean(axis=0)
+        w, v = np.linalg.eigh(np.cov((pts - c).T) + np.eye(3) * 1e-4)
+        out.append((c, v, 2.0 * np.sqrt(np.maximum(w, 1e-4))))
+    return out
+
+
+def volume_depth(vol, p):
+    """How deep a point lies in a mass's ellipsoid: 0 at its skin (or outside), 1 at its centre."""
+    c, axes, radii = vol
+    q = axes.T @ (np.asarray(p) - c)
+    return float(np.clip(1.0 - np.linalg.norm(q / radii), 0.0, 1.0))
+
+
+def volume_normal(vol, p, lift=0.25):
+    """The outward normal of a mass's ellipsoid at the point (its gradient), tipped a little up: the top of a mass is
+    where the sky lights it."""
+    c, axes, radii = vol
+    q = axes.T @ (np.asarray(p) - c)
+    g = axes @ (q / radii ** 2)
+    n = g / max(np.linalg.norm(g), 1e-9) + np.array([0.0, 0.0, lift])
+    return n / np.linalg.norm(n)
+
+
 def hulls(points, which, k):
     """Each mass as a convex hull dissolved into a few planes; a BVH tree for each."""
     import bmesh
@@ -452,6 +483,23 @@ def leaf_mesh(tl, parts, age, seed, H, species):
         k = int(min(5, max(3, round(3 + (H - 6) / 6))))
         which = spatial_masses(centres, k, seed)
     trees = hulls(np.vstack([centres, end[ids] + d * L]), np.concatenate([which, which]), max(k, 1))
+    vols = volumes(centres, which, k)
+    # sky between the masses: sprays on the seam between two masses (nearly as deep in the neighbour as in their own)
+    # are thinned, seeded, so the crown reads as a few masses, never one
+    seam = parts.get("seam", 0.0)
+    if seam > 0 and k > 1:
+        keep = []
+        for j, i in enumerate(ids):
+            own = vols[which[j]]
+            if own is None:
+                keep.append(True)
+                continue
+            e_own = 1.0 - volume_depth(own, centres[j])
+            e = [np.linalg.norm((v[1].T @ (centres[j] - v[0])) / v[2]) for m, v in enumerate(vols) if v is not None and m != which[j]]
+            ratio = (min(e) / max(np.linalg.norm((own[1].T @ (centres[j] - own[0])) / own[2]), 1e-6)) if e else 9.0
+            keep.append(not (ratio < 1.0 + seam and h01(seed, i, 15) < 0.92))
+        keep = np.array(keep)
+        ids, d, centres, which = ids[keep], d[keep], centres[keep], which[keep]
     V, F, UV0, UV1, NR, COL = [], [], [], [], [], []
     for j, i in enumerate(ids):
         depth, nrm = depth_in(trees, which[j], centres[j])
@@ -462,8 +510,12 @@ def leaf_mesh(tl, parts, age, seed, H, species):
         # a little of the card's own way out of the mass, so neighbouring cards on one plane are not identical
         out = centres[j] - (trees[which[j]][1] if trees[which[j]] is not None else centres.mean(axis=0))
         out /= max(np.linalg.norm(out), 1e-9)
-        # the mass's plane alone: a crown shades as its masses, never card by card
-        n_shade = nrm / max(np.linalg.norm(nrm), 1e-9)
+        # the mass's own volume: a smooth ellipsoid fitted to its foliage, so light turns across the mass from a lit
+        # side to a shadow side (the shader steps it into a painter's few values); never card by card
+        n_shade = volume_normal(vols[which[j]], centres[j]) if vols[which[j]] is not None else nrm / max(np.linalg.norm(nrm), 1e-9)
+        if vols[which[j]] is not None:
+            # how deep inside its own mass the card is: 0 at the skin, 1 at the core
+            depth = volume_depth(vols[which[j]], centres[j])
         # the cards' planes hold the spray's line, the first turned about it to face out of its mass with a seeded
         # roll, the others crossing it
         face0 = n_shade - d[j] * np.dot(n_shade, d[j])
@@ -474,7 +526,7 @@ def leaf_mesh(tl, parts, age, seed, H, species):
         nz = n_shade[2]
         sky = float(np.clip((1.0 - depth) * (0.72 + 0.28 * nz), 0.12, 1.0))
         ground = float(np.clip(0.1 + 0.3 * max(-nz, 0.0) + 0.2 * depth, 0.0, 1.0))
-        opn = float(1.0 - 0.6 * depth)
+        opn = float(1.0 - depth)
         # two orders in the season: colour comes to the most exposed first; leaves fall first inside the crown and low
         # in it, so by late October the structure shows through and the outer upper shoots hold on
         rank = 0.55 * h01(seed, i, 4) + 0.45 * depth
@@ -524,7 +576,28 @@ def leaf_mesh(tl, parts, age, seed, H, species):
             UV1.extend([(rank, fall)] * 4)
             NR.extend([n_shade] * 4)
             COL.extend([(sky, ground, opn, 1.0)] * 4)
-    return np.array(V), F, UV0, UV1, NR, COL, trees, which
+    # what each card sees of an overcast sky through all the others (the growth's own sky, at the cards): the true
+    # occlusion of the crown, the value under a grey sky (top and outside light, inside and under dark)
+    V = np.array(V)
+    if len(V):
+        cards = V.reshape(-1, 4, 3).mean(axis=1)
+        seen = crown_sky(cards, H, parts.get("occlusion", 0.6))
+        for c in range(len(cards)):
+            for q in range(4):
+                sky_, ground_, _, a_ = COL[c * 4 + q]
+                COL[c * 4 + q] = (float(0.1 + 0.9 * min(seen[c] * 1.4, 1.0)), ground_, 1.0, a_)
+    return V, F, UV0, UV1, NR, COL, trees, which
+
+
+def crown_sky(points, H, extinction):
+    """The share of an overcast sky each point sees through the crown's cards (rays to the sky through a grid of them;
+    tree_growth.Sky)."""
+    pts = np.asarray(points)
+    radius = float(np.abs(pts[:, :2]).max()) + 2.0
+    sky = G.Sky(radius, H * 1.2 + 2.0, 0.35, extinction, 0.0)
+    sky.build(pts, np.zeros((0, 3)))
+    seen, _ = sky.light(pts)
+    return np.clip(seen, 0.0, 1.0)
 
 
 def branch_bake(samples, V, trees, k):
