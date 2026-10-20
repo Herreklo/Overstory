@@ -32,6 +32,9 @@ namespace Overstory.EditorTools
         /// <summary>The trees on the sheet: species, seed, age.</summary>
         static readonly (string species, int seed, int age)[] Sheet = { ("birch", 1, 15), ("birch", 1, 30), ("birch", 1, 60) };
 
+        /// <summary>A model's name, with any dated events in it (tree.py: tree_birch_s1_a60_cut50).</summary>
+        static string ModelSuffix = "";
+
         /// <summary>Near where the sheet's tree stands, in street metres (Broad Street): it stands at the first open,
         /// sunlit ground from here (SunlitSpot).</summary>
         static readonly Vector2 Near = new Vector2(250f, -236f);
@@ -107,7 +110,7 @@ namespace Overstory.EditorTools
         /// <summary>A grown tree, stood with its foot at a point (street metres), turned by yaw degrees.</summary>
         public static GameObject Place(Transform parent, string species, int seed, int age, Vector3 street, float yaw)
         {
-            string path = $"{Art}/{species}/tree_{species}_s{seed}_a{age}.fbx";
+            string path = $"{Art}/{species}/tree_{species}_s{seed}_a{age}{ModelSuffix}.fbx";
             var model = AssetDatabase.LoadAssetAtPath<GameObject>(path);
             if (model == null)
                 throw new FileNotFoundException($"no grown tree at {path}: run blender/generators/tree.py first");
@@ -309,7 +312,10 @@ namespace Overstory.EditorTools
                 using var rays = new Rays();
                 for (int seed = 1; seed <= 12; seed++)
                 {
+                    // six planted garden birches (sheltered), then six self-seeded on an exposed knoll
+                    ModelSuffix = seed <= 6 ? "" : "_x10_wild";
                     var tree = Place(root, "birch", seed, 30, spot, 0f);
+                    ModelSuffix = "";
                     float h = 0f;
                     foreach (var r in tree.GetComponentsInChildren<MeshRenderer>())
                         h = Mathf.Max(h, r.bounds.max.y - spot.z);
@@ -336,6 +342,32 @@ namespace Overstory.EditorTools
                 Object.DestroyImmediate(root.gameObject);
                 Object.DestroyImmediate(shot);
             }
+        }
+
+        /// <summary>
+        /// A pruned tree beside the same tree unpruned (reviews/lt1/trees/pruned/): the 60-year birch whose three
+        /// heaviest limbs above 3 m were cut at the trunk ten years before, at 16:00 and in grey light.
+        ///     Unity -batchmode -quit -projectPath unity -executeMethod Overstory.EditorTools.LT1Trees.Pruned
+        /// (after: blender ... tree.py -- birch 1 60 1.0 - cut:50:3:3.0)
+        /// </summary>
+        public static void Pruned()
+        {
+            string outDir = Path.GetFullPath(Path.Combine(Application.dataPath, "..", "..", "reviews", "lt1", "trees", "pruned"));
+            Directory.CreateDirectory(outDir);
+            ModelSuffix = "_cut50";
+            try
+            {
+                var args = new List<string>(System.Environment.GetCommandLineArgs()) { "-ages", "60", "-views", "street,into" };
+                Frames();
+            }
+            finally { ModelSuffix = ""; }
+            foreach (var m in new[] { "1300-drizzle", "1600-low-sun", "1750-sea-fog" })
+                foreach (var v in new[] { "street", "into-the-sun" })
+                {
+                    string src = Path.GetFullPath(Path.Combine(Application.dataPath, "..", "..", "reviews", "lt1", "trees", "first", m, $"birch-s1-a60-{v}.png"));
+                    if (File.Exists(src))
+                        File.Copy(src, Path.Combine(outDir, $"birch-s1-a60-cut50-{m}-{v}.png"), true);
+                }
         }
 
         /// <summary>A command-line filter: -moments 1600-low-sun, -ages 30,60, -views street (prefixes match).</summary>
