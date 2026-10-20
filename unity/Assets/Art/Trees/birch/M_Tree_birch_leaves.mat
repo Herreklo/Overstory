@@ -33,15 +33,19 @@ Material:
         m_Texture: {fileID: 2800000, guid: 5381025e73e3842d3949be5d4a534ba2, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _Twigs:
+        m_Texture: {fileID: 2800000, guid: 7ea7618eeed044ab9b259df916c75e10, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
     - _AlphaToMask: 1
     - _Cutoff: 0.5
     - _Hold: 0.15
-    - _InnerGlow: 0.9
+    - _InnerGlow: 0
     - _LeafSkyTint: 0.35
     - _Leaves: 1
-    - _MassShadow: 1.5
+    - _MassShadow: 8
     - _SunPale: 0.35
     m_Colors:
     - _BarkBand: {r: 0.29999998, g: 0.28999996, b: 0.27999997, a: 1}
@@ -54,7 +58,7 @@ Material:
     - _Season: {r: 0.78, g: 0.45, b: 0, a: 0}
     - _Through: {r: 1, g: 0.85, b: 0.45, a: 0.9}
     - _Turned: {r: 0.72, g: 0.62, b: 0.3, a: 1}
-    - _Twig: {r: 0.36, g: 0.29, b: 0.27, a: 1}
+    - _Twig: {r: 0.27, g: 0.2, b: 0.2, a: 1}
     - _TwigRadius: {r: 0.012, g: 0.045, b: 0, a: 0}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

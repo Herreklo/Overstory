@@ -45,7 +45,7 @@ import tree_growth as G  # noqa: E402
 # sized for a twig's foliage on a grown tree (clump_full: the height at which they reach full size).
 PARTS = {
     "birch": dict(sag=0.05, taper=0.55, occlusion=0.05, seam=0.3, atlas="lobes", lobe=0.8, lobe_gap=0.15, lose_tips=40, hang=False, card=(0.50, 0.48), card_u=(0.03, 0.97), cells=4,
-                  per_node=2, along=1, droop=0.7, leaf_years=999, leaf_tips=24, draw_tips=2.5, draw_tips_per_m=0.45, reach=0.9,
+                  per_node=2, along=1, droop=0.7, leaf_years=999, leaf_tips=24, draw_tips=2.5, draw_tips_per_m=0.45, winter_tips=0.8, reach=0.9,
                   bark=(0.30, 0.60), max_cards=4200, grow_to=80),
     "spruce": dict(card=(0.60, 0.40), cells=4, per_node=2, droop=0.25, leaf_years=7, leaf_tips=30, draw_tips=3.0, draw_tips_per_m=0.45,
                    bark=(0.30, 0.50), max_cards=8000, grow_to=100),
@@ -231,12 +231,14 @@ def branch_mesh(tl, parts, H, vols=None):
     thinnest drawn grows with the tree: from the street stop a twig thinner than about a pixel is the sprays' to carry."""
     start, end, r, tips = tl["start"], tl["end"], tl["r"], tl["tips"]
     draw = drawn_tips(parts, H)
+    # bare, the finer twigs are drawn too (the winter crown's haze); in leaf they are hidden, the sprays carry them
+    winter = min(parts.get("winter_tips", draw), draw)
     tile_round, tile_along = parts["bark"]
     V, F, UV0, UV1 = [], [], [], []
     BARE = []                                            # per vertex: drawn only when the leaves are down
     samples = []                                         # (point, radius) along branches, for the bake
     for c in chains(tl):
-        if tips[c[0]] < draw:
+        if tips[c[0]] < winter:
             continue
         # spurs and short stubs are carried by the sprays, not drawn as tubes
         if sum(np.linalg.norm(end[i] - start[i]) for i in c) < 0.12:
@@ -250,11 +252,14 @@ def branch_mesh(tl, parts, H, vols=None):
         stop = len(pts)
         lost = parts.get("lose_tips", 0)
         hidden = np.zeros(len(pts), dtype=bool)
+        hidden[0] = tp[0] < draw
         for k in range(1, len(pts)):
-            if tp[k] < draw:
+            if tp[k] < winter:
                 stop = k + 1
                 break
-            if vols and tp[k] < lost and not hidden[k - 1]:
+            if tp[k] < draw:
+                hidden[k] = True
+            elif vols and tp[k] < lost and not hidden[k - 1]:
                 deep = max((volume_depth(v, pts[k]) for v in vols if v is not None), default=0.0)
                 hidden[k] = deep > 0.3
             else:
@@ -550,13 +555,26 @@ def lobe_mesh(tl, parts, age, seed, H):
         upc = np.cross(face, side)
         roll = (h01(seed, i, 1) - 0.5) * math.radians(24)     # curtains hang plumb, give or take
         side, upc = side * math.cos(roll) + upc * math.sin(roll), upc * math.cos(roll) - side * math.sin(roll)
-        s_ = size * (0.6 + 0.9 * h01(seed, i, 14) ** 1.5)
+        # a hierarchy in each mass: big lobes at its core, smaller towards its skin and smallest at its tips
+        depth_j = volume_depth(vol, centres[j]) if vol is not None else 0.3
+        s_ = size * (0.75 + 0.6 * min(depth_j * 2.2, 1.0)) * (0.85 + 0.3 * h01(seed, i, 14))
         corners = [centres[j] - side * s_ / 2 - upc * s_ / 2, centres[j] + side * s_ / 2 - upc * s_ / 2,
                    centres[j] + side * s_ / 2 + upc * s_ / 2, centres[j] - side * s_ / 2 + upc * s_ / 2]
         b = len(V)
         V.extend(corners)
         F.append((b, b + 1, b + 2, b + 3))
-        cell = int(h01(seed, i, 2) * parts["cells"]) % parts["cells"]
+        # which curtain: round or wide on a mass's top, long ones hanging at the crown's outer lower edge, small at
+        # the skin (the atlas: 0 round, 1 tall, 2 wide, 3 small)
+        zr = float(np.clip(centres[j][2] / max(H, 1e-3), 0.0, 1.0))
+        top_of_mass = vol is not None and (centres[j] - vol[0])[2] > 0.25 * vol[2].max()
+        if top_of_mass:
+            cell = 0 if h01(seed, i, 2) < 0.5 else 2
+        elif zr < 0.55 and depth_j < 0.3:
+            cell = 1
+        elif depth_j < 0.15:
+            cell = 3
+        else:
+            cell = int(h01(seed, i, 2) * parts["cells"]) % parts["cells"]
         cx, cy = (cell % 2) * 0.5, 1.0 - (cell // 2) * 0.5 - 0.5
         u0, u1 = (cx, cx + 0.5) if h01(seed, i, 3) < 0.5 else (cx + 0.5, cx)
         UV0.extend([(u0, cy), (u1, cy), (u1, cy + 0.5), (u0, cy + 0.5)])
@@ -569,7 +587,11 @@ def lobe_mesh(tl, parts, age, seed, H):
             n = volume_normal(vol, p) if vol is not None else face
             dep = volume_depth(vol, p) if vol is not None else 0.0
             NR.append(n)
-            COL.append((float(0.25 + 0.75 * (1.0 - dep) ** 1.2), float(np.clip(0.15 + 0.35 * max(-n[2], 0.0), 0, 1)), 1.0, 1.0))
+            # what the corner sees of the sky: less deep in its mass, and less low in the crown (the whole crown
+            # shades from a sky-lit top to a dark underside, as a painter blocks a tree)
+            zc = float(np.clip(p[2] / max(H, 1e-3), 0.0, 1.0))
+            crown = 0.55 + 0.45 * np.clip((zc - 0.25) / 0.6, 0.0, 1.0)
+            COL.append((float((0.25 + 0.75 * (1.0 - dep) ** 1.2) * crown), float(np.clip(0.15 + 0.35 * max(-n[2], 0.0), 0, 1)), 1.0, 1.0))
     return np.array(V), F, UV0, UV1, NR, COL, trees, which, vols
 
 
@@ -719,11 +741,15 @@ def crown_sky(points, H, extinction):
     return np.clip(seen, 0.0, 1.0)
 
 
-def branch_bake(samples, V, trees, k):
-    """For each branch vertex: sky by its facing and how deep it is in the crown; ground by facing down."""
+def branch_bake(samples, V, trees, k, vols=None):
+    """For each branch vertex: sky by its facing and how deep it is in the crown (the masses' smooth volumes where
+    there are any, so the shade comes on gradually); ground by facing down."""
     pts = np.array([p for p, _ in samples])
     deep = np.zeros(len(pts))
-    if trees is not None:
+    if vols:
+        for j, p in enumerate(pts):
+            deep[j] = max((volume_depth(v, p) for v in vols if v is not None), default=0.0) ** 0.7
+    elif trees is not None:
         for j, p in enumerate(pts):
             deep[j] = max((depth_in(trees, m, p)[0] for m in range(k) if trees[m] is not None), default=0.0)
     return pts, deep
@@ -769,7 +795,7 @@ def build(species, seed, age, quality=1.0, unity=None):
     k = int(which.max()) + 1 if which is not None and len(which) else 0
     BV, BF, BUV0, BUV1, samples, BARE = branch_mesh(tl, parts, H, vols)
     # the branches' bake: per loop, from the vertex's facing and the depth of the nearest chain point in the crown
-    pts, deep = branch_bake(samples, BV, trees, k)
+    pts, deep = branch_bake(samples, BV, trees, k, vols)
     from mathutils import kdtree
     kd = kdtree.KDTree(len(pts))
     for j, p in enumerate(pts):

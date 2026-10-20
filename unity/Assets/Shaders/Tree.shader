@@ -22,6 +22,7 @@ Shader "Overstory/Tree"
         _FootPlate ("Foot: plates", Color) = (0.36, 0.35, 0.33, 1)
         _FootCrack ("Foot: fissures", Color) = (0.06, 0.055, 0.05, 1)
         _Spray ("Leaf sprays (r id, g light, b thickness, a coverage)", 2D) = "white" {}
+        _Twigs ("Bare twigs on the same cards (a coverage)", 2D) = "black" {}
         _Green ("Leaves in summer", Color) = (0.26, 0.38, 0.11, 1)
         _Turned ("Leaves turned", Color) = (0.86, 0.62, 0.12, 1)
         _Late ("Leaves late", Color) = (0.50, 0.32, 0.10, 1)
@@ -29,7 +30,7 @@ Shader "Overstory/Tree"
         _Through ("Light through the leaves (rgb tint, a strength)", Color) = (1.0, 0.85, 0.45, 0.9)
         _Cutoff ("Coverage cut", Range(0, 1)) = 0.5
         _Hold ("Leaves: how much of their own hue they hold in dim light (dusk)", Range(0, 1)) = 0.6
-        _MassShadow ("Leaves: how far out towards the sun their shadow is read (m)", Float) = 3.0
+        _MassShadow ("Leaves: how far out towards the sun their shadow is read (m)", Float) = 8.0
         _InnerGlow ("Leaves: the light bounced and passed inside a sunlit crown", Range(0, 2)) = 0.0
         _LeafSkyTint ("Leaves: how much of the sky's tint their shade takes", Range(0, 2)) = 0.35
         _SunPale ("Leaves: how far the sun's light pales their colour", Range(0, 1)) = 0.35
@@ -63,6 +64,7 @@ Shader "Overstory/Tree"
 
     TEXTURE2D(_Bark);  SAMPLER(sampler_Bark);
     TEXTURE2D(_Spray); SAMPLER(sampler_Spray);
+    TEXTURE2D(_Twigs); SAMPLER(sampler_Twigs);
 
     #include "StreetSurface.hlsl"
 
@@ -78,16 +80,26 @@ Shader "Overstory/Tree"
     half OS_LeafCover(half4 m, float2 card)
     {
         bool leaf = m.r > 0.03h;
-        // a card's strokes go over a short span of the season, in their own order, so a lobe thins before it goes
+        // a card's strokes go over a short span of the season, in their own order, so a lobe thins before it goes;
+        // its painted twig goes with its last leaves (bare, a fragment would float: the drawn twigs carry the winter)
         half fall = (half)card.y + frac(m.r * 3.7h) * 0.12h;
-        return leaf && fall < (half)_Season.y ? 0.0h : m.a;
+        if (!leaf)
+            fall = (half)card.y + 0.14h;
+        return fall < (half)_Season.y ? 0.0h : m.a;
+    }
+
+    // The bare twigs a card carries, shown as its leaves fall: the winter crown's haze, where the foliage was.
+    half OS_TwigCover(float2 uv, float2 card)
+    {
+        half bare = smoothstep((half)card.y, (half)card.y + 0.18h, (half)_Season.y);
+        return SAMPLE_TEXTURE2D(_Twigs, sampler_Twigs, uv).a * bare;
     }
 
     // Cut at the coverage threshold (depth, shadows): returns the atlas sample.
     half4 OS_LeafClip(float2 uv, float2 card)
     {
         half4 m = SAMPLE_TEXTURE2D(_Spray, sampler_Spray, uv);
-        clip(OS_LeafCover(m, card) - _Cutoff);
+        clip(max(OS_LeafCover(m, card), OS_TwigCover(uv, card)) - _Cutoff);
         return m;
     }
 
@@ -109,6 +121,10 @@ Shader "Overstory/Tree"
         c *= 1.0h + half3(0.05h, 0.02h, -0.04h) * k;
         c *= 0.5h + 0.5h * m.g;
         s.albedo = m.r > 0.03h ? c : _Twig.rgb * (0.6h + 0.4h * m.g);
+        // where the leaves are gone and the bare twigs show, the twigs' colour
+        half leafHere = OS_LeafCover(m, extra);
+        if (leafHere < _Cutoff && OS_TwigCover(uv, extra) >= _Cutoff)
+            s.albedo = _Twig.rgb;
         s.smoothness = 0.18h;
     #else
         half4 b = SAMPLE_TEXTURE2D(_Bark, sampler_Bark, uv);
@@ -215,7 +231,7 @@ Shader "Overstory/Tree"
                 half4 m = SAMPLE_TEXTURE2D(_Spray, sampler_Spray, input.uv);
                 // coverage sharpened to a pixel's width, for alpha to coverage under MSAA (Castano): crisp edges that
                 // do not fizz; without MSAA it falls back to the cut
-                half cover = OS_LeafCover(m, input.extra);
+                half cover = max(OS_LeafCover(m, input.extra), OS_TwigCover(input.uv, input.extra));
                 // a card seen edge-on is a line, not a lobe: it fades as it turns away (its own face, from the screen)
                 float3 faceN = normalize(cross(ddx(input.positionWS), ddy(input.positionWS)));
                 half facing = abs(dot(faceN, GetWorldSpaceNormalizeViewDir(input.positionWS)));

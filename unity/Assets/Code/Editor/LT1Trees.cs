@@ -67,6 +67,7 @@ namespace Overstory.EditorTools
                 // the painted leaves the species' cards carry (as blender/generators/tree.py PARTS[species]["atlas"])
                 string atlas = Atlas.TryGetValue(species, out var a) ? a : "leaves";
                 m.SetTexture("_Spray", AssetDatabase.LoadAssetAtPath<Texture2D>($"{dir}/{species}_{atlas}.png"));
+                m.SetTexture("_Twigs", AssetDatabase.LoadAssetAtPath<Texture2D>($"{dir}/{species}_twigs.png"));
                 m.SetFloat("_Leaves", leaves ? 1f : 0f);
                 m.SetFloat("_AlphaToMask", leaves ? 1f : 0f);
                 if (leaves) m.EnableKeyword("_OS_LEAVES"); else m.DisableKeyword("_OS_LEAVES");
@@ -77,13 +78,21 @@ namespace Overstory.EditorTools
                     m.SetColor("_Late", s.late);
                     m.SetVector("_Season", s.season);
                     m.SetFloat("_Hold", 0.15f);
+                    // every setting written here, so the material is what this code says (a material keeps the values
+                    // it was first saved with, and a changed shader default never reaches it)
+                    m.SetFloat("_InnerGlow", 0f);
+                    m.SetFloat("_MassShadow", 8f);
+                    m.SetFloat("_LeafSkyTint", 0.35f);
+                    m.SetFloat("_SunPale", 0.35f);
+                    m.SetFloat("_Cutoff", 0.5f);
+                    m.SetColor("_Through", new Color(1f, 0.85f, 0.45f, 0.9f));
                 }
                 // a birch's twigs and young branches are dark purple-brown up to two or three centimetres; the white
                 // bark comes with age on the limbs and the trunk
                 m.SetVector("_TwigRadius", new Vector4(0.012f, 0.045f, 0f, 0f));
                 // a birch's twigs are a purple-grey brown, and seen through the leaves they are lost in them: lighter
                 // than bark's dark marks, never black lines
-                m.SetColor("_Twig", new Color(0.36f, 0.29f, 0.27f));
+                m.SetColor("_Twig", new Color(0.27f, 0.2f, 0.2f));
                 m.enableInstancing = true;
                 EditorUtility.SetDirty(m);
                 return m;
@@ -220,7 +229,7 @@ namespace Overstory.EditorTools
             var (bark, leaves) = Materials("birch");
             var seasons = new (string name, Color green, Vector4 season)[]
             {
-                ("05-may", new Color(0.50f, 0.58f, 0.20f), new Vector4(0f, 0.62f, 0f, 0f)),     // half out: a pale haze
+                ("05-may", new Color(0.50f, 0.58f, 0.20f), new Vector4(0f, 0.78f, 0f, 0f)),     // half out: a pale haze
                 ("07-july", new Color(0.25f, 0.37f, 0.11f), new Vector4(0f, 0f, 0f, 0f)),
                 ("10-october-20", new Color(0.36f, 0.40f, 0.15f), new Vector4(0.78f, 0.45f, 0f, 0f)),
                 ("01-january", new Color(0.27f, 0.38f, 0.12f), new Vector4(1f, 1.3f, 0f, 0f)),

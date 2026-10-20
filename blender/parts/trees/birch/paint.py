@@ -437,6 +437,78 @@ def lobes(path):
     return write_png(path, (np.clip(atlas, 0, 1) * 255 + 0.5).astype(np.uint8))
 
 
+# -- twigs: the bare crown's haze ------------------------------------------------------------------------------------
+
+def _line(cover, xs, ys, pts, width):
+    """Paint a polyline of the given width (pixels) into the coverage, antialiased by distance."""
+    n = cover.shape[0]
+    for (x0, y0), (x1, y1) in zip(pts, pts[1:]):
+        r = int(width + 3)
+        ya, yb = max(int(min(y0, y1)) - r, 0), min(int(max(y0, y1)) + r, n)
+        xa, xb = max(int(min(x0, x1)) - r, 0), min(int(max(x0, x1)) + r, n)
+        if ya >= yb or xa >= xb:
+            continue
+        X, Y = xs[ya:yb, xa:xb], ys[ya:yb, xa:xb]
+        dx, dy = x1 - x0, y1 - y0
+        L2 = dx * dx + dy * dy + 1e-6
+        t = np.clip(((X - x0) * dx + (Y - y0) * dy) / L2, 0, 1)
+        d = np.hypot(X - (x0 + t * dx), Y - (y0 + t * dy))
+        cov = np.clip(width / 2 + 0.5 - d, 0, 1)
+        cover[ya:yb, xa:xb] = np.maximum(cover[ya:yb, xa:xb], cov)
+
+
+def paint_twigs(rng, kind):
+    """One fan of bare birch twigs in one cell (the same cell as the foliage curtain it carries): a twig hanging from
+    the cell's top centre, side twigs off it every few centimetres, alternately, drooping, and finer twiglets off
+    those; thinner at each order and towards each tip. A painter's haze of fine lines, purple-brown in the shader."""
+    n = CELL
+    ys, xs = np.mgrid[0:n, 0:n].astype(np.float32)
+    cover = np.zeros((n, n), np.float32)
+    spread = {"round": 0.62, "tall": 0.42, "wide": 0.84, "small": 0.4}[kind]
+    length = {"round": 0.8, "tall": 0.9, "wide": 0.62, "small": 0.55}[kind]
+
+    def grow(x, y, ang, L, width, order):
+        pts = [(x, y)]
+        steps = max(int(L / (0.02 * n)), 2)
+        a = ang
+        for i in range(steps):
+            a += (math.pi / 2 - a) * 0.08 + rng.gauss(0, 0.06)      # droops towards hanging
+            x, y = x + math.cos(a) * L / steps, y + math.sin(a) * L / steps
+            x = min(max(x, n * (0.5 - spread / 2)), n * (0.5 + spread / 2))
+            pts.append((x, y))
+        for i, (p0, p1) in enumerate(zip(pts, pts[1:])):
+            w = width * (1.0 - 0.6 * i / len(pts))
+            _line(cover, xs, ys, [p0, p1], max(w, 1.3))
+        if order < 2:
+            k = 0
+            for i in range(1, len(pts) - 1):
+                if rng.random() < (0.55 if order == 0 else 0.4):
+                    side = 1 if k % 2 else -1
+                    k += 1
+                    (x0, y0), (x1, y1) = pts[i], pts[i + 1]
+                    along = math.atan2(y1 - y0, x1 - x0)
+                    grow(x0, y0, along + side * math.radians(rng.uniform(25, 50)),
+                         L * rng.uniform(0.3, 0.55) * (1.0 - 0.5 * i / len(pts)), width * 0.6, order + 1)
+
+    starts = {"round": 3, "tall": 2, "wide": 4, "small": 2}[kind]
+    for k in range(starts):
+        f = (k + 0.5) / starts
+        x = n * (0.5 + (f - 0.5) * spread * 0.6)
+        grow(x, n * 0.04, math.pi / 2 + (f - 0.5) * 1.2 + rng.gauss(0, 0.1), n * length * rng.uniform(0.8, 1.0), 3.2, 0)
+    return cover
+
+
+def twigs(path):
+    import random
+    atlas = np.zeros((1024, 1024, 4), np.float32)
+    for c, kind in enumerate(("round", "tall", "wide", "small")):
+        r = random.Random(f"birch-twigs-{SEED}-{c}")
+        cov = downsample(paint_twigs(r, kind), 2)
+        y0, x0 = (c // 2) * 512, (c % 2) * 512
+        atlas[y0:y0 + 512, x0:x0 + 512] = np.stack([np.zeros_like(cov), np.full_like(cov, 0.8), np.zeros_like(cov), cov], -1)
+    return write_png(path, (np.clip(atlas, 0, 1) * 255 + 0.5).astype(np.uint8))
+
+
 # -- bark -------------------------------------------------------------------------------------------------------------
 
 def value_noise(shape, cells, rng):
@@ -493,4 +565,5 @@ if __name__ == "__main__":
     print(leaves(os.path.join(out, "birch_leaves.png")))
     print(clumps(os.path.join(out, "birch_clumps.png")))
     print(lobes(os.path.join(out, "birch_lobes.png")))
+    print(twigs(os.path.join(out, "birch_twigs.png")))
     print(bark(os.path.join(out, "birch_bark.png")))
