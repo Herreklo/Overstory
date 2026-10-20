@@ -18,7 +18,7 @@ The town is the size of Stavanger in 1989: about 95,000 people over a built area
 
 ## The land
 
-A narrow harbour basin, about 600 m long and 110 m wide, runs north to south. Its mouth opens north into the fjord; its head, at the south end, is the square. The old town climbs the east shore's slope to villas and a wooded hill (about 80 m) with a water tower on top. The west shore is flatter and lower, with the knoll (about 25 m of bare rock) rising behind the pub streets. North of the basin, across the mouth, the land runs out to the oil base, then low islands and skerries in the fjord. Mountains only far off to the east.
+The harbour basin, Vågen, is the town's heart and its biggest space: about 900 m long, 180 to 260 m wide in its outer part and narrowing to about 90 m at its head, where the square is. It runs north to south with a gentle bend in the middle, so no view shows all of it at once and every walk along it opens new views. Its mouth opens north into the fjord, past a breakwater and a lighthouse; in its outer part stands a small rock islet with a beacon. The outer basin is deep (ferries, express boats, supply ships); the inner basin is shallow (fishing boats, small craft, pontoons, the fish quay at the head). Both shores are stone quays with steps down to the water, slipways and mooring rings; the quays are where both shores' lives meet the water. The old town climbs the east shore's slope to villas and a wooded hill (about 80 m) with a water tower on top. The west shore is flatter and lower, with the knoll (about 25 m of bare rock) rising behind the pub streets. North of the basin, across the mouth, the land runs out to the oil base, then low islands and skerries in the fjord. Mountains only far off to the east.
 
 The old town faces west-north-west across the water: the evening sun lies on its fronts, and from it the sun sets behind the pub quay. The pub quay faces east-south-east: morning sun, and at night its lit windows lie in the water, seen from the old town.
 
@@ -28,7 +28,7 @@ The town's history, which sets which eras stand where: a medieval cathedral town
 
 | Area | Where | Grain | What happens there | Sound and light |
 | --- | --- | --- | --- | --- |
-| The basin, Vågen | The middle | Water, quays both sides, boats, the fish quay at the head | Boats come and go; the town looks at itself across it | Gulls, engines, halyards; reflections, the town doubled at night |
+| The basin, Vågen | The middle, 900 m long | Water, stone quays both sides, the islet and its beacon, the ferry and express-boat quay in the outer basin, the fish quay and pontoons in the inner | Boats come and go; regattas and the Christmas lights; the town looks at itself across it | Gulls, engines, halyards; reflections, the town doubled at night |
 | The old town | East slope, from the canning works to the square | White timber houses of 1½ to 2 storeys, shoulder to shoulder along contour lanes; stepped lanes in the gullies; yards, walls, picket fences, lanterns | Living; small trades; the beauty corner is here | Quiet, footsteps, a radio through a window; evening sun on the fronts |
 | Harbour Row | The east quay below the old town | Merchants' houses and warehouses on the quay road | A bar (the Anchor), a café, a rehearsal loft in a warehouse | Quay noise by day, one bar's door at night |
 | The pub quay and pub street | The west quay and the street behind it | Warehouses (sjøhus) turned pubs and restaurants on the quay; behind them a narrow street of shops and bars | Nightlife: the band's first rungs, the pub back room and a club in a warehouse | Loud and warm at night, neon and tungsten in the water; shabby by day |
@@ -51,6 +51,44 @@ The town's history, which sets which eras stand where: a medieval cathedral town
 - **Edges:** the basin (the strongest); the forest's edge; the oil base's fence; the lake.
 - **Nodes:** the square; the landing in the old town (the beauty corner); the ferry quay; the fish quay; the bus station's square.
 - **Landmarks:** the cathedral; the tower on the knoll; the water tower on the forest hill; the oil base's cranes; the lighthouse; the canning works' chimney.
+
+## A city to play in
+
+The town must make many games, not one: the band, a murder mystery, a family across generations, a venture, talent spotting, the town's politics, growing up. What makes a game city exciting, drawn from games (Yakuza's Kamurocho, Disco Elysium's Revachol, Shadows of Doubt, Night in the Woods, Pentiment's Tassing, Kentucky Route Zero) and from real towns (Jacobs, Gehl, Hillier):
+
+- **Dense with purpose.** Small and full beats large and empty. Every block of the centre gives some scenario a reason to go there: a third place, a workplace, a secret. The districts round it are visited for reasons, not crossed for distance.
+- **Everyone passes the same few places.** The square, the quays, the bus station and the bridge are where routines cross, so chance meetings happen and are true (who walks where comes from the engine).
+- **Places change with the clock.** The square by day and empty at night; the pub quay shabby by day and alive at night; the beach in summer; the lake frozen for skating in a cold winter; the market on Saturdays. One map is many towns.
+- **Front and back.** Every place worth a scene has a front and a backstage: the pub's front room and its back yard, the villa's drawing room and its kitchen door, the cannery's office and its loading bay. Drama lives in the back.
+- **Edges and margins.** What happens out of sight happens at the edges: the forest, the boatyards, the empty brewery, under the bridge, the oil base at night, the end of the breakwater. Crime, romance and youth need them.
+- **Views and climbs.** Stairs, lookouts and the bridge orient the player and reward the climb: the knoll, the water tower, the lighthouse, the corner's landing.
+- **Contrast is conflict.** Villas above Storhaug; the conserved old town against the oil offices; the seventies estate against the fishing village. Social tension made spatial gives every scenario its stakes.
+- **Secrets with dates.** The history system becomes play: the old name under the new sign, the wall under the trees, the bricked-up door, the moss that has not grown back. Following an anomaly leads to a true story.
+- **Recognition.** The same places, years apart, changed by what happened: the strongest moment any scenario has.
+
+What each scenario needs from the town, all on one map:
+
+| Scenario | It needs | Where |
+| --- | --- | --- |
+| The band | A rehearsal room, a pub back room, a club, a hall; a record shop, the radio, poster walls, the van, the walk home at three in the morning | Harbour Row's loft, the pub street, a warehouse on the pub quay, the newer town's hall, later the brewery |
+| A murder mystery | Paths with witnesses at known hours, ground that remembers, an inheritance, a newspaper, a police station, gossip | The forest hill, the villas, the boathouses, the oil base at night, the café and the hairdresser |
+| A family over generations | Homes in districts to move between as fortunes change; a school, a church, a hospital, workplaces that rise and fall, a cemetery | The old town, the garden suburb, the estate; the cannery, then oil |
+| A venture | Empty shops after the crash, rents by street, foot traffic by route, rivals, the market | The pub street, the fire grid, the square |
+| Talent spotting | Where talent leaks out unmeasured: school sports, youth clubs, open mics, the local league | The estate's sports hall, the football ground, the pubs |
+| The town's politics | The town hall, the conservation fight, the bridge, the newspaper, the oil money | The square, the old town, the oil offices |
+| Growing up | The beach, the knoll at night, the bus station, the cinema, the youth club, the ferry to the islands | Everywhere at the edges |
+
+## How the town grows and changes
+
+**Before play: a script of eras.** The town is grown from a timed script (`docs/research/generating-the-past.md`), each era leaving its layer where it could: the medieval core at the basin's head; the herring boom filling the east slope with timber houses and the quays with warehouses; fires, and the fire grid rebuilt in straight streets; canning at the mouth; the railway along the lake; villas above the old town; between the wars the garden suburb; the modernist renewal of the 1950s and 60s, which cleared part of the centre for the newer town and was stopped when the old town was saved; oil from the 1970s, with the base, the offices, the bridge and the motorway; the boom of the early 80s, when the pub quay's warehouses became bars; the crash of 1986. The town in 1989 is all of these at once.
+
+**How growth finds its place.** Growth follows roads and stalls at barriers: the basin, the lake, the railway, the forest's edge. Where it stalls, belts of big, low-density uses gather (Conzen's fringe belts): the hospital, the school, the cemetery, the football ground, the university. Plots run through their cycle (built, filled in behind, decayed, cleared, rebuilt). Booms build in their own style; busts leave empty shops and lots. Plans are only partly carried out, and their scars stay.
+
+**During play: change on many clocks.** Each layer changes at its own speed (Brand): crowds, posters and cars by the hour and the week; businesses by the year; paint and cladding by the decade; buildings and streets by the generation; the land by the century. What drives it is the engine's facts: the economy (a boom builds, a bust empties), people (families grow and move out, the young move in), ventures (cheap old space draws artists, then bars, then offices), plans (a bridge opens an island, a road cuts a district), accidents (a fire, a storm) and nature (trees grow, an abandoned yard grows over, the forest takes back pasture).
+
+**What the player sees.** The same views across the years: a scenario set in 1960 and one in 2010 meet the same quay, the same corner, the same view from the knoll, each changed by what happened in between.
+
+**Who decides.** These are facts, so the engine's fabric pass owns them (`docs/engine-requests.md`); the plan supplies the setting pack's land and its script of eras. The same machinery grows other towns and, later, cities, each with its own land and script.
 
 ## The town around the centre
 
