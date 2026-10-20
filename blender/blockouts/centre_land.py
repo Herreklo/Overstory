@@ -27,9 +27,10 @@ import numpy as np
 COAST = [
     (-380, -1400, "n"), (-340, -1150, "n"), (-360, -1000, "q"), (-330, -780, "n"), (-372, -700, "n"),
     (-318, -640, "n"), (-300, -570, "n"),
-    # the west cove: boatyards and slips on its natural shore
-    (-230, -600, "n"), (-160, -612, "n"), (-60, -590, "n"), (20, -560, "n"), (64, -520, "n"), (86, -440, "n"),
-    (70, -360, "n"), (54, -300, "q"),
+    # the west cove, a broad round bay: boatyards and slips on its west shore, a sandy beach at its head
+    # facing north-west up the cove, for the summer evening sun
+    (-240, -660, "n"), (-150, -722, "n"), (-40, -724, "n"), (40, -684, "n"), (80, -620, "b"), (104, -520, "b"),
+    (96, -430, "n"), (70, -360, "n"), (54, -300, "q"),
     # the sund's east bank, then Vågen's west quay to the head, the head, and Harbour Row back to the point
     (54, -150, "q"), (150, -140, "q"), (250, -124, "q"), (302, -112, "q"), (302, -62, "q"), (270, -40, "q"),
     (220, -24, "q"), (150, -15, "q"),
@@ -37,15 +38,15 @@ COAST = [
     (-250, -15, "n"), (-280, 10, "n"), (-322, 60, "n"), (-348, 120, "n"), (-342, 190, "n"), (-312, 260, "n"),
     (-292, 330, "n"), (-262, 390, "n"),
     # the east harbour: the cannery's quays on its west side, a shingle beach at its head, slips on its east
-    (-250, 420, "q"), (-150, 420, "q"), (0, 428, "n"), (122, 452, "n"), (160, 500, "n"), (138, 560, "n"),
-    (50, 604, "n"), (-100, 642, "n"), (-250, 650, "n"),
+    (-250, 420, "q"), (-150, 430, "q"), (-20, 462, "n"), (80, 524, "n"), (140, 604, "n"), (156, 700, "n"),
+    (110, 768, "n"), (10, 750, "n"), (-120, 706, "n"), (-250, 660, "n"),
     # Storhaug's shore and on east
-    (-330, 700, "n"), (-392, 772, "n"), (-346, 850, "n"), (-300, 920, "n"), (-330, 1020, "n"), (-380, 1400, "m"),
+    (-330, 710, "n"), (-392, 782, "n"), (-346, 860, "n"), (-300, 930, "n"), (-330, 1030, "n"), (-380, 1400, "m"),
     (-1400, 1400, "m"), (-1400, -1400, "m"),
 ]
 HOLMEN = [
     (-250, -172, "q"), (0, -156, "q"), (40, -150, "q"), (40, -300, "n"), (-60, -304, "n"), (-150, -310, "n"),
-    (-262, -346, "n"), (-334, -296, "n"), (-300, -236, "n"),
+    (-220, -322, "n"), (-284, -292, "n"), (-270, -236, "n"),
 ]
 ISLAND_SUBURB = [
     (-560, 160, "n"), (-640, 110, "n"), (-720, 140, "n"), (-820, 150, "n"), (-900, 230, "n"), (-950, 330, "n"),
@@ -74,7 +75,7 @@ def _shore(points, closed=True, amp=9.0, seed=7):
         x1, y1, kind = points[k]
         x2, y2, _ = points[(k + 1) % n]
         out.append((x1, y1))
-        if kind != "n":
+        if kind not in ("n", "b"):
             continue
         L = math.hypot(x2 - x1, y2 - y1)
         steps = int(L / 6.0)
@@ -83,7 +84,8 @@ def _shore(points, closed=True, amp=9.0, seed=7):
             t = i / steps
             s = (k * 1000.0 + t * L) / 1.0
             w = math.sin(math.pi * t) ** 0.6  # no offset at the drawn corners
-            off = amp * w * (_n1(s / 45.0, seed) * 0.7 + _n1(s / 11.0, seed + 1) * 0.3 - 0.5) * 2.0
+            a = amp if kind == "n" else amp * 0.25  # a beach is a smooth curve of sand
+            off = a * w * (_n1(s / 45.0, seed) * 0.7 + _n1(s / 11.0, seed + 1) * 0.3 - 0.5) * 2.0
             out.append((x1 + (x2 - x1) * t + nx * off, y1 + (y2 - y1) * t + ny * off))
     return out
 
@@ -126,6 +128,7 @@ CONTOURS = [
     (22.0, [(100, -440), (250, -430), (400, -410), (600, -390)]),
     (32.0, [(110, -600), (300, -580), (500, -560), (700, -540)]),
     (40.0, [(0, -780), (300, -760), (700, -720)]),
+    (54.0, [(160, -900), (420, -930), (700, -900), (900, -820)]),  # the ridge behind the fire grid
     # west of the cove: the ferry quay's low ground, the oil base, the coast
     (6.0, [(-300, -660), (-150, -660), (0, -660)]),
     (16.0, [(-300, -860), (-100, -860), (100, -860)]),
@@ -134,7 +137,7 @@ CONTOURS = [
     (12.0, [(680, -300), (700, -60), (680, 200)]),
     (24.0, [(880, -300), (900, 0), (880, 300)]),
     # Storhaug, east of the east harbour
-    (20.0, [(-200, 760), (-60, 760), (60, 720), (180, 660)]),
+    (20.0, [(-220, 860), (-60, 880), (80, 860), (200, 800)]),
     # the forest hill, south-east
     # the forest hill: a ridge with two summits and a saddle, steep on its north-west side over Storhaug
     (82.0, [(360, 770), (420, 830), (470, 880)]),
@@ -145,10 +148,13 @@ CONTOURS = [
 ]
 SPOTS = [
     (42.0, (40, 210)),     # the top of the old town's hill, the villas' plateau
-    (36.0, (-60, 840)),    # Storhaug's top
+    (36.0, (-90, 940)),    # Storhaug's top
+    (46.0, (10, 236)),     # the old town hill's summit: a small park and a viewpoint by the villas
     (88.0, (440, 860)),    # the forest hill's summit, the water tower
     (16.0, (-200, 1000)),
-    (30.0, (300, 1300)), (45.0, (900, 900)), (30.0, (1300, 0)), (40.0, (1200, -900)), (25.0, (-300, -1150)),
+    (30.0, (300, 1300)), (45.0, (900, 900)), (25.0, (-300, -1150)),
+    # the upland to the south: the town's skyline seen from the bay, a layer behind the near hills
+    (70.0, (1250, -600)), (95.0, (1350, -100)), (110.0, (1400, 400)), (90.0, (1300, 900)), (60.0, (1150, -1100)),
 ]
 OUTCROPS = [
     dict(name="the knoll", x=150.0, y=-330.0, r=60.0, face=14.0, top=30.0, sx=1.0, sy=1.15),
@@ -159,6 +165,9 @@ OUTCROPS = [
     dict(name="a skerry", x=-480.0, y=110.0, r=12.0, face=6.0, top=4.0, sx=1.0, sy=1.0),
     dict(name="a skerry", x=-640.0, y=-60.0, r=10.0, face=5.0, top=3.0, sx=1.0, sy=1.0),
     dict(name="a skerry", x=-460.0, y=560.0, r=14.0, face=7.0, top=4.0, sx=1.0, sy=1.0),
+]
+VALLEYS = [  # the stream from the forest hill's saddle down to the east harbour's head, in a green valley
+    dict(name="the stream valley", depth=9.0, width=26.0, line=[(520, 640), (420, 690), (320, 720), (230, 724), (156, 720)]),
 ]
 GULLIES = [  # where the streams come down the old town's west slope to Vågen
     dict(x=49.3, depth=2.0, width=8.0, y0=10.0, y1=170.0),
@@ -252,6 +261,9 @@ def heights(X, Y):
     for g in GULLIES:
         k = np.exp(-((X - g["x"]) / g["width"]) ** 2) * _smoothstep(g["y0"], g["y0"] + 25, Y) * (1 - _smoothstep(g["y1"] - 40, g["y1"], Y))
         Z -= g["depth"] * k * (Y > -15)
+    for v in VALLEYS:
+        d = _poly_dist(X, Y, v["line"], closed=False)
+        Z -= v["depth"] * np.exp(-(d / v["width"]) ** 2) * np.clip((Z - 1.0) / 6.0, 0.0, 1.0)
     rough = (_noise(X, Y, 60.0, 1989) * 0.65 + _noise(X + 500, Y, 23.0, 1990) * 0.35 - 0.5) * 2.0
     Z += rough * np.clip((Z - 4.0) / 10.0, 0.0, 1.0)
 
