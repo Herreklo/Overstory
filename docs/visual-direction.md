@@ -13,7 +13,7 @@ The direction is painterly realism. Simon Stålenhag leads: real proportions, mu
 ## Shape
 
 - Shapes carry the style; shading finishes it. Silhouettes first: every building has its own outline from its volumes, roofs, chimneys and additions.
-- Real proportions, a little exaggerated: a steeper roof, a deeper eave, a bigger chimney, tall-and-narrow next to low-and-wide, at the strength called gentle. Real proportions read as a place; pushed further, the town reads as a toy. Deformation (lean, sag, bow) stays small, because it is what reads as caricature.
+- Real proportions, exaggerated: the base is real, and the push (a steeper roof, a deeper eave, a bigger chimney, tall-and-narrow next to low-and-wide) is welcome as long as the town reads as a place, never as a toy. The push is chosen by eye in the beauty corner, between the strengths called gentle and strong. Deformation (lean, sag, bow) stays small, because it is what reads as caricature.
 - A handmade feel from the seed: a lean, a sagging ridge, windows slightly out of line, soft bevels. The wobble lives inside each piece; edges stay on the grid.
 - Detail where history is. Calm walls; rich junctions, signs, trims and traces of change. Human scale, never miniature.
 - No round blobs. Shapes are considered and structured: planes, edges and silhouettes with intent, as a painter builds a tree or a roof, never a soft ball standing in for a form. Rounded, puffy shapes are the generic stylised look, not ours.
@@ -51,11 +51,12 @@ One style carries a range of moods: moody, cozy, alive, glam. The mood comes fro
 ## Views
 
 - The city view: a free perspective camera over the live town, navigated rather than staged. It belongs inside the town: most of the time at roof height among the houses, looking along lanes and streets, not at the town from a distance. Its tilt follows its zoom: steep and map-like when pulled out to navigate, the horizon in frame in the middle, just over the rooftops close in. Shots are composed: a near frame, a lit middle ground, a glimpse beyond (Another World, Cullen's here and there). Silhouettes, Lynch's paths, edges, districts, nodes and landmarks must read from it. The camera is designed early; it is part of the style.
+- Every look is judged from the game's camera. Target frames and sheets use the city view's own stops, lens and tilt, never a place the player cannot put the camera. The player turns the camera any way, so a place is finished in the round as far as the camera can see, and a composed frame is checked against a strip of headings. Close in, the camera sees fronts and ground as much as roofs, because that is where history is read.
 - Scene views: bounded, walkable, staged like a film or theatre set, every light motivated by a real source. Moving between views is a cut or a short move through a doorway.
 
 ## Open, decided by look tests
 
-- The city camera: its zoom stops, tilt and lens (LT1).
+- The city camera: its zoom stops, tilt and lens (LT1). First values, judged in the beauty corner: the close stop 12 to 15 m above the ground, just over the ridges, with the horizon in frame; the middle stop about 35 m; the far stop about 120 m, steep and map-like; a 35 mm lens close in (about 38° vertical), longer when pulled out, so the town flattens towards a map.
 - The shading model: painted ramp against plain URP Lit as a control, soft toon and graphic if needed (LT1).
 - The colour script through the day and the year (LT1).
 - How visible history should be: ghost signs, wear, mismatched additions (LT3).
