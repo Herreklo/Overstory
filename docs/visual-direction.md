@@ -25,7 +25,8 @@ Mostly painted timber, with brick, stone and concrete where era, purpose, wealth
 
 ## Light and colour
 
-- Light is the identity. Northern daylight (grey drizzle, low winter sun, a blue hour that lasts) and the light of the night (warm windows, street lamps by era, neon, stage light in haze).
+- Light is the identity. The coast's daylight (grey drizzle, low winter sun, a blue hour that lasts, and hot summer days of thirty degrees with warm, golden light) and the light of the night (warm windows, street lamps by era, neon, stage light in haze). Warm light belongs to this place as much as cold; the look is not "Nordic" grey.
+- Light is dramatic. In sun: deep shadow with little fill, coloured by the sky, and light rays where the sun streams past roofs and trees. At night: darker, with the town's own lights bright, casting real shadows, and lit rooms spilling warm light onto the lanes in front of them.
 - Light follows a colour script keyed to facts: the date and hour set the sun's height and colour, the weather sets the cloud. The west coast's year is part of the identity: December's short blue days, June's light nights, October's low gold under cloud. Strong colour is for the moments that earn it; ordinary light must stand on its own.
 - Drizzle is the default and the hardest test. The town must be beautiful in flat grey light, where the sky is the key light.
 - Shadow and ambient colour come from the light, never from the object. Shadows go cool, not black.
@@ -42,7 +43,7 @@ One style carries a range of moods: moody, cozy, alive, glam. The mood comes fro
 
 ## Views
 
-- The city view: a free perspective camera over the live town, navigated rather than staged. Its tilt follows its zoom: steep and map-like far out, the horizon and the landscape in frame in the middle, just over the rooftops close in. Silhouettes, Lynch's paths, edges, districts, nodes and landmarks must read from it. The camera is designed early; it is part of the style.
+- The city view: a free perspective camera over the live town, navigated rather than staged. It belongs inside the town: most of the time at roof height among the houses, looking along lanes and streets, not at the town from a distance. Its tilt follows its zoom: steep and map-like when pulled out to navigate, the horizon in frame in the middle, just over the rooftops close in. Shots are composed: a near frame, a lit middle ground, a glimpse beyond (Another World, Cullen's here and there). Silhouettes, Lynch's paths, edges, districts, nodes and landmarks must read from it. The camera is designed early; it is part of the style.
 - Scene views: bounded, walkable, staged like a film or theatre set, every light motivated by a real source. Moving between views is a cut or a short move through a doorway.
 
 ## Open, decided by look tests
@@ -53,6 +54,27 @@ One style carries a range of moods: moody, cozy, alive, glam. The mood comes fro
 - How visible history should be: ghost signs, wear, mismatched additions (LT3).
 - People: stylisation, faces, animation (LT2 and the people deep dive).
 
+## How the look is built
+
+One style, its rules shared by every element; each element learned from its own lead reference, built and judged one at a time.
+
+**The rules every element must pass:** deliberate planes and crisp silhouettes, never round blobs (Another World's discipline); realistically exaggerated proportions; three to five values per frame, reading in greyscale and at thumbnail size; a muted base, with light and air giving the colour; painted rather than textured surfaces, calm areas and detail at edges and junctions; one shading model and one air for everything; fewer things, each done well.
+
+**Lead reference per element:**
+
+| Element | Lead | Support |
+| --- | --- | --- |
+| Trees | Firewatch | Kazuo Oga (Ghibli backgrounds), Stålenhag |
+| Rocks and cliffs | Another World | Firewatch, Norwegian coast photographs |
+| Water | Kawase Hasui | Firewatch, Stålenhag |
+| Sky | Firewatch | Sohlberg, Astrup |
+| Roads and paths | Stålenhag | Disco Elysium |
+| Moss and ground cover | Kazuo Oga | Firewatch |
+| Buildings | Stålenhag, Hopper | the house generator |
+| The town at night | Hasui, Hopper | Stålenhag |
+
+**The process, per element:** a reference board first (`docs/references/<element>/`, images for private study only); a note on what makes the references work; a written target Øystein agrees with; a generator; a sheet in the three lights, in greyscale and at thumbnail size; checks and a fresh reviewer; Øystein's judgement. Only then does it join the town. A small fixed style scene (a few houses, a lane, a tree, rocks, water, sky, the same lights and cameras) shows whether each new element belongs with the rest.
+
 ## References
 
 What we take and leave from each is recorded in `docs/experiments.md` as look tests meet them.
@@ -60,12 +82,13 @@ What we take and leave from each is recorded in `docs/experiments.md` as look te
 | Reference | What interests us |
 | --- | --- |
 | Simon Stålenhag (lead) | Painterly realism, muted colour, atmosphere, the mundane 1980s Scandinavia |
+| Another World (Éric Chahi) | Shape from deliberate planes, silhouettes, a few values per screen, light as shape, composed shots |
 | SEASON: A letter to the future | Light-derived shadow colour, authored atmosphere |
 | Firewatch | Colour in depth layers, an artist-driven sky |
 | Sable | Fog as the first readability tool, outlines that fade |
 | Team Fortress 2 | Readable value and colour rules |
 | Townscaper, Tiny Glade | Harmony from rules, detail at junctions |
-| Kiki's Delivery Service | A Nordic harbour town, pushed proportions, life clutter |
+| Kiki's Delivery Service | A harbour town, pushed proportions, life clutter |
 | Disco Elysium | History visible in every wall |
 | Kentucky Route Zero | Theatrical staging and light |
 | Clay renders of a stylised European town | Flair from shape alone |
