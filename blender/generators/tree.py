@@ -36,12 +36,18 @@ import tree_growth as G  # noqa: E402
 # (2 by 2); per_node: cards on each leafy shoot, crossing about it; along: more along it where it is out in the light;
 # droop: how far a spray hangs from its shoot's line under its own weight; leaf_years: how many years a shoot keeps
 # bearing leaves; leaf_tips: the most shoot tips a stem may carry and still bear sprays itself (by the pipe model, so it
-# holds whatever the species' tip size); twig_r: the thinnest branch drawn as a tube (thinner ones are in the sprays);
-# bark: one bark tile round and along (m); grow_to: how long the timeline is grown (it contains every younger age).
+# holds whatever the species' tip size); draw_tips: the fewest shoot tips a branch carries to be drawn as a tube
+# (lighter ones are in the sprays), raised by draw_tips_per_m for each metre of the tree's height; reach: how far along
+# undrawn twigs a spray may hang from drawn wood;
+# bark: one bark tile round and along (m); grow_to: how long the timeline is grown (it contains every younger age);
+# sag: how much the branches give under their own weight (see sag); atlas: which painted leaves the cards carry (the
+# species' sprays, or its clumps: a painter's blocking of its foliage); hang: clumps hang from their shoots' ends,
+# sized for a twig's foliage on a grown tree (clump_full: the height at which they reach full size).
 PARTS = {
-    "birch": dict(card=(0.60, 0.38), cells=4, per_node=2, along=1, droop=0.7, leaf_years=25, leaf_tips=24, twig_r=0.004,
-                  bark=(0.30, 0.60), max_cards=6000, grow_to=80),
-    "spruce": dict(card=(0.60, 0.40), cells=4, per_node=2, droop=0.25, leaf_years=7, leaf_tips=30, twig_r=0.004,
+    "birch": dict(sag=0.05, taper=0.55, atlas="leaves", hang=False, card=(0.50, 0.48), card_u=(0.03, 0.97), cells=4,
+                  per_node=2, along=1, droop=0.7, leaf_years=999, leaf_tips=24, draw_tips=2.5, draw_tips_per_m=0.45, reach=0.9,
+                  bark=(0.30, 0.60), max_cards=4200, grow_to=80),
+    "spruce": dict(card=(0.60, 0.40), cells=4, per_node=2, droop=0.25, leaf_years=7, leaf_tips=30, draw_tips=3.0, draw_tips_per_m=0.45,
                    bark=(0.30, 0.50), max_cards=8000, grow_to=100),
 }
 
@@ -67,9 +73,82 @@ def read(species, seed, age, quality):
     t = G.cached(species, seed, max(parts["grow_to"], age), quality)
     alive = (t["born"] <= age) & ((t["died"] < 0) | (t["died"] > age))
     pipe = t["radius"][:, age].astype(np.float64)
-    return dict(parent=t["parent"], start=t["start"].astype(np.float64), end=t["end"].astype(np.float64),
-                born=t["born"], order=t["order"], r=drawn_radius(pipe), alive=alive,
-                tips=(pipe / G.SPECIES[species]["tip_radius"]) ** G.SPECIES[species]["pipe"])
+    tl = dict(parent=t["parent"], start=t["start"].astype(np.float64), end=t["end"].astype(np.float64),
+              born=t["born"], order=t["order"], r=drawn_radius(pipe), alive=alive,
+              tips=(pipe / G.SPECIES[species]["tip_radius"]) ** G.SPECIES[species]["pipe"])
+    sag(tl, pipe, parts, G.SPECIES[species]["tip_radius"])
+    return tl
+
+
+def sag(tl, pipe, parts, tip):
+    """The branches bent by their own weight at this age, as loaded cantilevers: each internode turns down by the
+    moment of everything beyond it (its foliage, by the pipe model's tips, and its wood) about its start, over its
+    stiffness (its radius to the fourth power), so thin twigs under leaves hang, long limbs arch out and the trunk
+    stands. Rotations carry down each branch to everything it bears; computed from the timeline at the age, so a
+    heavier, older limb sags more. The timeline's own record is left as it grew."""
+    k = parts.get("sag", 0.0)
+    if k <= 0:
+        return
+    parent, order, alive = tl["parent"], tl["order"], tl["alive"]
+    start, end = tl["start"], tl["end"]
+    n = len(parent)
+    seg = end - start
+    length = np.linalg.norm(seg, axis=1)
+    mid = (start + end) / 2
+    rr = np.maximum(pipe / tip, 1.0)                       # radius in tips' radii
+    own = np.where(alive, 0.15 * length * rr ** 2 / 40.0, 0.0)   # wood
+    kids_leafy = np.zeros(n)
+    W = own.copy()
+    S = own[:, None] * mid
+    # leaves: the shoots at the ends (no living child of their own) carry the foliage
+    has_kid = np.zeros(n, dtype=bool)
+    for i in range(1, n):
+        if alive[i]:
+            has_kid[parent[i]] = True
+    leaf = alive & ~has_kid
+    W += leaf * 1.0
+    S += (leaf * 1.0)[:, None] * end
+    for i in range(n - 1, 0, -1):
+        if alive[i]:
+            p = parent[i]
+            W[p] += W[i]
+            S[p] += S[i]
+    R = np.zeros((n, 3, 3))
+    R[:] = np.eye(3)
+    bent = np.zeros(n)                                    # how far each has turned down from how it grew
+    new_start, new_end = start.copy(), end.copy()
+    down = np.array([0.0, 0.0, -1.0])
+    for i in range(n):
+        if not alive[i]:
+            continue
+        p = parent[i]
+        Rp = R[p] if i > 0 else np.eye(3)
+        d = Rp @ seg[i]
+        ns = new_end[p] if i > 0 else start[i]
+        if order[i] > 0 and W[i] > 0:
+            # the moment about this internode's start: the load beyond it times its reach out from here
+            c = S[i] / W[i] - start[i]
+            reach = math.hypot(c[0], c[1])
+            curv = k * W[i] * reach / rr[i] ** 4
+            # a branch's own stiffness limits it: a few degrees an internode, about fifty along all of it
+            ang = min(curv * length[i], 0.10, max(0.0, 0.9 - bent[p]))
+            dn = d / max(np.linalg.norm(d), 1e-12)
+            axis = np.cross(dn, down)
+            na = np.linalg.norm(axis)
+            if ang > 1e-5 and na > 1e-6:
+                axis /= na
+                c_, s_ = math.cos(ang), math.sin(ang)
+                K = np.array([[0, -axis[2], axis[1]], [axis[2], 0, -axis[0]], [-axis[1], axis[0], 0]])
+                Ri = np.eye(3) + s_ * K + (1 - c_) * (K @ K)
+                Rp = Ri @ Rp
+                d = Ri @ d
+            bent[i] = bent[p] + ang
+        else:
+            bent[i] = bent[p] if i > 0 else 0.0
+        R[i] = Rp
+        new_start[i] = ns
+        new_end[i] = ns + d
+    tl["start"], tl["end"] = new_start, new_end
 
 
 # -- branches -------------------------------------------------------------------------------------------------------
@@ -114,7 +193,7 @@ def simplify(pts, radii, bend=0.14, thin=0.25):
 
 
 def sides_for(r):
-    return 10 if r >= 0.08 else 8 if r >= 0.03 else 6 if r >= 0.012 else 4 if r >= 0.005 else 3
+    return 10 if r >= 0.12 else 8 if r >= 0.06 else 6 if r >= 0.03 else 4 if r >= 0.015 else 3
 
 
 def frames(pts):
@@ -147,29 +226,41 @@ def frames(pts):
     return T, N, B
 
 
-def branch_mesh(tl, parts):
-    """Vertices, faces, per-loop UV0 and UV1, and the chain points (for the bake), for every branch thick enough."""
-    start, end, r = tl["start"], tl["end"], tl["r"]
+def branch_mesh(tl, parts, H):
+    """Vertices, faces, per-loop UV0 and UV1, and the chain points (for the bake), for every branch thick enough. The
+    thinnest drawn grows with the tree: from the street stop a twig thinner than about a pixel is the sprays' to carry."""
+    start, end, r, tips = tl["start"], tl["end"], tl["r"], tl["tips"]
+    draw = drawn_tips(parts, H)
     tile_round, tile_along = parts["bark"]
     V, F, UV0, UV1 = [], [], [], []
     samples = []                                         # (point, radius) along branches, for the bake
     for c in chains(tl):
-        if r[c[0]] < parts["twig_r"]:
+        if tips[c[0]] < draw:
+            continue
+        # spurs and short stubs are carried by the sprays, not drawn as tubes
+        if sum(np.linalg.norm(end[i] - start[i]) for i in c) < 0.12:
             continue
         pts = np.array([start[c[0]]] + [end[i] for i in c])
         rad = np.array([r[c[0]]] + [r[i] for i in c])
-        # stop where the branch gets thinner than the thinnest drawn: the sprays carry it on
+        tp = np.array([tips[c[0]]] + [tips[i] for i in c])
+        # stop where the branch carries too little to be drawn: the sprays carry it on
         stop = len(pts)
         for k in range(1, len(pts)):
-            if rad[k] < parts["twig_r"]:
+            if tp[k] < draw:
                 stop = k + 1
                 break
         pts, rad = pts[:stop], rad[:stop]
         if len(pts) < 2:
             continue
-        keep = simplify(pts, rad, bend=0.05 if rad[0] >= 0.04 else 0.10 if rad[0] >= 0.012 else 0.14)
+        # rings where a branch bends: tight on the trunk and limbs, looser the thinner it is (a kink in a thin branch
+        # is not seen from the street stop)
+        keep = simplify(pts, rad, bend=0.06 if rad[0] >= 0.08 else 0.12 if rad[0] >= 0.04 else 0.25)
         pts, rad = pts[keep], rad[keep]
         if c[0] == 0:
+            # the trunk thickens towards its foot (the wind's lever on the crown is greatest there; the pipe model alone
+            # gives a pole), then flares into the ground
+            crown_base = max(H * 0.35, 1e-3)
+            rad = rad * (1.0 + parts.get("taper", 0.0) * np.clip((crown_base - pts[:, 2]) / crown_base, 0.0, 1.0) ** 0.6)
             # the trunk's foot: below the ground a little, and flared
             pts = np.vstack([pts[0] - np.array([0.0, 0.0, 0.25]), pts])
             rad = np.concatenate([[rad[0] * 1.35], rad])
@@ -209,10 +300,25 @@ def branch_mesh(tl, parts):
 
 # -- leaves and masses -------------------------------------------------------------------------------------------------
 
-def leafy(tl, parts, age, seed):
+def drawn_tips(parts, H):
+    """How many shoot tips a branch must carry to be drawn as a tube: more on a bigger tree, seen from further off
+    (from the street stop a twig under a pixel wide is the sprays' to carry). By the pipe model, so it holds whatever
+    the species' tip size."""
+    return max(parts["draw_tips"], H * parts["draw_tips_per_m"])
+
+
+def leafy(tl, parts, age, seed, draw):
     """The nodes that carry a spray at the age: the living shoots younger than the species keeps leaves on, thin
-    enough, at most max_cards of them (a seeded choice if there are more)."""
-    ok = tl["alive"] & (age - tl["born"] < parts["leaf_years"]) & (tl["tips"] <= parts["leaf_tips"])
+    enough, and near enough drawn wood that the spray is seen to hang from it (no leaves in the air on twigs too thin
+    to draw), at most max_cards of them (a seeded choice if there are more)."""
+    parent, alive, tips = tl["parent"], tl["alive"], tl["tips"]
+    seglen = np.linalg.norm(tl["end"] - tl["start"], axis=1)
+    undrawn = np.zeros(len(parent))
+    for i in range(1, len(parent)):
+        if alive[i]:
+            undrawn[i] = 0.0 if tips[i] >= draw else undrawn[parent[i]] + seglen[i]
+    ok = alive & (age - tl["born"] < parts["leaf_years"]) & (tl["tips"] <= parts["leaf_tips"]) \
+        & (undrawn <= parts.get("reach", 0.9))
     ids = np.nonzero(ok)[0]
     if len(ids) > parts["max_cards"]:
         keep = sorted(ids, key=lambda i: h01(seed, i, 7))[:parts["max_cards"]]
@@ -258,6 +364,27 @@ def masses(points, groups, k):
     return out
 
 
+def spatial_masses(points, k, seed, iters=25):
+    """The crown cut into k compact masses by where its foliage is (k-means, seeded from the farthest points so it is
+    deterministic): a painter's masses are regions of the crown, each one plane of light or shade, never interleaved."""
+    pts = np.asarray(points)
+    if len(pts) <= k:
+        return np.arange(len(pts))
+    # farthest-point start: the top, then each next the farthest from those chosen
+    cent = [pts[int(np.argmax(pts[:, 2]))]]
+    for _ in range(1, k):
+        d = np.min(np.linalg.norm(pts[:, None, :] - np.array(cent)[None, :, :], axis=2), axis=1)
+        cent.append(pts[int(np.argmax(d))])
+    cent = np.array(cent)
+    for _ in range(iters):
+        which = np.argmin(np.linalg.norm(pts[:, None, :] - cent[None, :, :], axis=2), axis=1)
+        new = np.array([pts[which == m].mean(axis=0) if np.any(which == m) else cent[m] for m in range(k)])
+        if np.allclose(new, cent):
+            break
+        cent = new
+    return which
+
+
 def hulls(points, which, k):
     """Each mass as a convex hull dissolved into a few planes; a BVH tree for each."""
     import bmesh
@@ -297,9 +424,11 @@ def depth_in(trees, m, p):
 
 
 def leaf_mesh(tl, parts, age, seed, H, species):
-    ids = leafy(tl, parts, age, seed)
+    ids = leafy(tl, parts, age, seed, drawn_tips(parts, H))
     start, end = tl["start"], tl["end"]
     L, W = parts["card"]
+    # clumps are the size of a twig's foliage, smaller on a young tree
+    scale = min(max(H / parts.get("clump_full", 12.0), 0.6), 1.0)
     if len(ids) == 0:
         return np.zeros((0, 3)), [], [], [], [], [], None, None
     d = end[ids] - start[ids]
@@ -320,10 +449,8 @@ def leaf_mesh(tl, parts, age, seed, H, species):
         which = np.array([used.index(w) for w in which])
         k = len(used)
     else:
-        limb = limbs(tl)[ids]
         k = int(min(5, max(3, round(3 + (H - 6) / 6))))
-        k = min(k, len(set(limb.tolist())))
-        which = masses(centres, limb, max(k, 1))
+        which = spatial_masses(centres, k, seed)
     trees = hulls(np.vstack([centres, end[ids] + d * L]), np.concatenate([which, which]), max(k, 1))
     V, F, UV0, UV1, NR, COL = [], [], [], [], [], []
     for j, i in enumerate(ids):
@@ -335,8 +462,8 @@ def leaf_mesh(tl, parts, age, seed, H, species):
         # a little of the card's own way out of the mass, so neighbouring cards on one plane are not identical
         out = centres[j] - (trees[which[j]][1] if trees[which[j]] is not None else centres.mean(axis=0))
         out /= max(np.linalg.norm(out), 1e-9)
-        n_shade = nrm * 0.85 + out * 0.15
-        n_shade /= np.linalg.norm(n_shade)
+        # the mass's plane alone: a crown shades as its masses, never card by card
+        n_shade = nrm / max(np.linalg.norm(nrm), 1e-9)
         # the cards' planes hold the spray's line, the first turned about it to face out of its mass with a seeded
         # roll, the others crossing it
         face0 = n_shade - d[j] * np.dot(n_shade, d[j])
@@ -348,7 +475,11 @@ def leaf_mesh(tl, parts, age, seed, H, species):
         sky = float(np.clip((1.0 - depth) * (0.72 + 0.28 * nz), 0.12, 1.0))
         ground = float(np.clip(0.1 + 0.3 * max(-nz, 0.0) + 0.2 * depth, 0.0, 1.0))
         opn = float(1.0 - 0.6 * depth)
-        rank = 0.55 * h01(seed, i, 4) + 0.45 * depth          # the season's order: the most exposed first, then seeded
+        # two orders in the season: colour comes to the most exposed first; leaves fall first inside the crown and low
+        # in it, so by late October the structure shows through and the outer upper shoots hold on
+        rank = 0.55 * h01(seed, i, 4) + 0.45 * depth
+        zrel = float(np.clip(end[i][2] / max(H, 1e-3), 0.0, 1.0))
+        fall = 0.45 * (1.0 - depth) + 0.3 * zrel + 0.25 * h01(seed, i, 9)
         # the shoot's own sprays at its end, and deeper in a mass more along it: the short shoots a birch carries its
         # leaves on, so a mass is dense while the branches stay open
         extra = parts.get("along", 0) * (1 if sky > 0.55 else 0) + parts.get("along", 0) * (1 if sky > 0.8 else 0)
@@ -361,16 +492,36 @@ def leaf_mesh(tl, parts, age, seed, H, species):
                 f = 0.2 + 0.6 * h01(seed, i, 8, c)
                 foot = start[i] + (end[i] - start[i]) * f
             b = len(V)
-            V.extend([foot - side * W / 2, foot + side * W / 2, foot + side * W / 2 + d[j] * L,
-                      foot - side * W / 2 + d[j] * L])
+            if parts.get("hang"):
+                # a clump hangs from its shoot's end: its top (the atlas's twig) there, the clump below, turned to
+                # face out of its mass
+                up = np.array([0.0, 0.0, 1.0]) * 0.8 + d[j] * 0.2
+                up /= np.linalg.norm(up)
+                # turned off the mass's facing by a seeded angle, so many clumps are seen aslant, as leaves are
+                wob = np.array([h01(seed, i, 11, c), h01(seed, i, 12, c), h01(seed, i, 13, c)]) * 2.0 - 1.0
+                face = n_shade + wob * 0.75
+                face = face - up * np.dot(face, up)
+                if np.linalg.norm(face) < 1e-6:
+                    face = np.cross(up, [1.0, 0.0, 0.0])
+                face /= np.linalg.norm(face)
+                hs = np.cross(up, face)
+                rot = (h01(seed, i, 1, c) - 0.5) * math.radians(70)          # a seeded turn about the facing
+                hs, up = hs * math.cos(rot) + up * math.sin(rot), up * math.cos(rot) - hs * math.sin(rot)
+                k_ = scale * (0.6 + 0.65 * h01(seed, i, 14, c))           # sprays in a few sizes, overlapping
+                sl, sw = L * k_, W * k_
+                top = end[i] + up * sl * 0.03
+                V.extend([top - up * sl - hs * sw / 2, top - up * sl + hs * sw / 2, top + hs * sw / 2, top - hs * sw / 2])
+            else:
+                V.extend([foot - side * W / 2, foot + side * W / 2, foot + side * W / 2 + d[j] * L,
+                          foot - side * W / 2 + d[j] * L])
             F.append((b, b + 1, b + 2, b + 3))
             cell = int(h01(seed, i, 2, c) * parts["cells"]) % parts["cells"]
             cx, cy = (cell % 2) * 0.5, 1.0 - (cell // 2) * 0.5 - 0.5
-            u0, u1 = cx + 0.5 * 0.2, cx + 0.5 * 0.8
+            u0, u1 = cx + 0.5 * parts.get("card_u", (0.2, 0.8))[0], cx + 0.5 * parts.get("card_u", (0.2, 0.8))[1]
             if h01(seed, i, 3, c) < 0.5:
                 u0, u1 = u1, u0                                 # mirrored
             UV0.extend([(u0, cy), (u1, cy), (u1, cy + 0.5), (u0, cy + 0.5)])
-            UV1.extend([(rank, h01(seed, i, 5, c))] * 4)
+            UV1.extend([(rank, fall)] * 4)
             NR.extend([n_shade] * 4)
             COL.extend([(sky, ground, opn, 1.0)] * 4)
     return np.array(V), F, UV0, UV1, NR, COL, trees, which
@@ -420,7 +571,7 @@ def build(species, seed, age, quality=1.0, unity=None):
     H = float(tl["end"][tl["alive"]][:, 2].max())
     LV, LF, LUV0, LUV1, LN, LC, trees, which = leaf_mesh(tl, parts, age, seed, H, species)
     k = int(which.max()) + 1 if which is not None and len(which) else 0
-    BV, BF, BUV0, BUV1, samples = branch_mesh(tl, parts)
+    BV, BF, BUV0, BUV1, samples = branch_mesh(tl, parts, H)
     # the branches' bake: per loop, from the vertex's facing and the depth of the nearest chain point in the crown
     pts, deep = branch_bake(samples, BV, trees, k)
     from mathutils import kdtree

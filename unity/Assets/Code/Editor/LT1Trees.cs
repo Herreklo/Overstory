@@ -39,11 +39,15 @@ namespace Overstory.EditorTools
         /// <summary>Each species' look on 20 October: its leaves' colours and how far the season has gone.</summary>
         static readonly Dictionary<string, (Color green, Color turned, Color late, Vector4 season)> Species = new()
         {
-            // downy birch on the coast in late October: most leaves turned butter-yellow to gold, a third fallen, the
-            // first turned gone a dull brown; never red
-            ["birch"] = (new Color(0.27f, 0.38f, 0.12f), new Color(0.88f, 0.70f, 0.18f), new Color(0.58f, 0.45f, 0.20f),
-                         new Vector4(0.62f, 0.30f, 0f, 0f)),
+            // downy birch on the coast on 20 October: most leaves turned an ochre gold (greyed, never cadmium), the
+            // last still olive, the first a dull brown, never orange or red; nearly half fallen, from the inside and
+            // below, so the limbs show
+            ["birch"] = (new Color(0.38f, 0.41f, 0.17f), new Color(0.74f, 0.63f, 0.30f), new Color(0.46f, 0.38f, 0.23f),
+                         new Vector4(0.78f, 0.45f, 0f, 0f)),
         };
+
+        /// <summary>Which painted leaves each species' cards carry: its sprays, or its clumps.</summary>
+        static readonly Dictionary<string, string> Atlas = new() { ["birch"] = "leaves" };
 
         public static (Material bark, Material leaves) Materials(string species)
         {
@@ -60,8 +64,11 @@ namespace Overstory.EditorTools
                 }
                 m.shader = shader;
                 m.SetTexture("_Bark", AssetDatabase.LoadAssetAtPath<Texture2D>($"{dir}/{species}_bark.png"));
-                m.SetTexture("_Spray", AssetDatabase.LoadAssetAtPath<Texture2D>($"{dir}/{species}_leaves.png"));
+                // the painted leaves the species' cards carry (as blender/generators/tree.py PARTS[species]["atlas"])
+                string atlas = Atlas.TryGetValue(species, out var a) ? a : "leaves";
+                m.SetTexture("_Spray", AssetDatabase.LoadAssetAtPath<Texture2D>($"{dir}/{species}_{atlas}.png"));
                 m.SetFloat("_Leaves", leaves ? 1f : 0f);
+                m.SetFloat("_AlphaToMask", leaves ? 1f : 0f);
                 if (leaves) m.EnableKeyword("_OS_LEAVES"); else m.DisableKeyword("_OS_LEAVES");
                 if (Species.TryGetValue(species, out var s))
                 {
@@ -69,7 +76,11 @@ namespace Overstory.EditorTools
                     m.SetColor("_Turned", s.turned);
                     m.SetColor("_Late", s.late);
                     m.SetVector("_Season", s.season);
+                    m.SetFloat("_Hold", 0.6f);
                 }
+                // a birch's twigs and young branches are dark purple-brown up to two or three centimetres; the white
+                // bark comes with age on the limbs and the trunk
+                m.SetVector("_TwigRadius", new Vector4(0.012f, 0.045f, 0f, 0f));
                 m.enableInstancing = true;
                 EditorUtility.SetDirty(m);
                 return m;
@@ -173,6 +184,147 @@ namespace Overstory.EditorTools
                     }
         }
 
+        /// <summary>
+        /// The seasons sheet: the birch at 30 and 60 years in mid-May (leaves coming out, young green: the season's
+        /// "fallen" share read as "not yet out", the same order), July, 20 October and January (bare: the drawn branches
+        /// and the sprays' own twigs), all in the corner's 16:00 light, so only the tree changes.
+        ///
+        ///     Unity -batchmode -quit -projectPath unity -executeMethod Overstory.EditorTools.LT1Trees.Seasons
+        /// </summary>
+        public static void Seasons()
+        {
+            LT1Heart.Rigs();
+            LT1Heart.WriteStyles();
+            AssetDatabase.SaveAssets();
+            EditorSceneManager.OpenScene(HeartScene, OpenSceneMode.Single);
+            var stage = Object.FindAnyObjectByType<StreetStage>();
+            stage.clay = true;
+            stage.look = "P";
+            stage.style = AssetDatabase.LoadAssetAtPath<Style>($"{Lights}/Styles/Style_game.asset");
+            if (stage.skyMap != null)
+                stage.skyMap.Build();
+            stage.rig = AssetDatabase.LoadAssetAtPath<LightRig>($"{Lights}/Heart_1600-low-sun.asset");
+            var urp = (UniversalRenderPipelineAsset)GraphicsSettings.currentRenderPipeline;
+            float reach = urp.shadowDistance;
+            Vector3 sunStreet = stage.rig.SunDirectionStreet;
+            var spot = SunlitSpot(Near, StreetSpace.ToUnity(sunStreet).normalized, 17f);
+            var sunFlat = new Vector2(sunStreet.x, sunStreet.y).normalized;
+            var side = new Vector2(-sunFlat.y, sunFlat.x);
+            var root = new GameObject("Trees (seasons)").transform;
+            var shot = ScriptableObject.CreateInstance<CameraShot>();
+            string dir = Path.GetFullPath(Path.Combine(Application.dataPath, "..", "..", "reviews", "lt1", "trees", "seasons"));
+            Directory.CreateDirectory(dir);
+            var (bark, leaves) = Materials("birch");
+            var seasons = new (string name, Color green, Vector4 season)[]
+            {
+                ("05-may", new Color(0.46f, 0.56f, 0.17f), new Vector4(0f, 0.45f, 0f, 0f)),
+                ("07-july", new Color(0.25f, 0.37f, 0.11f), new Vector4(0f, 0f, 0f, 0f)),
+                ("10-october-20", new Color(0.36f, 0.40f, 0.15f), new Vector4(0.78f, 0.45f, 0f, 0f)),
+                ("01-january", new Color(0.27f, 0.38f, 0.12f), new Vector4(1f, 1.01f, 0f, 0f)),
+            };
+            try
+            {
+                using var rays = new Rays();
+                foreach (int age in new[] { 30, 60 })
+                {
+                    var tree = Place(root, "birch", 1, age, spot, 0f);
+                    float h = 0f;
+                    foreach (var r in tree.GetComponentsInChildren<MeshRenderer>())
+                        h = Mathf.Max(h, r.bounds.max.y - spot.z);
+                    float d = Mathf.Max(h * 1.55f, 9f);
+                    var off = sunFlat * d * 0.94f + side * d * 0.34f;
+                    shot.position = new Vector3(spot.x + off.x, spot.y + off.y, spot.z + 2.8f);
+                    shot.target = new Vector3(spot.x, spot.y, spot.z + h * 0.48f);
+                    shot.verticalFov = Lens28;
+                    shot.near = 0.3f;
+                    shot.far = 9000f;
+                    foreach (var (name, green, season) in seasons)
+                    {
+                        leaves.SetColor("_Green", green);
+                        leaves.SetVector("_Season", season);
+                        urp.shadowDistance = 160f;
+                        stage.shot = shot;
+                        stage.Apply();
+                        string file = Path.Combine(dir, $"birch-s1-a{age}-{name}.png");
+                        LT1Render.Still(stage.view, file, grey: true, eighth: true, msaa: 4);
+                        Debug.Log($"[LT1Trees] {file}");
+                    }
+                    Object.DestroyImmediate(tree);
+                }
+            }
+            finally
+            {
+                urp.shadowDistance = reach;
+                Materials("birch");   // back to 20 October
+                Object.DestroyImmediate(root.gameObject);
+                Object.DestroyImmediate(shot);
+            }
+        }
+
+        /// <summary>
+        /// The variety sheet: twelve birches of thirty years from twelve seeds on the same site, side by side in the
+        /// 16:00 light. Each must be its own tree and every one a downy birch of that age.
+        ///
+        ///     Unity -batchmode -quit -projectPath unity -executeMethod Overstory.EditorTools.LT1Trees.Variety
+        /// (after blender/generators/tree.py has assembled birch seeds 1 to 12 at 30)
+        /// </summary>
+        public static void Variety()
+        {
+            LT1Heart.Rigs();
+            LT1Heart.WriteStyles();
+            AssetDatabase.SaveAssets();
+            EditorSceneManager.OpenScene(HeartScene, OpenSceneMode.Single);
+            var stage = Object.FindAnyObjectByType<StreetStage>();
+            stage.clay = true;
+            stage.look = "P";
+            stage.style = AssetDatabase.LoadAssetAtPath<Style>($"{Lights}/Styles/Style_game.asset");
+            if (stage.skyMap != null)
+                stage.skyMap.Build();
+            stage.rig = AssetDatabase.LoadAssetAtPath<LightRig>($"{Lights}/Heart_1600-low-sun.asset");
+            var urp = (UniversalRenderPipelineAsset)GraphicsSettings.currentRenderPipeline;
+            float reach = urp.shadowDistance;
+            Vector3 sunStreet = stage.rig.SunDirectionStreet;
+            var spot = SunlitSpot(Near, StreetSpace.ToUnity(sunStreet).normalized, 17f);
+            var sunFlat = new Vector2(sunStreet.x, sunStreet.y).normalized;
+            var side = new Vector2(-sunFlat.y, sunFlat.x);
+            var root = new GameObject("Trees (variety)").transform;
+            var shot = ScriptableObject.CreateInstance<CameraShot>();
+            string dir = Path.GetFullPath(Path.Combine(Application.dataPath, "..", "..", "reviews", "lt1", "trees", "variety"));
+            Directory.CreateDirectory(dir);
+            try
+            {
+                using var rays = new Rays();
+                for (int seed = 1; seed <= 12; seed++)
+                {
+                    var tree = Place(root, "birch", seed, 30, spot, 0f);
+                    float h = 0f;
+                    foreach (var r in tree.GetComponentsInChildren<MeshRenderer>())
+                        h = Mathf.Max(h, r.bounds.max.y - spot.z);
+                    // the same camera for every seed, framed for a 12 m tree, so their sizes compare
+                    float d = 12f * 1.55f;
+                    var off = sunFlat * d * 0.94f + side * d * 0.34f;
+                    shot.position = new Vector3(spot.x + off.x, spot.y + off.y, spot.z + 2.8f);
+                    shot.target = new Vector3(spot.x, spot.y, spot.z + 12f * 0.48f);
+                    shot.verticalFov = Lens28;
+                    shot.near = 0.3f;
+                    shot.far = 9000f;
+                    urp.shadowDistance = 160f;
+                    stage.shot = shot;
+                    stage.Apply();
+                    string file = Path.Combine(dir, $"birch-s{seed}-a30.png");
+                    LT1Render.Still(stage.view, file, grey: false, eighth: true, msaa: 4);
+                    Debug.Log($"[LT1Trees] {file} ({h:F1} m)");
+                    Object.DestroyImmediate(tree);
+                }
+            }
+            finally
+            {
+                urp.shadowDistance = reach;
+                Object.DestroyImmediate(root.gameObject);
+                Object.DestroyImmediate(shot);
+            }
+        }
+
         /// <summary>A command-line filter: -moments 1600-low-sun, -ages 30,60, -views street (prefixes match).</summary>
         static bool Wanted(string flag, string value)
         {
@@ -217,7 +369,7 @@ namespace Overstory.EditorTools
             using var rays = new Rays();
             try
             {
-                foreach (var moment in new[] { "1600-low-sun", "1750-sea-fog" })
+                foreach (var moment in new[] { "1600-low-sun", "1750-sea-fog", "1300-drizzle" })
                 {
                     if (!Wanted("-moments", moment))
                         continue;
@@ -274,7 +426,7 @@ namespace Overstory.EditorTools
                             stage.shot = shot;
                             stage.Apply();
                             string file = Path.Combine(dir, $"{species}-s{seed}-a{age}-{view}.png");
-                            LT1Render.Still(stage.view, file, grey: true, eighth: true);
+                            LT1Render.Still(stage.view, file, grey: true, eighth: true, msaa: 4);
                             Debug.Log($"[LT1Trees] {file} (tree {h:F1} m)");
                         }
                         Object.DestroyImmediate(tree);

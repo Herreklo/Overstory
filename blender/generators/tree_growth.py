@@ -46,11 +46,12 @@ UP = np.array([0.0, 0.0, 1.0])
 # steer how much of the difference a shoot makes up per internode: a limb can sag at its base and turn up at its tip.
 # curl: how far each year's shoot bends its own seeded way, per internode (the leader's, then the branches'): a year's
 # shoot is an arc, and the years together make a limb's S-curves and a trunk's slow sweep (wobble alone averages out to
-# a straight line).
+# a straight line). variety: how far each tree's inherited habit strays from the species' (genotype).
 # shed: a branch dies when its buds' mean light has been under this share of open sky for so many years running (the
 # species' shade tolerance), or when it has no buds left. long_min: a side bud makes a long shoot only with resource for
 # so many internodes; below it, it stays a short shoot that only bears leaves (most of a birch's buds), so the year's
-# growth goes into a few limbs and the crown stays open. self_prune: the share of the tree's height, young and grown,
+# growth goes into a few limbs and the crown stays open. spurs: such a short shoot's length (m), kept as a node that
+# bears leaves while its bud lives and gets light (a birch's leaves are mostly on spurs along its limbs). self_prune: the share of the tree's height, young and grown,
 # below which it sheds its limbs (birch prunes itself; an open-grown spruce keeps its skirt). masses: the crown's plan
 # of masses, a painter's blocking of the crown, seeded per tree and scaled with its height: one crowning the top
 # (height, half-width, half-height as shares of the tree's height) and two to four lower and to the sides (heights,
@@ -71,22 +72,46 @@ SPECIES = {
         envelope="cone", width=(0.34, 0.17), crown_base=(0.0, 0.03), self_prune=(0.0, 0.0),
         shed=(0.10, 4), bud_life=3, tip_radius=0.0032, pipe=2.2, light=(0.30, 0.25, 6),
     ),
-    # Downy birch, Betula pubescens. A leader while young, then the crown opens into a few ascending limbs and a mass
-    # of fine twigs; alternate buds (2/5 phyllotaxis); an airy, irregular crown, not weeping (that is the silver birch);
+    # Downy birch, Betula pubescens. A central stem well up into the crown all its life, the crown broadening on its
+    # side limbs and a mass of fine twigs; alternate buds (2/5 phyllotaxis); an airy, irregular crown, not weeping (that is the silver birch);
     # it needs light and sheds its lower branches early. On a good site on this coast about 6 m at 15 years, 11 at 30
     # and 15 at 60; few live past 100.
     "birch": dict(
-        kind="broadleaf", height=16.0, growth=(0.050, 1.5), leader_until=35,
-        internode=0.22, shoot=0.35, full_size=3.0, alpha=2.0, apical=(0.58, 0.50, 40),
+        kind="broadleaf", height=16.0, growth=(0.050, 1.5), leader_until=999,
+        internode=0.22, shoot=0.35, full_size=3.0, alpha=2.0, apical=(0.60, 0.56, 40),
         phyllotaxis=144.0, lateral_angle=42.0, max_order=4, long_min=2.2,
-        setpoint=((90, 90), (55, 35), (30, 10), (10, -5), (-5, -20), (-15, -30)), steer=0.15, light_pull=0.25,
-        jitter=0.08, curl=(1.3, 5.0),
-        envelope="dome", width=(0.30, 0.36), crown_base=(0.0, 0.0), self_prune=(0.05, 0.24),
+        setpoint=((90, 90), (76, 52), (44, 14), (16, -8), (-8, -24), (-15, -30)), steer=0.15, light_pull=0.25,
+        light_up=0.3, jitter=0.08, curl=(1.3, 5.0), variety=1.0,
+        envelope="dome", width=(0.24, 0.29), lobing=0.45, crown_base=(0.0, 0.0), self_prune=(0.05, 0.24),
         masses=dict(top=(0.84, 0.19, 0.15), sides=(2, 4), side_z=(0.40, 0.68), side_off=(0.17, 0.27),
                     side_r=(0.12, 0.17), outside=0.6, pull=0.3),
-        shed=(0.30, 2), bud_life=6, tip_radius=0.0075, pipe=2.4, light=(0.22, 0.25, 2),
+        shed=(0.30, 2), bud_life=10, tip_radius=0.0045, spurs=0.025, pipe=2.4, light=(0.15, 0.25, 2),
     ),
 }
+
+
+def genotype(sp, seed):
+    """The species' habit as this one tree inherited it: a few per cent on its height and growth, its spread, its
+    limbs' angles, its leader's sweep and its outline's lobing, seeded. Non-semantic: it claims nothing about the tree's
+    history, only that no two birches are built alike."""
+    rng = random.Random(f"{VERSION}:genotype:{seed}")
+    g = dict(sp)
+    v = sp.get("variety", 0.0)
+    if v <= 0:
+        return g
+    g["height"] = sp["height"] * (1.0 + rng.uniform(-0.08, 0.08) * v)
+    k, c = sp["growth"]
+    g["growth"] = (k * (1.0 + rng.uniform(-0.1, 0.1) * v), c)
+    g["width"] = tuple(w * (1.0 + rng.uniform(-0.15, 0.15) * v) for w in sp["width"])
+    tilt_ = rng.uniform(-7.0, 7.0) * v
+    g["setpoint"] = tuple((hi, lo) if i == 0 else (hi + tilt_, lo + tilt_) for i, (hi, lo) in enumerate(sp["setpoint"]))
+    lc, bc = sp["curl"]
+    g["curl"] = (lc * rng.uniform(1.0 - 0.6 * v, 1.0 + 0.9 * v), bc * (1.0 + rng.uniform(-0.2, 0.2) * v))
+    if "lobing" in sp:
+        g["lobing"] = sp["lobing"] * (1.0 + rng.uniform(-0.3, 0.3) * v)
+    lo_, hi_, yrs = sp["apical"]
+    g["apical"] = (lo_ + rng.uniform(-0.015, 0.015) * v, hi_ + rng.uniform(-0.015, 0.015) * v, yrs)
+    return g
 
 
 def height_curve(sp, year, quality=1.0):
@@ -110,6 +135,7 @@ class Node:
     died: int | None = None      # the year it was shed or cut
     radius: dict = field(default_factory=dict)   # year -> radius (m), written every year it lives
     children: list = field(default_factory=list)
+    spur: bool = False           # a short shoot: a spur a few centimetres long that only bears leaves
 
 
 @dataclass(eq=False)
@@ -125,6 +151,7 @@ class Bud:
     resource: float = 0.0
     way: np.ndarray = field(default_factory=lambda: np.zeros(3))
     vigour: float = 1.0          # a weak bud (a conifer's buds along the shoot) makes less of its share
+    spurred: bool = False        # it has made its short shoot and waits on it
 
 
 class Timeline:
@@ -159,6 +186,7 @@ class Timeline:
             born=np.array([nd.born for nd in self.nodes], dtype=np.int16),
             died=np.array([-1 if nd.died is None else nd.died for nd in self.nodes], dtype=np.int16),
             order=np.array([nd.order for nd in self.nodes], dtype=np.int8),
+            spur=np.array([nd.spur for nd in self.nodes], dtype=bool),
             radius=radius,
         )
         return path
@@ -204,9 +232,21 @@ def in_mass(p, plan, H):
     return best, which, (way / n if n > 1e-9 else way)
 
 
-def envelope_ok(p, sp, H, H_full):
-    """Inside the species' crown for a tree of height H that will grow to H_full. Simple solids for now; the
-    hand-made masses replace them."""
+def lobes(sp, seed):
+    """The crown bound's seeded lobes for one tree, the same all its life: (waves round the trunk, share, phase, how
+    the lobe drifts with height). Empty for a species without lobing."""
+    a = sp.get("lobing", 0.0)
+    if a <= 0:
+        return []
+    rng = random.Random(f"{VERSION}:lobes:{seed}")
+    ks = [(2, 0.45), (3, 0.35), (5, 0.20)]
+    return [(k, a * w * rng.uniform(0.7, 1.3), rng.uniform(0, 2 * math.pi), rng.uniform(-3.0, 3.0)) for k, w in ks]
+
+
+def envelope_ok(p, sp, H, H_full, lobing=()):
+    """Inside the species' crown for a tree of height H that will grow to H_full: a loose bound whose radius swells
+    and narrows round the trunk and with height by the tree's seeded lobes, so no two crowns share an outline and none
+    is a smooth oval."""
     H = max(H, 0.05)
     m = min(H / H_full, 1.0)                              # how grown the tree is
     width = sp["width"][0] + (sp["width"][1] - sp["width"][0]) * m
@@ -218,8 +258,11 @@ def envelope_ok(p, sp, H, H_full):
     if sp["envelope"] == "cone":
         return r <= width * (1.04 - z) / (1.04 - base) + 0.03 if z >= base else r <= 0.03
     if sp["envelope"] == "dome":
-        # a loose bound on height and spread only, rounded over the top: the crown takes its form from the light,
+        # a loose bound on height and spread, rounded over the top, lobed: the crown takes its form from the light,
         # its clear trunk from shedding
+        if lobing:
+            th = math.atan2(p[1], p[0])
+            width *= max(0.35, 1.0 + sum(a * math.sin(k * th + ph + c * z) for k, a, ph, c in lobing))
         zc = 0.5
         if z <= zc:
             return r <= width
@@ -368,7 +411,7 @@ def grow(species, seed, years=60, site=(), quality=1.0, wind=(0.0, 0.0, 0.0)):
     shelter (1 a good, sheltered garden; about 0.4 a birch on a knoll in the sea wind). wind: the prevailing wind at
     the site (x, y the way it blows, z its strength, 0 sheltered to 1 the open coast): every shoot leans with it, so
     an exposed tree leans away from the sea."""
-    sp = SPECIES[species]
+    sp = genotype(SPECIES[species], seed)
     tl = Timeline(species, seed, quality)
     H_full = sp["height"] * quality
     extinction, own, foliage_years = sp["light"]
@@ -383,6 +426,7 @@ def grow(species, seed, years=60, site=(), quality=1.0, wind=(0.0, 0.0, 0.0)):
     tl.nodes.append(first)
     buds = [Bud(0, first.end.copy(), UP.copy(), 0, True, "0", 0)]
     plan = masses(sp, seed)
+    lobing = lobes(sp, seed)
     w = np.array([wind[0], wind[1], 0.0])
     push = (w / np.linalg.norm(w) * wind[2] * 0.06) if np.linalg.norm(w) > 1e-9 else np.zeros(3)
     starved = {}                                          # branch base -> years in a row its buds have been starved
@@ -499,9 +543,19 @@ def grow(species, seed, years=60, site=(), quality=1.0, wind=(0.0, 0.0, 0.0)):
             n = min(n, 8)
             if n <= 0:
                 if year - bd.born <= sp["bud_life"] or leader:
+                    if sp.get("spurs") and not bd.apical and not bd.spurred and bd.order > 0:
+                        # a side bud that does not make a long shoot makes a short one: a spur that bears leaves for
+                        # as long as the bud lives and gets light, and can still grow out if it is freed
+                        end = bd.pos + bd.dir * sp["spurs"]
+                        nd = Node(len(tl.nodes), bd.node, bd.pos.copy(), end, year, bd.order, spur=True)
+                        nd.radius[year] = sp["tip_radius"]
+                        tl.nodes[bd.node].children.append(nd.id)
+                        tl.nodes.append(nd)
+                        bd.node, bd.pos, bd.spurred = nd.id, end.copy(), True
                     kept.append(bd)
                 continue
-            new = shoot(tl, sp, bd, n, exact or length, year, H, H_full, rng, exact=exact is not None, push=push)
+            new = shoot(tl, sp, bd, n, exact or length, year, H, H_full, rng, exact=exact is not None, push=push,
+                        lobing=lobing)
             if new is None:
                 bd.born = year                      # at the crown's edge: a living shoot that cannot extend
                 kept.append(bd)
@@ -528,7 +582,7 @@ def grow(species, seed, years=60, site=(), quality=1.0, wind=(0.0, 0.0, 0.0)):
     return tl
 
 
-def shoot(tl, sp, bd, n, length, year, crown_h, H_full, rng, exact=False, push=np.zeros(3)):
+def shoot(tl, sp, bd, n, length, year, crown_h, H_full, rng, exact=False, push=np.zeros(3), lobing=()):
     """Grow n internodes of about the length from a bud; return the new buds, or None if it could not grow at all."""
     nodes = tl.nodes
     parent_id, pos, d = bd.node, bd.pos.copy(), bd.dir.copy()
@@ -540,7 +594,9 @@ def shoot(tl, sp, bd, n, length, year, crown_h, H_full, rng, exact=False, push=n
     new_buds = []
     made = 0
     for i in range(n):
-        toward = bd.way
+        # towards the light: a leader all of it; a side shoot mostly its sideways part (the crown leans to the open
+        # side; how steeply a branch climbs is its set-point's, not the bright zenith's)
+        toward = bd.way if order == 0 else bd.way * np.array([1.0, 1.0, sp.get("light_up", 1.0)])
         jitter = np.array([rng.gauss(0, 1), rng.gauss(0, 1), rng.gauss(0, 1)]) * sp["jitter"]
         # steer towards the order's set-point angle for this height in the crown, then towards light, then a wobble
         set_to = lo + (hi - lo) * min(max(pos[2] / max(crown_h, 1e-3), 0.0), 1.0)
@@ -549,7 +605,7 @@ def shoot(tl, sp, bd, n, length, year, crown_h, H_full, rng, exact=False, push=n
         d2 = rotate(d2, curl_axis, curl)
         d2 = unit(d2 + sp["light_pull"] * toward + jitter + push)
         end = pos + d2 * length * (1.0 if exact else 0.85 + 0.3 * rng.random())
-        if not envelope_ok(end, sp, crown_h * 1.02, H_full):
+        if not envelope_ok(end, sp, crown_h * 1.02, H_full, lobing):
             break
         d = d2
         nd = Node(len(nodes), parent_id, pos, end, year, order)

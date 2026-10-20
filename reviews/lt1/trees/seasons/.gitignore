@@ -1,0 +1,3 @@
+# Full-size frames and greyscale copies are rebuilt by LT1Trees.Seasons; sheets and one-eighth copies are kept.
+*.png
+!*-eighth.png

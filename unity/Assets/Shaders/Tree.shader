@@ -12,11 +12,12 @@ Shader "Overstory/Tree"
     Properties
     {
         [Toggle(_OS_LEAVES)] _Leaves ("Leaf cards", Float) = 0
+        [Toggle] _AlphaToMask ("Leaves: alpha to coverage (smooth edges under MSAA)", Float) = 0
         _Bark ("Bark (r lightness, g lenticels, b fissured foot)", 2D) = "white" {}
         _BarkLight ("Bark: the white of the limbs", Color) = (0.86, 0.85, 0.82, 1)
         _BarkBand ("Bark: its grey bands and lenticels", Color) = (0.55, 0.53, 0.50, 1)
         _Twig ("Twigs", Color) = (0.20, 0.11, 0.09, 1)
-        _TwigRadius ("Twig to bark: x radius all twig, y radius all bark (m)", Vector) = (0.006, 0.03, 0, 0)
+        _TwigRadius ("Twig to bark: x radius all twig, y radius all bark (m)", Vector) = (0.012, 0.045, 0, 0)
         _Foot ("Foot: x trunk radius of a full foot, y its height per metre of radius, z strength", Vector) = (0.16, 6.0, 1.0, 0)
         _FootPlate ("Foot: plates", Color) = (0.36, 0.35, 0.33, 1)
         _FootCrack ("Foot: fissures", Color) = (0.06, 0.055, 0.05, 1)
@@ -27,6 +28,9 @@ Shader "Overstory/Tree"
         _Season ("Season: x turned (0 to 1), y fallen (0 to 1)", Vector) = (0.6, 0.25, 0, 0)
         _Through ("Light through the leaves (rgb tint, a strength)", Color) = (1.0, 0.85, 0.45, 0.9)
         _Cutoff ("Coverage cut", Range(0, 1)) = 0.5
+        _Hold ("Leaves: how much of their own hue they hold in dim light (dusk)", Range(0, 1)) = 0.6
+        _MassShadow ("Leaves: how far out towards the sun their shadow is read (m)", Float) = 3.0
+        _InnerGlow ("Leaves: the light bounced and passed inside a sunlit crown", Range(0, 2)) = 0.7
     }
 
     HLSLINCLUDE
@@ -48,6 +52,9 @@ Shader "Overstory/Tree"
         float4 _Season;
         half4 _Through;
         half _Cutoff;
+        half _Hold;
+        float _MassShadow;
+        half _InnerGlow;
     CBUFFER_END
 
     TEXTURE2D(_Bark);  SAMPLER(sampler_Bark);
@@ -55,21 +62,26 @@ Shader "Overstory/Tree"
 
     #include "StreetSurface.hlsl"
 
-    // A leaf's place in the season: its card's rank and its own id, so within a card some leaves go before others and
-    // across the tree the most exposed cards go first. The same leaves first every year.
+    // A leaf's place in the season's colour: mostly its clump's rank, so a clump turns as one (as a painter sees it),
+    // a little its own id; across the tree the most exposed clumps go first. The same leaves first every year.
     half OS_LeafOrder(half rank, half id)
     {
-        return saturate(rank * 0.6h + frac(id * 7.31h) * 0.4h);
+        return saturate(rank * 0.85h + frac(id * 7.31h) * 0.15h);
     }
 
-    // The leaves' coverage at a point, with the fallen ones gone; twigs stay. Returns the atlas sample.
+    // The leaves' coverage at a point: a clump falls as a whole, by its own order (first inside the crown and low in
+    // it; leaf by leaf, at a pixel or two a leaf, reads as speckle); twigs stay.
+    half OS_LeafCover(half4 m, float2 card)
+    {
+        bool leaf = m.r > 0.03h;
+        return leaf && (half)card.y < (half)_Season.y ? 0.0h : m.a;
+    }
+
+    // Cut at the coverage threshold (depth, shadows): returns the atlas sample.
     half4 OS_LeafClip(float2 uv, float2 card)
     {
         half4 m = SAMPLE_TEXTURE2D(_Spray, sampler_Spray, uv);
-        bool leaf = m.r > 0.03h;
-        half order = OS_LeafOrder((half)card.x, m.r);
-        half fallen = leaf && order < (half)_Season.y ? 1.0h : 0.0h;
-        clip(m.a - _Cutoff - fallen * 2.0h);
+        clip(OS_LeafCover(m, card) - _Cutoff);
         return m;
     }
 
@@ -84,11 +96,11 @@ Shader "Overstory/Tree"
         half order = OS_LeafOrder((half)extra.x, m.r);
         // turning: each leaf from green to the species' autumn colour as the season passes its order, the first to
         // turn going on to brown; a seeded touch of hue per card
-        half t = smoothstep(order - 0.08h, order + 0.08h, (half)_Season.x);
-        half late = smoothstep(order + 0.42h, order + 0.6h, (half)_Season.x);
+        half t = smoothstep(order - 0.2h, order + 0.2h, (half)_Season.x);
+        half late = smoothstep(order + 0.6h, order + 0.75h, (half)_Season.x);
         half3 c = lerp(lerp(_Green.rgb, _Turned.rgb, t), _Late.rgb, late);
-        half k = (half)extra.y - 0.5h;
-        c *= 1.0h + half3(0.10h, 0.04h, -0.08h) * k;
+        half k = frac((half)extra.x * 13.7h) - 0.5h;
+        c *= 1.0h + half3(0.05h, 0.02h, -0.04h) * k;
         c *= 0.5h + 0.5h * m.g;
         s.albedo = m.r > 0.03h ? c : _Twig.rgb * (0.6h + 0.4h * m.g);
         s.smoothness = 0.18h;
@@ -121,6 +133,7 @@ Shader "Overstory/Tree"
             Name "ForwardLit"
             Tags { "LightMode" = "UniversalForward" }
             Cull Off
+            AlphaToMask [_AlphaToMask]
 
             HLSLPROGRAM
             #pragma target 3.5
@@ -193,7 +206,12 @@ Shader "Overstory/Tree"
                 UNITY_SETUP_INSTANCE_ID(input);
                 UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(input);
             #if defined(_OS_LEAVES)
-                half4 m = OS_LeafClip(input.uv, input.extra);
+                half4 m = SAMPLE_TEXTURE2D(_Spray, sampler_Spray, input.uv);
+                // coverage sharpened to a pixel's width, for alpha to coverage under MSAA (Castano): crisp edges that
+                // do not fizz; without MSAA it falls back to the cut
+                half cover = OS_LeafCover(m, input.extra);
+                half alpha = saturate((cover - _Cutoff) / max(fwidth(cover), 1e-4h) + 0.5h);
+                clip(alpha - 0.004h);
                 // a card shades as its mass: the same normal seen from either side
                 half3 n = normalize(input.normalWS);
             #else
@@ -207,14 +225,51 @@ Shader "Overstory/Tree"
                 id.normalWS = s.normalWS;
                 id.viewDirectionWS = GetWorldSpaceNormalizeViewDir(input.positionWS);
             #if defined(MAIN_LIGHT_CALCULATE_SHADOWS)
+            #if defined(_OS_LEAVES)
+                // the sun's shadow read a little out from the leaves towards the light: what shades a mass is the
+                // houses and the other masses, not the next card (card by card it is speckle)
+                id.shadowCoord = TransformWorldToShadowCoord(input.positionWS + _OS_SunDir.xyz * _MassShadow);
+            #else
                 id.shadowCoord = TransformWorldToShadowCoord(input.positionWS);
+            #endif
             #endif
                 id.normalizedScreenSpaceUV = GetNormalizedScreenSpaceUV(input.positionCS);
                 id.shadowMask = half4(1, 1, 1, 1);
                 OSBake b = OS_ReadBake(input.bake);
                 b.town = OS_TownSky(input.positionWS, s.normalWS);
 
-            #if defined(_OS_LOOK_B)
+            #if defined(_OS_LEAVES)
+                // leaves lit as a painter lights foliage: from the mass's plane, two families (the sun's and the sky's)
+                // with a narrow half-tone where the plane turns from the light, a warm band at the turn, no brush noise;
+                // the sun's shadow only from what stands outside the mass (read three metres towards the light)
+                half3 colour;
+                {
+                    Light sun = GetMainLight(id.shadowCoord, id.positionWS, half4(1, 1, 1, 1));
+                    half ndl = dot(n, sun.direction);
+                    half shadow = sun.shadowAttenuation * OS_CloudLight(input.positionWS, sun.direction);
+                    half lit = smoothstep(-0.12h, 0.3h, ndl) * shadow;
+                    half3 sky = OS_SkyTerm(b, n);
+                    half skyLum = dot(sky, half3(0.2126h, 0.7152h, 0.0722h));
+                    sky = max(skyLum + (sky - skyLum) * _OS_ShadowChroma, 0.0h);
+                    colour = s.albedo * sky + s.albedo * sun.color * lit;
+                    // the inside of a sunlit crown glows: light bounced leaf to leaf and through the leaves, warm with
+                    // their colour, so its shade sits near half the lit side, not a hole (only while the crown has sun)
+                    half3 glowc = lerp(s.albedo, dot(s.albedo, half3(0.2126h, 0.7152h, 0.0722h)).xxx, 0.45h);
+                    colour += s.albedo * glowc * sun.color * _InnerGlow * shadow * (1.0h - smoothstep(-0.12h, 0.3h, ndl));
+                    half turn = saturate(1.0h - abs(ndl - 0.09h) * 9.0h) * shadow * 0.6h;
+                    colour += s.albedo * sun.color * _OS_EdgeTint.rgb * _OS_EdgeTint.a * turn;
+                    // lamps and lit windows nearby
+                #if defined(_ADDITIONAL_LIGHTS)
+                    uint count = GetAdditionalLightsCount();
+                    InputData inputData = id;
+                    half4 shadowMask = half4(1, 1, 1, 1);
+                    LIGHT_LOOP_BEGIN(count)
+                        Light l = GetAdditionalLight(lightIndex, id.positionWS, shadowMask);
+                        colour += s.albedo * l.color * l.distanceAttenuation * saturate(dot(n, l.direction) * 0.5h + 0.5h);
+                    LIGHT_LOOP_END
+                #endif
+                }
+            #elif defined(_OS_LOOK_B)
                 half3 colour = OS_ShadeB(id, s, b, input.positionWS);
             #elif defined(_OS_LOOK_D)
                 half3 colour = OS_ShadeD(id, s, b, input.positionWS);
@@ -233,9 +288,20 @@ Shader "Overstory/Tree"
                 colour += s.albedo * _Through.rgb * main.color * through * m.b * _Through.a * isLeaf;
                 // and the sky's own light through a thin leaf, from the side it does not face: shaded leaves glow a little
                 colour += s.albedo * OS_SkyFor(-n) * b.sky * b.town * m.b * 0.35h * isLeaf;
+                // a painter's hold on local colour: in dim or strongly coloured light (dusk, deep shade) the leaves
+                // keep some of their own hue at the light's brightness, so a yellow birch reads yellow, never as a
+                // green summer tree; the more the dimmer
+                half lum = dot(colour, half3(0.2126h, 0.7152h, 0.0722h));
+                half3 own = s.albedo / max(dot(s.albedo, half3(0.2126h, 0.7152h, 0.0722h)), 1e-3h) * lum;
+                // only as the light fails (dusk): by day the shade takes the sky's blue, as a painter's does
+                colour = lerp(colour, own, _Hold * (1.0h - saturate(lum * 5.0h)));
             #endif
                 colour = OS_Atmosphere(colour, input.positionWS);
+            #if defined(_OS_LEAVES)
+                outColor = half4(colour, alpha);
+            #else
                 outColor = half4(colour, 1);
+            #endif
             #ifdef _WRITE_RENDERING_LAYERS
                 outRenderingLayers = EncodeMeshRenderingLayer();
             #endif

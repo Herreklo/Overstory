@@ -119,9 +119,12 @@ namespace Overstory.EditorTools
             }
         }
 
-        public static void Still(Camera cam, string file, bool grey = true, bool eighth = false)
+        /// <param name="msaa">samples per pixel, as the game's PC pipeline renders them (4); 1 for the frames judged
+        /// before trees, which stay as they were</param>
+        public static void Still(Camera cam, string file, bool grey = true, bool eighth = false, int msaa = 1)
         {
-            var big = new RenderTexture(Width * Super, Height * Super, 24, RenderTextureFormat.ARGB32, RenderTextureReadWrite.sRGB);
+            var big = new RenderTexture(Width * Super, Height * Super, 24, RenderTextureFormat.ARGB32, RenderTextureReadWrite.sRGB)
+                { antiAliasing = msaa };
             var small = new RenderTexture(Width, Height, 0, RenderTextureFormat.ARGB32, RenderTextureReadWrite.sRGB);
             big.Create();
             small.Create();

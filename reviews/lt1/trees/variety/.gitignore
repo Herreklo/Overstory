@@ -1,0 +1,3 @@
+# Full-size frames are rebuilt by LT1Trees.Variety; sheets and one-eighth copies are kept.
+*.png
+!*-eighth.png

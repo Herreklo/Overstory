@@ -84,7 +84,7 @@ def _twig(rng, x0, y0, ang, length, curl, n=14):
 
 
 def paint_spray(rng, kind):
-    """One spray in one cell: a mother twig with side twiglets fanning forward, short shoots of two or three leaves
+    """One spray in one cell: a mother twig with side twiglets fanning wide, short shoots of two or three leaves
     along all of them, the long shoots' leaves at their tips, smaller towards them. Returns (id, light, thick, cover)
     supersampled."""
     n = CELL
@@ -94,11 +94,11 @@ def paint_spray(rng, kind):
     thick = np.zeros((n, n), np.float32)
     cover = np.zeros((n, n), np.float32)
 
-    sides = {"spray": 4, "dense": 5, "open": 3, "tip": 2}[kind]
+    sides = {"spray": 5, "dense": 6, "open": 4, "tip": 3}[kind]
     spacing = {"spray": 0.024, "dense": 0.019, "open": 0.032, "tip": 0.026}[kind] * PX
     up = -math.pi / 2                                   # image y runs down: the twig grows up the card
     mother = _twig(rng, n * (0.5 + rng.uniform(-0.04, 0.04)), n * 0.97, up + rng.uniform(-0.12, 0.12),
-                   n * 0.86, rng.uniform(-0.35, 0.35))
+                   n * 0.80, rng.uniform(-0.35, 0.35))
     twigs = [(mother, 1.0)]
     for k in range(sides):
         t = 0.2 + 0.6 * (k + rng.uniform(0.0, 0.6)) / sides
@@ -106,8 +106,8 @@ def paint_spray(rng, kind):
         (x0, y0), (x1, y1) = mother[i], mother[i + 1]
         along = math.atan2(y1 - y0, x1 - x0)
         side = 1 if k % 2 else -1
-        a = along + side * math.radians(rng.uniform(32, 52))
-        L = n * rng.uniform(0.18, 0.34) * (1.0 - 0.35 * t)
+        a = along + side * math.radians(rng.uniform(44, 70))
+        L = n * rng.uniform(0.26, 0.42) * (1.0 - 0.3 * t)
         twigs.append((_twig(rng, x0, y0, a, L, -side * rng.uniform(0.2, 0.5), 10), 0.7))
 
     # the leaves: along each twig a short shoot every few centimetres, alternately left and right
@@ -208,6 +208,131 @@ def leaves(path):
     return write_png(path, (np.clip(atlas, 0, 1) * 255 + 0.5).astype(np.uint8))
 
 
+# -- clumps: the leaves as a painter blocks them -------------------------------------------------------------------------
+
+CLUMP = 1.0          # metres down a spray card (and across its cell; the card itself is half as wide)
+CPX = CELL / CLUMP   # pixels per metre while painting
+
+
+def _leaf(arrs, xs, ys, bx, by, ang, length, fore, lid, g):
+    """One birch leaf on its stalk, painted into the masks."""
+    leaf_id, light, thick, cover = arrs
+    n = xs.shape[0]
+    stalk = 0.28 * length
+    ca, sa = math.cos(ang), math.sin(ang)
+    r = int(stalk + length + 4)
+    y0, y1 = max(int(by) - r, 0), min(int(by) + r, n)
+    x0, x1 = max(int(bx) - r, 0), min(int(bx) + r, n)
+    if y0 >= y1 or x0 >= x1:
+        return
+    X, Y = xs[y0:y1, x0:x1], ys[y0:y1, x0:x1]
+    u = (X - bx) * ca + (Y - by) * sa
+    v = -(X - bx) * sa + (Y - by) * ca
+    stalk_px = (u >= 0) & (u <= stalk) & (np.abs(v) <= 0.0008 * CPX)
+    t = (u - stalk) / length
+    half = leaf_width(np.clip(t, 0, 1)) * length * fore
+    blade = (t >= 0) & (t <= 1) & (np.abs(v) <= half)
+    here = blade | stalk_px
+    across = np.where(half > 0, np.abs(v) / np.maximum(half, 1e-3), 1.0)
+    rib = np.exp(-(np.abs(v) / (0.012 * length)) ** 2) * (t > 0) * (t < 0.92)
+    gg = g * (1.0 - 0.14 * across ** 3) + 0.05 * rib
+    sl = (slice(y0, y1), slice(x0, x1))
+    leaf_id[sl][here] = lid
+    light[sl][here] = np.clip(gg, 0, 1)[here]
+    thick[sl][blade] = (0.55 + 0.45 * (1.0 - across ** 2))[blade]
+    thick[sl][stalk_px] = 0.2
+    cover[sl][here] = 1.0
+
+
+def paint_clump(rng, kind):
+    """One hanging spray in one cell: the twig a birch's foliage hangs from, pendulous from the cell's top centre with
+    a few side twigs hanging off it, and the leaves dense along all of them, so the spray is a long, narrow, soft mass
+    whose edge is broken only by leaf tips. It keeps to the cell's middle half (the card is half as wide as it is long).
+    Lit from above, a little darker beneath; the leaves at the skin painted last."""
+    n = CELL
+    ys, xs = np.mgrid[0:n, 0:n].astype(np.float32)
+    arrs = [np.zeros((n, n), np.float32) for _ in range(4)]
+    length = {"tassel": 0.8, "long": 0.86, "fan": 0.7, "short": 0.54}[kind]
+    sides = {"tassel": 3, "long": 2, "fan": 5, "short": 2}[kind]
+    # the main twig: down from the top centre, swaying a little
+    main = _twig(rng, n * 0.5, n * 0.02, math.pi / 2 + rng.uniform(-0.12, 0.12), n * length, rng.uniform(-0.5, 0.5), 18)
+    twigs = [(main, 1.0)]
+    for k in range(sides):
+        t = 0.18 + 0.6 * (k + rng.uniform(0, 0.7)) / sides
+        i = int(t * (len(main) - 1))
+        (x0, y0), (x1, y1) = main[i], main[i + 1]
+        along = math.atan2(y1 - y0, x1 - x0)
+        side = 1 if k % 2 else -1
+        a = along + side * math.radians(rng.uniform(18, 40) if kind != "fan" else rng.uniform(30, 55))
+        L = n * length * rng.uniform(0.3, 0.5) * (1.0 - 0.4 * t)
+        twigs.append((_twig(rng, x0, y0, a, L, -side * rng.uniform(0.1, 0.4), 10), 0.7))
+    # where the leaves are: a chain of masses along every twig, fattest a little below the top, thinning to the tip
+    blobs = []
+    for pts, w in twigs:
+        for j, (x, y) in enumerate(pts[1:], 1):
+            f = j / (len(pts) - 1)
+            r = n * 0.085 * w * (0.55 + 0.45 * math.sin(math.pi * min(f * 1.15, 1.0))) * rng.uniform(0.85, 1.15)
+            blobs.append((x, y, r))
+    m = np.full((n, n), -1e9, np.float32)
+    for cx, cy, r in blobs:
+        m = np.maximum(m, 1.0 - np.hypot(xs - cx, ys - cy) / r)
+    # keep to the middle half of the cell, clear of its foot
+    m = np.where((np.abs(xs - n * 0.5) < n * 0.245) & (ys < n * 0.93), m, -1e9)
+    inside = m > 0
+    ymin, ymax = ys[inside].min(), ys[inside].max()
+
+    def m_at(x, y):
+        if abs(x - n * 0.5) >= n * 0.245 or y >= n * 0.93:
+            return -1e9
+        return max(1.0 - math.hypot(x - cx, y - cy) / r for cx, cy, r in blobs)
+
+    count = {"tassel": 900, "long": 820, "fan": 980, "short": 520}[kind]
+    leaves = []
+    tries = 0
+    while len(leaves) < count and tries < count * 60:
+        tries += 1
+        x, y = rng.uniform(n * 0.25, n * 0.75), rng.uniform(0, n)
+        mm = m_at(x, y)
+        if mm < -0.04:
+            continue
+        # birch leaves on a hanging spray point down and out, a little each way
+        ang = math.pi / 2 + rng.gauss(0, 0.7)
+        leaves.append((x, y, ang, mm, rng.random()))
+    dist = np.full((n, n), 1e9, np.float32)
+    for pts, w in twigs:
+        for (x0, y0), (x1, y1) in zip(pts, pts[1:]):
+            dx, dy = x1 - x0, y1 - y0
+            L2 = dx * dx + dy * dy
+            tt = np.clip(((xs - x0) * dx + (ys - y0) * dy) / L2, 0, 1)
+            dist = np.minimum(dist, np.hypot(xs - (x0 + tt * dx), ys - (y0 + tt * dy)))
+    twig = dist < 0.0018 * CPX
+    arrs[3][twig] = 1.0
+    arrs[1][twig] = 0.45
+    for x, y, ang, mm, rr in sorted(leaves, key=lambda l: -l[3] + 0.08 * l[4]):
+        t = (y - ymin) / max(ymax - ymin, 1.0)
+        g = (1.0 - 0.14 * t) * (0.86 + 0.14 * (1.0 - max(mm, 0.0))) * rng.uniform(0.88, 1.05)
+        length_ = rng.uniform(0.038, 0.054) * CPX
+        back = 0.64 * length_
+        _leaf(arrs, xs, ys, x - math.cos(ang) * back, y - math.sin(ang) * back, ang, length_, rng.uniform(0.55, 1.0),
+              0.06 + 0.94 * rng.random(), g)
+    return arrs
+
+
+def clumps(path):
+    import random
+    atlas = np.zeros((1024, 1024, 4), np.float32)
+    for c, kind in enumerate(("tassel", "long", "fan", "short")):
+        r = random.Random(f"birch-clumps-{SEED}-{c}")
+        lid, light, thick, cover = paint_clump(r, kind)
+        cov = downsample(cover, 2)
+        w = np.maximum(cov, 1e-4)
+        ids = lid.reshape(512, 2, 512, 2).max(axis=(1, 3))
+        cell = np.stack([ids, downsample(light * cover, 2) / w, downsample(thick * cover, 2) / w, cov], -1)
+        y0, x0 = (c // 2) * 512, (c % 2) * 512
+        atlas[y0:y0 + 512, x0:x0 + 512] = cell
+    return write_png(path, (np.clip(atlas, 0, 1) * 255 + 0.5).astype(np.uint8))
+
+
 # -- bark -------------------------------------------------------------------------------------------------------------
 
 def value_noise(shape, cells, rng):
@@ -262,4 +387,5 @@ if __name__ == "__main__":
     unity = sys.argv[1] if len(sys.argv) > 1 else os.path.join(HERE, "..", "..", "..", "..", "unity")
     out = os.path.join(unity, "Assets", "Art", "Trees", "birch")
     print(leaves(os.path.join(out, "birch_leaves.png")))
+    print(clumps(os.path.join(out, "birch_clumps.png")))
     print(bark(os.path.join(out, "birch_bark.png")))
