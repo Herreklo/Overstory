@@ -123,7 +123,7 @@ Shader "Overstory/Tree"
         s.albedo = m.r > 0.03h ? c : _Twig.rgb * (0.6h + 0.4h * m.g);
         // where the leaves are gone and the bare twigs show, the twigs' colour
         half leafHere = OS_LeafCover(m, extra);
-        if (leafHere < _Cutoff && OS_TwigCover(uv, extra) >= _Cutoff)
+        if (leafHere < _Cutoff)
             s.albedo = _Twig.rgb;
         s.smoothness = 0.18h;
     #else
@@ -244,13 +244,18 @@ Shader "Overstory/Tree"
                 half4 m = SAMPLE_TEXTURE2D(_Spray, sampler_Spray, input.uv);
                 // coverage sharpened to a pixel's width, for alpha to coverage under MSAA (Castano): crisp edges that
                 // do not fizz; without MSAA it falls back to the cut
-                half cover = max(OS_LeafCover(m, input.extra), OS_TwigCover(input.uv, input.extra));
+                half leafCover = OS_LeafCover(m, input.extra);
+                half twigCover = OS_TwigCover(input.uv, input.extra);
+                half cover = max(leafCover, twigCover);
                 // a card seen edge-on is a line, not a lobe: it fades as it turns away (its own face, from the screen)
                 float3 faceN = normalize(cross(ddx(input.positionWS), ddy(input.positionWS)));
                 half facing = abs(dot(faceN, GetWorldSpaceNormalizeViewDir(input.positionWS)));
                 cover *= smoothstep(0.12h, 0.38h, facing);
                 half alpha = saturate((cover - _Cutoff) / max(fwidth(cover), 1e-4h) + 0.5h);
-                clip(alpha - 0.004h);
+                // where only bare twigs are, they are a soft tone: their coverage as it is, dithered over the samples
+                if (leafCover < _Cutoff)
+                    alpha = saturate(twigCover * 2.4h) * smoothstep(0.12h, 0.38h, facing);
+                clip(alpha - 0.06h - 0.1h * OS_Hash(input.positionCS.xy));
                 // a card shades as its mass: the same normal seen from either side
                 half3 n = normalize(input.normalWS);
             #else
