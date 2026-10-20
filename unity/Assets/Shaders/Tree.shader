@@ -103,12 +103,24 @@ Shader "Overstory/Tree"
         return SAMPLE_TEXTURE2D(_Twigs, sampler_Twigs, uv).a * bare;
     }
 
-    // Cut at the coverage threshold (depth, shadows): returns the atlas sample.
+    // Cut at the coverage threshold (depth): returns the atlas sample.
     half4 OS_LeafClip(float2 uv, float2 card)
     {
         half4 m = SAMPLE_TEXTURE2D(_Spray, sampler_Spray, uv);
         clip(max(OS_LeafCover(m, card), OS_TwigCover(uv, card)) - _Cutoff);
         return m;
+    }
+
+    // Cut for the sun's shadow: an open crown's coverage, averaged over a shadow texel, falls mostly under any fixed
+    // cut, so an autumn crown would cast a bare winter skeleton. Each shadow texel is kept with the chance of the
+    // leaves' coverage there (read at a fixed level, 128 texels a card), so the shadow filter softens it into the
+    // dappled tone a half-open crown casts
+    void OS_LeafClipShadow(float2 uv, float2 card, float2 pixel)
+    {
+        half4 m = SAMPLE_TEXTURE2D_LOD(_Spray, sampler_Spray, uv, 2);
+        half bare = smoothstep((half)card.y, (half)card.y + 0.18h, (half)_Season.y);
+        half twig = SAMPLE_TEXTURE2D_LOD(_Twigs, sampler_Twigs, uv, 2).a * bare;
+        clip(max(OS_LeafCover(m, card), twig) - (0.08h + 0.84h * (half)OS_Hash(pixel)));
     }
 
     StreetSurface OS_TreeSurface(float2 uv, float2 extra, half3 normalWS)
@@ -390,7 +402,7 @@ Shader "Overstory/Tree"
                 half isLeaf = m.r > 0.03h ? 1.0h : 0.0h;
                 // light through a leaf takes its colour twice, as through stained glass: deeper, clearer, never greyer
                 half lumLeaf = max(dot(s.albedo, half3(0.2126h, 0.7152h, 0.0722h)), 1e-3h);
-                half3 glass = lerp(s.albedo, s.albedo * s.albedo / lumLeaf, 0.5h);
+                half3 glass = lerp(s.albedo, s.albedo * s.albedo / lumLeaf, 0.25h);
                 colour += glass * _Through.rgb * main.color * through * m.b * _Through.a * isLeaf;
                 // and the sky's own light through a thin leaf, from the side it does not face: on a grey day the whole
                 // crown is lit from behind by the bright sky, which is why a yellow birch glows in the rain
@@ -485,7 +497,7 @@ Shader "Overstory/Tree"
             half4 Frag(ShadowVaryings input) : SV_Target
             {
             #if defined(_OS_LEAVES)
-                OS_LeafClip(input.uv, input.extra);
+                OS_LeafClipShadow(input.uv, input.extra, input.positionCS.xy);
             #endif
                 return 0;
             }

@@ -61,11 +61,9 @@ PARTS = {
     "spruce": dict(card=(0.60, 0.40), cells=4, per_node=2, droop=0.25, leaf_years=7, leaf_tips=30, draw_tips=3.0, draw_tips_per_m=0.45,
                    bark=(0.30, 0.50), max_cards=8000, grow_to=100),
 }
-# the silver birch: the birch's fitting, carrying its own drapes (blender/parts/trees/silver_birch), its branches
-# giving more under their weight
-PARTS["silver_birch"] = dict(PARTS["birch"], sag=0.12, cluster_size=(1.15, 1.4, 1.15, 0.9), top_z=0.72,
-                             places=dict(top=((0, 0),), core=((1, 2), (2, 1)), low=((1, 2), (1, 3)),
-                                         high=((2, 3), (3, 2))))
+# the silver birch: the birch's fitting, carrying its own drapes (blender/parts/trees/silver_birch; Øystein preferred
+# them, full and arching, to open strands with a rising top), its branches giving more under their weight
+PARTS["silver_birch"] = dict(PARTS["birch"], sag=0.12)
 
 
 def h01(*k):

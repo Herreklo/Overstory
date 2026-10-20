@@ -48,12 +48,12 @@ namespace Overstory.EditorTools
             // downy birch on the coast on 20 October: most leaves turned an ochre gold (greyed, never cadmium), the
             // last still olive, the first a dull brown, never orange or red; nearly half fallen, from the inside and
             // below, so the limbs show
-            // a clear yellow-ochre (a birch in the rain is the clearest colour in the street; the sun pales it, so it
-            // never goes cadmium)
-            ["birch"] = (new Color(0.40f, 0.42f, 0.20f), new Color(0.72f, 0.61f, 0.27f), new Color(0.50f, 0.39f, 0.21f),
+            // a clear yellow-ochre, muted as the coast and Stålenhag's birches are (a birch in the rain is the clearest
+            // colour in the street, never a loud one; the sun pales it, so it never goes cadmium)
+            ["birch"] = (new Color(0.40f, 0.42f, 0.20f), new Color(0.72f, 0.61f, 0.32f), new Color(0.50f, 0.39f, 0.21f),
                          new Vector4(0.70f, 0.40f, 0f, 0f)),     // two curtains in five gone, a few still green
             // the silver birch turns as the downy does on this coast
-            ["silver_birch"] = (new Color(0.40f, 0.42f, 0.20f), new Color(0.72f, 0.61f, 0.27f), new Color(0.50f, 0.39f, 0.21f),
+            ["silver_birch"] = (new Color(0.40f, 0.42f, 0.20f), new Color(0.72f, 0.61f, 0.32f), new Color(0.50f, 0.39f, 0.21f),
                                 new Vector4(0.70f, 0.40f, 0f, 0f)),
         };
 
@@ -255,7 +255,7 @@ namespace Overstory.EditorTools
             var seasons = new (string name, Color green, Vector4 season)[]
             {
                 ("05-may", new Color(0.50f, 0.58f, 0.20f), new Vector4(0f, 0.55f, 0f, 0f)),     // half out: a pale haze
-                ("07-july", new Color(0.34f, 0.47f, 0.15f), new Vector4(0f, 0f, 0f, 0f)),     // a birch's light, fresh green
+                ("07-july", new Color(0.41f, 0.49f, 0.23f), new Vector4(0f, 0f, 0f, 0f)),     // a birch's soft yellow-green
                 ("10-october-20", new Color(0.36f, 0.40f, 0.15f), new Vector4(0.70f, 0.40f, 0f, 0f)),
                 ("01-january", new Color(0.27f, 0.38f, 0.12f), new Vector4(1f, 1.3f, 0f, 0f)),
             };

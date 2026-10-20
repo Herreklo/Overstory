@@ -61,7 +61,7 @@ Material:
     - _Late: {r: 0.5, g: 0.39, b: 0.21, a: 1}
     - _Season: {r: 0.7, g: 0.4, b: 0, a: 0}
     - _Through: {r: 1, g: 0.85, b: 0.45, a: 0.9}
-    - _Turned: {r: 0.72, g: 0.61, b: 0.27, a: 1}
+    - _Turned: {r: 0.72, g: 0.61, b: 0.32, a: 1}
     - _Twig: {r: 0.36, g: 0.27, b: 0.27, a: 1}
     - _TwigRadius: {r: 0.012, g: 0.045, b: 0, a: 0}
   m_BuildTextureStacks: []
