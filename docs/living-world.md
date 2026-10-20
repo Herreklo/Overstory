@@ -29,14 +29,24 @@ Each place has three layers:
 
 **A building and a business are separate.** The building has an era, extensions in later eras and a condition. A business occupies it for a time. When the business closes, the building stays: boarded up, then reopened as something else, with the old name fading above the new sign. Streets look varied because they are layers of history.
 
-**Variety comes from combination and history,** not from more models: a few hundred pieces give hundreds of thousands of buildings. Every visual difference carries something true (era, wealth, wear, the owner's character), so the player can read places the way they read people.
+**Variety comes from combination and history,** not from more models: a few hundred pieces give hundreds of thousands of buildings. Every visual difference carries something true (era, wealth, wear, the owner's character), so the player can read places the way they read people. `blender/tools/trace_check.py` checks the plan side of this: every part a plan shows names the diary event that put it there.
+
+## What the player can know
+
+**The record has four layers,** and the screen never confuses them:
+1. **Facts:** what happened, decided by the engine.
+2. **Traces and records.** Traces are what happening leaves behind without meaning to: wear, a ghost sign, a later window. They cannot lie. Records are made to tell: a gig poster, a newspaper report, a deed, a phone-book entry, a shop sign, a photograph. Each has a maker, a date and a purpose, and can be wrong, partial or out of date: the sign says "Bakery" over a shop that closed two years ago. Records age like any surface: posters paste over posters, and the wall by a venue becomes a coat stack of its gigs.
+3. **Beliefs:** what each person thinks happened, from the engine's accounts.
+4. **Discoveries:** what the player has found, and where.
+
+**Three dials, set per game, role and scene:** control (what the player commands), influence (what they can try to change, which the engine accepts or refuses) and knowledge (what they are allowed to see). A manager, a detective and an observer in the same town differ mostly in knowledge; the world under them is the same.
 
 ## Two kinds of view
 
 - **The world view:** an illustrated map at city scale, showing only what the player knows; a live 3D neighbourhood seen from above, where people move and places visibly change.
 - **Scene views:** where things happen: a conversation, a gig, a match, a lab, a forest. Scenes are not only interiors: a forest clearing, a farmyard, a quay at night, a beach bonfire, a boat on the bay, a bunker on the ridge are scenes as much as a kitchen or a bar. Most are walkable point-and-click spaces, bounded, with a staged camera, composed and lit like a film set. Moving between views is a cut or a short move through a doorway.
 
-Each kind of scene is a small production of its own. Cheap ones come first (a conversation in a bar); expensive ones (a full match) come when a game needs them.
+Each kind of scene is a social practice: a rehearsal, a dinner, a gig, an interview, each with roles and expectations, while every person in it still makes their own choices. The choices are the engine's; each practice gets a staging idiom from Overstory (`docs/research/scenes-and-sound.md`). Whether the engine or the scene holds the practice itself belongs to the two-clocks question above. Each kind of scene is also a small production of its own. Cheap ones come first (a conversation in a bar); expensive ones (a full match) come when a game needs them.
 
 ## People
 

@@ -41,6 +41,7 @@ After Øystein has judged, record in `docs/experiments.md`:
 
 - What we keep and what we drop, and why, in a few lines.
 - For each reference that came up: what we take from it and what we leave.
+- Anything that surprised us or might be new goes under Findings at the top of `docs/experiments.md`: the evidence, what it does not show, and what would disprove it. Tell Øystein about it directly, with how sure we are; do not leave it buried in the log.
 
 Then update `docs/visual-direction.md` so it describes the current direction: only what we now believe, no history. History lives in `docs/experiments.md` and git.
 

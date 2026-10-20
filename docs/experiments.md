@@ -4,6 +4,14 @@ Newest first. Each entry: the question, how it is judged, then the outcome: what
 
 ---
 
+## Findings
+
+Results that surprised us or might be new, newest first. Each says what the evidence is, what it does not show, and what would disprove it.
+
+- **Every part a plan shows names its cause, checked by machine (20 October).** `blender/tools/trace_check.py` resolved every fixture building in every year it stands, plus 500 of the stress test's random diaries: 73,121 plans and 1.6 million visible elements. Every element names the diary event that put it there, and every named event is in the diary by that year. We know of no game that checks this; it turns "every visible difference is a true fact" from a promise into a test. *It does not show* that the mesh adds nothing: lean and sag are seeded texture applied at build time, kept out of history by rule rather than by check. Nor does it show that the event is the right reading of the part, or that viewers read it (exit criterion 1). *Gap found:* `condition`, which wear is drawn from, is a number with no trail: the plan knows a house is worn but not which neglect caused it. Next, the plan keeps the events behind its condition, so the diary inspector can point from a worn wall to the years it stood empty. *Disproved if* a built mesh shows something no plan element accounts for; a mesh-side trace in Unity would test that.
+
+---
+
 ## LT3: the street through the years
 
 **Status:** planned, after LT2. The question and the rest of the entry are written when it starts.
