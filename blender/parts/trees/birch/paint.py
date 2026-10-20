@@ -20,6 +20,10 @@ painting.py); G is the spray's own light (lit along its upper edge, one mid valu
 Its bare twigs (birch_twigs.png, the same cells): the spray's twigs and finer ones going out and up, the winter
 crown's haze, shown as each card's leaves fall.
 
+Marks (birch_marks.png, 2 by 2 cells): the bark's dark marks, each placed by the assembler where the tree's history
+put it (a chevron over every branch, a scar where one was shed, fresh or old, a rough patch); G their lightness, A
+coverage.
+
 Bark (birch_bark.png, 512 by 1024, tiling; u round the stem, v along it, one tile 0.3 m round and 0.6 m along):
 - R: the bark's lightness, white with soft grey bands;
 - G: lenticels (the short dark horizontal dashes) and the dark scars under branches;
@@ -463,6 +467,65 @@ def clusters(path, twig_path):
     return atlas(path, twig_path, KINDS, paint_cluster, paint_bare, "birch-sprays", SEED)
 
 
+# -- the bark's marks --------------------------------------------------------------------------------------------------
+
+def _shape_cell(kind, rng):
+    """One mark in one cell (u across the wood, up the image as up the wood): coverage and lightness (0 the mark's
+    darkest, 1 its lightest), supersampled. Bold and few-valued, as Firewatch draws an aspen's marks; each a fact the
+    assembler places (tree.py, mark_mesh)."""
+    n = CELL
+    ys, xs = np.mgrid[0:n, 0:n].astype(np.float32) / n
+    yu = 1.0 - ys                                            # up the wood
+    edge = value_noise((n, n), (14, 14), np.random.default_rng(rng.randrange(1 << 30))) - 0.5
+    if kind == "chevron":
+        # the bark wrinkled over a branch's collar: a dark arc above it, its arms drooping and thinning to each side
+        x = xs - 0.5
+        arc = 0.78 - 1.25 * x * x                            # the arc's line, highest over the branch
+        width = 0.11 * (1.0 - 1.6 * np.abs(x)) + 0.012
+        d = np.abs(yu - arc) - np.maximum(width, 0.0) - 0.03 * edge
+        cover = np.clip(0.5 - d * n / 2.5, 0, 1) * (np.abs(x) < 0.47)
+        light = 0.15 + 0.15 * np.clip((np.abs(x) - 0.2) * 3, 0, 1)
+    elif kind in ("eye", "eye-old"):
+        old = kind == "eye-old"
+        # a shed branch's scar: a lens across the wood, its rim dark, its middle the grey of old wood; older, wider,
+        # darker, cracked across and running down in a drip
+        x, y = (xs - 0.5) / (0.46 if old else 0.36), (yu - 0.5) / (0.2 if old else 0.24)
+        r = np.sqrt(x * x + y * y) + 0.18 * edge * (2.0 if old else 1.0)
+        lens = np.abs(y) - 0.85 * (1.0 - x * x)
+        d = np.maximum(r - 1.0, lens) if not old else r - 1.0
+        if old:
+            drip = (np.abs(xs - 0.5 - 0.04 * edge) < 0.035 * (1.0 - (0.5 - yu) / 0.45)) & (yu < 0.5) & (yu > 0.05)
+            d = np.where(drip, np.minimum(d, -0.01), d)
+        cover = np.clip(0.5 - d * n / 6.0, 0, 1)
+        core = np.clip(1.0 - r / (0.55 if not old else 0.4), 0, 1)
+        light = 0.05 + (0.45 if not old else 0.2) * core
+        if old:
+            cracks = (np.abs(np.sin((yu + 0.04 * edge) * 70.0)) < 0.18) & (r < 0.85)
+            light = np.where(cracks, 0.32, light)
+    else:
+        # a rough patch: a diamond of black, cracked bark (the old silver birch's)
+        x, y = np.abs(xs - 0.5) / 0.45, np.abs(yu - 0.5) / 0.42
+        d = x + y - 1.0 + 0.25 * edge
+        cover = np.clip(0.5 - d * n / 8.0, 0, 1)
+        light = 0.08 + 0.2 * (np.abs(np.sin((xs + 0.1 * edge) * 40.0)) < 0.15)
+    return cover.astype(np.float32), light.astype(np.float32)
+
+
+def marks(path):
+    """The bark marks atlas (birch_marks.png, 2 by 2 cells: chevron, scar, old scar, rough patch): R one, G the
+    mark's lightness, B none, A coverage."""
+    import random
+    out = np.zeros((1024, 1024, 4), np.float32)
+    for c, kind in enumerate(("chevron", "eye", "eye-old", "rough")):
+        cover, light = _shape_cell(kind, random.Random(f"birch-marks-{SEED}-{c}"))
+        cov = downsample(cover, 2)
+        w = np.maximum(cov, 1e-4)
+        cell = np.stack([np.ones_like(cov), downsample(light * cover, 2) / w, np.zeros_like(cov), cov], -1)
+        y0, x0 = (c // 2) * 512, (c % 2) * 512
+        out[y0:y0 + 512, x0:x0 + 512] = cell
+    return write_png(path, (np.clip(out, 0, 1) * 255 + 0.5).astype(np.uint8))
+
+
 # -- bark -------------------------------------------------------------------------------------------------------------
 
 def value_noise(shape, cells, rng):
@@ -488,27 +551,28 @@ def bark(path):
     # lightness: white with soft grey bands running round the stem, and a faint mottle
     bands = value_noise((H, W), (40, 3), rng) * 0.6 + value_noise((H, W), (90, 6), rng) * 0.4
     mottle = value_noise((H, W), (24, 12), rng)
-    light = 0.78 + 0.16 * (bands - 0.5) * 2 * 0.5 + 0.08 * (mottle - 0.5)
+    # calm (Firewatch's trunks): a pale ground with soft bands, the detail rationed to the lenticels
+    light = 0.80 + 0.08 * (bands - 0.5) + 0.05 * (mottle - 0.5)
     # lenticels: short dark dashes across the stem, a few hundred per tile
     lent = np.zeros((H, W), np.float32)
     ys, xs = np.mgrid[0:H, 0:W].astype(np.float32)
-    for _ in range(120):
+    for _ in range(38):
         cy, cx = rng.uniform(0, H), rng.uniform(0, W)
-        L, T = rng.uniform(16, 60), rng.uniform(1.0, 2.2)
+        L, T = rng.uniform(26, 80), rng.uniform(1.6, 3.2)
         dy = (ys - cy + H / 2) % H - H / 2
         dx = (xs - cx + W / 2) % W - W / 2
         lent = np.maximum(lent, np.clip(1.0 - (np.abs(dx) / L) ** 2 - (dy / T) ** 2, 0, 1) ** 0.6)
     # the foot: deep fissures running along the stem, wandering, between cracked plates
     wander = (value_noise((H, W), (5, 4), rng) - 0.5) * 70.0
     xw = (xs + wander) % W
-    cells = 7
+    cells = 3                                                              # a few broad plates, bold fissures
     ridge = np.abs(((xw / W) * cells) % 1.0 - 0.5) * 2.0                  # 1 at a fissure, 0 mid-plate
-    width = 0.75 + 0.2 * value_noise((H, W), (16, 7), rng)
+    width = 0.62 + 0.15 * value_noise((H, W), (6, 3), rng)
     fiss = np.clip((ridge - width) / (1.0 - width), 0, 1) ** 0.7
-    breaks = value_noise((H, W), (26, 7), rng)
+    breaks = value_noise((H, W), (9, 3), rng)
     across = np.clip(1.0 - np.abs(breaks - 0.5) * 14.0, 0, 1) * (ridge < width)   # plates cracked across now and then
     rough = value_noise((H, W), (60, 40), rng)
-    foot = np.clip(np.maximum(fiss, across * 0.8) + 0.25 * (rough - 0.5), 0, 1)
+    foot = np.clip(np.maximum(fiss, across * 0.8) + 0.08 * (rough - 0.5), 0, 1)
     img = np.stack([np.clip(light, 0, 1), np.clip(lent, 0, 1), foot, np.ones_like(light)], -1)
     return write_png(path, (img * 255 + 0.5).astype(np.uint8))
 
@@ -519,4 +583,5 @@ if __name__ == "__main__":
     print(leaves(os.path.join(out, "birch_leaves.png")))
     print(clumps(os.path.join(out, "birch_clumps.png")))
     print(clusters(os.path.join(out, "birch_clusters.png"), os.path.join(out, "birch_twigs.png")))
+    print(marks(os.path.join(out, "birch_marks.png")))
     print(bark(os.path.join(out, "birch_bark.png")))

@@ -12,6 +12,10 @@ Shader "Overstory/Tree"
     Properties
     {
         [Toggle(_OS_LEAVES)] _Leaves ("Leaf cards", Float) = 0
+        [Toggle(_OS_MARKS)] _MarksOn ("Bark marks", Float) = 0
+        _Marks ("Bark marks (g lightness, a coverage)", 2D) = "white" {}
+        _MarkDark ("Marks: their darkest", Color) = (0.07, 0.065, 0.06, 1)
+        _MarkLight ("Marks: their lightest (old wood)", Color) = (0.42, 0.40, 0.37, 1)
         [Toggle] _AlphaToMask ("Leaves: alpha to coverage (smooth edges under MSAA)", Float) = 0
         _Bark ("Bark (r lightness, g lenticels, b fissured foot)", 2D) = "white" {}
         _BarkLight ("Bark: the white of the limbs", Color) = (0.86, 0.85, 0.82, 1)
@@ -64,11 +68,14 @@ Shader "Overstory/Tree"
         half _SkyThrough;
         half _UnderFloor;
         half _MassSplit;
+        half4 _MarkDark;
+        half4 _MarkLight;
     CBUFFER_END
 
     TEXTURE2D(_Bark);  SAMPLER(sampler_Bark);
     TEXTURE2D(_Spray); SAMPLER(sampler_Spray);
     TEXTURE2D(_Twigs); SAMPLER(sampler_Twigs);
+    TEXTURE2D(_Marks); SAMPLER(sampler_Marks);
 
     #include "StreetSurface.hlsl"
 
@@ -146,7 +153,7 @@ Shader "Overstory/Tree"
         half4 b = SAMPLE_TEXTURE2D(_Bark, sampler_Bark, uv);
         float r = extra.x, z = extra.y;
         // white bark with grey bands and dark lenticels on the limbs and trunk; dark twigs
-        half3 bark = lerp(_BarkBand.rgb, _BarkLight.rgb, saturate((b.r - 0.6h) / 0.25h));
+        half3 bark = lerp(_BarkBand.rgb, _BarkLight.rgb, saturate((b.r - 0.62h) / 0.3h));
         bark = lerp(bark, _BarkBand.rgb * 0.2h, b.g * 0.9h);
         half twig = 1.0h - smoothstep((half)_TwigRadius.x, (half)_TwigRadius.y, (half)r);
         half3 c = lerp(bark, _Twig.rgb, twig);
@@ -167,6 +174,12 @@ Shader "Overstory/Tree"
             c = lerp(wood, _BarkBand.rgb * 0.8h, callus);
         }
         s.albedo = c;
+    #if defined(_OS_MARKS)
+        // a mark of the tree's history (a chevron over a branch, a shed branch's scar): its own pigment, lit as the
+        // bark it lies on
+        half4 mk = SAMPLE_TEXTURE2D(_Marks, sampler_Marks, uv);
+        s.albedo = lerp(_MarkDark.rgb, _MarkLight.rgb, mk.g);
+    #endif
         s.smoothness = 0.12h;
     #endif
         return s;
@@ -190,6 +203,7 @@ Shader "Overstory/Tree"
             #pragma fragment Frag
 
             #pragma shader_feature_local _OS_LEAVES
+            #pragma shader_feature_local _OS_MARKS
             #pragma multi_compile_fragment _ _OS_LOOK_B _OS_LOOK_D _OS_LOOK_P
 
             #pragma multi_compile _ _MAIN_LIGHT_SHADOWS _MAIN_LIGHT_SHADOWS_CASCADE
@@ -239,7 +253,7 @@ Shader "Overstory/Tree"
                 UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(o);
                 float3 posOS = input.positionOS.xyz;
                 o.cover = 1;
-            #if !defined(_OS_LEAVES)
+            #if !defined(_OS_LEAVES) && !defined(_OS_MARKS)
                 // a twig thinner than a pixel is drawn a pixel wide and covers only its share of it (alpha to
                 // coverage): a faint stroke, as a painter sees fine twigs, never a hard ink line
                 float3 ws = TransformObjectToWorld(posOS);
@@ -286,6 +300,9 @@ Shader "Overstory/Tree"
                 // a card shades as its mass: the same normal seen from either side
                 half3 n = normalize(input.normalWS);
             #else
+            #if defined(_OS_MARKS)
+                clip(SAMPLE_TEXTURE2D(_Marks, sampler_Marks, input.uv).a - 0.5h);
+            #endif
                 // a twig deep in the foliage shows from the season its leaves fall (bake alpha; 0 always shown)
                 if (input.bake.a > 0.001h)
                     clip((half)_Season.y - input.bake.a - 0.04h * OS_Hash(input.positionCS.xy));

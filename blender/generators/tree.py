@@ -49,12 +49,14 @@ import tree_growth as G  # noqa: E402
 # masses: "limbs" makes the crown's masses from its main limbs' foliage (else from where the foliage lies); seam: how
 # wide the seam of sky between two masses is (cards nearly as deep in a neighbour as in their own), and seam_cut the
 # share of the cards there taken out; core_depth, core_keep: how deep in its mass a card is core, and the share of the
-# core kept (under a mass's middle only). lobe_size, lobe_weight: each mass cut into lobes about so many metres
+# core kept (under a mass's middle only). taper: how much wider the trunk is drawn towards its foot; flare: how far it
+# spreads into the ground; collar: how much a branch swells where it joins. lobe_size, lobe_weight: each mass cut into lobes about so many metres
 # across (on a grown tree), whose own volumes shade the cards by so much of their normal. places: for each place in the crown (top: above top_z of its height; core; low; high skin), the pairs of
 # atlas cells its two crossed cards may carry. top_tilt: how far the cards inside a mass's top (deeper than top_tilt_depth) lean to the sky (degrees), for steep
 # views.
 PARTS = {
-    "birch": dict(sag=0.08, taper=0.55, occlusion=0.05, seam=0.5, atlas="clusters", lobe=0.8, lobe_gap=0.36,
+    "birch": dict(sag=0.08, taper=0.55, flare=0.5, collar=1.3, occlusion=0.05, seam=0.5, atlas="clusters", lobe=0.8, lobe_gap=0.36,
+                  marks=True, mark_min_radius=0.02, mark_scale=2.4,
                   cluster_size=(1.3, 1.15, 1.05, 0.85), crossed=True, edge_gap=0.22, edge_depth=0.2,
                   masses="limbs", seam_cut=0.95, core_depth=0.45, core_keep=0.55, top_tilt=50.0,
                   lobe_size=2.2, lobe_weight=0.7, top_z=0.66, top_tilt_depth=0.15,
@@ -99,6 +101,11 @@ def read(species, seed, age, quality, events=(), exposure=0.0, origin="planted")
               born=t["born"], order=t["order"], r=drawn_radius(pipe, paint_n), alive=alive,
               tips=(pipe / G.SPECIES[species]["tip_radius"]) ** G.SPECIES[species]["pipe"],
               cut=np.where((t["cut"] >= 0) & (t["cut"] <= age), age - t["cut"], -1) if "cut" in t else np.full(len(alive), -1))
+    # the history the bark shows: when each branch was shed, how thick it was then, and where it grew (as grown)
+    tl["died"] = t["died"]
+    tl["radius_hist"] = t["radius"]
+    tl["start_grown"], tl["end_grown"] = t["start"].astype(np.float64), t["end"].astype(np.float64)
+    tl["age"] = age
     sag(tl, pipe, parts, G.SPECIES[species]["tip_radius"])
     kids = {}
     for i in range(1, len(tl["parent"])):
@@ -220,6 +227,45 @@ def simplify(pts, radii, bend=0.14, thin=0.25):
     return keep
 
 
+def taper_runs(pts, rad):
+    """A chain's radii drawn tapering: the pipe model's width holds between forks and steps down at each; here each
+    fork's width runs linearly (by length along the chain) down to the next fork's, the last to the tip's."""
+    rad = np.asarray(rad, dtype=float).copy()
+    if len(rad) < 3:
+        return rad
+    along = np.concatenate([[0.0], np.cumsum(np.linalg.norm(np.diff(pts, axis=0), axis=1))])
+    knots = [0] + [k for k in range(1, len(rad)) if rad[k] < rad[k - 1] - 1e-9] + [len(rad) - 1]
+    knots = sorted(set(knots))
+    out = np.interp(along, along[knots], rad[knots])
+    return np.maximum(out, rad.min())
+
+
+def trunk_scale(z, H, parts):
+    """How much wider the trunk is drawn than the pipe model holds, by height: thicker towards the foot, as the wind's
+    lever is greatest there, and flared into the ground over the last half metre or so."""
+    z = np.asarray(z, dtype=float)
+    crown_base = max(H * 0.35, 1e-3)
+    s = 1.0 + parts.get("taper", 0.0) * np.clip((crown_base - z) / crown_base, 0.0, 1.0) ** 0.6
+    return s * (1.0 + parts.get("flare", 0.0) * np.exp(-np.maximum(z, 0.0) / 0.28))
+
+
+def foot_rings(pts, rad, appear, heights=(0.12, 0.3, 0.6, 1.0)):
+    """The trunk's points with rings added near the ground (at these heights), so its flare curves."""
+    P, R, A = [pts[0]], [rad[0]], [appear[0]]
+    for k in range(1, len(pts)):
+        a, b = pts[k - 1], pts[k]
+        for hz in heights:
+            if a[2] < hz < b[2]:
+                t = (hz - a[2]) / (b[2] - a[2])
+                P.append(a + (b - a) * t)
+                R.append(rad[k - 1] + (rad[k] - rad[k - 1]) * t)
+                A.append(appear[k])
+        P.append(b)
+        R.append(rad[k])
+        A.append(appear[k])
+    return np.array(P), np.array(R), np.array(A)
+
+
 def sides_for(r):
     return 10 if r >= 0.12 else 8 if r >= 0.06 else 6 if r >= 0.03 else 4 if r >= 0.015 else 3
 
@@ -269,6 +315,8 @@ def branch_mesh(tl, parts, H, vols=None, needed=None):
     node_appear = {}                                     # every drawn node: the season from which it shows
     tl["node_appear"] = node_appear
     tl["chain_appear"] = []
+    node_radius = {}                                     # every drawn node: its radius as drawn (for the bark's marks)
+    tl["node_radius"] = node_radius
     base_appear = {}                                     # and from which it would show if no spray hid it
     tl["base_appear"] = base_appear
     cover = tl.get("cover")                              # per node: the season until which a spray round it hangs
@@ -362,16 +410,23 @@ def branch_mesh(tl, parts, H, vols=None, needed=None):
         wood.append((pts[-1], appear[-1]))
         pts, rad, appear = pts[keep], rad[keep], appear[keep]
         tl.setdefault("chain_appear", []).append((c[0], appear.copy()))     # for the checks: shown from, ring by ring
+        # a branch tapers along its length: the pipe model steps down only where a branch leaves it, so between
+        # forks the wood is drawn tapering from each fork's width to the next (never a stack of even sticks)
+        rad = taper_runs(pts, rad)
+        for k in range(1, len(rad)):
+            node_radius[c[k - 1]] = float(rad[k]) * (float(trunk_scale(pts[k][2], H, parts)) if c[0] == 0 else 1.0)
+        if c[0] > 0 and len(rad) > 2:
+            # the collar: a branch swells where it joins the wood it grows from
+            rad[0] *= parts.get("collar", 1.0)
+            rad[1] *= 1.0 + (parts.get("collar", 1.0) - 1.0) * 0.35
         if c[0] == 0:
             # the trunk thickens towards its foot (the wind's lever on the crown is greatest there; the pipe model alone
-            # gives a pole), then flares into the ground
-            crown_base = max(H * 0.35, 1e-3)
-            rad = rad * (1.0 + parts.get("taper", 0.0) * np.clip((crown_base - pts[:, 2]) / crown_base, 0.0, 1.0) ** 0.6)
-            # the trunk's foot: below the ground a little, and flared
+            # gives a pole), then flares into the ground, the flare in rings near the ground so it curves
+            pts, rad, appear = foot_rings(pts, rad, appear)
+            rad = rad * trunk_scale(pts[:, 2], H, parts)
             pts = np.vstack([pts[0] - np.array([0.0, 0.0, 0.25]), pts])
-            rad = np.concatenate([[rad[0] * 1.35], rad])
+            rad = np.concatenate([[rad[0] * 1.08], rad])
             appear = np.concatenate([[0.0], appear])
-            rad[1] *= 1.18
         s = sides_for(rad[0])
         wraps = max(1, int(round(2 * math.pi * rad[0] / tile_round)))
         T, N, B = frames(pts)
@@ -420,6 +475,81 @@ def branch_mesh(tl, parts, H, vols=None, needed=None):
                             (wraps * (k + 0.5) / s, (along[i] + rad[-1]) / tile_along)])
                 UV1.extend([(rad[-1], pts[-1][2])] * 3)
     return np.array(V), F, UV0, UV1, samples, np.array(APPEAR), wood
+
+
+# -- the bark's marks ------------------------------------------------------------------------------------------------
+
+def mark_mesh(tl, parts):
+    """The dark marks a birch's bark carries, each a fact of the tree's history, placed by the timeline: a chevron
+    above every living branch where it joins (the bark wrinkles over the branch's collar), and a scar where a branch was
+    shed, sized by how thick it was then and widened by the years since, as the trunk has grown round it (cells 1 and 2
+    of the atlas: fresh and old). Each a small strip bent round the wood it lies on, a hair above its surface, showing
+    when that wood does. Only on wood thick enough for its bark to be seen (min_radius). Returns V, F, UV0 (the marks
+    atlas), UV1 (radius, height, as the bark's), and per vertex the season it shows from."""
+    na, nr = tl["node_appear"], tl["node_radius"]
+    parent, order, start, end = tl["parent"], tl["order"], tl["start"], tl["end"]
+    age = tl["age"]
+    min_r = parts.get("mark_min_radius", 0.02)
+    V, F, UV0, UV1, APP = [], [], [], [], []
+
+    def axis_of(p):
+        d = end[p] - start[p]
+        return d / max(np.linalg.norm(d), 1e-9)
+
+    def put(p, direction, w, h, cell, lift):
+        a = axis_of(p)
+        out = direction - a * np.dot(direction, a)
+        if np.linalg.norm(out) < 1e-6:
+            return
+        out /= np.linalg.norm(out)
+        side = np.cross(a, out)
+        R = nr[p]
+        span = min(w / max(R, 1e-3), 1.8)
+        centre = end[p] + a * lift
+        cx, cy = (cell % 2) * 0.5, 1.0 - (cell // 2) * 0.5 - 0.5
+        b = len(V)
+        for row, dv in enumerate((-h / 2, h / 2)):
+            for col in range(4):
+                ang = -span / 2 + span * col / 3
+                pos = centre + a * dv + (math.cos(ang) * out + math.sin(ang) * side) * (R * 1.012 + 0.0015)
+                V.append(pos)
+                UV0.append((cx + 0.5 * col / 3, cy + 0.5 * row))
+                UV1.append((R, float(pos[2])))
+                APP.append(float(na[p]))
+        for col in range(3):
+            F.append((b + col, b + col + 1, b + 4 + col + 1, b + 4 + col))
+
+    # the chevrons over living branches
+    for c in tl.get("drawn_chains", []):
+        if c[0] == 0:
+            continue
+        p = int(parent[c[0]])
+        if p not in na or p not in nr or nr[p] < min_r or order[c[0]] <= order[p]:
+            continue
+        rc = nr.get(c[0], tl["r"][c[0]])
+        if rc < 0.25 * min_r:
+            continue
+        # larger than life, as Firewatch draws an aspen's marks: they must read from the street stop
+        k_ = parts.get("mark_scale", 1.0)
+        put(p, end[c[0]] - start[c[0]], min(3.0 * rc * k_, 1.6 * nr[p]), 1.3 * rc * k_, 0, 1.1 * rc * k_)
+    # the scars of shed branches
+    died, hist = tl["died"], tl["radius_hist"]
+    for d in np.nonzero((died > 0) & (died <= age))[0]:
+        p = int(parent[d])
+        if p < 0 or p not in na or p not in nr or nr[p] < min_r or order[d] <= order[p]:
+            continue
+        r_then = float(hist[d, died[d] - 1])
+        if r_then < 0.3 * min_r:
+            continue
+        years = age - int(died[d])
+        grown = min(years / 25.0, 1.5)
+        k_ = parts.get("mark_scale", 1.0)
+        put(p, tl["end_grown"][d] - tl["start_grown"][d], min(2.4 * r_then * (1.0 + 0.8 * grown) * k_, 1.6 * nr[p]),
+            1.6 * r_then * (1.0 + 0.2 * grown) * k_, 1 if years < 12 else 2, 0.0)
+    # UVs per face corner, as make() takes them
+    UV0c = [UV0[v] for f in F for v in f]
+    UV1c = [UV1[v] for f in F for v in f]
+    return np.array(V), F, UV0c, UV1c, np.array(APP)
 
 
 # -- leaves and masses -------------------------------------------------------------------------------------------------
@@ -1184,10 +1314,30 @@ def build(species, seed, age, quality=1.0, unity=None, events=(), exposure=0.0, 
     obs = [ob_b]
     if len(LV):
         obs.append(make(name + "_leaves", LV, LF, LUV0, LUV1, LC, LN))
+    marks = 0
+    if parts.get("marks"):
+        MV, MF, MUV0, MUV1, MAPP = mark_mesh(tl, parts)
+        if len(MF):
+            ob_m = make(name + "_marks", MV, MF, MUV0, MUV1)
+            me_m = ob_m.data
+            ml = np.zeros(len(me_m.loops), dtype=np.int64)
+            me_m.loops.foreach_get("vertex_index", ml)
+            mn = np.zeros(len(me_m.loops) * 3)
+            me_m.corner_normals.foreach_get("vector", mn) if hasattr(me_m, "corner_normals") else None
+            mz = mn.reshape(-1, 3)[:, 2]
+            mnear = np.array([kd.find(MV[v])[1] for v in range(len(MV))])
+            mdv = deep[mnear][ml]
+            mcol = np.stack([np.clip((0.5 + 0.5 * mz) * (1.0 - 0.3 * mdv), 0.5, 1.0), np.clip(0.5 - 0.5 * mz, 0, 1),
+                             1.0 - 0.5 * mdv, MAPP[ml]], -1).astype(np.float32)
+            attr = me_m.color_attributes.new("bake", "FLOAT_COLOR", "CORNER")
+            attr.data.foreach_set("color", mcol.ravel())
+            me_m.color_attributes.active_color = attr
+            obs.append(ob_m)
+            marks = len(MF) // 3
     tris_b = sum(len(f) - 2 for f in BF)
     tris_l = sum(len(f) - 2 for f in LF)
     info = dict(name=name, height=round(H, 2), trunk_cm=round(200 * float(tl["r"][0]), 1), branch_tris=tris_b,
-                leaf_cards=len(LF), leaf_tris=tris_l, masses=k,
+                leaf_cards=len(LF), leaf_tris=tris_l, masses=k, marks=marks,
                 planes=[t[3] for t in (trees or []) if t is not None])
     print("TREE", info)
     if unity:

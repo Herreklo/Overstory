@@ -161,16 +161,27 @@ def clusters(path, twig_path):
     return atlas(path, twig_path, KINDS, paint_cluster, paint_bare, "birch-clusters", SEED)
 
 
-def bark(path):
-    """The downy birch's bark, until the silver birch's own is painted."""
+def _downy():
+    """The downy birch's parts module (its bark and its marks, which the silver birch borrows for now)."""
     spec = importlib.util.spec_from_file_location("paint_birch", os.path.join(HERE, "..", "birch", "paint.py"))
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)
-    return mod.bark(path)
+    return mod
+
+
+def bark(path):
+    """The downy birch's bark, until the silver birch's own is painted (its colour is set apart in its material)."""
+    return _downy().bark(path)
+
+
+def marks(path):
+    """The downy birch's marks: a birch's chevrons and scars."""
+    return _downy().marks(path)
 
 
 if __name__ == "__main__":
     unity = sys.argv[1] if len(sys.argv) > 1 else os.path.join(HERE, "..", "..", "..", "..", "unity")
     out = os.path.join(unity, "Assets", "Art", "Trees", "silver_birch")
     print(clusters(os.path.join(out, "silver_birch_clusters.png"), os.path.join(out, "silver_birch_twigs.png")))
+    print(marks(os.path.join(out, "silver_birch_marks.png")))
     print(bark(os.path.join(out, "silver_birch_bark.png")))

@@ -28,6 +28,10 @@ Material:
         m_Texture: {fileID: 2800000, guid: 1e523a56bd20b4cb7a544c0f8af0f4d9, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _Marks:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _Spray:
         m_Texture: {fileID: 2800000, guid: 9f2702223e4f54e999207d0581b3024d, type: 3}
         m_Scale: {x: 1, y: 1}
@@ -44,6 +48,7 @@ Material:
     - _InnerGlow: 0
     - _LeafSkyTint: 0.15
     - _Leaves: 0
+    - _MarksOn: 0
     - _MassShadow: 8
     - _MassSplit: -0.05
     - _Scatter: 0.12
@@ -51,13 +56,15 @@ Material:
     - _SunPale: 0.45
     - _UnderFloor: 0.5
     m_Colors:
-    - _BarkBand: {r: 0.54999995, g: 0.53, b: 0.5, a: 1}
+    - _BarkBand: {r: 0.6, g: 0.58, b: 0.55, a: 1}
     - _BarkLight: {r: 0.86, g: 0.85, b: 0.82, a: 1}
     - _Foot: {r: 0.16, g: 6, b: 1, a: 0}
     - _FootCrack: {r: 0.059999965, g: 0.054999977, b: 0.049999982, a: 1}
     - _FootPlate: {r: 0.35999998, g: 0.34999996, b: 0.32999998, a: 1}
     - _Green: {r: 0.4, g: 0.42, b: 0.2, a: 1}
     - _Late: {r: 0.5, g: 0.36, b: 0.19, a: 1}
+    - _MarkDark: {r: 0.07, g: 0.065, b: 0.06, a: 1}
+    - _MarkLight: {r: 0.42, g: 0.4, b: 0.37, a: 1}
     - _Season: {r: 0.7, g: 0.4, b: 0, a: 0}
     - _Through: {r: 1, g: 1, b: 1, a: 0.9}
     - _Turned: {r: 0.74, g: 0.59, b: 0.29, a: 1}

@@ -107,6 +107,14 @@ namespace Overstory.EditorTools
                 // a birch's twigs and young branches are dark purple-brown up to two or three centimetres; the white
                 // bark comes with age on the limbs and the trunk
                 m.SetVector("_TwigRadius", new Vector4(0.012f, 0.045f, 0f, 0f));
+                // the bark's pigment: the downy's a grey white (weathered, lichen-dimmed), the silver's a clean white
+                bool silver = species == "silver_birch";
+                m.SetColor("_BarkLight", silver ? new Color(0.86f, 0.85f, 0.82f) : new Color(0.74f, 0.73f, 0.70f));
+                m.SetColor("_BarkBand", silver ? new Color(0.60f, 0.58f, 0.55f) : new Color(0.52f, 0.50f, 0.48f));
+                // an old trunk's foot: the silver's breaks black and fissured; the downy's only greys and roughens
+                m.SetVector("_Foot", new Vector4(0.16f, 6.0f, silver ? 1.0f : 0.5f, 0f));
+                m.SetColor("_MarkDark", new Color(0.07f, 0.065f, 0.06f));
+                m.SetColor("_MarkLight", new Color(0.42f, 0.40f, 0.37f));
                 // a birch's twigs are a purple-grey brown, and seen through the leaves they are lost in them: lighter
                 // than bark's dark marks, never black lines
                 m.SetColor("_Twig", new Color(0.42f, 0.34f, 0.34f));
@@ -116,6 +124,11 @@ namespace Overstory.EditorTools
             }
             var bark = Make("bark", false);
             var leafy = Make("leaves", true);
+            var marks = Make("marks", false);
+            marks.SetTexture("_Marks", AssetDatabase.LoadAssetAtPath<Texture2D>($"{dir}/{species}_marks.png"));
+            marks.SetFloat("_MarksOn", 1f);
+            marks.EnableKeyword("_OS_MARKS");
+            EditorUtility.SetDirty(marks);
             AssetDatabase.SaveAssets();
             return (bark, leafy);
         }
@@ -135,13 +148,16 @@ namespace Overstory.EditorTools
             foreach (var r in go.GetComponentsInChildren<MeshRenderer>())
             {
                 bool leafy = r.gameObject.name.EndsWith("_leaves");
+                bool marked = r.gameObject.name.EndsWith("_marks");
                 if ((only == "leaves" && !leafy) || (only == "branches" && leafy))
                     r.enabled = false;
+                var markMat = AssetDatabase.LoadAssetAtPath<Material>($"{Art}/{species}/M_Tree_{species}_marks.mat");
                 var mats = new Material[r.sharedMaterials.Length];
                 for (int i = 0; i < mats.Length; i++)
-                    mats[i] = leafy ? leaves : bark;
+                    mats[i] = leafy ? leaves : marked ? markMat : bark;
                 r.sharedMaterials = mats;
-                r.shadowCastingMode = ShadowCastingMode.On;
+                // the marks lie a hair off the bark: they cast nothing
+                r.shadowCastingMode = marked ? ShadowCastingMode.Off : ShadowCastingMode.On;
             }
             return go;
         }
@@ -288,6 +304,9 @@ namespace Overstory.EditorTools
                         leaves.SetColor("_Green", green);
                         leaves.SetVector("_Season", season);
                         bark.SetVector("_Season", season);     // the twigs show as the leaves fall: the same season
+                        var markMat = AssetDatabase.LoadAssetAtPath<Material>($"{Art}/{species}/M_Tree_{species}_marks.mat");
+                        if (markMat != null)
+                            markMat.SetVector("_Season", season);
                         urp.shadowDistance = 160f;
                         stage.shot = shot;
                         stage.Apply();
