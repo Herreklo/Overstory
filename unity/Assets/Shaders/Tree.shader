@@ -35,6 +35,9 @@ Shader "Overstory/Tree"
         _LeafSkyTint ("Leaves: how much of the sky's tint their shade takes", Range(0, 2)) = 0.35
         _SunPale ("Leaves: how far the sun's light pales their colour", Range(0, 1)) = 0.35
         _Scatter ("Leaves: light passed leaf to leaf into a sunlit crown's shade", Range(0, 2)) = 0.6
+        _SkyThrough ("Leaves: the sky's light through them from behind (an overcast day's glow)", Range(0, 2)) = 0.35
+        _UnderFloor ("Leaves: the sky's light on a mass's underside, as a share of its top's", Range(0, 1)) = 0.5
+        _MassSplit ("Leaves: where a mass turns from its lit top to its shaded underside (its normal's height)", Range(-1, 1)) = -0.05
     }
 
     HLSLINCLUDE
@@ -62,6 +65,9 @@ Shader "Overstory/Tree"
         half _LeafSkyTint;
         half _SunPale;
         half _Scatter;
+        half _SkyThrough;
+        half _UnderFloor;
+        half _MassSplit;
     CBUFFER_END
 
     TEXTURE2D(_Bark);  SAMPLER(sampler_Bark);
@@ -297,12 +303,19 @@ Shader "Overstory/Tree"
                 id.shadowMask = half4(1, 1, 1, 1);
                 OSBake b = OS_ReadBake(input.bake);
                 b.town = OS_TownSky(input.positionWS, s.normalWS);
+            #if defined(_OS_LEAVES)
+                // what a card sees of the sky, flattened to two values: a mass's skin open, its core one darker
+                // interior (Oga's dark inner mass behind the lit ones, never a hollow)
+                b.sky = lerp(0.58h, 1.0h, smoothstep(0.42h, 0.56h, b.sky));
+            #endif
 
             #if defined(_OS_LEAVES)
                 // leaves lit as a painter lights foliage: from the mass's plane, two families (the sun's and the sky's)
                 // with a narrow half-tone where the plane turns from the light, a warm band at the turn, no brush noise;
                 // the sun's shadow only from what stands outside the mass (read three metres towards the light)
                 half3 colour;
+                // where the card sits on its mass: its top (1) or its underside (0), with a narrow soft edge between
+                half top = smoothstep(_MassSplit - 0.06h, _MassSplit + 0.06h, n.y);
                 {
                     Light sun = GetMainLight(id.shadowCoord, id.positionWS, half4(1, 1, 1, 1));
                     half ndl = dot(n, sun.direction);
@@ -318,8 +331,10 @@ Shader "Overstory/Tree"
                     half3 sky = OS_SkyTerm(b, n);
                     half skyLum = dot(sky, half3(0.2126h, 0.7152h, 0.0722h));
                     sky = max(skyLum + (sky - skyLum) * _LeafSkyTint, 0.0h);
-                    // a mass's top takes the sky, its underside is in its own shade: stepped like the sun's planes
-                    sky *= lerp(0.5h, 1.15h, smoothstep(-0.35h, -0.1h, n.y) * 0.45h + smoothstep(0.1h, 0.4h, n.y) * 0.55h);
+                    // a mass's top takes the sky, its underside is in its own shade: two flat values with a narrow soft
+                    // edge between (Firewatch's two values a form), decided by where the card sits on its mass, never
+                    // leaf by leaf
+                    sky *= lerp(_UnderFloor, 1.1h, top);
                     // the sky's light by what the card sees of the sky through the crown (baked); the sun's by its own
                     // shadow, a little dimmed deep inside
                     half seen = saturate(b.sky);
@@ -373,9 +388,15 @@ Shader "Overstory/Tree"
                 half through = (into * into * into * 0.8h + 0.2h * saturate(-ndlT)) * body
                              * main.shadowAttenuation * OS_CloudLight(input.positionWS, main.direction);
                 half isLeaf = m.r > 0.03h ? 1.0h : 0.0h;
-                colour += s.albedo * _Through.rgb * main.color * through * m.b * _Through.a * isLeaf;
-                // and the sky's own light through a thin leaf, from the side it does not face: shaded leaves glow a little
-                colour += s.albedo * OS_SkyFor(-n) * b.sky * b.town * m.b * 0.35h * isLeaf;
+                // light through a leaf takes its colour twice, as through stained glass: deeper, clearer, never greyer
+                half lumLeaf = max(dot(s.albedo, half3(0.2126h, 0.7152h, 0.0722h)), 1e-3h);
+                half3 glass = lerp(s.albedo, s.albedo * s.albedo / lumLeaf, 0.5h);
+                colour += glass * _Through.rgb * main.color * through * m.b * _Through.a * isLeaf;
+                // and the sky's own light through a thin leaf, from the side it does not face: on a grey day the whole
+                // crown is lit from behind by the bright sky, which is why a yellow birch glows in the rain
+                half3 behind = OS_SkyFor(-id.viewDirectionWS);          // the sky beyond the leaf, seen through it
+                // strongest through a mass's lit skin, weaker under it, so the glow never flattens the mass's two values
+                colour += glass * behind * b.sky * b.town * m.b * _SkyThrough * lerp(0.4h, 1.0h, top) * isLeaf;
                 // a painter's hold on local colour: in dim or strongly coloured light (dusk, deep shade) the leaves
                 // keep some of their own hue at the light's brightness, so a yellow birch reads yellow, never as a
                 // green summer tree; the more the dimmer

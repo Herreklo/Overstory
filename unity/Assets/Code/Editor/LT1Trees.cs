@@ -48,11 +48,13 @@ namespace Overstory.EditorTools
             // downy birch on the coast on 20 October: most leaves turned an ochre gold (greyed, never cadmium), the
             // last still olive, the first a dull brown, never orange or red; nearly half fallen, from the inside and
             // below, so the limbs show
-            ["birch"] = (new Color(0.40f, 0.42f, 0.20f), new Color(0.64f, 0.55f, 0.29f), new Color(0.44f, 0.37f, 0.24f),
-                         new Vector4(0.78f, 0.40f, 0f, 0f)),     // two curtains in five gone
+            // a clear yellow-ochre (a birch in the rain is the clearest colour in the street; the sun pales it, so it
+            // never goes cadmium)
+            ["birch"] = (new Color(0.40f, 0.42f, 0.20f), new Color(0.72f, 0.61f, 0.27f), new Color(0.50f, 0.39f, 0.21f),
+                         new Vector4(0.70f, 0.40f, 0f, 0f)),     // two curtains in five gone, a few still green
             // the silver birch turns as the downy does on this coast
-            ["silver_birch"] = (new Color(0.40f, 0.42f, 0.20f), new Color(0.64f, 0.55f, 0.29f), new Color(0.44f, 0.37f, 0.24f),
-                                new Vector4(0.78f, 0.40f, 0f, 0f)),
+            ["silver_birch"] = (new Color(0.40f, 0.42f, 0.20f), new Color(0.72f, 0.61f, 0.27f), new Color(0.50f, 0.39f, 0.21f),
+                                new Vector4(0.70f, 0.40f, 0f, 0f)),
         };
 
         /// <summary>Which painted leaves each species' cards carry: its sprays, or its clumps.</summary>
@@ -91,7 +93,12 @@ namespace Overstory.EditorTools
                     // it was first saved with, and a changed shader default never reaches it)
                     m.SetFloat("_InnerGlow", 0f);
                     m.SetFloat("_MassShadow", 8f);
-                    m.SetFloat("_LeafSkyTint", 0.35f);
+                    // a grey day's sky gives the leaves its light, little of its grey; light through them from
+                    // behind and a mass's underside not sunk let a yellow birch glow in the rain
+                    m.SetFloat("_LeafSkyTint", 0.15f);
+                    m.SetFloat("_SkyThrough", 0.65f);
+                    m.SetFloat("_UnderFloor", 0.6f);
+                    m.SetFloat("_MassSplit", -0.05f);
                     m.SetFloat("_SunPale", 0.45f);
                     m.SetFloat("_Scatter", 0.32f);
                     m.SetFloat("_Cutoff", 0.5f);
@@ -248,8 +255,8 @@ namespace Overstory.EditorTools
             var seasons = new (string name, Color green, Vector4 season)[]
             {
                 ("05-may", new Color(0.50f, 0.58f, 0.20f), new Vector4(0f, 0.55f, 0f, 0f)),     // half out: a pale haze
-                ("07-july", new Color(0.25f, 0.37f, 0.11f), new Vector4(0f, 0f, 0f, 0f)),
-                ("10-october-20", new Color(0.36f, 0.40f, 0.15f), new Vector4(0.78f, 0.40f, 0f, 0f)),
+                ("07-july", new Color(0.34f, 0.47f, 0.15f), new Vector4(0f, 0f, 0f, 0f)),     // a birch's light, fresh green
+                ("10-october-20", new Color(0.36f, 0.40f, 0.15f), new Vector4(0.70f, 0.40f, 0f, 0f)),
                 ("01-january", new Color(0.27f, 0.38f, 0.12f), new Vector4(1f, 1.3f, 0f, 0f)),
             };
             try
@@ -550,6 +557,8 @@ namespace Overstory.EditorTools
                             ("middle", At(across * 33f, 35f), mid, Lens35),
                             // pulled out and steep, on a long lens: near an isometric view of the town
                             ("high", At(across * 52f, 81f), mid, 15f),
+                            // steeper still, about 70 degrees down: the crown seen nearly from above
+                            ("steep", At(across * 30f, 85f), mid, 15f),
                             // lower roaming heights, to choose from: just over the ridges, the close stop, between
                             ("over18", At(across * 19.7f, 18f), mid, Lens28),
                             ("over25", At(across * 25f, 25f), mid, Lens35),

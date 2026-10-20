@@ -49,18 +49,19 @@ import tree_growth as G  # noqa: E402
 # masses: "limbs" makes the crown's masses from its main limbs' foliage (else from where the foliage lies); seam: how
 # wide the seam of sky between two masses is (cards nearly as deep in a neighbour as in their own), and seam_cut the
 # share of the cards there taken out; core_depth, core_keep: how deep in its mass a card is core, and the share of the
-# core kept.
+# core kept. top_tilt: how far one card of each pair on a mass's top tilts to the sky (degrees), for steep views.
 PARTS = {
-    "birch": dict(sag=0.12, taper=0.55, occlusion=0.05, seam=0.5, atlas="clusters", lobe=0.8, lobe_gap=0.36,
+    "birch": dict(sag=0.08, taper=0.55, occlusion=0.05, seam=0.5, atlas="clusters", lobe=0.8, lobe_gap=0.36,
                   cluster_size=(1.3, 1.15, 1.05, 0.85), crossed=True, edge_gap=0.22, edge_depth=0.2,
-                  masses="limbs", seam_cut=0.95, core_depth=0.45, core_keep=0.35, lose_tips=40, hang=False, card=(0.50, 0.48), card_u=(0.03, 0.97), cells=4,
+                  masses="limbs", seam_cut=0.95, core_depth=0.45, core_keep=0.55, top_tilt=50.0, lose_tips=40, hang=False, card=(0.50, 0.48), card_u=(0.03, 0.97), cells=4,
                   per_node=2, along=1, droop=0.7, leaf_years=999, leaf_tips=24, draw_tips=2.5, draw_tips_per_m=0.9, winter_tips=3.0, reach=99.0, hang_reach=0.3,
                   bark=(0.30, 0.60), max_cards=4200, grow_to=80),
     "spruce": dict(card=(0.60, 0.40), cells=4, per_node=2, droop=0.25, leaf_years=7, leaf_tips=30, draw_tips=3.0, draw_tips_per_m=0.45,
                    bark=(0.30, 0.50), max_cards=8000, grow_to=100),
 }
-# the silver birch: the birch's fitting, carrying its own drapes (blender/parts/trees/silver_birch)
-PARTS["silver_birch"] = dict(PARTS["birch"])
+# the silver birch: the birch's fitting, carrying its own drapes (blender/parts/trees/silver_birch), its branches
+# giving more under their weight
+PARTS["silver_birch"] = dict(PARTS["birch"], sag=0.12)
 
 
 def h01(*k):
@@ -711,9 +712,16 @@ def lobe_mesh(tl, parts, age, seed, H):
         # edge-on (a card turned edge-on fades: a spray at the crown's sides would vanish and leave its branch bare)
         twins = (-45.0, 45.0) if parts.get("crossed") else (0.0,)
         face_mass = face
+        on_top = vol is not None and (centres[j] - vol[0])[2] > 0.25 * vol[2].max()
         for twin, turn in enumerate(twins):
             face = G.rotate(face_mass, up_w, turn)
             face /= max(np.linalg.norm(face), 1e-9)
+            if parts.get("top_tilt") and on_top and twin == 0:
+                # on a mass's top one card of the pair tilts to the sky, its foliage lying out over the mass, so the
+                # crown has a face from the city camera's steep views (upright cards are edge-on from above)
+                tt = math.radians(parts["top_tilt"])
+                face = face * math.cos(tt) + up_w * math.sin(tt)
+                face /= max(np.linalg.norm(face), 1e-9)
             side = np.cross(up_w, face)
             if np.linalg.norm(side) < 1e-6:
                 side = np.array([1.0, 0.0, 0.0])
@@ -774,8 +782,9 @@ def lobe_mesh(tl, parts, age, seed, H):
             UV1.extend([(rank, fall)] * 4)
             ATTACH.append((end[i].copy(), depth_j, fall, int(i)))
             EXTENT.append((np.mean(corners, axis=0), 0.42 * s_))
-            # a thin outer spray sees the sky round it, not the mass's underside: its normal lifts towards up
-            lift = 0.25 + (0.55 * (1.0 - min(depth_j / 0.3, 1.0)) if anchor is not None else 0.0)
+            # a thin outer spray sees a little more of the sky round it: its normal lifts a little towards up (its
+            # lightness comes from the light through it; a mass's underside stays in shade)
+            lift = 0.25 + (0.2 * (1.0 - min(depth_j / 0.3, 1.0)) if anchor is not None else 0.0)
             for p in corners:
                 n = volume_normal(vol, p, lift) if vol is not None else face
                 dep = volume_depth(vol, p) if vol is not None else 0.0
@@ -1117,7 +1126,9 @@ def build(species, seed, age, quality=1.0, unity=None, events=(), exposure=0.0, 
     near = np.array([kd.find(BV[v])[1] for v in range(len(BV))])
     dv = deep[near][loops]
     nz = nrm[:, 2]
-    sky = np.clip((0.5 + 0.5 * nz) * (1.0 - 0.45 * dv), 0.15, 1.0)
+    # deep in the crown a branch is in the foliage's shade, but a painter keeps it a dark-mid tone, never black against
+    # the sky in a gap
+    sky = np.clip((0.5 + 0.5 * nz) * (1.0 - 0.3 * dv), 0.3, 1.0)
     # alpha: the season from which a point of wood shows (0 always; a twig deep in the foliage shows as it falls)
     col = np.stack([sky, np.clip(0.5 - 0.5 * nz, 0, 1), 1.0 - 0.5 * dv, APPEAR[loops]], -1).astype(np.float32)
     attr = me.color_attributes.new("bake", "FLOAT_COLOR", "CORNER")

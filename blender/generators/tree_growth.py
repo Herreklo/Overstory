@@ -80,15 +80,16 @@ SPECIES = {
         envelope="cone", width=(0.34, 0.17), crown_base=(0.0, 0.03), self_prune=(0.0, 0.0),
         shed=(0.10, 4), bud_life=3, tip_radius=0.0032, pipe=2.2, light=(0.30, 0.25, 6),
     ),
-    # Downy birch, Betula pubescens. A leader while young (a slender whip at 15), then apical control gives way and
-    # the stem forks into a few ascending limbs that arch outward, the crown broadening on them, a mass of fine twigs; alternate buds (2/5 phyllotaxis); an airy, irregular crown, not weeping (that is the silver birch);
+    # Downy birch, Betula pubescens. A leader while young (a slender whip at 15), then the crown broadens on a few
+    # limbs that ascend in a vase, their twigs spreading and rising, the tips only nodding; a mass of fine twigs;
+    # alternate buds (2/5 phyllotaxis); an airy, irregular crown with a ragged top, not weeping (that is the silver birch);
     # it needs light and sheds its lower branches early. On a good site on this coast about 6 m at 15 years, 11 at 30
     # and 15 at 60; few live past 100.
     "birch": dict(
         kind="broadleaf", height=16.0, growth=(0.050, 1.5), leader_until=999,
         internode=0.22, shoot=0.35, full_size=3.0, alpha=2.0, apical=(0.64, 0.58, 40),
         phyllotaxis=144.0, lateral_angle=42.0, max_order=4, long_min=1.4, acrotony=(2, 1.3, 0.35),
-        setpoint=((90, 90), (66, 38), (30, 0), (0, -20), (-15, -30), (-20, -35)), steer=0.15, light_pull=0.25,
+        setpoint=((90, 90), (70, 48), (48, 20), (30, 5), (20, -5), (15, -10)), steer=0.15, light_pull=0.25,
         light_up=0.3, jitter=0.08, curl=(1.0, 3.5), variety=1.0, tip_loss=(0.04, 0.10), flag=0.85,
         envelope="dome", width=(0.19, 0.27), lobing=0.6, crown_base=(0.0, 0.0), self_prune=(0.05, 0.34),
         masses=dict(top=(0.86, 0.17, 0.13), sides=(3, 4), side_z=(0.36, 0.70), side_off=(0.20, 0.30),
@@ -99,10 +100,11 @@ SPECIES = {
     ),
 }
 # Silver birch, Betula pendula: the planted garden and park birch of the town. A leader kept, branches that rise and
-# arch over, the fine twigs hanging in long curtains as it ages, whiter bark breaking black at the foot. Its habit
-# starts as the planted birch's habit found so far (which already arches and hangs); what sets it apart from the
-# downy birch's is found in look tests.
-SPECIES["silver_birch"] = dict(SPECIES["birch"])
+# arch over, the fine twigs hanging in long curtains as it ages, whiter bark breaking black at the foot. The downy
+# birch's habit but for its limbs: they rise less and arch over, their ends hanging (the downy's ascend, their twigs
+# spreading); what else sets the two apart is found in look tests.
+SPECIES["silver_birch"] = dict(SPECIES["birch"],
+                               setpoint=((90, 90), (66, 38), (30, 0), (0, -20), (-15, -30), (-20, -35)))
 
 
 def character(sp, seed, age_full, exposure, push):
