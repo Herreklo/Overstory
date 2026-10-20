@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cc406944d9a4348bbacb016ee3063e1c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Overstory.Scenes.Grade
+  intent: 'Hard going: hard contrast, crushed blacks, dirty teal against rust, coarse grain.'
+  exposure: 0.05
+  contrast: 16
+  lift: {x: 0.98, y: 1, z: 1, w: -0.015}
+  gamma: {x: 1, y: 0.99, z: 0.97, w: -0.02}
+  gain: {x: 1, y: 1, z: 1, w: 0}
+  saturation: -15
+  temperature: 0
+  tint: 0
+  filter: {r: 1, g: 1, b: 1, a: 1}
+  splitShadows: {r: 0.43, g: 0.51, b: 0.52, a: 1}
+  splitHighlights: {r: 0.6, g: 0.51, b: 0.42, a: 1}
+  splitBalance: 0
+  shadowSaturation: 0.5
+  vignette: 0.3
+  vignetteSmoothness: 0.45
+  vignetteColour: {r: 0, g: 0, b: 0, a: 1}
+  grain: 0.45
+  bloom: -0.1
+  bloomScatter: 0.5

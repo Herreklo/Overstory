@@ -14,10 +14,14 @@ What is built (all grey masses; parts come later, one at a time):
 - the landmarks beyond the heart (the platform in the fjord, the High Bridge, the cannery's chimney, the
   monastery's ruin, the wreck, the cranes, the funicular, the water tower) and quiet context massing by use.
 
-Every face carries a "bake" colour (sky, ground, openness) from its facing, as the street shader expects.
-Each category is one mesh, exported to <unity>/Assets/Art/Blockout/heart/<name>.fbx.
+Every face carries a "bake" colour (sky, ground, openness) from its facing, as the street shader expects, and UVs
+on one swatch of the shared palette: in clay every surface is one grey, but the palette still says which faces are
+glass, which glow and as what (a lit window, a lamp of its era), and which ground is paved, where puddles lie.
+Each category is one mesh, exported to <unity>/Assets/Art/Blockout/heart/<name>.fbx, with the palette's maps and the
+lamps as lights (lights.json: where each lamp stands and what kind it is).
 """
 
+import json
 import math
 import os
 import random
@@ -31,6 +35,9 @@ sys.path.insert(0, HERE)
 import centre_land as L  # noqa: E402
 import heart_layout as H  # noqa: E402
 
+sys.path.insert(0, os.path.join(HERE, "..", "generators"))
+import palette  # noqa: E402
+
 ROOT = os.path.normpath(os.path.join(HERE, "..", ".."))
 COLLECTION = "heart"
 
@@ -38,10 +45,28 @@ COLLECTION = "heart"
 class Mesh:
     """Vertices and faces gathered for one category, made into one object at the end."""
 
-    def __init__(self, name):
+    def __init__(self, name, swatch="render_white"):
         self.name = name
         self.v = []
         self.f = []
+        self.marks = [(0, swatch)]  # (first face, swatch or a list of swatches face by face) as they were set
+
+    def paint(self, swatch):
+        """Every face added from now on sits on this swatch of the palette."""
+        self.marks.append((len(self.f), swatch))
+
+    def swatches(self):
+        """The swatch of each face."""
+        out = [None] * len(self.f)
+        for k, (start, sw) in enumerate(self.marks):
+            end = self.marks[k + 1][0] if k + 1 < len(self.marks) else len(self.f)
+            if isinstance(sw, str):
+                out[start:end] = [sw] * (end - start)
+            else:
+                out[start:start + len(sw)] = sw
+                if start + len(sw) < end:
+                    out[start + len(sw):end] = [sw[-1]] * (end - start - len(sw))
+        return out
 
     def quad(self, a, b, c, d):
         n = len(self.v)
@@ -85,7 +110,8 @@ def grid(x0, y0, x1, y1, step):
     return np.meshgrid(xs, ys, indexing="ij")
 
 
-def ground_mesh(m, X, Y, Z, skip=None):
+def ground_mesh(m, X, Y, Z, skip=None, paving=None):
+    """A grid of ground; paving(cx, cy) names each face's swatch (else plain ground)."""
     nx, ny = X.shape
     idx = np.arange(nx * ny).reshape(nx, ny)
     base = len(m.v)
@@ -95,12 +121,14 @@ def ground_mesh(m, X, Y, Z, skip=None):
     c = idx[1:, 1:].ravel()
     d = idx[:-1, 1:].ravel()
     keep = np.ones(a.shape, dtype=bool)
+    cx = (X[:-1, :-1] + X[1:, 1:]).ravel() / 2
+    cy = (Y[:-1, :-1] + Y[1:, 1:]).ravel() / 2
     if skip is not None:
-        cx = (X[:-1, :-1] + X[1:, 1:]).ravel() / 2
-        cy = (Y[:-1, :-1] + Y[1:, 1:]).ravel() / 2
         keep = ~skip(cx, cy)
+    m.paint(list(paving(cx[keep], cy[keep])) if paving is not None else "ground")
     for qa, qb, qc, qd in zip(a[keep], b[keep], c[keep], d[keep]):
         m.f.append((base + int(qa), base + int(qb), base + int(qc), base + int(qd)))
+    m.paint("ground")
 
 
 def skirt(m, X, Y, Z, drop=5.0):
@@ -126,6 +154,13 @@ def far_heights(X, Y):
 
 
 def building_mesh(m, b, ground):
+    """A building's masses and its windows."""
+    _massing(m, b, ground)
+    windows(m, b)
+    m.paint("render_white")
+
+
+def _massing(m, b, ground):
     W, D, z0 = b["w"], b["d"], b["base"]
     c, s = math.cos(math.radians(b["angle"])), math.sin(math.radians(b["angle"]))
     to = lambda x, y: (b["ox"] + x * c - y * s, b["oy"] + x * s + y * c)
@@ -136,10 +171,13 @@ def building_mesh(m, b, ground):
         m.box([to(x0, y0), to(x1, y0), to(x1, y1), to(x0, y1)], za, zb)
 
     if low < z0 - 0.1:
+        m.paint("stone")
         lbox(0.05, 0.05, W - 0.05, D - 0.05, low - 0.4, z0)  # the plinth takes up the slope
     ze = z0 + b["eave"]
     roof = b["roof"]
+    m.paint("render_white")
     lbox(0, 0, W, D, z0, ze)
+    m.paint("roof_red")
     o = 0.45
     if roof == "flat":
         lbox(-0.15, -0.15, W + 0.15, D + 0.15, ze, ze + 0.5)
@@ -149,7 +187,11 @@ def building_mesh(m, b, ground):
             cap = b["eave"] * 1.1   # a tall spire
         else:
             cap = min(W, D) * 0.45
+        beacon = dict(H.BEACONS).get(b["name"])
+        if beacon:
+            m.paint(f"lamp_{beacon}")  # the lantern room of a harbour light
         lbox(-0.3, -0.3, W + 0.3, D + 0.3, ze, ze + 0.6)
+        m.paint("roof_red")
         n = len(m.v)
         m.v += [(*to(-0.3, -0.3), ze + 0.6), (*to(W + 0.3, -0.3), ze + 0.6), (*to(W + 0.3, D + 0.3), ze + 0.6),
                 (*to(-0.3, D + 0.3), ze + 0.6), (*to(W / 2, D / 2), ze + 0.6 + cap)]
@@ -185,6 +227,7 @@ def building_mesh(m, b, ground):
                 (*to(W / 2, -o * 0.6), ze + rise), (*to(W / 2, D + o * 0.6), ze + rise)]
         m.f += [(n + 1, n + 2, n + 5, n + 4), (n + 3, n, n + 4, n + 5), (n, n + 1, n + 4), (n + 2, n + 3, n + 5), (n + 3, n + 2, n + 1, n)]
     # the gable walls up into the roof
+    m.paint("render_white")
     n = len(m.v)
     if along:
         m.v += [(*to(0, 0), ze), (*to(0, D), ze), (*to(0, D / 2), ze + rise - 0.2), (*to(W, 0), ze), (*to(W, D), ze), (*to(W, D / 2), ze + rise - 0.2)]
@@ -197,19 +240,140 @@ def building_mesh(m, b, ground):
         lbox(W / 2 - 0.25, -1.2, W / 2 + 0.25, 0.0, ze + rise * 0.62, ze + rise * 0.72)
         return
     if b["role"] in ("row", "corner", "warehouse") and b["name"] != "the Fish Hall":
+        m.paint("brick")
         cx = W * 0.62 if along else W / 2
         cy = D / 2 if along else D * 0.62
         lbox(cx - 0.35, cy - 0.35, cx + 0.35, cy + 0.35, ze + rise * 0.4, ze + rise + 1.1)
 
 
+# -- windows: openings in the clay, lit where someone is in (heart_layout.evening) ----------------------------------
+
+STOREY = 2.75                    # an old timber house's storey, floor to floor
+PANE = dict(w=0.9, h=1.3, sill=0.85)
+
+
+def _facades(W, D, along):
+    """The four walls in the building's frame: (start, end, is_front, is_gable_end). Running from start to end with
+    up, the outward side is to the right, so a quad laid that way faces out."""
+    return [((0.0, 0.0), (W, 0.0), True, not along), ((W, D), (0.0, D), False, not along),
+            ((0.0, D), (0.0, 0.0), False, along), ((W, 0.0), (W, D), False, along)]
+
+
+def windows(m, b):
+    W, D, z0 = b["w"], b["d"], b["base"]
+    ze = z0 + b["eave"]
+    name, role, roof = b["name"], b["role"], b["roof"]
+    if name in H.EXEMPT or name in ("the bandstand in Lookout Park", "the breakwater's light", "the beacon on the Pip"):
+        return
+    c, s = math.cos(math.radians(b["angle"])), math.sin(math.radians(b["angle"]))
+    to = lambda x, y: (b["ox"] + x * c - y * s, b["oy"] + x * s + y * c)
+    ev = H.evening(b)
+    r = random.Random(f"windows:{H.key(b)}")
+    along = roof in ("eaves", "mansard")
+    span = D if along else W
+    rise = math.tan(math.radians(b["pitch"])) * (span / 2) if roof in ("eaves", "gable", "mansard") else 0.0
+
+    def pane(a, e, t0, t1, za, zb, swatch, out=0.04):
+        (ax, ay), (ex, ey) = a, e
+        lx, ly = ex - ax, ey - ay
+        ln = math.hypot(lx, ly)
+        nx, ny = ly / ln, -lx / ln  # outward, in the building's frame
+        p0 = to(ax + lx * t0 + nx * out, ay + ly * t0 + ny * out)
+        p1 = to(ax + lx * t1 + nx * out, ay + ly * t1 + ny * out)
+        m.paint(swatch)
+        m.quad((*p0, za), (*p1, za), (*p1, zb), (*p0, zb))
+
+    def lit_runs(n, share):
+        """Which of n windows on a floor are lit: rooms are lit together, so a run of one to three."""
+        on = [False] * n
+        if n and r.random() < min(1.0, share * 1.6):
+            k = r.randint(1, min(3, n))
+            i = r.randint(0, n - k)
+            on[i:i + k] = [True] * k
+        return on
+
+    # landmarks with their own openings
+    if name.startswith("the cathedral"):
+        if "tower" in name:
+            for a, e, _, _ in _facades(W, D, along):
+                pane(a, e, 0.4, 0.6, ze - 6.0, ze - 2.0, "glass")  # the belfry
+            return
+        for a, e, _, _ in _facades(W, D, along):
+            ln = math.hypot(e[0] - a[0], e[1] - a[1])
+            n = max(1, int(ln / 6.0))
+            for i in range(n):
+                t = (i + 0.5) / n
+                pane(a, e, t - 0.7 / ln, t + 0.7 / ln, z0 + 3.0, z0 + 8.5, "glass")
+        return
+    if name == "the Fire Watch":
+        for a, e, _, _ in _facades(W, D, along):
+            for k in range(1, int(b["eave"] / 4.5)):
+                pane(a, e, 0.42, 0.58, z0 + k * 4.5, z0 + k * 4.5 + 1.1, "glass")
+            pane(a, e, 0.3, 0.7, ze - 2.2, ze - 0.6, "glass")  # the watchman's room, shut in the evening
+        return
+
+    warehouse = role == "warehouse"
+    storey = 3.0 if warehouse else (3.4 if role == "landmark" else STOREY)
+    floors = max(1, int((ze - z0 - 0.5) / storey + 0.2))
+    for a, e, front, gable_end in _facades(W, D, along):
+        ln = math.hypot(e[0] - a[0], e[1] - a[1])
+        if warehouse and front and gable_end:
+            # the sea house's gable to the quay: loading doors up the middle, a small window either side
+            for k in range(floors):
+                zb = z0 + k * storey
+                if k == 0 and ev["shop"] == "open":  # turned into a bar: its ground floor glazed and lit
+                    pane(a, e, 0.08, 0.42, zb + 0.3, zb + 2.5, "glass_shop_lit")
+                    pane(a, e, 0.58, 0.92, zb + 0.3, zb + 2.5, "glass_shop_lit")
+                    pane(a, e, 0.44, 0.56, zb, zb + 2.3, "door_brown")
+                    continue
+                pane(a, e, 0.5 - 0.7 / ln, 0.5 + 0.7 / ln, zb + 0.1, zb + 2.3, "wood")
+                for t in (0.2, 0.8):
+                    lit = r.random() < ev["upper"]
+                    pane(a, e, t - 0.35 / ln, t + 0.35 / ln, zb + 1.0, zb + 1.9, "glass_lit" if lit else "glass")
+            continue
+        bays = max(1, int(ln / (4.5 if warehouse else 2.6)))
+        w = min(PANE["w"], ln / bays * 0.5) / ln
+        for k in range(floors):
+            zb = z0 + k * storey
+            za, zt = zb + PANE["sill"], zb + PANE["sill"] + PANE["h"]
+            if zt > ze - 0.25:
+                break
+            if k == 0 and front and ev["shop"] is not None:
+                # the ground floor's front: a shop, a pub or a café, two panes either side of a door, a sign over
+                lit = ev["shop"] == "open"
+                glass = "glass_shop_lit" if lit else "glass_shop"
+                pane(a, e, 0.1, 0.43, zb + 0.35, zb + 2.55, glass)
+                pane(a, e, 0.57, 0.9, zb + 0.35, zb + 2.55, glass)
+                pane(a, e, 0.45, 0.55, zb + 0.02, zb + 2.3, "door_brown")
+                if ev["shop"] != "empty":
+                    pane(a, e, 0.14, 0.86, zb + 2.7, zb + 3.1, "sign_lit" if lit else "sign")
+                continue
+            on = lit_runs(bays, ev["upper"] if k > 0 or not front else ev["upper"])
+            for i in range(bays):
+                t = (i + 0.5) / bays
+                pane(a, e, t - w / 2, t + w / 2, za, zt, "glass_lit" if on[i] else "glass")
+        if gable_end and rise > 2.6 and not warehouse:
+            lit = r.random() < ev["upper"] * 0.5
+            pane(a, e, 0.5 - 0.4 / ln, 0.5 + 0.4 / ln, ze + 0.5, ze + 1.5, "glass_lit" if lit else "glass")
+
+
 def detail_mesh(m, d):
     k, x, y, z, l, w, h, a = d["kind"], d["x"], d["y"], d["z"], d["l"], d["w"], d["h"], d["a"]
     if k == "lantern":
+        m.paint("metal_post")
         m.obox(x, y, a, 0.18, 0.18, z, z + h - 0.6)
-        m.obox(x, y, a, 0.5, 0.5, z + h - 0.6, z + h)
+        m.obox(x, y, a, 0.56, 0.56, z + h - 0.12, z + h)        # its cap
+        m.paint(f"lamp_{d.get('light', 'warm')}")
+        m.obox(x, y, a, 0.46, 0.46, z + h - 0.6, z + h - 0.12)  # its glass
+        m.paint("render_white")
     elif k == "pole":
+        ax, ay = d.get("arm", (math.sin(math.radians(a)), -math.cos(math.radians(a))))
+        m.paint("metal_post")
         m.obox(x, y, a, 0.24, 0.24, z, z + h)
-        m.obox(x + 0.8 * math.sin(math.radians(a)), y - 0.8 * math.cos(math.radians(a)), a + 90, 1.8, 0.4, z + h - 0.3, z + h)
+        m.obox(x + 0.8 * ax, y + 0.8 * ay, math.degrees(math.atan2(ay, ax)), 1.8, 0.2, z + h - 0.2, z + h)
+        m.paint(f"lamp_{d.get('light', 'sodium')}")
+        m.obox(x + 1.5 * ax, y + 1.5 * ay, math.degrees(math.atan2(ay, ax)), 0.7, 0.32, z + h - 0.38, z + h - 0.2)
+        m.paint("render_white")
     elif k == "boat" or k == "tall ship":
         c, s = math.cos(math.radians(a)), math.sin(math.radians(a))
         pts = [(-l / 2, -w / 2), (l * 0.25, -w / 2), (l / 2, 0.0), (l * 0.25, w / 2), (-l / 2, w / 2)]
@@ -357,7 +521,7 @@ def context_mesh(m, roads, ground):
                 if L._inside(poly, np.array([fx]), np.array([fy]))[0]:
                     for (du, dv, w, d, e) in ((0, 0, 12, 9, 5.0), (16, 4, 24, 12, 6.5)):
                         ox, oy = fx + ca * du - sa * dv, fy + sa * du + ca * dv
-                        b = dict(name="context", ox=ox, oy=oy, angle=math.degrees(ang), w=w, d=d, base=ground(ox, oy) + 0.2,
+                        b = dict(name="context", use=kind, ox=ox, oy=oy, angle=math.degrees(ang), w=w, d=d, base=ground(ox, oy) + 0.2,
                                  eave=e, pitch=40.0, roof="eaves", role="context")
                         if free(H.footprint(b)):
                             building_mesh(m, b, ground)
@@ -402,13 +566,13 @@ def context_mesh(m, roads, ground):
                     if L._inside(poly, np.array([mx]), np.array([my]))[0] and rng.random() > 0.1:
                         z = ground(mx, my)
                         if kind == "home":
-                            b = dict(name="context", ox=ox, oy=oy, angle=a, w=w, d=d, base=z + 0.2, eave=rng.choice([4.4, 5.8, 6.4]),
+                            b = dict(name="context", use=kind, ox=ox, oy=oy, angle=a, w=w, d=d, base=z + 0.2, eave=rng.choice([4.4, 5.8, 6.4]),
                                      pitch=rng.uniform(36, 46), roof=rng.choice(["eaves", "gable"]), role="context")
                         elif kind == "civic":
-                            b = dict(name="context", ox=ox, oy=oy, angle=a, w=w, d=d, base=z + 0.2, eave=rng.uniform(11, 20),
+                            b = dict(name="context", use=kind, ox=ox, oy=oy, angle=a, w=w, d=d, base=z + 0.2, eave=rng.uniform(11, 20),
                                      pitch=0.0, roof="flat", role="context")
                         else:
-                            b = dict(name="context", ox=ox, oy=oy, angle=a, w=w, d=d, base=z + 0.2, eave=rng.uniform(6, 9),
+                            b = dict(name="context", use=kind, ox=ox, oy=oy, angle=a, w=w, d=d, base=z + 0.2, eave=rng.uniform(6, 9),
                                      pitch=22.0, roof="gable", role="context")
                         fp = H.footprint(b)
                         if free(fp):
@@ -426,16 +590,29 @@ def context_mesh(m, roads, ground):
 def make_object(m, coll):
     me = bpy.data.meshes.new(m.name)
     me.from_pydata(m.v, [], m.f)
+    names = sorted(set(m.swatches()))
+    ids = np.array([names.index(n) for n in m.swatches()], dtype=np.int32)
+    me.attributes.new("swatch", "INT", "FACE").data.foreach_set("value", ids)
     me.validate()
     me.update()
+    # every corner of a face on its swatch's centre
+    ids = np.zeros(len(me.polygons), dtype=np.int32)
+    me.attributes["swatch"].data.foreach_get("value", ids)
+    centres = np.array([palette.uv(n) for n in names], dtype=np.float32)
+    loop_poly = np.zeros(len(me.loops), dtype=np.int64)
+    starts = np.zeros(len(me.polygons), dtype=np.int64)
+    totals = np.zeros(len(me.polygons), dtype=np.int64)
+    me.polygons.foreach_get("loop_start", starts)
+    me.polygons.foreach_get("loop_total", totals)
+    loop_poly = np.repeat(np.arange(len(me.polygons)), totals)
+    uv = me.uv_layers.new(name="palette")
+    uv.data.foreach_set("uv", centres[ids[loop_poly]].ravel())
+    me.attributes.remove(me.attributes["swatch"])
     # what each face sees, from its facing: up-facing faces see sky, down-facing see ground
     normals = np.zeros(len(me.polygons) * 3)
     me.polygons.foreach_get("normal", normals)
     nz = normals.reshape(-1, 3)[:, 2]
     attr = me.color_attributes.new("bake", "FLOAT_COLOR", "CORNER")
-    loop_poly = np.zeros(len(me.loops), dtype=np.int64)
-    for p in me.polygons:
-        loop_poly[p.loop_start:p.loop_start + p.loop_total] = p.index
     sky = 0.5 + 0.5 * nz[loop_poly]
     cols = np.stack([sky, 1.0 - sky, np.ones_like(sky), np.ones_like(sky)], -1).astype(np.float32)
     attr.data.foreach_set("color", cols.ravel())
@@ -474,7 +651,7 @@ def build(unity=None):
     Zh = H.carve(X, Y, L.heights(X, Y))
     heart_ground = lambda x, y: float(_sample(X, Y, Zh, x, y))
     g = Mesh("ground_heart")
-    ground_mesh(g, X, Y, Zh)
+    ground_mesh(g, X, Y, Zh, paving=H.paving)
     skirt(g, X, Y, Zh)
     RX, RY = grid(RX0, RY0, RX1, RY1, 6.0)
     Zr = L.heights(RX, RY)
@@ -543,12 +720,36 @@ def build(unity=None):
     meshes = [g, r, fm, water, lake, steps, walls, corner, houses, marks, det, far, ctx, roads, rail]
     objs = [make_object(m, coll) for m in meshes]
     report.update({m.name: len(m.f) for m in meshes})
+    lamps = lamp_lights()
+    report["lamps"] = len(lamps)
     if unity:
         out = os.path.join(unity, "Assets", "Art", "Blockout", "heart")
         for ob in objs:
             export_fbx(ob, os.path.join(out, f"{ob.name}.fbx"))
+        with open(os.path.join(out, "lights.json"), "w") as f:
+            json.dump({"lamps": lamps}, f, indent=0)
+        palette.save_maps(os.path.join(unity, "Assets", "Art", "Palette"))
         report["exported to"] = out
     return report
+
+
+def lamp_lights():
+    """Every lamp as a light, where its glass is, in street metres: {x, y, z, kind}. Kinds: warm, mercury, sodium (the
+    era its street was lit), red and white (the harbour's own lights)."""
+    out = []
+    for d in H.DETAILS:
+        if d["kind"] == "lantern":
+            out.append(dict(x=round(d["x"], 2), y=round(d["y"], 2), z=round(d["z"] + d["h"] - 0.36, 2), kind=d.get("light", "warm")))
+        elif d["kind"] == "pole":
+            ax, ay = d.get("arm", (0.0, 0.0))
+            out.append(dict(x=round(d["x"] + 1.5 * ax, 2), y=round(d["y"] + 1.5 * ay, 2), z=round(d["z"] + d["h"] - 0.45, 2),
+                            kind=d.get("light", "sodium")))
+    for b in H.BUILDINGS:
+        colour = dict(H.BEACONS).get(b["name"])
+        if colour:
+            out.append(dict(x=round(b["ox"] + b["w"] / 2, 2), y=round(b["oy"] + b["d"] / 2, 2),
+                            z=round(b["base"] + b["eave"] + 0.3, 2), kind=colour))
+    return out
 
 
 def _sample(X, Y, Z, x, y):

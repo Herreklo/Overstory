@@ -68,6 +68,7 @@ MonoBehaviour:
   lampGlow: 0
   lampIntensity: 0
   windowSpill: 0
+  lampHalo: 1
   postExposure: 0.05
   contrast: 8
   saturation: 0

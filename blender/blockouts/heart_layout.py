@@ -682,6 +682,75 @@ def _local(b, u, v):
     return b["ox"] + u * c - v * s, b["oy"] + u * s + v * c
 
 
+# -- the town at night: its lamps and who is in -------------------------------------------------------------------
+# Every light on screen is a fact. Until the engine gives them, they are authored here for one evening: 17:50 on
+# Friday 20 October 1989, blue hour, sea fog.
+
+# Lamps by the era their street was lit: the old town's lanes and stairs got lanterns with warm bulbs in 1955; Holm
+# Street's were replaced with mercury lamps in the 1960s; the quays, Broad Street and the Grid's streets were lit
+# with high-pressure sodium on poles in the 1970s.
+LAMP_ERAS = {"warm": "1955, lanterns, incandescent", "mercury": "the 1960s, mercury vapour", "sodium": "the 1970s, high-pressure sodium"}
+
+
+def lamp_kind(lane):
+    if lane["kind"] in ("quay", "road") or lane["name"] in ("Broad Street",) or lane["name"].startswith("the Grid"):
+        return "sodium"
+    if lane["name"].startswith("Holm Street"):
+        return "mercury"
+    return "warm"
+
+
+def key(b):
+    """A building's own name for seeding: its name, and where it stands for the unnamed ones."""
+    return f"{b['name']}@{b['ox']:.1f},{b['oy']:.1f}"
+
+
+def evening(b):
+    """Who is in at 17:50 that Friday, for one building (authored, seeded by its name so it never changes between
+    frames): the share of its upper windows lit, and its ground floor's front: a lit shop, pub or café, a closed or
+    empty one, or none. Which of its windows glow is seeded texture; that someone is home is the fact."""
+    r = random.Random(f"evening:{key(b)}")
+    name, role = b["name"], b["role"]
+    shop = None
+    if role == "context":  # the town round the heart, by its district's use
+        use = b.get("use", "home")
+        if use == "night":
+            return dict(upper=0.3, shop="open" if r.random() < 0.7 else "closed")
+        if use in ("work", "civic"):
+            return dict(upper=0.2 if r.random() < 0.6 else 0.0, shop=None)
+        return dict(upper=0.35 if r.random() < 0.85 else 0.0, shop=None)
+    if name.startswith("D (1107"):
+        return dict(upper=0.0, shop=None)  # empty and boarded since 1986
+    if name.startswith("A (104"):
+        return dict(upper=0.4, shop="open")  # the café, opened in 1988
+    if role == "corner":
+        return dict(upper=0.45, shop=None)
+    if name.startswith("Harbour Row"):
+        shop = r.choices(["open", "closed", "empty"], [0.45, 0.35, 0.2])[0]  # a boom town in a slump
+        return dict(upper=0.3 if r.random() < 0.8 else 0.0, shop=shop)
+    if name.startswith(("Holm Street", "Holm Street west")):
+        shop = r.choices(["open", "closed"], [0.7, 0.3])[0]  # pubs, a club, a chip shop
+        return dict(upper=0.3, shop=shop)
+    if role == "warehouse":
+        shop = "open" if r.random() < 0.28 else None  # sea houses turned bars and restaurants
+        return dict(upper=0.08, shop=shop)
+    if name.startswith("the Grid"):
+        shop = r.choices(["open", "closed", "empty"], [0.4, 0.45, 0.15])[0]
+        return dict(upper=0.25, shop=shop)
+    if role == "landmark":
+        upper = {"the hotel": 0.6, "the bishop's house": 0.4, "the harbour master": 0.5, "the customs house": 0.1,
+                 "the bank": 0.05}.get(name, 0.0)
+        if name.startswith("the square's"):
+            return dict(upper=0.3, shop=r.choices(["open", "closed"], [0.5, 0.5])[0])
+        return dict(upper=upper, shop=None)
+    # the old town's houses and the Heights' villas: someone is home in most
+    return dict(upper=0.35 if r.random() < 0.85 else 0.0, shop=None)
+
+
+# The harbour's own lights, lit every night: the breakwater's head (red) and the beacon on the Pip (white)
+BEACONS = [("the breakwater's light", "red"), ("the beacon on the Pip", "white")]
+
+
 def details(rng):
     """Yards, walls, sheds, stoops, fences, bollards, quay steps, boats, lamps, benches, the square's furniture."""
     DETAILS.clear()
@@ -756,11 +825,13 @@ def details(rng):
     detail("tall ship", 196.0, -126.0, SEA - 1.0, 44.0, 8.0, 4.2, 6.0)
     for k, mx in enumerate((-14.0, 0.0, 13.0)):
         detail("mast", 196.0 + mx * math.cos(math.radians(6)), -126.0 + mx * math.sin(math.radians(6)), SEA + 3.0, 0.5, 0.5, 30.0 - 4 * abs(k - 1), 6.0)
-    # lamps: lanterns on posts along the old town's lanes, poles along the quays and Broad Street
+    # lamps: lanterns on posts along the old town's lanes, poles along the quays and Broad Street; each lamp the
+    # kind its lane was lit with (LAMP_ERAS)
     for lane in LANES:
         if lane["kind"] == "steps" and lane["width"] < 2.5:
             continue
         pole = lane["kind"] == "quay" or lane["name"] == "Broad Street"
+        light = lamp_kind(lane)
         every = 30.0 if pole else 24.0
         s, total, k = 6.0, length(lane["pts"]), 0
         while s < total:
@@ -773,10 +844,13 @@ def details(rng):
             lx, ly = x - math.sin(math.radians(a)) * off * side, y + math.cos(math.radians(a)) * off * side
             if not any(_sat_overlap([(lx - 0.2, ly - 0.2), (lx + 0.2, ly - 0.2), (lx + 0.2, ly + 0.2), (lx - 0.2, ly + 0.2)], footprint(b)) for b in BUILDINGS):
                 detail("pole" if pole else "lantern", lx, ly, z, 0.25, 0.25, 7.0 if pole else 3.6, a)
+                DETAILS[-1]["light"] = light
+                DETAILS[-1]["arm"] = ((x - lx) / off, (y - ly) / off)  # towards the lane it lights
             s += every
             k += 1
-    # the corner's lantern on the Landing
+    # the corner's lantern on the Landing, put up in 1955 when the council brought electric light to the lane
     detail("lantern", 44.2, LANDING[0][1] + 1.0, LANDING_Z, 0.25, 0.25, 3.6, 0.0)
+    DETAILS[-1]["light"] = "warm"
     # benches on the Hundred Steps' landings and in Lookout Park; the square's fountain and stalls
     for (x, y, z) in HUNDRED_STEPS[2::2]:
         detail("bench", x + 1.5, y, z, 1.8, 0.5, 0.45, 90.0)
@@ -872,6 +946,21 @@ def ground_walls(ground):
                     continue
                 walls.append(dict(x=mx, y=my, a=a, l=run / n + 0.02, w=0.45, z0=out - 0.3, z1=z + 0.9))
     return walls
+
+
+def paving(X, Y):
+    """What the ground is at points X, Y: the swatch of the shared palette it sits on. Granite setts on the quays,
+    the old town's lanes, stairs and squares; asphalt on the streets cars took over; elsewhere earth and grass, where
+    no puddle lies."""
+    out = np.full(X.shape, "ground", dtype=object)
+    for lane in LANES:
+        d, _ = L._line_dist_z(X, Y, [(p[0], p[1], p[2]) for p in lane["pts"]])
+        on = d <= lane["width"] / 2 + 0.3
+        road = lane["kind"] == "road" or lane["name"] in ("Broad Street", "Holm Street") or lane["name"].startswith("the Grid")
+        out[on] = "asphalt" if road else "setts_mean"
+    for poly in [MARKET_SQUARE, LANDING] + [p for _, p, _ in SMALL_PLACES]:
+        out[L._inside(poly, X, Y)] = "setts_mean"
+    return out
 
 
 def carve(X, Y, Z):

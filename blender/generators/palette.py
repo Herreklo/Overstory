@@ -86,6 +86,9 @@ SWATCHES = {
     "leaf_sycamore": (196, 128, 54),
     "leaf_spruce": (46, 64, 50),
     "grass": (62, 74, 50),
+    # the harbour's own lights: a breakwater's head, a beacon
+    "lamp_red": (255, 70, 52),
+    "lamp_white": (240, 244, 250),
 }
 
 NAMES = list(SWATCHES)
@@ -102,6 +105,8 @@ EMISSIVE = {
     "lamp_warm": ("lamp_off", "lamp"),
     "lamp_mercury": ("lamp_off", "lamp"),
     "lamp_sodium": ("lamp_off", "lamp"),
+    "lamp_red": ("lamp_off", "lamp"),
+    "lamp_white": ("lamp_off", "lamp"),
 }
 GROUPS = ("window", "lamp")
 
@@ -118,6 +123,7 @@ SURFACE = {
     "glass_shop_lit": (0.92, 0.0, 0.0),
     "sign": (0.45, 0.0, 0.05), "sign_lit": (0.45, 0.0, 0.05), "lamp_off": (0.55, 0.0, 0.0),
     "lamp_warm": (0.55, 0.0, 0.0), "lamp_mercury": (0.55, 0.0, 0.0), "lamp_sodium": (0.55, 0.0, 0.0),
+    "lamp_red": (0.55, 0.0, 0.0), "lamp_white": (0.55, 0.0, 0.0),
     "metal_galv": (0.45, 0.85, 0.0), "metal_dark": (0.38, 0.0, 0.05), "metal_post": (0.38, 0.0, 0.05),
     "metal_gutter": (0.40, 0.0, 0.05),
     "roof_black": (0.55, 0.0, 0.05), "roof_red": (0.16, 0.0, 0.7), "roof_red_dark": (0.18, 0.0, 0.65),

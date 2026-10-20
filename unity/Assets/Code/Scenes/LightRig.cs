@@ -104,6 +104,8 @@ namespace Overstory.Scenes
         public float lampIntensity = 0f;
         [Tooltip("Intensity of the warm light a lit room spills through its windows onto what is in front.")]
         public float windowSpill = 0f;
+        [Tooltip("How strongly each lamp lights the air round it (its halo in fog); 0 none.")]
+        public float lampHalo = 1f;
 
         [Header("Grade")]
         public float postExposure = 0f;

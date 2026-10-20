@@ -23,6 +23,10 @@ namespace Overstory.Scenes
         public SkyMap skyMap;
         [Tooltip("A probe that sees only the sky, captured again whenever the light changes, so water and wet stone reflect this hour's sky. Optional.")]
         public ReflectionProbe skyReflection;
+        [Tooltip("The town's lamps as lights, lit with the rig and handed to the fog. Optional.")]
+        public TownLights townLights;
+        [Tooltip("The mood: how the scene is filmed, over the hour's own grade. None: the hour as it is.")]
+        public Grade mood;
 
         [Header("The shared palette")]
         public Texture2D paletteAlbedo;
@@ -233,6 +237,11 @@ namespace Overstory.Scenes
             var fs = Linear(r.fogSunColour);
             Shader.SetGlobalVector("_OS_FogSun", new Vector4(fs.x, fs.y, fs.z, r.fogSunPower));
 
+            if (townLights != null)
+                townLights.Apply(r);
+            else
+                Shader.SetGlobalInt("_OS_FogLampCount", 0);
+
             if (street != null)
             {
                 foreach (var (light, kind) in street.LampLights)
@@ -264,23 +273,52 @@ namespace Overstory.Scenes
             volume.isGlobal = true;
             volume.sharedProfile = profile;
 
+            // four layers: exposure (the rig's, the eye adjusting to the hour), the hour's balance (the rig's grade),
+            // the mood (a Grade, offsets on the hour), the lens; a mood changes how the scene is seen, never what is in it
+            var m = mood;
             var tone = Get<Tonemapping>();
             tone.mode.Override(TonemappingMode.Neutral);
 
             var adj = Get<ColorAdjustments>();
-            adj.postExposure.Override(r.postExposure);
-            adj.contrast.Override(r.contrast);
-            adj.saturation.Override(r.saturation);
-            adj.colorFilter.Override(r.colourFilter);
+            adj.postExposure.Override(r.postExposure + (m ? m.exposure : 0f));
+            adj.contrast.Override(Mathf.Clamp(r.contrast + (m ? m.contrast : 0f), -100f, 100f));
+            adj.saturation.Override(Mathf.Clamp(r.saturation + (m ? m.saturation : 0f), -100f, 100f));
+            adj.colorFilter.Override(m ? r.colourFilter * m.filter : r.colourFilter);
 
             var wb = Get<WhiteBalance>();
-            wb.temperature.Override(r.temperature);
-            wb.tint.Override(r.tint);
+            wb.temperature.Override(Mathf.Clamp(r.temperature + (m ? m.temperature : 0f), -100f, 100f));
+            wb.tint.Override(Mathf.Clamp(r.tint + (m ? m.tint : 0f), -100f, 100f));
+
+            var lgg = Get<LiftGammaGain>();
+            lgg.lift.Override(m ? m.lift : new Vector4(1, 1, 1, 0));
+            lgg.gamma.Override(m ? m.gamma : new Vector4(1, 1, 1, 0));
+            lgg.gain.Override(m ? m.gain : new Vector4(1, 1, 1, 0));
+
+            var split = Get<SplitToning>();
+            split.shadows.Override(m ? m.splitShadows : Color.grey);
+            split.highlights.Override(m ? m.splitHighlights : Color.grey);
+            split.balance.Override(m ? m.splitBalance : 0f);
+
+            var curves = Get<ColorCurves>();
+            float dark = m ? m.shadowSaturation : 1f;
+            curves.lumVsSat.Override(new TextureCurve(new[] { new Keyframe(0f, 0.5f * dark), new Keyframe(0.35f, 0.5f), new Keyframe(1f, 0.5f) },
+                                                      0.5f, false, new Vector2(0f, 1f)));
 
             var bloom = Get<Bloom>();
-            bloom.intensity.Override(r.bloomIntensity);
+            bloom.intensity.Override(Mathf.Max(0f, r.bloomIntensity + (m ? m.bloom : 0f)));
             bloom.threshold.Override(r.bloomThreshold);
+            bloom.scatter.Override(m ? m.bloomScatter : 0.7f);
             bloom.highQualityFiltering.Override(true);
+
+            var vig = Get<Vignette>();
+            vig.intensity.Override(m ? m.vignette : 0f);
+            vig.smoothness.Override(m ? m.vignetteSmoothness : 0.45f);
+            vig.color.Override(m ? m.vignetteColour : Color.black);
+
+            var grain = Get<FilmGrain>();
+            grain.type.Override(FilmGrainLookup.Medium3);
+            grain.intensity.Override(m ? m.grain : 0f);
+            grain.response.Override(0.8f);
 
 #if URP_SCREEN_SPACE_REFLECTION
             var ssr = Get<ScreenSpaceReflectionVolumeSettings>();

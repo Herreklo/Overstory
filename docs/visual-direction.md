@@ -45,19 +45,25 @@ The town is made of areas, each with its own grain: what stands there, how close
 
 - Light is the identity. The coast's daylight (grey drizzle, low winter sun, a blue hour that lasts, and hot summer days of thirty degrees with warm, golden light) and the light of the night (warm windows, street lamps by era, neon, stage light in haze). Warm light belongs to this place as much as cold; the look is not "Nordic" grey.
 - Light is dramatic. In sun: deep shadow with little fill, coloured by the sky, and light rays where the sun streams past roofs and trees. At night: darker, with the town's own lights bright, casting real shadows, and lit rooms spilling warm light onto the lanes in front of them.
-- Light follows a colour script keyed to facts: the date and hour set the sun's height and colour, the weather sets the cloud. The west coast's year is part of the identity: December's short blue days, June's light nights, October's low gold under cloud. Strong colour is for the moments that earn it; ordinary light must stand on its own.
+- Light follows a colour script keyed to facts: the date, hour and place set the sun (computed, never typed: `Daylight.cs`), the weather sets the cloud, the fog and the wet, the season the rest. The west coast's year is part of the identity: December's short blue days, June's light nights, October's low gold under cloud. Strong colour is for the moments that earn it; ordinary light must stand on its own.
+- Physics underneath, art direction on top. The physics says where light comes from and what it falls on; the colour script chooses the palette: one dominant colour of air that carries the mood, one warm accent against it, little else.
+- Every light in the town is a fact. Lamps are the kind their street was lit with (the old town's lanterns of 1955, warm; mercury of the 1960s; sodium of the 1970s on the quays and main streets; the harbour's red and white lights); lit windows, shops and signs are who is in and what is open at that hour. They are the warm accents, and they show where life is.
+- Shade sees the town. A sky map of the town, its height seen from above and redrawn whenever the town changes (`SkyMap.cs`), tells each point how much sky it sees: lanes, yards and the feet of walls darken, roofs and quays stay open, and the hidden sky is replaced by the town's own bounce. Shade takes the colour of the part of the sky it faces: warm towards the sun, cool away from it, blue from overhead.
 - Drizzle is the default and the hardest test. The town must be beautiful in flat grey light, where the sky is the key light.
 - Shadow and ambient colour come from the light, never from the object. Shadows go cool, not black.
 - Value first: every frame reads in greyscale; extreme lights and darks are kept for edges, highlights and windows.
 - Muted base, small saturated accents: lit windows, signs, boats, stage light.
 - White stays white: it shifts temperature with the light, never drops to grey.
-- Atmosphere does distance: aerial perspective and height fog of our own.
+- Atmosphere does distance: air in coloured layers (near, middle, far), and a low haze or sea fog that lies on the water and thins up the hill, so the hills stand out of it and distance steps back in flat layers of value. Fog and dusk are first-class, not exceptions. Each lamp lights the air round it with a halo, thrown forward as fog droplets throw it (`FogLights.shader`).
+- Weather wets what it wets: paving darkens and shines, puddles lie only on paved ground, the town's lights glint in it.
 - Neutral tonemapping with our own grade; windows and stage lights are bright emissives.
 - Every colour difference also shows in value, pattern or wear, so it reads for colour-blind players.
 
 ## Mood
 
-One style carries a range of moods: moody, cozy, alive, glam. The mood comes from what is true in the world (a struggling bar in drizzle, a family kitchen at blue hour, market day, a sold-out gig) through one mood manager that blends sun, sky, fog, ambient light and grade. Intensity follows what is happening, like a film's colour script. Motion follows mood too: environment effects step on twos; what carries no fact stays still.
+One style carries every atmosphere a story needs: sad, hopeless, gritty, hopeful, grand, success; in rain, wind, sun and snow; through the seasons. The mood comes first from what is true in the world (a struggling bar in drizzle, a family kitchen at blue hour, market day, a sold-out gig, sea fog on a Friday evening); then from how the scene is filmed.
+
+Grading has four layers, each with one owner: exposure (the eye adjusting to the hour, from the light), the hour's balance (the camera stays balanced for daylight, so blue hour is blue and lamps are orange), the mood (a `Grade`: contrast, colour, split toning, lift and gain, how much colour the dark keeps), and the lens (grain, glow round bright light, vignette). A mood never changes a fact: it cannot make night day, fog clear or a lit window dark; it only chooses how what is there is seen. The moods are written as recipes until target paintings give their looks: a frame graded in a paint program with a reference strip in it becomes the game's lookup table, exactly. A mood is chosen per scene by the game's direction and blends over a few seconds. Moods are judged blind: a viewer names each, and reads the same weather, hour and lights in all of them. Intensity follows what is happening, like a film's colour script. Motion follows mood too: environment effects step on twos; what carries no fact stays still.
 
 ## Views
 

@@ -25,14 +25,14 @@ Material:
     m_TexEnvs: []
     m_Ints: []
     m_Floats:
-    - _Curve: 0.45
-    - _HighCloud: 0.45
-    - _SunGlowPower: 4
+    - _Curve: 0.5
+    - _HighCloud: 0
+    - _SunGlowPower: 10
     m_Colors:
-    - _AntiGlow: {r: 0.32, g: 0.22, b: 0.34, a: 1}
-    - _Below: {r: 0.1, g: 0.1, b: 0.13, a: 1}
-    - _Horizon: {r: 0.5, g: 0.46, b: 0.56, a: 1}
-    - _SunGlow: {r: 0.78, g: 0.42, b: 0.22, a: 1}
-    - _Zenith: {r: 0.16, g: 0.24, b: 0.44, a: 1}
+    - _AntiGlow: {r: 0.1, g: 0.08, b: 0.13, a: 1}
+    - _Below: {r: 0.08, g: 0.09, b: 0.12, a: 1}
+    - _Horizon: {r: 0.32, g: 0.37, b: 0.5, a: 1}
+    - _SunGlow: {r: 0.3, g: 0.17, b: 0.12, a: 1}
+    - _Zenith: {r: 0.13, g: 0.2, b: 0.38, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

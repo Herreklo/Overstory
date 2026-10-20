@@ -69,11 +69,23 @@ StreetSurface OS_StreetSurface(float2 uv, float3 positionWS, half3 normalWS)
     half smoothness = props.r, metallic = props.g, porosity = props.b;
     half3 n = normalWS;
 
+    // Clay: every surface one matte grey, to judge shape and light alone; but glass stays dark and glossy, what
+    // glows still glows, and the weather still wets what it wets, for those are facts.
+    bool clay = _OS_Clay > 0.5;
+    if (clay)
+    {
+        half glass = step(0.85h, smoothness);
+        albedo = lerp(0.42h, 0.045h, glass).xxx;
+        smoothness = lerp(0.12h, 0.9h, glass);
+        metallic = 0.0h;
+    }
+
     // Once a pixel covers more than a stone, a sett pavement is seen as one tone: its stones, joints
     // and bevels average out as a lens would average them, instead of breaking into speckle.
     float footprint = max(length(ddx(positionWS)), length(ddy(positionWS)));
     half far = saturate((footprint - 0.015) / 0.045) * step(0.75h, paving);
-    albedo = lerp(albedo, SAMPLE_TEXTURE2D(_OS_Albedo, sampler_PointClamp, _OS_PavingMeanUV.xy).rgb, far);
+    if (!clay)
+        albedo = lerp(albedo, SAMPLE_TEXTURE2D(_OS_Albedo, sampler_PointClamp, _OS_PavingMeanUV.xy).rgb, far);
     n = normalize(lerp(n, half3(0, 1, 0), far));
 
     // Rain wets what faces the sky; walls a little, undersides (eaves, soffits) not at all. Porous
@@ -102,14 +114,6 @@ StreetSurface OS_StreetSurface(float2 uv, float3 positionWS, half3 normalWS)
     s.smoothness = smoothness;
     s.metallic = metallic;
     s.normalWS = n;
-    if (_OS_Clay > 0.5)
-    {
-        s.albedo = 0.42;
-        s.emission = 0;
-        s.smoothness = 0.12;
-        s.metallic = 0;
-        s.normalWS = normalWS;
-    }
     return s;
 }
 
@@ -138,11 +142,12 @@ StreetSurface OS_WaterSurface(float3 positionWS, half4 colour, half smoothness, 
 }
 
 // Leaf cards (blender/generators/tree.py): a tree's crown is cards whose second UV carries their own
-// coordinates offset by one. Each is cut into a soft, ragged cluster of leaves, fixed to the world so
-// it never swims; walls and roofs carry zero there and are never cut.
+// coordinates offset by one (1 to 2). Each is cut into a soft, ragged cluster of leaves, fixed to the world so
+// it never swims. Nothing else is ever cut: a mesh without a second UV gets its first in its place (Unity's
+// stand-in for a missing channel), and palette UVs lie between 0 and 1.
 void OS_CardClip(float2 card, float3 positionWS)
 {
-    if (card.x < 0.5)
+    if (card.x < 0.999 || card.y < 0.999)
         return;
     float2 c = card - 1.0;
     float r = length(c - 0.5) * 2.0;

@@ -18,6 +18,7 @@ namespace Overstory.EditorTools
     ///     Unity -batchmode -quit -projectPath unity -executeMethod Overstory.EditorTools.LT1Heart.Scene
     ///     Unity -batchmode -quit -projectPath unity -executeMethod Overstory.EditorTools.LT1Heart.Frames
     ///     Unity -batchmode -quit -projectPath unity -executeMethod Overstory.EditorTools.LT1Heart.LightFrames [-frames 1,5] [-hours 1600]
+    ///     Unity -batchmode -quit -projectPath unity -executeMethod Overstory.EditorTools.LT1Heart.NightFrames [-frames 1,9] [-moods hopeful]
     ///
     /// The renderer and materials are LT1's; this touches neither.
     /// </summary>
@@ -52,6 +53,8 @@ namespace Overstory.EditorTools
             ("7-from-lookout-park", new Vector3(26f, 214f, 58f), new Vector3(-2100f, 1500f, 60f), Lens35),
             // the middle stop over the Basin's head, at Watch Knoll and the Fire Watch above Holm Street
             ("8-watch-knoll", new Vector3(10f, -110f, 42f), new Vector3(140f, -330f, 26f), Lens35),
+            // the street stop on Harbour Row's quay, along the lamps towards the Basin's head
+            ("9-harbour-row-quay", new Vector3(-30f, -9.5f, 4.4f), new Vector3(150f, -7f, 4.0f), Lens28),
         };
 
         /// <summary>The frames named after -frames on the command line (by number, e.g. -frames 5,8), or all.</summary>
@@ -129,6 +132,11 @@ namespace Overstory.EditorTools
             skyMap.resolution = 2048;
             skyMap.enabled = true;
 
+            var lamps = new GameObject("Lamps").AddComponent<TownLights>();
+            lamps.source = AssetDatabase.LoadAssetAtPath<TextAsset>(Models + "/lights.json");
+            lamps.Build();
+            EnsureFogLights();
+
             var probe = new GameObject("Sky reflection").AddComponent<ReflectionProbe>();
             probe.size = new Vector3(20000f, 4000f, 20000f);
             probe.resolution = 256;
@@ -138,6 +146,7 @@ namespace Overstory.EditorTools
             stage.enabled = false;
             stage.skyMap = skyMap;
             stage.skyReflection = probe;
+            stage.townLights = lamps;
             stage.sun = sun;
             stage.view = cam;
             stage.volume = volume;
@@ -223,7 +232,7 @@ namespace Overstory.EditorTools
                 Air(r, C(0.66f, 0.70f, 0.76f), C(0.74f, 0.77f, 0.82f), C(0.84f, 0.86f, 0.88f), 0.0006f, C(0.70f, 0.60f, 0.48f), 5f);
                 Haze(r, C(0.86f, 0.88f, 0.90f), 0.0035f, 12f);
                 Clouds(r, 0.2f, 0.12f, 0.25f);
-                Grade(r, 0.05f, 8f, 0f, 0.1f);
+                Grading(r, 0.05f, 8f, 0f, 0.1f);
             });
             Asset<LightRig>($"{Lights}/Heart_{Hours[1]}.asset", r =>
             {
@@ -240,7 +249,7 @@ namespace Overstory.EditorTools
                 Clouds(r, 0.97f, 0.15f, 0f);
                 r.cloudHeight = 900f;
                 r.wetness = 0.85f;
-                Grade(r, 0.2f, 4f, -5f, 0f);
+                Grading(r, 0.2f, 4f, -5f, 0f);
             });
             Asset<LightRig>($"{Lights}/Heart_{Hours[2]}.asset", r =>
             {
@@ -254,7 +263,7 @@ namespace Overstory.EditorTools
                 Haze(r, C(0.88f, 0.78f, 0.68f), 0.0025f, 16f);
                 Clouds(r, 0.32f, 0.12f, 0.35f);
                 r.wetness = 0.25f;
-                Grade(r, 0.1f, 10f, 0f, 0.2f);
+                Grading(r, 0.1f, 10f, 0f, 0.2f);
             });
             Asset<LightRig>($"{Lights}/Heart_{Hours[3]}.asset", r =>
             {
@@ -267,7 +276,7 @@ namespace Overstory.EditorTools
                 Air(r, C(0.26f, 0.30f, 0.44f), C(0.33f, 0.35f, 0.50f), C(0.48f, 0.44f, 0.56f), 0.0007f, C(0.40f, 0.24f, 0.18f), 4f);
                 Haze(r, C(0.40f, 0.42f, 0.54f), 0.003f, 18f);
                 Clouds(r, 0.3f, 0.12f, 0.45f);
-                Grade(r, 0.35f, 6f, 0f, 0f);
+                Grading(r, 0.35f, 6f, 0f, 0f);
             });
             AssetDatabase.SaveAssets();
             foreach (var h in Hours)
@@ -352,7 +361,7 @@ namespace Overstory.EditorTools
             r.highCloud = high;
         }
 
-        static void Grade(LightRig r, float exposure, float contrast, float saturation, float bloom)
+        static void Grading(LightRig r, float exposure, float contrast, float saturation, float bloom)
         {
             r.postExposure = exposure;
             r.contrast = contrast;
@@ -406,6 +415,222 @@ namespace Overstory.EditorTools
             {
                 urp.shadowDistance = reach;
             }
+        }
+
+        // -- blue hour in sea fog, with the town's lights; the moods (docs/experiments.md, LT1) -----------------------
+
+        const string Night = "1750-sea-fog";
+        public static readonly string[] Moods = { "hopeless", "hopeful", "grand", "sad", "gritty", "success" };
+
+        /// <summary>The rig: 17:50 on Friday 20 October 1989, the sun five degrees down, a bank of sea fog on the water.</summary>
+        static LightRig NightRig()
+        {
+            Directory.CreateDirectory(Lights);
+            AssetDatabase.Refresh();
+            return Asset<LightRig>($"{Lights}/Heart_{Night}.asset", r =>
+            {
+                Clock(r, 17f + 50f / 60f);
+                Sun(r, Color.black, 0f, 0f);
+                // a sky mostly fog: blue overhead, a last dull glow low in the west, tight to where the sun went down
+                Sky(r, C(0.13f, 0.20f, 0.38f), C(0.32f, 0.37f, 0.50f), C(0.08f, 0.09f, 0.12f), 0.5f, C(0.30f, 0.17f, 0.12f), 10f, C(0.10f, 0.08f, 0.13f));
+                Shade(r, C(0.22f, 0.30f, 0.50f), C(0.24f, 0.29f, 0.42f), C(0.32f, 0.30f, 0.40f), C(0.10f, 0.10f, 0.12f), C(0.12f, 0.11f, 0.12f), 1.0f);
+                Air(r, C(0.17f, 0.25f, 0.41f), C(0.21f, 0.29f, 0.45f), C(0.29f, 0.34f, 0.49f), 0.0008f, C(0.14f, 0.09f, 0.07f), 8f);
+                r.fogMaxOpacity = 0.97f;
+                // the sea fog: thick on the water, thinning over a dozen metres, so the hills stand out of it
+                Haze(r, C(0.19f, 0.28f, 0.45f), 0.019f, 12f);
+                Clouds(r, 0.9f, 0.2f, 0f);
+                r.wetness = 0.75f;
+                r.lampsOn = true;
+                r.lampIntensity = 10f;
+                r.lampGlow = 24f;
+                r.lampHalo = 4f;
+                r.windowGlow = 1.3f;
+                r.windowSpill = 0f;
+                Grading(r, 0.6f, 8f, 0f, 0.5f);
+                r.bloomThreshold = 1.3f; // above the sky, so only the lamps and lit windows glow
+            });
+        }
+
+        /// <summary>The moods as recipes, until target paintings give their looks (a graded strip in a painted frame).</summary>
+        static void WriteMoods()
+        {
+            Directory.CreateDirectory(Lights + "/Moods");
+            AssetDatabase.Refresh();
+            Mood("hopeless", "Nothing will change: the colour drained to a sick grey-green, flat, the blacks lifted to fog, the edges closing in.", g =>
+            {
+                // the darks and middle drained; a lit window keeps its warmth (a fact), only dimmer
+                g.exposure = -0.2f; g.contrast = -12f; g.saturation = -28f; g.filter = C(0.94f, 1.0f, 0.93f);
+                g.lift = new Vector4(0.98f, 1.0f, 0.97f, 0.03f); g.gain = new Vector4(0.96f, 0.98f, 0.94f, -0.05f);
+                g.splitShadows = C(0.45f, 0.52f, 0.47f); g.splitHighlights = C(0.52f, 0.52f, 0.49f);
+                g.shadowSaturation = 0.15f; g.vignette = 0.34f; g.grain = 0.3f; g.bloom = -0.2f; g.bloomScatter = 0.5f;
+            });
+            Mood("hopeful", "It may yet turn out well: warmer highlights over a light, cool shade, lifted, a soft glow round the lights.", g =>
+            {
+                g.exposure = 0.25f; g.contrast = 4f; g.saturation = 10f; g.temperature = 10f;
+                g.lift = new Vector4(1.0f, 1.0f, 1.02f, 0.02f); g.gain = new Vector4(1.04f, 1.0f, 0.95f, 0.02f);
+                g.splitShadows = C(0.47f, 0.50f, 0.56f); g.splitHighlights = C(0.62f, 0.54f, 0.44f); g.splitBalance = 20f;
+                g.shadowSaturation = 0.9f; g.vignette = 0.12f; g.grain = 0.12f; g.bloom = 0.45f; g.bloomScatter = 0.85f;
+            });
+            Mood("grand", "The town as larger than the people in it: deep contrast, rich colour, cool shade against warm light, distance in clear layers.", g =>
+            {
+                // depth, not more blue: the cool comes from the hour already, so the grade warms the lights against it
+                g.contrast = 14f; g.saturation = -4f;
+                g.lift = new Vector4(1.0f, 0.99f, 0.99f, -0.02f); g.gain = new Vector4(1.04f, 1.0f, 0.95f, 0.03f);
+                g.splitShadows = C(0.50f, 0.50f, 0.50f); g.splitHighlights = C(0.62f, 0.53f, 0.42f); g.splitBalance = 10f;
+                g.shadowSaturation = 1.0f; g.vignette = 0.25f; g.grain = 0.1f; g.bloom = 0.25f; g.bloomScatter = 0.75f;
+            });
+            Mood("sad", "A loss: low contrast, the colour going out of it, cool shade, the haze shown more than the light.", g =>
+            {
+                g.exposure = -0.1f; g.contrast = -10f; g.saturation = -30f; g.temperature = -12f;
+                g.lift = new Vector4(0.98f, 1.0f, 1.03f, 0.03f);
+                g.splitShadows = C(0.44f, 0.48f, 0.56f); g.splitHighlights = C(0.50f, 0.50f, 0.52f);
+                g.shadowSaturation = 0.6f; g.vignette = 0.22f; g.grain = 0.18f; g.bloom = 0f; g.bloomScatter = 0.6f;
+            });
+            Mood("gritty", "Hard going: hard contrast, crushed blacks, dirty teal against rust, coarse grain.", g =>
+            {
+                // hard, not black: the shadows keep their shapes
+                g.exposure = 0.05f; g.contrast = 16f; g.saturation = -15f;
+                g.lift = new Vector4(0.98f, 1.0f, 1.0f, -0.015f); g.gamma = new Vector4(1.0f, 0.99f, 0.97f, -0.02f);
+                g.splitShadows = C(0.43f, 0.51f, 0.52f); g.splitHighlights = C(0.60f, 0.51f, 0.42f);
+                g.shadowSaturation = 0.5f; g.vignette = 0.3f; g.grain = 0.45f; g.bloom = -0.1f; g.bloomScatter = 0.5f;
+            });
+            Mood("success", "It worked: bright, warm, clean whites, colour up, a generous glow.", g =>
+            {
+                g.exposure = 0.4f; g.contrast = 10f; g.saturation = 20f; g.temperature = 8f;
+                g.gain = new Vector4(1.03f, 1.01f, 0.97f, 0.04f);
+                g.splitShadows = C(0.48f, 0.50f, 0.54f); g.splitHighlights = C(0.60f, 0.55f, 0.46f); g.splitBalance = 25f;
+                g.shadowSaturation = 1.0f; g.vignette = 0.08f; g.grain = 0.06f; g.bloom = 0.6f; g.bloomScatter = 0.85f;
+            });
+            AssetDatabase.SaveAssets();
+        }
+
+        static void Mood(string name, string intent, System.Action<Grade> set) =>
+            Asset<Grade>($"{Lights}/Moods/Mood_{name}.asset", g =>
+            {
+                // start each recipe from neutral, so a value left out is neutral rather than last time's
+                var neutral = ScriptableObject.CreateInstance<Grade>();
+                EditorUtility.CopySerialized(neutral, g);
+                Object.DestroyImmediate(neutral);
+                g.intent = intent;
+                set(g);
+            });
+
+        /// <summary>
+        /// The night frames (reviews/lt1/heart/night/): every camera at 17:50 in sea fog, neutral; then the street, the
+        /// roofs, the middle and the quay in each mood. Colour, greyscale and one-eighth.
+        /// </summary>
+        public static void NightFrames()
+        {
+            NightRig();
+            WriteMoods();
+            AssetDatabase.SaveAssets();
+            EditorSceneManager.OpenScene(ScenePath, OpenSceneMode.Single);
+            // loaded only now: opening a scene unloads assets nothing in it holds, and a rig made before would be gone
+            var rig = AssetDatabase.LoadAssetAtPath<LightRig>($"{Lights}/Heart_{Night}.asset");
+            var args = System.Environment.GetCommandLineArgs();
+            int hi = System.Array.IndexOf(args, "-halo"); // a check: -halo 0 renders without the lamps' light in the fog
+            if (hi >= 0 && hi + 1 < args.Length)
+                rig.lampHalo = float.Parse(args[hi + 1], System.Globalization.CultureInfo.InvariantCulture);
+            var stage = Object.FindAnyObjectByType<StreetStage>();
+            stage.clay = true;
+            stage.look = "P";
+            stage.rig = rig;
+            if (stage.skyMap != null)
+                stage.skyMap.Build();
+            if (stage.townLights != null)
+                stage.townLights.Build();
+            Debug.Log($"[LT1Heart] {(stage.townLights != null ? stage.townLights.Count : 0)} lamps; sun {rig.sunElevation:F1} degrees");
+            var urp = (UniversalRenderPipelineAsset)GraphicsSettings.currentRenderPipeline;
+            float reach = urp.shadowDistance;
+            string root = Path.GetFullPath(Path.Combine(Application.dataPath, "..", "..", "reviews", "lt1", "heart", "night"));
+            try
+            {
+                var runs = new List<(string mood, string[] shots)> { ("neutral", null) };
+                foreach (var mood in Moods)
+                    runs.Add((mood, new[] { "1", "3", "4", "9" }));
+                foreach (var (mood, only) in runs)
+                {
+                    if (!WantedMood(mood))
+                        continue;
+                    stage.mood = mood == "neutral" ? null : AssetDatabase.LoadAssetAtPath<Grade>($"{Lights}/Moods/Mood_{mood}.asset");
+                    string dir = Path.Combine(root, mood);
+                    Directory.CreateDirectory(dir);
+                    foreach (var (name, pos, target, _) in Shots)
+                    {
+                        if (!Wanted(name) || (only != null && System.Array.IndexOf(only, name.Split('-')[0]) < 0))
+                            continue;
+                        urp.shadowDistance = Mathf.Clamp(Vector3.Distance(pos, target) * 2.2f, 150f, 2000f);
+                        stage.shot = AssetDatabase.LoadAssetAtPath<CameraShot>($"{Dir}/Views/Heart_{name}.asset");
+                        stage.Apply();
+                        string file = Path.Combine(dir, $"heart-night-{mood}-{name}.png");
+                        LT1Render.Still(stage.view, file, grey: true, eighth: true);
+                        Debug.Log($"[LT1Heart] {file}");
+                    }
+                }
+            }
+            finally
+            {
+                urp.shadowDistance = reach;
+                stage.mood = null;
+            }
+        }
+
+        /// <summary>A check: every model in the heart's scene, with its size, place and material.</summary>
+        public static void Inventory()
+        {
+            EditorSceneManager.OpenScene(ScenePath, OpenSceneMode.Single);
+            foreach (var r in Object.FindObjectsByType<MeshRenderer>(FindObjectsSortMode.None))
+            {
+                var mf = r.GetComponent<MeshFilter>();
+                var mesh = mf != null ? mf.sharedMesh : null;
+                Debug.Log($"[LT1Heart] {r.gameObject.name}: {(mesh ? mesh.vertexCount : 0)} vertices, uv {(mesh ? mesh.uv.Length : 0)}, " +
+                          $"colours {(mesh ? mesh.colors.Length : 0)}, bounds {r.bounds.center} {r.bounds.size}, " +
+                          $"enabled {r.enabled}, material {(r.sharedMaterial ? r.sharedMaterial.name : "none")}");
+            }
+            var lamps = Object.FindAnyObjectByType<TownLights>();
+            Debug.Log($"[LT1Heart] lamps: {(lamps ? lamps.Count : -1)}");
+        }
+
+        static bool WantedMood(string mood)
+        {
+            var args = System.Environment.GetCommandLineArgs();
+            int i = System.Array.IndexOf(args, "-moods");
+            return i < 0 || i + 1 >= args.Length || System.Array.IndexOf(args[i + 1].Split(','), mood) >= 0;
+        }
+
+        /// <summary>The fog's lamps: a full-screen pass after the opaque scene, before post-processing, on the renderer.</summary>
+        static void EnsureFogLights()
+        {
+            const string renderer = "Assets/Settings/PC_Renderer.asset";
+            var data = AssetDatabase.LoadAssetAtPath<UniversalRendererData>(renderer);
+            if (data == null || data.rendererFeatures.Exists(f => f != null && f.name == "FogLights"))
+                return;
+            const string path = Materials + "/M_FogLights.mat";
+            var mat = AssetDatabase.LoadAssetAtPath<Material>(path);
+            if (mat == null)
+            {
+                mat = new Material(Shader.Find("Overstory/FogLights") ?? throw new FileNotFoundException("FogLights.shader did not compile"));
+                AssetDatabase.CreateAsset(mat, path);
+            }
+            var feature = ScriptableObject.CreateInstance<FullScreenPassRendererFeature>();
+            feature.name = "FogLights";
+            feature.passMaterial = mat;
+            feature.injectionPoint = FullScreenPassRendererFeature.InjectionPoint.BeforeRenderingPostProcessing;
+            feature.requirements = ScriptableRenderPassInput.Depth;
+            feature.fetchColorBuffer = true;
+            AssetDatabase.AddObjectToAsset(feature, data);
+            AssetDatabase.TryGetGUIDAndLocalFileIdentifier(feature, out string _, out long id);
+            var so = new SerializedObject(data);
+            var list = so.FindProperty("m_RendererFeatures");
+            list.arraySize++;
+            list.GetArrayElementAtIndex(list.arraySize - 1).objectReferenceValue = feature;
+            var map = so.FindProperty("m_RendererFeatureMap");
+            map.arraySize++;
+            map.GetArrayElementAtIndex(map.arraySize - 1).longValue = id;
+            so.ApplyModifiedPropertiesWithoutUndo();
+            EditorUtility.SetDirty(data);
+            AssetDatabase.SaveAssets();
+            Debug.Log("[LT1Heart] the fog's lamps added to the renderer");
         }
 
         static bool WantedHour(string hour)
