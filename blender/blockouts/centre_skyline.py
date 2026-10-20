@@ -52,7 +52,7 @@ for d0, d1, col in bands:
 dr.line([(0, ypix(0)), (W, ypix(0))], fill=(120, 150, 175), width=2)
 f = ImageFont.truetype("/System/Library/Fonts/Supplemental/Arial.ttf", 16)
 dr.text((10, 10), f"From the bay at ({ex:.0f}, {ey:.0f}) looking south, eye 4 m over the water. Dark: within 600 m. Mid: 600-1600 m. Light: 1600-3400 m. Palest: mountains 22-34 km. 26 px per degree.", fill=(30, 30, 30), font=f)
-for deg, name in [(-50, "east (Storhaug, forest hill)"), (0, "south (the town, Vågen's head)"), (50, "west (fire grid, ridge)")]:
+for deg, name in [(-50, "east (Ropewalk, forest hill)"), (0, "south (the town, the Basin's head)"), (50, "west (fire grid, ridge)")]:
     xpix = W / 2 - deg / 100 * W
     dr.text((xpix, H - 30), name, fill=(30, 30, 30), font=f, anchor="mm")
 img.save(sys.argv[1])

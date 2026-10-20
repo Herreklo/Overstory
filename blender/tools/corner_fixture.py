@@ -208,7 +208,7 @@ fixture = dict(
         dict(what="lichen", where="the knuckle and the wall", year=1874, cause="bare since the lane was cut past the rock"),
     ],
     lanes=[],
-    stairs=[dict(id="stair-corner", name="Bakkesmauet", width=mm(LANE_W), points=[[mm(x), mm(y), mm(z)] for x, y, z in STAIR])],
+    stairs=[dict(id="stair-corner", name="Gully Steps", width=mm(LANE_W), points=[[mm(x), mm(y), mm(z)] for x, y, z in STAIR])],
     squares=[dict(id="landing", name="the landing", z=mm(8.0), surface="setts", laid=1874, corners=[[mm(x), mm(y)] for x, y in LANDING])],
     pads=[],
     walls=walls,

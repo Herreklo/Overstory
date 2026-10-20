@@ -60,16 +60,16 @@ def label(x, y, t, big=False):
     sx, sy = P(x, y)
     dr.text((sx, sy), t, fill=(255, 255, 255), font=f, anchor="mm", stroke_width=3, stroke_fill=(255, 255, 255))
     dr.text((sx, sy), t, fill=(30, 30, 30), font=f, anchor="mm")
-for x, y, t, big in [(-620, 0, "THE BAY", True), (210, -84, "VÅGEN", True), (-160, 680, "EAST HARBOUR", True),
-                     (-160, -520, "WEST COVE", True), (-100, -230, "Holmen", False), (190, -370, "knoll, tower", False),
-                     (360, -470, "FIRE GRID", True), (440, -84, "Torget", False), (470, 40, "cathedral", False),
-                     (640, -50, "lake", False), (60, 170, "OLD TOWN", True), (-20, 270, "villas, summit park", False),
-                     (-300, 230, "bluff", False), (-110, 380, "cannery streets", False), (-250, 520, "cannery", False),
-                     (-260, 1200, "STORHAUG", True), (520, 1000, "FOREST HILL", True), (-740, 390, "island suburb", False),
-                     (-620, -380, "island", False), (-580, 900, "bridge 1978", False), (-312, -150, "light", False),
-                     (-250, -780, "ferry quay, oil base", False), (800, -420, "NEWER TOWN", True), (80, 30, "corner", False),
-                     (-400, -60, "beacon", False), (40, -620, "beach", False), (250, 640, "stream valley", False),
-                     (980, 150, "railway", False), (800, -780, "ridge", False), (1350, 300, "upland", True), (30, -250, "sund", False)]:
+for x, y, t, big in [(-620, 0, "THE ROADS", True), (210, -84, "THE BASIN", True), (-160, 680, "CANNERY BIGHT", True),
+                     (-160, -520, "SLIPWAY COVE", True), (-100, -230, "the Holm", False), (190, -370, "Watch Knoll", False),
+                     (360, -470, "THE GRID", True), (440, -84, "Market Square", False), (470, 40, "cathedral", False),
+                     (640, -50, "the Mere", False), (60, 170, "HERRING HILL", True), (-20, 270, "the Heights, Lookout Park", False),
+                     (-300, 230, "the Bluff", False), (-110, 380, "Tin Town", False), (-250, 520, "cannery", False),
+                     (-260, 1200, "ROPEWALK", True), (520, 1000, "TOWER WOOD", True), (-740, 390, "Bridge Island", False),
+                     (-620, -380, "Gull Island", False), (-580, 900, "the High Bridge", False), (-312, -150, "light", False),
+                     (-250, -780, "Ferry Point, the Supply Base", False), (800, -420, "NEW TOWN", True), (80, 30, "corner", False),
+                     (-400, -60, "the Pip", False), (40, -620, "Bonfire Beach", False), (250, 640, "Millbrook Dell", False),
+                     (980, 150, "railway", False), (800, -780, "Gun Ridge", False), (1350, 300, "THE HIGH MOOR", True), (30, -250, "the Cut", False)]:
     label(x, y, t, big)
 im.save(f"{sys.argv[1]}/centre-land-draft.png")
 print("done", round(time.time() - t0, 1), "s", im.size)

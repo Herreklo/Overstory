@@ -37,16 +37,16 @@ SCENE = "corner_blockout"
 LANES = {
     # the stepped lane in the gully: flat between A and B, a flight to the lower crossing, a flight to the
     # landing, the upper flight to E
-    "Bakkesmauet": dict(width=3.2, pts=[(49.3, -0.2, 0.0), (49.3, 12.0, 0.0), (49.3, 17.2, 2.6), (49.1, 21.6, 2.6),
+    "Gully Steps": dict(width=3.2, pts=[(49.3, -0.2, 0.0), (49.3, 12.0, 0.0), (49.3, 17.2, 2.6), (49.1, 21.6, 2.6),
                                         (48.2, 32.5, 8.0), (46.5, 38.0, 8.0), (46.5, 44.5, 8.0), (46.5, 61.5, 18.4),
                                         (46.5, 64.2, 18.4)]),
     # the lower contour lane, level, bending with the hill
-    "Nedre Bakken": dict(width=3.6, pts=[(-40.0, 16.6, 2.6), (-10.0, 18.2, 2.6), (20.0, 19.6, 2.6), (49.2, 19.4, 2.6),
+    "Low Terrace": dict(width=3.6, pts=[(-40.0, 16.6, 2.6), (-10.0, 18.2, 2.6), (20.0, 19.6, 2.6), (49.2, 19.4, 2.6),
                                          (78.0, 18.6, 2.6), (112.0, 17.0, 2.6), (135.0, 16.2, 2.6)]),
     # the upper contour lane west of the landing, level, ending in it
-    "Øvre Bakken": dict(width=3.4, pts=[(-40.0, 29.4, 8.0), (-10.0, 31.0, 8.0), (18.0, 32.6, 8.0), (44.0, 34.4, 8.0)]),
+    "High Terrace": dict(width=3.4, pts=[(-40.0, 29.4, 8.0), (-10.0, 31.0, 8.0), (18.0, 32.6, 8.0), (44.0, 34.4, 8.0)]),
     # the upper lane east of the knuckle, a little higher, reaching the rock's top where D stands
-    "Knausen": dict(width=3.2, pts=[(64.5, 42.6, 12.6), (86.0, 41.6, 12.3), (112.0, 40.0, 11.8), (135.0, 39.0, 11.6)]),
+    "Knuckle Lane": dict(width=3.2, pts=[(64.5, 42.6, 12.6), (86.0, 41.6, 12.3), (112.0, 40.0, 11.8), (135.0, 39.0, 11.6)]),
     # a worn path from E up the heath, where the sheep went until 1958
     "the heath path": dict(width=1.1, pts=[(49.4, 64.6, 18.6), (53.5, 74.0, 22.4), (58.0, 86.0, 27.0), (61.0, 100.0, 30.2)]),
 }
@@ -120,24 +120,24 @@ house("shed 3", 64.4, 11.0, 0.0, 4.2, 3.0, 0.3, 2.4, 20.0)
 house("shed 4", 118.0, 11.0, 0.0, 5.0, 3.2, 0.3, 2.6, 18.0)
 
 # below the lower lane, fronting it, their backs high over the yards on plinths
-row("Nedre Bakken", -1, 13.0, [("L1", 7.0, 5.0, 4.6, 44.0, "eaves", 0.2, 46.0), ("L2", 6.4, 4.8, 4.2, 46.0, "eaves", 0.2, 30.0),
+row("Low Terrace", -1, 13.0, [("L1", 7.0, 5.0, 4.6, 44.0, "eaves", 0.2, 46.0), ("L2", 6.4, 4.8, 4.2, 46.0, "eaves", 0.2, 30.0),
                                ("L3", 8.0, 5.2, 4.8, 42.0, "eaves", 0.2, 0.0)], 2.6)
 
 # the lower lane's uphill side, shoulder to shoulder; a gap with steps up at s 72; C's yard from s 76
-row("Nedre Bakken", +1, 4.0, [
+row("Low Terrace", +1, 4.0, [
     ("U1", 9.6, 7.0, 5.4, 42.0, "eaves", 0.0, 0.0), ("U2", 7.2, 6.6, 4.4, 46.0, "eaves", 0.0, 1.2),
     ("U3", 6.4, 8.4, 5.2, 48.0, "gable", 0.0, 0.6), ("U4", 12.8, 7.2, 5.0, 40.0, "eaves", 0.0, 0.0),
     ("U5", 6.0, 6.6, 4.0, 46.0, "eaves", 0.0, 1.6), ("U6", 8.8, 7.6, 6.2, 42.0, "eaves", 2.6, 0.8),
     ("U7", 7.0, 8.0, 4.6, 48.0, "gable", 0.0, 0.4), ("U7b", 5.6, 6.4, 4.2, 46.0, "eaves", 0.0, 3.0)], 2.75)
 # (the row ends at x 32: steps go up the gap to the upper lane, then C's yard and the stepped lane)
-row("Nedre Bakken", +1, 91.8, [
+row("Low Terrace", +1, 91.8, [
     ("U10 (under the rock)", 6.8, 6.4, 4.2, 46.0, "eaves", 0.0, 1.4), ("U11", 8.4, 6.8, 5.6, 42.0, "eaves", 0.0, 0.0),
     ("U12", 6.0, 8.2, 5.0, 48.0, "gable", 0.0, 1.8), ("U13", 11.6, 7.0, 4.6, 42.0, "eaves", 0.0, 0.6),
     ("U14", 7.0, 7.4, 6.0, 44.0, "eaves", 1.8, 1.0), ("U15", 6.2, 8.6, 5.0, 48.0, "gable", 0.0, 0.4),
     ("U16", 9.6, 7.0, 4.4, 44.0, "eaves", 0.0, 0.0), ("U17", 8.2, 7.2, 6.4, 40.0, "eaves", 0.0, 1.2)], 2.75)
 
 # the upper lane's uphill side, west of the landing
-row("Øvre Bakken", +1, 0.0, [
+row("High Terrace", +1, 0.0, [
     ("V1", 8.0, 6.8, 4.6, 46.0, "eaves", 0.0, 0.8), ("V2", 10.4, 7.0, 5.6, 42.0, "eaves", 0.0, 0.0),
     ("V3", 6.2, 8.6, 4.6, 48.0, "gable", 0.0, 2.4), ("V4", 8.6, 6.6, 4.2, 46.0, "eaves", 3.0, 1.0),
     ("V5", 7.2, 7.2, 5.4, 44.0, "eaves", 0.0, 0.0), ("V6", 13.2, 7.6, 6.4, 40.0, "eaves", 0.0, 1.4),
@@ -150,7 +150,7 @@ house("D (1107, empty since 1986)", 60.6, 36.6, 90.0, 7.6, 7.0, 12.65, 4.0, 46.0
 house("E (304, 1826)", 49.8, 64.6, 90.0, 7.0, 6.8, 20.6, 4.0, 46.0, "eaves", "corner")  # gable to the lane
 
 # the east upper lane's uphill side
-row("Knausen", +1, 3.0, [
+row("Knuckle Lane", +1, 3.0, [
     ("W1", 7.6, 6.6, 4.6, 46.0, "eaves", 0.0, 0.0), ("W2", 9.0, 7.0, 5.6, 42.0, "eaves", 0.0, 1.6),
     ("W3", 6.2, 8.2, 4.6, 48.0, "gable", 0.0, 0.8), ("W4", 11.4, 7.0, 5.0, 42.0, "eaves", 0.0, 0.0),
     ("W5", 6.6, 6.6, 4.2, 46.0, "eaves", 2.4, 1.4), ("W6", 8.4, 7.2, 5.8, 44.0, "eaves", 0.0, 1.0),

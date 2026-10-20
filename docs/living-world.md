@@ -34,7 +34,7 @@ Each place has three layers:
 ## Two kinds of view
 
 - **The world view:** an illustrated map at city scale, showing only what the player knows; a live 3D neighbourhood seen from above, where people move and places visibly change.
-- **Scene views:** where things happen: a conversation, a gig, a match, a lab, a forest. Most are walkable point-and-click spaces, bounded, with a staged camera, composed and lit like a film set. Moving between views is a cut or a short move through a doorway.
+- **Scene views:** where things happen: a conversation, a gig, a match, a lab, a forest. Scenes are not only interiors: a forest clearing, a farmyard, a quay at night, a beach bonfire, a boat on the bay, a bunker on the ridge are scenes as much as a kitchen or a bar. Most are walkable point-and-click spaces, bounded, with a staged camera, composed and lit like a film set. Moving between views is a cut or a short move through a doorway.
 
 Each kind of scene is a small production of its own. Cheap ones come first (a conversation in a bar); expensive ones (a full match) come when a game needs them.
 

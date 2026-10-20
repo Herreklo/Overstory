@@ -21,80 +21,165 @@ This is the starter town. Later come other towns, bigger cities and metropolises
 
 **Its place in the world.** The starter town has a latitude, longitude and time zone (Stavanger's: 58.97°N, 5.73°E, Central European Time), and its light is computed from them, so every later city's light is a fact of where it stands. Its routes out (the ferry quay, the station, the airport, the motorway) are the doors to a world map later (`docs/ideas/world-map.md`).
 
+## Names
+
+Every name in the town is English: descriptive where that is clearest, fun or odd where a local would say it so. Real places are named by their real names only where they are cited as evidence. The glossary of the starter town:
+
+| Name | What it is | After |
+| --- | --- | --- |
+| the Basin | The inner harbour, the town's heart | Stavanger's Vågen |
+| the Roads | The harbour bay, the anchorage | Byfjorden |
+| Cannery Bight | The east harbour, with the cannery's quays | Østre havn |
+| Slipway Cove and Bonfire Beach | The west cove with its boatyards, and the beach at its head | |
+| the Holm, Holm Street, Barrel Quay | The pub quarter's island, its upper street, its quay | Holmen and Skagen, Øvre Holmegate |
+| the Cut and Cut Bridge | The narrow strait across the Holm's root, and its bridge | Brosundet in Ålesund |
+| Watch Knoll, the Fire Watch, the Crack | The bare-rock knoll, its fire-watch tower, the cleft with the steps | Valberget and Valbergtårnet |
+| Herring Hill | The old town's hill, between the Basin and Cannery Bight | Gamle Stavanger |
+| the Landing, Gully Steps, Low Terrace, High Terrace, Knuckle Lane | The beauty corner's level place, its stepped lane, its contour lanes | |
+| the Bluff and the Hundred Steps | Herring Hill's point and the stair up it | Aksla's steps in Ålesund |
+| Tin Town | The cannery workers' streets on Herring Hill's east slope | |
+| the Heights and Lookout Park | The villas on the hill's top, and its summit park | Eiganes |
+| Market Square, the Fish Hall, the Mere | The square at the Basin's head, its market hall, the lake | Torget, Breiavatnet |
+| the Grid | The streets rebuilt straight after the fires | Bergen's allmenninger, Lunenburg |
+| New Town | The post-war and seventies centre | |
+| Ropewalk | The working town east of Cannery Bight | Storhaug |
+| Tower Wood, Mill Brook, Millbrook Dell | The forest hill with the water tower, its stream, its valley park | Våland |
+| the Mudbowl | The football ground in the railway's valley | |
+| Gun Ridge | The ridge behind the Grid with the German bunkers | |
+| Plough Valley, Quarry Hollow, Sheepwash Valley, the High Moor | The upland's valleys and its top | |
+| Bridge Island, Gull Island, the Pip, the Teeth | The island suburb, the small island, the beacon islet, the skerries | Hundvåg, the bridges of 1978 |
+| the Supply Base, Ferry Point, Battery Head | The oil base, the ferry quay, the coast with the old battery | |
+| the Penny Ferry, the High Bridge | The harbour ferry across the Basin, the bridge to Bridge Island | Kristiansund's sundbåt |
+| the Culture House, the Expo Hall, the Old Brewery | The venues at the top of the town's ladder | |
+
+The town itself has no name yet.
+
 ## Size
 
-The town is the size of Stavanger in 1989: about 95,000 people over a built area of about 5 by 4 km, with farms, a beach and the fjord at its edges. Its centre, around the basin and about 1.3 km across, is planned area by area below; the town around it is planned by district (The town around the centre). The centre is laid out by hand in clay. The districts around it are laid out by rules learned from the centre and from the real map, and checked in clay from the far stop. Exit criterion 5 (a street at city scale holds its look and frame rate) is tested on the whole town, not on the corner.
+The town is the size of Stavanger in 1989: about 95,000 people over a built area of about 5 by 4 km, with farms, a beach and the fjord at its edges. Its centre, around the Basin and about 1.5 km across, is planned area by area below; the town around it is planned by district (The town around the centre). The centre is laid out by hand in clay. The districts around it are laid out by rules learned from the centre and from the real map, and checked in clay from the far stop. Exit criterion 5 (a street at city scale holds its look and frame rate) is tested on the whole town, not on the corner.
 
 ## What the plan must do
 
 - **Give every exit criterion its places.** Buildings whose history reads (the old town, the warehouses turned pubs); consequences the page does not make obvious (the empty shops after the 1986 crash, the closing canning works, the brewery standing empty); scenes (a pub, the square on market day, the forest, the ferry quay); the band's ladder of venues.
 - **Read from the camera.** Lynch's five elements must all be there and visible: paths, edges, districts, nodes, landmarks.
 - **Contrast.** Each area has its own grain (what stands there, how close, how high, on what ground), its own sound and its own light. Moving between them is the pleasure of the town.
-- **Sightlines.** The best views are planned: from the old town over the roofs across the basin to the pub quay (the corner's camera 2); from the knoll over the whole town; along the pub quay to the water; from the forest's edge over the roofs to the fjord.
+- **Sightlines.** The best views are planned: from the old town over the roofs across the Basin to Barrel Quay (the corner's camera 2); from Watch Knoll over the whole town; along the pub quay to the water; from the forest's edge over the roofs to the fjord.
 - **Grow.** It is built in clay one area at a time, and it extends to a larger town later without being redrawn.
 
 ## The land
 
-The town stands round a harbour bay that reaches into it in three inlets, so it is never a corridor with two sides: from most high places there is water in more than one direction. The inlets are Vågen in the middle, at Stavanger's scale (about 550 m long, 70 m wide at its head and 160 m at its mouth, lined with quays, bending gently); the east harbour beside it across the old town's hill, with the cannery's quays and a shingle beach at its head; and the west cove, with boatyards and slips on its natural shore. Between them stand three fingers of land: Holmen and the knoll on the west (the pubs), the old town's hill in the middle (water on three sides, its point a bluff over the bay), and Storhaug on the east (the working town). The points reach into the bay by different amounts. In the bay: an island with the island suburb, joined to Storhaug's point by the high bridge of 1978; a smaller island; skerries; a beacon on an islet and a light on the breakwater at Vågen's mouth. Built quays are straight; natural shore is rock and shingle, broken into small points and coves. The land's design is drawn as contours and spot heights in `blender/blockouts/centre_land.py` and mapped in `reviews/lt1/centre/`. Inland, the stream comes down from the forest hill in a green valley to the east harbour's head, the railway runs south from the station by the lake in its own valley through a pass in the upland, and a broad ridge with a spur closes the fire grid's slope to the west. Seen from the bay, the skyline stands in layers (`reviews/lt1/centre/skyline-from-bay.png`): the old town's hill near, the fire grid's ridge and the forest hill behind it, and the upland at 150 to 185 m behind them, showing through the gap over Vågen's head; the mountains, 20 to 35 km off, show from the high places.
+The town stands round a harbour bay that reaches into it in three inlets, so it is never a corridor with two sides: from most high places there is water in more than one direction. The inlets are the Basin in the middle, at Stavanger's scale (about 550 m long, 70 m wide at its head and 160 m at its mouth, lined with quays, bending gently); Cannery Bight beside it across Herring Hill, with the cannery's quays and a shingle beach at its head; and Slipway Cove, with boatyards and slips on its natural shore. Between them stand three fingers of land: the Holm and Watch Knoll on the west (the pubs), Herring Hill in the middle (water on three sides, its point a bluff over the Roads), and Ropewalk on the east (the working town). The points reach into the Roads by different amounts. In the Roads: an island with Bridge Island, joined to Ropewalk's point by the High Bridge of 1978; a smaller island; skerries; a beacon on an islet and a light on the breakwater at the Basin's mouth. Built quays are straight; natural shore is rock and shingle, broken into small points and coves. The land's design is drawn as contours and spot heights in `blender/blockouts/centre_land.py` and mapped in `reviews/lt1/centre/`. Inland, the stream comes down from Tower Wood in a green valley to Cannery Bight's head, the railway runs south from the station by the lake in its own valley through a pass in the upland, and a broad ridge with a spur closes the Grid's slope to the west. Seen from the Roads, the skyline stands in layers (`reviews/lt1/centre/skyline-from-bay.png`): Herring Hill near, the Grid's ridge and Tower Wood behind it, and the upland at 150 to 185 m behind them, showing through the gap over the Basin's head; the mountains, 20 to 35 km off, show from the high places.
 
-The ground has a different section in every area. The old town's hill is the steepest: from Vågen's quay it climbs at 15 to 20% to a spine at about 40 m (the villas), cut by two stream gullies and knuckles of bedrock, and falls more gently to the east harbour; at its point it ends in a bluff, a 20 m rock face over the bay. The forest hill rises inland to the south-east, a ridge with two summits (about 88 and 75 m) steep over Storhaug. The west is lower: Holmen a few metres above the water, cut off from the land by a narrow sund with a bridge; behind it a knoll of bare rock, 28 m, with its tower; and a gentle slope rising to about 30 m, carrying the fire grid. At the basin's head the ground is flat, made land, with the cathedral on a small rise and the lake in a hollow behind at 5 m. North of the outer harbour the land runs out to the oil base, then low islands and skerries in the fjord. Mountains only far off to the east.
+The ground has a different section in every area. Herring Hill is the steepest: from the Basin's quay it climbs at 15 to 20% to a spine at about 40 m (the villas), cut by two stream gullies and knuckles of bedrock, and falls more gently to Cannery Bight; at its point it ends in a bluff, a 20 m rock face over the Roads. Tower Wood rises inland to the south-east, a ridge with two summits (about 88 and 75 m) steep over Ropewalk. The west is lower: the Holm a few metres above the water, cut off from the land by a narrow cut with a bridge; behind it a knoll of bare rock, 28 m, with its tower; and a gentle slope rising to about 30 m, carrying the Grid. At the basin's head the ground is flat, made land, with the cathedral on a small rise and the lake in a hollow behind at 5 m. West of the Roads the land runs out past Ferry Point and the Supply Base to Battery Head; out in the Roads lie Bridge Island, Gull Island, the Teeth and the Pip. Mountains only far off to the east.
 
-**Facing the sun.** The free camera can look any way; what is designed is which way the town faces the sun, because the sun's place follows from the date, the hour and the town's orientation. At 59°N the sun is in the south most of the day, very low in winter (7.5° at noon in December, setting south-west at about 15:40) and setting far in the north-west in summer (about 23:00, the northern sky glowing all night in June): golden light comes from the south-west in autumn and winter and the north-west in summer, so west-facing slopes have it all year. Front light flattens, side light models, backlight gives silhouettes, haze and glittering water. So the old town faces west-north-west across Vågen: the low south-west sun rakes its fronts (seen from Holmen or the water, looking east), and from it, looking across Vågen, the sun sets behind Holmen's roofs (the view of the Stavanger references). The bay opens north: flatter by day, but the June night glow lies over it. The beach faces north-west up the west cove, into the summer evening sun.
+**Facing the sun.** The free camera can look any way; what is designed is which way the town faces the sun, because the sun's place follows from the date, the hour and the town's orientation. At 59°N the sun is in the south most of the day, very low in winter (7.5° at noon in December, setting south-west at about 15:40) and setting far in the north-west in summer (about 23:00, the northern sky glowing all night in June): golden light comes from the south-west in autumn and winter and the north-west in summer, so west-facing slopes have it all year. Front light flattens, side light models, backlight gives silhouettes, haze and glittering water. So the old town faces west-north-west across the Basin: the low south-west sun rakes its fronts (seen from the Holm or the water, looking east), and from it, looking across the Basin, the sun sets behind the Holm's roofs (the view of the Stavanger references). The Roads opens north: flatter by day, but the June night glow lies over it. The beach faces north-west up Slipway Cove, into the summer evening sun.
 
 The old town faces west-north-west across the water: the evening sun lies on its fronts, and from it the sun sets behind the pub quay. The pub quay faces east-south-east: morning sun, and at night its lit windows lie in the water, seen from the old town.
 
-The town's history, which sets which eras stand where: a medieval cathedral town at the basin's head; the herring boom of the early 1800s, when the wooden old town filled the east slope; fires, after which the west shore was rebuilt in straight streets (the fire grid); canning from the 1870s, its works at the mouth; villas for the merchants above; the modernist renewal of the 1950s to 70s, which cleared part of the old centre for the newer town and was stopped by conservation in the 1970s; the oil boom from the 1970s; the crash of 1986.
+The town's history, which sets which eras stand where: a medieval cathedral town at the basin's head; the herring boom of the early 1800s, when the wooden old town filled the east slope; fires, after which the west shore was rebuilt in straight streets (the Grid); canning from the 1870s, its works at the mouth; villas for the merchants above; the modernist renewal of the 1950s to 70s, which cleared part of the old centre for New Town and was stopped by conservation in the 1970s; the oil boom from the 1970s; the crash of 1986.
 
 ## The centre in detail
 
 The set pieces that make the centre worth exploring, each with its size and its use. Sources for the sister towns are in the research notes of 20 October (Bergen, Ålesund, St. John's, Tórshavn, Kristiansund, Lunenburg); principles from Cullen, Lynch, Sitte, Alexander, Gehl, Hillier and the game cities named below.
 
-1. **The inner basin and the harbour ferry.** Vågen at Stavanger's scale, with a little ferry crossing it every twenty minutes from the old town's quay to the pub quay (after Kristiansund's sundbåt, running since 1876). Crossing the water is an event, and the ferry is a place for chance meetings.
-2. **The outer harbour.** Wide water with the islet and its beacon, the breakwater and lighthouse, the ferry and express-boat quay on the west side, supply ships at the oil base beyond. The town's door to the world.
+1. **The Basin and the Penny Ferry.** The inner harbour at Stavanger's scale, quayed all round, with a little ferry crossing it every twenty minutes from Harbour Row to Barrel Quay (after Kristiansund's sundbåt, running since 1876). Crossing the water is an event, and the ferry is a place for chance meetings.
+2. **The Roads.** The harbour bay the three inlets open into: wide water with the Pip and its beacon, the Teeth, the breakwater and its light at the Basin's mouth, Ferry Point and the Supply Base on the west shore, Bridge Island and Gull Island out in it. The town's door to the world.
 3. **The old town.** The east slope at 15 to 20%, its houses at Stavanger's grain (about ten by seven and a half metres, 25 to the hectare, covering a quarter of the ground), placed as their owners chose rather than to a plan. Three contour lanes at about 3, 8 and 16 m; short, frequent flights of steps (a median of five metres); two stepped lanes in the gullies where the stream comes down; the landing where the lanes meet by a rock knuckle (the beauty corner). A passage under a house (a portrom) leads from Harbour Row into a yard and up into the lanes.
 4. **Harbour Row.** The narrow apron between the water and the slope: merchants' houses and warehouses on the quay road, the stream's mouth through an arch in the quay wall.
-5. **The bluff and the hundred steps.** The old town ends in an 18 m rock face over the outer harbour. At its foot, on made ground, the cannery; up its face, a long stair to the villas (after Ålesund's 418 steps to Aksla), with a bench on each landing and the whole harbour below; under it, a short road tunnel of the 1960s to Storhaug.
-6. **Holmen, the pub quarter.** The peninsula on the west shore, on two levels after St. John's: the pub quay along the water, and the upper street (Holmegate) about six metres higher, joined by stair-lanes with pubs and doorways tucked into them. The warehouses stand in double rows, gables to the water, with a private passage between each pair and bridges between their lofts (after Bryggen). Holmen burned in 1860 and was rebuilt with wider streets, so its grain is the 1860s'. In 1989 Holmegate is grey and run-down; its doors are cheap. At the tip, on bare rock, the old customs house and harbour master's office in small red wooden buildings (after Tinganes in Tórshavn), and the express-boat quay.
-7. **The sund.** A narrow strait, about 14 m wide, cut across Holmen's root in the 1880s to join the inner basin to the west cove, with a stone bridge over it (after Brosundet in Ålesund). Holmen is an island you reach by bridge; warehouses stand with their feet in the sund. The west cove beyond is the boatyards' water: slipways, sheds, small boats, a margin.
-8. **The knoll and the tower.** Bare rock, 28 m, behind Holmen: on top the stone fire-watch tower of 1853, 27 m tall, a harbour light from 1863 to 1894 (after Valbergtårnet); a cleft with steps up from Holmegate; a sheer face over the upper street. From the tower the whole centre is seen at once.
-9. **The head of the basin.** The square (Torget), irregular and enclosed by warehouse gables and the slope, streets entering at its corners (Sitte), open to the water on one side, with the fish market hall; the cathedral of about 1125 on its rise behind, with the cathedral school; the lake in its hollow at 5 m, about three hectares, with a fountain; the railway along its far shore to the station.
-10. **The fire grid.** West of the head, straight streets laid over the slope regardless of the ground, so they are steep and every cross street ends in a view of the water (after Lunenburg). Through it runs one wide fire-break street, about 30 m, from the knoll's foot down to the water (after Bergen's allmenninger): the town's broadest space next to its narrowest lanes. The shopping street runs along the slope.
+5. **The Bluff and the Hundred Steps.** Herring Hill ends in a 20 m rock face over the Roads. Below it on its east side, on made ground, the cannery; up its face, a long stair from the cannery's quay to the Heights (after Ålesund's 418 steps to Aksla), with a bench on each landing and the whole harbour below; under its neck, a short road tunnel of the 1960s from Harbour Row to Tin Town.
+6. **The Holm, the pub quarter.** The island on the Basin's west side, cut off by the Cut, on two levels after St. John's: the pub quay along the water, and the upper street (Holm Street) about six metres higher, joined by stair-lanes with pubs and doorways tucked into them. The warehouses stand in double rows, gables to the water, with a private passage between each pair and bridges between their lofts (after Bryggen). The Holm burned in 1860 and was rebuilt with wider streets, so its grain is the 1860s'. In 1989 Holm Street is grey and run-down; its doors are cheap. At the tip, on bare rock, the old customs house and harbour master's office in small red wooden buildings (after Tinganes in Tórshavn), and a landing for the Penny Ferry.
+7. **The Cut.** A narrow strait, about 14 m wide, cut across the Holm's root in the 1880s to join the Basin to Slipway Cove, with a stone bridge over it (after Brosundet in Ålesund). The Holm is an island you reach by bridge; warehouses stand with their feet in the Cut. Slipway Cove beyond is the boatyards' water: slipways, sheds, small boats, a margin.
+8. **Watch Knoll and the tower.** Bare rock, 28 m, behind the Holm: on top the stone fire-watch tower of 1853, 27 m tall, a harbour light from 1863 to 1894 (after Stavanger's Valbergtårnet); a cleft with steps up from Holm Street; a sheer face over the upper street. From the tower the whole centre is seen at once.
+9. **The head of the basin.** The square (Market Square), irregular and enclosed by warehouse gables and the slope, streets entering at its corners (Sitte), open to the water on one side, with the fish market hall; the cathedral of about 1125 on its rise behind, with the cathedral school; the lake in its hollow at 5 m, about three hectares, with a fountain; the railway along its far shore to the station.
+10. **The Grid.** West of the head, straight streets laid over the slope regardless of the ground, so they are steep and every cross street ends in a view of the water (after Lunenburg). Through it runs one wide fire-break street, about 30 m, from Watch Knoll's foot down to the water (after Bergen's allmenninger): the town's broadest space next to its narrowest lanes. The shopping street runs along the slope.
 11. **Views and reveals.** Prospects you climb to: the landing, the tower, the top of the hundred steps, the end of the breakwater. Reveals on the way: the basin's bend; lanes that turn so the tower appears at the corner; the fire-break street opening to the sea (Cullen's serial vision).
-12. **The cove beach.** The west cove is a broad round bay with a sandy beach at its head, facing north-west up the cove: sheltered, in the summer evening sun, a few minutes from the fire grid and the newer town. Summer, youth, the night after the pubs.
-13. **The stream valley.** The stream comes down from the forest hill's saddle in a green valley to the east harbour's head: a park with paths and a footbridge, where the forest reaches into the town.
-14. **The summit park.** The old town's hill has a top, by the villas: a small park and a viewpoint with water on three sides.
-15. **Margins.** The boatyards in the west cove, under the sund's bridge, the cannery's yard, the cleft, the breakwater at night: where what should not be seen happens.
+12. **Bonfire Beach.** Slipway Cove is a broad round bay with a sandy beach at its head, facing north-west up the cove: sheltered, in the summer evening sun, a few minutes from the Grid and New Town. Summer, youth, the night after the pubs.
+13. **Millbrook Dell.** The stream comes down from Tower Wood's saddle in a green valley to Cannery Bight's head: a park with paths and a footbridge, where the forest reaches into the town.
+14. **Lookout Park.** Herring Hill has a top, by the villas: a small park and a viewpoint with water on three sides.
+15. **Margins.** The boatyards in Slipway Cove, under the Cut's bridge, the cannery's yard, the cleft, the breakwater at night: where what should not be seen happens.
 
-**Checks for every clay pass:** Lynch's five elements read from the middle and far stops; grain contrast (the narrowest lanes beside the widest street); levels joined by stairs; every place the camera can see can be reached (Arkane's rule: no view of a place the player cannot go); crossings are events (the ferry, the bridge, the hundred steps); decline is readable from facts (Holmegate grey, the cannery closing, empty shops).
+**Checks for every clay pass:** Lynch's five elements read from the middle and far stops; grain contrast (the narrowest lanes beside the widest street); levels joined by stairs; every place the camera can see can be reached (Arkane's rule: no view of a place the player cannot go); crossings are events (the ferry, the bridge, the hundred steps); decline is readable from facts (Holm Street grey, the cannery closing, empty shops).
 
 ## The areas
 
 | Area | Where | Grain | What happens there | Sound and light |
 | --- | --- | --- | --- | --- |
-| The basin, Vågen | The middle, 900 m long | Water, stone quays both sides, the islet and its beacon, the ferry and express-boat quay in the outer basin, the fish quay and pontoons in the inner | Boats come and go; regattas and the Christmas lights; the town looks at itself across it | Gulls, engines, halyards; reflections, the town doubled at night |
+| The Basin and the Roads | The middle, and the bay beyond | The Basin quayed all round, the fish quay at its head; the Roads with the Pip, the Teeth, the islands and the breakwater's light | Boats come and go; regattas and the Christmas lights; the town looks at itself across it | Gulls, engines, halyards; reflections, the town doubled at night |
 | The old town | East slope, from the canning works to the square | White timber houses of 1½ to 2 storeys, shoulder to shoulder along contour lanes; stepped lanes in the gullies; yards, walls, picket fences, lanterns | Living; small trades; the beauty corner is here | Quiet, footsteps, a radio through a window; evening sun on the fronts |
-| The cannery streets | The old town hill's east slope, down to the east harbour | Workers' wooden rows and small terraces of the 1890s to 1920s, rising from the cannery's quay; a school; garden plots | Where the cannery's workers lived, near enough to hear the hooter; the cannery's closing reaches every door | Washing lines, children, a radio; morning sun |
+| Tin Town | The old town hill's east slope, down to Cannery Bight | Workers' wooden rows and small terraces of the 1890s to 1920s, rising from the cannery's quay; a school; garden plots | Where the cannery's workers lived, near enough to hear the hooter; the cannery's closing reaches every door | Washing lines, children, a radio; morning sun |
 | Harbour Row | The east quay below the old town | Merchants' houses and warehouses on the quay road | A bar (the Anchor), a café, a rehearsal loft in a warehouse | Quay noise by day, one bar's door at night |
 | The pub quay and pub street | The west quay and the street behind it | Warehouses (sjøhus) turned pubs and restaurants on the quay; behind them a narrow street of shops and bars | Nightlife: the band's first rungs, the pub back room and a club in a warehouse | Loud and warm at night, neon and tungsten in the water; shabby by day |
-| The square, Torget | The basin's head | An irregular square open to the water, market stalls, the cathedral beside it on rising ground, the lake behind | Market day, meetings, the town's public life | Busy by day; the cathedral bells |
-| The fire grid | West, behind the pub street | Straight streets of 1860s to 1900s two- and three-storey timber and render, shops below | Shopping, offices, rented flats | Traffic and shop doors |
-| The knoll | West, above the fire grid | Bare rock, a stone tower (once a fire watch), a few wind-bent trees, steps up | The view over everything; meetings; a landmark | Wind, the whole town below |
-| The newer town | South-west, past the square | Post-war and seventies blocks, a department store, a hotel, the bus station, a pedestrian street | Work, shopping, the hall the band climbs to | Traffic, sodium light |
+| The square, Market Square | The basin's head | An irregular square open to the water, market stalls, the cathedral beside it on rising ground, the lake behind | Market day, meetings, the town's public life | Busy by day; the cathedral bells |
+| The Grid | West, behind the pub street | Straight streets of 1860s to 1900s two- and three-storey timber and render, shops below | Shopping, offices, rented flats | Traffic and shop doors |
+| Watch Knoll | West, above the Grid | Bare rock, a stone tower (once a fire watch), a few wind-bent trees, steps up | The view over everything; meetings; a landmark | Wind, the whole town below |
+| New Town | South-west, past the square | Post-war and seventies blocks, a department store, a hotel, the bus station, a pedestrian street | Work, shopping, the hall the band climbs to | Traffic, sodium light |
 | The canning works | The old town's north end, at the mouth | Brick and timber factory halls on the quay, a chimney | Closing in the 1980s: empty halls, a consequence | Silence where machines were |
-| Storhaug, the working town | East, past the canning works | Dense small houses and workers' blocks, a closed brewery | Cheap rooms; the brewery is the venue that comes later | Children, laundry lines, dogs |
+| Ropewalk, the working town | East, past the canning works | Dense small houses and workers' blocks, a closed brewery | Cheap rooms; the brewery is the venue that comes later | Children, laundry lines, dogs |
 | The oil base | North-west, across the mouth | Supply quays, tanks, cranes, sheds, a fence | The boom and the bust of 1986, half empty | Generators, floodlights |
-| The ferry quay and the mouth | Where the basin meets the fjord | A ferry quay, a breakwater, a lighthouse | Arrivals and departures | Ferry horns, the lighthouse at night |
+| Ferry Point and the breakwater | Where the Roads meet the fjord, west of the Basin | A ferry quay, the breakwater, its light | Arrivals and departures | Ferry horns, the lighthouse at night |
 | The villas | East, above the old town | Merchants' villas in big gardens, old trees, iron fences | Old money, an inheritance, a garden party | Quiet, gravel |
-| The forest hill | East, above the villas | Mixed wood of birch, spruce and pine on an old pasture; stone walls under the trees; paths worn and grown over; a tarn; a water tower on top; heath at the edge, grazed until 1958 | Walks, the murder mystery, nature with a history | Wind in trees, birds, the town's noise far below |
+| Tower Wood | East, above the villas | Mixed wood of birch, spruce and pine on an old pasture; stone walls under the trees; paths worn and grown over; a tarn; a water tower on top; heath at the edge, grazed until 1958 | Walks, the murder mystery, nature with a history | Wind in trees, birds, the town's noise far below |
 | The edge | Between the forest and the town | Allotments, a football ground, a scout hut | Weekends, children | Shouts, a ball |
-| The islands | The fjord | Low rock, heather, a few cabins | Seen from everywhere; a boat trip | Sea |
+| Gull Island and the Teeth | The Roads | Low rock, heather, a few cabins | Seen from everywhere; a boat trip | Sea |
+
+## Every place has a use
+
+Land may be empty; it may never be dead. Every piece of the map has a use in the town's life and a reason for a game to go there, and every use carries the scenes that could happen in it. Scenes are not only interiors: a quay at night, a forest clearing, a farmyard, a boat, a bunker are scenes too (`docs/living-world.md`). The map of uses is `reviews/lt1/centre/centre-land-use.png`.
+
+| Place | Its use in the town | Scenes it holds |
+| --- | --- | --- |
+| The old town on Herring Hill | Homes in timber houses, small trades in front rooms | A lane at dusk; a quarrel heard through a window; the landing at night; a yard party; moving in, moving out |
+| Harbour Row | A bar, a café, a rehearsal loft in a warehouse | The first rehearsal; a lock-in; the café at opening time |
+| The Heights and Lookout Park | Old money; the town's best view | A garden party; a will read; a proposal on the bench at the top |
+| The Bluff and the Hundred Steps | A climb, a lookout | A meeting halfway up; a fall, or a push |
+| Tin Town | Workers' homes, a school | The school gate; the day the cannery's closing is announced; a wake |
+| The cannery and its quay | The canning works, closing in the 1980s | The last shift; the empty hall; a squat; a later venue |
+| The Holm and Holm Street | Pubs, a club, cheap rooms; the old customs house at the tip | A first gig in a back room; a fight on the stair-lane; closing time on the quay |
+| Watch Knoll and the Fire Watch | A viewpoint and a landmark, steps up through the cleft | A secret meeting; a kiss; the whole town at once |
+| Market Square, the cathedral, the Fish Hall | Market, church, the town's public life | Market day; a wedding and a funeral; a protest; the summer festival's stage |
+| The Mere and its park, the station | Walks, a fountain, skating in a hard winter; arrivals | A walk round the lake; a leaving on the night train; the first ice |
+| The Grid | Shops, offices, rented flats | A shop that opens or closes; a job interview; the long street to the sea |
+| Bonfire Beach | Summer, swimming, bonfires | Midsummer night; a bonfire after the pubs; a drowning |
+| Slipway Cove's boatyards | Repair, slips, boat sheds | A boat that should not be there; a deal in a shed |
+| Ferry Point and the Supply Base | Ferries, supply ships, tanks, a helipad | Arrivals and departures; a night shift; the fence after the crash |
+| Gun Ridge, behind the Grid | Heath and rock, a radio mast, German bunkers of 1940 to 45 | A hideout; a teenage party in a bunker; something found in a tunnel |
+| New Town | Offices, the department store, the hotel, the bus station, the culture house | A press conference; a concert at the culture house; the last bus |
+| The institutions' belt between the Mere and Tower Wood | The hospital, the upper school, its sports ground | A birth; a death; a school dance; a match |
+| The railway's valley | The goods yard, sheds, the Mudbowl (the football ground) | A train at night; a match day; a body by the line |
+| Tower Wood | Woods on old pasture, stone walls under the trees, paths, a tarn, a croft's ruin, the water tower on top, a scout hut | A walk; a search; a clearing at night; a meeting at the water tower; the mystery's ground |
+| Millbrook Dell | A park with the stream, a footbridge, an old mill's ruin, a shingle beach at the harbour's head | A child's game; a body in the stream; the first spring day |
+| The Plots and the old cemetery at Tower Wood's edge | Vegetable plots and sheds; graves of the herring merchants | A Sunday at the plot; a grave visited every year |
+| Ropewalk | Workers' town, a rope walk along the shore, boathouses, the closed brewery | Cheap rooms; a party in the brewery; a boat launched |
+| Plough Valley and Sheepwash Valley | Farms with walls and barns, the town creeping in | A sale; an inheritance; a barn dance; the bulldozers |
+| Quarry Hollow | The old quarry that built the quays, now a swimming hole; a sledging slope in winter | Diving in summer; a dare; a sledge race |
+| The High Moor | Heath and sheep, a mast on top, the railway's pass | A long walk; a crash; the town seen from outside |
+| Bridge Island | Seventies homes, a marina, a church, a beach facing west | Commuting over the bridge; a sunset swim; a marriage going wrong |
+| Gull Island, the Teeth and the Pip | Summer cabins, a jetty; seabirds, the beacon | A boat trip; a weekend away; stranded |
+| The Roads | Fishing, the Penny Ferry, the regatta | A boat at night; a race; a scattering of ashes |
+
+## The ladder of venues
+
+A band climbs a ladder of rooms, and the climb is the story (`docs/research/scenes-and-sound.md`, The venue ladder). Every rung is a real place in the town, and the top of one town's ladder is the door to the next city.
+
+| Rung | Place in the starter town (1989) | About |
+| --- | --- | --- |
+| Rehearsal | The loft in a warehouse on Harbour Row, rented cheap after the crash | 4 to 10 people |
+| First gigs | The back room of a pub on Holm Street | 60 to 120 |
+| A local following | A club in one of the Holm's warehouses | 300 to 400 |
+| On the side | The student pub at the upper school, the youth club in the seventies estate | 150 to 250 |
+| The town's stage | The culture house hall in New Town | about 900 seated |
+| Outdoors | The summer festival's stage on the square, a stage by the lake | 2,000 to 5,000 |
+| The biggest room in town | The exhibition hall at the town's edge by the motorway, built with oil money | about 5,000 |
+| Later | The closed brewery in Ropewalk, opened as a venue in the 1990s | 600 to 1,000 |
+
+Beyond the starter town, the ladder goes on in bigger cities, each built by the same method (a land, a script of eras, areas, a heart laid out by hand, a ladder of its own), reached by the world map (`docs/ideas/world-map.md`): a regional city with bigger clubs and a national stage; the capital with its halls, labels and press; then London or New York, their clubs, halls and arenas. A band that tops one town's ladder starts near the bottom of the next one's.
 
 ## Paths, edges, nodes and landmarks
 
-- **Paths:** the quay roads on both shores, meeting at the square; the pub street; the main street from the square into the newer town; the old town's contour lanes and stepped lanes; the road up through the villas to the water tower; the forest paths.
+- **Paths:** the quay roads on both shores, meeting at the square; the pub street; the main street from the square into New Town; the old town's contour lanes and stepped lanes; the road up through the villas to the water tower; the forest paths.
 - **Edges:** the basin (the strongest); the forest's edge; the oil base's fence; the lake.
 - **Nodes:** the square; the landing in the old town (the beauty corner); the ferry quay; the fish quay; the bus station's square.
-- **Landmarks:** the cathedral; the tower on the knoll; the water tower on the forest hill; the oil base's cranes; the lighthouse; the canning works' chimney.
+- **Landmarks:** the cathedral; the tower on Watch Knoll; the water tower on Tower Wood; the oil base's cranes; the lighthouse; the canning works' chimney.
 
 ## A city to play in
 
@@ -105,8 +190,8 @@ The town must make many games, not one: the band, a murder mystery, a family acr
 - **Places change with the clock.** The square by day and empty at night; the pub quay shabby by day and alive at night; the beach in summer; the lake frozen for skating in a cold winter; the market on Saturdays. One map is many towns.
 - **Front and back.** Every place worth a scene has a front and a backstage: the pub's front room and its back yard, the villa's drawing room and its kitchen door, the cannery's office and its loading bay. Drama lives in the back.
 - **Edges and margins.** What happens out of sight happens at the edges: the forest, the boatyards, the empty brewery, under the bridge, the oil base at night, the end of the breakwater. Crime, romance and youth need them.
-- **Views and climbs.** Stairs, lookouts and the bridge orient the player and reward the climb: the knoll, the water tower, the lighthouse, the corner's landing.
-- **Contrast is conflict.** Villas above Storhaug; the conserved old town against the oil offices; the seventies estate against the fishing village. Social tension made spatial gives every scenario its stakes.
+- **Views and climbs.** Stairs, lookouts and the bridge orient the player and reward the climb: Watch Knoll, the water tower, the lighthouse, the corner's landing.
+- **Contrast is conflict.** Villas above Ropewalk; the conserved old town against the oil offices; the seventies estate against the fishing village. Social tension made spatial gives every scenario its stakes.
 - **Secrets with dates.** The history system becomes play: the old name under the new sign, the wall under the trees, the bricked-up door, the moss that has not grown back. Following an anomaly leads to a true story.
 - **Recognition.** The same places, years apart, changed by what happened: the strongest moment any scenario has.
 
@@ -114,17 +199,17 @@ What each scenario needs from the town, all on one map:
 
 | Scenario | It needs | Where |
 | --- | --- | --- |
-| The band | A rehearsal room, a pub back room, a club, a hall; a record shop, the radio, poster walls, the van, the walk home at three in the morning | Harbour Row's loft, the pub street, a warehouse on the pub quay, the newer town's hall, later the brewery |
-| A murder mystery | Paths with witnesses at known hours, ground that remembers, an inheritance, a newspaper, a police station, gossip | The forest hill, the villas, the boathouses, the oil base at night, the café and the hairdresser |
+| The band | A rehearsal room, a pub back room, a club, a hall; a record shop, the radio, poster walls, the van, the walk home at three in the morning | Harbour Row's loft, the pub street, a warehouse on the pub quay, New Town's hall, later the brewery |
+| A murder mystery | Paths with witnesses at known hours, ground that remembers, an inheritance, a newspaper, a police station, gossip | Tower Wood, the villas, the boathouses, the oil base at night, the café and the hairdresser |
 | A family over generations | Homes in districts to move between as fortunes change; a school, a church, a hospital, workplaces that rise and fall, a cemetery | The old town, the garden suburb, the estate; the cannery, then oil |
-| A venture | Empty shops after the crash, rents by street, foot traffic by route, rivals, the market | The pub street, the fire grid, the square |
+| A venture | Empty shops after the crash, rents by street, foot traffic by route, rivals, the market | The pub street, the Grid, the square |
 | Talent spotting | Where talent leaks out unmeasured: school sports, youth clubs, open mics, the local league | The estate's sports hall, the football ground, the pubs |
 | The town's politics | The town hall, the conservation fight, the bridge, the newspaper, the oil money | The square, the old town, the oil offices |
-| Growing up | The beach, the knoll at night, the bus station, the cinema, the youth club, the ferry to the islands | Everywhere at the edges |
+| Growing up | The beach, Watch Knoll at night, the bus station, the cinema, the youth club, the ferry to the islands | Everywhere at the edges |
 
 ## How the town grows and changes
 
-**Before play: a script of eras.** The town is grown from a timed script (`docs/research/generating-the-past.md`), each era leaving its layer where it could: the medieval core at the basin's head; the herring boom filling the east slope with timber houses and the quays with warehouses; fires, and the fire grid rebuilt in straight streets; canning at the mouth; the railway along the lake; villas above the old town; between the wars the garden suburb; the modernist renewal of the 1950s and 60s, which cleared part of the centre for the newer town and was stopped when the old town was saved; oil from the 1970s, with the base, the offices, the bridge and the motorway; the boom of the early 80s, when the pub quay's warehouses became bars; the crash of 1986. The town in 1989 is all of these at once.
+**Before play: a script of eras.** The town is grown from a timed script (`docs/research/generating-the-past.md`), each era leaving its layer where it could: the medieval core at the basin's head; the herring boom filling the east slope with timber houses and the quays with warehouses; fires, and the Grid rebuilt in straight streets; canning at the mouth; the railway along the lake; villas above the old town; between the wars the garden suburb; the modernist renewal of the 1950s and 60s, which cleared part of the centre for New Town and was stopped when the old town was saved; oil from the 1970s, with the base, the offices, the bridge and the motorway; the boom of the early 80s, when the pub quay's warehouses became bars; the crash of 1986. The town in 1989 is all of these at once.
 
 **How growth finds its place.** Growth follows roads and stalls at barriers: the basin, the lake, the railway, the forest's edge. Where it stalls, belts of big, low-density uses gather (Conzen's fringe belts): the hospital, the school, the cemetery, the football ground, the university. Plots run through their cycle (built, filled in behind, decayed, cleared, rebuilt). Booms build in their own style; busts leave empty shops and lots. Plans are only partly carried out, and their scars stay.
 
@@ -142,7 +227,7 @@ Expansion stalls at barriers and leaves fringe belts, and the edge is always the
 
 **From town to metropolis.** A city is the same process run longer and on more seeds: a region of villages and farms that a town grows over, until the villages are districts and each keeps its heart. So later cities are planned as regions first, their hearts are the old villages laid out by hand, and their bodies are grown.
 
-**What the player sees.** The same views across the years: a scenario set in 1960 and one in 2010 meet the same quay, the same corner, the same view from the knoll, each changed by what happened in between.
+**What the player sees.** The same views across the years: a scenario set in 1960 and one in 2010 meet the same quay, the same corner, the same view from Watch Knoll, each changed by what happened in between.
 
 **Who decides.** These are facts, so the engine's fabric pass owns them (`docs/engine-requests.md`); the plan supplies the setting pack's land and its script of eras. The same machinery grows other towns and, later, cities, each with its own land and script.
 
@@ -167,15 +252,15 @@ What keeps change local: layout is data in the setting pack, buildings are assem
 
 | District | Where | Grain | What it adds to the game |
 | --- | --- | --- | --- |
-| The island suburb and the bridge | North-east, across the fjord | A high bridge of 1978 to an island of seventies terraces and blocks, a marina | A landmark, the commute, the town's newest homes |
-| The garden suburb | East, past the forest hill | Detached houses of the 1920s to 50s in gardens, hedges, a church, a school | Families, ordinary life, the school |
+| Bridge Island and the High Bridge | North, across the Roads | A high bridge of 1978 to an island of seventies terraces and blocks, a marina | A landmark, the commute, the town's newest homes |
+| The garden suburb | East, past Tower Wood | Detached houses of the 1920s to 50s in gardens, hedges, a church, a school | Families, ordinary life, the school |
 | The seventies estate | Far east | Blocks and terraces round a shopping centre and a sports hall | The modern town; youth, its clubs and boredom |
 | The hospital and the stadium | East, between the suburbs | A hospital campus; a football ground with stands | Births and deaths; match days |
 | The lake and the railway | South of the square | A lake in a park with a path round it; the railway along its shore to the station by the square | Walks, a skating rink in winter, arrivals |
 | The university | South-east | A campus of the 1960s and 70s on the plain | Students, ideas, a student pub |
 | The oil offices | South, by the motorway | Glass and concrete offices of the 1970s and 80s, car parks, half let after the crash | The boom's money and the bust |
 | The farms | South-east and west | Flat fields, stone walls, farmhouses and barns, the town's edge creeping in | Land, inheritance, the town eating the country |
-| The western housing | West, past the newer town | Workers' and clerks' streets of the 1900s to 50s, corner shops | The town's ordinary middle |
+| The western housing | West, past New Town | Workers' and clerks' streets of the 1900s to 50s, corner shops | The town's ordinary middle |
 | The fishing village | The west coast | An old fishing village the town has reached: boathouses, a harbour, a chapel | The town's past, still working |
 | The beach | The west coast | A long sandy beach and dunes | Summer, youth, the open sea |
 | The coastal heath | North-west, by the oil base | Heather and rock by the sea, the oldest cultural landscape | Walks, wind, what the land was |
@@ -185,9 +270,9 @@ The airport lies beyond, to the south-west, reached by the motorway.
 ## The order in clay
 
 1. **The corner**, refined (the old town around the landing).
-2. **The heart:** the basin, both shores and the square: the old town's lower slope, Harbour Row, the pub quay and pub street, the fire grid's first blocks, the knoll. The corner's camera 2 then looks at a real pub quay.
-3. **Above:** the villas and the forest hill, with the heath and the water tower.
-4. **The rest of the centre:** the canning works, Storhaug, the newer town, the oil base, the ferry quay, the islands.
+2. **The heart:** the basin, both shores and the square: the old town's lower slope, Harbour Row, the pub quay and pub street, the Grid's first blocks, Watch Knoll. The corner's camera 2 then looks at a real pub quay.
+3. **Above:** the villas and Tower Wood, with the heath and the water tower.
+4. **The rest of the centre:** the canning works, Ropewalk, New Town, the oil base, the ferry quay, the islands.
 5. **The districts around it,** laid out by rules learned from the centre and checked in clay from the far stop: first the lake and the railway, the garden suburb and the bridge, then the others.
 
 Each step is judged in clay at the middle and far stops before the next. Parts are made at final quality in parallel and fill the corner first.
