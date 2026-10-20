@@ -44,8 +44,8 @@ import tree_growth as G  # noqa: E402
 # species' sprays, or its clumps: a painter's blocking of its foliage); hang: clumps hang from their shoots' ends,
 # sized for a twig's foliage on a grown tree (clump_full: the height at which they reach full size).
 PARTS = {
-    "birch": dict(sag=0.05, taper=0.55, occlusion=0.05, seam=0.3, atlas="lobes", lobe=0.8, lobe_gap=0.15, lose_tips=40, hang=False, card=(0.50, 0.48), card_u=(0.03, 0.97), cells=4,
-                  per_node=2, along=1, droop=0.7, leaf_years=999, leaf_tips=24, draw_tips=2.5, draw_tips_per_m=0.45, winter_tips=0.8, reach=0.9, hang_reach=0.3,
+    "birch": dict(sag=0.05, taper=0.55, occlusion=0.05, seam=0.3, atlas="lobes", lobe=0.8, lobe_gap=0.3, lose_tips=40, hang=False, card=(0.50, 0.48), card_u=(0.03, 0.97), cells=4,
+                  per_node=2, along=1, droop=0.7, leaf_years=999, leaf_tips=24, draw_tips=2.5, draw_tips_per_m=0.45, winter_tips=0.8, reach=99.0, hang_reach=0.3,
                   bark=(0.30, 0.60), max_cards=4200, grow_to=80),
     "spruce": dict(card=(0.60, 0.40), cells=4, per_node=2, droop=0.25, leaf_years=7, leaf_tips=30, draw_tips=3.0, draw_tips_per_m=0.45,
                    bark=(0.30, 0.50), max_cards=8000, grow_to=100),
@@ -289,11 +289,14 @@ def branch_mesh(tl, parts, H, vols=None, needed=None):
             if vols and tp[k] < lost:
                 deep = max((volume_depth(v, pts[k]) for v in vols if v is not None), default=0.0)
             if deep > 0.3:
-                appear[k] = fall_at(deep, pts[k][2] / max(H, 1e-3)) - 0.03
+                appear[k] = ranked_fall(tl, fall_at(deep, pts[k][2] / max(H, 1e-3))) - 0.03
+                if needed is not None and k > 0 and c[k - 1] in needed:
+                    # a twig carrying leaves shows by the time the first of them falls
+                    appear[k] = min(appear[k], needed[c[k - 1]] - 0.02)
             elif needed is not None and k > 0 and tp[k] < draw and c[k - 1] not in needed:
                 # a fine twig end that carries no leaves: in leaf it is among the foliage's edge; it shows as the
                 # outer leaves fall
-                appear[k] = fall_at(0.1, pts[k][2] / max(H, 1e-3))
+                appear[k] = ranked_fall(tl, fall_at(0.1, pts[k][2] / max(H, 1e-3)))
             if k > 0:
                 node_appear[c[k - 1]] = appear[k]
         pts, rad, appear = pts[:stop], rad[:stop], appear[:stop]
@@ -543,10 +546,19 @@ def thin(points, keys, gap):
     return np.array(sorted(kept), dtype=int)
 
 
-def fall_at(depth, zrel, seeded=0.5):
-    """The season (0 to 1) at which foliage at a depth in its mass and a height in the crown falls: inside and low
-    first, the outer upper shoots last. Cards and twigs share it, so a twig shows exactly as its leaves go."""
-    return 0.45 * (1.0 - depth) + 0.3 * float(np.clip(zrel, 0.0, 1.0)) + 0.25 * seeded
+def fall_at(depth, zrel, seeded=0.5, gale=0.5):
+    """The order (raw) in which foliage falls: inside and low first, the outer upper shoots last, broken by chance
+    and by the gale, which strips whole outer branch groups together (on this coast an October birch is patchy:
+    green, gold and bare twigs side by side). Cards and twigs share it, so a twig shows as its leaves go."""
+    return 0.3 * (1.0 - depth) + 0.15 * float(np.clip(zrel, 0.0, 1.0)) + 0.3 * seeded + 0.25 * gale
+
+
+def ranked_fall(tl, raw):
+    """A raw fall order as the share of the tree's foliage fallen by then (fall_map, from the cards)."""
+    if "fall_map" not in tl:
+        return raw
+    order, q = tl["fall_map"]
+    return float(np.interp(raw, order, q))
 
 
 def lobe_mesh(tl, parts, age, seed, H):
@@ -629,7 +641,9 @@ def lobe_mesh(tl, parts, age, seed, H):
         depth_c = volume_depth(vol, centres[j]) if vol is not None else 0.0
         zrel = float(np.clip(centres[j][2] / max(H, 1e-3), 0.0, 1.0))
         rank = 0.55 * h01(seed, i, 4) + 0.45 * depth_c
-        fall = fall_at(depth_c, zrel, h01(seed, i, 9))
+        # the gale's share: the same for a group of shoots (the cards hanging from one branch), seeded
+        group = int(tl["parent"][tl["parent"][i]]) if i > 0 and tl["parent"][i] > 0 else int(i)
+        fall = fall_at(depth_c, zrel, h01(seed, i, 9), h01(seed, group, 16))
         UV1.extend([(rank, fall)] * 4)
         ATTACH.append((end[i].copy(), depth_j, fall, int(i)))
         for p in corners:
@@ -641,6 +655,17 @@ def lobe_mesh(tl, parts, age, seed, H):
             zc = float(np.clip(p[2] / max(H, 1e-3), 0.0, 1.0))
             crown = 0.55 + 0.45 * np.clip((zc - 0.25) / 0.6, 0.0, 1.0)
             COL.append((float((0.25 + 0.75 * (1.0 - dep) ** 1.2) * crown), float(np.clip(0.15 + 0.35 * max(-n[2], 0.0), 0, 1)), 1.0, 1.0))
+    # the season is the share of this tree's foliage fallen (or, in spring, not yet out): each card's place in the
+    # fall order becomes its rank among them, so 0.4 is two curtains in five gone, inside and low first
+    if ATTACH:
+        raw = np.array([a[2] for a in ATTACH])
+        order = np.sort(raw)
+        q = (np.arange(len(order)) + 0.5) / len(order)
+        tl["fall_map"] = (order, q)
+        ranked = np.interp(raw, order, q)
+        for n in range(len(ATTACH)):
+            UV1[4 * n:4 * n + 4] = [(UV1[4 * n][0], float(ranked[n]))] * 4
+        ATTACH = [(a[0], a[1], float(r_), a[3]) for a, r_ in zip(ATTACH, ranked)]
     tl["attach"] = ATTACH
     return np.array(V), F, UV0, UV1, NR, COL, trees, which, vols
 
@@ -887,11 +912,13 @@ def build(species, seed, age, quality=1.0, unity=None):
     BV, BF, BUV0, BUV1, samples, APPEAR, wood = branch_mesh(tl, parts, H, vols)
     if "attach" in tl:
         # every curtain's own twig, from its shoot up the tree: drawn, however fine, so it hangs from wood
-        paths = set()
-        for (_, _, _, i) in tl["attach"]:
+        paths = {}
+        for (_, _, fall_, i) in tl["attach"]:
             j = i
-            while j >= 0 and j not in paths:
-                paths.add(j)
+            while j >= 0:
+                if j in paths and paths[j] <= fall_:
+                    break
+                paths[j] = min(paths.get(j, 9.0), fall_)
                 j = int(tl["parent"][j]) if j > 0 else -1
         # again, now knowing which fine twigs carry leaves: those always show, the bare ends show as leaves fall
         BV, BF, BUV0, BUV1, samples, APPEAR, wood = branch_mesh(tl, parts, H, vols, needed=paths)

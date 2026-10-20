@@ -83,7 +83,7 @@ SPECIES = {
         phyllotaxis=144.0, lateral_angle=42.0, max_order=4, long_min=2.6,
         setpoint=((90, 90), (72, 48), (40, 8), (12, -14), (-10, -28), (-15, -30)), steer=0.15, light_pull=0.25,
         light_up=0.3, jitter=0.08, curl=(1.0, 3.5), variety=1.0,
-        envelope="dome", width=(0.26, 0.40), lobing=0.45, crown_base=(0.0, 0.0), self_prune=(0.05, 0.24),
+        envelope="dome", width=(0.26, 0.48), lobing=0.45, crown_base=(0.0, 0.0), self_prune=(0.05, 0.34),
         masses=dict(top=(0.84, 0.19, 0.15), sides=(2, 4), side_z=(0.40, 0.68), side_off=(0.17, 0.27),
                     side_r=(0.12, 0.17), outside=0.6, pull=0.3),
         shed=(0.30, 2), bud_life=10, tip_radius=0.0045, spurs=0.025, pipe=2.4, light=(0.15, 0.25, 2), ring=0.42e-5,

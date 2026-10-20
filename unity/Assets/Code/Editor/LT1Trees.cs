@@ -43,7 +43,7 @@ namespace Overstory.EditorTools
             // last still olive, the first a dull brown, never orange or red; nearly half fallen, from the inside and
             // below, so the limbs show
             ["birch"] = (new Color(0.40f, 0.42f, 0.20f), new Color(0.72f, 0.62f, 0.30f), new Color(0.46f, 0.39f, 0.25f),
-                         new Vector4(0.78f, 0.45f, 0f, 0f)),
+                         new Vector4(0.78f, 0.40f, 0f, 0f)),     // two curtains in five gone
         };
 
         /// <summary>Which painted leaves each species' cards carry: its sprays, or its clumps.</summary>
@@ -229,9 +229,9 @@ namespace Overstory.EditorTools
             var (bark, leaves) = Materials("birch");
             var seasons = new (string name, Color green, Vector4 season)[]
             {
-                ("05-may", new Color(0.50f, 0.58f, 0.20f), new Vector4(0f, 0.78f, 0f, 0f)),     // half out: a pale haze
+                ("05-may", new Color(0.50f, 0.58f, 0.20f), new Vector4(0f, 0.55f, 0f, 0f)),     // half out: a pale haze
                 ("07-july", new Color(0.25f, 0.37f, 0.11f), new Vector4(0f, 0f, 0f, 0f)),
-                ("10-october-20", new Color(0.36f, 0.40f, 0.15f), new Vector4(0.78f, 0.45f, 0f, 0f)),
+                ("10-october-20", new Color(0.36f, 0.40f, 0.15f), new Vector4(0.78f, 0.40f, 0f, 0f)),
                 ("01-january", new Color(0.27f, 0.38f, 0.12f), new Vector4(1f, 1.3f, 0f, 0f)),
             };
             try
