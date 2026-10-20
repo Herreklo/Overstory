@@ -37,7 +37,7 @@ namespace Overstory.EditorTools
             // close stop behind the Landing, over the roofs, across the Basin to the Holm and Watch Knoll
             ("1-over-the-roofs", new Vector3(40f, 66f, 25f), new Vector3(30f, -240f, 4f), Lens35),
             // close stop over High Terrace's downhill roofs, along the lane to the Landing
-            ("2-along-high-terrace", new Vector3(-104f, 42f, 13f), new Vector3(47f, 44f, 9.5f), Lens28),
+            ("2-along-high-terrace", new Vector3(-150f, 36.7f, 12.5f), new Vector3(20f, 36.5f, 9f), Lens28),
             // the street stop on Gully Steps, three metres over them, up to the Landing
             ("3-street-gully-steps", new Vector3(49.3f, 12f, 5.6f), new Vector3(47.5f, 44f, 10.5f), Lens28),
             // the middle stop over the Basin's mouth, into the heart

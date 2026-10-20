@@ -229,6 +229,19 @@ RAILWAY = [(700, -170), (760, -90), (840, -10), (960, 70), (1100, 160), (1300, 2
 RAILWAY_TUNNEL = (1500, 260)
 RAILWAY_START_Z = 7.0
 RAILWAY_GRADE = 0.012
+# the old roads, from the town's movement history (docs/town-plan.md, How people moved): they come in down the
+# valleys at grades a horse could pull and are the main roads out of town; the heart's ways join them
+OLD_ROADS = [
+    dict(name="the King's Road", width=9.0, pts=[(446.0, -120.0), (530.0, -200.0), (700.0, -262.0), (900.0, -420.0),
+                                               (1100.0, -560.0), (1300.0, -600.0), (1500.0, -640.0)]),
+    dict(name="the coast road", width=8.0, pts=[(250.0, -470.0), (120.0, -600.0), (-40.0, -740.0), (-200.0, -800.0),
+                                              (-380.0, -900.0), (-620.0, -960.0)]),
+    dict(name="the ridge road", width=8.0, pts=[(-262.0, 8.0), (-240.0, 120.0), (-220.0, 300.0), (-130.0, 440.0),
+                                              (40.0, 520.0), (150.0, 640.0), (40.0, 790.0), (-200.0, 900.0), (-470.0, 1030.0)]),
+    dict(name="the station road", width=8.0, pts=[(446.0, -120.0), (560.0, -175.0), (700.0, -180.0)]),
+    dict(name="the hospital road", width=7.0, pts=[(440.0, 26.0), (560.0, 70.0), (760.0, 200.0), (900.0, 420.0),
+                                                 (760.0, 600.0), (520.0, 660.0), (300.0, 640.0)]),
+]
 GOODS_LINE = [(700, -170), (560, -200), (420, -190), (330, -134), (240, -138)]
 CLIFFS = [
     # Watch Knoll's face over Holm Street: the houses back onto the rock (the high side to the left of travel)

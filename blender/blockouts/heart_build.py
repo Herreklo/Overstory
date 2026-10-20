@@ -299,51 +299,124 @@ HAND = {"the Holm: pubs, a club", "Holm Street", "Watch Knoll and the Fire Watch
         "Market Square, the cathedral, the Fish Hall", "Harbour Row", "the old town on Herring Hill",
         "the Heights and Lookout Park", "the Grid", "the Bluff and the Hundred Steps",
         "the cathedral school and the bishop's garden"}
-SPACING = {"home": 15.0, "civic": 40.0, "work": 42.0, "farm": 150.0}
+STREET_SPACING = {"home": 34.0, "civic": 60.0, "work": 64.0}
 
 
-def context_mesh(m, ground):
+def _ribbon(m, pts, width, ground, lift=0.12, step=6.0):
+    """A road laid on the ground as a strip just over it."""
+    for (x1, y1), (x2, y2) in zip(pts, pts[1:]):
+        L_ = math.hypot(x2 - x1, y2 - y1)
+        n = max(1, int(L_ / step))
+        nx, ny = -(y2 - y1) / L_ * width / 2, (x2 - x1) / L_ * width / 2
+        for i in range(n):
+            ax, ay = x1 + (x2 - x1) * i / n, y1 + (y2 - y1) * i / n
+            bx, by = x1 + (x2 - x1) * (i + 1) / n, y1 + (y2 - y1) * (i + 1) / n
+            za, zb = ground(ax, ay) + lift, ground(bx, by) + lift
+            if za < H.SEA + 0.2 or zb < H.SEA + 0.2:
+                continue  # no road on water
+            m.quad((ax + nx, ay + ny, za), (ax - nx, ay - ny, za), (bx - nx, by - ny, zb), (bx + nx, by + ny, zb))
+
+
+def context_mesh(m, roads, ground):
+    """The town round the heart: the old roads, and in each district a street grid along its length with its
+    houses along the streets, fronts to them, so every house has its street. Quiet massing, not judged."""
     rng = random.Random(H.SEED + 7)
     occupied = [H.footprint(b, 1.0) for b in H.BUILDINGS]
     boxes = [(min(p[0] for p in fp), min(p[1] for p in fp), max(p[0] for p in fp), max(p[1] for p in fp)) for fp in occupied]
+    placed = []
+
+    def free(fp):
+        xs = [p[0] for p in fp]; ys = [p[1] for p in fp]
+        b = (min(xs), min(ys), max(xs), max(ys))
+        if any(not (b[2] < o[0] or b[0] > o[2] or b[3] < o[1] or b[1] > o[3]) for o in boxes):
+            return False
+        if any(not (b[2] < o[0] or b[0] > o[2] or b[3] < o[1] or b[1] > o[3]) for o in placed):
+            return False
+        return not L.is_water(np.array(xs), np.array(ys)).any()
+
+    for r in L.OLD_ROADS:
+        _ribbon(roads, r["pts"], r["width"], ground)
     count = 0
     for name, kind, poly in L.USES:
-        if name in HAND or kind not in SPACING:
+        if name in HAND or kind not in STREET_SPACING and kind != "farm":
             continue
-        sp = SPACING[kind]
-        xs = [p[0] for p in poly]
-        ys = [p[1] for p in poly]
-        X, Y = np.meshgrid(np.arange(min(xs), max(xs), sp), np.arange(min(ys), max(ys), sp), indexing="ij")
-        X = X + np.array([[rng.uniform(-sp * 0.25, sp * 0.25) for _ in range(X.shape[1])] for _ in range(X.shape[0])])
-        Y = Y + np.array([[rng.uniform(-sp * 0.25, sp * 0.25) for _ in range(X.shape[1])] for _ in range(X.shape[0])])
-        inside = L._inside(poly, X, Y) & ~L.is_water(X, Y)
-        for x, y in zip(X[inside].tolist(), Y[inside].tolist()):
-            if any(b0 <= x <= b2 and b1 <= y <= b3 for b0, b1, b2, b3 in boxes):
-                continue
-            if HX0 + 20 < x < HX1 - 20 and HY0 + 20 < y < HY1 - 20 and name in HAND:
-                continue
-            if rng.random() < 0.12:
-                continue  # a gap, a yard, a garden
-            a = rng.uniform(-10, 10)
-            z = ground(x, y)
-            if kind == "home":
-                b = dict(name="context", ox=x, oy=y, angle=a, w=rng.uniform(8, 11), d=rng.uniform(7, 9), base=z + 0.2,
-                         eave=rng.choice([4.4, 5.8, 6.4]), pitch=rng.uniform(36, 46), roof=rng.choice(["eaves", "gable"]), role="context")
-                building_mesh(m, b, ground)
-            elif kind == "civic":
-                b = dict(name="context", ox=x, oy=y, angle=a, w=rng.uniform(20, 30), d=rng.uniform(13, 18), base=z + 0.2,
-                         eave=rng.uniform(11, 20), pitch=0.0, roof="flat", role="context")
-                building_mesh(m, b, ground)
-            elif kind == "work":
-                b = dict(name="context", ox=x, oy=y, angle=a, w=rng.uniform(18, 28), d=rng.uniform(12, 16), base=z + 0.2,
-                         eave=rng.uniform(6, 9), pitch=22.0, roof="gable", role="context")
-                building_mesh(m, b, ground)
-            elif kind == "farm":
-                for (dx, dy, w, d, e) in ((0, 0, 12, 9, 5.0), (18, 6, 24, 12, 6.5)):
-                    b = dict(name="context", ox=x + dx, oy=y + dy, angle=a, w=w, d=d, base=ground(x + dx, y + dy) + 0.2,
-                             eave=e, pitch=40.0, roof="eaves", role="context")
-                    building_mesh(m, b, ground)
-            count += 1
+        xs = [p[0] for p in poly]; ys = [p[1] for p in poly]
+        # the district's length runs along its longest edge
+        best = max(zip(poly, poly[1:] + poly[:1]), key=lambda e: math.hypot(e[1][0] - e[0][0], e[1][1] - e[0][1]))
+        ang = math.atan2(best[1][1] - best[0][1], best[1][0] - best[0][0])
+        ca, sa = math.cos(ang), math.sin(ang)
+        cx, cy = sum(xs) / len(xs), sum(ys) / len(ys)
+        span = max(max(xs) - min(xs), max(ys) - min(ys)) * 0.8
+        if kind == "farm":
+            # farmsteads along a farm lane down the valley's middle
+            lane = [(cx - ca * span, cy - sa * span), (cx + ca * span, cy + sa * span)]
+            _ribbon(roads, lane, 4.0, ground)
+            t = -span
+            while t < span:
+                fx, fy = cx + ca * t + (-sa) * 14.0, cy + sa * t + ca * 14.0
+                if L._inside(poly, np.array([fx]), np.array([fy]))[0]:
+                    for (du, dv, w, d, e) in ((0, 0, 12, 9, 5.0), (16, 4, 24, 12, 6.5)):
+                        ox, oy = fx + ca * du - sa * dv, fy + sa * du + ca * dv
+                        b = dict(name="context", ox=ox, oy=oy, angle=math.degrees(ang), w=w, d=d, base=ground(ox, oy) + 0.2,
+                                 eave=e, pitch=40.0, roof="eaves", role="context")
+                        if free(H.footprint(b)):
+                            building_mesh(m, b, ground)
+                            placed.append(tuple(f(v) for f, v in zip((min, min, max, max), ([p[0] for p in H.footprint(b)], [p[1] for p in H.footprint(b)], [p[0] for p in H.footprint(b)], [p[1] for p in H.footprint(b)]))))
+                    count += 1
+                t += rng.uniform(140.0, 200.0)
+            continue
+        sp = STREET_SPACING[kind]
+        k = -int(span / sp)
+        while k * sp < span:
+            off = k * sp
+            # a street across the district, then houses on both sides of it, fronts to it
+            sx0, sy0 = cx - ca * span - sa * off, cy - sa * span + ca * off
+            sx1, sy1 = cx + ca * span - sa * off, cy + sa * span + ca * off
+            seg = []
+            t = 0.0
+            L_ = 2 * span
+            while t < L_:
+                px, py = sx0 + ca * t, sy0 + sa * t
+                if L._inside(poly, np.array([px]), np.array([py]))[0] and not L.is_water(np.array([px]), np.array([py]))[0]:
+                    seg.append((px, py))
+                elif len(seg) > 1:
+                    _ribbon(roads, seg, 7.0 if kind == "home" else 10.0, ground)
+                    seg = []
+                else:
+                    seg = []
+                t += 4.0
+            if len(seg) > 1:
+                _ribbon(roads, seg, 7.0 if kind == "home" else 10.0, ground)
+            for side in (1, -1):
+                t = rng.uniform(0, 6)
+                while t < L_:
+                    w = rng.uniform(8, 11) if kind == "home" else rng.uniform(20, 30)
+                    d = rng.uniform(7, 9) if kind == "home" else rng.uniform(13, 18)
+                    hw = 3.5 if kind == "home" else 5.0
+                    fx, fy = sx0 + ca * t, sy0 + sa * t  # the front's start on the street's edge
+                    if side > 0:
+                        ox, oy, a = fx - sa * (hw + 1.0), fy + ca * (hw + 1.0), math.degrees(ang)
+                    else:
+                        ox, oy, a = fx + ca * w + sa * (hw + 1.0), fy + sa * w - ca * (hw + 1.0), math.degrees(ang) + 180.0
+                    mx, my = fx + ca * w / 2, fy + sa * w / 2
+                    if L._inside(poly, np.array([mx]), np.array([my]))[0] and rng.random() > 0.1:
+                        z = ground(mx, my)
+                        if kind == "home":
+                            b = dict(name="context", ox=ox, oy=oy, angle=a, w=w, d=d, base=z + 0.2, eave=rng.choice([4.4, 5.8, 6.4]),
+                                     pitch=rng.uniform(36, 46), roof=rng.choice(["eaves", "gable"]), role="context")
+                        elif kind == "civic":
+                            b = dict(name="context", ox=ox, oy=oy, angle=a, w=w, d=d, base=z + 0.2, eave=rng.uniform(11, 20),
+                                     pitch=0.0, roof="flat", role="context")
+                        else:
+                            b = dict(name="context", ox=ox, oy=oy, angle=a, w=w, d=d, base=z + 0.2, eave=rng.uniform(6, 9),
+                                     pitch=22.0, roof="gable", role="context")
+                        fp = H.footprint(b)
+                        if free(fp):
+                            building_mesh(m, b, ground)
+                            placed.append((min(p[0] for p in fp), min(p[1] for p in fp), max(p[0] for p in fp), max(p[1] for p in fp)))
+                            count += 1
+                    t += w + rng.uniform(0.5, 3.0)
+            k += 1
     return count
 
 
@@ -479,9 +552,16 @@ def build(unity=None):
     for f in H.FAR:
         far_mesh(far, f, ground)
     ctx = Mesh("context")
-    report["context buildings"] = context_mesh(ctx, ground)
+    roads = Mesh("roads")
+    report["context buildings"] = context_mesh(ctx, roads, ground)
+    # the railway: its bed and track on the ground, its station by the Mere
+    rail = Mesh("railway")
+    _ribbon(rail, [(p[0], p[1]) for p in L.RAILWAY], 9.0, ground, lift=0.3)
+    _ribbon(rail, [(p[0], p[1]) for p in L.GOODS_LINE], 5.0, ground, lift=0.2)
+    building_mesh(marks, dict(name="the station", ox=672.0, oy=-196.0, angle=30.0, w=40.0, d=14.0, base=ground(690.0, -190.0) + 0.3,
+                              eave=8.0, pitch=36.0, roof="hip", role="landmark"), ground)
 
-    meshes = [g, r, fm, water, lake, steps, walls, corner, houses, marks, det, far, ctx]
+    meshes = [g, r, fm, water, lake, steps, walls, corner, houses, marks, det, far, ctx, roads, rail]
     objs = [make_object(m, coll) for m in meshes]
     report.update({m.name: len(m.f) for m in meshes})
     if unity:
