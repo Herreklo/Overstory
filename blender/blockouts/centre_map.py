@@ -8,7 +8,7 @@ import numpy as np
 import centre_land as L
 from PIL import Image, ImageDraw, ImageFont
 t0 = time.time()
-X0, X1, Y0, Y1, step = -820, 900, -900, 1160, 2.0   # x down (south), y right (east)
+X0, X1, Y0, Y1, step = -900, 1450, -1000, 1350, 2.5   # x down (south), y right (east)
 xs = np.arange(X0, X1, step); ys = np.arange(Y0, Y1, step)
 XX, YY = np.meshgrid(xs, ys, indexing="ij")
 Z = L.heights(XX, YY)
@@ -49,7 +49,8 @@ line([(60, -10), (60, -150)], WATERWAY, 2, dash=True)                           
 line(L.BRIDGE, (50, 50, 50), 5)                                                           # the 1978 bridge
 line(L.BREAKWATER, (100, 100, 100), 5)
 line([(-236, 120), (-230, 140), (-224, 150)], STEP, 3)                                    # the hundred steps
-line([(-246, 412), (-150, 422), (-20, 452)], ROAD, 3)                                       # the east harbour's quay, the cannery
+line([(-206, 420), (-120, 440), (-20, 460)], ROAD, 3)
+line(L.RAILWAY, (40, 40, 40), 3, dash=True)                                       # the east harbour's quay, the cannery
 for off in (18, 34, 54):
     line([(-200, off + 4), (60, off), (200, off - 6), (280, off - 30)], LANE, 2)          # contour lanes
 line([(49, -6), (49, 20), (47, 38), (46, 64), (60, 120), (60, 205)], STEP, 3)            # Bakkesmauet to the top
@@ -68,13 +69,13 @@ def label(x, y, t, big=False):
     sx, sy = P(x, y)
     dr.text((sx, sy), t, fill=(255, 255, 255), font=f, anchor="mm", stroke_width=3, stroke_fill=(255, 255, 255))
     dr.text((sx, sy), t, fill=(30, 30, 30), font=f, anchor="mm")
-for x, y, t, big in [(-620, 0, "THE BAY", True), (60, -86, "VÅGEN", True), (-90, 590, "EAST HARBOUR", True),
-                     (-180, -560, "WEST COVE", True), (60, -650, "beach", False), (300, 690, "stream valley", False), (20, 236, "summit park", False), (-150, -262, "Holmen (pubs)", False), (150, -360, "knoll, tower", False),
+for x, y, t, big in [(-620, 0, "THE BAY", True), (60, -86, "VÅGEN", True), (-140, 640, "EAST HARBOUR", True),
+                     (-180, -560, "WEST COVE", True), (60, -650, "beach", False), (250, 600, "stream valley", False), (900, 120, "railway", False), (820, -600, "ridge", False), (1350, 300, "upland", True), (20, 236, "summit park", False), (-110, -230, "Holmen", False), (150, -360, "knoll, tower", False),
                      (360, -470, "FIRE GRID", True), (330, -95, "Torget", False), (395, 30, "cathedral", False),
                      (520, -50, "lake", False), (100, 140, "OLD TOWN", True), (90, 300, "villas", False),
-                     (-300, 180, "bluff", False), (-200, 440, "cannery", False), (-160, 940, "STORHAUG", True),
+                     (-300, 180, "bluff", False), (-200, 480, "cannery", False), (-200, 1180, "STORHAUG", True),
                      (470, 980, "FOREST HILL", True), (-740, 390, "island suburb", False), (-620, -380, "island", False),
-                     (-470, 640, "bridge 1978", False), (-395, -110, "light", False), (-250, -760, "ferry quay, oil base", False),
+                     (-560, 900, "bridge 1978", False), (-395, -110, "light", False), (-250, -760, "ferry quay, oil base", False),
                      (760, -320, "NEWER TOWN", True), (90, 36, "corner", False), (-370, -60, "beacon", False)]:
     label(x, y, t, big)
 im.save(f"{sys.argv[1]}/centre-land-draft.png")

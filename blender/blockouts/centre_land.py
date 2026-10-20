@@ -37,20 +37,20 @@ COAST = [
     # the old town's point: rock round its tip below the bluff
     (-250, -15, "n"), (-280, 10, "n"), (-322, 60, "n"), (-348, 120, "n"), (-342, 190, "n"), (-312, 260, "n"),
     (-292, 330, "n"), (-262, 390, "n"),
-    # the east harbour: the cannery's quays on its west side, a shingle beach at its head, slips on its east
-    (-250, 420, "q"), (-150, 430, "q"), (-20, 462, "n"), (80, 524, "n"), (140, 604, "n"), (156, 700, "n"),
-    (110, 768, "n"), (10, 750, "n"), (-120, 706, "n"), (-250, 660, "n"),
-    # Storhaug's shore and on east
-    (-330, 710, "n"), (-392, 782, "n"), (-346, 860, "n"), (-300, 930, "n"), (-330, 1030, "n"), (-380, 1400, "m"),
+    # the east harbour, opening north-east: the cannery's quays along the old town hill's east side, a shingle
+    # beach where the stream comes in at its head, slips on Storhaug's side, Storhaug's point far out to the north-east
+    (-210, 430, "q"), (-120, 452, "q"), (-20, 470, "n"), (60, 500, "n"), (100, 560, "n"), (90, 640, "n"),
+    (30, 700, "n"), (-60, 760, "n"), (-160, 830, "n"), (-260, 900, "n"), (-380, 960, "n"), (-470, 1030, "n"),
+    (-520, 1120, "n"), (-470, 1220, "n"), (-420, 1400, "m"),
     (-1400, 1400, "m"), (-1400, -1400, "m"),
 ]
 HOLMEN = [
-    (-250, -172, "q"), (0, -156, "q"), (40, -150, "q"), (40, -300, "n"), (-60, -304, "n"), (-150, -310, "n"),
-    (-220, -322, "n"), (-284, -292, "n"), (-270, -236, "n"),
+    (-190, -168, "q"), (0, -156, "q"), (40, -150, "q"), (40, -270, "n"), (-60, -276, "n"), (-130, -282, "n"),
+    (-190, -280, "n"), (-226, -246, "n"), (-216, -200, "n"),
 ]
 ISLAND_SUBURB = [
     (-560, 160, "n"), (-640, 110, "n"), (-720, 140, "n"), (-820, 150, "n"), (-900, 230, "n"), (-950, 330, "n"),
-    (-930, 450, "n"), (-880, 560, "n"), (-780, 610, "n"), (-700, 650, "n"), (-620, 590, "n"), (-580, 520, "q"),
+    (-930, 450, "n"), (-880, 560, "n"), (-780, 610, "n"), (-700, 650, "n"), (-620, 590, "n"), (-600, 560, "q"),
     (-540, 440, "n"), (-530, 330, "n"), (-520, 240, "n"),
 ]
 SMALL_ISLAND = [
@@ -61,9 +61,13 @@ ISLANDS = [(HOLMEN, 8.0), (ISLAND_SUBURB, 26.0), (SMALL_ISLAND, 12.0)]
 LAKE = [(420, -122, "n"), (470, -140, "n"), (520, -132, "n"), (570, -116, "n"), (600, -92, "n"), (612, -40, "n"),
         (612, -10, "n"), (590, 18, "n"), (560, 30, "n"), (510, 34, "n"), (470, 26, "n"), (436, 4, "n"), (420, -30, "n")]
 LAKE_LEVEL = 5.0
-BRIDGE = [(-300, 690), (-575, 545)]  # the high bridge of 1978, from Storhaug's point to the island
-BREAKWATER = [(-250, -172), (-300, -150), (-338, -110)]  # sheltering Vågen's mouth, a light at its end
-LIGHT = (-338, -110)
+# the mountains far off to the east and south-east, seen over the upland: (compass bearing in degrees from the
+# old town's summit, height in metres, distance in metres). Too far for the ground; drawn as the backdrop.
+FAR_RANGE = [(60, 380, 22000), (80, 620, 26000), (95, 840, 30000), (110, 760, 28000), (125, 980, 34000),
+             (140, 700, 30000), (155, 520, 26000), (170, 420, 24000), (185, 300, 22000)]
+BRIDGE = [(-470, 1030), (-640, 620)]  # the high bridge of 1978, from Storhaug's point to the island
+BREAKWATER = [(-206, -186), (-270, -160), (-312, -110)]  # from Holmen's tip, sheltering Vågen's mouth, a light at its end
+LIGHT = (-312, -110)
 
 
 def _shore(points, closed=True, amp=9.0, seed=7):
@@ -114,8 +118,8 @@ CONTOURS = [
     (38.0, [(-170, 170), (-60, 200), (60, 214), (180, 200), (240, 190)]),
     (20.0, [(-200, 86), (-60, 92), (60, 96), (180, 90), (250, 70)]),
     (10.0, [(-215, 50), (-60, 52), (60, 54), (190, 46), (260, 30)]),
-    (20.0, [(-200, 330), (-60, 336), (60, 330), (150, 310)]),
-    (10.0, [(-220, 372), (-60, 380), (60, 372), (140, 350)]),
+    (20.0, [(-210, 340), (-80, 370), (20, 400), (80, 440)]),
+    (10.0, [(-220, 390), (-90, 420), (10, 444), (70, 470)]),
     (24.0, [(-262, 30), (-300, 70), (-324, 125), (-318, 195), (-290, 262), (-268, 330)]),  # the bluff's top edge
     (3.0, [(-276, 30), (-314, 70), (-338, 125), (-332, 195), (-304, 262), (-282, 330)]),   # its foot: a rock face
     # the saddle from the hill's back to the forest hill
@@ -128,7 +132,13 @@ CONTOURS = [
     (22.0, [(100, -440), (250, -430), (400, -410), (600, -390)]),
     (32.0, [(110, -600), (300, -580), (500, -560), (700, -540)]),
     (40.0, [(0, -780), (300, -760), (700, -720)]),
-    (54.0, [(160, -900), (420, -930), (700, -900), (900, -820)]),  # the ridge behind the fire grid
+    # the ridge behind the fire grid: broad, with a spur towards the cove and a notch where a road crosses
+    (50.0, [(40, -720), (240, -740), (440, -730), (640, -700), (840, -660)]),
+    (64.0, [(100, -860), (300, -900), (420, -890)]),
+    (58.0, [(480, -880), (520, -885)]),
+    (66.0, [(580, -870), (760, -840), (900, -800)]),
+    (40.0, [(-60, -800), (40, -880)]),
+    (52.0, [(120, -1060), (400, -1120), (800, -1060)]),
     # west of the cove: the ferry quay's low ground, the oil base, the coast
     (6.0, [(-300, -660), (-150, -660), (0, -660)]),
     (16.0, [(-300, -860), (-100, -860), (100, -860)]),
@@ -137,24 +147,37 @@ CONTOURS = [
     (12.0, [(680, -300), (700, -60), (680, 200)]),
     (24.0, [(880, -300), (900, 0), (880, 300)]),
     # Storhaug, east of the east harbour
-    (20.0, [(-220, 860), (-60, 880), (80, 860), (200, 800)]),
+    (20.0, [(-340, 1080), (-180, 980), (-20, 880), (120, 800), (220, 760)]),
     # the forest hill, south-east
+    # the upland to the south, the skyline seen from the bay behind the near hills: a long ridge with spurs
+    # and a pass where the railway goes through
+    (60.0, [(1100, -700), (1150, -400), (1180, -200), (1170, 0)]),
+    (70.0, [(1200, 300), (1220, 600), (1150, 900), (1000, 1100)]),
+    (120.0, [(1500, -1300), (1640, -900), (1700, -500), (1720, -260)]),
+    (96.0, [(1680, -120), (1700, 20)]),                   # the pass the railway goes through
+    (160.0, [(1760, 160), (1900, 420), (1980, 640), (1940, 900)]),
+    (185.0, [(2050, 520), (2080, 600)]),                  # the upland's top
+    (140.0, [(1880, 1060), (1760, 1300), (1620, 1600)]),
+    (150.0, [(2400, -1400), (2500, -400), (2500, 800), (2300, 1900)]),
     # the forest hill: a ridge with two summits and a saddle, steep on its north-west side over Storhaug
     (82.0, [(360, 770), (420, 830), (470, 880)]),
     (74.0, [(540, 960), (600, 1020)]),
     (66.0, [(500, 920), (520, 940)]),
     (60.0, [(300, 720), (340, 690), (420, 740), (520, 840), (640, 960), (660, 1060), (560, 1060), (440, 960), (330, 860), (290, 790)]),
     (40.0, [(170, 690), (260, 560), (420, 600), (600, 760), (760, 960), (720, 1120), (480, 1140), (300, 1000), (190, 860)]),
+    (55.0, [(620, 1020), (720, 1120), (820, 1180)]),   # a spur running on south-east
+    (50.0, [(280, 980), (220, 1080)]),                 # a spur towards Storhaug
 ]
 SPOTS = [
     (42.0, (40, 210)),     # the top of the old town's hill, the villas' plateau
-    (36.0, (-90, 940)),    # Storhaug's top
+    (36.0, (-220, 1120)),  # Storhaug's top
     (46.0, (10, 236)),     # the old town hill's summit: a small park and a viewpoint by the villas
+    (36.0, (-200, 170)),   # the bluff's top, where the hundred steps arrive: a second high point
+    (31.0, (-100, 190)),   # the saddle between them, where a lane crosses the spine
     (88.0, (440, 860)),    # the forest hill's summit, the water tower
     (16.0, (-200, 1000)),
     (30.0, (300, 1300)), (45.0, (900, 900)), (25.0, (-300, -1150)),
-    # the upland to the south: the town's skyline seen from the bay, a layer behind the near hills
-    (70.0, (1250, -600)), (95.0, (1350, -100)), (110.0, (1400, 400)), (90.0, (1300, 900)), (60.0, (1150, -1100)),
+
 ]
 OUTCROPS = [
     dict(name="the knoll", x=150.0, y=-330.0, r=60.0, face=14.0, top=30.0, sx=1.0, sy=1.15),
@@ -166,9 +189,13 @@ OUTCROPS = [
     dict(name="a skerry", x=-640.0, y=-60.0, r=10.0, face=5.0, top=3.0, sx=1.0, sy=1.0),
     dict(name="a skerry", x=-460.0, y=560.0, r=14.0, face=7.0, top=4.0, sx=1.0, sy=1.0),
 ]
-VALLEYS = [  # the stream from the forest hill's saddle down to the east harbour's head, in a green valley
-    dict(name="the stream valley", depth=9.0, width=26.0, line=[(520, 640), (420, 690), (320, 720), (230, 724), (156, 720)]),
+VALLEYS = [
+    # the stream from the forest hill's saddle down to the east harbour's head, in a green valley
+    dict(name="the stream valley", depth=9.0, width=26.0, line=[(520, 640), (420, 650), (320, 630), (200, 590), (110, 560)]),
+    # the lake's valley, carrying the railway south from the station
+    dict(name="the railway's valley", depth=7.0, width=40.0, line=[(600, -40), (760, 0), (920, 80), (1100, 160), (1300, 200)]),
 ]
+RAILWAY = [(560, -150), (620, -60), (760, 0), (920, 80), (1100, 160), (1300, 200)]  # the station by the lake
 GULLIES = [  # where the streams come down the old town's west slope to Vågen
     dict(x=49.3, depth=2.0, width=8.0, y0=10.0, y1=170.0),
     dict(x=-110.0, depth=2.6, width=9.0, y0=10.0, y1=170.0),
@@ -239,7 +266,7 @@ def heights(X, Y):
     den = np.zeros(X.shape)
 
     def add(z, d, p=2.2):
-        w = 1.0 / (d ** p + 4.0)
+        w = 1.0 / (d ** p + 900.0)  # soft within about 20 m of a line, so lines never pinch into stars
         num[...] += w * z
         den[...] += w
 
@@ -263,24 +290,19 @@ def heights(X, Y):
         Z -= g["depth"] * k * (Y > -15)
     for v in VALLEYS:
         d = _poly_dist(X, Y, v["line"], closed=False)
-        Z -= v["depth"] * np.exp(-(d / v["width"]) ** 2) * np.clip((Z - 1.0) / 6.0, 0.0, 1.0)
+        Z -= v["depth"] * np.exp(-(d / v["width"]) ** 2) * _smoothstep(2.0, 16.0, Z)
     rough = (_noise(X, Y, 60.0, 1989) * 0.65 + _noise(X + 500, Y, 23.0, 1990) * 0.35 - 0.5) * 2.0
     Z += rough * np.clip((Z - 4.0) / 10.0, 0.0, 1.0)
 
-    # bedrock standing up
+    # the water and the lake first, then bedrock standing up out of land and sea alike
+    W = water_mask(X, Y)
+    lake = _inside(LAKE_LINE, X, Y)
+    Z = np.where(W, -6.0, Z)
+    Z = np.where(lake, LAKE_LEVEL - 2.0, Z)
     for o in OUTCROPS:
         d = np.hypot((X - o["x"]) / o["sx"], (Y - o["y"]) / o["sy"])
         k = _smoothstep(o["r"], o["r"] - o["face"], d)
         Z = np.where(d < o["r"], np.maximum(Z, Z + (o["top"] - Z) * k), Z)
-
-    # the water, and the lake
-    W = water_mask(X, Y)
-    lake = _inside(LAKE_LINE, X, Y)
-    rock = np.zeros(X.shape, dtype=bool)
-    for o in OUTCROPS:
-        rock |= np.hypot((X - o["x"]) / o["sx"], (Y - o["y"]) / o["sy"]) < o["r"] - o["face"] * 0.5
-    Z = np.where(W & ~rock, -6.0, Z)
-    Z = np.where(lake, LAKE_LEVEL - 2.0, Z)
     return Z
 
 
