@@ -199,6 +199,7 @@ Shader "Overstory/Tree"
                 half3 normalWS : TEXCOORD2;
                 half4 bake : TEXCOORD3;
                 float2 extra : TEXCOORD4;
+                half cover : TEXCOORD5;
                 UNITY_VERTEX_INPUT_INSTANCE_ID
                 UNITY_VERTEX_OUTPUT_STEREO
             };
@@ -209,7 +210,19 @@ Shader "Overstory/Tree"
                 UNITY_SETUP_INSTANCE_ID(input);
                 UNITY_TRANSFER_INSTANCE_ID(input, o);
                 UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(o);
-                VertexPositionInputs p = GetVertexPositionInputs(input.positionOS.xyz);
+                float3 posOS = input.positionOS.xyz;
+                o.cover = 1;
+            #if !defined(_OS_LEAVES)
+                // a twig thinner than a pixel is drawn a pixel wide and covers only its share of it (alpha to
+                // coverage): a faint stroke, as a painter sees fine twigs, never a hard ink line
+                float3 ws = TransformObjectToWorld(posOS);
+                float pixel = 2.0 * distance(ws, _WorldSpaceCameraPos) / (UNITY_MATRIX_P._m11 * _ScreenParams.y);
+                float r = input.extra.x;
+                float drawnR = max(r, 0.7 * pixel);
+                posOS += normalize(input.normalOS) * (drawnR - r);
+                o.cover = saturate(r / drawnR);
+            #endif
+                VertexPositionInputs p = GetVertexPositionInputs(posOS);
                 o.positionCS = p.positionCS;
                 o.positionWS = p.positionWS;
                 o.normalWS = TransformObjectToWorldNormal(input.normalOS);
@@ -241,9 +254,9 @@ Shader "Overstory/Tree"
                 // a card shades as its mass: the same normal seen from either side
                 half3 n = normalize(input.normalWS);
             #else
-                // twigs deep in the foliage show only when the leaves are down: dithered in as they fall
-                if (input.bake.a < 0.5h)
-                    clip((half)_Season.y - 0.55h - 0.3h * OS_Hash(input.positionCS.xy));
+                // a twig deep in the foliage shows from the season its leaves fall (bake alpha; 0 always shown)
+                if (input.bake.a > 0.001h)
+                    clip((half)_Season.y - input.bake.a - 0.04h * OS_Hash(input.positionCS.xy));
                 half3 n = normalize(front ? input.normalWS : -input.normalWS);
             #endif
                 StreetSurface s = OS_TreeSurface(input.uv, input.extra, n);
@@ -341,7 +354,10 @@ Shader "Overstory/Tree"
             #if defined(_OS_LEAVES)
                 outColor = half4(colour, alpha);
             #else
-                outColor = half4(colour, 1);
+                // a fine twig's share of its pixel, dithered across the samples
+                half share = saturate(input.cover * 1.6h);
+                clip(share - 0.15h * OS_Hash(input.positionCS.xy));
+                outColor = half4(colour, share);
             #endif
             #ifdef _WRITE_RENDERING_LAYERS
                 outRenderingLayers = EncodeMeshRenderingLayer();

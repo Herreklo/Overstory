@@ -69,7 +69,7 @@ namespace Overstory.EditorTools
                 m.SetTexture("_Spray", AssetDatabase.LoadAssetAtPath<Texture2D>($"{dir}/{species}_{atlas}.png"));
                 m.SetTexture("_Twigs", AssetDatabase.LoadAssetAtPath<Texture2D>($"{dir}/{species}_twigs.png"));
                 m.SetFloat("_Leaves", leaves ? 1f : 0f);
-                m.SetFloat("_AlphaToMask", leaves ? 1f : 0f);
+                m.SetFloat("_AlphaToMask", 1f);   // leaves' edges and fine twigs, soft under MSAA
                 if (leaves) m.EnableKeyword("_OS_LEAVES"); else m.DisableKeyword("_OS_LEAVES");
                 if (Species.TryGetValue(species, out var s))
                 {
@@ -92,7 +92,7 @@ namespace Overstory.EditorTools
                 m.SetVector("_TwigRadius", new Vector4(0.012f, 0.045f, 0f, 0f));
                 // a birch's twigs are a purple-grey brown, and seen through the leaves they are lost in them: lighter
                 // than bark's dark marks, never black lines
-                m.SetColor("_Twig", new Color(0.27f, 0.2f, 0.2f));
+                m.SetColor("_Twig", new Color(0.36f, 0.27f, 0.27f));
                 m.enableInstancing = true;
                 EditorUtility.SetDirty(m);
                 return m;

@@ -45,7 +45,7 @@ import tree_growth as G  # noqa: E402
 # sized for a twig's foliage on a grown tree (clump_full: the height at which they reach full size).
 PARTS = {
     "birch": dict(sag=0.05, taper=0.55, occlusion=0.05, seam=0.3, atlas="lobes", lobe=0.8, lobe_gap=0.15, lose_tips=40, hang=False, card=(0.50, 0.48), card_u=(0.03, 0.97), cells=4,
-                  per_node=2, along=1, droop=0.7, leaf_years=999, leaf_tips=24, draw_tips=2.5, draw_tips_per_m=0.45, winter_tips=0.8, reach=0.9,
+                  per_node=2, along=1, droop=0.7, leaf_years=999, leaf_tips=24, draw_tips=2.5, draw_tips_per_m=0.45, winter_tips=0.8, reach=0.9, hang_reach=0.3,
                   bark=(0.30, 0.60), max_cards=4200, grow_to=80),
     "spruce": dict(card=(0.60, 0.40), cells=4, per_node=2, droop=0.25, leaf_years=7, leaf_tips=30, draw_tips=3.0, draw_tips_per_m=0.45,
                    bark=(0.30, 0.50), max_cards=8000, grow_to=100),
@@ -77,6 +77,11 @@ def read(species, seed, age, quality):
               born=t["born"], order=t["order"], r=drawn_radius(pipe), alive=alive,
               tips=(pipe / G.SPECIES[species]["tip_radius"]) ** G.SPECIES[species]["pipe"])
     sag(tl, pipe, parts, G.SPECIES[species]["tip_radius"])
+    kids = {}
+    for i in range(1, len(tl["parent"])):
+        if alive[i]:
+            kids.setdefault(int(tl["parent"][i]), []).append(i)
+    tl["children_of"] = kids
     return tl
 
 
@@ -226,7 +231,7 @@ def frames(pts):
     return T, N, B
 
 
-def branch_mesh(tl, parts, H, vols=None):
+def branch_mesh(tl, parts, H, vols=None, needed=None):
     """Vertices, faces, per-loop UV0 and UV1, and the chain points (for the bake), for every branch thick enough. The
     thinnest drawn grows with the tree: from the street stop a twig thinner than about a pixel is the sprays' to carry."""
     start, end, r, tips = tl["start"], tl["end"], tl["r"], tl["tips"]
@@ -235,44 +240,80 @@ def branch_mesh(tl, parts, H, vols=None):
     winter = min(parts.get("winter_tips", draw), draw)
     tile_round, tile_along = parts["bark"]
     V, F, UV0, UV1 = [], [], [], []
-    BARE = []                                            # per vertex: drawn only when the leaves are down
+    APPEAR = []                                          # per vertex: the season from which it shows (0 always)
     samples = []                                         # (point, radius) along branches, for the bake
-    for c in chains(tl):
-        if tips[c[0]] < winter:
-            continue
-        # spurs and short stubs are carried by the sprays, not drawn as tubes
-        if sum(np.linalg.norm(end[i] - start[i]) for i in c) < 0.12:
+    wood = []                                            # (point, appear) every few centimetres along drawn wood
+    node_appear = {}                                     # every drawn node: the season from which it shows
+    tl["node_appear"] = node_appear
+    cs = chains(tl)
+    # a chain is drawn if it carries enough tips and is long enough to be more than a stub, or if any branch drawn
+    # off it needs it to hang from: nothing drawn ever hangs from nothing
+    chain_of = {}
+    for ci, c in enumerate(cs):
+        for i in c:
+            chain_of[i] = ci
+    parent = tl["parent"]
+    drawn = [(tips[c[0]] >= winter and sum(np.linalg.norm(end[i] - start[i]) for i in c) >= 0.12)
+             or (needed is not None and any(i in needed for i in c)) for c in cs]
+    for ci in range(len(cs) - 1, -1, -1):
+        if drawn[ci] and cs[ci][0] > 0:
+            p = parent[cs[ci][0]]
+            while p >= 0 and p in chain_of and not drawn[chain_of[p]]:
+                drawn[chain_of[p]] = True
+                p = parent[cs[chain_of[p]][0]] if cs[chain_of[p]][0] > 0 else -1
+    tl["drawn_chains"] = [c for c, d in zip(cs, drawn) if d]
+    for ci, c in enumerate(cs):
+        if not drawn[ci]:
             continue
         pts = np.array([start[c[0]]] + [end[i] for i in c])
         rad = np.array([r[c[0]]] + [r[i] for i in c])
         tp = np.array([tips[c[0]]] + [tips[i] for i in c])
-        # stop where the branch carries too little to be drawn; where a thin one passes deep into a mass of foliage,
-        # from there on it is drawn only when the leaves are down (in leaf a painter loses twigs in the foliage, and
-        # drawn they are black scratches; bare, they are the crown's haze)
+        # stop where the branch carries too little to be drawn (unless a drawn branch hangs from further along it).
+        # A thin twig deep inside a mass of foliage is hidden while the foliage there covers it and shows as those
+        # leaves fall, in the same order (in leaf a painter loses twigs in the foliage; drawn they are black
+        # scratches): appear is the season from which a point shows, 0 always.
         stop = len(pts)
         lost = parts.get("lose_tips", 0)
-        hidden = np.zeros(len(pts), dtype=bool)
-        hidden[0] = tp[0] < draw
-        for k in range(1, len(pts)):
-            if tp[k] < winter:
+        need = 0
+        for k, i in enumerate(c):
+            if any(chain_of.get(ch) is not None and drawn[chain_of[ch]] and chain_of[ch] != ci for ch in tl["children_of"].get(i, ())):
+                need = k + 1
+            if needed is not None and i in needed:
+                need = k + 1                                # a leaf curtain hangs from here: draw its twig to it
+        appear = np.zeros(len(pts))
+        for k in range(len(pts)):
+            if k > 0 and tp[k] < winter and k >= need + 1:
                 stop = k + 1
                 break
-            if tp[k] < draw:
-                hidden[k] = True
-            elif vols and tp[k] < lost and not hidden[k - 1]:
+            deep = 0.0
+            if vols and tp[k] < lost:
                 deep = max((volume_depth(v, pts[k]) for v in vols if v is not None), default=0.0)
-                hidden[k] = deep > 0.3
-            else:
-                hidden[k] = hidden[k - 1]
-        pts, rad, hidden = pts[:stop], rad[:stop], hidden[:stop]
+            if deep > 0.3:
+                appear[k] = fall_at(deep, pts[k][2] / max(H, 1e-3)) - 0.03
+            elif needed is not None and k > 0 and tp[k] < draw and c[k - 1] not in needed:
+                # a fine twig end that carries no leaves: in leaf it is among the foliage's edge; it shows as the
+                # outer leaves fall
+                appear[k] = fall_at(0.1, pts[k][2] / max(H, 1e-3))
+            if k > 0:
+                node_appear[c[k - 1]] = appear[k]
+        pts, rad, appear = pts[:stop], rad[:stop], appear[:stop]
+        for i in c[stop - 1:]:
+            node_appear.pop(i, None)
         if len(pts) < 2:
             continue
         # rings where a branch bends: tight on the trunk and limbs, looser the thinner it is (a kink in a thin branch
         # is not seen from the street stop)
         keep = simplify(pts, rad, bend=0.06 if rad[0] >= 0.08 else 0.12 if rad[0] >= 0.04 else 0.25)
-        # keep the point where a branch passes into hiding, so the change falls on a ring
-        keep = sorted(set(keep) | {k for k in range(1, len(pts)) if hidden[k] and not hidden[k - 1]})
-        pts, rad, hidden = pts[keep], rad[keep], hidden[keep]
+        # keep the points where a branch passes into hiding or out of it, so the change falls on a ring
+        keep = sorted(set(keep) | {k for k in range(1, len(pts)) if (appear[k] > 0) != (appear[k - 1] > 0)})
+        # the wood, finely, for checking what hangs from it
+        for k in range(len(pts) - 1):
+            seg = pts[k + 1] - pts[k]
+            m = max(int(np.linalg.norm(seg) / 0.05), 1)
+            for t in range(m):
+                wood.append((pts[k] + seg * t / m, max(appear[k], appear[k + 1])))
+        wood.append((pts[-1], appear[-1]))
+        pts, rad, appear = pts[keep], rad[keep], appear[keep]
         if c[0] == 0:
             # the trunk thickens towards its foot (the wind's lever on the crown is greatest there; the pipe model alone
             # gives a pole), then flares into the ground
@@ -281,7 +322,7 @@ def branch_mesh(tl, parts, H, vols=None):
             # the trunk's foot: below the ground a little, and flared
             pts = np.vstack([pts[0] - np.array([0.0, 0.0, 0.25]), pts])
             rad = np.concatenate([[rad[0] * 1.35], rad])
-            hidden = np.concatenate([[False], hidden])
+            appear = np.concatenate([[0.0], appear])
             rad[1] *= 1.18
         s = sides_for(rad[0])
         wraps = max(1, int(round(2 * math.pi * rad[0] / tile_round)))
@@ -293,7 +334,7 @@ def branch_mesh(tl, parts, H, vols=None):
             for k in range(s):
                 a = 2 * math.pi * k / s
                 V.append(pts[i] + rr * (math.cos(a) * N[i] + math.sin(a) * B[i]))
-                BARE.append(bool(hidden[i]))
+                APPEAR.append(float(appear[i]))
             samples.append((pts[i], rad[i]))
         for i in range(len(pts) - 1):
             for k in range(s):
@@ -307,7 +348,7 @@ def branch_mesh(tl, parts, H, vols=None):
         # the tip closed to a point
         tip = len(V)
         V.append(pts[-1] + T[-1] * rad[-1] * 1.5)
-        BARE.append(bool(hidden[-1]))
+        APPEAR.append(float(appear[-1]))
         i = len(pts) - 1
         for k in range(s):
             k1 = (k + 1) % s
@@ -315,7 +356,7 @@ def branch_mesh(tl, parts, H, vols=None):
             UV0.extend([(wraps * k / s, along[i] / tile_along), (wraps * (k + 1) / s, along[i] / tile_along),
                         (wraps * (k + 0.5) / s, (along[i] + rad[-1]) / tile_along)])
             UV1.extend([(rad[-1], pts[-1][2])] * 3)
-    return np.array(V), F, UV0, UV1, samples, np.array(BARE, dtype=bool)
+    return np.array(V), F, UV0, UV1, samples, np.array(APPEAR), wood
 
 
 # -- leaves and masses -------------------------------------------------------------------------------------------------
@@ -502,6 +543,12 @@ def thin(points, keys, gap):
     return np.array(sorted(kept), dtype=int)
 
 
+def fall_at(depth, zrel, seeded=0.5):
+    """The season (0 to 1) at which foliage at a depth in its mass and a height in the crown falls: inside and low
+    first, the outer upper shoots last. Cards and twigs share it, so a twig shows exactly as its leaves go."""
+    return 0.45 * (1.0 - depth) + 0.3 * float(np.clip(zrel, 0.0, 1.0)) + 0.25 * seeded
+
+
 def lobe_mesh(tl, parts, age, seed, H):
     """The foliage as a painter's lobes: one painted lobe card (strokes standing for little groups of leaves,
     flat-filled, scalloped at the edge) for each patch of leafy shoots about lobe_gap across, hung a little below them;
@@ -537,6 +584,7 @@ def lobe_mesh(tl, parts, age, seed, H):
         keep = np.array(keep)
         ids, centres, which = ids[keep], centres[keep], which[keep]
     V, F, UV0, UV1, NR, COL = [], [], [], [], [], []
+    ATTACH = []                                         # per card: where it hangs from, how deep, when it falls
     up_w = np.array([0.0, 0.0, 1.0])
     for j, i in enumerate(ids):
         vol = vols[which[j]]
@@ -581,8 +629,9 @@ def lobe_mesh(tl, parts, age, seed, H):
         depth_c = volume_depth(vol, centres[j]) if vol is not None else 0.0
         zrel = float(np.clip(centres[j][2] / max(H, 1e-3), 0.0, 1.0))
         rank = 0.55 * h01(seed, i, 4) + 0.45 * depth_c
-        fall = 0.45 * (1.0 - depth_c) + 0.3 * zrel + 0.25 * h01(seed, i, 9)
+        fall = fall_at(depth_c, zrel, h01(seed, i, 9))
         UV1.extend([(rank, fall)] * 4)
+        ATTACH.append((end[i].copy(), depth_j, fall, int(i)))
         for p in corners:
             n = volume_normal(vol, p) if vol is not None else face
             dep = volume_depth(vol, p) if vol is not None else 0.0
@@ -592,6 +641,7 @@ def lobe_mesh(tl, parts, age, seed, H):
             zc = float(np.clip(p[2] / max(H, 1e-3), 0.0, 1.0))
             crown = 0.55 + 0.45 * np.clip((zc - 0.25) / 0.6, 0.0, 1.0)
             COL.append((float((0.25 + 0.75 * (1.0 - dep) ** 1.2) * crown), float(np.clip(0.15 + 0.35 * max(-n[2], 0.0), 0, 1)), 1.0, 1.0))
+    tl["attach"] = ATTACH
     return np.array(V), F, UV0, UV1, NR, COL, trees, which, vols
 
 
@@ -741,6 +791,47 @@ def crown_sky(points, H, extinction):
     return np.clip(seen, 0.0, 1.0)
 
 
+def hung(attach, tl, parts):
+    """Which cards hang from wood: each card hangs from its own shoot, traced up the tree to the first drawn wood,
+    which must lie within reach of where the card hangs, and show whenever the card does: in full leaf (or the card
+    lies deep in its mass, covered by the cards round it), and as its own leaves fall (its twig fan hangs there then).
+    Returns a mask of the cards that hang, and the nodes their paths run through."""
+    reach = parts.get("hang_reach", 0.3)
+    na, parent, start, end = tl["node_appear"], tl["parent"], tl["start"], tl["end"]
+    out = np.zeros(len(attach), dtype=bool)
+    paths = set()
+    for n, (p, depth, fall, i) in enumerate(attach):
+        j = i
+        while j >= 0 and j not in na:
+            j = int(parent[j]) if j > 0 else -1
+        if j < 0:
+            continue
+        a, b = start[j], end[j]
+        t = np.clip(np.dot(p - a, b - a) / max(np.dot(b - a, b - a), 1e-12), 0, 1)
+        if np.linalg.norm(p - (a + t * (b - a))) > reach:
+            continue
+        on_ok = depth > 0.3 or na[j] <= 0.0
+        off_ok = na[j] <= fall + 0.1
+        if on_ok and off_ok:
+            out[n] = True
+            while j >= 0:
+                paths.add(j)
+                j = int(parent[j]) if j > 0 else -1
+    return out, paths
+
+
+def orphan_chains(tl):
+    """Drawn branches whose first node does not lie on a drawn branch (the trunk excepted): should be none."""
+    on = set()
+    for c in tl.get("drawn_chains", []):
+        on.update(c)
+    bad = 0
+    for c in tl.get("drawn_chains", []):
+        if c[0] > 0 and tl["parent"][c[0]] not in on:
+            bad += 1
+    return bad
+
+
 def branch_bake(samples, V, trees, k, vols=None):
     """For each branch vertex: sky by its facing and how deep it is in the crown (the masses' smooth volumes where
     there are any, so the shade comes on gradually); ground by facing down."""
@@ -793,7 +884,33 @@ def build(species, seed, age, quality=1.0, unity=None):
     else:
         LV, LF, LUV0, LUV1, LN, LC, trees, which = leaf_mesh(tl, parts, age, seed, H, species)
     k = int(which.max()) + 1 if which is not None and len(which) else 0
-    BV, BF, BUV0, BUV1, samples, BARE = branch_mesh(tl, parts, H, vols)
+    BV, BF, BUV0, BUV1, samples, APPEAR, wood = branch_mesh(tl, parts, H, vols)
+    if "attach" in tl:
+        # every curtain's own twig, from its shoot up the tree: drawn, however fine, so it hangs from wood
+        paths = set()
+        for (_, _, _, i) in tl["attach"]:
+            j = i
+            while j >= 0 and j not in paths:
+                paths.add(j)
+                j = int(tl["parent"][j]) if j > 0 else -1
+        # again, now knowing which fine twigs carry leaves: those always show, the bare ends show as leaves fall
+        BV, BF, BUV0, BUV1, samples, APPEAR, wood = branch_mesh(tl, parts, H, vols, needed=paths)
+        keep, _ = hung(tl["attach"], tl, parts)
+        LV = LV.reshape(-1, 4, 3)[keep].reshape(-1, 3) if len(LV) else LV
+        LF = [(4 * n, 4 * n + 1, 4 * n + 2, 4 * n + 3) for n in range(int(keep.sum()))]
+        sel = np.repeat(keep, 4)
+        LUV0 = [x for x, k_ in zip(LUV0, sel) if k_]
+        LUV1 = [x for x, k_ in zip(LUV1, sel) if k_]
+        LN = [x for x, k_ in zip(LN, sel) if k_]
+        LC = [x for x, k_ in zip(LC, sel) if k_]
+        removed = int((~keep).sum())
+        tl["attach"] = [a for a, k_ in zip(tl["attach"], keep) if k_]
+        floating = len(tl["attach"]) - int(hung(tl["attach"], tl, parts)[0].sum())
+        orphans = orphan_chains(tl)
+        print(f"CONNECTED cards {len(tl['attach'])} (removed {removed} that hung from nothing), floating {floating}, "
+              f"branches hanging from nothing {orphans}")
+        if floating or orphans:
+            raise SystemExit(f"tree {species} {seed} {age}: something floats; not exported")
     # the branches' bake: per loop, from the vertex's facing and the depth of the nearest chain point in the crown
     pts, deep = branch_bake(samples, BV, trees, k, vols)
     from mathutils import kdtree
@@ -812,9 +929,9 @@ def build(species, seed, age, quality=1.0, unity=None):
     near = np.array([kd.find(BV[v])[1] for v in range(len(BV))])
     dv = deep[near][loops]
     nz = nrm[:, 2]
-    sky = np.clip((0.5 + 0.5 * nz) * (1.0 - 0.7 * dv), 0.05, 1.0)
-    # alpha 0: a twig drawn only when the leaves are down (the tree shader hides it while they are on)
-    col = np.stack([sky, np.clip(0.5 - 0.5 * nz, 0, 1), 1.0 - 0.5 * dv, np.where(BARE[loops], 0.0, 1.0)], -1).astype(np.float32)
+    sky = np.clip((0.5 + 0.5 * nz) * (1.0 - 0.45 * dv), 0.15, 1.0)
+    # alpha: the season from which a point of wood shows (0 always; a twig deep in the foliage shows as it falls)
+    col = np.stack([sky, np.clip(0.5 - 0.5 * nz, 0, 1), 1.0 - 0.5 * dv, APPEAR[loops]], -1).astype(np.float32)
     attr = me.color_attributes.new("bake", "FLOAT_COLOR", "CORNER")
     attr.data.foreach_set("color", col.ravel())
     me.color_attributes.active_color = attr
