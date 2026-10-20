@@ -417,7 +417,8 @@ def paint_lobe(rng, kind):
     arrs[1][twig] = 0.45
     for x, y, ang, g in strokes:
         length = rng.uniform(0.07, 0.1) * LPX
-        light = (1.0 - 0.18 * g) * rng.uniform(0.9, 1.04)
+        # each curtain a little mass of its own: lit along its top, shading down to its foot (Oga's clumps)
+        light = (1.0 - 0.42 * g ** 1.2) * rng.uniform(0.93, 1.03)
         _stroke(arrs, xs, ys, x, y, ang, length, rng.uniform(0.42, 0.55), 0.06 + 0.94 * rng.random(), light)
     return arrs
 

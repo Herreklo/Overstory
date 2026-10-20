@@ -119,7 +119,7 @@ Shader "Overstory/Tree"
         half3 c = lerp(lerp(_Green.rgb, _Turned.rgb, t), _Late.rgb, late);
         half k = frac((half)extra.x * 13.7h) - 0.5h;
         c *= 1.0h + half3(0.05h, 0.02h, -0.04h) * k;
-        c *= 0.5h + 0.5h * m.g;
+        c *= 0.25h + 0.75h * m.g;
         s.albedo = m.r > 0.03h ? c : _Twig.rgb * (0.6h + 0.4h * m.g);
         // where the leaves are gone and the bare twigs show, the twigs' colour
         half leafHere = OS_LeafCover(m, extra);
@@ -291,7 +291,10 @@ Shader "Overstory/Tree"
                     half shadow = sun.shadowAttenuation * OS_CloudLight(input.positionWS, sun.direction);
                     // the mass's turn from the light stepped into three values, soft at their edges: shadow, a
                     // half-tone, lit (a painter's planes on a volume)
-                    half lit = (smoothstep(-0.32h, -0.12h, ndl) * 0.42h + smoothstep(0.12h, 0.32h, ndl) * 0.58h) * shadow;
+                    // within the light family too: the planes facing the sun brightest, those turning from it a step
+                    // lower, then the half-tone at the turn, then shade (a painter's four planes on a lit mass)
+                    half lit = (smoothstep(-0.32h, -0.14h, ndl) * 0.36h + smoothstep(0.1h, 0.26h, ndl) * 0.34h
+                              + smoothstep(0.42h, 0.62h, ndl) * 0.30h) * shadow;
                     // the sky's light on leaves keeps only a little of its tint: under an overcast sky a leaf's own
                     // colour is at its truest (a yellow birch in the rain is yellow, not olive)
                     half3 sky = OS_SkyTerm(b, n);
