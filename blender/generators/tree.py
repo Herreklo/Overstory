@@ -44,7 +44,7 @@ import tree_growth as G  # noqa: E402
 # species' sprays, or its clumps: a painter's blocking of its foliage); hang: clumps hang from their shoots' ends,
 # sized for a twig's foliage on a grown tree (clump_full: the height at which they reach full size).
 PARTS = {
-    "birch": dict(sag=0.05, taper=0.55, occlusion=0.05, seam=0.3, atlas="lobes", lobe=0.6, lobe_gap=0.15, lose_tips=40, hang=False, card=(0.50, 0.48), card_u=(0.03, 0.97), cells=4,
+    "birch": dict(sag=0.05, taper=0.55, occlusion=0.05, seam=0.3, atlas="lobes", lobe=0.8, lobe_gap=0.15, lose_tips=40, hang=False, card=(0.50, 0.48), card_u=(0.03, 0.97), cells=4,
                   per_node=2, along=1, droop=0.7, leaf_years=999, leaf_tips=24, draw_tips=2.5, draw_tips_per_m=0.45, reach=0.9,
                   bark=(0.30, 0.60), max_cards=4200, grow_to=80),
     "spruce": dict(card=(0.60, 0.40), cells=4, per_node=2, droop=0.25, leaf_years=7, leaf_tips=30, draw_tips=3.0, draw_tips_per_m=0.45,
@@ -233,6 +233,7 @@ def branch_mesh(tl, parts, H, vols=None):
     draw = drawn_tips(parts, H)
     tile_round, tile_along = parts["bark"]
     V, F, UV0, UV1 = [], [], [], []
+    BARE = []                                            # per vertex: drawn only when the leaves are down
     samples = []                                         # (point, radius) along branches, for the bake
     for c in chains(tl):
         if tips[c[0]] < draw:
@@ -243,24 +244,30 @@ def branch_mesh(tl, parts, H, vols=None):
         pts = np.array([start[c[0]]] + [end[i] for i in c])
         rad = np.array([r[c[0]]] + [r[i] for i in c])
         tp = np.array([tips[c[0]]] + [tips[i] for i in c])
-        # stop where the branch carries too little to be drawn, or where a thin one passes deep into a mass of
-        # foliage: there the foliage carries it (a painter loses twigs in the leaves; drawn, they are black scratches)
+        # stop where the branch carries too little to be drawn; where a thin one passes deep into a mass of foliage,
+        # from there on it is drawn only when the leaves are down (in leaf a painter loses twigs in the foliage, and
+        # drawn they are black scratches; bare, they are the crown's haze)
         stop = len(pts)
         lost = parts.get("lose_tips", 0)
+        hidden = np.zeros(len(pts), dtype=bool)
         for k in range(1, len(pts)):
-            deep = 0.0
-            if vols and tp[k] < lost:
-                deep = max((volume_depth(v, pts[k]) for v in vols if v is not None), default=0.0)
-            if tp[k] < draw or deep > 0.3:
+            if tp[k] < draw:
                 stop = k + 1
                 break
-        pts, rad = pts[:stop], rad[:stop]
+            if vols and tp[k] < lost and not hidden[k - 1]:
+                deep = max((volume_depth(v, pts[k]) for v in vols if v is not None), default=0.0)
+                hidden[k] = deep > 0.3
+            else:
+                hidden[k] = hidden[k - 1]
+        pts, rad, hidden = pts[:stop], rad[:stop], hidden[:stop]
         if len(pts) < 2:
             continue
         # rings where a branch bends: tight on the trunk and limbs, looser the thinner it is (a kink in a thin branch
         # is not seen from the street stop)
         keep = simplify(pts, rad, bend=0.06 if rad[0] >= 0.08 else 0.12 if rad[0] >= 0.04 else 0.25)
-        pts, rad = pts[keep], rad[keep]
+        # keep the point where a branch passes into hiding, so the change falls on a ring
+        keep = sorted(set(keep) | {k for k in range(1, len(pts)) if hidden[k] and not hidden[k - 1]})
+        pts, rad, hidden = pts[keep], rad[keep], hidden[keep]
         if c[0] == 0:
             # the trunk thickens towards its foot (the wind's lever on the crown is greatest there; the pipe model alone
             # gives a pole), then flares into the ground
@@ -269,6 +276,7 @@ def branch_mesh(tl, parts, H, vols=None):
             # the trunk's foot: below the ground a little, and flared
             pts = np.vstack([pts[0] - np.array([0.0, 0.0, 0.25]), pts])
             rad = np.concatenate([[rad[0] * 1.35], rad])
+            hidden = np.concatenate([[False], hidden])
             rad[1] *= 1.18
         s = sides_for(rad[0])
         wraps = max(1, int(round(2 * math.pi * rad[0] / tile_round)))
@@ -280,6 +288,7 @@ def branch_mesh(tl, parts, H, vols=None):
             for k in range(s):
                 a = 2 * math.pi * k / s
                 V.append(pts[i] + rr * (math.cos(a) * N[i] + math.sin(a) * B[i]))
+                BARE.append(bool(hidden[i]))
             samples.append((pts[i], rad[i]))
         for i in range(len(pts) - 1):
             for k in range(s):
@@ -293,6 +302,7 @@ def branch_mesh(tl, parts, H, vols=None):
         # the tip closed to a point
         tip = len(V)
         V.append(pts[-1] + T[-1] * rad[-1] * 1.5)
+        BARE.append(bool(hidden[-1]))
         i = len(pts) - 1
         for k in range(s):
             k1 = (k + 1) % s
@@ -300,7 +310,7 @@ def branch_mesh(tl, parts, H, vols=None):
             UV0.extend([(wraps * k / s, along[i] / tile_along), (wraps * (k + 1) / s, along[i] / tile_along),
                         (wraps * (k + 0.5) / s, (along[i] + rad[-1]) / tile_along)])
             UV1.extend([(rad[-1], pts[-1][2])] * 3)
-    return np.array(V), F, UV0, UV1, samples
+    return np.array(V), F, UV0, UV1, samples, np.array(BARE, dtype=bool)
 
 
 # -- leaves and masses -------------------------------------------------------------------------------------------------
@@ -757,7 +767,7 @@ def build(species, seed, age, quality=1.0, unity=None):
     else:
         LV, LF, LUV0, LUV1, LN, LC, trees, which = leaf_mesh(tl, parts, age, seed, H, species)
     k = int(which.max()) + 1 if which is not None and len(which) else 0
-    BV, BF, BUV0, BUV1, samples = branch_mesh(tl, parts, H, vols)
+    BV, BF, BUV0, BUV1, samples, BARE = branch_mesh(tl, parts, H, vols)
     # the branches' bake: per loop, from the vertex's facing and the depth of the nearest chain point in the crown
     pts, deep = branch_bake(samples, BV, trees, k)
     from mathutils import kdtree
@@ -777,7 +787,8 @@ def build(species, seed, age, quality=1.0, unity=None):
     dv = deep[near][loops]
     nz = nrm[:, 2]
     sky = np.clip((0.5 + 0.5 * nz) * (1.0 - 0.7 * dv), 0.05, 1.0)
-    col = np.stack([sky, np.clip(0.5 - 0.5 * nz, 0, 1), 1.0 - 0.5 * dv, np.ones_like(sky)], -1).astype(np.float32)
+    # alpha 0: a twig drawn only when the leaves are down (the tree shader hides it while they are on)
+    col = np.stack([sky, np.clip(0.5 - 0.5 * nz, 0, 1), 1.0 - 0.5 * dv, np.where(BARE[loops], 0.0, 1.0)], -1).astype(np.float32)
     attr = me.color_attributes.new("bake", "FLOAT_COLOR", "CORNER")
     attr.data.foreach_set("color", col.ravel())
     me.color_attributes.active_color = attr

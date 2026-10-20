@@ -382,7 +382,8 @@ def paint_lobe(rng, kind):
     for k in range(strands):
         f = (k + 0.5) / strands
         x = 0.5 + (f - 0.5) * width + rng.gauss(0, 0.015)
-        y = top + 0.10 * (2 * (f - 0.5)) ** 2 + rng.gauss(0, 0.01)
+        # a domed, uneven top: the middle strands start highest, the outer ones lower, each a little off
+        y = top + 0.16 * (2 * (f - 0.5)) ** 2 + rng.uniform(0.0, 0.06)
         arc.append((x * n, y * n, f))
     strokes = []
     for x0, y0, f in arc:
@@ -394,10 +395,14 @@ def paint_lobe(rng, kind):
             g = t / max(steps - 1, 1)
             y = y0 + L * g
             x = x0 + sway * g ** 1.5 + rng.gauss(0, 0.012 * n)
-            # each step a few strokes side by side, hanging
+            # each step a few strokes side by side, hanging; at the top of the strand they stand out and up from the
+            # twig, so the curtain's top is a rounded, broken edge, never the twig's straight line
             for _ in range(rng.randint(2, 3)):
-                strokes.append((x + rng.gauss(0, 0.03 * n), y + rng.gauss(0, 0.012 * n),
-                                math.pi / 2 + rng.gauss(0, 0.45), g))
+                if g < 0.12:
+                    ang = -math.pi / 2 + rng.gauss(0, 1.0)
+                else:
+                    ang = math.pi / 2 + rng.gauss(0, 0.45)
+                strokes.append((x + rng.gauss(0, 0.03 * n), y + rng.gauss(0, 0.012 * n), ang, g))
     strokes.sort(key=lambda st: st[3] + rng.uniform(0, 0.15))
     # the twig and the strands' own stalks first
     dist = np.full((n, n), 1e9, np.float32)

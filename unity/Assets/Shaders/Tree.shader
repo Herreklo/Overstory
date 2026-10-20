@@ -225,6 +225,9 @@ Shader "Overstory/Tree"
                 // a card shades as its mass: the same normal seen from either side
                 half3 n = normalize(input.normalWS);
             #else
+                // twigs deep in the foliage show only when the leaves are down: dithered in as they fall
+                if (input.bake.a < 0.5h)
+                    clip((half)_Season.y - 0.55h - 0.3h * OS_Hash(input.positionCS.xy));
                 half3 n = normalize(front ? input.normalWS : -input.normalWS);
             #endif
                 StreetSurface s = OS_TreeSurface(input.uv, input.extra, n);

@@ -46,7 +46,8 @@ UP = np.array([0.0, 0.0, 1.0])
 # steer how much of the difference a shoot makes up per internode: a limb can sag at its base and turn up at its tip.
 # curl: how far each year's shoot bends its own seeded way, per internode (the leader's, then the branches'): a year's
 # shoot is an arc, and the years together make a limb's S-curves and a trunk's slow sweep (wobble alone averages out to
-# a straight line). variety: how far each tree's inherited habit strays from the species' (genotype).
+# a straight line). variety: how far each tree's inherited habit strays from the species' (genotype). ring: the wood
+# laid down each year per leafy bud a stem feeds (m^2), so old trunks and limbs keep thickening while their crown lives.
 # shed: a branch dies when its buds' mean light has been under this share of open sky for so many years running (the
 # species' shade tolerance), or when it has no buds left. long_min: a side bud makes a long shoot only with resource for
 # so many internodes; below it, it stays a short shoot that only bears leaves (most of a birch's buds), so the year's
@@ -72,20 +73,20 @@ SPECIES = {
         envelope="cone", width=(0.34, 0.17), crown_base=(0.0, 0.03), self_prune=(0.0, 0.0),
         shed=(0.10, 4), bud_life=3, tip_radius=0.0032, pipe=2.2, light=(0.30, 0.25, 6),
     ),
-    # Downy birch, Betula pubescens. A central stem well up into the crown all its life, the crown broadening on its
-    # side limbs and a mass of fine twigs; alternate buds (2/5 phyllotaxis); an airy, irregular crown, not weeping (that is the silver birch);
+    # Downy birch, Betula pubescens. A leader while young (a slender whip at 15), then apical control gives way and
+    # the stem forks into a few ascending limbs that arch outward, the crown broadening on them, a mass of fine twigs; alternate buds (2/5 phyllotaxis); an airy, irregular crown, not weeping (that is the silver birch);
     # it needs light and sheds its lower branches early. On a good site on this coast about 6 m at 15 years, 11 at 30
     # and 15 at 60; few live past 100.
     "birch": dict(
-        kind="broadleaf", height=16.0, growth=(0.050, 1.5), leader_until=999,
-        internode=0.22, shoot=0.35, full_size=3.0, alpha=2.0, apical=(0.60, 0.56, 40),
-        phyllotaxis=144.0, lateral_angle=42.0, max_order=4, long_min=2.2,
-        setpoint=((90, 90), (76, 52), (44, 14), (16, -8), (-8, -24), (-15, -30)), steer=0.15, light_pull=0.25,
-        light_up=0.3, jitter=0.08, curl=(1.3, 5.0), variety=1.0,
-        envelope="dome", width=(0.24, 0.29), lobing=0.45, crown_base=(0.0, 0.0), self_prune=(0.05, 0.24),
+        kind="broadleaf", height=16.0, growth=(0.050, 1.5), leader_until=18,
+        internode=0.22, shoot=0.35, full_size=3.0, alpha=2.0, apical=(0.58, 0.44, 30),
+        phyllotaxis=144.0, lateral_angle=42.0, max_order=4, long_min=2.6,
+        setpoint=((90, 90), (72, 48), (40, 8), (12, -14), (-10, -28), (-15, -30)), steer=0.15, light_pull=0.25,
+        light_up=0.3, jitter=0.08, curl=(1.0, 3.5), variety=1.0,
+        envelope="dome", width=(0.26, 0.40), lobing=0.45, crown_base=(0.0, 0.0), self_prune=(0.05, 0.24),
         masses=dict(top=(0.84, 0.19, 0.15), sides=(2, 4), side_z=(0.40, 0.68), side_off=(0.17, 0.27),
                     side_r=(0.12, 0.17), outside=0.6, pull=0.3),
-        shed=(0.30, 2), bud_life=10, tip_radius=0.0045, spurs=0.025, pipe=2.4, light=(0.15, 0.25, 2),
+        shed=(0.30, 2), bud_life=10, tip_radius=0.0045, spurs=0.025, pipe=2.4, light=(0.15, 0.25, 2), ring=0.42e-5,
     ),
 }
 
@@ -570,13 +571,19 @@ def grow(species, seed, years=60, site=(), quality=1.0, wind=(0.0, 0.0, 0.0)):
         for bd in buds:
             leafy[bd.node] += 1
         pipe, tip = sp["pipe"], sp["tip_radius"]
+        feeds = np.zeros(len(tl.nodes))
         for nd in reversed(tl.nodes):
             if nd.died is not None:
                 continue
             kids = [c for c in nd.children if tl.nodes[c].died is None]
             area = sum(r[c] ** pipe for c in kids) + leafy[nd.id] * tip ** pipe
             rr = area ** (1.0 / pipe) if area > 0 else tip
-            r[nd.id] = max(rr, radius_at(nd, year - 1), sp["tip_radius"])
+            # and a ring every year: wood laid down in proportion to the foliage the stem feeds (its leafy buds), so
+            # an old trunk keeps thickening while its crown lives (White's basal area increment), never thinning
+            feeds[nd.id] = leafy[nd.id] + sum(feeds[c] for c in kids)
+            prev = radius_at(nd, year - 1)
+            ringed = math.sqrt(prev * prev + sp.get("ring", 0.0) * feeds[nd.id] / math.pi)
+            r[nd.id] = max(rr, ringed, sp["tip_radius"])
             nd.radius[year] = float(r[nd.id])
         tl.years = year
     return tl
