@@ -29,7 +29,8 @@ float4 _OS_HazeColor;    // rgb: its colour (linear)
 float4 _OS_SunDir;       // xyz: towards the sun
 float4 _OS_PavingMeanUV; // xy: the palette UV of setts_mean, the tone a sett pavement averages to
 float _OS_Clay;          // 1: every surface one matte grey, to judge shape and composition alone
-float _OS_AirBands;      // 0: the air thickens smoothly; n: in n flat bands, a printer's graded wipe (look D)
+float _OS_AirBands;      // 0: the air thickens smoothly; n: in n flat bands (look D's graded wipe, or a style's layers)
+float _OS_AirBandSoft;   // how soft each band's edge is (0 hard, 1 smooth); 0 reads as look D's 0.2
 
 struct StreetSurface
 {
@@ -197,7 +198,8 @@ half3 OS_Atmosphere(half3 colour, float3 positionWS)
     {
         // distance laid in flat layers, each a step of air, the edges soft like a wiped block
         float hb = hidden * _OS_AirBands;
-        hidden = (floor(hb) + smoothstep(0.8, 1.0, frac(hb))) / _OS_AirBands;
+        float soft = _OS_AirBandSoft > 0.0 ? _OS_AirBandSoft : 0.2;
+        hidden = (floor(hb) + smoothstep(1.0 - soft, 1.0, frac(hb))) / _OS_AirBands;
     }
     half sun = pow(saturate(dot(v / max(d, 1e-4), _OS_SunDir.xyz)), max(_OS_FogSun.w, 1.0));
     // the air changes colour with distance, in layers, never one grey (Firewatch, Sable)

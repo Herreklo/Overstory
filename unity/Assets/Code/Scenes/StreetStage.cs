@@ -25,6 +25,8 @@ namespace Overstory.Scenes
         public ReflectionProbe skyReflection;
         [Tooltip("The town's lamps as lights, lit with the rig and handed to the fog. Optional.")]
         public TownLights townLights;
+        [Tooltip("The house style: how far colour, value and air are pushed, between the hour's grade and the mood. None: unstylised.")]
+        public Style style;
         [Tooltip("The mood: how the scene is filmed, over the hour's own grade. None: the hour as it is.")]
         public Grade mood;
 
@@ -113,20 +115,54 @@ namespace Overstory.Scenes
             Shader.SetGlobalVector("_OS_Grime", new Vector4(g.r, g.g, g.b, 1f));
             bool print = look == "D";
             Shader.SetGlobalFloat("_OS_KeyBlock", print ? 1f : 0f);
-            Shader.SetGlobalFloat("_OS_AirBands", print ? airBands : 0f);
+            bool layered = !print && style != null && style.airLayers > 0;
+            Shader.SetGlobalFloat("_OS_AirBands", print ? airBands : layered ? style.airLayers : 0f);
+            Shader.SetGlobalFloat("_OS_AirBandSoft", layered ? style.airLayerSoftness : 0f);
             Shader.SetGlobalFloat("_OS_SkyBands", print ? skyBands : 0f);
             Shader.SetGlobalVector("_OS_Plates", new Vector4(stopsPerPlate, carving, whiteLineSpacing, whiteLines));
             var inkLinear = ink.linear;
             Shader.SetGlobalVector("_OS_Ink", new Vector4(inkLinear.r, inkLinear.g, inkLinear.b, ink.a));
             Shader.SetGlobalVector("_OS_InkFade", new Vector4(inkFadeStart, inkFadeEnd, 0, 0));
-            Shader.SetGlobalFloat("_OS_ShadowChroma", look == "P" ? paintShadowChroma : shadowChroma);
+            float chroma = (look == "P" ? paintShadowChroma : shadowChroma) * (style != null ? style.shadeChroma : 1f);
+            Shader.SetGlobalFloat("_OS_ShadowChroma", chroma);
             Shader.SetGlobalVector("_OS_Ramp", new Vector4(rampEdge, rampSoftness, shadowFloor, stroke));
-            Shader.SetGlobalVector("_OS_EdgeTint", new Vector4(edgeTint.linear.r, edgeTint.linear.g, edgeTint.linear.b, edgeTint.a));
+            var edge = style != null ? style.turningEdge.linear : edgeTint.linear;
+            Shader.SetGlobalVector("_OS_EdgeTint", new Vector4(edge.r, edge.g, edge.b, style != null ? style.turningEdgeStrength : edgeTint.a));
+            SetStyle();
             if (rig != null)
                 SetLight(rig);
             if (shot != null && view != null)
                 shot.Apply(view);
             SetShafts();
+        }
+
+        /// <summary>The style's colour pass (Palette.shader): its ramp, value masses and film response.</summary>
+        void SetStyle()
+        {
+            var st = style;
+            Shader.SetGlobalFloat("_OS_PaletteOn", st != null ? 1f : 0f);
+            if (st == null)
+                return;
+            // the hour's own colours: the sky's in shade; in light the sun's, or after it sets the lamps'
+            Color sky = rig != null ? rig.ambientSky : st.shade;
+            bool sunUp = rig != null && rig.sunElevation > 0f && rig.sunIntensity > 0.05f;
+            Color lit = rig == null ? st.light : sunUp ? rig.sunColour : new Color(1.0f, 0.70f, 0.42f);
+            float f = rig != null ? st.followLight : 0f;
+            Shader.SetGlobalVector("_OS_Key0", Follow(st.shade, sky, f));
+            Shader.SetGlobalVector("_OS_Key1", Follow(st.lowMiddle, Color.Lerp(sky, lit, 0.25f), f));
+            Shader.SetGlobalVector("_OS_Key2", Follow(st.highMiddle, Color.Lerp(sky, lit, 0.7f), f));
+            Shader.SetGlobalVector("_OS_Key3", Follow(st.light, lit, f));
+            Shader.SetGlobalVector("_OS_PaletteParams", new Vector4(st.ramp, st.spare, st.vibrance, st.rolloff));
+            Shader.SetGlobalVector("_OS_Grouping", new Vector4(st.valueSteps, st.grouping, st.groupSoftness, 0f));
+        }
+
+        /// <summary>A key of the style's ramp moved towards the hour's colour, at the key's own lightness.</summary>
+        static Color Follow(Color key, Color hour, float f)
+        {
+            float lk = 0.2126f * key.r + 0.7152f * key.g + 0.0722f * key.b;
+            float lh = Mathf.Max(0.2126f * hour.r + 0.7152f * hour.g + 0.0722f * hour.b, 1e-4f);
+            var matched = hour * (lk / lh);
+            return Color.Lerp(key, new Color(Mathf.Clamp01(matched.r), Mathf.Clamp01(matched.g), Mathf.Clamp01(matched.b)), f);
         }
 
         /// <summary>Where the sun stands on screen, for the light rays; they are off when it is behind the camera.</summary>
@@ -276,13 +312,14 @@ namespace Overstory.Scenes
             // four layers: exposure (the rig's, the eye adjusting to the hour), the hour's balance (the rig's grade),
             // the mood (a Grade, offsets on the hour), the lens; a mood changes how the scene is seen, never what is in it
             var m = mood;
+            var st = style;
             var tone = Get<Tonemapping>();
             tone.mode.Override(TonemappingMode.Neutral);
 
             var adj = Get<ColorAdjustments>();
-            adj.postExposure.Override(r.postExposure + (m ? m.exposure : 0f));
-            adj.contrast.Override(Mathf.Clamp(r.contrast + (m ? m.contrast : 0f), -100f, 100f));
-            adj.saturation.Override(Mathf.Clamp(r.saturation + (m ? m.saturation : 0f), -100f, 100f));
+            adj.postExposure.Override(r.postExposure + (st ? st.exposure : 0f) + (m ? m.exposure : 0f));
+            adj.contrast.Override(Mathf.Clamp(r.contrast + (st ? st.contrast : 0f) + (m ? m.contrast : 0f), -100f, 100f));
+            adj.saturation.Override(Mathf.Clamp(r.saturation + (st ? st.saturation : 0f) + (m ? m.saturation : 0f), -100f, 100f));
             adj.colorFilter.Override(m ? r.colourFilter * m.filter : r.colourFilter);
 
             var wb = Get<WhiteBalance>();
@@ -305,8 +342,9 @@ namespace Overstory.Scenes
                                                       0.5f, false, new Vector2(0f, 1f)));
 
             var bloom = Get<Bloom>();
-            bloom.intensity.Override(Mathf.Max(0f, r.bloomIntensity + (m ? m.bloom : 0f)));
+            bloom.intensity.Override(Mathf.Max(0f, r.bloomIntensity + (st ? st.glow : 0f) + (m ? m.bloom : 0f)));
             bloom.threshold.Override(r.bloomThreshold);
+            bloom.tint.Override(st ? st.glowTint : Color.white);
             bloom.scatter.Override(m ? m.bloomScatter : 0.7f);
             bloom.highQualityFiltering.Override(true);
 

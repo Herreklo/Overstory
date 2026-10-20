@@ -8,7 +8,8 @@ Reads the Unity stills (LT1Heart.Frames for the flat clay, LT1Heart.LightFrames 
   which near, middle and far must still separate;
 - reviews/lt1/heart/night/sheet-<camera>.png: blue hour in sea fog, neutral and in each mood (LT1Heart.NightFrames),
   colour above, greyscale below, for the cameras the moods are rendered from;
-- reviews/lt1/heart/night/sheet-neutral.png: every camera at blue hour in sea fog, neutral.
+- reviews/lt1/heart/night/sheet-neutral.png: every camera at blue hour in sea fog, neutral;
+- reviews/lt1/heart/style/sheet-<moment>-<camera>.png: unstylised and each candidate style (LT1Heart.StyleFrames).
 Nothing is changed in the frames; the sheets only lay them side by side.
 """
 
@@ -118,9 +119,40 @@ def night_overview():
     return out
 
 
+STYLE = os.path.join(HEART, "style")
+STYLES = ["none", "nocturne", "luminous", "painted"]
+
+
+def style_sheet(moment, camera):
+    def get(style, kind=""):
+        path = os.path.join(STYLE, moment, style, f"heart-{moment}-{style}-{camera}{kind}.png")
+        return Image.open(path).convert("RGB") if os.path.exists(path) else None
+    cols = [st for st in STYLES if get(st) is not None]
+    if len(cols) < 2:
+        return None
+    cell = (640, 360)
+    sheet = Image.new("RGB", (cell[0] * len(cols), (cell[1] + LABEL) * 2), (24, 24, 26))
+    draw = ImageDraw.Draw(sheet)
+    for i, st in enumerate(cols):
+        im = get(st)
+        x = i * cell[0]
+        draw.text((x + 8, 4), "unstylised" if st == "none" else st, fill=(230, 230, 230))
+        sheet.paste(im.resize(cell, Image.LANCZOS), (x, LABEL))
+        sheet.paste((get(st, "-grey") or grey(im)).resize(cell, Image.LANCZOS), (x, LABEL * 2 + cell[1]))
+    out = os.path.join(STYLE, f"sheet-{moment}-{camera}.png")
+    sheet.save(out)
+    return out
+
+
 if __name__ == "__main__":
     import sys
-    if "night" in sys.argv[1:]:
+    if "style" in sys.argv[1:]:
+        for moment in ("1600-low-sun", "1750-sea-fog"):
+            for c in CAMERAS:
+                out = style_sheet(moment, c)
+                if out:
+                    print(out)
+    elif "night" in sys.argv[1:]:
         for c in CAMERAS:
             out = night_sheet(c)
             if out:

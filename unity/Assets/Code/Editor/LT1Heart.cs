@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using System.IO;
 using UnityEditor;
 using UnityEditor.SceneManagement;
@@ -19,6 +20,7 @@ namespace Overstory.EditorTools
     ///     Unity -batchmode -quit -projectPath unity -executeMethod Overstory.EditorTools.LT1Heart.Frames
     ///     Unity -batchmode -quit -projectPath unity -executeMethod Overstory.EditorTools.LT1Heart.LightFrames [-frames 1,5] [-hours 1600]
     ///     Unity -batchmode -quit -projectPath unity -executeMethod Overstory.EditorTools.LT1Heart.NightFrames [-frames 1,9] [-moods hopeful]
+    ///     Unity -batchmode -quit -projectPath unity -executeMethod Overstory.EditorTools.LT1Heart.StyleFrames [-frames 1,9] [-styles nocturne]
     ///
     /// The renderer and materials are LT1's; this touches neither.
     /// </summary>
@@ -136,6 +138,8 @@ namespace Overstory.EditorTools
             lamps.source = AssetDatabase.LoadAssetAtPath<TextAsset>(Models + "/lights.json");
             lamps.Build();
             EnsureFogLights();
+            EnsurePass("Palette", "Overstory/Palette", FullScreenPassRendererFeature.InjectionPoint.AfterRenderingPostProcessing,
+                       ScriptableRenderPassInput.None);
 
             var probe = new GameObject("Sky reflection").AddComponent<ReflectionProbe>();
             probe.size = new Vector3(20000f, 4000f, 20000f);
@@ -573,6 +577,154 @@ namespace Overstory.EditorTools
                 urp.shadowDistance = reach;
                 stage.mood = null;
             }
+        }
+
+        // -- the house style, after the masters of colour (docs/research/masters-of-colour.md) -----------------------
+
+        public static readonly string[] Styles = { "nocturne", "luminous", "painted" };
+
+        /// <summary>Three candidate styles, to be judged beside the unstylised look on the same frames.</summary>
+        static void WriteStyles()
+        {
+            Directory.CreateDirectory(Lights + "/Styles");
+            AssetDatabase.Refresh();
+            StyleAsset("nocturne", "After Whistler's nocturnes, Jansson's blue Stockholm and Grimshaw's lamplit quays: the picture is the air; " +
+                                   "a few close values of blue and slate, lights as points of gold, distance in soft layers of tone.", st =>
+            {
+                st.shade = C(0.07f, 0.09f, 0.16f); st.lowMiddle = C(0.19f, 0.25f, 0.35f); st.highMiddle = C(0.44f, 0.48f, 0.52f); st.light = C(0.98f, 0.82f, 0.54f);
+                st.ramp = 0.55f; st.spare = 0.85f;
+                st.valueSteps = 5; st.grouping = 0.35f; st.groupSoftness = 0.35f;
+                st.airLayers = 5; st.airLayerSoftness = 0.4f;
+                st.shadeChroma = 1.0f; st.turningEdge = C(0.95f, 0.6f, 0.35f); st.turningEdgeStrength = 0.12f;
+                st.vibrance = 0.1f; st.rolloff = 0.4f; st.glowTint = C(1.0f, 0.78f, 0.5f); st.glow = 0.2f;
+                st.contrast = -6f; st.saturation = -10f;
+            });
+            StyleAsset("luminous", "After Shinkai's skies, Oga's backgrounds, Mary Blair and Firewatch: the ordinary made radiant; saturated air, " +
+                                   "violet shade against coral and gold light, glow round every light, distance in crisp layers.", st =>
+            {
+                st.shade = C(0.12f, 0.08f, 0.28f); st.lowMiddle = C(0.17f, 0.31f, 0.55f); st.highMiddle = C(0.95f, 0.58f, 0.46f); st.light = C(1.0f, 0.93f, 0.72f);
+                st.ramp = 0.45f; st.spare = 0.7f;
+                st.valueSteps = 0; st.grouping = 0f;
+                st.airLayers = 6; st.airLayerSoftness = 0.2f;
+                st.shadeChroma = 1.6f; st.turningEdge = C(1.0f, 0.45f, 0.2f); st.turningEdgeStrength = 0.45f;
+                st.vibrance = 0.45f; st.rolloff = 0.2f; st.glowTint = C(1.0f, 0.72f, 0.6f); st.glow = 0.5f;
+                st.contrast = 8f; st.saturation = 12f;
+            });
+            StyleAsset("painted", "After Sorolla and Sargent, Sohlberg and Hopper: painterly realism pushed; full-colour shade, a warm band where light " +
+                                  "turns, values gathered into masses, light shapes designed, deep saturated darks.", st =>
+            {
+                st.shade = C(0.10f, 0.10f, 0.21f); st.lowMiddle = C(0.30f, 0.29f, 0.42f); st.highMiddle = C(0.72f, 0.63f, 0.52f); st.light = C(1.0f, 0.90f, 0.74f);
+                st.ramp = 0.3f; st.spare = 0.85f;
+                st.valueSteps = 4; st.grouping = 0.25f; st.groupSoftness = 0.35f;
+                st.airLayers = 4; st.airLayerSoftness = 0.45f;
+                st.shadeChroma = 1.8f; st.turningEdge = C(1.0f, 0.5f, 0.25f); st.turningEdgeStrength = 0.5f;
+                st.vibrance = 0.3f; st.rolloff = 0.35f; st.glowTint = C(1.0f, 0.82f, 0.6f); st.glow = 0.15f;
+                st.contrast = 10f;
+            });
+            AssetDatabase.SaveAssets();
+        }
+
+        static void StyleAsset(string name, string intent, System.Action<Style> set) =>
+            Asset<Style>($"{Lights}/Styles/Style_{name}.asset", st =>
+            {
+                var neutral = ScriptableObject.CreateInstance<Style>();
+                EditorUtility.CopySerialized(neutral, st);
+                Object.DestroyImmediate(neutral);
+                st.intent = intent;
+                set(st);
+            });
+
+        /// <summary>
+        /// The style frames (reviews/lt1/heart/style/): 16:00 low sun and 17:50 in sea fog, from the roofs, the steps, the
+        /// middle and the quay, unstylised and in each candidate style.
+        /// </summary>
+        public static void StyleFrames()
+        {
+            Rigs();
+            NightRig();
+            WriteStyles();
+            AssetDatabase.SaveAssets();
+            EditorSceneManager.OpenScene(ScenePath, OpenSceneMode.Single);
+            EnsurePass("Palette", "Overstory/Palette", FullScreenPassRendererFeature.InjectionPoint.AfterRenderingPostProcessing,
+                       ScriptableRenderPassInput.None);
+            var stage = Object.FindAnyObjectByType<StreetStage>();
+            stage.clay = true;
+            stage.look = "P";
+            if (stage.skyMap != null)
+                stage.skyMap.Build();
+            if (stage.townLights != null)
+                stage.townLights.Build();
+            var urp = (UniversalRenderPipelineAsset)GraphicsSettings.currentRenderPipeline;
+            float reach = urp.shadowDistance;
+            string root = Path.GetFullPath(Path.Combine(Application.dataPath, "..", "..", "reviews", "lt1", "heart", "style"));
+            var args = System.Environment.GetCommandLineArgs();
+            int si = System.Array.IndexOf(args, "-styles");
+            try
+            {
+                foreach (var moment in new[] { "1600-low-sun", Night })
+                {
+                    stage.rig = AssetDatabase.LoadAssetAtPath<LightRig>($"{Lights}/Heart_{moment}.asset");
+                    foreach (var styleName in new[] { "none" }.Concat(Styles))
+                    {
+                        if (si >= 0 && si + 1 < args.Length && System.Array.IndexOf(args[si + 1].Split(','), styleName) < 0)
+                            continue;
+                        stage.style = styleName == "none" ? null : AssetDatabase.LoadAssetAtPath<Style>($"{Lights}/Styles/Style_{styleName}.asset");
+                        string dir = Path.Combine(root, moment, styleName);
+                        Directory.CreateDirectory(dir);
+                        foreach (var (name, pos, target, _) in Shots)
+                        {
+                            if (System.Array.IndexOf(new[] { "1", "3", "4", "9" }, name.Split('-')[0]) < 0 || !Wanted(name))
+                                continue;
+                            urp.shadowDistance = Mathf.Clamp(Vector3.Distance(pos, target) * 2.2f, 150f, 2000f);
+                            stage.shot = AssetDatabase.LoadAssetAtPath<CameraShot>($"{Dir}/Views/Heart_{name}.asset");
+                            stage.Apply();
+                            string file = Path.Combine(dir, $"heart-{moment}-{styleName}-{name}.png");
+                            LT1Render.Still(stage.view, file, grey: true, eighth: true);
+                            Debug.Log($"[LT1Heart] {file}");
+                        }
+                    }
+                }
+            }
+            finally
+            {
+                urp.shadowDistance = reach;
+                stage.style = null;
+            }
+        }
+
+        /// <summary>Puts a full-screen pass on the renderer once, at its injection point, with its own material.</summary>
+        static void EnsurePass(string name, string shader, FullScreenPassRendererFeature.InjectionPoint at, ScriptableRenderPassInput needs)
+        {
+            const string renderer = "Assets/Settings/PC_Renderer.asset";
+            var data = AssetDatabase.LoadAssetAtPath<UniversalRendererData>(renderer);
+            if (data == null || data.rendererFeatures.Exists(f => f != null && f.name == name))
+                return;
+            string path = $"{Materials}/M_{name}.mat";
+            var mat = AssetDatabase.LoadAssetAtPath<Material>(path);
+            if (mat == null)
+            {
+                mat = new Material(Shader.Find(shader) ?? throw new FileNotFoundException($"{shader} did not compile"));
+                AssetDatabase.CreateAsset(mat, path);
+            }
+            var feature = ScriptableObject.CreateInstance<FullScreenPassRendererFeature>();
+            feature.name = name;
+            feature.passMaterial = mat;
+            feature.injectionPoint = at;
+            feature.requirements = needs;
+            feature.fetchColorBuffer = true;
+            AssetDatabase.AddObjectToAsset(feature, data);
+            AssetDatabase.TryGetGUIDAndLocalFileIdentifier(feature, out string _, out long id);
+            var so = new SerializedObject(data);
+            var list = so.FindProperty("m_RendererFeatures");
+            list.arraySize++;
+            list.GetArrayElementAtIndex(list.arraySize - 1).objectReferenceValue = feature;
+            var map = so.FindProperty("m_RendererFeatureMap");
+            map.arraySize++;
+            map.GetArrayElementAtIndex(map.arraySize - 1).longValue = id;
+            so.ApplyModifiedPropertiesWithoutUndo();
+            EditorUtility.SetDirty(data);
+            AssetDatabase.SaveAssets();
+            Debug.Log($"[LT1Heart] {name} added to the renderer");
         }
 
         /// <summary>A check: every model in the heart's scene, with its size, place and material.</summary>
