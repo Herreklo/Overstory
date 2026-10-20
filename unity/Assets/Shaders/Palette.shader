@@ -1,4 +1,4 @@
-// The house style's colour, applied after the grade (Overstory.Scenes.Style; docs/research/masters-of-colour.md):
+// The game's style's colour, applied after the grade (Overstory.Scenes.Style; docs/research/masters-of-colour.md):
 // values pulled softly into a few masses; a designed ramp of colour by value blended over the scene with the light
 // kept, sparing saturated colour so a lit window stays warm and a sign keeps its red; colour added in the middle
 // values and rolled off towards black and white, as print film does. Off when no style is set.
@@ -25,7 +25,7 @@ Shader "Overstory/Palette"
             float _OS_PaletteOn;
             float4 _OS_Key0, _OS_Key1, _OS_Key2, _OS_Key3; // the ramp's colours (perceptual, sRGB), dark to light
             float4 _OS_PaletteParams;                      // x ramp strength, y spare saturated, z vibrance, w roll-off
-            float4 _OS_Grouping;                           // x steps, y strength, z softness
+            float4 _OS_Grouping;                           // x steps, y strength, z softness, w chroma placed at the focus
 
             float Luma(float3 g) { return dot(g, float3(0.2126, 0.7152, 0.0722)); }
 
@@ -71,6 +71,10 @@ Shader "Overstory/Palette"
                 float3 chroma = g - grey;
                 float middle = saturate(4.0 * grey * (1.0 - grey));
                 chroma *= (1.0 + _OS_PaletteParams.z * middle) * (1.0 - _OS_PaletteParams.w * (1.0 - middle));
+                // chroma placed, not spread: strong colour (the lights and their warmth) kept, dull colour drained
+                float hi2 = max(g.r, max(g.g, g.b)), lo2 = min(g.r, min(g.g, g.b));
+                float sat2 = (hi2 - lo2) / max(hi2, 1e-4);
+                chroma *= lerp(1.0 - 0.45 * _OS_Grouping.w, 1.0 + 0.25 * _OS_Grouping.w, smoothstep(0.18, 0.5, sat2));
                 g = grey + chroma;
 
                 colour.rgb = SRGBToLinear(saturate(g));

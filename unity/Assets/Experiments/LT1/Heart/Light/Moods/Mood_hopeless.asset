@@ -12,23 +12,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cc406944d9a4348bbacb016ee3063e1c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Overstory.Scenes.Grade
-  intent: 'Nothing will change: the colour drained to a sick grey-green, flat, the blacks lifted to fog, the edges closing in.'
-  exposure: -0.2
-  contrast: -12
-  lift: {x: 0.98, y: 1, z: 0.97, w: 0.03}
-  gamma: {x: 1, y: 1, z: 1, w: 0}
-  gain: {x: 0.96, y: 0.98, z: 0.94, w: -0.05}
-  saturation: -28
-  temperature: 0
-  tint: 0
-  filter: {r: 0.94, g: 1, b: 0.93, a: 1}
-  splitShadows: {r: 0.45, g: 0.52, b: 0.47, a: 1}
-  splitHighlights: {r: 0.52, g: 0.52, b: 0.49, a: 1}
-  splitBalance: 0
+  intent: 'Nothing will change: under-exposed and flat, the shade drained of colour, the edges closing in.'
+  exposure: -0.3
+  contrast: -10
   shadowSaturation: 0.15
-  vignette: 0.34
+  vignette: 0.36
   vignetteSmoothness: 0.45
-  vignetteColour: {r: 0, g: 0, b: 0, a: 1}
   grain: 0.3
   bloom: -0.2
   bloomScatter: 0.5

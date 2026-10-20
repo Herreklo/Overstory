@@ -3,7 +3,7 @@ using UnityEngine;
 namespace Overstory.Scenes
 {
     /// <summary>
-    /// The house style: how far colour, value and air are pushed beyond the light the world gives, after the masters of
+    /// The game's style: how far colour, value and air are pushed beyond the light the world gives, after the masters of
     /// colour (docs/research/masters-of-colour.md). It sits between the hour's grade and the mood: one style for the
     /// game, chosen by look tests; the mood then moves within it. A style never stylises a fact away: the ramp of colour
     /// by value spares saturated light (a lit window stays warm, a red sign red), and the hour and weather still read.
@@ -48,6 +48,9 @@ namespace Overstory.Scenes
         [Range(-1, 1)] public float vibrance = 0f;
         [Tooltip("Colour taken away towards black and white, as print film does.")]
         [Range(0, 1)] public float rolloff = 0f;
+        [Tooltip("Chroma placed, not spread: colour already strong (lights, their warmth) kept, dull colour drained, " +
+                 "so the eye goes where the light that means people is.")]
+        [Range(0, 1)] public float chromaFocus = 0f;
         public Color glowTint = Color.white;
         public float glow = 0f;
 

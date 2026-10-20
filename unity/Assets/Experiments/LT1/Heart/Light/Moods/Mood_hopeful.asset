@@ -12,23 +12,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cc406944d9a4348bbacb016ee3063e1c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Overstory.Scenes.Grade
-  intent: 'It may yet turn out well: warmer highlights over a light, cool shade, lifted, a soft glow round the lights.'
+  intent: 'It may yet turn out well: opened up, the shade keeping its colour, a soft glow round the lights.'
   exposure: 0.25
-  contrast: 4
-  lift: {x: 1, y: 1, z: 1.02, w: 0.02}
-  gamma: {x: 1, y: 1, z: 1, w: 0}
-  gain: {x: 1.04, y: 1, z: 0.95, w: 0.02}
-  saturation: 10
-  temperature: 10
-  tint: 0
-  filter: {r: 1, g: 1, b: 1, a: 1}
-  splitShadows: {r: 0.47, g: 0.5, b: 0.56, a: 1}
-  splitHighlights: {r: 0.62, g: 0.54, b: 0.44, a: 1}
-  splitBalance: 20
-  shadowSaturation: 0.9
-  vignette: 0.12
+  contrast: 2
+  shadowSaturation: 1
+  vignette: 0.1
   vignetteSmoothness: 0.45
-  vignetteColour: {r: 0, g: 0, b: 0, a: 1}
-  grain: 0.12
-  bloom: 0.45
+  grain: 0.1
+  bloom: 0.4
   bloomScatter: 0.85

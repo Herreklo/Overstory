@@ -30,6 +30,7 @@ MonoBehaviour:
   turningEdgeStrength: 0.45
   vibrance: 0.45
   rolloff: 0.2
+  chromaFocus: 0
   glowTint: {r: 1, g: 0.72, b: 0.6, a: 1}
   glow: 0.5
   exposure: 0

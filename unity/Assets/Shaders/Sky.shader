@@ -1,7 +1,9 @@
-// The sky: a gradient from the horizon to the zenith, the ground's colour below the horizon, a glow towards the
-// sun and a band opposite a low sun (the belt of Venus); a low broken cloud layer, the same pattern whose shadows
-// lie on the town, and a high thin one that catches the sun after it has set for the town; and the low haze over
-// the water. The light rig sets every colour; the horizon matches the colour of the air (StreetSurface.hlsl,
+// The sky, designed from the hour and the weather as a painter would build it: a dome lightest at the horizon and
+// darkening to the zenith; the sun's glow tight round it and wide and low along the horizon on its side; the band
+// opposite a low sun (the belt of Venus); a low cloud layer of big wind-stretched billows (the same field whose
+// shadows lie on the town), its bellies darker, its edges silvered towards the sun, its undersides lit warm by a
+// low sun and, at night, by the town's glow; a high thin layer that catches the sun after it has set for the town;
+// and the low haze or fog bank towards the horizon, with the town's glow in it. The light rig sets every colour; the horizon matches the colour of the air (StreetSurface.hlsl,
 // OS_Atmosphere) so distant things fade into the sky they stand against.
 Shader "Overstory/Sky"
 {
@@ -52,6 +54,12 @@ Shader "Overstory/Sky"
             half4 Frag(Varyings input) : SV_Target
             {
                 float3 d = normalize(input.dir);
+                float2 dh = d.xz / max(length(d.xz), 1e-4);
+                float2 sh = _OS_SunDir.xz / max(length(_OS_SunDir.xz), 1e-4);
+                float towardsSun = dot(dh, sh) * 0.5 + 0.5;    // 1 at the sun's bearing, 0 opposite
+                float low = exp(-max(d.y, 0.0) / 0.16);         // the band just over the horizon
+
+                // the dome: lightest at the horizon, darkening to the zenith
                 float t = pow(saturate(d.y), _Curve);
                 if (_OS_SkyBands > 0.5)
                 {
@@ -60,42 +68,48 @@ Shader "Overstory/Sky"
                 }
                 half3 c = d.y >= 0 ? lerp(_Horizon.rgb, _Zenith.rgb, t)
                                    : lerp(_Horizon.rgb, _Below.rgb, saturate(-d.y * 6.0));
-                c += _SunGlow.rgb * pow(saturate(dot(d, _OS_SunDir.xyz)), max(_SunGlowPower, 1.0));
-                float2 dh = d.xz / max(length(d.xz), 1e-4);
-                float2 sh = _OS_SunDir.xz / max(length(_OS_SunDir.xz), 1e-4);
-                half opposite = (half)pow(saturate(-dot(dh, sh) * 0.5 + 0.5), 3.0);
+                // the sun's glow: tight round the sun, and wide and low along the horizon on its side
+                c += _SunGlow.rgb * (pow(saturate(dot(d, _OS_SunDir.xyz)), max(_SunGlowPower, 1.0))
+                                     + 0.55 * pow(towardsSun, 3.0) * low);
+                // the band opposite a low sun (the belt of Venus), just over the horizon
                 half band = (half)exp(-pow((d.y - 0.07) / 0.06, 2.0));
-                c += _AntiGlow.rgb * opposite * band;
+                c += _AntiGlow.rgb * (half)pow(1.0 - towardsSun, 3.0) * band;
+                half3 sky = c;
 
                 // the high layer: thin streaks along the wind, lit by the low sun's glow from below the town's horizon
                 if (_HighCloud > 0.001 && d.y > 0.01)
                 {
                     float2 p = _WorldSpaceCameraPos.xz + d.xz / d.y * (7000.0 - _WorldSpaceCameraPos.y);
-                    float2 q = float2(dot(p, float2(0.866, 0.5)) / 3200.0, dot(p, float2(-0.5, 0.866)) / 520.0);
+                    float2 q = float2(dot(p, float2(0.866, 0.5)) / 3600.0, dot(p, float2(-0.5, 0.866)) / 480.0);
+                    q += (float2(OS_Noise(q * 0.3 + 2.0), OS_Noise(q * 0.3 - 5.0)) - 0.5) * 0.8;
                     float f = 0.55 * OS_Noise(q) + 0.3 * OS_Noise(q * 2.3 + 4.1) + 0.15 * OS_Noise(q * 5.3 - 1.7);
-                    half streak = (half)smoothstep(0.78 - _HighCloud * 0.35, 0.98 - _HighCloud * 0.2, f) * 0.6h;
-                    half sunward = (half)pow(saturate(dot(d, _OS_SunDir.xyz) * 0.5 + 0.5), 2.0);
-                    half3 lit = _SunGlow.rgb * (0.9h + 0.8h * sunward) + _Horizon.rgb * 0.45h;
-                    c = lerp(c, lerp(c * 1.06h, lit, 0.75h), streak * saturate(d.y * 9.0));
+                    half streak = (half)smoothstep(0.62 - _HighCloud * 0.2, 0.9 - _HighCloud * 0.1, f) * 0.55h;
+                    half3 lit = _SunGlow.rgb * (0.7h + 0.9h * (half)towardsSun) + _Horizon.rgb * 0.5h;
+                    c = lerp(c, lerp(c * 1.04h, lit, 0.7h), streak * (half)saturate(d.y * 9.0));
                 }
 
-                // the clouds: the view ray meets the cloud layer, the same pattern whose shadows lie on the town
+                // the low layer: the same cloud whose shadows lie on the town
                 if (_OS_Clouds.x > 0.001 && d.y > 0.004)
                 {
                     float height = _OS_Clouds.w - _WorldSpaceCameraPos.y;
                     float2 p = _WorldSpaceCameraPos.xz + d.xz / d.y * height;
                     float field = OS_CloudField(p, 1.0);
-                    half cover = OS_CloudCover(field, 0.07);
-                    // an edge is lit where the cloud thins towards the sun, shaded where it thickens
-                    float2 toSun = normalize(_OS_SunDir.xz + float2(1e-4, 0));
-                    float towards = OS_CloudField(p + toSun * _OS_Clouds.y * 0.22, 1.0);
-                    half lit = saturate(0.45h + (half)(field - towards) * 7.0h);
-                    if (_OS_SkyBands > 0.5)
-                        lit = (floor(lit * 3.0h) + smoothstep(0.75h, 1.0h, frac(lit * 3.0h))) / 3.0h; // in plates, as look D cuts all light
-                    half3 shade = lerp(_Horizon.rgb, _Zenith.rgb, 0.4h) * 0.82h;     // a cloud's shade is the sky's colour
-                    half3 sunlit = _OS_SunCol.rgb + _Horizon.rgb * 0.35h;
-                    half3 cloud = lerp(shade, sunlit, lit * lit);
-                    half far = saturate(d.y * 7.0); // far clouds melt into the horizon's haze
+                    half cover = OS_CloudCover(field, 0.04);
+                    // how deep into the cloud: its belly darker
+                    half thick = (half)saturate((field - (1.0 - _OS_Clouds.x)) / 0.3);
+                    // an edge thinning towards the sun catches it: a silver lining
+                    float towards = OS_CloudField(p + sh * _OS_Clouds.y * 0.12, 1.0);
+                    half edge = (half)saturate(0.5 + (field - towards) * 6.0) * (1.0h - thick * 0.6h);
+                    half sunUp = (half)saturate(_OS_SunDir.y * 6.0 + 0.3);
+                    half3 shade = lerp(_Horizon.rgb, _Zenith.rgb, 0.45h) * lerp(0.98h, 0.6h, thick);
+                    half3 sunlit = _OS_SunCol.rgb * (0.35h + 0.65h * edge) * sunUp;
+                    // a low sun lights the undersides on its side warm; after it has set the glow lingers there
+                    half lowSun = (half)saturate(1.0 - _OS_SunDir.y * 5.0);
+                    half3 under = _SunGlow.rgb * (half)pow(towardsSun, 2.0) * lowSun * 0.8h;
+                    // and over the town the fog's glow lights them from below
+                    half3 townGlow = (half3)OS_GlowAt(float3(p.x, 0.0, p.y)) * 3.0h;
+                    half3 cloud = shade * (1.0h - 0.35h * sunUp * edge) + sunlit * 0.8h + under + townGlow;
+                    half far = (half)saturate(d.y * 7.0); // far clouds melt into the horizon's haze
                     c = lerp(c, cloud, cover * far);
                 }
 
@@ -103,9 +117,14 @@ Shader "Overstory/Sky"
                 if (_OS_Haze.x > 0.0)
                 {
                     float H = max(_OS_Haze.y, 1.0);
-                    float tau = _OS_Haze.x * exp(-max(_WorldSpaceCameraPos.y, 0.0) / H) * H / max(d.y, 0.012);
+                    float tau;
+                    float3 glow = 0;
+                    if (_OS_Bank.x > 0.5)
+                        OS_HazeMarch(_WorldSpaceCameraPos, d, 3000.0, tau, glow); // the bank and the town's glow in it
+                    else
+                        tau = _OS_Haze.x * exp(-max(_WorldSpaceCameraPos.y, 0.0) / H) * H / max(d.y, 0.012);
                     half sun = (half)pow(saturate(dot(d, _OS_SunDir.xyz)), max(_OS_FogSun.w, 1.0));
-                    c = lerp(c, _OS_HazeColor.rgb + _OS_FogSun.rgb * sun, (half)(1.0 - exp(-min(tau, 8.0))));
+                    c = lerp(c, _OS_HazeColor.rgb + _OS_FogSun.rgb * sun, (half)(1.0 - exp(-min(tau, 8.0)))) + (half3)glow;
                 }
                 return half4(c, 1);
             }

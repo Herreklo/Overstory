@@ -37,7 +37,7 @@ MonoBehaviour:
   ambientGround: {r: 0.33, g: 0.29, b: 0.25, a: 1}
   ambientSunSide: {r: 0.8, g: 0.64, b: 0.5, a: 1}
   townBounce: {r: 0.46, g: 0.38, b: 0.31, a: 1}
-  ambientIntensity: 0.62
+  ambientIntensity: 0.42
   fogColour: {r: 0.6, g: 0.6, b: 0.66, a: 1}
   fogMidColour: {r: 0.76, g: 0.69, b: 0.66, a: 1}
   fogMidDistance: 300
@@ -52,7 +52,14 @@ MonoBehaviour:
   hazeColour: {r: 0.88, g: 0.78, b: 0.68, a: 1}
   hazeDensity: 0.0025
   hazeHeight: 16
-  shafts: 1.6
+  fogBank: 0
+  bankOverLand: 0.35
+  bankWisps: 0.45
+  bankWispSize: 140
+  townGlow: 0
+  townGlowHeight: 25
+  beamHaze: 3
+  shafts: 1.2
   shaftReach: 0.6
   shaftDecay: 0.965
   motes: 1.2
@@ -71,8 +78,8 @@ MonoBehaviour:
   lampIntensity: 0
   windowSpill: 0
   lampHalo: 1
-  postExposure: 0.1
-  contrast: 10
+  postExposure: 0.45
+  contrast: 12
   saturation: 0
   temperature: 0
   tint: 0

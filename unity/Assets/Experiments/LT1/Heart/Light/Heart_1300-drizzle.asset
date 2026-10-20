@@ -52,6 +52,13 @@ MonoBehaviour:
   hazeColour: {r: 0.78, g: 0.8, b: 0.82, a: 1}
   hazeDensity: 0.004
   hazeHeight: 25
+  fogBank: 0
+  bankOverLand: 0.35
+  bankWisps: 0.45
+  bankWispSize: 140
+  townGlow: 0
+  townGlowHeight: 25
+  beamHaze: 1
   shafts: 0
   shaftReach: 0.6
   shaftDecay: 0.965

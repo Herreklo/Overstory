@@ -13,12 +13,9 @@ float4 _OS_HorizonAmb;  // what it gives a face that looks at the horizon
 float4 _OS_GroundAmb;   // what the ground bounces back up
 float4 _OS_SunSideAmb;  // what the horizon on the sun's side gives a wall facing it (a 0: the same all round)
 float4 _OS_TownBounce;  // what the town's walls and ground give back, in place of the sky they hide
+float4 _OS_SunBounce;   // the sun's light bounced up from lit ground (linear), for faces that see the ground
 
-// The town's sky map (Overstory.Scenes.SkyMap): its height from above
-TEXTURE2D(_OS_SkyMap);
-SAMPLER(sampler_OS_SkyMap);
-float4 _OS_SkyMapRect;  // xy the map's corner (world x, z), z 1 / its size, w 1 when v reads from the top
-float _OS_SkyMapOn;
+// The town's sky map (Overstory.Scenes.SkyMap) is declared with the air, in StreetSurface.hlsl
 
 // How much of a face's open sky the town leaves open, 0 to 1: the horizon the town makes round it, found in eight
 // directions out to about 60 m, each weighted by how much the face looks that way. A lane's floor at the foot of
@@ -117,7 +114,7 @@ half3 OS_SkyFor(half3 n)
 // between sky and ground with its ramp.
 half3 OS_SkyTerm(OSBake b, half3 n)
 {
-    half3 light = b.sky * (b.town * OS_SkyFor(n) + (1.0h - b.town) * _OS_TownBounce.rgb) + b.ground * _OS_GroundAmb.rgb;
+    half3 light = b.sky * (b.town * OS_SkyFor(n) + (1.0h - b.town) * _OS_TownBounce.rgb) + b.ground * (_OS_GroundAmb.rgb + _OS_SunBounce.rgb);
     return light * lerp(0.55h, 1.0h, b.open);
 }
 

@@ -122,6 +122,14 @@ Shader "Overstory/Street"
                 OS_CardClip(input.card, input.positionWS);
 
                 StreetSurface s = OS_Surface(input.uv, input.positionWS, NormalizeNormalPerPixel(input.normalWS));
+                // each lit window a little different in brightness and warmth: seeded per window (bake alpha below one),
+                // claiming nothing; everything else carries one and is left as it is
+                if (input.bake.a < 0.99h)
+                {
+                    half k = input.bake.a;
+                    half warm = frac(k * 7.13h);
+                    s.emission *= lerp(0.55h, 1.25h, k) * lerp(half3(1.0h, 0.80h, 0.58h), half3(1.0h, 0.97h, 0.92h), warm);
+                }
 
                 InputData id = (InputData)0;
                 id.positionWS = input.positionWS;

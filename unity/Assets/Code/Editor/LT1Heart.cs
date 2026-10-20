@@ -57,6 +57,8 @@ namespace Overstory.EditorTools
             ("8-watch-knoll", new Vector3(10f, -110f, 42f), new Vector3(140f, -330f, 26f), Lens35),
             // the street stop on Harbour Row's quay, along the lamps towards the Basin's head
             ("9-harbour-row-quay", new Vector3(-30f, -9.5f, 4.4f), new Vector3(150f, -7f, 4.0f), Lens28),
+            // the close stop over the Landing, down the lanes and across the Basin into the low sun of 16:00
+            ("10-into-the-light", new Vector3(40f, 60f, 21f), new Vector3(256f, -147f, 4f), Lens35),
         };
 
         /// <summary>The frames named after -frames on the command line (by number, e.g. -frames 5,8), or all.</summary>
@@ -244,6 +246,7 @@ namespace Overstory.EditorTools
                 Clouds(r, 0.2f, 0.12f, 0.25f);
                 Grading(r, 0.05f, 8f, 0f, 0.1f);
                 r.shafts = 1.6f;   // the low sun over Herring Hill, through the morning haze
+                r.beamHaze = 6f;
                 r.motes = 1.0f;
             });
             Asset<LightRig>($"{Lights}/Heart_{Hours[1]}.asset", r =>
@@ -272,13 +275,15 @@ namespace Overstory.EditorTools
                 Clock(r, 16f);
                 Sun(r, C(1.0f, 0.72f, 0.46f), 3.0f, 1f);
                 Sky(r, C(0.33f, 0.46f, 0.68f), C(0.94f, 0.80f, 0.63f), C(0.24f, 0.23f, 0.24f), 0.5f, C(1.0f, 0.62f, 0.34f), 7f, C(0.12f, 0.08f, 0.10f));
-                Shade(r, C(0.40f, 0.51f, 0.72f), C(0.50f, 0.53f, 0.62f), C(0.80f, 0.64f, 0.50f), C(0.33f, 0.29f, 0.25f), C(0.46f, 0.38f, 0.31f), 0.62f);
+                // shade two values below the light (value plans: the lane's foot the darkest, the sunlit wall the white)
+                Shade(r, C(0.40f, 0.51f, 0.72f), C(0.50f, 0.53f, 0.62f), C(0.80f, 0.64f, 0.50f), C(0.33f, 0.29f, 0.25f), C(0.46f, 0.38f, 0.31f), 0.42f);
                 Air(r, C(0.60f, 0.60f, 0.66f), C(0.76f, 0.69f, 0.66f), C(0.90f, 0.80f, 0.70f), 0.0006f, C(0.86f, 0.56f, 0.32f), 5f);
                 Haze(r, C(0.88f, 0.78f, 0.68f), 0.0025f, 16f);
                 Clouds(r, 0.32f, 0.12f, 0.35f);
                 r.wetness = 0.25f;
-                Grading(r, 0.1f, 10f, 0f, 0.2f);
-                r.shafts = 1.6f;   // low sun down the lanes and through the breaking cloud
+                Grading(r, 0.45f, 12f, 0f, 0.2f);
+                r.shafts = 1.2f;   // low sun down the lanes and through the breaking cloud
+                r.beamHaze = 3f;
                 r.motes = 1.2f;
             });
             Asset<LightRig>($"{Lights}/Heart_{Hours[3]}.asset", r =>
@@ -450,19 +455,26 @@ namespace Overstory.EditorTools
                 Clock(r, 17f + 50f / 60f);
                 Sun(r, Color.black, 0f, 0f);
                 // a sky mostly fog: blue overhead, a last dull glow low in the west, tight to where the sun went down
-                Sky(r, C(0.13f, 0.20f, 0.38f), C(0.32f, 0.37f, 0.50f), C(0.08f, 0.09f, 0.12f), 0.5f, C(0.30f, 0.17f, 0.12f), 10f, C(0.10f, 0.08f, 0.13f));
-                Shade(r, C(0.22f, 0.30f, 0.50f), C(0.24f, 0.29f, 0.42f), C(0.32f, 0.30f, 0.40f), C(0.10f, 0.10f, 0.12f), C(0.12f, 0.11f, 0.12f), 1.0f);
-                Air(r, C(0.17f, 0.25f, 0.41f), C(0.21f, 0.29f, 0.45f), C(0.29f, 0.34f, 0.49f), 0.0008f, C(0.14f, 0.09f, 0.07f), 8f);
+                Sky(r, C(0.14f, 0.22f, 0.40f), C(0.38f, 0.45f, 0.58f), C(0.08f, 0.09f, 0.12f), 0.5f, C(0.14f, 0.09f, 0.08f), 12f, C(0.06f, 0.05f, 0.08f));
+                Shade(r, C(0.22f, 0.30f, 0.50f), C(0.24f, 0.29f, 0.42f), C(0.30f, 0.30f, 0.40f), C(0.10f, 0.10f, 0.12f), C(0.12f, 0.11f, 0.12f), 0.72f);
+                Air(r, C(0.22f, 0.31f, 0.48f), C(0.27f, 0.35f, 0.52f), C(0.34f, 0.40f, 0.55f), 0.0008f, C(0.10f, 0.07f, 0.06f), 8f);
                 r.fogMaxOpacity = 0.97f;
-                // the sea fog: thick on the water, thinning over a dozen metres, so the hills stand out of it
-                Haze(r, C(0.19f, 0.28f, 0.45f), 0.019f, 12f);
+                // the sea fog: a bank, thick over the cold water and thinner over the land, thinning over a dozen metres
+                // so the hills stand out of it, broken by slow wisps, with the town's glow in it over the lit streets
+                Haze(r, C(0.26f, 0.35f, 0.53f), 0.019f, 12f);
+                r.fogBank = true;
+                r.bankOverLand = 0.3f;
+                r.bankWisps = 0.45f;
+                r.bankWispSize = 140f;
+                r.townGlow = 0.0012f;
+                r.townGlowHeight = 25f;
                 Clouds(r, 0.9f, 0.2f, 0f);
                 r.wetness = 0.75f;
                 r.lampsOn = true;
                 r.lampIntensity = 10f;
-                r.lampGlow = 24f;
+                r.lampGlow = 40f;     // the lamp's glass the one white
                 r.lampHalo = 4f;
-                r.windowGlow = 1.3f;
+                r.windowGlow = 0.6f;  // windows and shopfronts a step below the lamps
                 r.windowSpill = 0f;
                 Grading(r, 0.6f, 8f, 0f, 0.5f);
                 r.bloomThreshold = 1.3f; // above the sky, so only the lamps and lit windows glow
@@ -477,50 +489,31 @@ namespace Overstory.EditorTools
         {
             Directory.CreateDirectory(Lights + "/Moods");
             AssetDatabase.Refresh();
-            Mood("hopeless", "Nothing will change: the colour drained to a sick grey-green, flat, the blacks lifted to fog, the edges closing in.", g =>
+            // a mood moves exposure, contrast, how much colour the shade keeps, and the lens; never a light's hue, never
+            // anything that reads as weather (docs/visual-direction.md, Mood)
+            Mood("hopeless", "Nothing will change: under-exposed and flat, the shade drained of colour, the edges closing in.", g =>
             {
-                // the darks and middle drained; a lit window keeps its warmth (a fact), only dimmer
-                g.exposure = -0.2f; g.contrast = -12f; g.saturation = -28f; g.filter = C(0.94f, 1.0f, 0.93f);
-                g.lift = new Vector4(0.98f, 1.0f, 0.97f, 0.03f); g.gain = new Vector4(0.96f, 0.98f, 0.94f, -0.05f);
-                g.splitShadows = C(0.45f, 0.52f, 0.47f); g.splitHighlights = C(0.52f, 0.52f, 0.49f);
-                g.shadowSaturation = 0.15f; g.vignette = 0.34f; g.grain = 0.3f; g.bloom = -0.2f; g.bloomScatter = 0.5f;
+                g.exposure = -0.3f; g.contrast = -10f; g.shadowSaturation = 0.15f; g.vignette = 0.36f; g.grain = 0.3f; g.bloom = -0.2f; g.bloomScatter = 0.5f;
             });
-            Mood("hopeful", "It may yet turn out well: warmer highlights over a light, cool shade, lifted, a soft glow round the lights.", g =>
+            Mood("sad", "A loss: a little low, soft contrast, the colour going out of the shade.", g =>
             {
-                g.exposure = 0.25f; g.contrast = 4f; g.saturation = 10f; g.temperature = 10f;
-                g.lift = new Vector4(1.0f, 1.0f, 1.02f, 0.02f); g.gain = new Vector4(1.04f, 1.0f, 0.95f, 0.02f);
-                g.splitShadows = C(0.47f, 0.50f, 0.56f); g.splitHighlights = C(0.62f, 0.54f, 0.44f); g.splitBalance = 20f;
-                g.shadowSaturation = 0.9f; g.vignette = 0.12f; g.grain = 0.12f; g.bloom = 0.45f; g.bloomScatter = 0.85f;
+                g.exposure = -0.12f; g.contrast = -8f; g.shadowSaturation = 0.45f; g.vignette = 0.2f; g.grain = 0.15f; g.bloomScatter = 0.6f;
             });
-            Mood("grand", "The town as larger than the people in it: deep contrast, rich colour, cool shade against warm light, distance in clear layers.", g =>
+            Mood("gritty", "Hard going: hard contrast that keeps the shapes, the shade half drained, coarse grain.", g =>
             {
-                // depth, not more blue: the cool comes from the hour already, so the grade warms the lights against it
-                g.contrast = 14f; g.saturation = -4f;
-                g.lift = new Vector4(1.0f, 0.99f, 0.99f, -0.02f); g.gain = new Vector4(1.04f, 1.0f, 0.95f, 0.03f);
-                g.splitShadows = C(0.50f, 0.50f, 0.50f); g.splitHighlights = C(0.62f, 0.53f, 0.42f); g.splitBalance = 10f;
-                g.shadowSaturation = 1.0f; g.vignette = 0.25f; g.grain = 0.1f; g.bloom = 0.25f; g.bloomScatter = 0.75f;
+                g.contrast = 18f; g.shadowSaturation = 0.5f; g.vignette = 0.3f; g.grain = 0.45f; g.bloom = -0.1f; g.bloomScatter = 0.5f;
             });
-            Mood("sad", "A loss: low contrast, the colour going out of it, cool shade, the haze shown more than the light.", g =>
+            Mood("hopeful", "It may yet turn out well: opened up, the shade keeping its colour, a soft glow round the lights.", g =>
             {
-                g.exposure = -0.1f; g.contrast = -10f; g.saturation = -30f; g.temperature = -12f;
-                g.lift = new Vector4(0.98f, 1.0f, 1.03f, 0.03f);
-                g.splitShadows = C(0.44f, 0.48f, 0.56f); g.splitHighlights = C(0.50f, 0.50f, 0.52f);
-                g.shadowSaturation = 0.6f; g.vignette = 0.22f; g.grain = 0.18f; g.bloom = 0f; g.bloomScatter = 0.6f;
+                g.exposure = 0.25f; g.contrast = 2f; g.shadowSaturation = 1.0f; g.vignette = 0.1f; g.grain = 0.1f; g.bloom = 0.4f; g.bloomScatter = 0.85f;
             });
-            Mood("gritty", "Hard going: hard contrast, crushed blacks, dirty teal against rust, coarse grain.", g =>
+            Mood("grand", "The town larger than the people in it: deep contrast, rich shade, the lights against it.", g =>
             {
-                // hard, not black: the shadows keep their shapes
-                g.exposure = 0.05f; g.contrast = 16f; g.saturation = -15f;
-                g.lift = new Vector4(0.98f, 1.0f, 1.0f, -0.015f); g.gamma = new Vector4(1.0f, 0.99f, 0.97f, -0.02f);
-                g.splitShadows = C(0.43f, 0.51f, 0.52f); g.splitHighlights = C(0.60f, 0.51f, 0.42f);
-                g.shadowSaturation = 0.5f; g.vignette = 0.3f; g.grain = 0.45f; g.bloom = -0.1f; g.bloomScatter = 0.5f;
+                g.contrast = 16f; g.shadowSaturation = 1.15f; g.vignette = 0.25f; g.grain = 0.08f; g.bloom = 0.2f; g.bloomScatter = 0.75f;
             });
-            Mood("success", "It worked: bright, warm, clean whites, colour up, a generous glow.", g =>
+            Mood("success", "It worked: bright, clean, rich shade and a generous glow.", g =>
             {
-                g.exposure = 0.4f; g.contrast = 10f; g.saturation = 20f; g.temperature = 8f;
-                g.gain = new Vector4(1.03f, 1.01f, 0.97f, 0.04f);
-                g.splitShadows = C(0.48f, 0.50f, 0.54f); g.splitHighlights = C(0.60f, 0.55f, 0.46f); g.splitBalance = 25f;
-                g.shadowSaturation = 1.0f; g.vignette = 0.08f; g.grain = 0.06f; g.bloom = 0.6f; g.bloomScatter = 0.85f;
+                g.exposure = 0.4f; g.contrast = 8f; g.shadowSaturation = 1.2f; g.vignette = 0.05f; g.grain = 0.05f; g.bloom = 0.5f; g.bloomScatter = 0.85f;
             });
             AssetDatabase.SaveAssets();
         }
@@ -556,6 +549,8 @@ namespace Overstory.EditorTools
             stage.clay = true;
             stage.look = "P";
             stage.rig = rig;
+            WriteStyles();
+            stage.style = AssetDatabase.LoadAssetAtPath<Style>($"{Lights}/Styles/Style_game.asset"); // the game's style
             if (stage.skyMap != null)
                 stage.skyMap.Build();
             if (stage.townLights != null)
@@ -596,9 +591,9 @@ namespace Overstory.EditorTools
             }
         }
 
-        // -- the house style, after the masters of colour (docs/research/masters-of-colour.md) -----------------------
+        // -- the game's style, after the masters of colour (docs/research/masters-of-colour.md) -----------------------
 
-        public static readonly string[] Styles = { "nocturne", "luminous", "painted" };
+        public static readonly string[] Styles = { "nocturne", "luminous", "painted", "game" };
 
         /// <summary>Three candidate styles, to be judged beside the unstylised look on the same frames.</summary>
         static void WriteStyles()
@@ -637,6 +632,19 @@ namespace Overstory.EditorTools
                 st.shadeChroma = 1.8f; st.turningEdge = C(1.0f, 0.5f, 0.25f); st.turningEdgeStrength = 0.5f;
                 st.vibrance = 0.3f; st.rolloff = 0.35f; st.glowTint = C(1.0f, 0.82f, 0.6f); st.glow = 0.15f;
                 st.contrast = 10f;
+            });
+            StyleAsset("game", "The game's style (approved by Øystein, 20 October): painted's restraint in chroma " +
+                                "as the system, luminous's warm and cool split at the focus, nocturne's handling of the fog. Stålenhag and " +
+                                "Hopper: strong value, moderate chroma, one warm accent.", st =>
+            {
+                st.shade = C(0.10f, 0.11f, 0.22f); st.lowMiddle = C(0.26f, 0.29f, 0.40f); st.highMiddle = C(0.70f, 0.62f, 0.52f); st.light = C(1.0f, 0.90f, 0.72f);
+                st.ramp = 0.35f; st.followLight = 0.65f; st.spare = 0.85f;
+                st.valueSteps = 5; st.grouping = 0.25f; st.groupSoftness = 0.35f;
+                st.airLayers = 5; st.airLayerSoftness = 0.4f;
+                st.shadeChroma = 1.4f; st.turningEdge = C(1.0f, 0.52f, 0.28f); st.turningEdgeStrength = 0.35f;
+                st.vibrance = 0.2f; st.rolloff = 0.35f; st.chromaFocus = 0.6f;
+                st.glowTint = C(1.0f, 0.82f, 0.6f); st.glow = 0.15f;
+                st.contrast = 6f;
             });
             AssetDatabase.SaveAssets();
         }
@@ -690,7 +698,7 @@ namespace Overstory.EditorTools
                         Directory.CreateDirectory(dir);
                         foreach (var (name, pos, target, _) in Shots)
                         {
-                            if (System.Array.IndexOf(new[] { "1", "3", "4", "9" }, name.Split('-')[0]) < 0 || !Wanted(name))
+                            if (System.Array.IndexOf(new[] { "1", "3", "9", "10" }, name.Split('-')[0]) < 0 || !Wanted(name))
                                 continue;
                             urp.shadowDistance = Mathf.Clamp(Vector3.Distance(pos, target) * 2.2f, 150f, 2000f);
                             stage.shot = AssetDatabase.LoadAssetAtPath<CameraShot>($"{Dir}/Views/Heart_{name}.asset");

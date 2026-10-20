@@ -20,7 +20,7 @@ from PIL import Image, ImageDraw
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 HEART = os.path.join(ROOT, "reviews", "lt1", "heart")
 CAMERAS = ["1-over-the-roofs", "2-along-high-terrace", "3-street-gully-steps", "4-middle", "5-far",
-           "6-from-the-roads", "7-from-lookout-park", "8-watch-knoll", "9-harbour-row-quay"]
+           "6-from-the-roads", "7-from-lookout-park", "8-watch-knoll", "9-harbour-row-quay", "10-into-the-light"]
 MOODS = ["neutral", "hopeless", "sad", "gritty", "hopeful", "grand", "success"]
 NIGHT = os.path.join(HEART, "night")
 HOURS = [("0930-morning", "09:30 morning"), ("1300-drizzle", "13:00 drizzle"), ("1600-low-sun", "16:00 low sun"),
@@ -120,7 +120,7 @@ def night_overview():
 
 
 STYLE = os.path.join(HEART, "style")
-STYLES = ["none", "nocturne", "luminous", "painted"]
+STYLES = ["none", "nocturne", "luminous", "painted", "game"]
 
 
 def style_sheet(moment, camera):
@@ -144,9 +144,55 @@ def style_sheet(moment, camera):
     return out
 
 
+# five values, as a painter's notan (reviews/lt1/heart/value-plans.md): the upper bound of each, in perceptual lightness
+VALUES = (0.2, 0.38, 0.56, 0.76, 1.01)
+SHADES = (24, 70, 120, 175, 235)
+
+
+def notan(im):
+    """The frame in five values, and the share of the frame in each."""
+    import numpy as np
+    g = np.asarray(im.convert("L"), dtype=np.float32) / 255.0
+    idx = np.digitize(g, VALUES[:-1])
+    out = np.array(SHADES, dtype=np.uint8)[idx]
+    shares = [float((idx == k).mean()) for k in range(5)]
+    return Image.fromarray(out).convert("RGB"), shares
+
+
+def notan_sheet(moment, style, cameras):
+    w, h = 480, 270
+    rows = []
+    for c in cameras:
+        path = os.path.join(STYLE, moment, style, f"heart-{moment}-{style}-{c}.png")
+        if os.path.exists(path):
+            rows.append((c, Image.open(path).convert("RGB")))
+    if not rows:
+        return None
+    sheet = Image.new("RGB", (w * 2, (h + LABEL) * len(rows)), (24, 24, 26))
+    draw = ImageDraw.Draw(sheet)
+    for i, (c, im) in enumerate(rows):
+        small = im.resize((im.width // 8, im.height // 8), Image.BOX)
+        n, shares = notan(small)
+        y = i * (h + LABEL)
+        middle = shares[1] + shares[2] + shares[3]
+        draw.text((8, y + 4), f"{c}: values 1-5 {' / '.join(f'{100 * v:.0f}%' for v in shares)}; middle {100 * middle:.0f}%",
+                  fill=(230, 230, 230))
+        sheet.paste(im.resize((w, h), Image.LANCZOS), (0, y + LABEL))
+        sheet.paste(n.resize((w, h), Image.NEAREST), (w, y + LABEL))
+    out = os.path.join(STYLE, f"notan-{moment}-{style}.png")
+    sheet.save(out)
+    return out
+
+
 if __name__ == "__main__":
     import sys
-    if "style" in sys.argv[1:]:
+    if "notan" in sys.argv[1:]:
+        for moment in ("1600-low-sun", "1750-sea-fog"):
+            for style in STYLES:
+                out = notan_sheet(moment, style, ["1-over-the-roofs", "3-street-gully-steps", "9-harbour-row-quay", "10-into-the-light"])
+                if out:
+                    print(out)
+    elif "style" in sys.argv[1:]:
         for moment in ("1600-low-sun", "1750-sea-fog"):
             for c in CAMERAS:
                 out = style_sheet(moment, c)

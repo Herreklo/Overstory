@@ -50,6 +50,7 @@ class Mesh:
         self.v = []
         self.f = []
         self.marks = [(0, swatch)]  # (first face, swatch or a list of swatches face by face) as they were set
+        self.vary = {}              # face -> a seeded 0-1 for a lit window's brightness and warmth (bake alpha)
 
     def paint(self, swatch):
         """Every face added from now on sits on this swatch of the palette."""
@@ -249,6 +250,7 @@ def _massing(m, b, ground):
 # -- windows: openings in the clay, lit where someone is in (heart_layout.evening) ----------------------------------
 
 STOREY = 2.75                    # an old timber house's storey, floor to floor
+SHOP_LIGHTS = []                 # each open shopfront's light on the pavement, as a light
 PANE = dict(w=0.9, h=1.3, sill=0.85)
 
 
@@ -282,6 +284,14 @@ def windows(m, b):
         p1 = to(ax + lx * t1 + nx * out, ay + ly * t1 + ny * out)
         m.paint(swatch)
         m.quad((*p0, za), (*p1, za), (*p1, zb), (*p0, zb))
+        if swatch in ("glass_lit", "glass_shop_lit"):
+            m.vary[len(m.f) - 1] = r.random() * 0.98  # each lit room a little brighter or dimmer, warmer or cooler
+        if swatch == "glass_shop_lit" and role != "context":
+            # the shop's light on the pavement in front of it, a light of its own
+            cx, cy = to(ax + lx * (t0 + t1) / 2 + nx * 0.4, ay + ly * (t0 + t1) / 2 + ny * 0.4)
+            wx, wy = to(ax + lx * (t0 + t1) / 2 + nx * 1.4, ay + ly * (t0 + t1) / 2 + ny * 1.4)
+            SHOP_LIGHTS.append(dict(x=round(cx, 2), y=round(cy, 2), z=round(zb - 0.2, 2), kind="shop",
+                                    dx=round(wx - cx, 3), dy=round(wy - cy, 3)))
 
     def lit_runs(n, share):
         """Which of n windows on a floor are lit: rooms are lit together, so a run of one to three."""
@@ -593,6 +603,10 @@ def make_object(m, coll):
     names = sorted(set(m.swatches()))
     ids = np.array([names.index(n) for n in m.swatches()], dtype=np.int32)
     me.attributes.new("swatch", "INT", "FACE").data.foreach_set("value", ids)
+    vary = np.ones(len(m.f), dtype=np.float32)
+    for k, val in m.vary.items():
+        vary[k] = val
+    me.attributes.new("vary", "FLOAT", "FACE").data.foreach_set("value", vary)
     me.validate()
     me.update()
     # every corner of a face on its swatch's centre
@@ -608,13 +622,16 @@ def make_object(m, coll):
     uv = me.uv_layers.new(name="palette")
     uv.data.foreach_set("uv", centres[ids[loop_poly]].ravel())
     me.attributes.remove(me.attributes["swatch"])
+    vary = np.ones(len(me.polygons), dtype=np.float32)
+    me.attributes["vary"].data.foreach_get("value", vary)
+    me.attributes.remove(me.attributes["vary"])
     # what each face sees, from its facing: up-facing faces see sky, down-facing see ground
     normals = np.zeros(len(me.polygons) * 3)
     me.polygons.foreach_get("normal", normals)
     nz = normals.reshape(-1, 3)[:, 2]
     attr = me.color_attributes.new("bake", "FLOAT_COLOR", "CORNER")
     sky = 0.5 + 0.5 * nz[loop_poly]
-    cols = np.stack([sky, 1.0 - sky, np.ones_like(sky), np.ones_like(sky)], -1).astype(np.float32)
+    cols = np.stack([sky, 1.0 - sky, np.ones_like(sky), vary[loop_poly]], -1).astype(np.float32)
     attr.data.foreach_set("color", cols.ravel())
     me.color_attributes.active_color = attr
     ob = bpy.data.objects.new(m.name, me)
@@ -645,6 +662,7 @@ def build(unity=None):
     coll = bpy.data.collections.new(COLLECTION)
     scene.collection.children.link(coll)
     report = {}
+    SHOP_LIGHTS.clear()
 
     # the ground: the heart, carved; the ring round it; the far land and the Roads
     X, Y = grid(HX0, HY0, HX1, HY1, 1.5)
@@ -744,6 +762,7 @@ def lamp_lights():
             ax, ay = d.get("arm", (0.0, 0.0))
             out.append(dict(x=round(d["x"] + 1.5 * ax, 2), y=round(d["y"] + 1.5 * ay, 2), z=round(d["z"] + d["h"] - 0.45, 2),
                             kind=d.get("light", "sodium")))
+    out += SHOP_LIGHTS
     for b in H.BUILDINGS:
         colour = dict(H.BEACONS).get(b["name"])
         if colour:

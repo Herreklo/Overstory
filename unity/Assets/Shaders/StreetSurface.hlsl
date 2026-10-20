@@ -160,12 +160,17 @@ void OS_CardClip(float2 card, float3 positionWS)
 float4 _OS_Clouds;      // x cover (0 none, 1 overcast), y feature size (m), z softness, w layer height (m)
 float4 _OS_CloudDrift;  // xy how far the wind has moved the layer (m), from the scene's clock
 
-// Cloud density at a point on the layer (world xz, metres), 0..1, before cover is applied.
+// Cloud density at a point on the layer (world xz, metres), 0..1, before cover is applied. Shaped as a painter
+// simplifies a sky: big billows (the field warped by a slower one), stretched along the wind so the layer reads as
+// bands foreshortening to the horizon, a little finer detail at their edges. The same field casts the shadows.
 float OS_CloudField(float2 layerXZ, float detail)
 {
     float2 q = (layerXZ + _OS_CloudDrift.xy) / max(_OS_Clouds.y, 1.0);
-    float c = 0.55 * OS_Noise(q) + 0.3 * OS_Noise(q * 2.13 + 7.7) + 0.15 * OS_Noise(q * 4.7 - 3.1);
-    return c + detail * (OS_Noise(q * 11.3 + 1.9) - 0.5) * 0.05;
+    q = float2(dot(q, float2(0.906, 0.423)), dot(q, float2(-0.423, 0.906)) * 2.2);
+    float2 w = float2(OS_Noise(q * 0.5 + 11.3), OS_Noise(q * 0.5 - 7.1)) - 0.5;
+    q += w * 1.1;
+    float c = 0.5 * OS_Noise(q) + 0.28 * OS_Noise(q * 2.07 + 5.3) + 0.14 * OS_Noise(q * 4.3 - 2.7) + 0.08 * OS_Noise(q * 8.9 + 1.3);
+    return c + detail * (OS_Noise(q * 17.0 + 3.7) - 0.5) * 0.06;
 }
 
 // How much cloud there is at a point on the layer, 0 clear to 1 cloud, with the rig's cover and softness.
@@ -173,6 +178,77 @@ half OS_CloudCover(float c, float extraSoft)
 {
     float soft = _OS_Clouds.z + extraSoft;
     return (half)smoothstep(1.0 - _OS_Clouds.x - soft, 1.0 - _OS_Clouds.x + soft, c);
+}
+
+// The town's sky map (Overstory.Scenes.SkyMap): its height from above. The shade uses it for the sky each point
+// sees (StreetLooks.hlsl, OS_TownSky); the fog for where land is under it.
+TEXTURE2D(_OS_SkyMap);
+SAMPLER(sampler_OS_SkyMap);
+float4 _OS_SkyMapRect;  // xy the map's corner (world x, z), z 1 / its size, w 1 when v reads from the top
+float _OS_SkyMapOn;
+
+// The town's glow (Overstory.Scenes.TownLights): its lamps and lit shops summed and spread on a map from above,
+// so fog over lit streets glows from below
+TEXTURE2D(_OS_GlowMap);
+SAMPLER(sampler_OS_GlowMap);
+float4 _OS_GlowRect;    // xy the map's corner (world x, z), z 1 / its size
+float4 _OS_GlowParams;  // x strength (0 none), y how high the glow reaches into the fog (m)
+
+// The fog as a bank: x 1 on, y its density over land against over water, z how strongly wisps break it, w their size (m)
+float4 _OS_Bank;
+
+// 1 over land or buildings, 0 over water, from the sky map; water where there is no map
+float OS_LandUnder(float2 xz)
+{
+    if (_OS_SkyMapOn < 0.5)
+        return 0.0;
+    float2 uv = (xz - _OS_SkyMapRect.xy) * _OS_SkyMapRect.z;
+    if (any(uv < 0.0) || any(uv > 1.0))
+        return 0.0;
+    uv.y = _OS_SkyMapRect.w > 0.5 ? 1.0 - uv.y : uv.y;
+    float h = SAMPLE_TEXTURE2D_LOD(_OS_SkyMap, sampler_OS_SkyMap, uv, 0).r;
+    return smoothstep(0.3, 2.0, h);
+}
+
+float3 OS_GlowAt(float3 p)
+{
+    float2 uv = (p.xz - _OS_GlowRect.xy) * _OS_GlowRect.z;
+    if (_OS_GlowParams.x <= 0.0 || any(uv < 0.0) || any(uv > 1.0))
+        return 0;
+    return SAMPLE_TEXTURE2D_LOD(_OS_GlowMap, sampler_OS_GlowMap, uv, 0).rgb * (_OS_GlowParams.x * exp(-max(p.y - 4.0, 0.0) / max(_OS_GlowParams.y, 1.0)));
+}
+
+// The low haze's density at a point: thinning with height; as a bank, thicker over the water than the land, broken
+// by slow wisps that the scene's clock moves
+float OS_HazeDensity(float3 p)
+{
+    float base = _OS_Haze.x * exp(-max(p.y, 0.0) / max(_OS_Haze.y, 1.0));
+    if (_OS_Bank.x < 0.5)
+        return base;
+    float2 q = p.xz / max(_OS_Bank.w, 1.0) + float2(0.013, 0.007) * _OS_Time;
+    float wisp = 1.0 + _OS_Bank.z * ((OS_Noise(q) * 2.0 - 1.0) + 0.5 * (OS_Noise(q * 2.7 + 3.1) * 2.0 - 1.0));
+    return base * lerp(1.0, _OS_Bank.y, OS_LandUnder(p.xz)) * max(wisp, 0.15);
+}
+
+// The haze along a ray: its optical depth, and the town's glow it scatters towards the camera
+void OS_HazeMarch(float3 o, float3 dir, float dist, out float tau, out float3 glow)
+{
+    const int N = 12;
+    tau = 0.0;
+    glow = 0;
+    float prev = 0.0;
+    [loop]
+    for (int i = 0; i < N; i++)
+    {
+        float f = (i + 0.5) / N;
+        float s = dist * f * f;
+        float ds = dist * ((i + 1.0) * (i + 1.0) - i * i) / (N * N);
+        float3 p = o + dir * s;
+        float sigma = OS_HazeDensity(p);
+        glow += exp(-tau) * sigma * OS_GlowAt(p) * ds;
+        tau += sigma * ds;
+        prev = s;
+    }
 }
 
 // The mean density along a straight path through air that thins exponentially with height (k per metre, from the
@@ -192,7 +268,12 @@ half3 OS_Atmosphere(half3 colour, float3 positionWS)
     float3 v = positionWS - _WorldSpaceCameraPos;
     float d = length(v);
     float tauAir = _OS_FogParams.x * d * OS_MeanDensity(v, max(_OS_FogParams.y, 1e-4), _OS_FogParams.z);
-    float tauHaze = _OS_Haze.x * d * OS_MeanDensity(v, 1.0 / max(_OS_Haze.y, 1.0), 0.0);
+    float tauHaze;
+    float3 glow = 0;
+    if (_OS_Bank.x > 0.5)
+        OS_HazeMarch(_WorldSpaceCameraPos, v / max(d, 1e-4), min(d, 3000.0), tauHaze, glow);
+    else
+        tauHaze = _OS_Haze.x * d * OS_MeanDensity(v, 1.0 / max(_OS_Haze.y, 1.0), 0.0);
     float hidden = min(1.0 - exp(-(tauAir + tauHaze)), _OS_FogParams.w);
     if (_OS_AirBands > 0.5)
     {
@@ -207,7 +288,7 @@ half3 OS_Atmosphere(half3 colour, float3 positionWS)
     half3 air = lerp(_OS_FogColor.rgb, _OS_FogMid.rgb, smoothstep(0.0, max(_OS_FogMid.a, 1.0), d));
     air = lerp(air, _OS_FogFar.rgb, smoothstep(_OS_FogMid.a, max(_OS_FogFar.a, _OS_FogMid.a + 1.0), d));
     air = lerp(air, _OS_HazeColor.rgb, tauHaze / max(tauAir + tauHaze, 1e-5)) + _OS_FogSun.rgb * sun;
-    return lerp(colour, air, hidden);
+    return lerp(colour, air, hidden) + glow;
 }
 
 #endif

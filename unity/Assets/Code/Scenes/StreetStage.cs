@@ -27,7 +27,7 @@ namespace Overstory.Scenes
         public TownLights townLights;
         [Tooltip("Motes in the air round the camera, lit by sun and lamps. Optional.")]
         public AirMotes motes;
-        [Tooltip("The house style: how far colour, value and air are pushed, between the hour's grade and the mood. None: unstylised.")]
+        [Tooltip("The game's style: how far colour, value and air are pushed, between the hour's grade and the mood. None: unstylised.")]
         public Style style;
         [Tooltip("The mood: how the scene is filmed, over the hour's own grade. None: the hour as it is.")]
         public Grade mood;
@@ -112,7 +112,8 @@ namespace Overstory.Scenes
             if (look == "B") Shader.EnableKeyword("_OS_LOOK_B"); else Shader.DisableKeyword("_OS_LOOK_B");
             if (look == "D") Shader.EnableKeyword("_OS_LOOK_D"); else Shader.DisableKeyword("_OS_LOOK_D");
             if (look == "P") Shader.EnableKeyword("_OS_LOOK_P"); else Shader.DisableKeyword("_OS_LOOK_P");
-            Shader.SetGlobalVector("_OS_Paint", new Vector4(wrap, muting, grime, brush));
+            // clay is plain: no brushwork, so light is judged alone
+            Shader.SetGlobalVector("_OS_Paint", new Vector4(wrap, muting, grime, clay ? 0f : brush));
             var g = grimeColour.linear;
             Shader.SetGlobalVector("_OS_Grime", new Vector4(g.r, g.g, g.b, 1f));
             bool print = look == "D";
@@ -155,7 +156,7 @@ namespace Overstory.Scenes
             Shader.SetGlobalVector("_OS_Key2", Follow(st.highMiddle, Color.Lerp(sky, lit, 0.7f), f));
             Shader.SetGlobalVector("_OS_Key3", Follow(st.light, lit, f));
             Shader.SetGlobalVector("_OS_PaletteParams", new Vector4(st.ramp, st.spare, st.vibrance, st.rolloff));
-            Shader.SetGlobalVector("_OS_Grouping", new Vector4(st.valueSteps, st.grouping, st.groupSoftness, 0f));
+            Shader.SetGlobalVector("_OS_Grouping", new Vector4(st.valueSteps, st.grouping, st.groupSoftness, st.chromaFocus));
         }
 
         /// <summary>A key of the style's ramp moved towards the hour's colour, at the key's own lightness.</summary>
@@ -252,6 +253,9 @@ namespace Overstory.Scenes
             var side = Linear(r.ambientSunSide) * r.ambientIntensity;
             Shader.SetGlobalVector("_OS_SunSideAmb", new Vector4(side.x, side.y, side.z, r.ambientSunSide.a > 0f ? 1f : 0f));
             Shader.SetGlobalVector("_OS_TownBounce", Linear(r.townBounce) * r.ambientIntensity);
+            // the sun bounced up from lit ground: ground of about a third albedo, about half of it in sun in a town
+            float lift = Mathf.Max(0f, Mathf.Sin(r.sunElevation * Mathf.Deg2Rad));
+            Shader.SetGlobalVector("_OS_SunBounce", Linear(r.sunColour) * (r.sunIntensity * lift * 0.33f * 0.5f));
             var skyLight = Linear(r.ambientSky);
             Shader.SetGlobalVector("_OS_Rim", new Vector4(skyLight.x, skyLight.y, skyLight.z, rim));
             // the air far off; a rig without a far distance keeps one colour of air
@@ -273,7 +277,9 @@ namespace Overstory.Scenes
             Shader.SetGlobalVector("_OS_HazeColor", new Vector4(hz.x, hz.y, hz.z, 1f));
             Shader.SetGlobalVector("_OS_Haze", new Vector4(r.hazeDensity, r.hazeHeight, 0f, 0f));
             // shafts of sun through the shadow map replace the sun's unshadowed glow in the air (SunBeams.shader)
-            Shader.SetGlobalVector("_OS_SunBeams", new Vector4(r.shafts, 700f, 0.7f, 0f));
+            Shader.SetGlobalVector("_OS_SunBeams", new Vector4(r.shafts, 700f, 0.7f, Mathf.Max(r.beamHaze, 1f)));
+            Shader.SetGlobalVector("_OS_Bank", new Vector4(r.fogBank ? 1f : 0f, r.bankOverLand, r.bankWisps, r.bankWispSize));
+            Shader.SetGlobalVector("_OS_GlowParams", new Vector4(r.lampsOn ? r.townGlow : 0f, r.townGlowHeight, 0f, 0f));
             if (motes != null)
                 motes.Apply(r);
             var fs = Linear(r.fogSunColour) * (r.shafts > 0f ? 0f : 1f);
@@ -325,22 +331,12 @@ namespace Overstory.Scenes
             var adj = Get<ColorAdjustments>();
             adj.postExposure.Override(r.postExposure + (st ? st.exposure : 0f) + (m ? m.exposure : 0f));
             adj.contrast.Override(Mathf.Clamp(r.contrast + (st ? st.contrast : 0f) + (m ? m.contrast : 0f), -100f, 100f));
-            adj.saturation.Override(Mathf.Clamp(r.saturation + (st ? st.saturation : 0f) + (m ? m.saturation : 0f), -100f, 100f));
-            adj.colorFilter.Override(m ? r.colourFilter * m.filter : r.colourFilter);
+            adj.saturation.Override(Mathf.Clamp(r.saturation + (st ? st.saturation : 0f), -100f, 100f));
+            adj.colorFilter.Override(r.colourFilter);
 
             var wb = Get<WhiteBalance>();
-            wb.temperature.Override(Mathf.Clamp(r.temperature + (m ? m.temperature : 0f), -100f, 100f));
-            wb.tint.Override(Mathf.Clamp(r.tint + (m ? m.tint : 0f), -100f, 100f));
-
-            var lgg = Get<LiftGammaGain>();
-            lgg.lift.Override(m ? m.lift : new Vector4(1, 1, 1, 0));
-            lgg.gamma.Override(m ? m.gamma : new Vector4(1, 1, 1, 0));
-            lgg.gain.Override(m ? m.gain : new Vector4(1, 1, 1, 0));
-
-            var split = Get<SplitToning>();
-            split.shadows.Override(m ? m.splitShadows : Color.grey);
-            split.highlights.Override(m ? m.splitHighlights : Color.grey);
-            split.balance.Override(m ? m.splitBalance : 0f);
+            wb.temperature.Override(r.temperature);
+            wb.tint.Override(r.tint);
 
             var curves = Get<ColorCurves>();
             float dark = m ? m.shadowSaturation : 1f;
@@ -357,7 +353,7 @@ namespace Overstory.Scenes
             var vig = Get<Vignette>();
             vig.intensity.Override(m ? m.vignette : 0f);
             vig.smoothness.Override(m ? m.vignetteSmoothness : 0.45f);
-            vig.color.Override(m ? m.vignetteColour : Color.black);
+            vig.color.Override(Color.black);
 
             var grain = Get<FilmGrain>();
             grain.type.Override(FilmGrainLookup.Medium3);

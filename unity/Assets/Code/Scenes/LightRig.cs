@@ -72,6 +72,19 @@ namespace Overstory.Scenes
         public float hazeDensity = 0f;
         [Tooltip("The height in metres over which the haze thins to a third.")]
         public float hazeHeight = 20f;
+        [Tooltip("The haze lies as a bank: thick over the water, thinner over land, broken by wisps.")]
+        public bool fogBank = false;
+        [Tooltip("The bank's density over land against over water.")]
+        [Range(0, 1)] public float bankOverLand = 0.35f;
+        [Range(0, 1)] public float bankWisps = 0.45f;
+        [Tooltip("The size of a wisp, in metres.")]
+        public float bankWispSize = 140f;
+        [Tooltip("How strongly the town's lamps and lit shops glow in the fog over the streets.")]
+        public float townGlow = 0f;
+        [Tooltip("How high that glow reaches into the fog, in metres.")]
+        public float townGlowHeight = 25f;
+        [Tooltip("For the sun's beams: how much more the air scatters than it hides (dust, humidity; a cinematographer's haze).")]
+        public float beamHaze = 1f;
 
         [Header("Light rays")]
         [Tooltip("How strongly the sky's light streams past what stands against it, looking towards the sun.")]

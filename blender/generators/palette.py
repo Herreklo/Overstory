@@ -61,11 +61,11 @@ SWATCHES = {
     "metal_post": (44, 56, 50),
     "metal_galv": (146, 150, 148),
     "lamp_off": (198, 200, 194),
-    "lamp_warm": (255, 206, 138),
-    "lamp_mercury": (214, 236, 232),
-    "lamp_sodium": (255, 164, 72),
+    "lamp_warm": (255, 214, 160),     # incandescent: warm white
+    "lamp_mercury": (188, 236, 224),  # mercury vapour: blue-green
+    "lamp_sodium": (255, 126, 30),    # high-pressure sodium: deep orange
     "glass_shop_lit": (240, 196, 124),
-    "sign_lit": (250, 236, 206),
+    "sign_lit": (200, 172, 128),      # a lit sign, dimmer than the shop under it
     # the street: granite setts in three tones, concrete flags, kerb, quay wall, grass
     "setts_light": (118, 116, 112),
     "setts_mid": (106, 104, 100),

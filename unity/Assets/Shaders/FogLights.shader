@@ -36,14 +36,11 @@ Shader "Overstory/FogLights"
             StructuredBuffer<float4> _OS_FogLampColour;  // rgb its light (linear, intensity in), w unused
             int _OS_FogLampCount;
             float _OS_FogLampStrength;                   // the rig's halo strength; 0 turns the pass off
-            float4 _OS_FogParams;                        // the air: x density at its base, y falloff per metre, z base height
-            float4 _OS_Haze;                             // the low haze: x density at sea level, y the height it thins over
+            #include "StreetSurface.hlsl"                // the air: its height fog and the haze or bank
 
-            float AirDensity(float y)
+            float AirDensity(float3 p)
             {
-                float air = _OS_FogParams.x * exp(-max(_OS_FogParams.y, 1e-4) * (y - _OS_FogParams.z));
-                float haze = _OS_Haze.x * exp(-max(y, 0.0) / max(_OS_Haze.y, 1.0));
-                return air + haze;
+                return _OS_FogParams.x * exp(-max(_OS_FogParams.y, 1e-4) * (p.y - _OS_FogParams.z)) + OS_HazeDensity(p);
             }
 
             half4 Frag(Varyings input) : SV_Target
@@ -76,7 +73,7 @@ Shader "Overstory/FogLights"
                     float h = sqrt(h2);
                     if (h > lp.w || s0 < -lp.w)
                         continue;
-                    float sigma = AirDensity(lp.y);
+                    float sigma = AirDensity(lp.xyz);
                     float a0 = atan(-s0 / h), a1 = atan((t - s0) / h);
                     const int N = 10;
                     const float g = 0.85, g2 = g * g;
@@ -97,6 +94,18 @@ Shader "Overstory/FogLights"
                     // soft edge at the reach, so no lamp's glow ends in a line
                     float edge = saturate(1.0 - h / lp.w);
                     sum += _OS_FogLampColour[i].rgb * (sigma / h * acc * da * edge * edge);
+
+                    // light scattered many times on its way to the camera: the lamp's glow spreads wider and dimmer the
+                    // more fog lies between, a halo that grows with distance (the air's point-spread)
+                    float dl = length(d);
+                    if (t > dl - 1.0)
+                    {
+                        float tau = sigma * dl;
+                        float w = 0.012 + 0.09 * min(tau, 3.0);                 // its angular width, radians
+                        float theta = acos(clamp(dot(v, d / dl), -1.0, 1.0));
+                        float spread = exp(-theta * theta / (2.0 * w * w)) / (2.0 * PI * w * w);
+                        sum += _OS_FogLampColour[i].rgb * ((1.0 - exp(-tau)) * exp(-0.35 * tau) * spread / (dl * dl) * 0.35);
+                    }
                 }
                 colour.rgb += sum * _OS_FogLampStrength;
                 return colour;

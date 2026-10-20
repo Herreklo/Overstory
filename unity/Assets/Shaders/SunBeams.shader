@@ -32,14 +32,12 @@ Shader "Overstory/SunBeams"
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Shadows.hlsl"
             #include "StreetSurface.hlsl"   // the air's parameters, the cloud layer
 
-            float4 _OS_SunBeams;   // x strength (0 off), y how far the march reaches (m), z forward scattering g
+            float4 _OS_SunBeams;   // x strength (0 off), y how far the march reaches (m), z forward scattering g, w beam haze
             float4 _OS_SunCol;     // the sun's light (linear, intensity in)
 
-            float AirDensity(float y)
+            float AirDensity(float3 p)
             {
-                float air = _OS_FogParams.x * exp(-max(_OS_FogParams.y, 1e-4) * (y - _OS_FogParams.z));
-                float haze = _OS_Haze.x * exp(-max(y, 0.0) / max(_OS_Haze.y, 1.0));
-                return air + haze;
+                return _OS_FogParams.x * exp(-max(_OS_FogParams.y, 1e-4) * (p.y - _OS_FogParams.z)) + OS_HazeDensity(p);
             }
 
             // how much sun reaches a point through the cloud layer (the same pattern whose shadows lie on the town)
@@ -88,10 +86,11 @@ Shader "Overstory/SunBeams"
                     float ds = s - prev;
                     prev = s;
                     float3 p = o + v * s;
-                    float sigma = AirDensity(p.y);
+                    float sigma = AirDensity(p);
                     float lit = MainLightRealtimeShadow(TransformWorldToShadowCoord(p)) * CloudLight(p, toSun);
                     depth += sigma * ds;
-                    sum += exp(-depth) * sigma * lit * ds;
+                    // what the air scatters for beams can be more than what it hides: a set is hazed for the light
+                    sum += exp(-depth) * sigma * _OS_SunBeams.w * lit * ds;
                 }
                 colour.rgb += _OS_SunCol.rgb * (sum * phase * _OS_SunBeams.x);
                 return colour;
