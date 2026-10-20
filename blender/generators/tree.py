@@ -45,7 +45,7 @@ import tree_growth as G  # noqa: E402
 # sized for a twig's foliage on a grown tree (clump_full: the height at which they reach full size).
 PARTS = {
     "birch": dict(sag=0.05, taper=0.55, occlusion=0.05, seam=0.3, atlas="lobes", lobe=0.8, lobe_gap=0.3, lose_tips=40, hang=False, card=(0.50, 0.48), card_u=(0.03, 0.97), cells=4,
-                  per_node=2, along=1, droop=0.7, leaf_years=999, leaf_tips=24, draw_tips=2.5, draw_tips_per_m=0.45, winter_tips=0.8, reach=99.0, hang_reach=0.3,
+                  per_node=2, along=1, droop=0.7, leaf_years=999, leaf_tips=24, draw_tips=2.5, draw_tips_per_m=0.9, winter_tips=3.0, reach=99.0, hang_reach=0.3,
                   bark=(0.30, 0.60), max_cards=4200, grow_to=80),
     "spruce": dict(card=(0.60, 0.40), cells=4, per_node=2, droop=0.25, leaf_years=7, leaf_tips=30, draw_tips=3.0, draw_tips_per_m=0.45,
                    bark=(0.30, 0.50), max_cards=8000, grow_to=100),
@@ -62,19 +62,24 @@ def h01(*k):
     return (x >> 11) / float(1 << 53)
 
 
-def drawn_radius(r):
-    """The pipe model's radius drawn: true for limbs and the trunk, thinned for twigs, which the model holds a little
-    thick because each modelled tip stands for a bundle of real shoots."""
-    return np.where(r > 0.02, r, r * (0.4 + 0.6 * r / 0.02))
+def drawn_radius(r, paint=0.0):
+    """The pipe model's radius drawn: true for the trunk, thinned for twigs, which the model holds a little thick
+    because each modelled tip stands for a bundle of real shoots; and with the painterly push, the scaffold limbs
+    drawn heavier than life (a painter's limbs carry their weight)."""
+    out = np.where(r > 0.02, r, r * (0.4 + 0.6 * r / 0.02))
+    limb = np.clip((r - 0.015) / 0.05, 0.0, 1.0)
+    return out * (1.0 + 0.7 * paint * limb)
 
 
-def read(species, seed, age, quality, events=()):
+def read(species, seed, age, quality, events=(), exposure=0.0, origin="planted"):
     parts = PARTS[species]
-    t = G.cached(species, seed, max(parts["grow_to"], age), quality, events)
+    t = G.cached(species, seed, max(parts["grow_to"], age), quality, events, exposure, origin)
     alive = (t["born"] <= age) & ((t["died"] < 0) | (t["died"] > age))
     pipe = t["radius"][:, age].astype(np.float64)
+    paint = float(t["paint"]) if "paint" in t else 0.0
+    paint_n = np.where(t["order"] >= 1, paint, 0.0)              # the push weighs the limbs, never the trunk
     tl = dict(parent=t["parent"], start=t["start"].astype(np.float64), end=t["end"].astype(np.float64),
-              born=t["born"], order=t["order"], r=drawn_radius(pipe), alive=alive,
+              born=t["born"], order=t["order"], r=drawn_radius(pipe, paint_n), alive=alive,
               tips=(pipe / G.SPECIES[species]["tip_radius"]) ** G.SPECIES[species]["pipe"],
               cut=np.where((t["cut"] >= 0) & (t["cut"] <= age), age - t["cut"], -1) if "cut" in t else np.full(len(alive), -1))
     sag(tl, pipe, parts, G.SPECIES[species]["tip_radius"])
@@ -912,12 +917,12 @@ def make(name, V, F, UV0, UV1, COL=None, normals=None, smooth=True):
     return ob
 
 
-def build(species, seed, age, quality=1.0, unity=None, events=()):
+def build(species, seed, age, quality=1.0, unity=None, events=(), exposure=0.0, origin="planted"):
     import bpy
     parts = PARTS[species]
     for ob in list(bpy.data.objects):
         bpy.data.objects.remove(ob, do_unlink=True)
-    tl = read(species, seed, age, quality, events)
+    tl = read(species, seed, age, quality, events, exposure, origin)
     H = float(tl["end"][tl["alive"]][:, 2].max())
     vols = None
     if parts.get("atlas") == "lobes":
@@ -961,7 +966,8 @@ def build(species, seed, age, quality=1.0, unity=None, events=()):
     for j, p in enumerate(pts):
         kd.insert(p, j)
     kd.balance()
-    name = f"tree_{species}_s{seed}_a{age}" + "".join(f"_{e[0]}{e[1]}" for e in events)
+    name = (f"tree_{species}_s{seed}_a{age}" + "".join(f"_{e[0]}{e[1]}" for e in events)
+            + (f"_x{int(round(exposure * 10))}" if exposure > 0 else "") + ("_wild" if origin != "planted" else ""))
     ob_b = make(name + "_branches", BV, BF, BUV0, BUV1)
     me = ob_b.data
     loops = np.zeros(len(me.loops), dtype=np.int64)
@@ -1010,7 +1016,10 @@ if __name__ == "__main__":
     age = int(argv[2]) if len(argv) > 2 else 30
     quality = float(argv[3]) if len(argv) > 3 else 1.0
     unity = argv[4] if len(argv) > 4 and argv[4] != "-" else os.path.join(HERE, "..", "..", "unity")
-    # events, as cut:YEAR:N:MINHEIGHT
+    # then any of: cut:YEAR:N:MINHEIGHT (an event), exposure:E (0 sheltered to 1 the open coast), self-seeded
+    rest = argv[5:]
     events = tuple((e.split(":")[0], int(e.split(":")[1]), int(e.split(":")[2]), float(e.split(":")[3]))
-                   for e in argv[5:])
-    build(species, seed, age, quality, unity, events)
+                   for e in rest if e.startswith("cut:"))
+    exposure = next((float(e.split(":")[1]) for e in rest if e.startswith("exposure:")), 0.0)
+    origin = "self-seeded" if "self-seeded" in rest else "planted"
+    build(species, seed, age, quality, unity, events, exposure, origin)
