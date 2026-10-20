@@ -56,6 +56,7 @@ The assembler picks kit pieces slot by slot (footprint, facade, roof, shopfront,
 ## Light and shading
 
 - The look lives in our own shading model, not in engine defaults: light ramps, gradient fog by distance, a ground-bounce colour, and a colour script per time of day and weather.
+- One shade rule for every surface (`StreetLooks.hlsl`): shade is the surface's own pigment times the light falling on it (the sky term, the sun, bounce, lamps), and how much of the sky's colour shade takes is the light's setting (`_OS_ShadowChroma`, from the stage and style), never a material's. No per-material shadow tint, no shade hue shifted per object, no colour held against the light at dusk (SEASON's lesson, `docs/research/colour-and-shading.md`, rule 1). A material sets its pigment and its form; the light sets everything else. Mud on grey days is answered by the pigment's own strength and by value, never by a tint. Test any light or colour change in drizzle, low sun and blue hour.
 - It must not depend on true real-time global illumination. URP's real-time GI is a preview; if it becomes stable it is an extra layer on top.
 - No baked lightmaps for generated places: they change.
 - Every look is checked in morning, grey afternoon and evening light.

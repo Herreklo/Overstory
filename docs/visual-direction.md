@@ -99,7 +99,7 @@ One style, its rules shared by every element; each element learned from its own 
 - One focal point per frame, where the strongest value contrast, the hardest edge and the accent colour meet.
 - A muted base, with light and air giving the colour.
 - Painted rather than textured surfaces: calm areas and detail at edges and junctions. A brush mark has a size in the world, the same on every object, and never tiles visibly.
-- One shading model and one air for everything.
+- One shading model and one air for everything: shade takes its colour from the light, never from the object (no material carries its own shadow tint).
 - Fewer things, each done well.
 
 **Lead reference per element:**
