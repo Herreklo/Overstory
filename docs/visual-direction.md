@@ -23,6 +23,13 @@ The direction is painterly realism. Simon Stålenhag leads: real proportions, mu
 
 Mostly painted timber, with brick, stone and concrete where era, purpose, wealth or rules put them: brick canneries and a masonry belt from fire rules, stone banks and churches, functionalist render, oil-era concrete and glass. Landmarks tend to be the masonry ones. Each material ages in its own way.
 
+## Ground and nature
+
+- The town stands on rock and climbs. Height difference is everywhere: lanes in flights of steps, houses on plinths that take up the slope, walls holding yards, bedrock breaking through where it was too hard to cut. Level ground is made (quays, yards, terraces) and shows it.
+- Nature is in every frame, not decoration around the town: bedrock, heath, moss, grass in the joints, self-seeded trees.
+- Nature has a history, like a building, and changes with the years. Trees grow from their planting or seeding year; heath left ungrazed goes to juniper and birch; an empty yard grows over within a few summers; a busy step wears smooth while its quiet edge grows moss; lichen size shows how long stone has been bare (`docs/research/nature.md`). The same rule as for buildings holds: what reads as history must be a fact with a date.
+- Rock is built in deliberate planes (Another World); ground cover in clusters with edges, never noise.
+
 ## Light and colour
 
 - Light is the identity. The coast's daylight (grey drizzle, low winter sun, a blue hour that lasts, and hot summer days of thirty degrees with warm, golden light) and the light of the night (warm windows, street lamps by era, neon, stage light in haze). Warm light belongs to this place as much as cold; the look is not "Nordic" grey.
@@ -86,7 +93,7 @@ One style, its rules shared by every element; each element learned from its own 
 
 **Final quality is defined before it is built.** Three to five target frames, painted over our own Unity renders of the beauty corner, show what final looks like. A paintover may change light, air, surfaces, detail and the forms of parts; it may not change a fact (which houses stand there, their eras and histories). Everything built so far, the house generator included, is test quality: programmer art, boxes from Python. Final quality is a render that holds up beside its target frame from the same camera.
 
-**The beauty corner** is where final quality is reached first: one lane, five houses, two trees, a wall and a lamp, in one light, from fixed cameras. Nothing scales to the town until the corner holds up beside its targets. Every new element is judged in the corner, so it belongs with the rest.
+**The beauty corner** is where final quality is reached first: one lane over rock, five houses, two trees, the ground's own cover, a wall and a lamp, in one light, from fixed cameras. Nothing scales to the town until the corner holds up beside its targets. Every new element is judged in the corner, so it belongs with the rest.
 
 **Parts are made with care, one at a time.** Each part (house trims, windows and doors, a tree, a rock) is built in Blender against its reference board, shaped by eye rather than written as quick generator code. The generator chooses, fits, places and seeds approved parts; it does not invent their geometry. Because the world changes (villages grow into towns and cities, people open shops and cafés in old ground floors and close them, houses are extended and reclad), a part is made to fit the assembly rules: its era, its sockets and the range of sizes it must fit. A part that only fits one house in one frame is not done. The process, per part: a reference board (`docs/references/<element>/`, images for private study only); a note on what makes the references work; a written target Øystein agrees with; the part, built; a sheet in the corner's light, in greyscale and at thumbnail size; checks and a fresh reviewer; Øystein's judgement. Only then does it join the corner.
 
