@@ -4,6 +4,21 @@ The first town: its land, its areas, how they meet and what happens in each. It 
 
 The plan is part of the setting pack. It sets the land and the building history. Who runs a pub, who lives where and what opens or closes are the engine's facts; until the engine supplies them, fixtures author them, and the plan only says what a place offers (cheap old warehouses by the water draw bars, as Jacobs and Zukin found).
 
+## The first of many
+
+This is the starter town. Later come other towns, bigger cities and metropolises on the scale of London or New York, each its own setting pack on the same engine and the same look. The starter town is where the method is proved, so nothing in it may be hard-coded to a timber harbour town.
+
+**What carries over to every later place:**
+- the method: the land, a script of eras, areas with their own grain, a heart laid out by hand in clay, districts round it grown by rules and checked in clay;
+- the look's rules, light, air and shading (`docs/visual-direction.md`);
+- the part system: families of parts that connect by the same rules, with each region bringing its own families (brick terraces, tenements, stone, steel and glass);
+- the engine's growth: booms and busts, plot cycles, fringe belts, plans partly carried out;
+- the camera and its stops, and the tools (export, checks, sheets).
+
+**What each new place brings:** its land, its script of eras, its part families, its areas, its heart laid out by hand.
+
+**What a metropolis adds, to be designed for now and built later:** towers and deep blocks, so the camera needs stops for height and streets that are canyons; transit in layers (metro, elevated rail, stations as nodes); many districts, each with its own heart laid out by hand and its body grown by rules; crowds by the thousand (`docs/living-world.md`, Crowds); streaming and levels of detail so a whole city holds its frame rate. The starter town is built so these can be added without starting again: the town is data in a setting pack, parts are families, and the city view is built to stream.
+
 ## Size
 
 The town is the size of Stavanger in 1989: about 95,000 people over a built area of about 5 by 4 km, with farms, a beach and the fjord at its edges. Its centre, around the basin and about 1.3 km across, is planned area by area below; the town around it is planned by district (The town around the centre). The centre is laid out by hand in clay. The districts around it are laid out by rules learned from the centre and from the real map, and checked in clay from the far stop. Exit criterion 5 (a street at city scale holds its look and frame rate) is tested on the whole town, not on the corner.
