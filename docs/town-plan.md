@@ -4,6 +4,10 @@ The first town: its land, its areas, how they meet and what happens in each. It 
 
 The plan is part of the setting pack. It sets the land and the building history. Who runs a pub, who lives where and what opens or closes are the engine's facts; until the engine supplies them, fixtures author them, and the plan only says what a place offers (cheap old warehouses by the water draw bars, as Jacobs and Zukin found).
 
+## Size
+
+The town is the size of Stavanger in 1989: about 95,000 people over a built area of about 5 by 4 km, with farms, a beach and the fjord at its edges. Its centre, around the basin and about 1.3 km across, is planned area by area below; the town around it is planned by district (The town around the centre). The centre is laid out by hand in clay. The districts around it are laid out by rules learned from the centre and from the real map, and checked in clay from the far stop. Exit criterion 5 (a street at city scale holds its look and frame rate) is tested on the whole town, not on the corner.
+
 ## What the plan must do
 
 - **Give every exit criterion its places.** Buildings whose history reads (the old town, the warehouses turned pubs); consequences the page does not make obvious (the empty shops after the 1986 crash, the closing canning works, the brewery standing empty); scenes (a pub, the square on market day, the forest, the ferry quay); the band's ladder of venues.
@@ -48,11 +52,31 @@ The town's history, which sets which eras stand where: a medieval cathedral town
 - **Nodes:** the square; the landing in the old town (the beauty corner); the ferry quay; the fish quay; the bus station's square.
 - **Landmarks:** the cathedral; the tower on the knoll; the water tower on the forest hill; the oil base's cranes; the lighthouse; the canning works' chimney.
 
+## The town around the centre
+
+| District | Where | Grain | What it adds to the game |
+| --- | --- | --- | --- |
+| The island suburb and the bridge | North-east, across the fjord | A high bridge of 1978 to an island of seventies terraces and blocks, a marina | A landmark, the commute, the town's newest homes |
+| The garden suburb | East, past the forest hill | Detached houses of the 1920s to 50s in gardens, hedges, a church, a school | Families, ordinary life, the school |
+| The seventies estate | Far east | Blocks and terraces round a shopping centre and a sports hall | The modern town; youth, its clubs and boredom |
+| The hospital and the stadium | East, between the suburbs | A hospital campus; a football ground with stands | Births and deaths; match days |
+| The lake and the railway | South of the square | A lake in a park with a path round it; the railway along its shore to the station by the square | Walks, a skating rink in winter, arrivals |
+| The university | South-east | A campus of the 1960s and 70s on the plain | Students, ideas, a student pub |
+| The oil offices | South, by the motorway | Glass and concrete offices of the 1970s and 80s, car parks, half let after the crash | The boom's money and the bust |
+| The farms | South-east and west | Flat fields, stone walls, farmhouses and barns, the town's edge creeping in | Land, inheritance, the town eating the country |
+| The western housing | West, past the newer town | Workers' and clerks' streets of the 1900s to 50s, corner shops | The town's ordinary middle |
+| The fishing village | The west coast | An old fishing village the town has reached: boathouses, a harbour, a chapel | The town's past, still working |
+| The beach | The west coast | A long sandy beach and dunes | Summer, youth, the open sea |
+| The coastal heath | North-west, by the oil base | Heather and rock by the sea, the oldest cultural landscape | Walks, wind, what the land was |
+
+The airport lies beyond, to the south-west, reached by the motorway.
+
 ## The order in clay
 
 1. **The corner**, refined (the old town around the landing).
 2. **The heart:** the basin, both shores and the square: the old town's lower slope, Harbour Row, the pub quay and pub street, the fire grid's first blocks, the knoll. The corner's camera 2 then looks at a real pub quay.
 3. **Above:** the villas and the forest hill, with the heath and the water tower.
-4. **The rest:** the canning works, Storhaug, the newer town, the oil base, the ferry quay, the islands.
+4. **The rest of the centre:** the canning works, Storhaug, the newer town, the oil base, the ferry quay, the islands.
+5. **The districts around it,** laid out by rules learned from the centre and checked in clay from the far stop: first the lake and the railway, the garden suburb and the bridge, then the others.
 
 Each step is judged in clay at the middle and far stops before the next. Parts are made at final quality in parallel and fill the corner first.
