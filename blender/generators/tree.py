@@ -340,7 +340,11 @@ def junction_rings(pts, rad, appear, Rp, flare, sin_t):
     peak = min(flare, max(0.95 * Rp / max(rc, 1e-6) - 1.0, 0.0))
     x = np.maximum(al - exit_, 0.0) / max(rc, 1e-4)
     bump = (x / 1.0) * np.exp(1.0 - x / 1.0)                  # 0 at the bark, 1 a branch width out, easing off slowly
-    R = np.where(al <= exit_, np.minimum(R, rc), R * (1.0 + peak * bump))
+    # inside the parent's wood the branch narrows towards the parent's axis, well within its faceted tube, so its
+    # start (an open ring, tilted) never pokes out of the bark as a blunt dark stub
+    f_in = np.clip(al / max(exit_, 1e-6), 0.0, 1.0)
+    inside = np.minimum(np.minimum(R, rc), Rp * (0.55 + 0.4 * f_in ** 2)) * (0.6 + 0.4 * f_in)
+    R = np.where(al < exit_, inside, R * (1.0 + peak * bump))
     return P, R, A
 
 
@@ -531,8 +535,8 @@ def branch_mesh(tl, parts, H, vols=None, needed=None):
             d0 /= max(np.linalg.norm(d0), 1e-9)
             sin_t = float(np.linalg.norm(np.cross(pa, d0)))
             pts, rad, appear = junction_rings(pts, rad, appear, Rp, parts["flare_branch"], sin_t)
-            # its first ring, on the parent's axis, inside the parent's wood: never wider than it
-            rad[0] = min(rad[0], 0.85 * Rp)
+            # its first ring, on the parent's axis, deep inside the parent's wood
+            rad[0] = min(rad[0], 0.33 * Rp)
         if c[0] == 0:
             # the trunk thickens towards its foot (the wind's lever on the crown is greatest there; the pipe model alone
             # gives a pole), then flares into the ground, the flare in rings near the ground so it curves
@@ -666,7 +670,8 @@ def mark_mesh(tl, parts, seed):
         if p not in na or p not in nr or nr[p] < 2.5 * min_r or order[c[0]] <= order[p]:
             continue
         rc = nr.get(c[0], tl["r"][c[0]])
-        if rc < 1.5 * min_r or h01(seed, int(c[0]), 54) < 0.25:
+        # only over a branch large for the wood it leaves (on a slim stem a row of small ones reads as a zipper)
+        if rc < 1.75 * min_r or rc < 0.4 * nr[p] or h01(seed, int(c[0]), 54) < 0.25:
             continue
         # over the branch where it leaves the bark: the parent's bark wrinkled over the collar's upper side
         dirc = end[c[0]] - start[c[0]]
@@ -693,7 +698,7 @@ def mark_mesh(tl, parts, seed):
         years = age - int(died[d])
         grown = min(years / 25.0, 1.5)
         w = min(6.0 * r_then * (1.0 + 0.7 * grown) * k_, 1.3 * nr[p])
-        kind = "scar" if years > 30 and w > 0.5 * nr[p] else ("broken" if h01(int(d), 55) < 0.3 else "slash")
+        kind = "broken" if h01(int(d), 55) < 0.35 else "slash"
         # a fresh scar is dark; an old one fades towards the bark as it weathers, low in contrast
         put(p, tl["end_grown"][d] - tl["start_grown"][d], w, pick(kind, int(d)), 0.0, int(d),
             weather=min(years / 35.0, 0.85))

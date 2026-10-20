@@ -28,8 +28,8 @@ bark's own lenticels, seeded); G lightness, B relief, A coverage.
 Bark (birch_bark.png, 512 by 1024, tiling; u round the stem, v along it, one tile 0.3 m round and 0.6 m along):
 - R: the bark's lightness, white with soft grey bands;
 - G: lenticels (the short dark horizontal dashes) and the dark scars under branches;
-- B: lichen (the downy birch's patches; none on the silver's); an old trunk's dark foot is the shader's, from noise
-  round the trunk, so it never repeats with the tile;
+- B: unused (lichen and an old trunk's dark foot are the shader's, from noise round the trunk, so they never repeat
+  with the tile);
 - A: the relief: thin horizontal rings of the outer bark, a faint grain along the stem, the lenticels sunk in; the
   shader bends the light by it.
 
@@ -641,7 +641,7 @@ def bark(path, kind="downy"):
     # lichen: patches of several sizes, their edges broken (the downy birch's, on this damp coast)
     lich = (value_noise((H, W), (5, 3), rng) * 0.55 + value_noise((H, W), (14, 7), rng) * 0.3
             + value_noise((H, W), (40, 20), rng) * 0.15)
-    lichen = np.clip((lich - 0.52) / 0.12, 0, 1) if downy else np.zeros_like(light)
+    lichen = np.zeros_like(light)          # lichen is the shader's, from noise round the trunk (a tile repeats it)
     height = (0.5 + (0.12 if downy else 0.22) * (rings - 0.3) + (0.1 if downy else 0.04) * grain - 0.35 * lent
               + 0.12 * lichen)
     img = np.stack([np.clip(light, 0, 1), np.clip(lent, 0, 1), lichen, np.clip(height, 0, 1)], -1)

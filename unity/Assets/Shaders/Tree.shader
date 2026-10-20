@@ -106,10 +106,14 @@ Shader "Overstory/Tree"
         half up = saturate(1.0h - (half)(z / max(_Foot.y * r, 0.05)));          // 1 at the ground, 0 at its top
         half age = saturate((half)(r / _Foot.x));
         half reach = (half)OS_Noise(float2(u * 2.3, 0.0)) * 0.6h + (half)OS_Noise(float2(u * 9.0 + 2.7, 0.0)) * 0.4h;
-        half f = (half)(OS_Noise(float2(u * 30.0, positionWS.y * 1.4)) * 0.75 + OS_Noise(float2(u * 55.0 + 3.1, positionWS.y * 4.0)) * 0.25);
-        // the threshold falls towards the ground and with each fissure's own reach: more of the bark dark lower down
-        half t = 0.92h - 0.75h * up - 0.35h * (reach - 0.5h);
+        half f = (half)(OS_Noise(float2(u * 24.0, positionWS.y * 3.0)) * 0.6 + OS_Noise(float2(u * 45.0 + 3.1, positionWS.y * 7.0)) * 0.4);
+        // the threshold falls towards the ground and with each fissure's own reach: more of the bark dark lower down,
+        // never all of it
+        half t = 0.95h - 0.5h * up - 0.3h * (reach - 0.5h);
         half dark = smoothstep(t - 0.02h, t + 0.02h, f) * smoothstep(0.02h, 0.12h, up);
+        // broken across by bands of the white bark left (the reference's plates, never long spikes)
+        half breaks = smoothstep(0.62h, 0.66h, (half)OS_Noise(float2(u * 6.0 + 9.3, positionWS.y * 11.0)));
+        dark *= 1.0h - breaks;
         half grey = smoothstep(0.1h, 0.9h, up);
         half k = age * age * (half)_Foot.z;
         return half3(dark * k * (half)_Foot.w, grey * k, 0.0h);
@@ -190,8 +194,15 @@ Shader "Overstory/Tree"
         float r = extra.x, z = extra.y;
         // white bark with grey bands and dark lenticels on the limbs and trunk; dark twigs
         half3 bark = lerp(_BarkBand.rgb, _BarkLight.rgb, saturate((b.r - 0.62h) / 0.3h));
-        // lichen where it grows (its pigment and how much the species carries)
-        bark = lerp(bark, _Lichen.rgb, b.b * _Lichen.a);
+        // lichen where it grows (its pigment and how much the species carries): patches of several sizes, broader
+        // round the stem than along it, from noise anchored round the trunk (never the bark's tile, which repeats)
+        {
+            float lu = positionWS.x + positionWS.z;
+            half ln = (half)(OS_Noise(float2(lu * 4.0, positionWS.y * 2.6)) * 0.55 + OS_Noise(float2(lu * 11.0 + 1.7, positionWS.y * 7.0)) * 0.3
+                          + OS_Noise(float2(lu * 29.0 + 4.1, positionWS.y * 19.0)) * 0.15);
+            half lichen = smoothstep(0.53h, 0.6h, ln) * saturate((half)((r - 0.02) / 0.05));
+            bark = lerp(bark, _Lichen.rgb, lichen * _Lichen.a);
+        }
         bark = lerp(bark, _BarkBand.rgb * 0.2h, b.g * 0.9h);
         half twig = 1.0h - smoothstep((half)_TwigRadius.x, (half)_TwigRadius.y, (half)r);
         half3 c = lerp(bark, _Twig.rgb, twig);
@@ -345,7 +356,9 @@ Shader "Overstory/Tree"
             #if defined(_OS_MARKS)
                 clip(SAMPLE_TEXTURE2D(_Marks, sampler_Marks, input.uv).a - 0.5h);
                 // a mark on an old trunk's dark foot is lost in it
-                clip(0.4h - OS_TreeFoot(input.positionWS, input.extra.x, input.extra.y).x);
+                half3 footM = OS_TreeFoot(input.positionWS, input.extra.x, input.extra.y);
+                clip(0.4h - footM.x);
+                clip(0.25h - footM.y);
                 // and one round the wood's edge as seen is never drawn past its outline (a shard in the air)
                 clip(abs(dot(normalize(input.normalWS), GetWorldSpaceNormalizeViewDir(input.positionWS))) - 0.3h);
             #endif

@@ -60,7 +60,7 @@ Material:
     - _BarkBand: {r: 0.76, g: 0.74, b: 0.71, a: 1}
     - _BarkLight: {r: 0.94, g: 0.93, b: 0.9, a: 1}
     - _Foot: {r: 0.16, g: 4.5, b: 1, a: 0.85}
-    - _FootCrack: {r: 0.33, g: 0.31, b: 0.3, a: 1}
+    - _FootCrack: {r: 0.38, g: 0.36, b: 0.34, a: 1}
     - _FootPlate: {r: 0.66, g: 0.64, b: 0.61, a: 1}
     - _Green: {r: 0.4, g: 0.42, b: 0.2, a: 1}
     - _Late: {r: 0.5, g: 0.36, b: 0.19, a: 1}

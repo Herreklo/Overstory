@@ -366,7 +366,8 @@ half3 OS_ShadeP(InputData id, StreetSurface s, OSBake b, float3 positionWS)
     // makes a saturated stripe brighter than the light itself
     half turn = saturate(1.0h - abs(ndl) * 4.0h) * shadow;
     half3 warm = _OS_EdgeTint.rgb / max(dot(_OS_EdgeTint.rgb, half3(0.2126h, 0.7152h, 0.0722h)), 1e-3h);
-    colour += albedo * main.color * lerp(half3(1, 1, 1), warm, _OS_EdgeTint.a * turn) * lit * ao.directAmbientOcclusion;
+    // (the style's strength was set when the turn was colour added on top: as a shift of the light, half of it)
+    colour += albedo * main.color * lerp(half3(1, 1, 1), warm, 0.5h * _OS_EdgeTint.a * turn) * lit * ao.directAmbientOcclusion;
 
     // lamps and lit rooms: soft pools, and their glints in wet stone
     half3 specular = 0;
