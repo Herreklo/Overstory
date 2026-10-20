@@ -137,6 +137,8 @@ class Node:
     radius: dict = field(default_factory=dict)   # year -> radius (m), written every year it lives
     children: list = field(default_factory=list)
     spur: bool = False           # a short shoot: a spur a few centimetres long that only bears leaves
+    cut: int | None = None       # the year a limb was cut here (its stub ends at this node)
+    stub: bool = False           # part of a cut limb's stub: never shed
 
 
 @dataclass(eq=False)
@@ -188,6 +190,7 @@ class Timeline:
             died=np.array([-1 if nd.died is None else nd.died for nd in self.nodes], dtype=np.int16),
             order=np.array([nd.order for nd in self.nodes], dtype=np.int8),
             spur=np.array([nd.spur for nd in self.nodes], dtype=bool),
+            cut=np.array([-1 if nd.cut is None else nd.cut for nd in self.nodes], dtype=np.int16),
             radius=radius,
         )
         return path
@@ -406,12 +409,15 @@ def tilt(d, towards, deg):
 
 # -- growing -----------------------------------------------------------------------------------------------------------
 
-def grow(species, seed, years=60, site=(), quality=1.0, wind=(0.0, 0.0, 0.0)):
+def grow(species, seed, years=60, site=(), quality=1.0, wind=(0.0, 0.0, 0.0), events=()):
     """Grow a tree of the species for so many years. site: obstacles that cast full shade, as axis-aligned boxes
     (x0, y0, z0, x1, y1, z1) in the tree's frame: a house beside it, a wall. quality: the site's, from its soil and
     shelter (1 a good, sheltered garden; about 0.4 a birch on a knoll in the sea wind). wind: the prevailing wind at
     the site (x, y the way it blows, z its strength, 0 sheltered to 1 the open coast): every shoot leans with it, so
-    an exposed tree leans away from the sea."""
+    an exposed tree leans away from the sea. events: dated facts that change the tree from their year on, each a
+    tuple: ("cut", year, n, min_height) cuts its n heaviest limbs above min_height (m) off at the trunk, as the big
+    trees of a town are cut to keep them from growing wild: a short stub stays, as thick as the limb was, and water
+    shoots sprout from round the wound in the years after."""
     sp = genotype(SPECIES[species], seed)
     tl = Timeline(species, seed, quality)
     H_full = sp["height"] * quality
@@ -433,6 +439,9 @@ def grow(species, seed, years=60, site=(), quality=1.0, wind=(0.0, 0.0, 0.0)):
     starved = {}                                          # branch base -> years in a row its buds have been starved
 
     for year in range(1, years + 1):
+        for ev in events:
+            if ev[0] == "cut" and ev[1] == year:
+                buds = cut_limbs(tl, sp, buds, year, ev[2], ev[3], rng_for("cut", year))
         nodes = tl.nodes
         N = len(nodes)
         parent = np.array([nd.parent for nd in nodes])
@@ -474,7 +483,8 @@ def grow(species, seed, years=60, site=(), quality=1.0, wind=(0.0, 0.0, 0.0)):
         prune_below = (p0 + (p1 - p0) * min(H / H_full, 1.0)) * H
         shed_any = False
         for nd in nodes:
-            if nd.died is None and nd.parent >= 0 and nd.order > nodes[nd.parent].order and year - nd.born > 1:
+            if nd.died is None and nd.parent >= 0 and nd.order > nodes[nd.parent].order and year - nd.born > 1 \
+                    and not nd.stub:
                 # how big the branch has grown at its base: self-pruning takes small branches; a limb dies slowly,
                 # over years in proportion to its size (all at once only in a storm, which is an event)
                 r_base = radius_at(nd, year - 1)
@@ -659,6 +669,41 @@ def shoot(tl, sp, bd, n, length, year, crown_h, H_full, rng, exact=False, push=n
     return new_buds
 
 
+def cut_limbs(tl, sp, buds, year, n, min_height, rng, stub_len=0.3, shoots=(4, 7)):
+    """Cut the n heaviest living limbs (first-order branches off the trunk) that start above min_height, leaving a stub
+    stub_len long; water shoots (vigorous, upright, epicormic) from the stub's end. Returns the buds left."""
+    nodes = tl.nodes
+    bases = [nd for nd in nodes if nd.died is None and nd.order == 1 and nd.parent >= 0
+             and nodes[nd.parent].order == 0 and nd.start[2] >= min_height]
+    bases.sort(key=lambda nd: -radius_at(nd, year - 1))
+    for base in bases[:n]:
+        # walk the limb's own axis until the stub is long enough
+        chain, length, nd = [base], np.linalg.norm(base.end - base.start), base
+        while length < stub_len:
+            nxt = [nodes[c] for c in nd.children if nodes[c].died is None and nodes[c].order == nd.order]
+            if not nxt:
+                break
+            nd = nxt[0]
+            chain.append(nd)
+            length += np.linalg.norm(nd.end - nd.start)
+        on_stub = {x.id for x in chain}
+        for x in chain:
+            x.stub = True
+            for c in x.children:
+                if c not in on_stub:
+                    kill(tl, c, year)
+        chain[-1].cut = year
+        # water shoots from round the cut: upright, many, vigorous
+        tip, d = chain[-1].end, unit(chain[-1].end - chain[-1].start)
+        for k in range(rng.randint(*shoots)):
+            sd = rotate(side_of(d), d, rng.uniform(0, 360))
+            ld = tilt(UP, sd, rng.uniform(10, 35))
+            buds.append(Bud(chain[-1].id, tip - d * rng.uniform(0.0, 0.12), ld, chain[-1].order + 1, False,
+                            f"water.{year}.{chain[-1].id}.{k}", year, vigour=2.5))
+    alive = {nd.id for nd in nodes if nd.died is None}
+    return [bd for bd in buds if bd.node in alive and not (nodes[bd.node].stub and not bd.key.startswith("water"))]
+
+
 def kill(tl, node_id, year):
     """Shed a node and everything beyond it."""
     stack = [node_id]
@@ -716,17 +761,18 @@ def sketch(tl, ages, path, px_per_m=22):
 CACHE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "cache", "trees")
 
 
-def cached(species, seed, years, quality=1.0):
+def cached(species, seed, years, quality=1.0, events=()):
     """The timeline's arrays (as saved), grown once and kept in blender/cache/trees (not in git: it regrows the same)."""
     import hashlib
     # a changed habit, or a change to this simulator, regrows
     with open(os.path.abspath(__file__), "rb") as f:
         code = f.read()
     habit = hashlib.sha1(repr(sorted(SPECIES[species].items())).encode() + code).hexdigest()[:8]
-    path = os.path.join(CACHE, f"{species}-{seed}-q{quality:.2f}-{years}y-{VERSION}-{habit}.npz")
+    ev = "".join(f"-{e[0]}{e[1]}x{e[2]}" for e in events)
+    path = os.path.join(CACHE, f"{species}-{seed}-q{quality:.2f}-{years}y{ev}-{VERSION}-{habit}.npz")
     if not os.path.exists(path):
         os.makedirs(CACHE, exist_ok=True)
-        tl = grow(species, seed, years, quality=quality)
+        tl = grow(species, seed, years, quality=quality, events=events)
         check(tl)
         tl.save(path)
     return dict(np.load(path))

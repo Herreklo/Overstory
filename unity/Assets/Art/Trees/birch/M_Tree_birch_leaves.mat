@@ -46,6 +46,7 @@ Material:
     - _LeafSkyTint: 0.35
     - _Leaves: 1
     - _MassShadow: 8
+    - _Scatter: 0.32
     - _SunPale: 0.45
     m_Colors:
     - _BarkBand: {r: 0.29999998, g: 0.28999996, b: 0.27999997, a: 1}

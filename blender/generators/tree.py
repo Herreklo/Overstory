@@ -68,14 +68,15 @@ def drawn_radius(r):
     return np.where(r > 0.02, r, r * (0.4 + 0.6 * r / 0.02))
 
 
-def read(species, seed, age, quality):
+def read(species, seed, age, quality, events=()):
     parts = PARTS[species]
-    t = G.cached(species, seed, max(parts["grow_to"], age), quality)
+    t = G.cached(species, seed, max(parts["grow_to"], age), quality, events)
     alive = (t["born"] <= age) & ((t["died"] < 0) | (t["died"] > age))
     pipe = t["radius"][:, age].astype(np.float64)
     tl = dict(parent=t["parent"], start=t["start"].astype(np.float64), end=t["end"].astype(np.float64),
               born=t["born"], order=t["order"], r=drawn_radius(pipe), alive=alive,
-              tips=(pipe / G.SPECIES[species]["tip_radius"]) ** G.SPECIES[species]["pipe"])
+              tips=(pipe / G.SPECIES[species]["tip_radius"]) ** G.SPECIES[species]["pipe"],
+              cut=np.where((t["cut"] >= 0) & (t["cut"] <= age), age - t["cut"], -1) if "cut" in t else np.full(len(alive), -1))
     sag(tl, pipe, parts, G.SPECIES[species]["tip_radius"])
     kids = {}
     for i in range(1, len(tl["parent"])):
@@ -333,7 +334,7 @@ def branch_mesh(tl, parts, H, vols=None, needed=None):
         along = np.concatenate([[0.0], np.cumsum(np.linalg.norm(np.diff(pts, axis=0), axis=1))])
         base = len(V)
         for i in range(len(pts)):
-            rr = rad[i] if i < len(pts) - 1 else rad[i] * 0.6
+            rr = rad[i] if i < len(pts) - 1 else rad[i] * 0.6       # (a cut end is widened back below)
             for k in range(s):
                 a = 2 * math.pi * k / s
                 V.append(pts[i] + rr * (math.cos(a) * N[i] + math.sin(a) * B[i]))
@@ -348,17 +349,32 @@ def branch_mesh(tl, parts, H, vols=None, needed=None):
                 UV0.extend([(u0, v0), (u1, v0), (u1, v1), (u0, v1)])
                 UV1.extend([(rad[i], pts[i][2]), (rad[i], pts[i][2]), (rad[i + 1], pts[i + 1][2]),
                             (rad[i + 1], pts[i + 1][2])])
-        # the tip closed to a point
+        cut_age = int(tl["cut"][c[stop - 2]]) if stop >= 2 and stop - 2 < len(c) and tl["cut"][c[stop - 2]] >= 0 else -1
         tip = len(V)
-        V.append(pts[-1] + T[-1] * rad[-1] * 1.5)
-        APPEAR.append(float(appear[-1]))
         i = len(pts) - 1
-        for k in range(s):
-            k1 = (k + 1) % s
-            F.append((base + i * s + k, base + i * s + k1, tip))
-            UV0.extend([(wraps * k / s, along[i] / tile_along), (wraps * (k + 1) / s, along[i] / tile_along),
-                        (wraps * (k + 0.5) / s, (along[i] + rad[-1]) / tile_along)])
-            UV1.extend([(rad[-1], pts[-1][2])] * 3)
+        if cut_age >= 0:
+            # a cut limb: the last ring at full width and a flat face across it (UV0 u below -0.5 tells the shader:
+            # u + 2 the way out from the heart, 0 to 1; v the years since the cut, a fiftieth each)
+            for k in range(s):
+                a = 2 * math.pi * k / s
+                V[base + i * s + k] = pts[i] + rad[i] * (math.cos(a) * N[i] + math.sin(a) * B[i])
+            V.append(pts[-1].copy())
+            APPEAR.append(0.0)
+            for k in range(s):
+                k1 = (k + 1) % s
+                F.append((base + i * s + k, base + i * s + k1, tip))
+                UV0.extend([(-1.0, cut_age / 50.0), (-1.0, cut_age / 50.0), (-2.0, cut_age / 50.0)])
+                UV1.extend([(rad[-1], pts[-1][2])] * 3)
+        else:
+            # the tip closed to a point
+            V.append(pts[-1] + T[-1] * rad[-1] * 1.5)
+            APPEAR.append(float(appear[-1]))
+            for k in range(s):
+                k1 = (k + 1) % s
+                F.append((base + i * s + k, base + i * s + k1, tip))
+                UV0.extend([(wraps * k / s, along[i] / tile_along), (wraps * (k + 1) / s, along[i] / tile_along),
+                            (wraps * (k + 0.5) / s, (along[i] + rad[-1]) / tile_along)])
+                UV1.extend([(rad[-1], pts[-1][2])] * 3)
     return np.array(V), F, UV0, UV1, samples, np.array(APPEAR), wood
 
 
@@ -896,12 +912,12 @@ def make(name, V, F, UV0, UV1, COL=None, normals=None, smooth=True):
     return ob
 
 
-def build(species, seed, age, quality=1.0, unity=None):
+def build(species, seed, age, quality=1.0, unity=None, events=()):
     import bpy
     parts = PARTS[species]
     for ob in list(bpy.data.objects):
         bpy.data.objects.remove(ob, do_unlink=True)
-    tl = read(species, seed, age, quality)
+    tl = read(species, seed, age, quality, events)
     H = float(tl["end"][tl["alive"]][:, 2].max())
     vols = None
     if parts.get("atlas") == "lobes":
@@ -945,7 +961,7 @@ def build(species, seed, age, quality=1.0, unity=None):
     for j, p in enumerate(pts):
         kd.insert(p, j)
     kd.balance()
-    name = f"tree_{species}_s{seed}_a{age}"
+    name = f"tree_{species}_s{seed}_a{age}" + "".join(f"_{e[0]}{e[1]}" for e in events)
     ob_b = make(name + "_branches", BV, BF, BUV0, BUV1)
     me = ob_b.data
     loops = np.zeros(len(me.loops), dtype=np.int64)
@@ -993,5 +1009,8 @@ if __name__ == "__main__":
     seed = int(argv[1]) if len(argv) > 1 else 1
     age = int(argv[2]) if len(argv) > 2 else 30
     quality = float(argv[3]) if len(argv) > 3 else 1.0
-    unity = argv[4] if len(argv) > 4 else os.path.join(HERE, "..", "..", "unity")
-    build(species, seed, age, quality, unity)
+    unity = argv[4] if len(argv) > 4 and argv[4] != "-" else os.path.join(HERE, "..", "..", "unity")
+    # events, as cut:YEAR:N:MINHEIGHT
+    events = tuple((e.split(":")[0], int(e.split(":")[1]), int(e.split(":")[2]), float(e.split(":")[3]))
+                   for e in argv[5:])
+    build(species, seed, age, quality, unity, events)

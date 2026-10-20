@@ -84,6 +84,7 @@ namespace Overstory.EditorTools
                     m.SetFloat("_MassShadow", 8f);
                     m.SetFloat("_LeafSkyTint", 0.35f);
                     m.SetFloat("_SunPale", 0.45f);
+                    m.SetFloat("_Scatter", 0.32f);
                     m.SetFloat("_Cutoff", 0.5f);
                     m.SetColor("_Through", new Color(1f, 0.85f, 0.45f, 0.9f));
                 }

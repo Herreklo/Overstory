@@ -34,6 +34,7 @@ Shader "Overstory/Tree"
         _InnerGlow ("Leaves: the light bounced and passed inside a sunlit crown", Range(0, 2)) = 0.0
         _LeafSkyTint ("Leaves: how much of the sky's tint their shade takes", Range(0, 2)) = 0.35
         _SunPale ("Leaves: how far the sun's light pales their colour", Range(0, 1)) = 0.35
+        _Scatter ("Leaves: light passed leaf to leaf into a sunlit crown's shade", Range(0, 2)) = 0.6
     }
 
     HLSLINCLUDE
@@ -60,6 +61,7 @@ Shader "Overstory/Tree"
         half _InnerGlow;
         half _LeafSkyTint;
         half _SunPale;
+        half _Scatter;
     CBUFFER_END
 
     TEXTURE2D(_Bark);  SAMPLER(sampler_Bark);
@@ -139,6 +141,17 @@ Shader "Overstory/Tree"
         half foot = saturate(1.0h - (half)(z / max(_Foot.y * r, 0.05))) * age * age * (half)_Foot.z;
         half3 footc = lerp(_FootPlate.rgb, _FootCrack.rgb, saturate(b.b * 1.4h));
         c = lerp(c, footc, foot * saturate(0.35h + b.b));
+        // a cut face: pale fresh wood weathering to grey over the years, the rings faintly, the callus rolling in
+        // from the bark round its edge
+        if (uv.x < -0.5)
+        {
+            half out_ = saturate((half)uv.x + 2.0h);
+            half years = saturate((half)uv.y * 50.0h / 12.0h);
+            half3 wood = lerp(half3(0.80h, 0.68h, 0.50h), half3(0.46h, 0.43h, 0.40h), years);
+            wood *= 0.94h + 0.06h * sin(out_ * 40.0h);
+            half callus = smoothstep(0.72h, 0.95h, out_) * saturate((half)uv.y * 50.0h / 4.0h);
+            c = lerp(wood, _BarkBand.rgb * 0.8h, callus);
+        }
         s.albedo = c;
         s.smoothness = 0.12h;
     #endif
@@ -313,7 +326,15 @@ Shader "Overstory/Tree"
                     // in the sun a leaf's colour is lifted towards the light's, not deepened: highlights go paler,
                     // never cadmium (a painter's lit foliage)
                     half3 litAlbedo = lerp(s.albedo, dot(s.albedo, half3(0.2126h, 0.7152h, 0.0722h)).xxx, _SunPale);
-                    colour = s.albedo * sky + litAlbedo * sun.color * lit * lerp(0.75h, 1.0h, seen);
+                    // shade kept clean (a painter's shade on yellow foliage is a warm sienna-umber, never a darkened
+                    // yellow, which reads as olive dirt): the same value, its hue turned warmer and its chroma kept
+                    half lumA = dot(s.albedo, half3(0.2126h, 0.7152h, 0.0722h));
+                    half3 shadePig = s.albedo * half3(1.04h, 0.92h, 0.80h);
+                    shadePig *= lumA / max(dot(shadePig, half3(0.2126h, 0.7152h, 0.0722h)), 1e-3h);
+                    // and lit from within: in a sunlit crown light passes leaf to leaf, so the shade side of a mass
+                    // glows with the leaves' own colour (only while the crown has sun)
+                    half3 scatter = shadePig * shadePig * sun.color * _Scatter * shadow * (1.0h - saturate(lit));
+                    colour = shadePig * sky + scatter + litAlbedo * sun.color * lit * lerp(0.75h, 1.0h, seen);
                     // the inside of a sunlit crown glows: light bounced leaf to leaf and through the leaves, warm with
                     // their colour, so its shade sits near half the lit side, not a hole (only while the crown has sun)
                     half3 glowc = lerp(s.albedo, dot(s.albedo, half3(0.2126h, 0.7152h, 0.0722h)).xxx, 0.45h);
