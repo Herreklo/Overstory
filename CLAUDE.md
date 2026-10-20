@@ -62,6 +62,7 @@ Choose the model by the kind of work, and say in one line when a step calls for 
 | --- | --- |
 | `docs/visual-direction.md` | The current visual direction |
 | `docs/living-world.md` | How places, people and history are shown |
+| `docs/town-plan.md` | The first town: its land, areas, paths, nodes and landmarks, and the order they are laid out in clay |
 | `docs/building-system.md` | How buildings are generated from dated diaries |
 | `docs/experiments.md` | Every experiment: question, outcome, what we keep and drop |
 | `docs/engine-contract.md` | The draft format of the engine's data for the game |
