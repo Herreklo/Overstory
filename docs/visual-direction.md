@@ -6,14 +6,14 @@ The current direction for how the world looks. Look tests decide the open points
 
 The world is a fictional **North Atlantic timber harbour town**: the family that includes the Norwegian west coast, New England, the Maritimes and the Faroes. Painted clapboard, steep gables, white trim, quays with warehouses, wet maritime light, long dusks. It could be several places and is clearly not just anywhere: no Mediterranean stucco, no brick-terrace Britain. Features that pin it to one country are accents, not the identity. The first town is rooted in Stavanger and first shown in 1989. The town is seen in its landscape: it steps up from the quay, with hills, mountains and the fjord behind, and the setting is part of every wide picture. The rules engine is reusable across regions, but each region still needs real work on its own assets and data: building eras, regulations, geography, clothes, vehicles and signage.
 
-The style is ours. It does not follow the cosy stylised-Unity look or AI-art trends. It is found in look tests, judged in Unity, never on concept images.
+The style is ours. It does not follow the cosy stylised-Unity look or AI-art trends. It is found in look tests and judged in Unity. Target frames, painted over our own Unity renders, set the bar; they are never the judgement.
 
 The direction is painterly realism. Simon Stålenhag leads: real proportions, muted natural colour with one accent, heavy atmosphere, loose painted edges, the mundane made beautiful, grey days and dusk. Alongside him: Hopper (hard low sun on simple planes, lit rooms at night), Hammershøi (quiet grey light, few colours), Disco Elysium (a painted city in decline, visible brushwork) and Kawase Hasui's Tokyo prints (night, rain, lamplight in wet streets). It must hold from a small town to a large city, so it lives in light, air and generated surfaces, never in per-asset cartoon art. Not a cartoon village.
 
 ## Shape
 
 - Shapes carry the style; shading finishes it. Silhouettes first: every building has its own outline from its volumes, roofs, chimneys and additions.
-- Pushed proportions: steeper roofs, deeper eaves, oversized chimneys, tall-and-narrow next to low-and-wide, at the strength called stronger. Proportions carry the boldness; deformation (lean, sag, bow) stays small, because it is what reads as caricature.
+- Real proportions, a little exaggerated: a steeper roof, a deeper eave, a bigger chimney, tall-and-narrow next to low-and-wide, at the strength called gentle. Real proportions read as a place; pushed further, the town reads as a toy. Deformation (lean, sag, bow) stays small, because it is what reads as caricature.
 - A handmade feel from the seed: a lean, a sagging ridge, windows slightly out of line, soft bevels. The wobble lives inside each piece; edges stay on the grid.
 - Detail where history is. Calm walls; rich junctions, signs, trims and traces of change. Human scale, never miniature.
 - No round blobs. Shapes are considered and structured: planes, edges and silhouettes with intent, as a painter builds a tree or a roof, never a soft ball standing in for a form. Rounded, puffy shapes are the generic stylised look, not ours.
@@ -56,9 +56,20 @@ One style carries a range of moods: moody, cozy, alive, glam. The mood comes fro
 
 ## How the look is built
 
-One style, its rules shared by every element; each element learned from its own lead reference, built and judged one at a time.
+One style, its rules shared by every element; each element learned from its own lead reference, built and judged one at a time, in the beauty corner, against target frames.
 
-**The rules every element must pass:** deliberate planes and crisp silhouettes, never round blobs (Another World's discipline); realistically exaggerated proportions; three to five values per frame, reading in greyscale and at thumbnail size; a muted base, with light and air giving the colour; painted rather than textured surfaces, calm areas and detail at edges and junctions; one shading model and one air for everything; fewer things, each done well.
+**The rules every element must pass:**
+- Deliberate planes and crisp silhouettes, never round blobs (Another World's discipline). A form reads first as one big shape, then a few medium ones, then small detail gathered in clusters, with calm areas between.
+- Realistically exaggerated proportions.
+- Three to five values per frame, reading in greyscale and at thumbnail size.
+- Light and shadow stay two families: nothing in shadow is as light as anything in sun, and nothing in sun as dark as anything in shadow. Bounce lifts a shadow; it never brings it up to the light.
+- Edges are chosen: hard where a lit plane turns into shadow and where a silhouette meets the sky; soft or lost inside shadow, in foliage and with distance. No drawn outlines: edges come from value and colour.
+- Detail lives in the light and near the focal point. Shadows and distance are simplified, as a painter leaves them.
+- One focal point per frame, where the strongest value contrast, the hardest edge and the accent colour meet.
+- A muted base, with light and air giving the colour.
+- Painted rather than textured surfaces: calm areas and detail at edges and junctions. A brush mark has a size in the world, the same on every object, and never tiles visibly.
+- One shading model and one air for everything.
+- Fewer things, each done well.
 
 **Lead reference per element:**
 
@@ -73,7 +84,13 @@ One style, its rules shared by every element; each element learned from its own 
 | Buildings | Stålenhag, Hopper | the house generator |
 | The town at night | Hasui, Hopper | Stålenhag |
 
-**The process, per element:** a reference board first (`docs/references/<element>/`, images for private study only); a note on what makes the references work; a written target Øystein agrees with; a generator; a sheet in the three lights, in greyscale and at thumbnail size; checks and a fresh reviewer; Øystein's judgement. Only then does it join the town. A small fixed style scene (a few houses, a lane, a tree, rocks, water, sky, the same lights and cameras) shows whether each new element belongs with the rest.
+**Final quality is defined before it is built.** Three to five target frames, painted over our own Unity renders of the beauty corner, show what final looks like. A paintover may change light, air, surfaces, detail and the forms of parts; it may not change a fact (which houses stand there, their eras and histories). Everything built so far, the house generator included, is test quality: programmer art, boxes from Python. Final quality is a render that holds up beside its target frame from the same camera.
+
+**The beauty corner** is where final quality is reached first: one lane, five houses, two trees, a wall and a lamp, in one light, from fixed cameras. Nothing scales to the town until the corner holds up beside its targets. Every new element is judged in the corner, so it belongs with the rest.
+
+**Parts are made with care, one at a time.** Each part (house trims, windows and doors, a tree, a rock) is built in Blender against its reference board, shaped by eye rather than written as quick generator code. The generator chooses, fits, places and seeds approved parts; it does not invent their geometry. The process, per part: a reference board (`docs/references/<element>/`, images for private study only); a note on what makes the references work; a written target Øystein agrees with; the part, built; a sheet in the corner's light, in greyscale and at thumbnail size; checks and a fresh reviewer; Øystein's judgement. Only then does it join the corner.
+
+**Roles.** Øystein is the art director: he judges every part and every frame. Claude is the technical artist: shaders, light and air, assembly rules, tools, and the parts themselves, built to his targets.
 
 ## References
 

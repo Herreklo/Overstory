@@ -5,14 +5,14 @@ description: Use when making any 3D asset in Blender through the Blender MCP: ki
 
 # Building assets in Blender
 
-## The rule: generators, not assets
+## The rule: parts made with care, assembled by generators
 
-Never model one object by hand. Write a Python generator (`bpy`, or geometry nodes driven from Python) that makes a family of variants from parameters. One generator can be changed in one place; two hundred hand-made objects cannot.
+A part (a window, a door, a trim, a tree, a rock) is built by hand in Blender through the MCP, one at a time, against its reference board (`docs/references/<element>/`), and shaped by eye: build a step, look at it from the judging camera, correct, repeat. It is not written as quick generator code. A generator (the resolver and builder for houses, a placer for trees) chooses, fits, places and seeds approved parts; it does not invent their geometry.
 
-- Generators live in the game repo under `blender/generators/<family>.py`, one file per family (`shopfront.py`, `roof.py`, `chair.py`).
-- Each generator has a parameter block at the top, with sensible ranges, and a `build(params, seed)` function.
-- Randomness comes only from the `seed` argument (`random.Random(seed)`), never from global state, so a variant can always be rebuilt.
-- Run generators through the Blender MCP's code tool. Keep each call small: build, check, then the next step.
+- Parts live in `blender/parts/<family>/<part>.blend` (through Git LFS), with the script that set them up beside them when one was used, and are exported to Unity as below.
+- A part may come in a few variants (three ages of a birch, two widths of a sash window). Each variant is made and judged like a part.
+- A part joins the beauty corner only after its sheet, its checks, a fresh reviewer and Øystein's judgement (`docs/visual-direction.md`, How the look is built).
+- Generators keep the old rules: a parameter block at the top, a `build(params, seed)` function, randomness only from `random.Random(seed)`, small MCP calls (build, check, then the next step). Generators live in `blender/generators/<family>.py`.
 
 ## Units and grid
 
