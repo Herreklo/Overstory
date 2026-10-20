@@ -44,7 +44,10 @@ UP = np.array([0.0, 0.0, 1.0])
 # above level each order's shoots steer towards (the gravitropic set-point), at the crown's top and at its foot, and
 # steer how much of the difference a shoot makes up per internode: a limb can sag at its base and turn up at its tip.
 # shed: a branch dies when its buds' mean light has been under this share of open sky for so many years running (the
-# species' shade tolerance), or when it has no buds left. light: the foliage's extinction per bud in a cell, how much
+# species' shade tolerance), or when it has no buds left. long_min: a side bud makes a long shoot only with resource for
+# so many internodes; below it, it stays a short shoot that only bears leaves (most of a birch's buds), so the year's
+# growth goes into a few limbs and the crown stays open. self_prune: the share of the tree's height, young and grown,
+# below which it sheds its limbs (birch prunes itself; an open-grown spruce keeps its skirt). light: the foliage's extinction per bud in a cell, how much
 # the others in a bud's own cell crowd it, and for how many years a shoot keeps its needles or leaves and so shades.
 SPECIES = {
     # Norway spruce, Picea abies. Excurrent: one leader all its life, a whorl of 3 to 6 branches at the top of each
@@ -56,21 +59,21 @@ SPECIES = {
         internode=0.14, shoot=0.30, full_size=3.5, alpha=2.0, apical=(0.60, 0.56, 80),
         whorl=(3, 6), whorl_angle=74.0, side_angle=48.0, side_p=0.8, along_p=0.45, along_vigour=0.3, max_order=2,
         setpoint=((90, 90), (18, -22), (-30, -45), (-40, -50)), steer=0.18, light_pull=0.20, jitter=0.05,
-        envelope="cone", width=(0.34, 0.17), crown_base=(0.0, 0.03),
-        shed=(0.10, 4), bud_life=3, tip_radius=0.004, pipe=2.2, light=(0.30, 0.25, 6),
+        envelope="cone", width=(0.34, 0.17), crown_base=(0.0, 0.03), self_prune=(0.0, 0.0),
+        shed=(0.10, 4), bud_life=3, tip_radius=0.0032, pipe=2.2, light=(0.30, 0.25, 6),
     ),
     # Downy birch, Betula pubescens. A leader while young, then the crown opens into a few ascending limbs and a mass
     # of fine twigs; alternate buds (2/5 phyllotaxis); an airy, irregular crown, not weeping (that is the silver birch);
     # it needs light and sheds its lower branches early. On a good site on this coast about 6 m at 15 years, 11 at 30
     # and 15 at 60; few live past 100.
     "birch": dict(
-        kind="broadleaf", height=16.0, growth=(0.050, 1.5), leader_until=28,
+        kind="broadleaf", height=16.0, growth=(0.050, 1.5), leader_until=35,
         internode=0.22, shoot=0.35, full_size=3.0, alpha=2.0, apical=(0.58, 0.50, 40),
-        phyllotaxis=144.0, lateral_angle=42.0, max_order=4,
+        phyllotaxis=144.0, lateral_angle=42.0, max_order=4, long_min=2.2,
         setpoint=((90, 90), (55, 35), (30, 10), (10, -5), (-5, -20), (-15, -30)), steer=0.15, light_pull=0.25,
         jitter=0.08,
-        envelope="ovate", width=(0.20, 0.24), crown_base=(0.12, 0.38),
-        shed=(0.25, 2), bud_life=4, tip_radius=0.003, pipe=2.4, light=(0.22, 0.25, 2),
+        envelope="dome", width=(0.20, 0.26), crown_base=(0.0, 0.0), self_prune=(0.05, 0.32),
+        shed=(0.30, 2), bud_life=6, tip_radius=0.0055, pipe=2.4, light=(0.22, 0.25, 2),
     ),
 }
 
@@ -172,6 +175,13 @@ def envelope_ok(p, sp, H, H_full):
         return False
     if sp["envelope"] == "cone":
         return r <= width * (1.04 - z) / (1.04 - base) + 0.03 if z >= base else r <= 0.03
+    if sp["envelope"] == "dome":
+        # a loose bound on height and spread only, rounded over the top: the crown takes its form from the light,
+        # its clear trunk from shedding
+        zc = 0.5
+        if z <= zc:
+            return r <= width
+        return r <= width * math.sqrt(max(1.0 - ((z - zc) / (1.06 - zc)) ** 2, 0.0)) + 0.02
     # ovate: from the crown base, widest a little above the crown's middle, rounded at the top
     if z < base:
         return r <= 0.04 + 0.5 * width * (z / max(base, 1e-3)) ** 3
@@ -365,11 +375,18 @@ def grow(species, seed, years=60, site=(), quality=1.0):
 
         qn, nb = summed()
 
-        # 2. shedding: a branch starved of light for years, or with no buds left, dies (the trunk is never shed)
+        # 2. shedding: a branch starved of light for years, or with no buds left, or below the species' rising crown
+        # base, dies (the trunk is never shed)
         share, years_starved = sp["shed"]
+        p0, p1 = sp["self_prune"]
+        prune_below = (p0 + (p1 - p0) * min(H / H_full, 1.0)) * H
         shed_any = False
         for nd in nodes:
             if nd.died is None and nd.parent >= 0 and nd.order > nodes[nd.parent].order and year - nd.born > 1:
+                if nd.start[2] < prune_below and year - nd.born > 2:
+                    kill(tl, nd.id, year)
+                    shed_any = True
+                    continue
                 if nb[nd.id] > 0 and qn[nd.id] / nb[nd.id] >= share * C:
                     starved.pop(nd.id, None)
                     continue
@@ -414,7 +431,8 @@ def grow(species, seed, years=60, site=(), quality=1.0):
         grown, kept = [], []
         for bd in buds:
             rng = rng_for(bd.key, year)
-            n = int(bd.resource * bd.vigour * per_light + rng.random())
+            raw = bd.resource * bd.vigour * per_light
+            n = int(raw + rng.random()) if bd.apical or raw >= sp.get("long_min", 0.0) else 0
             leader = bd.order == 0 and bd.apical and year < sp["leader_until"]
             exact = None
             if leader:
@@ -434,13 +452,19 @@ def grow(species, seed, years=60, site=(), quality=1.0):
             grown.extend(new)
         buds = kept + grown
 
-        # 5. widths: the pipe model, never smaller than last year (the trunk remembers)
+        # 5. widths: the pipe model, a pipe for every leafy bud, long shoot or short (a stem's wood follows the
+        # foliage it feeds), never smaller than last year (the trunk remembers)
         r = np.zeros(len(tl.nodes))
+        leafy = np.zeros(len(tl.nodes))
+        for bd in buds:
+            leafy[bd.node] += 1
+        pipe, tip = sp["pipe"], sp["tip_radius"]
         for nd in reversed(tl.nodes):
             if nd.died is not None:
                 continue
             kids = [c for c in nd.children if tl.nodes[c].died is None]
-            rr = sum(r[c] ** sp["pipe"] for c in kids) ** (1.0 / sp["pipe"]) if kids else sp["tip_radius"]
+            area = sum(r[c] ** pipe for c in kids) + leafy[nd.id] * tip ** pipe
+            rr = area ** (1.0 / pipe) if area > 0 else tip
             r[nd.id] = max(rr, radius_at(nd, year - 1), sp["tip_radius"])
             nd.radius[year] = float(r[nd.id])
         tl.years = year
@@ -535,21 +559,30 @@ def check(tl):
 
 # -- a quick look: the tree drawn side-on at several ages (no Blender needed) -----------------------------------------
 
+INK, PAPER = (44, 38, 32), (236, 232, 222)
+
+
+def draw(d, tl, age, ox, ground, px_per_m):
+    """The tree at an age, side-on, onto a PIL ImageDraw: each internode at its width, those thinner than a pixel
+    faded towards the paper by how much of the pixel they cover, as a bare crown reads as a haze against the sky."""
+    for nd, r in sorted(tl.at(age), key=lambda t: t[1]):
+        wpx = 2 * r * px_per_m
+        cover = min(wpx * 1.5, 1.0)
+        ink = tuple(int(p + (k - p) * cover) for k, p in zip(INK, PAPER))
+        d.line([(ox + nd.start[0] * px_per_m, ground - nd.start[2] * px_per_m),
+                (ox + nd.end[0] * px_per_m, ground - nd.end[2] * px_per_m)], fill=ink, width=max(1, int(round(wpx))))
+
+
 def sketch(tl, ages, path, px_per_m=22):
     from PIL import Image, ImageDraw
     sp = SPECIES[tl.species]
     H = sp["height"] * 1.05
     W = 2 * sp["height"] * max(sp["width"]) + 4
     w, h = int(W * px_per_m), int(H * px_per_m)
-    sheet = Image.new("RGB", (w * len(ages), h + 26), (236, 232, 222))
+    sheet = Image.new("RGB", (w * len(ages), h + 26), PAPER)
     d = ImageDraw.Draw(sheet)
     for i, y in enumerate(ages):
-        ox = i * w + w / 2
-        living = sorted(tl.at(y), key=lambda t: t[1])
-        for nd, r in living:
-            x0, z0 = ox + nd.start[0] * px_per_m, h - nd.start[2] * px_per_m
-            x1, z1 = ox + nd.end[0] * px_per_m, h - nd.end[2] * px_per_m
-            d.line([(x0, z0), (x1, z1)], fill=(44, 38, 32), width=max(1, int(round(2 * r * px_per_m))))
+        draw(d, tl, y, i * w + w / 2, h, px_per_m)
         d.line([(i * w, h), (i * w + w, h)], fill=(120, 110, 96))
         d.text((i * w + 6, h + 6), f"{tl.species} {tl.seed}: {y} years, {tl.height(y):.1f} m", fill=(30, 30, 30))
     sheet.save(path)
