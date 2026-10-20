@@ -51,10 +51,11 @@ namespace Overstory.EditorTools
             // the pigment a strong yellow-ochre: the light mutes it on a grey day to the coast's and Stålenhag's
             // birches (shade takes the light's colour, never a tint of the leaf's own), and the sun pales it, so it
             // never goes cadmium
-            ["birch"] = (new Color(0.40f, 0.42f, 0.20f), new Color(0.74f, 0.53f, 0.25f), new Color(0.50f, 0.33f, 0.18f),
+            ["birch"] = (new Color(0.40f, 0.42f, 0.20f), new Color(0.72f, 0.56f, 0.26f), new Color(0.50f, 0.34f, 0.18f),
                          new Vector4(0.70f, 0.40f, 0f, 0f)),     // two curtains in five gone, a few still green
-            // the silver birch turns as the downy does on this coast
-            ["silver_birch"] = (new Color(0.40f, 0.42f, 0.20f), new Color(0.74f, 0.53f, 0.25f), new Color(0.50f, 0.33f, 0.18f),
+            // the silver birch turns a little clearer and brighter yellow than the downy (a second channel beside the
+            // habit for telling them apart)
+            ["silver_birch"] = (new Color(0.40f, 0.42f, 0.20f), new Color(0.74f, 0.59f, 0.29f), new Color(0.50f, 0.36f, 0.19f),
                                 new Vector4(0.70f, 0.40f, 0f, 0f)),
         };
 
@@ -96,10 +97,10 @@ namespace Overstory.EditorTools
                     // light through them from behind and a mass's underside not sunk let a yellow birch glow in the
                     // rain; the shade's colour is the light's (the rig's), never set here
                     m.SetFloat("_SkyThrough", 0.65f);
-                    m.SetFloat("_UnderFloor", 0.6f);
+                    m.SetFloat("_UnderFloor", 0.5f);
                     m.SetFloat("_MassSplit", -0.05f);
                     m.SetFloat("_SunPale", 0.45f);
-                    m.SetFloat("_Scatter", 0.32f);
+                    m.SetFloat("_Scatter", 0.12f);     // a little: the shade side stays the sky's, cool
                     m.SetFloat("_Cutoff", 0.5f);
                     m.SetColor("_Through", new Color(1f, 1f, 1f, 0.9f));     // the light's own colour
                 }
@@ -129,9 +130,13 @@ namespace Overstory.EditorTools
             var (bark, leaves) = Materials(species);
             var go = (GameObject)PrefabUtility.InstantiatePrefab(model, parent);
             go.transform.SetPositionAndRotation(StreetSpace.ToUnity(street), Quaternion.Euler(0f, yaw, 0f));
+            // -only leaves|branches: draw one part alone (to find where a mark in a frame comes from)
+            string only = Arg("-only", "");
             foreach (var r in go.GetComponentsInChildren<MeshRenderer>())
             {
                 bool leafy = r.gameObject.name.EndsWith("_leaves");
+                if ((only == "leaves" && !leafy) || (only == "branches" && leafy))
+                    r.enabled = false;
                 var mats = new Material[r.sharedMaterials.Length];
                 for (int i = 0; i < mats.Length; i++)
                     mats[i] = leafy ? leaves : bark;
@@ -282,6 +287,7 @@ namespace Overstory.EditorTools
                             continue;
                         leaves.SetColor("_Green", green);
                         leaves.SetVector("_Season", season);
+                        bark.SetVector("_Season", season);     // the twigs show as the leaves fall: the same season
                         urp.shadowDistance = 160f;
                         stage.shot = shot;
                         stage.Apply();

@@ -51,12 +51,13 @@ import tree_growth as G  # noqa: E402
 # share of the cards there taken out; core_depth, core_keep: how deep in its mass a card is core, and the share of the
 # core kept (under a mass's middle only). lobe_size, lobe_weight: each mass cut into lobes about so many metres
 # across (on a grown tree), whose own volumes shade the cards by so much of their normal. places: for each place in the crown (top: above top_z of its height; core; low; high skin), the pairs of
-# atlas cells its two crossed cards may carry. top_tilt: how far one card of each pair on a mass's top tilts to the sky (degrees), for steep views.
+# atlas cells its two crossed cards may carry. top_tilt: how far the cards inside a mass's top (deeper than top_tilt_depth) lean to the sky (degrees), for steep
+# views.
 PARTS = {
     "birch": dict(sag=0.08, taper=0.55, occlusion=0.05, seam=0.5, atlas="clusters", lobe=0.8, lobe_gap=0.36,
                   cluster_size=(1.3, 1.15, 1.05, 0.85), crossed=True, edge_gap=0.22, edge_depth=0.2,
                   masses="limbs", seam_cut=0.95, core_depth=0.45, core_keep=0.55, top_tilt=50.0,
-                  lobe_size=2.2, lobe_weight=0.7, top_z=0.66,
+                  lobe_size=2.2, lobe_weight=0.7, top_z=0.66, top_tilt_depth=0.15,
                   places=dict(core=((0, 1), (1, 0)), top=((0, 1), (1, 0)), low=((2, 3),), high=((3, 2),)), lose_tips=40, hang=False, card=(0.50, 0.48), card_u=(0.03, 0.97), cells=4,
                   per_node=2, along=1, droop=0.7, leaf_years=999, leaf_tips=24, draw_tips=2.5, draw_tips_per_m=0.9, winter_tips=3.0, reach=99.0, hang_reach=0.3,
                   bark=(0.30, 0.60), max_cards=4200, grow_to=80),
@@ -267,6 +268,7 @@ def branch_mesh(tl, parts, H, vols=None, needed=None):
     wood = []                                            # (point, appear) every few centimetres along drawn wood
     node_appear = {}                                     # every drawn node: the season from which it shows
     tl["node_appear"] = node_appear
+    tl["chain_appear"] = []
     base_appear = {}                                     # and from which it would show if no spray hid it
     tl["base_appear"] = base_appear
     cover = tl.get("cover")                              # per node: the season until which a spray round it hangs
@@ -308,6 +310,9 @@ def branch_mesh(tl, parts, H, vols=None, needed=None):
         appear = np.zeros(len(pts))
         for k in range(len(pts)):
             if k > 0 and tp[k] < winter and k >= need + 1:
+                # the branch ends here: its last point shows when the wood before it does (left at 0 it showed
+                # always, and the last stretch faded in towards its tip: a dash at every twig's end)
+                appear[k] = appear[k - 1]
                 stop = k + 1
                 break
             deep = 0.0
@@ -343,8 +348,11 @@ def branch_mesh(tl, parts, H, vols=None, needed=None):
         # rings where a branch bends: tight on the trunk and limbs, looser the thinner it is (a kink in a thin branch
         # is not seen from the street stop)
         keep = simplify(pts, rad, bend=0.06 if rad[0] >= 0.08 else 0.12 if rad[0] >= 0.04 else 0.25)
-        # keep the points where a branch passes into hiding or out of it, so the change falls on a ring
-        keep = sorted(set(keep) | {k for k in range(1, len(pts)) if (appear[k] > 0) != (appear[k - 1] > 0)})
+        # keep the points where a branch passes into hiding or out of it, and those where a drawn twig grows from it,
+        # so a twig never shows from a stretch whose blended season hides it there (it would float)
+        forks = {k for k in range(1, len(pts)) if any(chain_of.get(ch) is not None and drawn[chain_of[ch]]
+                                                      and chain_of[ch] != ci for ch in tl["children_of"].get(c[k - 1], ()))}
+        keep = sorted(set(keep) | {k for k in range(1, len(pts)) if (appear[k] > 0) != (appear[k - 1] > 0)} | forks)
         # the wood, finely, for checking what hangs from it
         for k in range(len(pts) - 1):
             seg = pts[k + 1] - pts[k]
@@ -353,6 +361,7 @@ def branch_mesh(tl, parts, H, vols=None, needed=None):
                 wood.append((pts[k] + seg * t / m, max(appear[k], appear[k + 1])))
         wood.append((pts[-1], appear[-1]))
         pts, rad, appear = pts[keep], rad[keep], appear[keep]
+        tl.setdefault("chain_appear", []).append((c[0], appear.copy()))     # for the checks: shown from, ring by ring
         if c[0] == 0:
             # the trunk thickens towards its foot (the wind's lever on the crown is greatest there; the pipe model alone
             # gives a pole), then flares into the ground
@@ -742,12 +751,14 @@ def lobe_mesh(tl, parts, age, seed, H):
         twins = (-45.0, 45.0) if parts.get("crossed") else (0.0,)
         face_mass = face
         on_top = vol is not None and (centres[j] - vol[0])[2] > 0.25 * vol[2].max()
+        depth_top = volume_depth(vol, centres[j]) if vol is not None else 0.0
         for twin, turn in enumerate(twins):
             face = G.rotate(face_mass, up_w, turn)
             face /= max(np.linalg.norm(face), 1e-9)
-            if parts.get("top_tilt") and on_top:
-                # on a mass's top both cards of the pair lean to the sky, their foliage lying out over the mass, so the
-                # crown has a face from the city camera's steep views (upright cards are edge-on from above)
+            if parts.get("top_tilt") and on_top and depth_top > parts.get("top_tilt_depth", 0.0):
+                # inside a mass's top both cards of the pair lean to the sky, their foliage lying out over the mass, so
+                # the crown has a face from the city camera's steep views (upright cards are edge-on from above); its
+                # skin stays upright, so from the street the top's edge is foliage, never a leaning plane
                 tt = math.radians(parts["top_tilt"])
                 face = face * math.cos(tt) + up_w * math.sin(tt)
                 face /= max(np.linalg.norm(face), 1e-9)
@@ -1137,6 +1148,8 @@ def build(species, seed, age, quality=1.0, unity=None, events=(), exposure=0.0, 
         LF = [(4 * n, 4 * n + 1, 4 * n + 2, 4 * n + 3) for n in range(len(tl["attach"]))]
         floating = len(tl["attach"]) - int(hung(tl["attach"], tl, parts)[0].sum())
         orphans = orphan_chains(tl)
+        # and every branch shows from its base outward: a stretch shown while the wood before it is hidden floats
+        orphans += sum(1 for _, a in tl.get("chain_appear", []) if np.any(np.diff(a) < -1e-6))
         print(f"CONNECTED cards {len(tl['attach'])} (removed {removed} that hung from nothing), floating {floating}, "
               f"branches hanging from nothing {orphans}")
         if floating or orphans:
