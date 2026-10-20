@@ -73,9 +73,11 @@ def lane_y(lane, x):
 LANDING_Z = 8.0
 _yl, _yh, _yt = lane_y(LOW, 49.0), lane_y(HIGH, 47.0), lane_y(TOP, 47.0)
 LANDING = [(42.0, _yh - 6.0), (52.0, _yh - 6.0), (52.0, _yh + 6.5), (42.0, _yh + 6.5)]
-GULLY_STEPS = [(49.3, 0.0, 1.9), (49.3, 9.0, 1.9), (49.3, _yl - 1.6, 3.0), (49.1, _yl + 1.6, 3.0),
-               (48.0, _yh - 6.0, 8.0), (46.5, _yh + 6.5, 8.0), (46.5, _yt - 1.4, 16.0), (46.5, _yt + 1.4, 16.0),
-               (47.0, _yt + 18.0, 21.0), (40.0, 150.0, 32.0)]
+GULLY_STEPS = [(49.3, 0.0, 2.1), (49.3, 9.0, 2.4), (49.3, _yl - 1.6, 3.0), (49.1, _yl + 1.6, 3.0),
+               (48.0, _yh - 6.0, 8.0), (46.5, _yh + 6.5, 8.0), (46.5, _yt - 1.4, 16.0), (46.5, _yt + 1.4, 16.0)]
+# beyond Top Terrace a path goes round E and on up through the Heights to Lookout Park
+LOOKOUT_PATH = [(58.0, _yt + 1.0, 16.0), (60.0, _yt + 22.0, 21.0), (50.0, lane_y(CREST, 50.0) - 2.0, 28.0),
+                (40.0, 170.0, 35.0), (12.0, 226.0, 45.6)]
 _y2l, _y2h, _y2t, _y2c = lane_y(LOW, -110), lane_y(HIGH, -110), lane_y(TOP, -110), lane_y(CREST, -110)
 TANNERS_STEPS = [(-110.0, 0.0, 1.9), (-110.0, _y2l - 1.6, 3.0), (-110.0, _y2l + 1.6, 3.0), (-110.0, _y2h - 1.6, 8.0),
                  (-110.0, _y2h + 1.6, 8.0), (-110.0, _y2t - 1.6, 16.0), (-110.0, _y2t + 1.6, 16.0), (-108.0, _y2c, 28.0)]
@@ -86,7 +88,19 @@ BISHOPS_STEPS = [(196.0, 0.0, 2.0), (196.0, lane_y(LOW, 196) - 1.6, 3.0), (196.0
 HUNDRED_STEPS = [(-246.0, 4.0, 2.0), (-262.0, 22.0, 9.0), (-252.0, 36.0, 9.0), (-268.0, 58.0, 18.0),
                  (-256.0, 72.0, 18.0), (-262.0, 96.0, 26.0)]
 
-HARBOUR_ROW = [(-250.0, -8.0, 1.9), (150.0, -8.0, 1.9), (250.0, -15.0, 2.0), (300.0, -25.0, 2.1), (330.0, -40.0, 2.2)]
+# Harbour Row's building line, 15.4 m in from the quay's edge, with the quay's kink
+HR_LINE = [(-250.0, 0.0), (-160.0, 0.0), (-60.0, 3.0), (150.0, 0.4), (250.0, -6.6), (300.0, -16.6), (334.0, -34.6)]
+
+
+def hr_line(x):
+    """The building line's y at x, and its direction in degrees."""
+    for (x1, y1), (x2, y2) in zip(HR_LINE, HR_LINE[1:]):
+        if x1 <= x <= x2:
+            return y1 + (y2 - y1) * (x - x1) / (x2 - x1), math.degrees(math.atan2(y2 - y1, x2 - x1))
+    return HR_LINE[-1][1], 0.0
+
+
+HARBOUR_ROW = [(-250.0, -7.7, 1.9), (-160.0, -7.7, 1.9), (-60.0, -4.7, 1.9), (150.0, -7.3, 1.9), (250.0, -15.0, 2.0), (300.0, -25.0, 2.1), (330.0, -40.0, 2.2)]
 
 # The west shore: Barrel Quay on the Holm and the mainland, Holm Street above it, the Cut's two bridges
 BARREL_QUAY = [(-196.0, -168.0, 1.9), (0.0, -162.0, 1.9), (38.0, -157.0, 1.9)]
@@ -112,6 +126,7 @@ LANES = [
     dict(name="Top Terrace", width=3.2, pts=TOP, kind="lane"),
     dict(name="Crest Lane", width=4.2, pts=CREST, kind="lane"),
     dict(name="Gully Steps", width=3.2, pts=GULLY_STEPS, kind="steps"),
+    dict(name="the path to Lookout Park", width=2.0, pts=LOOKOUT_PATH, kind="steps"),
     dict(name="Tanner's Steps", width=2.6, pts=TANNERS_STEPS, kind="steps"),
     dict(name="Bishop's Steps", width=3.0, pts=BISHOPS_STEPS, kind="steps"),
     dict(name="the Hundred Steps", width=2.2, pts=HUNDRED_STEPS, kind="steps"),
@@ -184,7 +199,7 @@ def clear_of_lanes(fp, skip=None):
 
 def free(fp):
     for b in BUILDINGS:
-        if _sat_overlap(fp, footprint(b, 0.3)):
+        if _sat_overlap(fp, footprint(b, -0.15)):  # touching is neighbourly, overlapping is not
             return False
     return True
 
@@ -243,6 +258,8 @@ def row(lane, side, s0, s1, rng, grain="old", base_up=0.4, name="row", skip_lane
             ox, oy = x + math.sin(math.radians(a)) * off, y - math.cos(math.radians(a)) * off
             angle = a + 180.0
         base = z + (base_up if side > 0 else 0.0)
+        if grain == "old":
+            angle += rng.uniform(-5.0, 5.0)  # as their owners placed them, not to a line
         b = dict(name=f"{name} {k}", ox=ox, oy=oy, angle=angle, w=w, d=d, base=base, eave=eave, pitch=pitch,
                  roof=roof, role="row", low=None)
         fp = footprint(b)
@@ -262,6 +279,33 @@ def row(lane, side, s0, s1, rng, grain="old", base_up=0.4, name="row", skip_lane
 YARDS = []  # level pads made with walls: (polygon, z)
 
 
+def grid_block(x0, x1, y0, y1, rng):
+    """A perimeter block: buildings along all four sides facing out, a yard in the middle."""
+    def base_at(x, y):
+        return float(L.z_at(x, y))
+    depth = 11.0
+    sides = [  # (start point, direction angle, length): fronts face out
+        ((x0, y1), -90.0, y1 - y0),   # the side facing -x (north), running -y
+        ((x0, y0), 0.0, x1 - x0),     # the side facing -y (west), running +x
+        ((x1, y0), 90.0, y1 - y0),    # the side facing +x (south), running +y
+        ((x1, y1), 180.0, x1 - x0),   # the side facing +y (east), running -x
+    ]
+    for (sx, sy), a, run in sides:
+        s = 0.0
+        while s < run - 6.0:
+            w = min(run - s, rng.uniform(9.0, 15.0))
+            c, sn = math.cos(math.radians(a)), math.sin(math.radians(a))
+            ox, oy = sx + c * s, sy + sn * s
+            mid = (ox + c * w / 2 - sn * depth / 2, oy + sn * w / 2 + c * depth / 2)
+            b = dict(name=f"the Grid {len(BUILDINGS)}", ox=ox, oy=oy, angle=a, w=w, d=depth,
+                     base=base_at(*mid) + 0.2, eave=rng.choice([6.6, 7.2, 9.8, 10.4]), pitch=rng.uniform(30, 40),
+                     roof=rng.choice(["eaves", "eaves", "hip"]), role="row", low=None)
+            fp = footprint(b)
+            if free(fp) and clear_of_lanes(fp):
+                BUILDINGS.append(b)
+            s += w
+
+
 def lay_out():
     BUILDINGS.clear()
     YARDS.clear()
@@ -269,10 +313,10 @@ def lay_out():
 
     # the corner (docs/experiments.md, LT1, the reset): A and B at the foot of Gully Steps on Harbour Row,
     # C beside the Landing, D on the knuckle, E closing the view where the steps meet Top Terrace
-    building("A (104, café 1988)", 37.2, 0.0, 0.0, 9.8, 9.2, 1.9, 6.8, 54.0, "mansard", "corner")
-    building("B (105)", 52.0, 0.0, 0.0, 9.4, 8.4, 1.9, 6.9, 12.0, "hip", "corner")
+    building("A (104, café 1988)", 37.2, hr_line(37.2)[0], hr_line(37.2)[1], 9.8, 9.2, 1.9, 6.8, 54.0, "mansard", "corner")
+    building("B (105)", 52.0, hr_line(52.0)[0], hr_line(52.0)[1], 9.4, 8.4, 1.9, 6.9, 12.0, "hip", "corner")
     building("C (1203, cooper 1879)", 41.4, LANDING[0][1] + 1.0, 90.0, 7.2, 7.4, 8.4, 4.4, 45.0, "gable", "corner")
-    building("D (1107, empty since 1986)", 60.6, _yh - 2.0, 90.0, 7.6, 7.0, 12.65, 4.0, 46.0, "gable", "corner")
+    building("D (1107, empty since 1986)", 53.6, _yh + 5.6, -90.0, 7.6, 7.0, 12.65, 4.0, 46.0, "gable", "corner")
     building("E (304, 1826)", 50.0, _yt + 2.6, 90.0, 7.0, 6.8, 16.6, 4.0, 46.0, "eaves", "corner")
     YARDS.append(([(36.0, _yl + 2.2), (47.2, _yl + 2.2), (47.2, LANDING[0][1] - 0.6), (36.0, LANDING[0][1] - 0.6)], 5.2))
 
@@ -290,7 +334,8 @@ def lay_out():
                                     (11.2, 9.0, 7.2, 40.0, "eaves"), (10.0, 9.0, 6.0, 44.0, "gable"), (12.0, 9.0, 7.6, 40.0, "eaves")]:
         if hx > 150:
             break
-        b = dict(name=f"Harbour Row {len(BUILDINGS)}", ox=hx, oy=0.0, angle=0.0, w=w, d=d, base=1.9, eave=eave,
+        yb, ab = hr_line(hx)
+        b = dict(name=f"Harbour Row {len(BUILDINGS)}", ox=hx, oy=yb, angle=ab, w=w, d=d, base=1.9, eave=eave,
                  pitch=pitch, roof=roof, role="row", low=None)
         fp = footprint(b)
         if free(fp) and clear_of_lanes(fp, skip="Harbour Row"):
@@ -298,8 +343,8 @@ def lay_out():
         hx += w + rng.choice([0.0, 0.0, 0.4, 0.8, 1.2])
     # round the head's curve to the square
     for x0, w in [(156.0, 11.0), (169.0, 10.0), (181.0, 12.0), (215.0, 10.0), (227.0, 11.0), (240.0, 10.0), (262.0, 12.0), (276.0, 10.0)]:
-        oy = lane_y([(p[0], p[1] + 8.0, p[2]) for p in HARBOUR_ROW], x0 + w / 2) or 0.0
-        b = dict(name=f"Harbour Row {len(BUILDINGS)}", ox=x0, oy=oy, angle=0.0, w=w, d=9.0, base=2.0,
+        oy, ang = hr_line(x0)
+        b = dict(name=f"Harbour Row {len(BUILDINGS)}", ox=x0, oy=oy, angle=ang, w=w, d=9.0, base=2.0,
                  eave=rng.uniform(6.2, 8.0), pitch=rng.uniform(38, 46), roof=rng.choice(["eaves", "eaves", "gable"]), role="row", low=None)
         fp = footprint(b)
         if free(fp) and clear_of_lanes(fp, skip="Harbour Row"):
@@ -309,12 +354,12 @@ def lay_out():
     building("the cathedral, nave", 452.0, -42.0, 90.0, 60.0, 19.0, 9.6, 14.0, 50.0, "gable", "landmark")
     building("the cathedral, west tower", 452.0, -52.0, 90.0, 12.0, 19.0, 9.6, 34.0, 60.0, "tower", "landmark")
     building("the cathedral, choir", 456.0, 18.0, 90.0, 18.0, 11.0, 9.6, 12.0, 50.0, "gable", "landmark")
-    building("the Fish Hall", 300.0, -128.0, -8.0, 34.0, 13.0, 2.4, 6.0, 30.0, "gable", "landmark")
+    building("the Fish Hall", 340.0, -133.0, 0.0, 30.0, 12.0, 2.5, 6.0, 30.0, "gable", "landmark")
     building("the Fire Watch", 147.0, -331.0, 0.0, 9.0, 9.0, 30.0, 15.0, 0.0, "tower", "landmark")
     building("the breakwater's light", -314.0, -114.0, 0.0, 4.0, 4.0, 2.5, 9.0, 0.0, "tower", "landmark")
     building("the beacon on the Pip", -372.0, -62.0, 0.0, 3.0, 3.0, 6.0, 7.0, 0.0, "tower", "landmark")
-    building("the customs house", -224.0, -200.0, 90.0, 14.0, 9.0, 4.0, 5.2, 42.0, "eaves", "landmark")
-    building("the harbour master", -206.0, -236.0, 90.0, 9.0, 8.0, 5.0, 4.6, 44.0, "gable", "landmark")
+    building("the customs house", -198.0, -208.0, 90.0, 14.0, 9.0, 3.4, 5.2, 42.0, "eaves", "landmark")
+    building("the harbour master", -196.0, -248.0, 90.0, 9.0, 8.0, 4.6, 4.6, 44.0, "gable", "landmark")
     building("the bandstand in Lookout Park", 6.0, 232.0, 0.0, 6.0, 6.0, 46.0, 3.0, 30.0, "hip", "landmark")
     building("the tunnel's portal", -258.0, 6.0, 0.0, 10.0, 3.0, 1.9, 6.0, 0.0, "flat", "landmark")
 
@@ -334,7 +379,7 @@ def lay_out():
             building(f"Holm warehouse {i}.{j}", bx + w, front, 180.0, w, front - back, 2.1,
                      rng.uniform(7.6, 9.4), rng.uniform(42, 50), "gable", "warehouse")
         if i % 2 == 1:
-            sx = x + 18.4
+            sx = x + 19.3  # the gap between this pair and the next
             yq = lane_y(BARREL_QUAY, sx) or -162.0
             STAIR_LANES.append(dict(name=f"stair-lane {len(STAIR_LANES)}", width=2.2, kind="steps",
                                     pts=[(sx, yq - 6.2, 2.0), (sx, -220.4, 8.0)]))
@@ -376,12 +421,20 @@ def lay_out():
     LANES[:] = [l for l in LANES if not l["name"].startswith("stair-lane")] + STAIR_LANES
 
     # Market Square's edges: an irregular room, streets entering at its corners
-    for name, ox, oy, a, w, d, eave in [("the square's south side 1", 444.0, -150.0, 90.0, 22.0, 12.0, 9.0),
-                                        ("the square's south side 2", 448.0, -124.0, 90.0, 16.0, 12.0, 10.0),
-                                        ("the square's south side 3", 450.0, -104.0, 90.0, 24.0, 12.0, 8.6),
-                                        ("the bank", 360.0, -150.0, 0.0, 26.0, 14.0, 11.0),
-                                        ("the hotel", 400.0, -168.0, 0.0, 30.0, 16.0, 13.0)]:
+    for name, ox, oy, a, w, d, eave in [("the square's south side 1", 450.0, -152.0, 90.0, 22.0, 12.0, 9.0),
+                                        ("the square's south side 2", 452.0, -127.0, 90.0, 16.0, 12.0, 10.0),
+                                        ("the square's south side 3", 454.0, -108.0, 90.0, 24.0, 12.0, 8.6),
+                                        ("the bank", 372.0, -153.0, 0.0, 24.0, 13.0, 11.0),
+                                        ("the hotel", 404.0, -172.0, 0.0, 30.0, 16.0, 13.0)]:
         building(name, ox, oy, a, w, d, 2.6, eave, 36.0, "hip", "landmark")
+
+    # the Grid: rebuilt straight after the fires, laid over the slope regardless of it; perimeter blocks of
+    # two- and three-storey buildings round yards, 12 m streets, Broad Street (30 m) one of its lines
+    for bx0, bx1 in [(274.0, 330.0), (342.0, 398.0), (410.0, 466.0), (478.0, 534.0)]:
+        for by0, by1 in [(-252.0, -292.0), (-304.0, -344.0), (-356.0, -396.0), (-408.0, -448.0)]:
+            grid_block(bx0, bx1, by1, by0, rng)
+    for by0, by1 in [(-262.0, -296.0), (-308.0, -344.0)]:
+        grid_block(206.0, 232.0, by1, by0, rng)  # the narrow blocks between Watch Knoll and Broad Street
 
     # the old town's rows along its terraces, uphill and downhill sides
     keep = [LANDING, [(36.0, _yl + 1.0), (47.6, _yl + 1.0), (47.6, LANDING[0][1]), (36.0, LANDING[0][1])],

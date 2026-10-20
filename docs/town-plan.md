@@ -122,6 +122,30 @@ The set pieces that make the centre worth exploring, each with its size and its 
 | The edge | Between the forest and the town | Allotments, a football ground, a scout hut | Weekends, children | Shouts, a ball |
 | Gull Island and the Teeth | The Roads | Low rock, heather, a few cabins | Seen from everywhere; a boat trip | Sea |
 
+## Wonder and adventure
+
+The town must never read as a plain grey harbour town. Beside its everyday life it holds things of great scale, secrets and places that stop you, each grounded in the region's real history, so wonder is never invented against the facts:
+- **The platform in the fjord.** A Condeep, one of the giant concrete oil platforms built near Stavanger in the 1980s, stands under construction out beyond Bridge Island: three shafts rising over a base of cells, over a hundred metres tall, higher every year, lit at night. Seen from Herring Hill, the Basin's mouth and the High Moor.
+- **The High Bridge.** The bridge of 1978 to Bridge Island, a high span in the sky over the Roads, ships passing under it.
+- **The funicular.** A rail car up Tower Wood's steep side to the water tower and its viewpoint (after Bergen's Fløibanen of 1918).
+- **The sea caves under the Bluff,** reachable at low tide from the rocks, and the smugglers' tunnel from them to a cellar on Harbour Row, from the years when spirits were banned (1916 to 1927).
+- **Gun Ridge's tunnels.** German bunkers and the passages between them, sealed, then opened by children, then sealed again.
+- **The monastery on Gull Island.** The ruin of a medieval monastery, the oldest thing in sight (after Utstein, near Stavanger): walls, a church without a roof, a cloister of grass.
+- **The wreck in the Roads.** A mast and a bow showing at low tide, a story everyone tells differently.
+- **The Fire Watch.** The watchman's room at the top of Watch Knoll's tower, with its bell; the Crack's stair up to it.
+- **The cannery's chimney and the Supply Base's cranes,** the town's industrial skyline, floodlit at night.
+- **Weather and light as events.** Fog coming in from the Roads and swallowing the islands; storm spray over the breakwater; the lighthouse's beam; northern lights over the High Moor on a cold night; the midsummer night that never gets dark.
+
+## Between the buildings
+
+The space between buildings carries as much life and history as the buildings (`docs/research/between-buildings.md`), and it is laid out with the same care, from the first clay pass:
+- **Yards and walls:** a yard behind most houses on the hill, dry-stone walls and picket fences, garden sheds, a washing line, a water butt by the downpipe.
+- **Steps and doors:** a stoop of a few steps where a door stands above its lane; short stepped passages between houses; benches on the stairs' landings.
+- **The quays:** granite edges with bollards, ladders and stone steps down to the water, mooring rings, a crane on the fish quay, nets and crates where work happens.
+- **Boats:** fishing boats and small craft moored along the quays, the Penny Ferry's two landing stages, a tall ship at Barrel Quay for the summer.
+- **Lamps:** lanterns on posts and wall brackets in the old town, poles along the quays and Broad Street, each of its era.
+- **Small places:** a widening where lanes meet, with a well or a bench; Market Square's fountain and stalls; the Landing.
+
 ## Every place has a use
 
 Land may be empty; it may never be dead. Every piece of the map has a use in the town's life and a reason for a game to go there, and every use carries the scenes that could happen in it. Scenes are not only interiors: a quay at night, a forest clearing, a farmyard, a boat, a bunker are scenes too (`docs/living-world.md`). The map of uses is `reviews/lt1/centre/centre-land-use.png`.

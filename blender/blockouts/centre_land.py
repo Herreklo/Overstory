@@ -33,7 +33,7 @@ COAST = [
     (96, -430, "n"), (70, -360, "n"), (54, -300, "q"),
     # the sund's east bank, then the Basin's west quay to the head, the head, and Harbour Row back to the point
     (54, -150, "q"), (150, -140, "q"), (240, -130, "q"), (300, -124, "q"), (332, -106, "q"), (344, -80, "q"),
-    (334, -50, "q"), (300, -32, "q"), (250, -22, "q"), (150, -15, "q"),
+    (334, -50, "q"), (300, -32, "q"), (250, -22, "q"), (150, -15, "q"), (-60, -12.4, "q"), (-160, -15.4, "q"),
     # the old town's point: rock round its tip below the bluff
     (-250, -15, "n"), (-280, 10, "n"), (-322, 60, "n"), (-348, 120, "n"), (-342, 190, "n"), (-312, 260, "n"),
     (-292, 330, "n"), (-262, 390, "n"),
@@ -116,16 +116,23 @@ WATER = [COAST_LINE]
 CONTOURS = [
     # the old town's hill, between the Basin and the east harbour: its spine, its sides, the bluff at its tip
     (38.0, [(-170, 170), (-60, 200), (60, 214), (180, 200), (240, 190)]),
-    (20.0, [(-200, 86), (-60, 92), (60, 96), (180, 90), (250, 70)]),
-    (10.0, [(-215, 50), (-60, 52), (60, 54), (190, 46), (260, 30)]),
+    # its west slope, drawn on the old town's levels: the quay apron, then Low, High, Top and Crest terraces
+    (2.2, [(-250, 2), (-160, 0), (-60, 3), (150, 0), (250, -8), (300, -18), (330, -32)]),
+    # spurs bulge towards the water (about x -170, -30, 130), hollows run back where the streams come down
+    (3.0, [(-232, 16), (-170, 14), (-110, 26), (-60, 19), (-30, 14), (0, 18), (49, 22), (90, 18), (130, 13), (170, 17), (200, 20), (260, 8)]),
+    (8.0, [(-226, 34), (-170, 30), (-110, 46), (-60, 37), (-30, 30), (10, 36), (47, 40), (90, 35), (130, 28), (170, 34), (210, 36), (280, 18)]),
+    (16.0, [(-214, 70), (-170, 64), (-110, 86), (-60, 76), (-30, 66), (10, 74), (47, 80), (90, 72), (130, 62), (170, 70), (215, 72), (290, 44)]),
+    (28.0, [(-196, 124), (-160, 116), (-110, 142), (-60, 132), (-20, 120), (20, 128), (60, 134), (110, 124), (150, 112), (200, 120), (250, 108)]),
     (20.0, [(-210, 340), (-80, 370), (20, 400), (80, 440)]),
     (10.0, [(-220, 390), (-90, 420), (10, 444), (70, 470)]),
     (24.0, [(-262, 30), (-300, 70), (-324, 125), (-318, 195), (-290, 262), (-268, 330)]),  # the bluff's top edge
     (3.0, [(-276, 30), (-314, 70), (-338, 125), (-332, 195), (-304, 262), (-282, 330)]),   # its foot: a rock face
     # the saddle from the hill's back to the forest hill
     (30.0, [(240, 260), (300, 340), (360, 420)]),
-    # the Holm: low, with a spine
+    # the Holm: Barrel Quay's apron, then up to its spine, Holm Street
+    (2.2, [(-190, -170), (0, -168), (38, -164)]),
     (8.0, [(-236, -236), (-120, -232), (0, -228), (34, -226)]),
+    (2.2, [(56, -160), (150, -150), (240, -140), (300, -134), (334, -128)]),  # the mainland's Barrel Quay
     # the mainland west of the sund: the pub quay's upper street, then the fire grid's slope
     (8.0, [(60, -186), (150, -176), (250, -160), (300, -150)]),
     (12.0, [(90, -300), (200, -300), (330, -280), (500, -260)]),
@@ -182,18 +189,24 @@ SPOTS = [
 
 ]
 OUTCROPS = [
-    # the knoll: a main mass of bare rock and three lower lobes, so its outline is broken, not round
-    dict(name="the knoll", x=152.0, y=-326.0, r=42.0, face=6.0, top=30.0, sx=1.1, sy=1.0),
-    dict(name="the knoll's west lobe", x=118.0, y=-372.0, r=30.0, face=5.0, top=23.0, sx=1.3, sy=0.9),
-    dict(name="the knoll's north lobe", x=104.0, y=-310.0, r=22.0, face=4.0, top=19.0, sx=1.0, sy=1.2),
-    dict(name="the knoll's south lobe", x=196.0, y=-352.0, r=28.0, face=6.0, top=25.0, sx=1.2, sy=1.0),
-    dict(name="the corner's knuckle", x=59.0, y=39.0, r=7.5, face=1.3, top=12.6, sx=1.0, sy=1.15),
-    dict(name="the cathedral's rise", x=470.0, y=-10.0, r=50.0, face=32.0, top=10.0, sx=1.0, sy=1.0),
     dict(name="the Holm's rock tip", x=-246.0, y=-246.0, r=26.0, face=10.0, top=7.0, sx=1.0, sy=1.4),
     dict(name="the beacon islet", x=-370.0, y=-60.0, r=16.0, face=8.0, top=6.0, sx=1.3, sy=1.0),
     dict(name="a skerry", x=-480.0, y=110.0, r=12.0, face=6.0, top=4.0, sx=1.0, sy=1.0),
     dict(name="a skerry", x=-640.0, y=-60.0, r=10.0, face=5.0, top=3.0, sx=1.0, sy=1.0),
     dict(name="a skerry", x=-460.0, y=560.0, r=14.0, face=7.0, top=4.0, sx=1.0, sy=1.0),
+]
+# Rock with an outline of its own: a plateau of bare rock inside an irregular polygon, falling at its edge over
+# the face's width, its top tilted and broken in steps; the outline, not a circle, is what reads.
+ROCKS = [
+    dict(name="Watch Knoll", top=30.0, face=5.0, tilt=(0.0, 0.0), steps=2.0,
+         outline=[(92, -300), (104, -284), (124, -280), (142, -288), (164, -282), (186, -296), (204, -312), (214, -336),
+                  (206, -360), (212, -384), (196, -404), (170, -408), (150, -398), (128, -404), (104, -394), (90, -372),
+                  (96, -350), (84, -330)]),
+    dict(name="the corner's knuckle", top=12.6, face=1.4, tilt=(0.0, 0.0), steps=0.6,
+         outline=[(52.4, 31.0), (58.0, 30.4), (63.6, 32.0), (66.4, 37.0), (65.0, 42.4), (66.0, 46.6), (60.6, 48.2),
+                  (54.0, 47.4), (51.8, 43.0), (52.6, 37.4)]),
+    dict(name="the cathedral's rise", top=10.0, face=26.0, tilt=(0.0, 0.0), steps=0.0,
+         outline=[(430, -60), (468, -70), (500, -52), (512, -10), (506, 34), (476, 48), (440, 40), (424, 6)]),
 ]
 VALLEYS = [
     # the stream from the forest hill's saddle down to the east harbour's head, in a green valley
@@ -293,35 +306,116 @@ def water_mask(X, Y):
     return w
 
 
+# -- the smooth surface through the drawn lines ----------------------------------------------------------------------
+# Solved once on a grid (Laplace's equation, the shore, the contour lines and the spot heights held fixed, coarse
+# to fine), then sampled. Between two contour lines the ground ramps evenly from one to the other, as a mapmaker
+# reads them; nothing flattens round a line, and the shore stays at the shore's height. Cached in .cache/.
+
+DOMAIN = (-1600.0, -1600.0, 2800.0, 2800.0)
+_GRID = {}
+
+
+def _design_key():
+    import hashlib
+    blob = repr((COAST, ISLANDS, LAKE, CONTOURS, SPOTS, DOMAIN)).encode()
+    return hashlib.sha1(blob).hexdigest()[:16]
+
+
+def _constraints(step):
+    x0, y0, x1, y1 = DOMAIN
+    xs = np.arange(x0, x1 + step / 2, step)
+    ys = np.arange(y0, y1 + step / 2, step)
+    GX, GY = np.meshgrid(xs, ys, indexing="ij")
+    val = np.zeros(GX.shape)
+    fix = np.zeros(GX.shape, dtype=bool)
+    water = water_mask(GX, GY)
+    val[water], fix[water] = 1.0, True
+    lake = _inside(LAKE_LINE, GX, GY)
+    val[lake], fix[lake] = LAKE_LEVEL + 0.4, True
+
+    def put(x, y, z, r=0.0):
+        i = int(round((x - x0) / step))
+        j = int(round((y - y0) / step))
+        k = max(0, int(r / step))
+        if 0 <= i < GX.shape[0] and 0 <= j < GX.shape[1]:
+            val[max(0, i - k):i + k + 1, max(0, j - k):j + k + 1] = z
+            fix[max(0, i - k):i + k + 1, max(0, j - k):j + k + 1] = True
+
+    def line(pts, zf):
+        for (xa, ya), (xb, yb) in zip(pts, pts[1:]):
+            n = max(1, int(math.hypot(xb - xa, yb - ya) / (step * 0.5)))
+            for t in range(n + 1):
+                u = t / n
+                put(xa + (xb - xa) * u, ya + (yb - ya) * u, zf(u))
+
+    coast = [p for p in COAST_LINE if abs(p[0]) < 1390 and abs(p[1]) < 1390]
+    line(coast, lambda u: 1.8)
+    for poly, top in ISLAND_LINES:
+        line(poly + poly[:1], lambda u: 1.8)
+        cx = sum(p[0] for p in poly) / len(poly)
+        cy = sum(p[1] for p in poly) / len(poly)
+        put(cx, cy, top, r=20.0)
+    for z, pts in CONTOURS:
+        if z is None:
+            for (xa, ya, za), (xb, yb, zb) in zip(pts, pts[1:]):
+                line([(xa, ya), (xb, yb)], lambda u, za=za, zb=zb: za + (zb - za) * u)
+        else:
+            line(pts, lambda u, z=z: z)
+    for z, (x, y) in SPOTS:
+        put(x, y, z, r=12.0)
+    return val, fix
+
+
+def _relax(Z, val, fix, iters):
+    Z = np.where(fix, val, Z)
+    for _ in range(iters):
+        P = np.pad(Z, 1, mode="edge")
+        N = (P[:-2, 1:-1] + P[2:, 1:-1] + P[1:-1, :-2] + P[1:-1, 2:]) * 0.25
+        Z = np.where(fix, val, N)
+    return Z
+
+
+def _solve():
+    import os
+    key = _design_key()
+    cache = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".cache", f"land-{key}.npy")
+    if os.path.exists(cache):
+        return np.load(cache)
+    Z = None
+    for step, iters in [(64.0, 800), (32.0, 700), (16.0, 600), (8.0, 500), (4.0, 400)]:
+        val, fix = _constraints(step)
+        if Z is None:
+            Z = np.where(fix, val, 12.0)
+        else:  # the coarser answer, doubled, starts the finer one
+            Z = np.repeat(np.repeat(Z, 2, axis=0), 2, axis=1)
+            Z = np.pad(Z, ((0, max(0, val.shape[0] - Z.shape[0])), (0, max(0, val.shape[1] - Z.shape[1]))), mode="edge")
+            Z = Z[:val.shape[0], :val.shape[1]]
+        Z = _relax(Z, val, fix, iters)
+    os.makedirs(os.path.dirname(cache), exist_ok=True)
+    np.save(cache, Z)
+    return Z
+
+
+def _base_surface(X, Y):
+    if "Z" not in _GRID:
+        _GRID["Z"] = _solve()
+    G = _GRID["Z"]
+    x0, y0 = DOMAIN[0], DOMAIN[1]
+    step = 4.0
+    u = np.clip((X - x0) / step, 0, G.shape[0] - 1.001)
+    v = np.clip((Y - y0) / step, 0, G.shape[1] - 1.001)
+    i, j = np.floor(u).astype(int), np.floor(v).astype(int)
+    fu, fv = u - i, v - j
+    a = G[i, j] + (G[i + 1, j] - G[i, j]) * fu
+    b = G[i, j + 1] + (G[i + 1, j + 1] - G[i, j + 1]) * fu
+    return a + (b - a) * fv
+
+
 def heights(X, Y):
     """The designed ground at arrays of points X, Y (street metres)."""
     X = np.asarray(X, dtype=float)
     Y = np.asarray(Y, dtype=float)
-    num = np.zeros(X.shape)
-    den = np.zeros(X.shape)
-
-    def add(z, d, p=2.2):
-        w = 1.0 / (d ** p + 900.0)  # soft within about 20 m of a line, so lines never pinch into stars
-        num[...] += w * z
-        den[...] += w
-
-    coast = [p for p in COAST_LINE if abs(p[0]) < 1390 and abs(p[1]) < 1390]  # not the map's far edge
-    add(1.6, _poly_dist(X, Y, coast, closed=False))
-    add(LAKE_LEVEL + 0.6, _poly_dist(X, Y, LAKE_LINE))
-    for poly, top in ISLAND_LINES:
-        add(1.6, _poly_dist(X, Y, poly))
-        cx = sum(p[0] for p in poly) / len(poly)
-        cy = sum(p[1] for p in poly) / len(poly)
-        add(top, np.hypot(X - cx, Y - cy))
-    for z, line in CONTOURS:
-        if z is None:  # a line whose height runs along it
-            d, zl = _line_dist_z(X, Y, line)
-            add(zl, d)
-        else:
-            add(z, _poly_dist(X, Y, line, closed=False))
-    for z, (x, y) in SPOTS:
-        add(z, np.hypot(X - x, Y - y))
-    Z = num / den
+    Z = _base_surface(X, Y)
 
     # streams cut the old town's west slope; seeded unevenness off the quays
     for g in GULLIES:
@@ -362,6 +456,20 @@ def heights(X, Y):
         d = np.hypot((X - o["x"]) / o["sx"], (Y - o["y"]) / o["sy"])
         k = _smoothstep(o["r"], o["r"] - o["face"], d)
         Z = np.where(d < o["r"], np.maximum(Z, Z + (o["top"] - Z) * k), Z)
+    for r in ROCKS:
+        poly = r["outline"]
+        xs_ = [p[0] for p in poly]; ys_ = [p[1] for p in poly]
+        sel = (X > min(xs_) - r["face"] - 2) & (X < max(xs_) + r["face"] + 2) & (Y > min(ys_) - r["face"] - 2) & (Y < max(ys_) + r["face"] + 2)
+        if not sel.any():
+            continue
+        Xs, Ys = X[sel], Y[sel]
+        inside = _inside(poly, Xs, Ys)
+        d = _poly_dist(Xs, Ys, poly)
+        sd = np.where(inside, -d, d)  # negative inside the outline
+        top = r["top"] - r["steps"] * np.floor(_noise(Xs, Ys, 14.0, 77) * 2.6)  # a top broken into ledges
+        k = _smoothstep(r["face"], 0.0, sd)
+        Zs = Z[sel]
+        Z[sel] = np.where(sd < r["face"], np.maximum(Zs, Zs + (top - Zs) * k), Zs)
     for c in CLEFTS:
         d = _poly_dist(X, Y, c["line"], closed=False)
         Z -= c["depth"] * np.exp(-(d / c["width"]) ** 2) * _smoothstep(4.0, 12.0, Z)
