@@ -42,9 +42,13 @@ import tree_growth as G  # noqa: E402
 # bark: one bark tile round and along (m); grow_to: how long the timeline is grown (it contains every younger age);
 # sag: how much the branches give under their own weight (see sag); atlas: which painted leaves the cards carry (the
 # species' sprays, or its clumps: a painter's blocking of its foliage); hang: clumps hang from their shoots' ends,
-# sized for a twig's foliage on a grown tree (clump_full: the height at which they reach full size).
+# sized for a twig's foliage on a grown tree (clump_full: the height at which they reach full size). cluster_size: the
+# cluster atlas's cards by kind (as the atlas's cells, in metres on a grown tree); edge_gap: the spacing of the extra
+# small sprays that line the limbs' ends (where the crown is under edge_depth deep), so a limb's end is lined with
+# light, broken sprays, never one tuft on a bare stick; crossed: each cluster two cards crossed about the vertical.
 PARTS = {
-    "birch": dict(sag=0.12, taper=0.55, occlusion=0.05, seam=0.3, atlas="lobes", lobe=0.8, lobe_gap=0.3, lose_tips=40, hang=False, card=(0.50, 0.48), card_u=(0.03, 0.97), cells=4,
+    "birch": dict(sag=0.12, taper=0.55, occlusion=0.05, seam=0.3, atlas="clusters", lobe=0.8, lobe_gap=0.36,
+                  cluster_size=(1.3, 1.15, 1.05, 0.85), crossed=True, edge_gap=0.22, edge_depth=0.2, lose_tips=40, hang=False, card=(0.50, 0.48), card_u=(0.03, 0.97), cells=4,
                   per_node=2, along=1, droop=0.7, leaf_years=999, leaf_tips=24, draw_tips=2.5, draw_tips_per_m=0.9, winter_tips=3.0, reach=99.0, hang_reach=0.3,
                   bark=(0.30, 0.60), max_cards=4200, grow_to=80),
     "spruce": dict(card=(0.60, 0.40), cells=4, per_node=2, droop=0.25, leaf_years=7, leaf_tips=30, draw_tips=3.0, draw_tips_per_m=0.45,
@@ -78,7 +82,7 @@ def read(species, seed, age, quality, events=(), exposure=0.0, origin="planted")
     pipe = t["radius"][:, age].astype(np.float64)
     paint = float(t["paint"]) if "paint" in t else 0.0
     paint_n = np.where(t["order"] >= 1, paint, 0.0)              # the push weighs the limbs, never the trunk
-    tl = dict(parent=t["parent"], start=t["start"].astype(np.float64), end=t["end"].astype(np.float64),
+    tl = dict(species=species, parent=t["parent"], start=t["start"].astype(np.float64), end=t["end"].astype(np.float64),
               born=t["born"], order=t["order"], r=drawn_radius(pipe, paint_n), alive=alive,
               tips=(pipe / G.SPECIES[species]["tip_radius"]) ** G.SPECIES[species]["pipe"],
               cut=np.where((t["cut"] >= 0) & (t["cut"] <= age), age - t["cut"], -1) if "cut" in t else np.full(len(alive), -1))
@@ -251,6 +255,9 @@ def branch_mesh(tl, parts, H, vols=None, needed=None):
     wood = []                                            # (point, appear) every few centimetres along drawn wood
     node_appear = {}                                     # every drawn node: the season from which it shows
     tl["node_appear"] = node_appear
+    base_appear = {}                                     # and from which it would show if no spray hid it
+    tl["base_appear"] = base_appear
+    cover = tl.get("cover")                              # per node: the season until which a spray round it hangs
     cs = chains(tl)
     # a chain is drawn if it carries enough tips and is long enough to be more than a stub, or if any branch drawn
     # off it needs it to hang from: nothing drawn ever hangs from nothing
@@ -303,6 +310,11 @@ def branch_mesh(tl, parts, H, vols=None, needed=None):
                 # a fine twig end that carries no leaves: in leaf it is among the foliage's edge; it shows as the
                 # outer leaves fall
                 appear[k] = ranked_fall(tl, fall_at(0.1, pts[k][2] / max(H, 1e-3)))
+            if k > 0 and cover is not None and tp[k] < draw:
+                # a fine twig inside a spray is hidden while the spray hangs: a twig sits inside its leaves, and only
+                # the limbs come out of a mass
+                base_appear[c[k - 1]] = appear[k]
+                appear[k] = max(appear[k], cover[c[k - 1]])
             if k > 0:
                 node_appear[c[k - 1]] = appear[k]
         pts, rad, appear = pts[:stop], rad[:stop], appear[:stop]
@@ -392,10 +404,11 @@ def drawn_tips(parts, H):
     return max(parts["draw_tips"], H * parts["draw_tips_per_m"])
 
 
-def leafy(tl, parts, age, seed, draw):
+def leafy(tl, parts, age, seed, draw, cap=True):
     """The nodes that carry a spray at the age: the living shoots younger than the species keeps leaves on, thin
     enough, and near enough drawn wood that the spray is seen to hang from it (no leaves in the air on twigs too thin
-    to draw), at most max_cards of them (a seeded choice if there are more)."""
+    to draw), at most max_cards of them (a seeded choice if there are more) unless cap is off (the caller spaces
+    them itself)."""
     parent, alive, tips = tl["parent"], tl["alive"], tl["tips"]
     seglen = np.linalg.norm(tl["end"] - tl["start"], axis=1)
     undrawn = np.zeros(len(parent))
@@ -405,7 +418,7 @@ def leafy(tl, parts, age, seed, draw):
     ok = alive & (age - tl["born"] < parts["leaf_years"]) & (tl["tips"] <= parts["leaf_tips"]) \
         & (undrawn <= parts.get("reach", 0.9))
     ids = np.nonzero(ok)[0]
-    if len(ids) > parts["max_cards"]:
+    if cap and len(ids) > parts["max_cards"]:
         keep = sorted(ids, key=lambda i: h01(seed, i, 7))[:parts["max_cards"]]
         ids = np.array(sorted(keep))
     return ids
@@ -568,10 +581,23 @@ def thin(points, keys, gap):
 
 
 def fall_at(depth, zrel, seeded=0.5, gale=0.5):
-    """The order (raw) in which foliage falls: inside and low first, the outer upper shoots last, broken by chance
-    and by the gale, which strips whole outer branch groups together (on this coast an October birch is patchy:
-    green, gold and bare twigs side by side). Cards and twigs share it, so a twig shows as its leaves go."""
-    return 0.3 * (1.0 - depth) + 0.15 * float(np.clip(zrel, 0.0, 1.0)) + 0.3 * seeded + 0.25 * gale
+    """The order (raw) in which foliage falls: inside and low first, the outer upper shoots last, broken mostly by
+    the gale, which strips whole branch groups together (on this coast an October birch is patchy: green, gold and
+    bare branches side by side, each lobe whole or gone, never every lobe evenly thinned), and a little by chance.
+    Cards and twigs share it, so a twig shows as its leaves go."""
+    return 0.3 * (1.0 - depth) + 0.15 * float(np.clip(zrel, 0.0, 1.0)) + 0.1 * seeded + 0.45 * gale
+
+
+def branch_groups(tl, order=3):
+    """Each node's branch group: the base of the branch of the given order it grows on (a node of that order or
+    lower, the base of its own branch), so a group is a branch with its twigs, about a lobe of the crown."""
+    parent, orders = tl["parent"], tl["order"]
+    base = np.arange(len(parent))
+    for i in range(1, len(parent)):
+        p = parent[i]
+        if orders[i] > order or orders[i] == orders[p]:
+            base[i] = base[p]
+    return base
 
 
 def ranked_fall(tl, raw):
@@ -582,17 +608,31 @@ def ranked_fall(tl, raw):
     return float(np.interp(raw, order, q))
 
 
+def anchors(species):
+    """Where each cell of the species' cluster atlas has its twig come in (x, y as shares of the cell from its top
+    left), and which cells hang, from its painted parts (blender/parts/trees/<species>/paint.py), so the card and the
+    painting always agree."""
+    import importlib.util
+    path = os.path.join(HERE, "..", "parts", "trees", species, "paint.py")
+    spec = importlib.util.spec_from_file_location(f"paint_{species}", path)
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return [mod.CLUSTERS[k]["anchor"] for k in mod.KINDS], [mod.CLUSTERS[k]["hang"] for k in mod.KINDS]
+
+
 def lobe_mesh(tl, parts, age, seed, H):
     """The foliage as a painter's lobes: one painted lobe card (strokes standing for little groups of leaves,
     flat-filled, scalloped at the edge) for each patch of leafy shoots about lobe_gap across, hung a little below them;
     the crown's masses fitted to them; every corner of every card shaded by its mass's smooth volume (the normal and
     how deep it lies), so a mass reads as one shape with a lit top and a shaded underside, never card by card."""
-    ids = leafy(tl, parts, age, seed, drawn_tips(parts, H))
+    # every leafy shoot, then spaced (a cap before the spacing would drop shoots at random and leave holes)
+    ids = leafy(tl, parts, age, seed, drawn_tips(parts, H), cap=False)
     end = tl["end"]
     if len(ids) == 0:
         return np.zeros((0, 3)), [], [], [], [], [], None, None, None
     scale = min(max(H / parts.get("clump_full", 12.0), 0.55), 1.0)
     size = parts["lobe"] * scale
+    all_ids = ids
     pts = end[ids]
     keep = thin(pts, np.array([h01(seed, i, 21) for i in ids]), parts["lobe_gap"] * scale)
     ids, pts = ids[keep], pts[keep]
@@ -601,6 +641,23 @@ def lobe_mesh(tl, parts, age, seed, H):
     which = spatial_masses(centres, k, seed)
     vols = volumes(centres, which, k)
     trees = hulls(centres, which, k)
+    edge = np.zeros(len(ids), dtype=bool)
+    if parts.get("edge_gap"):
+        # the limbs' ends, where the crown is thin: more, smaller sprays, closer together
+        cc = end[all_ids] - np.array([0.0, 0.0, 0.38 * size])
+        dep = np.array([max((volume_depth(v, c) for v in vols if v is not None), default=0.0) for c in cc])
+        cand = np.nonzero(dep < parts["edge_depth"])[0]
+        union = np.vstack([centres, cc[cand]])
+        keys = np.concatenate([np.full(len(ids), -1.0), [h01(seed, all_ids[c], 22) for c in cand]])
+        kept = thin(union, keys, parts["edge_gap"] * scale)
+        add = cand[[q - len(ids) for q in kept if q >= len(ids)]]
+        if len(add):
+            near = np.array([int(np.argmin([np.linalg.norm(c - (v[0] if v is not None else c + 1e6)) for v in vols]))
+                             for c in cc[add]])
+            ids = np.concatenate([ids, all_ids[add]])
+            centres = np.vstack([centres, cc[add]])
+            which = np.concatenate([which, near])
+            edge = np.concatenate([edge, np.ones(len(add), dtype=bool)])
     # sky between the masses: lobes on the seam between two masses are thinned
     seam = parts.get("seam", 0.0)
     if seam > 0 and k > 1:
@@ -615,10 +672,14 @@ def lobe_mesh(tl, parts, age, seed, H):
             ratio = min(e) / max(e_own, 1e-6) if e else 9.0
             keep.append(not (ratio < 1.0 + seam and h01(seed, i, 15) < 0.9))
         keep = np.array(keep)
-        ids, centres, which = ids[keep], centres[keep], which[keep]
+        ids, centres, which, edge = ids[keep], centres[keep], which[keep], edge[keep]
     V, F, UV0, UV1, NR, COL = [], [], [], [], [], []
     ATTACH = []                                         # per card: where it hangs from, how deep, when it falls
+    EXTENT = []                                         # per card: its spray's middle and reach (what it hides)
     up_w = np.array([0.0, 0.0, 1.0])
+    groups = branch_groups(tl)
+    # clusters: each card hung so that the point where its painted twig comes in lies on its shoot's end
+    anchor, hangs = anchors(tl["species"]) if parts.get("atlas") == "clusters" else (None, None)
     for j, i in enumerate(ids):
         vol = vols[which[j]]
         c0 = vol[0] if vol is not None else centres.mean(axis=0)
@@ -629,53 +690,84 @@ def lobe_mesh(tl, parts, age, seed, H):
         face = out + wob * 0.9
         face -= up_w * np.dot(face, up_w) * 0.7               # mostly upright cards: lobes hang
         face /= max(np.linalg.norm(face), 1e-9)
-        side = np.cross(up_w, face)
-        if np.linalg.norm(side) < 1e-6:
-            side = np.array([1.0, 0.0, 0.0])
-        side /= np.linalg.norm(side)
-        upc = np.cross(face, side)
-        roll = (h01(seed, i, 1) - 0.5) * math.radians(24)     # curtains hang plumb, give or take
-        side, upc = side * math.cos(roll) + upc * math.sin(roll), upc * math.cos(roll) - side * math.sin(roll)
-        # a hierarchy in each mass: big lobes at its core, smaller towards its skin and smallest at its tips
-        depth_j = volume_depth(vol, centres[j]) if vol is not None else 0.3
-        s_ = size * (0.75 + 0.6 * min(depth_j * 2.2, 1.0)) * (0.85 + 0.3 * h01(seed, i, 14))
-        corners = [centres[j] - side * s_ / 2 - upc * s_ / 2, centres[j] + side * s_ / 2 - upc * s_ / 2,
-                   centres[j] + side * s_ / 2 + upc * s_ / 2, centres[j] - side * s_ / 2 + upc * s_ / 2]
-        b = len(V)
-        V.extend(corners)
-        F.append((b, b + 1, b + 2, b + 3))
-        # which curtain: round or wide on a mass's top, long ones hanging at the crown's outer lower edge, small at
-        # the skin (the atlas: 0 round, 1 tall, 2 wide, 3 small)
-        zr = float(np.clip(centres[j][2] / max(H, 1e-3), 0.0, 1.0))
-        top_of_mass = vol is not None and (centres[j] - vol[0])[2] > 0.25 * vol[2].max()
-        if top_of_mass:
-            cell = 0 if h01(seed, i, 2) < 0.5 else 2
-        elif zr < 0.55 and depth_j < 0.3:
-            cell = 1
-        elif depth_j < 0.15:
-            cell = 3
-        else:
-            cell = int(h01(seed, i, 2) * parts["cells"]) % parts["cells"]
-        cx, cy = (cell % 2) * 0.5, 1.0 - (cell // 2) * 0.5 - 0.5
-        u0, u1 = (cx, cx + 0.5) if h01(seed, i, 3) < 0.5 else (cx + 0.5, cx)
-        UV0.extend([(u0, cy), (u1, cy), (u1, cy + 0.5), (u0, cy + 0.5)])
-        depth_c = volume_depth(vol, centres[j]) if vol is not None else 0.0
-        zrel = float(np.clip(centres[j][2] / max(H, 1e-3), 0.0, 1.0))
-        rank = 0.55 * h01(seed, i, 4) + 0.45 * depth_c
-        # the gale's share: the same for a group of shoots (the cards hanging from one branch), seeded
-        group = int(tl["parent"][tl["parent"][i]]) if i > 0 and tl["parent"][i] > 0 else int(i)
-        fall = fall_at(depth_c, zrel, h01(seed, i, 9), h01(seed, group, 16))
-        UV1.extend([(rank, fall)] * 4)
-        ATTACH.append((end[i].copy(), depth_j, fall, int(i)))
-        for p in corners:
-            n = volume_normal(vol, p) if vol is not None else face
-            dep = volume_depth(vol, p) if vol is not None else 0.0
-            NR.append(n)
-            # what the corner sees of the sky: less deep in its mass, and less low in the crown (the whole crown
-            # shades from a sky-lit top to a dark underside, as a painter blocks a tree)
-            zc = float(np.clip(p[2] / max(H, 1e-3), 0.0, 1.0))
-            crown = 0.55 + 0.45 * np.clip((zc - 0.25) / 0.6, 0.0, 1.0)
-            COL.append((float((0.25 + 0.75 * (1.0 - dep) ** 1.2) * crown), float(np.clip(0.15 + 0.35 * max(-n[2], 0.0), 0, 1)), 1.0, 1.0))
+        # a drape is two cards crossed a right angle apart about the vertical, so from the street it is never seen
+        # edge-on (a card turned edge-on fades: a spray at the crown's sides would vanish and leave its branch bare)
+        twins = (-45.0, 45.0) if parts.get("crossed") else (0.0,)
+        face_mass = face
+        for twin, turn in enumerate(twins):
+            face = G.rotate(face_mass, up_w, turn)
+            face /= max(np.linalg.norm(face), 1e-9)
+            side = np.cross(up_w, face)
+            if np.linalg.norm(side) < 1e-6:
+                side = np.array([1.0, 0.0, 0.0])
+            side /= np.linalg.norm(side)
+            upc = np.cross(face, side)
+            roll = (h01(seed, i, 1, twin) - 0.5) * math.radians(24)     # curtains hang plumb, give or take
+            side, upc = side * math.cos(roll) + upc * math.sin(roll), upc * math.cos(roll) - side * math.sin(roll)
+            # a hierarchy in each mass: big lobes at its core, smaller towards its skin and smallest at its tips
+            depth_j = volume_depth(vol, centres[j]) if vol is not None else 0.3
+            s_ = size * (0.75 + 0.6 * min(depth_j * 2.2, 1.0)) * (0.85 + 0.3 * h01(seed, i, 14))
+            # which curtain: round or wide on a mass's top, long ones hanging at the crown's outer lower edge, small at
+            # the skin (the atlas: 0 round, 1 tall, 2 wide, 3 small)
+            zr = float(np.clip(centres[j][2] / max(H, 1e-3), 0.0, 1.0))
+            top_of_mass = vol is not None and (centres[j] - vol[0])[2] > 0.25 * vol[2].max()
+            if anchor is not None:
+                # by place: dense core drapes inside a mass, sparse skin drapes at its surface and lining the limbs'
+                # ends, long ones low in the crown where the limbs arch over; the two cards of a drape are the two
+                # variants of its kind (the atlas: 0 core long, 1 core, 2 skin long, 3 skin), each kind its size
+                if depth_j > 0.2 and not edge[j]:
+                    cell = 0 if h01(seed, i, 2) < 0.5 else 1
+                else:
+                    cell = 2 if (zr < 0.6 or h01(seed, i, 2) < 0.3) else 3
+                if twin:
+                    cell ^= 1
+                s_ = parts["cluster_size"][cell] * scale * (0.88 + 0.24 * h01(seed, i, 14, twin))
+            elif top_of_mass:
+                cell = 0 if h01(seed, i, 2) < 0.5 else 2
+            elif zr < 0.55 and depth_j < 0.3:
+                cell = 1
+            elif depth_j < 0.15:
+                cell = 3
+            else:
+                cell = int(h01(seed, i, 2) * parts["cells"]) % parts["cells"]
+            mirror = h01(seed, i, 3) >= 0.5
+            if anchor is not None:
+                if hangs[cell]:
+                    # a hanging cluster's twig arches out of the crown: the painting's right is the way out
+                    mirror = float(np.dot(side, out)) < 0.0
+                ax, ay = anchor[cell]
+                lx, ly = (0.5 - ax if mirror else ax - 0.5), 0.5 - ay
+                centre = end[i] - side * lx * s_ - upc * ly * s_
+            else:
+                centre = centres[j]
+            corners = [centre - side * s_ / 2 - upc * s_ / 2, centre + side * s_ / 2 - upc * s_ / 2,
+                       centre + side * s_ / 2 + upc * s_ / 2, centre - side * s_ / 2 + upc * s_ / 2]
+            b = len(V)
+            V.extend(corners)
+            F.append((b, b + 1, b + 2, b + 3))
+            cx, cy = (cell % 2) * 0.5, 1.0 - (cell // 2) * 0.5 - 0.5
+            u0, u1 = (cx + 0.5, cx) if mirror else (cx, cx + 0.5)
+            UV0.extend([(u0, cy), (u1, cy), (u1, cy + 0.5), (u0, cy + 0.5)])
+            depth_c = volume_depth(vol, centres[j]) if vol is not None else 0.0
+            zrel = float(np.clip(centres[j][2] / max(H, 1e-3), 0.0, 1.0))
+            rank = 0.55 * h01(seed, i, 4) + 0.45 * depth_c
+            # the gale's share: the same for a branch group (a lobe), seeded
+            group = int(groups[i])
+            fall = fall_at(depth_c, zrel, h01(seed, i, 9), h01(seed, group, 16))
+            UV1.extend([(rank, fall)] * 4)
+            ATTACH.append((end[i].copy(), depth_j, fall, int(i)))
+            EXTENT.append((np.mean(corners, axis=0), 0.42 * s_))
+            # a thin outer spray sees the sky round it, not the mass's underside: its normal lifts towards up
+            lift = 0.25 + (0.55 * (1.0 - min(depth_j / 0.3, 1.0)) if anchor is not None else 0.0)
+            for p in corners:
+                n = volume_normal(vol, p, lift) if vol is not None else face
+                dep = volume_depth(vol, p) if vol is not None else 0.0
+                NR.append(n)
+                # what the corner sees of the sky: less deep in its mass, and less low in the crown (the whole crown
+                # shades from a sky-lit top to a dark underside, as a painter blocks a tree)
+                zc = float(np.clip(p[2] / max(H, 1e-3), 0.0, 1.0))
+                crown = 0.55 + 0.45 * np.clip((zc - 0.25) / 0.6, 0.0, 1.0)
+                COL.append((float((0.25 + 0.75 * (1.0 - dep) ** 1.2) * crown), float(np.clip(0.15 + 0.35 * max(-n[2], 0.0), 0, 1)), 1.0, 1.0))
     # the season is the share of this tree's foliage fallen (or, in spring, not yet out): each card's place in the
     # fall order becomes its rank among them, so 0.4 is two curtains in five gone, inside and low first
     if ATTACH:
@@ -688,6 +780,7 @@ def lobe_mesh(tl, parts, age, seed, H):
             UV1[4 * n:4 * n + 4] = [(UV1[4 * n][0], float(ranked[n]))] * 4
         ATTACH = [(a[0], a[1], float(r_), a[3]) for a, r_ in zip(ATTACH, ranked)]
     tl["attach"] = ATTACH
+    tl["extent"] = EXTENT
     return np.array(V), F, UV0, UV1, NR, COL, trees, which, vols
 
 
@@ -837,6 +930,22 @@ def crown_sky(points, H, extinction):
     return np.clip(seen, 0.0, 1.0)
 
 
+def covered(tl):
+    """For every node: the season until which a spray round it still hangs and hides it (0 if none does), from each
+    card's extent (its spray's middle and reach) and when it falls."""
+    if not tl.get("extent"):
+        return None
+    C = np.array([e[0] for e in tl["extent"]])
+    R = np.array([e[1] for e in tl["extent"]])
+    F = np.array([a[2] for a in tl["attach"]])
+    P = tl["end"]
+    out = np.zeros(len(P))
+    for a in range(0, len(P), 512):
+        d = np.linalg.norm(P[a:a + 512, None, :] - C[None], axis=2)
+        out[a:a + 512] = np.where(d < R[None], F[None], 0.0).max(axis=1)
+    return out
+
+
 def hung(attach, tl, parts):
     """Which cards hang from wood: each card hangs from its own shoot, traced up the tree to the first drawn wood,
     which must lie within reach of where the card hangs, and show whenever the card does: in full leaf (or the card
@@ -856,8 +965,12 @@ def hung(attach, tl, parts):
         t = np.clip(np.dot(p - a, b - a) / max(np.dot(b - a, b - a), 1e-12), 0, 1)
         if np.linalg.norm(p - (a + t * (b - a))) > reach:
             continue
-        on_ok = depth > 0.3 or na[j] <= 0.0
-        off_ok = na[j] <= fall + 0.1
+        # while the card shows, its wood shows or is hidden inside a spray that still hangs; once its leaves fall,
+        # its wood shows soon after (unless another spray still hides it)
+        base = tl.get("base_appear", {}).get(j, na[j])
+        cov = tl["cover"][j] if tl.get("cover") is not None else 0.0
+        on_ok = depth > 0.3 or base <= 0.0 or base <= cov or fall <= cov
+        off_ok = base <= fall + 0.1
         if on_ok and off_ok:
             out[n] = True
             while j >= 0:
@@ -925,34 +1038,43 @@ def build(species, seed, age, quality=1.0, unity=None, events=(), exposure=0.0, 
     tl = read(species, seed, age, quality, events, exposure, origin)
     H = float(tl["end"][tl["alive"]][:, 2].max())
     vols = None
-    if parts.get("atlas") == "lobes":
+    if parts.get("atlas") in ("lobes", "clusters"):
         LV, LF, LUV0, LUV1, LN, LC, trees, which, vols = lobe_mesh(tl, parts, age, seed, H)
     else:
         LV, LF, LUV0, LUV1, LN, LC, trees, which = leaf_mesh(tl, parts, age, seed, H, species)
     k = int(which.max()) + 1 if which is not None and len(which) else 0
     BV, BF, BUV0, BUV1, samples, APPEAR, wood = branch_mesh(tl, parts, H, vols)
     if "attach" in tl:
-        # every curtain's own twig, from its shoot up the tree: drawn, however fine, so it hangs from wood
-        paths = {}
-        for (_, _, fall_, i) in tl["attach"]:
-            j = i
-            while j >= 0:
-                if j in paths and paths[j] <= fall_:
-                    break
-                paths[j] = min(paths.get(j, 9.0), fall_)
-                j = int(tl["parent"][j]) if j > 0 else -1
-        # again, now knowing which fine twigs carry leaves: those always show, the bare ends show as leaves fall
-        BV, BF, BUV0, BUV1, samples, APPEAR, wood = branch_mesh(tl, parts, H, vols, needed=paths)
-        keep, _ = hung(tl["attach"], tl, parts)
-        LV = LV.reshape(-1, 4, 3)[keep].reshape(-1, 3) if len(LV) else LV
-        LF = [(4 * n, 4 * n + 1, 4 * n + 2, 4 * n + 3) for n in range(int(keep.sum()))]
-        sel = np.repeat(keep, 4)
-        LUV0 = [x for x, k_ in zip(LUV0, sel) if k_]
-        LUV1 = [x for x, k_ in zip(LUV1, sel) if k_]
-        LN = [x for x, k_ in zip(LN, sel) if k_]
-        LC = [x for x, k_ in zip(LC, sel) if k_]
-        removed = int((~keep).sum())
-        tl["attach"] = [a for a, k_ in zip(tl["attach"], keep) if k_]
+        # every card's own twig, from its shoot up the tree: drawn, however fine, so it hangs from wood; drawn again
+        # knowing which fine twigs carry leaves (those show by the time their first leaves fall, the bare ends as the
+        # outer leaves fall) and which a hanging spray hides; cards that hang from nothing are dropped and the twigs
+        # redrawn without them (a dropped card carries and hides nothing), until every card hangs
+        removed = 0
+        for _ in range(6):
+            paths = {}
+            for (_, _, fall_, i) in tl["attach"]:
+                j = i
+                while j >= 0:
+                    if j in paths and paths[j] <= fall_:
+                        break
+                    paths[j] = min(paths.get(j, 9.0), fall_)
+                    j = int(tl["parent"][j]) if j > 0 else -1
+            tl["cover"] = covered(tl)
+            BV, BF, BUV0, BUV1, samples, APPEAR, wood = branch_mesh(tl, parts, H, vols, needed=paths)
+            keep, _ = hung(tl["attach"], tl, parts)
+            if keep.all():
+                break
+            LV = LV.reshape(-1, 4, 3)[keep].reshape(-1, 3) if len(LV) else LV
+            sel = np.repeat(keep, 4)
+            LUV0 = [x for x, k_ in zip(LUV0, sel) if k_]
+            LUV1 = [x for x, k_ in zip(LUV1, sel) if k_]
+            LN = [x for x, k_ in zip(LN, sel) if k_]
+            LC = [x for x, k_ in zip(LC, sel) if k_]
+            removed += int((~keep).sum())
+            tl["attach"] = [a for a, k_ in zip(tl["attach"], keep) if k_]
+            if tl.get("extent"):
+                tl["extent"] = [e for e, k_ in zip(tl["extent"], keep) if k_]
+        LF = [(4 * n, 4 * n + 1, 4 * n + 2, 4 * n + 3) for n in range(len(tl["attach"]))]
         floating = len(tl["attach"]) - int(hung(tl["attach"], tl, parts)[0].sum())
         orphans = orphan_chains(tl)
         print(f"CONNECTED cards {len(tl['attach'])} (removed {removed} that hung from nothing), floating {floating}, "

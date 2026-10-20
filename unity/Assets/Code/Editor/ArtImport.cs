@@ -54,7 +54,8 @@ namespace Overstory.EditorTools
                 // a tree's painted parts are masks the tree shader colours, not colours; the leaf sprays keep their
                 // coverage in every mip (Castano's coverage-preserving mips), so a crown does not thin with distance
                 var tt = (TextureImporter)assetImporter;
-                bool spray = assetPath.EndsWith("_leaves.png") || assetPath.EndsWith("_clumps.png") || assetPath.EndsWith("_lobes.png");
+                bool spray = assetPath.EndsWith("_leaves.png") || assetPath.EndsWith("_clumps.png") || assetPath.EndsWith("_lobes.png")
+                    || assetPath.EndsWith("_clusters.png");
                 // bare twigs: their distant mips average to a tone (a winter crown's haze), not kept as dashes
                 bool twigs = assetPath.EndsWith("_twigs.png");
                 tt.textureType = TextureImporterType.Default;

@@ -50,7 +50,7 @@ namespace Overstory.EditorTools
         };
 
         /// <summary>Which painted leaves each species' cards carry: its sprays, or its clumps.</summary>
-        static readonly Dictionary<string, string> Atlas = new() { ["birch"] = "lobes" };
+        static readonly Dictionary<string, string> Atlas = new() { ["birch"] = "clusters" };
 
         public static (Material bark, Material leaves) Materials(string species)
         {
@@ -206,6 +206,10 @@ namespace Overstory.EditorTools
         /// and the sprays' own twigs), all in the corner's 16:00 light, so only the tree changes.
         ///
         ///     Unity -batchmode -quit -projectPath unity -executeMethod Overstory.EditorTools.LT1Trees.Seasons
+        ///         [-moment 1300-drizzle] [-ages 60] [-seasons 01-january]
+        ///
+        /// -moment draws the sheet in another of the corner's lights (the grey drizzle judges form without the low
+        /// sun's flattery); its frames are named with it.
         /// </summary>
         public static void Seasons()
         {
@@ -219,10 +223,13 @@ namespace Overstory.EditorTools
             stage.style = AssetDatabase.LoadAssetAtPath<Style>($"{Lights}/Styles/Style_game.asset");
             if (stage.skyMap != null)
                 stage.skyMap.Build();
-            stage.rig = AssetDatabase.LoadAssetAtPath<LightRig>($"{Lights}/Heart_1600-low-sun.asset");
+            string moment = Arg("-moment", "1600-low-sun");
+            // the tree stands in the same place, and is seen from the same side, whatever the light
+            var lowSun = AssetDatabase.LoadAssetAtPath<LightRig>($"{Lights}/Heart_1600-low-sun.asset");
+            stage.rig = AssetDatabase.LoadAssetAtPath<LightRig>($"{Lights}/Heart_{moment}.asset");
             var urp = (UniversalRenderPipelineAsset)GraphicsSettings.currentRenderPipeline;
             float reach = urp.shadowDistance;
-            Vector3 sunStreet = stage.rig.SunDirectionStreet;
+            Vector3 sunStreet = lowSun.SunDirectionStreet;
             var spot = SunlitSpot(Near, StreetSpace.ToUnity(sunStreet).normalized, 17f);
             var sunFlat = new Vector2(sunStreet.x, sunStreet.y).normalized;
             var side = new Vector2(-sunFlat.y, sunFlat.x);
@@ -243,6 +250,8 @@ namespace Overstory.EditorTools
                 using var rays = new Rays();
                 foreach (int age in new[] { 30, 60 })
                 {
+                    if (!Wanted("-ages", age.ToString()))
+                        continue;
                     var tree = Place(root, "birch", 1, age, spot, 0f);
                     float h = 0f;
                     foreach (var r in tree.GetComponentsInChildren<MeshRenderer>())
@@ -256,12 +265,15 @@ namespace Overstory.EditorTools
                     shot.far = 9000f;
                     foreach (var (name, green, season) in seasons)
                     {
+                        if (!Wanted("-seasons", name))
+                            continue;
                         leaves.SetColor("_Green", green);
                         leaves.SetVector("_Season", season);
                         urp.shadowDistance = 160f;
                         stage.shot = shot;
                         stage.Apply();
-                        string file = Path.Combine(dir, $"birch-s1-a{age}-{name}.png");
+                        string light = moment == "1600-low-sun" ? "" : $"-{moment}";
+                        string file = Path.Combine(dir, $"birch-s1-a{age}-{name}{light}.png");
                         LT1Render.Still(stage.view, file, grey: true, eighth: true, msaa: 4);
                         Debug.Log($"[LT1Trees] {file}");
                     }
@@ -296,10 +308,13 @@ namespace Overstory.EditorTools
             stage.style = AssetDatabase.LoadAssetAtPath<Style>($"{Lights}/Styles/Style_game.asset");
             if (stage.skyMap != null)
                 stage.skyMap.Build();
-            stage.rig = AssetDatabase.LoadAssetAtPath<LightRig>($"{Lights}/Heart_1600-low-sun.asset");
+            string moment = Arg("-moment", "1600-low-sun");
+            // the tree stands in the same place, and is seen from the same side, whatever the light
+            var lowSun = AssetDatabase.LoadAssetAtPath<LightRig>($"{Lights}/Heart_1600-low-sun.asset");
+            stage.rig = AssetDatabase.LoadAssetAtPath<LightRig>($"{Lights}/Heart_{moment}.asset");
             var urp = (UniversalRenderPipelineAsset)GraphicsSettings.currentRenderPipeline;
             float reach = urp.shadowDistance;
-            Vector3 sunStreet = stage.rig.SunDirectionStreet;
+            Vector3 sunStreet = lowSun.SunDirectionStreet;
             var spot = SunlitSpot(Near, StreetSpace.ToUnity(sunStreet).normalized, 17f);
             var sunFlat = new Vector2(sunStreet.x, sunStreet.y).normalized;
             var side = new Vector2(-sunFlat.y, sunFlat.x);
@@ -388,10 +403,13 @@ namespace Overstory.EditorTools
             stage.style = AssetDatabase.LoadAssetAtPath<Style>($"{Lights}/Styles/Style_game.asset");
             if (stage.skyMap != null)
                 stage.skyMap.Build();
-            stage.rig = AssetDatabase.LoadAssetAtPath<LightRig>($"{Lights}/Heart_1600-low-sun.asset");
+            string moment = Arg("-moment", "1600-low-sun");
+            // the tree stands in the same place, and is seen from the same side, whatever the light
+            var lowSun = AssetDatabase.LoadAssetAtPath<LightRig>($"{Lights}/Heart_1600-low-sun.asset");
+            stage.rig = AssetDatabase.LoadAssetAtPath<LightRig>($"{Lights}/Heart_{moment}.asset");
             var urp = (UniversalRenderPipelineAsset)GraphicsSettings.currentRenderPipeline;
             float reach = urp.shadowDistance;
-            Vector3 sunStreet = stage.rig.SunDirectionStreet;
+            Vector3 sunStreet = lowSun.SunDirectionStreet;
             var spot = SunlitSpot(Near, StreetSpace.ToUnity(sunStreet).normalized, 17f);
             var sunFlat = new Vector2(sunStreet.x, sunStreet.y).normalized;
             var side = new Vector2(-sunFlat.y, sunFlat.x);
@@ -436,6 +454,14 @@ namespace Overstory.EditorTools
                 Object.DestroyImmediate(root.gameObject);
                 Object.DestroyImmediate(shot);
             }
+        }
+
+        /// <summary>A command-line value, or the default when it is not given.</summary>
+        static string Arg(string flag, string fallback)
+        {
+            var args = System.Environment.GetCommandLineArgs();
+            int i = System.Array.IndexOf(args, flag);
+            return i >= 0 && i + 1 < args.Length ? args[i + 1] : fallback;
         }
 
         /// <summary>A command-line filter: -moments 1600-low-sun, -ages 30,60, -views street (prefixes match).</summary>

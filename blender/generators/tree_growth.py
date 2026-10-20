@@ -49,7 +49,10 @@ UP = np.array([0.0, 0.0, 1.0])
 # a straight line). variety: how far each tree's inherited habit strays from the species' (genotype). ring: the wood
 # laid down each year per leafy bud a stem feeds (m^2), so old trunks and limbs keep thickening while their crown lives.
 # tip_loss: the share of side shoots' tips lost each year, in winter and more in gales on an exposed site; flag: how
-# much an exposed crown's windward shoots are stunted. hand: the share of trees that lose their leader young (browsed,
+# much an exposed crown's windward shoots are stunted. twig_len: how long a shoot of the last order the timeline grows
+# may get (m) before it stops (the finer twigs off it are the parts'); without it such shoots ran on for decades as
+# long bare whips. outward: how far a branch's heading round the trunk turns back to straight out each internode
+# (degrees), so limbs fan out of the crown and never wrap round it. hand: the share of trees that lose their leader young (browsed,
 # frost, a broken top) and grow on as a few stems spreading from low down like an open hand: (share, years, stems,
 # their spread from upright in degrees).
 # shed: a branch dies when its buds' mean light has been under this share of open sky for so many years running (the
@@ -91,6 +94,7 @@ SPECIES = {
         masses=dict(top=(0.86, 0.17, 0.13), sides=(3, 4), side_z=(0.36, 0.70), side_off=(0.20, 0.30),
                     side_r=(0.11, 0.15), outside=0.15, pull=0.6),
         shed=(0.40, 2), bud_life=10, tip_radius=0.0045, spurs=0.025, pipe=2.4, light=(0.15, 0.25, 2), ring=1.2e-6,
+        twig_len=1.2, outward=3.0,
         hand=(0.25, (4, 8), (3, 5), (16.0, 30.0)),
     ),
 }
@@ -157,6 +161,7 @@ class Node:
     spur: bool = False           # a short shoot: a spur a few centimetres long that only bears leaves
     cut: int | None = None       # the year a limb was cut here (its stub ends at this node)
     stub: bool = False           # part of a cut limb's stub: never shed
+    axis: float = 0.0            # how far along its own axis from where its branch began (m)
 
 
 @dataclass(eq=False)
@@ -543,7 +548,7 @@ def grow(species, seed, years=60, site=(), quality=1.0, wind=(0.0, 0.0, 0.0), ev
 
         # 3. the year's growth shared back up (extended Borchert-Honda)
         l0, l1, mature = sp["apical"]
-        lam = l0 + (l1 - l0) * min(year / mature, 1.0)
+        lam_stem = l0 + (l1 - l0) * min(year / mature, 1.0)
         buds_at = {}
         for bd in buds:
             buds_at.setdefault(bd.node, []).append(bd)
@@ -556,6 +561,8 @@ def grow(species, seed, years=60, site=(), quality=1.0, wind=(0.0, 0.0, 0.0), ev
             if not kids:
                 continue
             light = [qn[k.id] if t == "n" else k.light for t, k in kids]
+            # the stem's apical control, and a branch's: looser, so a limb forks and its arms share its growth
+            lam = lam_stem if nd.order == 0 else sp.get("apical_branch", lam_stem)
             main = [(t == "n" and k.order == nd.order) or (t == "b" and k.apical) for t, k in kids]
             qm = sum(l for l, m in zip(light, main) if m)
             ql = sum(l for l, m in zip(light, main) if not m)
@@ -615,6 +622,10 @@ def grow(species, seed, years=60, site=(), quality=1.0, wind=(0.0, 0.0, 0.0), ev
                     raw *= sp["masses"]["outside"]
                     bd.way = unit(bd.way + sp["masses"]["pull"] * inward)
             n = int(raw + rng.random()) if bd.apical or raw >= sp.get("long_min", 0.0) else 0
+            if bd.apical and bd.order >= sp.get("max_order", 99) and tl.nodes[bd.node].axis >= sp.get("twig_len", 1e9):
+                # the last order the timeline grows is a twig: it stops extending at a twig's length (in life it
+                # would fork into finer twigs, which the parts carry), and is shed when its bud dies
+                n = 0
             leader = bd.order == 0 and bd.apical and year < sp["leader_until"]
             exact = None
             if leader:
@@ -697,12 +708,23 @@ def shoot(tl, sp, bd, n, length, year, crown_h, H_full, rng, exact=False, push=n
         d2 = tilt(d, UP if turn > 0 else -UP, abs(turn)) if abs(turn) > 1e-3 else d
         d2 = rotate(d2, curl_axis, curl)
         d2 = unit(d2 + sp["light_pull"] * toward + jitter + push)
+        if order >= 1 and sp.get("outward", 0.0) > 0:
+            # a limb keeps heading out of the crown, towards the light at its edge: its heading round the trunk
+            # turns back towards straight out by a few degrees an internode, so it never wraps round the crown
+            # (the year's curl and wobble bend it up, down and aside, and average out)
+            radial = np.array([pos[0], pos[1], 0.0])
+            hd = np.array([d2[0], d2[1], 0.0])
+            if np.linalg.norm(radial) > 0.15 and np.linalg.norm(hd) > 0.05:
+                rn, hn_ = radial / np.linalg.norm(radial), hd / np.linalg.norm(hd)
+                off = math.degrees(math.atan2(rn[0] * hn_[1] - rn[1] * hn_[0], float(np.dot(rn, hn_))))
+                d2 = unit(rotate(d2, UP, -math.copysign(min(abs(off), sp["outward"]), off)))
         end = pos + d2 * length * (1.0 if exact else 0.85 + 0.3 * rng.random())
         if not envelope_ok(end, sp, crown_h * 1.02, H_full, lobing):
             break
         d = d2
         nd = Node(len(nodes), parent_id, pos, end, year, order)
         nd.radius[year] = sp["tip_radius"]
+        nd.axis = (nodes[parent_id].axis if nodes[parent_id].order == order else 0.0) + float(np.linalg.norm(end - pos))
         nodes[parent_id].children.append(nd.id)
         nodes.append(nd)
         made += 1
