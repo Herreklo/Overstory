@@ -44,7 +44,7 @@ import tree_growth as G  # noqa: E402
 # species' sprays, or its clumps: a painter's blocking of its foliage); hang: clumps hang from their shoots' ends,
 # sized for a twig's foliage on a grown tree (clump_full: the height at which they reach full size).
 PARTS = {
-    "birch": dict(sag=0.05, taper=0.55, occlusion=0.05, seam=0.45, atlas="leaves", hang=False, card=(0.50, 0.48), card_u=(0.03, 0.97), cells=4,
+    "birch": dict(sag=0.05, taper=0.55, occlusion=0.05, seam=0.3, atlas="lobes", lobe=0.6, lobe_gap=0.15, lose_tips=40, hang=False, card=(0.50, 0.48), card_u=(0.03, 0.97), cells=4,
                   per_node=2, along=1, droop=0.7, leaf_years=999, leaf_tips=24, draw_tips=2.5, draw_tips_per_m=0.45, reach=0.9,
                   bark=(0.30, 0.60), max_cards=4200, grow_to=80),
     "spruce": dict(card=(0.60, 0.40), cells=4, per_node=2, droop=0.25, leaf_years=7, leaf_tips=30, draw_tips=3.0, draw_tips_per_m=0.45,
@@ -226,7 +226,7 @@ def frames(pts):
     return T, N, B
 
 
-def branch_mesh(tl, parts, H):
+def branch_mesh(tl, parts, H, vols=None):
     """Vertices, faces, per-loop UV0 and UV1, and the chain points (for the bake), for every branch thick enough. The
     thinnest drawn grows with the tree: from the street stop a twig thinner than about a pixel is the sprays' to carry."""
     start, end, r, tips = tl["start"], tl["end"], tl["r"], tl["tips"]
@@ -243,10 +243,15 @@ def branch_mesh(tl, parts, H):
         pts = np.array([start[c[0]]] + [end[i] for i in c])
         rad = np.array([r[c[0]]] + [r[i] for i in c])
         tp = np.array([tips[c[0]]] + [tips[i] for i in c])
-        # stop where the branch carries too little to be drawn: the sprays carry it on
+        # stop where the branch carries too little to be drawn, or where a thin one passes deep into a mass of
+        # foliage: there the foliage carries it (a painter loses twigs in the leaves; drawn, they are black scratches)
         stop = len(pts)
+        lost = parts.get("lose_tips", 0)
         for k in range(1, len(pts)):
-            if tp[k] < draw:
+            deep = 0.0
+            if vols and tp[k] < lost:
+                deep = max((volume_depth(v, pts[k]) for v in vols if v is not None), default=0.0)
+            if tp[k] < draw or deep > 0.3:
                 stop = k + 1
                 break
         pts, rad = pts[:stop], rad[:stop]
@@ -454,6 +459,110 @@ def depth_in(trees, m, p):
     return (min(dist / max(0.55 * size, 1e-3), 1.0) if inside else 0.0), np.array(normal)
 
 
+def thin(points, keys, gap):
+    """A deterministic Poisson thinning: points taken in their seeded order, each kept if none kept lies within gap."""
+    order = np.argsort(keys)
+    cell = {}
+    kept = []
+    for j in order:
+        p = points[j]
+        c = tuple((p // gap).astype(int))
+        ok = True
+        for dx in (-1, 0, 1):
+            for dy in (-1, 0, 1):
+                for dz in (-1, 0, 1):
+                    for q in cell.get((c[0] + dx, c[1] + dy, c[2] + dz), ()):
+                        if np.linalg.norm(points[q] - p) < gap:
+                            ok = False
+                            break
+                    if not ok:
+                        break
+                if not ok:
+                    break
+            if not ok:
+                break
+        if ok:
+            kept.append(j)
+            cell.setdefault(c, []).append(j)
+    return np.array(sorted(kept), dtype=int)
+
+
+def lobe_mesh(tl, parts, age, seed, H):
+    """The foliage as a painter's lobes: one painted lobe card (strokes standing for little groups of leaves,
+    flat-filled, scalloped at the edge) for each patch of leafy shoots about lobe_gap across, hung a little below them;
+    the crown's masses fitted to them; every corner of every card shaded by its mass's smooth volume (the normal and
+    how deep it lies), so a mass reads as one shape with a lit top and a shaded underside, never card by card."""
+    ids = leafy(tl, parts, age, seed, drawn_tips(parts, H))
+    end = tl["end"]
+    if len(ids) == 0:
+        return np.zeros((0, 3)), [], [], [], [], [], None, None, None
+    scale = min(max(H / parts.get("clump_full", 12.0), 0.55), 1.0)
+    size = parts["lobe"] * scale
+    pts = end[ids]
+    keep = thin(pts, np.array([h01(seed, i, 21) for i in ids]), parts["lobe_gap"] * scale)
+    ids, pts = ids[keep], pts[keep]
+    centres = pts - np.array([0.0, 0.0, 0.38 * size])     # a curtain hangs from its shoot: its top at the shoot
+    k = int(min(6, max(3, round(3 + (H - 6) / 5))))
+    which = spatial_masses(centres, k, seed)
+    vols = volumes(centres, which, k)
+    trees = hulls(centres, which, k)
+    # sky between the masses: lobes on the seam between two masses are thinned
+    seam = parts.get("seam", 0.0)
+    if seam > 0 and k > 1:
+        keep = []
+        for j, i in enumerate(ids):
+            own = vols[which[j]]
+            if own is None:
+                keep.append(True)
+                continue
+            e_own = np.linalg.norm((own[1].T @ (centres[j] - own[0])) / own[2])
+            e = [np.linalg.norm((v[1].T @ (centres[j] - v[0])) / v[2]) for m, v in enumerate(vols) if v is not None and m != which[j]]
+            ratio = min(e) / max(e_own, 1e-6) if e else 9.0
+            keep.append(not (ratio < 1.0 + seam and h01(seed, i, 15) < 0.9))
+        keep = np.array(keep)
+        ids, centres, which = ids[keep], centres[keep], which[keep]
+    V, F, UV0, UV1, NR, COL = [], [], [], [], [], []
+    up_w = np.array([0.0, 0.0, 1.0])
+    for j, i in enumerate(ids):
+        vol = vols[which[j]]
+        c0 = vol[0] if vol is not None else centres.mean(axis=0)
+        out = centres[j] - c0
+        out[2] *= 0.5
+        out /= max(np.linalg.norm(out), 1e-9)
+        wob = np.array([h01(seed, i, 11), h01(seed, i, 12), h01(seed, i, 13)]) * 2.0 - 1.0
+        face = out + wob * 0.9
+        face -= up_w * np.dot(face, up_w) * 0.7               # mostly upright cards: lobes hang
+        face /= max(np.linalg.norm(face), 1e-9)
+        side = np.cross(up_w, face)
+        if np.linalg.norm(side) < 1e-6:
+            side = np.array([1.0, 0.0, 0.0])
+        side /= np.linalg.norm(side)
+        upc = np.cross(face, side)
+        roll = (h01(seed, i, 1) - 0.5) * math.radians(24)     # curtains hang plumb, give or take
+        side, upc = side * math.cos(roll) + upc * math.sin(roll), upc * math.cos(roll) - side * math.sin(roll)
+        s_ = size * (0.6 + 0.9 * h01(seed, i, 14) ** 1.5)
+        corners = [centres[j] - side * s_ / 2 - upc * s_ / 2, centres[j] + side * s_ / 2 - upc * s_ / 2,
+                   centres[j] + side * s_ / 2 + upc * s_ / 2, centres[j] - side * s_ / 2 + upc * s_ / 2]
+        b = len(V)
+        V.extend(corners)
+        F.append((b, b + 1, b + 2, b + 3))
+        cell = int(h01(seed, i, 2) * parts["cells"]) % parts["cells"]
+        cx, cy = (cell % 2) * 0.5, 1.0 - (cell // 2) * 0.5 - 0.5
+        u0, u1 = (cx, cx + 0.5) if h01(seed, i, 3) < 0.5 else (cx + 0.5, cx)
+        UV0.extend([(u0, cy), (u1, cy), (u1, cy + 0.5), (u0, cy + 0.5)])
+        depth_c = volume_depth(vol, centres[j]) if vol is not None else 0.0
+        zrel = float(np.clip(centres[j][2] / max(H, 1e-3), 0.0, 1.0))
+        rank = 0.55 * h01(seed, i, 4) + 0.45 * depth_c
+        fall = 0.45 * (1.0 - depth_c) + 0.3 * zrel + 0.25 * h01(seed, i, 9)
+        UV1.extend([(rank, fall)] * 4)
+        for p in corners:
+            n = volume_normal(vol, p) if vol is not None else face
+            dep = volume_depth(vol, p) if vol is not None else 0.0
+            NR.append(n)
+            COL.append((float(0.25 + 0.75 * (1.0 - dep) ** 1.2), float(np.clip(0.15 + 0.35 * max(-n[2], 0.0), 0, 1)), 1.0, 1.0))
+    return np.array(V), F, UV0, UV1, NR, COL, trees, which, vols
+
+
 def leaf_mesh(tl, parts, age, seed, H, species):
     ids = leafy(tl, parts, age, seed, drawn_tips(parts, H))
     start, end = tl["start"], tl["end"]
@@ -642,9 +751,13 @@ def build(species, seed, age, quality=1.0, unity=None):
         bpy.data.objects.remove(ob, do_unlink=True)
     tl = read(species, seed, age, quality)
     H = float(tl["end"][tl["alive"]][:, 2].max())
-    LV, LF, LUV0, LUV1, LN, LC, trees, which = leaf_mesh(tl, parts, age, seed, H, species)
+    vols = None
+    if parts.get("atlas") == "lobes":
+        LV, LF, LUV0, LUV1, LN, LC, trees, which, vols = lobe_mesh(tl, parts, age, seed, H)
+    else:
+        LV, LF, LUV0, LUV1, LN, LC, trees, which = leaf_mesh(tl, parts, age, seed, H, species)
     k = int(which.max()) + 1 if which is not None and len(which) else 0
-    BV, BF, BUV0, BUV1, samples = branch_mesh(tl, parts, H)
+    BV, BF, BUV0, BUV1, samples = branch_mesh(tl, parts, H, vols)
     # the branches' bake: per loop, from the vertex's facing and the depth of the nearest chain point in the crown
     pts, deep = branch_bake(samples, BV, trees, k)
     from mathutils import kdtree

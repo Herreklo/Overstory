@@ -47,7 +47,7 @@ namespace Overstory.EditorTools
         };
 
         /// <summary>Which painted leaves each species' cards carry: its sprays, or its clumps.</summary>
-        static readonly Dictionary<string, string> Atlas = new() { ["birch"] = "leaves" };
+        static readonly Dictionary<string, string> Atlas = new() { ["birch"] = "lobes" };
 
         public static (Material bark, Material leaves) Materials(string species)
         {
@@ -76,7 +76,7 @@ namespace Overstory.EditorTools
                     m.SetColor("_Turned", s.turned);
                     m.SetColor("_Late", s.late);
                     m.SetVector("_Season", s.season);
-                    m.SetFloat("_Hold", 0.6f);
+                    m.SetFloat("_Hold", 0.15f);
                 }
                 // a birch's twigs and young branches are dark purple-brown up to two or three centimetres; the white
                 // bark comes with age on the limbs and the trunk
@@ -235,7 +235,7 @@ namespace Overstory.EditorTools
                     foreach (var r in tree.GetComponentsInChildren<MeshRenderer>())
                         h = Mathf.Max(h, r.bounds.max.y - spot.z);
                     float d = Mathf.Max(h * 1.55f, 9f);
-                    var off = sunFlat * d * 0.94f + side * d * 0.34f;
+                    var off = sunFlat * d * 0.5f + side * d * 0.87f;   // side light, as the street frames
                     shot.position = new Vector3(spot.x + off.x, spot.y + off.y, spot.z + 2.8f);
                     shot.target = new Vector3(spot.x, spot.y, spot.z + h * 0.48f);
                     shot.verticalFov = Lens28;
@@ -305,7 +305,7 @@ namespace Overstory.EditorTools
                         h = Mathf.Max(h, r.bounds.max.y - spot.z);
                     // the same camera for every seed, framed for a 12 m tree, so their sizes compare
                     float d = 12f * 1.55f;
-                    var off = sunFlat * d * 0.94f + side * d * 0.34f;
+                    var off = sunFlat * d * 0.5f + side * d * 0.87f;   // side light, as the street frames
                     shot.position = new Vector3(spot.x + off.x, spot.y + off.y, spot.z + 2.8f);
                     shot.target = new Vector3(spot.x, spot.y, spot.z + 12f * 0.48f);
                     shot.verticalFov = Lens28;
@@ -394,8 +394,9 @@ namespace Overstory.EditorTools
                         var mid = new Vector3(Spot.x, Spot.y, ground + h * 0.48f);
                         var views = new (string name, Vector3 pos, Vector3 target, float fov)[]
                         {
-                            // the sun behind the viewer, a little to one side, so the crown shows its lit and shaded planes
-                            ("street", At(sunFlat * d * 0.94f + side * d * 0.34f, 2.8f), mid, Lens28),
+                            // the sun from the side and a little behind (about 60 degrees off the view), so the crown
+                            // shows its lit and its shaded planes, as a painter judges form
+                            ("street", At(sunFlat * d * 0.5f + side * d * 0.87f, 2.8f), mid, Lens28),
                             // looking into the low sun through the leaves
                             ("into-the-sun", At(-sunFlat * d * 0.94f + side * d * 0.34f, 2.8f), mid, Lens28),
                             // from the roofs, across the light

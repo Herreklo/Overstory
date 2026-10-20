@@ -32,6 +32,7 @@ Shader "Overstory/Tree"
         _MassShadow ("Leaves: how far out towards the sun their shadow is read (m)", Float) = 3.0
         _InnerGlow ("Leaves: the light bounced and passed inside a sunlit crown", Range(0, 2)) = 0.0
         _LeafSkyTint ("Leaves: how much of the sky's tint their shade takes", Range(0, 2)) = 0.35
+        _SunPale ("Leaves: how far the sun's light pales their colour", Range(0, 1)) = 0.35
     }
 
     HLSLINCLUDE
@@ -57,6 +58,7 @@ Shader "Overstory/Tree"
         float _MassShadow;
         half _InnerGlow;
         half _LeafSkyTint;
+        half _SunPale;
     CBUFFER_END
 
     TEXTURE2D(_Bark);  SAMPLER(sampler_Bark);
@@ -76,7 +78,9 @@ Shader "Overstory/Tree"
     half OS_LeafCover(half4 m, float2 card)
     {
         bool leaf = m.r > 0.03h;
-        return leaf && (half)card.y < (half)_Season.y ? 0.0h : m.a;
+        // a card's strokes go over a short span of the season, in their own order, so a lobe thins before it goes
+        half fall = (half)card.y + frac(m.r * 3.7h) * 0.12h;
+        return leaf && fall < (half)_Season.y ? 0.0h : m.a;
     }
 
     // Cut at the coverage threshold (depth, shadows): returns the atlas sample.
@@ -212,6 +216,10 @@ Shader "Overstory/Tree"
                 // coverage sharpened to a pixel's width, for alpha to coverage under MSAA (Castano): crisp edges that
                 // do not fizz; without MSAA it falls back to the cut
                 half cover = OS_LeafCover(m, input.extra);
+                // a card seen edge-on is a line, not a lobe: it fades as it turns away (its own face, from the screen)
+                float3 faceN = normalize(cross(ddx(input.positionWS), ddy(input.positionWS)));
+                half facing = abs(dot(faceN, GetWorldSpaceNormalizeViewDir(input.positionWS)));
+                cover *= smoothstep(0.12h, 0.38h, facing);
                 half alpha = saturate((cover - _Cutoff) / max(fwidth(cover), 1e-4h) + 0.5h);
                 clip(alpha - 0.004h);
                 // a card shades as its mass: the same normal seen from either side
@@ -257,10 +265,15 @@ Shader "Overstory/Tree"
                     half3 sky = OS_SkyTerm(b, n);
                     half skyLum = dot(sky, half3(0.2126h, 0.7152h, 0.0722h));
                     sky = max(skyLum + (sky - skyLum) * _LeafSkyTint, 0.0h);
+                    // a mass's top takes the sky, its underside is in its own shade: stepped like the sun's planes
+                    sky *= lerp(0.5h, 1.15h, smoothstep(-0.35h, -0.1h, n.y) * 0.45h + smoothstep(0.1h, 0.4h, n.y) * 0.55h);
                     // the sky's light by what the card sees of the sky through the crown (baked); the sun's by its own
                     // shadow, a little dimmed deep inside
                     half seen = saturate(b.sky);
-                    colour = s.albedo * sky + s.albedo * sun.color * lit * lerp(0.75h, 1.0h, seen);
+                    // in the sun a leaf's colour is lifted towards the light's, not deepened: highlights go paler,
+                    // never cadmium (a painter's lit foliage)
+                    half3 litAlbedo = lerp(s.albedo, dot(s.albedo, half3(0.2126h, 0.7152h, 0.0722h)).xxx, _SunPale);
+                    colour = s.albedo * sky + litAlbedo * sun.color * lit * lerp(0.75h, 1.0h, seen);
                     // the inside of a sunlit crown glows: light bounced leaf to leaf and through the leaves, warm with
                     // their colour, so its shade sits near half the lit side, not a hole (only while the crown has sun)
                     half3 glowc = lerp(s.albedo, dot(s.albedo, half3(0.2126h, 0.7152h, 0.0722h)).xxx, 0.45h);

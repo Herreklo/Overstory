@@ -335,6 +335,103 @@ def clumps(path):
     return write_png(path, (np.clip(atlas, 0, 1) * 255 + 0.5).astype(np.uint8))
 
 
+# -- lobes: the leaves as a painter's strokes ------------------------------------------------------------------------
+
+LOBE = 0.6           # metres across a lobe card
+LPX = CELL / LOBE    # pixels per metre while painting
+
+
+def _stroke(arrs, xs, ys, cx, cy, ang, length, width, lid, g):
+    """One stroke: a pointed, birch-leaf-like shape standing for a little group of leaves (a painter's unit, far bigger
+    than a leaf), flat-filled, centred on (cx, cy), pointing along ang."""
+    leaf_id, light, thick, cover = arrs
+    n = xs.shape[0]
+    r = int(length * 0.6 + 4)
+    y0, y1 = max(int(cy) - r, 0), min(int(cy) + r, n)
+    x0, x1 = max(int(cx) - r, 0), min(int(cx) + r, n)
+    if y0 >= y1 or x0 >= x1:
+        return
+    X, Y = xs[y0:y1, x0:x1], ys[y0:y1, x0:x1]
+    ca, sa = math.cos(ang), math.sin(ang)
+    u = ((X - cx) * ca + (Y - cy) * sa) / length + 0.5          # 0 at the base, 1 at the tip
+    v = (-(X - cx) * sa + (Y - cy) * ca) / (width * length)
+    t = np.clip(u, 0, 1)
+    half = np.maximum(np.sin(np.pi * t ** 0.8), 0.0) ** 0.9 * 0.5
+    here = (u >= 0) & (u <= 1) & (np.abs(v) <= half)
+    sl = (slice(y0, y1), slice(x0, x1))
+    leaf_id[sl][here] = lid
+    light[sl][here] = g
+    thick[sl][here] = 0.7
+    cover[sl][here] = 1.0
+
+
+def paint_lobe(rng, kind):
+    """One lobe in one cell, as a birch carries its foliage: a curtain of strands hanging from a short arc of twig
+    at the top, each strand a column of small leaf strokes (a painter's unit, a few leaves each) hanging point down,
+    longer in the middle of the curtain, ragged at the bottom, with dark slots between the strands. Lighter at the top
+    of each strand, where the sky reaches; otherwise flat: the lobe's light comes from its mass."""
+    n = CELL
+    ys, xs = np.mgrid[0:n, 0:n].astype(np.float32)
+    arrs = [np.zeros((n, n), np.float32) for _ in range(4)]
+    strands = {"round": 7, "tall": 5, "wide": 9, "small": 4}[kind]
+    width = {"round": 0.62, "tall": 0.42, "wide": 0.84, "small": 0.4}[kind]
+    longest = {"round": 0.78, "tall": 0.9, "wide": 0.62, "small": 0.55}[kind]
+    top = 0.08 + rng.uniform(0, 0.04)
+    # the twig arc at the top
+    arc = []
+    for k in range(strands):
+        f = (k + 0.5) / strands
+        x = 0.5 + (f - 0.5) * width + rng.gauss(0, 0.015)
+        y = top + 0.10 * (2 * (f - 0.5)) ** 2 + rng.gauss(0, 0.01)
+        arc.append((x * n, y * n, f))
+    strokes = []
+    for x0, y0, f in arc:
+        # longer in the middle, ragged
+        L = longest * (1.0 - 0.55 * (2 * (f - 0.5)) ** 2) * rng.uniform(0.7, 1.05) * n
+        sway = rng.uniform(-0.06, 0.06) * n
+        steps = int(L / (0.045 * LPX)) + 1
+        for t in range(steps):
+            g = t / max(steps - 1, 1)
+            y = y0 + L * g
+            x = x0 + sway * g ** 1.5 + rng.gauss(0, 0.012 * n)
+            # each step a few strokes side by side, hanging
+            for _ in range(rng.randint(2, 3)):
+                strokes.append((x + rng.gauss(0, 0.03 * n), y + rng.gauss(0, 0.012 * n),
+                                math.pi / 2 + rng.gauss(0, 0.45), g))
+    strokes.sort(key=lambda st: st[3] + rng.uniform(0, 0.15))
+    # the twig and the strands' own stalks first
+    dist = np.full((n, n), 1e9, np.float32)
+    pts = [(a[0], a[1]) for a in arc]
+    for (x0, y0), (x1, y1) in zip(pts, pts[1:]):
+        dx, dy = x1 - x0, y1 - y0
+        L2 = dx * dx + dy * dy + 1e-6
+        tt = np.clip(((xs - x0) * dx + (ys - y0) * dy) / L2, 0, 1)
+        dist = np.minimum(dist, np.hypot(xs - (x0 + tt * dx), ys - (y0 + tt * dy)))
+    twig = dist < 0.004 * LPX
+    arrs[3][twig] = 1.0
+    arrs[1][twig] = 0.45
+    for x, y, ang, g in strokes:
+        length = rng.uniform(0.07, 0.1) * LPX
+        light = (1.0 - 0.18 * g) * rng.uniform(0.9, 1.04)
+        _stroke(arrs, xs, ys, x, y, ang, length, rng.uniform(0.42, 0.55), 0.06 + 0.94 * rng.random(), light)
+    return arrs
+
+
+def lobes(path):
+    import random
+    atlas = np.zeros((1024, 1024, 4), np.float32)
+    for c, kind in enumerate(("round", "tall", "wide", "small")):
+        r = random.Random(f"birch-lobes-{SEED}-{c}")
+        lid, light, thick, cover = paint_lobe(r, kind)
+        cov = downsample(cover, 2)
+        w = np.maximum(cov, 1e-4)
+        ids = lid.reshape(512, 2, 512, 2).max(axis=(1, 3))
+        cell = np.stack([ids, downsample(light * cover, 2) / w, downsample(thick * cover, 2) / w, cov], -1)
+        y0, x0 = (c // 2) * 512, (c % 2) * 512
+        atlas[y0:y0 + 512, x0:x0 + 512] = cell
+    return write_png(path, (np.clip(atlas, 0, 1) * 255 + 0.5).astype(np.uint8))
+
+
 # -- bark -------------------------------------------------------------------------------------------------------------
 
 def value_noise(shape, cells, rng):
@@ -390,4 +487,5 @@ if __name__ == "__main__":
     out = os.path.join(unity, "Assets", "Art", "Trees", "birch")
     print(leaves(os.path.join(out, "birch_leaves.png")))
     print(clumps(os.path.join(out, "birch_clumps.png")))
+    print(lobes(os.path.join(out, "birch_lobes.png")))
     print(bark(os.path.join(out, "birch_bark.png")))
