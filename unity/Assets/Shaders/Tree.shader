@@ -339,7 +339,12 @@ Shader "Overstory/Tree"
                 // light through the leaves: strongest looking into a low sun, through thin, lit leaves
                 Light main = GetMainLight(id.shadowCoord, id.positionWS, half4(1, 1, 1, 1));
                 half into = saturate(dot(-id.viewDirectionWS, main.direction));
-                half through = (into * into * into * 0.8h + 0.2h * saturate(-dot(n, main.direction)))
+                // the light comes through the whole mass: the side of a mass turned from the sun sits behind the
+                // rest of it and glows little; its rim, where the light grazes past, glows most (a backlit crown
+                // is a dark body with a burning edge)
+                half ndlT = dot(n, main.direction);
+                half body = lerp(0.12h, 1.0h, smoothstep(-0.8h, -0.15h, ndlT));
+                half through = (into * into * into * 0.8h + 0.2h * saturate(-ndlT)) * body
                              * main.shadowAttenuation * OS_CloudLight(input.positionWS, main.direction);
                 half isLeaf = m.r > 0.03h ? 1.0h : 0.0h;
                 colour += s.albedo * _Through.rgb * main.color * through * m.b * _Through.a * isLeaf;
