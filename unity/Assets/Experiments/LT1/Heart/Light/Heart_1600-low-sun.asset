@@ -52,9 +52,11 @@ MonoBehaviour:
   hazeColour: {r: 0.88, g: 0.78, b: 0.68, a: 1}
   hazeDensity: 0.0025
   hazeHeight: 16
-  shafts: 0
+  shafts: 1.6
   shaftReach: 0.6
   shaftDecay: 0.965
+  motes: 1.2
+  moteSize: 0.004
   shaftThreshold: 0.5
   wetness: 0.25
   cloudCover: 0.32

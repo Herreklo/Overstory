@@ -55,6 +55,8 @@ MonoBehaviour:
   shafts: 0
   shaftReach: 0.6
   shaftDecay: 0.965
+  motes: 0
+  moteSize: 0.004
   shaftThreshold: 0.5
   wetness: 0
   cloudCover: 0.3

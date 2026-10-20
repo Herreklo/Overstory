@@ -78,6 +78,10 @@ namespace Overstory.Scenes
         public float shafts = 0f;
         [Range(0.1f, 1f)] public float shaftReach = 0.6f;
         [Range(0.9f, 1f)] public float shaftDecay = 0.965f;
+        [Tooltip("Motes in the air (dust in sunbeams, mist round lamps): how bright; 0 none.")]
+        public float motes = 0f;
+        [Tooltip("The size of a mote in metres.")]
+        public float moteSize = 0.004f;
         [Tooltip("How bright the sky must be to cast rays.")]
         public float shaftThreshold = 0.5f;
 

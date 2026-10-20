@@ -25,6 +25,8 @@ namespace Overstory.Scenes
         public ReflectionProbe skyReflection;
         [Tooltip("The town's lamps as lights, lit with the rig and handed to the fog. Optional.")]
         public TownLights townLights;
+        [Tooltip("Motes in the air round the camera, lit by sun and lamps. Optional.")]
+        public AirMotes motes;
         [Tooltip("The house style: how far colour, value and air are pushed, between the hour's grade and the mood. None: unstylised.")]
         public Style style;
         [Tooltip("The mood: how the scene is filmed, over the hour's own grade. None: the hour as it is.")]
@@ -270,7 +272,11 @@ namespace Overstory.Scenes
             var hz = Linear(r.hazeColour);
             Shader.SetGlobalVector("_OS_HazeColor", new Vector4(hz.x, hz.y, hz.z, 1f));
             Shader.SetGlobalVector("_OS_Haze", new Vector4(r.hazeDensity, r.hazeHeight, 0f, 0f));
-            var fs = Linear(r.fogSunColour);
+            // shafts of sun through the shadow map replace the sun's unshadowed glow in the air (SunBeams.shader)
+            Shader.SetGlobalVector("_OS_SunBeams", new Vector4(r.shafts, 700f, 0.7f, 0f));
+            if (motes != null)
+                motes.Apply(r);
+            var fs = Linear(r.fogSunColour) * (r.shafts > 0f ? 0f : 1f);
             Shader.SetGlobalVector("_OS_FogSun", new Vector4(fs.x, fs.y, fs.z, r.fogSunPower));
 
             if (townLights != null)

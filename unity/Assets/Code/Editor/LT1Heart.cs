@@ -140,6 +140,11 @@ namespace Overstory.EditorTools
             EnsureFogLights();
             EnsurePass("Palette", "Overstory/Palette", FullScreenPassRendererFeature.InjectionPoint.AfterRenderingPostProcessing,
                        ScriptableRenderPassInput.None);
+            EnsurePass("SunBeams", "Overstory/SunBeams", FullScreenPassRendererFeature.InjectionPoint.BeforeRenderingPostProcessing,
+                       ScriptableRenderPassInput.Depth);
+            var air = new GameObject("Air").AddComponent<AirMotes>();
+            air.material = MaterialAsset("M_AirMotes", "Overstory/AirMotes");
+            air.Build();
 
             var probe = new GameObject("Sky reflection").AddComponent<ReflectionProbe>();
             probe.size = new Vector3(20000f, 4000f, 20000f);
@@ -151,6 +156,7 @@ namespace Overstory.EditorTools
             stage.skyMap = skyMap;
             stage.skyReflection = probe;
             stage.townLights = lamps;
+            stage.motes = air;
             stage.sun = sun;
             stage.view = cam;
             stage.volume = volume;
@@ -237,6 +243,8 @@ namespace Overstory.EditorTools
                 Haze(r, C(0.86f, 0.88f, 0.90f), 0.0035f, 12f);
                 Clouds(r, 0.2f, 0.12f, 0.25f);
                 Grading(r, 0.05f, 8f, 0f, 0.1f);
+                r.shafts = 1.6f;   // the low sun over Herring Hill, through the morning haze
+                r.motes = 1.0f;
             });
             Asset<LightRig>($"{Lights}/Heart_{Hours[1]}.asset", r =>
             {
@@ -254,6 +262,8 @@ namespace Overstory.EditorTools
                 r.cloudHeight = 900f;
                 r.wetness = 0.85f;
                 Grading(r, 0.2f, 4f, -5f, 0f);
+                r.shafts = 0f;
+                r.motes = 0f;
             });
             Asset<LightRig>($"{Lights}/Heart_{Hours[2]}.asset", r =>
             {
@@ -268,6 +278,8 @@ namespace Overstory.EditorTools
                 Clouds(r, 0.32f, 0.12f, 0.35f);
                 r.wetness = 0.25f;
                 Grading(r, 0.1f, 10f, 0f, 0.2f);
+                r.shafts = 1.6f;   // low sun down the lanes and through the breaking cloud
+                r.motes = 1.2f;
             });
             Asset<LightRig>($"{Lights}/Heart_{Hours[3]}.asset", r =>
             {
@@ -281,6 +293,8 @@ namespace Overstory.EditorTools
                 Haze(r, C(0.40f, 0.42f, 0.54f), 0.003f, 18f);
                 Clouds(r, 0.3f, 0.12f, 0.45f);
                 Grading(r, 0.35f, 6f, 0f, 0f);
+                r.shafts = 0f;
+                r.motes = 0f;
             });
             AssetDatabase.SaveAssets();
             foreach (var h in Hours)
@@ -452,6 +466,9 @@ namespace Overstory.EditorTools
                 r.windowSpill = 0f;
                 Grading(r, 0.6f, 8f, 0f, 0.5f);
                 r.bloomThreshold = 1.3f; // above the sky, so only the lamps and lit windows glow
+                r.shafts = 0f;
+                r.motes = 1.0f;     // droplets of the fog, glittering round the lamps
+                r.moteSize = 0.003f;
             });
         }
 
@@ -690,6 +707,18 @@ namespace Overstory.EditorTools
                 urp.shadowDistance = reach;
                 stage.style = null;
             }
+        }
+
+        static Material MaterialAsset(string name, string shader)
+        {
+            string path = $"{Materials}/{name}.mat";
+            var m = AssetDatabase.LoadAssetAtPath<Material>(path);
+            if (m == null)
+            {
+                m = new Material(Shader.Find(shader) ?? throw new FileNotFoundException($"{shader} did not compile"));
+                AssetDatabase.CreateAsset(m, path);
+            }
+            return m;
         }
 
         /// <summary>Puts a full-screen pass on the renderer once, at its injection point, with its own material.</summary>
