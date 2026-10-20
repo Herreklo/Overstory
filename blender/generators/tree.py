@@ -49,11 +49,13 @@ import tree_growth as G  # noqa: E402
 # masses: "limbs" makes the crown's masses from its main limbs' foliage (else from where the foliage lies); seam: how
 # wide the seam of sky between two masses is (cards nearly as deep in a neighbour as in their own), and seam_cut the
 # share of the cards there taken out; core_depth, core_keep: how deep in its mass a card is core, and the share of the
-# core kept. top_tilt: how far one card of each pair on a mass's top tilts to the sky (degrees), for steep views.
+# core kept. places: for each place in the crown (top: above top_z of its height; core; low; high skin), the pairs of
+# atlas cells its two crossed cards may carry. top_tilt: how far one card of each pair on a mass's top tilts to the sky (degrees), for steep views.
 PARTS = {
     "birch": dict(sag=0.08, taper=0.55, occlusion=0.05, seam=0.5, atlas="clusters", lobe=0.8, lobe_gap=0.36,
                   cluster_size=(1.3, 1.15, 1.05, 0.85), crossed=True, edge_gap=0.22, edge_depth=0.2,
-                  masses="limbs", seam_cut=0.95, core_depth=0.45, core_keep=0.55, top_tilt=50.0, lose_tips=40, hang=False, card=(0.50, 0.48), card_u=(0.03, 0.97), cells=4,
+                  masses="limbs", seam_cut=0.95, core_depth=0.45, core_keep=0.55, top_tilt=50.0,
+                  places=dict(core=((0, 1), (1, 0)), top=((0, 1), (1, 0)), low=((2, 3),), high=((3, 2),)), lose_tips=40, hang=False, card=(0.50, 0.48), card_u=(0.03, 0.97), cells=4,
                   per_node=2, along=1, droop=0.7, leaf_years=999, leaf_tips=24, draw_tips=2.5, draw_tips_per_m=0.9, winter_tips=3.0, reach=99.0, hang_reach=0.3,
                   bark=(0.30, 0.60), max_cards=4200, grow_to=80),
     "spruce": dict(card=(0.60, 0.40), cells=4, per_node=2, droop=0.25, leaf_years=7, leaf_tips=30, draw_tips=3.0, draw_tips_per_m=0.45,
@@ -61,7 +63,9 @@ PARTS = {
 }
 # the silver birch: the birch's fitting, carrying its own drapes (blender/parts/trees/silver_birch), its branches
 # giving more under their weight
-PARTS["silver_birch"] = dict(PARTS["birch"], sag=0.12)
+PARTS["silver_birch"] = dict(PARTS["birch"], sag=0.12, cluster_size=(1.15, 1.4, 1.15, 0.9), top_z=0.72,
+                             places=dict(top=((0, 0),), core=((1, 2), (2, 1)), low=((1, 2), (1, 3)),
+                                         high=((2, 3), (3, 2))))
 
 
 def h01(*k):
@@ -737,15 +741,13 @@ def lobe_mesh(tl, parts, age, seed, H):
             zr = float(np.clip(centres[j][2] / max(H, 1e-3), 0.0, 1.0))
             top_of_mass = vol is not None and (centres[j] - vol[0])[2] > 0.25 * vol[2].max()
             if anchor is not None:
-                # by place: dense core drapes inside a mass, sparse skin drapes at its surface and lining the limbs'
-                # ends, long ones low in the crown where the limbs arch over; the two cards of a drape are the two
-                # variants of its kind (the atlas: 0 core long, 1 core, 2 skin long, 3 skin), each kind its size
-                if depth_j > 0.2 and not edge[j]:
-                    cell = 0 if h01(seed, i, 2) < 0.5 else 1
-                else:
-                    cell = 2 if (zr < 0.6 or h01(seed, i, 2) < 0.3) else 3
-                if twin:
-                    cell ^= 1
+                # by place (the species' places: its upper crown, a mass's core, its skin low in the crown where
+                # the limbs arch over, its skin higher up), each place a few pairs of atlas cells for the two
+                # crossed cards; each cell its size
+                place = ("top" if zr > parts.get("top_z", 9.0) else "core" if depth_j > 0.2 and not edge[j]
+                         else "low" if (zr < 0.6 or h01(seed, i, 2) < 0.3) else "high")
+                options = parts["places"][place]
+                cell = options[int(h01(seed, i, 2) * len(options)) % len(options)][twin]
                 s_ = parts["cluster_size"][cell] * scale * (0.88 + 0.24 * h01(seed, i, 14, twin))
             elif top_of_mass:
                 cell = 0 if h01(seed, i, 2) < 0.5 else 2

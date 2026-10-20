@@ -3,9 +3,10 @@ curtains as it ages): its foliage as drapes, and its bark.
 
     python blender/parts/trees/silver_birch/paint.py [unity project]      (numpy only; writes PNGs)
 
-Clusters (silver_birch_clusters.png, the atlas the tree's cards carry, four cells): a twig arching over, fine twigs
-falling from it, bold flat leaves along them (Firewatch's rule: larger than life, crisp), dense in a mass's core and
-sparse at its skin, long and short (CLUSTERS; the assembler reads each cell's anchor from there). Channels as every
+Clusters (silver_birch_clusters.png, the atlas the tree's cards carry, four cells): the downy birch's rising spray for
+the upper crown, and strand bundles in three lengths (a short bare twig arc, long fine twigs hanging from it, bold
+flat leaves along them; Firewatch's rule: larger than life, crisp) for the arching limbs below (CLUSTERS; the
+assembler reads each cell's anchor from there). Channels as every
 tree's cluster atlas (blender/parts/trees/painting.py): R each leaf's id, G the drape's own light (lit along the arch,
 one mid value below, shading softly to the tips), B thickness, A coverage. Its bare twigs (silver_birch_twigs.png, the
 same cells): the drape's twigs and finer hanging ones, the winter crown's haze. The bark is the downy birch's for now
@@ -27,65 +28,77 @@ SEED = 1989
 CLUSTER = 0.8        # metres across a cluster card's cell (as painted; the card is sized by the assembler)
 KPX = CELL / CLUSTER # pixels per metre while painting
 
-# A birch's foliage hangs in drapes: a twig arcs in and droops, and from it a few fine twigs hang, small leaves
-# scattered along them, so the drape is a soft veil, open between its strands, with no cap and no closed outline (a
-# closed shape repeated round a crown reads as one big leaf, or a jellyfish). Each kind: where its twig comes in (the
-# anchor, as shares of the cell from its top left; the assembler hangs the card so this point lies on the shoot's
-# end and turns it so the drape falls out from the crown), its width and length (shares of the cell), how many twigs
-# hang from it, and how densely they are leaved (the leaves' spacing along a twig, m; and whether each node bears a
-# pair). The core of a mass is dense drapes; its skin sparse ones, long and short. outward: the painting's right is
-# the way out of the crown (the assembler turns the card so).
+# A silver birch's foliage: its leader and upper limbs rise and carry sprays (the downy birch's, borrowed); its outer
+# and lower limbs arch over and let their twigs hang in strands. A strand bundle: a short twig arc at the top, bare,
+# and from it a few long fine twigs hanging, leaves along them, so the bundle is two or three times longer than wide,
+# a veil open between its strands, with no cap; the volume comes from many bundles overlapping along an arching limb.
+# Three lengths. Each kind: where its twig comes in (the anchor, as shares of the cell from its top left; the
+# assembler hangs the card so this point lies on the shoot's end), the arc's width and the strands' length (shares of
+# the cell), how many strands, and how densely they are leaved (the leaves' spacing along a strand, m; and whether a
+# node may bear a pair). outward: the painting's right is the way out of the crown (the assembler turns the card so).
 CLUSTERS = {
-    "core-long": dict(anchor=(0.2, 0.22), width=0.72, length=0.95, twigs=6, spacing=0.034, pairs=True, outward=True),
-    "core": dict(anchor=(0.2, 0.24), width=0.74, length=0.78, twigs=6, spacing=0.034, pairs=True, outward=True),
-    "skin-long": dict(anchor=(0.24, 0.22), width=0.6, length=0.92, twigs=4, spacing=0.05, pairs=False, outward=True),
-    "skin": dict(anchor=(0.24, 0.24), width=0.62, length=0.68, twigs=3, spacing=0.05, pairs=False, outward=True),
+    "spray": None,                                  # the downy birch's core spray (set below)
+    "strands-long": dict(anchor=(0.26, 0.14), width=0.5, length=0.86, twigs=4, spacing=0.04, pairs=False, outward=True),
+    "strands": dict(anchor=(0.26, 0.15), width=0.48, length=0.68, twigs=4, spacing=0.04, pairs=False, outward=True),
+    "strands-short": dict(anchor=(0.26, 0.16), width=0.44, length=0.5, twigs=3, spacing=0.044, pairs=False,
+                          outward=True),
 }
-KINDS = ("core-long", "core", "skin-long", "skin")    # the atlas's cells, in order (the assembler picks by place)
+KINDS = ("spray", "strands-long", "strands", "strands-short")   # the atlas's cells, in order
 
 
-def _drape(rng, spec, n):
-    """A drape's twigs: the twig comes in at the anchor, rises and arches over and down, as a birch's branchlet does;
-    fine twigs fall from points along the arch (and from its end), so the drape's top is the arch's curve, never a
-    straight rod; each falls its own length, swaying and splaying a little, with a few finer ones off it. Returns
-    (points in pixels, part) with part "main", "hang" or "fine"."""
+def _downy():
+    """The downy birch's parts module (its sprays and its bark, which the silver birch borrows for now)."""
+    spec = importlib.util.spec_from_file_location("paint_birch", os.path.join(HERE, "..", "birch", "paint.py"))
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
+
+
+DOWNY = _downy()
+CLUSTERS["spray"] = dict(DOWNY.CLUSTERS["core"])
+
+
+def _strands(rng, spec, n):
+    """A strand bundle's twigs: a short arc from the anchor, rising a little and turning over, and from points along
+    it fine twigs hanging, each its own length, swaying a little, a few finer ones off them. Returns (points in pixels,
+    part) with part "main", "hang" or "fine"."""
     A = np.array(spec["anchor"]) * n
     W, L = spec["width"] * n, spec["length"] * n
-    top = A[1] - rng.uniform(0.13, 0.17) * n                         # the arch's crown, above the anchor
-    E = np.array([A[0] + W * rng.uniform(0.8, 0.95), A[1] + rng.uniform(0.15, 0.3) * L])
-    main = curve(A, np.array([A[0] + 0.35 * (E[0] - A[0]), 2 * top - (A[1] + E[1]) / 2]), E, 24)
+    # the twig rises from the anchor and arches over, so the bundle's top is a curve, never a rod
+    E = np.array([A[0] + W * rng.uniform(0.85, 1.0), A[1] + rng.uniform(0.06, 0.12) * n])
+    main = curve(A, np.array([A[0] + 0.4 * (E[0] - A[0]), A[1] - rng.uniform(0.12, 0.16) * n]), E, 18)
     out = [(main, "main")]
     k = spec["twigs"]
     for j in range(k):
-        t = 0.2 + 0.8 * (j + rng.uniform(0.0, 0.8)) / k
+        t = 0.3 + 0.7 * (j + rng.uniform(0.0, 0.8)) / k
         P = main[min(int(t * (len(main) - 1)), len(main) - 1)]
-        bottom = A[1] + L - 0.2 * n
-        length = max(bottom - P[1], 0.1 * n) * rng.uniform(0.4, 1.0)
-        sway = rng.uniform(-0.1, 0.16) * W
-        Q = np.array([P[0] + sway, P[1] + length])
-        # leaving the arch outward a little before it falls
-        pts = curve(P, np.array([P[0] + rng.uniform(0.02, 0.08) * W, P[1] + 0.25 * length]), Q, 16)
+        # strands of very different lengths, swaying, splaying a little apart
+        length = (A[1] + L - P[1]) * rng.uniform(0.35, 1.0)
+        Q = np.array([P[0] + rng.uniform(-0.08, 0.12) * W, P[1] + length])
+        pts = curve(P, np.array([P[0] + rng.uniform(-0.1, 0.14) * W, P[1] + 0.45 * length]), Q, 18)
         out.append((pts, "hang"))
-        for _ in range(rng.randint(1, 3)):
-            u = rng.uniform(0.2, 0.7)
+        for _ in range(rng.randint(0, 2)):
+            u = rng.uniform(0.25, 0.7)
             q = pts[int(u * (len(pts) - 1))]
             sd = rng.choice((-1, 1))
-            R = q + np.array([sd * rng.uniform(0.04, 0.09) * n, rng.uniform(0.05, 0.13) * n])
-            out.append((curve(q, np.array([(q[0] + R[0]) / 2 + sd * 0.015 * n, q[1] + 0.005 * n]), R, 8), "fine"))
+            R = q + np.array([sd * rng.uniform(0.03, 0.06) * n, rng.uniform(0.07, 0.14) * n])
+            out.append((curve(q, np.array([(q[0] + R[0]) / 2 + sd * 0.012 * n, q[1] + 0.01 * n]), R, 8), "fine"))
     return out
 
 
 def paint_cluster(rng, kind):
-    """One drape in one cell: the foliage of one twig, as a birch carries it. Its twig arcs in at the top from the
-    anchor, where the drawn twig ends; bold birch leaves (Firewatch's rule: a stylised leaf, larger than life at 8 to
-    10 cm, flat, crisp) hang along every fine twig, densely in a core drape and sparsely in a skin drape, so it is a
-    veil of distinct leaves, never a closed shape and never a fine noise. Its own light is
-    a small modulation of the crown's: lit along the top where the sky reaches, one mid value down the strands, and a
-    soft shade towards their tips, each leaf one value. Returns (id, light, thick, cover) supersampled, and the twigs."""
+    """One cluster in one cell: on the upper crown the downy birch's rising spray; below, a strand bundle as a silver
+    birch carries its foliage: the twig comes in at the anchor, where the drawn twig ends, and arcs over, bare; bold
+    birch leaves (Firewatch's rule: larger than life, flat, crisp) hang along the strands falling from it, so it is a
+    veil of distinct leaves, longer than wide, never a capped shape and never a fine noise. Its own light is a small
+    modulation of the crown's: lit at the top where the sky reaches, one mid value down the strands, a soft shade
+    towards their tips, each leaf one value. Returns (id, light, thick, cover) supersampled, and the twigs."""
+    if kind == "spray":
+        return DOWNY.paint_cluster(rng, "core")
     n = CELL
     spec = CLUSTERS[kind]
     ys, xs = np.mgrid[0:n, 0:n].astype(np.float32)
-    twigs = _drape(rng, spec, n)
+    twigs = _strands(rng, spec, n)
     A = np.array(spec["anchor"]) * n
     L = spec["length"] * n
     strokes = []                                       # (x, y, angle, length, fore)
@@ -93,8 +106,11 @@ def paint_cluster(rng, kind):
         seg = np.linalg.norm(np.diff(pts, axis=0), axis=1)
         acc = np.concatenate([[0.0], np.cumsum(seg)])
         Lt = acc[-1]
-        # the arc where the twig comes in stays bare for a little: the drape is seen to hang from it
-        d = (0.08 * n if part == "main" else 0.01 * KPX) + rng.uniform(0, 0.01) * KPX
+        # the arc stays bare (no cap): the leaves are on the strands, the bundle seen to hang from its twig
+        if part == "main":
+            continue
+        # each strand's leaves begin a little way down it, at its own height: a ragged top, never a straight edge
+        d = rng.uniform(0.02, 0.12) * Lt + rng.uniform(0, 0.01) * KPX
         side = 1
         sp = spec["spacing"] * (1.3 if part == "fine" else 1.0)
         while d < Lt:
@@ -139,9 +155,12 @@ def paint_cluster(rng, kind):
 
 
 def paint_bare(rng, twigs):
-    """The cluster's twigs bare, as the winter crown's haze: the same fan from the anchor, and finer twigs off every
+    """A spray's twigs bare as the downy birch's are; a strand bundle's: the same twigs and finer ones hanging off
+    them. The cluster's twigs bare, as the winter crown's haze: the same fan from the anchor, and finer twigs off every
     twig, so a bare crown is a soft tone with an ascending grain (Stalenhag's birches), each fan visibly the drawn
     twig's own ends."""
+    if any(part == "side" for _, part in twigs):
+        return DOWNY.paint_bare(rng, twigs)
     n = CELL
     ys, xs = np.mgrid[0:n, 0:n].astype(np.float32)
     fine = []
@@ -157,16 +176,12 @@ def paint_bare(rng, twigs):
 
 
 def clusters(path, twig_path):
-    # painted with the seeds the birch's drapes were first painted with, so the atlas is the one judged on 21 October
-    return atlas(path, twig_path, KINDS, paint_cluster, paint_bare, "birch-clusters", SEED)
+    return atlas(path, twig_path, KINDS, paint_cluster, paint_bare, "silver-birch-clusters", SEED)
 
 
 def bark(path):
     """The downy birch's bark, until the silver birch's own is painted."""
-    spec = importlib.util.spec_from_file_location("paint_birch", os.path.join(HERE, "..", "birch", "paint.py"))
-    mod = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(mod)
-    return mod.bark(path)
+    return DOWNY.bark(path)
 
 
 if __name__ == "__main__":
