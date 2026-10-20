@@ -28,7 +28,8 @@ bark's own lenticels, seeded); G lightness, B relief, A coverage.
 Bark (birch_bark.png, 512 by 1024, tiling; u round the stem, v along it, one tile 0.3 m round and 0.6 m along):
 - R: the bark's lightness, white with soft grey bands;
 - G: lenticels (the short dark horizontal dashes) and the dark scars under branches;
-- B: unused (an old trunk's dark foot is the shader's, from noise round the trunk, so it never repeats with the tile);
+- B: lichen (the downy birch's patches; none on the silver's); an old trunk's dark foot is the shader's, from noise
+  round the trunk, so it never repeats with the tile;
 - A: the relief: thin horizontal rings of the outer bark, a faint grain along the stem, the lenticels sunk in; the
   shader bends the light by it.
 
@@ -511,11 +512,12 @@ def _shape_cell(kind, rng):
         d, up, half, mid, t = _slash(xs, yu, cx, cy, length, thick, curve, tilt, edge, n)
         tear = np.clip(0.5 - d * n / 2.0, 0, 1)
         cover = np.maximum(cover, tear)
-        light = np.where(tear > 0.5, dark + 0.1 * up, light)
+        # the dark under the torn skin: darkest just under the lip, where it shades the opening
+        light = np.where(tear > 0.5, dark + 0.2 * (1.0 - up), light)
         height = np.where(tear > 0.5, 0.12, height)
         if lip:
             # the outer bark torn and curled up along the upper edge: lighter, raised, catching the light
-            lip_w = thick * 0.35 * np.maximum(np.sin(np.pi * t), 0.0) ** 0.7
+            lip_w = thick * 0.5 * np.maximum(np.sin(np.pi * t), 0.0) ** 0.6 * (1.0 + 0.6 * edge)
             y = yu - cy - tilt * (xs - cx) - mid
             dl = np.abs(y - (half + lip_w * 0.6)) - lip_w * 0.6
             lipm = np.clip(0.5 - dl * n / 2.0, 0, 1) * (np.abs((xs - cx) / length) < 0.5) * (1.0 - tear)
@@ -526,7 +528,7 @@ def _shape_cell(kind, rng):
     tilt = rng.uniform(-0.12, 0.12)
     if kind == "slash":
         paint_slash(0.5, 0.5, rng.uniform(0.6, 0.94), rng.uniform(0.07, 0.15), rng.uniform(-0.04, 0.06), tilt,
-                    rng.random() < 0.7)
+                    rng.random() < 0.9)
     elif kind == "broken":
         # a slash broken where the bark bridged it: two or three pieces along one line
         k = rng.randint(2, 3)
@@ -609,14 +611,17 @@ def value_noise(shape, cells, rng):
     return (a * (1 - fx) + b * fx) * (1 - fy[:, None]) + (c * (1 - fx) + d * fx) * fy[:, None]
 
 
-def bark(path):
+def bark(path, kind="downy"):
+    """The bark tile. The downy birch's: a grey white mottled with lichen (B: where it grows), rougher, its rings
+    faint. The silver birch's: a clean white with soft rings round the stem, no lichen to speak of."""
+    downy = kind == "downy"
     rng = np.random.default_rng(SEED + 1)
     H, W = 1024, 512                       # v along (0.6 m), u round (0.3 m)
     # lightness: white with soft grey bands running round the stem, and a faint mottle
     bands = value_noise((H, W), (40, 3), rng) * 0.6 + value_noise((H, W), (90, 6), rng) * 0.4
     mottle = value_noise((H, W), (24, 12), rng)
     # calm (Firewatch's trunks): a pale ground with soft bands, the detail rationed to the lenticels
-    light = 0.80 + 0.14 * (bands - 0.5) + 0.05 * (mottle - 0.5)
+    light = 0.80 + (0.06 if downy else 0.14) * (bands - 0.5) + (0.12 if downy else 0.05) * (mottle - 0.5)
     # lenticels: short dark dashes across the stem, a few hundred per tile
     lent = np.zeros((H, W), np.float32)
     ys, xs = np.mgrid[0:H, 0:W].astype(np.float32)
@@ -631,8 +636,13 @@ def bark(path):
     ring_v = value_noise((H, W), (70, 2), rng)
     rings = np.abs(np.sin((ys / H * 26.0 + 1.5 * ring_v) * np.pi)) ** 3      # ridges, irregularly spaced
     grain = value_noise((H, W), (6, 9), rng) - 0.5                         # faint, broad: never stripes that repeat
-    height = 0.5 + 0.22 * (rings - 0.3) + 0.04 * grain - 0.35 * lent
-    img = np.stack([np.clip(light, 0, 1), np.clip(lent, 0, 1), np.zeros_like(light), np.clip(height, 0, 1)], -1)
+    # lichen: patches of several sizes, their edges broken (the downy birch's, on this damp coast)
+    lich = (value_noise((H, W), (5, 3), rng) * 0.55 + value_noise((H, W), (14, 7), rng) * 0.3
+            + value_noise((H, W), (40, 20), rng) * 0.15)
+    lichen = np.clip((lich - 0.52) / 0.12, 0, 1) if downy else np.zeros_like(light)
+    height = (0.5 + (0.12 if downy else 0.22) * (rings - 0.3) + (0.1 if downy else 0.04) * grain - 0.35 * lent
+              + 0.12 * lichen)
+    img = np.stack([np.clip(light, 0, 1), np.clip(lent, 0, 1), lichen, np.clip(height, 0, 1)], -1)
     return write_png(path, (img * 255 + 0.5).astype(np.uint8))
 
 

@@ -170,8 +170,9 @@ def _downy():
 
 
 def bark(path):
-    """The downy birch's bark, until the silver birch's own is painted (its colour is set apart in its material)."""
-    return _downy().bark(path)
+    """The silver birch's bark: clean white, soft rings round the stem, no lichen to speak of (painted by the birch
+    module's bark painter)."""
+    return _downy().bark(path, kind="silver")
 
 
 def marks(path):

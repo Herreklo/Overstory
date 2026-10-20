@@ -112,12 +112,14 @@ namespace Overstory.EditorTools
                 m.SetColor("_BarkLight", silver ? new Color(0.86f, 0.85f, 0.82f) : new Color(0.74f, 0.73f, 0.70f));
                 m.SetColor("_BarkBand", silver ? new Color(0.60f, 0.58f, 0.55f) : new Color(0.52f, 0.50f, 0.48f));
                 // an old trunk's foot: the silver's breaks black and fissured; the downy's only greys and roughens
-                m.SetVector("_Foot", new Vector4(0.16f, 4.5f, silver ? 1.0f : 0.5f, 0f));
+                m.SetVector("_Foot", new Vector4(0.16f, 4.5f, silver ? 1.0f : 0.35f, 0f));
                 // the foot's dark: deep, never black, so its form still reads; its islands a grey the bark shows through
                 // (colours set here are sRGB, as the eye sees them: Unity takes them to linear)
-                m.SetColor("_FootCrack", new Color(0.30f, 0.29f, 0.28f));
-                m.SetColor("_FootPlate", new Color(0.58f, 0.57f, 0.55f));
+                m.SetColor("_FootCrack", new Color(0.46f, 0.43f, 0.40f));     // a dark grey-brown, never black
+                m.SetColor("_FootPlate", new Color(0.70f, 0.69f, 0.66f));
                 m.SetVector("_Relief", new Vector4(0.008f, 0.01f, 0f, 0f));
+                // lichen: the downy birch on this damp coast carries it in grey-green patches; the silver little
+                m.SetColor("_Lichen", silver ? new Color(0.62f, 0.64f, 0.56f, 0.15f) : new Color(0.60f, 0.63f, 0.52f, 0.7f));
                 // the marks' pigment a dark grey-brown, never black: lit as the bark, they take the shade's colour
                 m.SetColor("_MarkDark", new Color(0.24f, 0.22f, 0.21f));
                 m.SetColor("_MarkLight", new Color(0.42f, 0.40f, 0.38f));

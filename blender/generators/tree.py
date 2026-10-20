@@ -56,7 +56,7 @@ import tree_growth as G  # noqa: E402
 # atlas cells its two crossed cards may carry. top_tilt: how far the cards inside a mass's top (deeper than top_tilt_depth) lean to the sky (degrees), for steep
 # views.
 PARTS = {
-    "birch": dict(sag=0.08, taper=0.55, flare=0.5, flare_branch=0.45, flare_min_radius=0.008, occlusion=0.05, seam=0.5, atlas="clusters", lobe=0.8, lobe_gap=0.36,
+    "birch": dict(sag=0.08, taper=0.55, flare=0.5, flare_branch=0.22, flare_min_radius=0.008, occlusion=0.05, seam=0.5, atlas="clusters", lobe=0.8, lobe_gap=0.36,
                   marks=True, mark_min_radius=0.02, mark_scale=1.6, lenticel_spacing=0.45,
                   cluster_size=(1.3, 1.15, 1.05, 0.85), crossed=True, edge_gap=0.22, edge_depth=0.2,
                   masses="limbs", seam_cut=0.95, core_depth=0.45, core_keep=0.55, top_tilt=50.0,
@@ -69,7 +69,7 @@ PARTS = {
 }
 # the silver birch: the birch's fitting, carrying its own drapes (blender/parts/trees/silver_birch; Øystein preferred
 # them, full and arching, to open strands with a rising top), its branches giving more under their weight
-PARTS["silver_birch"] = dict(PARTS["birch"], sag=0.12)
+PARTS["silver_birch"] = dict(PARTS["birch"], sag=0.12, lenticel_spacing=0.8)
 
 
 def h01(*k):
@@ -250,17 +250,21 @@ def taper_runs(pts, rad, ease=0.85):
     return out
 
 
+def branch_exit(Rp, sin_t, length):
+    """How far along a branch, from its parent's axis, its own axis crosses the parent's bark (the parent of radius Rp,
+    the branch at an angle whose sine is sin_t to it): where its collar sits."""
+    return min(Rp / max(sin_t, 0.25), length * 0.6)
+
+
 def junction_rings(pts, rad, appear, Rp, flare, sin_t):
     """A branch's points with rings where it leaves its parent (of radius Rp, the branch at an angle whose sine is sin_t
-    to the parent's axis). It starts on the parent's axis at its full, swollen width, hidden in the parent's wood; its
-    swollen surface first touches the parent's bark at d_touch along it, and from there the swell (flare, a share of
-    its own width, never wider than the parent) eases to its own width over a couple of branch widths: it grows out of
-    the bark as a crotch does, never a cylinder pushed in, nor a knob standing out beside it."""
+    to the parent's axis). Inside the parent's wood it is a plain cylinder of its own width, so it meets the parent's
+    bark in the long ellipse of a crotch; just outside, its collar swells (flare, a share of its own width, never wider
+    than the parent) and eases back to its own width over a couple of branch widths. No lobe below the fork, no cap."""
     along = np.concatenate([[0.0], np.cumsum(np.linalg.norm(np.diff(pts, axis=0), axis=1))])
     rc = float(rad[min(1, len(rad) - 1)])
-    swell = min(rc * (1.0 + flare), max(rc, 0.95 * Rp))
-    touch = min(max(Rp - swell, 0.0) / max(sin_t, 0.25), float(along[-1]) * 0.6)
-    targets = [touch + rc * f for f in (0.0, 0.7, 1.6, 3.0)]
+    exit_ = branch_exit(Rp, sin_t, float(along[-1]))
+    targets = [exit_ + rc * f for f in (-0.6, 0.0, 0.5, 1.1, 2.0, 3.2)]
     P, R, A = [pts[0]], [rad[0]], [appear[0]]
     for k in range(1, len(pts)):
         for tt in targets:
@@ -274,8 +278,10 @@ def junction_rings(pts, rad, appear, Rp, flare, sin_t):
         A.append(appear[k])
     P, R, A = np.array(P), np.array(R), np.array(A)
     al = np.concatenate([[0.0], np.cumsum(np.linalg.norm(np.diff(P, axis=0), axis=1))])
-    k_swell = swell / max(rc, 1e-6) - 1.0
-    R = R * (1.0 + k_swell * np.exp(-np.maximum(al - touch, 0.0) / max(2.2 * rc, 1e-4)))
+    peak = min(flare, max(0.95 * Rp / max(rc, 1e-6) - 1.0, 0.0))
+    x = np.maximum(al - exit_, 0.0) / max(rc, 1e-4)
+    bump = (x / 1.0) * np.exp(1.0 - x / 1.0)                  # 0 at the bark, 1 a branch width out, easing off slowly
+    R = np.where(al <= exit_, np.minimum(R, rc), R * (1.0 + peak * bump))
     return P, R, A
 
 
@@ -544,20 +550,20 @@ def mark_mesh(tl, parts, seed):
     where the bark wrinkles over its collar. The rest are the bark's own lenticels: seeded texture that claims no
     history, in rows up the trunk and the limbs, their sizes drawn mostly small. Each a small strip bent round the wood
     it lies on, a hair above its true surface, showing when that wood does; only on wood thick enough for its bark to
-    be seen (min_radius). Returns V, F, UV0 (the marks atlas), UV1 (radius, height, as the bark's), and per vertex the
-    season it shows from."""
+    be seen (min_radius). Returns V, F, UV0 (the marks atlas), UV1 (radius, height, as the bark's), per vertex the
+    season it shows from, and UV2 (x how weathered the mark is: a fresh scar dark, an old one greyed)."""
     na, nr = tl["node_appear"], tl["node_radius"]
     parent, order, start, end = tl["parent"], tl["order"], tl["start"], tl["end"]
     age = tl["age"]
     min_r = parts.get("mark_min_radius", 0.02)
     k_ = parts.get("mark_scale", 1.0)
-    V, F, UV0, UV1, APP = [], [], [], [], []
+    V, F, UV0, UV1, UV2, APP = [], [], [], [], [], []
 
     def axis_of(p):
         d = end[p] - start[p]
         return d / max(np.linalg.norm(d), 1e-9)
 
-    def put(p, direction, w, cell, lift, key):
+    def put(p, direction, w, cell, lift, key, weather=0.0):
         """A square strip w across centred on node p's wood, facing direction, lift along it from the node's end; cell
         of the atlas; tilted (a shear along the wood) and mirrored by the key."""
         a = axis_of(p)
@@ -582,6 +588,7 @@ def mark_mesh(tl, parts, seed):
                 u = col / 3 if not flip else 1.0 - col / 3
                 UV0.append((cx + 0.25 * u, cy + 0.25 * row))
                 UV1.append((R, float(pos[2])))
+                UV2.append((float(weather), 0.0))
                 APP.append(float(na[p]))
         for col in range(3):
             F.append((b + col, b + col + 1, b + 4 + col + 1, b + 4 + col))
@@ -606,8 +613,19 @@ def mark_mesh(tl, parts, seed):
         rc = nr.get(c[0], tl["r"][c[0]])
         if rc < 1.5 * min_r or h01(seed, int(c[0]), 54) < 0.25:
             continue
-        put(p, end[c[0]] - start[c[0]], min(3.4 * rc * k_, 1.4 * nr[p]), pick("chevron", int(c[0])),
-            1.3 * rc * k_, int(c[0]))
+        # over the branch where it leaves the bark: the parent's bark wrinkled over the collar's upper side
+        dirc = end[c[0]] - start[c[0]]
+        if c[0] in tl["children_of"]:
+            nx = [k2 for k2 in tl["children_of"][c[0]] if order[k2] == order[c[0]]]
+            if nx:
+                dirc = end[nx[0]] - start[c[0]]
+        dirc = dirc / max(np.linalg.norm(dirc), 1e-9)
+        a_p = axis_of(p)
+        sin_t = float(np.linalg.norm(np.cross(a_p, dirc)))
+        cos_t = float(np.dot(a_p, dirc))
+        ex = branch_exit(nr[p], sin_t, 99.0)
+        w = min(3.4 * rc * k_, 1.4 * nr[p])
+        put(p, dirc, w, pick("chevron", int(c[0])), ex * cos_t + 0.9 * rc + 0.15 * w, int(c[0]))
     # the scars of shed branches: large, stretched sideways as the wood grew round them
     died, hist = tl["died"], tl["radius_hist"]
     for d in np.nonzero((died > 0) & (died <= age))[0]:
@@ -621,7 +639,9 @@ def mark_mesh(tl, parts, seed):
         grown = min(years / 25.0, 1.5)
         w = min(6.0 * r_then * (1.0 + 0.7 * grown) * k_, 1.3 * nr[p])
         kind = "scar" if years > 20 and w > 0.5 * nr[p] else ("broken" if h01(int(d), 55) < 0.3 else "slash")
-        put(p, tl["end_grown"][d] - tl["start_grown"][d], w, pick(kind, int(d)), 0.0, int(d))
+        # a fresh scar is dark; an old one greys towards the bark as it weathers
+        put(p, tl["end_grown"][d] - tl["start_grown"][d], w, pick(kind, int(d)), 0.0, int(d),
+            weather=min(years / 40.0, 0.7))
     # the lenticels: rows up the trunk and the limbs at irregular gaps, a few marks to a row round the wood, their
     # sizes drawn mostly small (log-normal), seeded
     spacing = parts.get("lenticel_spacing", 0.0)
@@ -642,13 +662,14 @@ def mark_mesh(tl, parts, seed):
                     count = 1 + int(h01(key0, row, 56) * 3.2)
                     for m in range(count):
                         key = key0 * 31 + row * 7 + m
-                        z = math.exp(-0.9 + 0.6 * math.sqrt(-2.0 * math.log(max(h01(key, 57), 1e-6)))
+                        z = math.exp(-1.15 + 0.75 * math.sqrt(-2.0 * math.log(max(h01(key, 57), 1e-6)))
                                      * math.cos(2 * math.pi * h01(key, 58)))
-                        w = float(np.clip(z, 0.1, 1.2)) * nr[i] * k_
+                        w = float(np.clip(z, 0.08, 1.2)) * nr[i] * k_
                         rel = w / max(nr[i] * k_, 1e-6)
                         kind = ("tiny" if rel < 0.22 else "dashes" if rel < 0.4
                                 else ("hook" if h01(key, 59) < 0.15 else "broken" if h01(key, 59) < 0.4 else "slash"))
-                        put(i, around(a, key), w, pick(kind, key), -back + (h01(key, 60) - 0.5) * 0.06, key)
+                        put(i, around(a, key), w, pick(kind, key), -back + (h01(key, 60) - 0.5) * 0.06, key,
+                            weather=0.45 * h01(key, 62))
                     row += 1
                     gap = -math.log(max(h01(key0, row, 61), 1e-6)) * spacing      # exponential: rows clump and part
                     nxt += max(gap, 0.06)
@@ -656,7 +677,8 @@ def mark_mesh(tl, parts, seed):
     # UVs per face corner, as make() takes them
     UV0c = [UV0[v] for f in F for v in f]
     UV1c = [UV1[v] for f in F for v in f]
-    return np.array(V), F, UV0c, UV1c, np.array(APP)
+    UV2c = [UV2[v] for f in F for v in f]
+    return np.array(V), F, UV0c, UV1c, np.array(APP), UV2c
 
 
 # -- leaves and masses -------------------------------------------------------------------------------------------------
@@ -1315,7 +1337,7 @@ def branch_bake(samples, V, trees, k, vols=None):
 
 # -- in Blender ---------------------------------------------------------------------------------------------------------
 
-def make(name, V, F, UV0, UV1, COL=None, normals=None, smooth=True):
+def make(name, V, F, UV0, UV1, COL=None, normals=None, smooth=True, UV2=None):
     import bpy
     me = bpy.data.meshes.new(name)
     me.from_pydata([tuple(v) for v in V], [], F)
@@ -1325,6 +1347,9 @@ def make(name, V, F, UV0, UV1, COL=None, normals=None, smooth=True):
     uv0.data.foreach_set("uv", np.array(UV0, dtype=np.float32).ravel())
     uv1 = me.uv_layers.new(name="uv1")
     uv1.data.foreach_set("uv", np.array(UV1, dtype=np.float32).ravel())
+    if UV2 is not None:
+        uv2 = me.uv_layers.new(name="uv2")
+        uv2.data.foreach_set("uv", np.array(UV2, dtype=np.float32).ravel())
     if COL is not None:
         attr = me.color_attributes.new("bake", "FLOAT_COLOR", "CORNER")
         attr.data.foreach_set("color", np.array(COL, dtype=np.float32).ravel())
@@ -1423,9 +1448,9 @@ def build(species, seed, age, quality=1.0, unity=None, events=(), exposure=0.0, 
         obs.append(make(name + "_leaves", LV, LF, LUV0, LUV1, LC, LN))
     marks = 0
     if parts.get("marks"):
-        MV, MF, MUV0, MUV1, MAPP = mark_mesh(tl, parts, seed)
+        MV, MF, MUV0, MUV1, MAPP, MUV2 = mark_mesh(tl, parts, seed)
         if len(MF):
-            ob_m = make(name + "_marks", MV, MF, MUV0, MUV1)
+            ob_m = make(name + "_marks", MV, MF, MUV0, MUV1, UV2=MUV2)
             me_m = ob_m.data
             ml = np.zeros(len(me_m.loops), dtype=np.int64)
             me_m.loops.foreach_get("vertex_index", ml)
