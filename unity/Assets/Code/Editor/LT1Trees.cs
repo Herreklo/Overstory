@@ -42,7 +42,7 @@ namespace Overstory.EditorTools
             // downy birch on the coast on 20 October: most leaves turned an ochre gold (greyed, never cadmium), the
             // last still olive, the first a dull brown, never orange or red; nearly half fallen, from the inside and
             // below, so the limbs show
-            ["birch"] = (new Color(0.40f, 0.42f, 0.20f), new Color(0.72f, 0.62f, 0.30f), new Color(0.46f, 0.39f, 0.25f),
+            ["birch"] = (new Color(0.40f, 0.42f, 0.20f), new Color(0.64f, 0.55f, 0.29f), new Color(0.44f, 0.37f, 0.24f),
                          new Vector4(0.78f, 0.40f, 0f, 0f)),     // two curtains in five gone
         };
 
@@ -83,7 +83,7 @@ namespace Overstory.EditorTools
                     m.SetFloat("_InnerGlow", 0f);
                     m.SetFloat("_MassShadow", 8f);
                     m.SetFloat("_LeafSkyTint", 0.35f);
-                    m.SetFloat("_SunPale", 0.35f);
+                    m.SetFloat("_SunPale", 0.45f);
                     m.SetFloat("_Cutoff", 0.5f);
                     m.SetColor("_Through", new Color(1f, 0.85f, 0.45f, 0.9f));
                 }
