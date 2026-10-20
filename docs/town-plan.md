@@ -105,6 +105,23 @@ What each scenario needs from the town, all on one map:
 
 **Who decides.** These are facts, so the engine's fabric pass owns them (`docs/engine-requests.md`); the plan supplies the setting pack's land and its script of eras. The same machinery grows other towns and, later, cities, each with its own land and script.
 
+## Changing the town in the machine
+
+Change is cheap as long as one rule holds: everything that can change is a dated fact, and the geometry is rebuilt from the facts. A house is never deleted; its diary says `demolished`, and the next build leaves it out.
+
+| Change | How | Status |
+| --- | --- | --- |
+| Repainted, extended, new windows, a business opens or closes | An event in the building's diary; parts from that decade | Works (`blender/resolver`) |
+| Demolished, an empty lot, a new building | `demolished` then `built` on the same plot; the lot's state (gravel car park, garden) | Works in the resolver; lot states to add |
+| Plots merged or split | A diary for the plot | Designed (`docs/research/world-that-remembers.md`), not built |
+| A street laid out, widened or cut through | A diary for the street; the plots along it change; the ground re-cut locally | Designed, not built |
+| New land: a quay pushed out, land filled, forest cleared, farmland built on | A diary for the land; the ground recomputed from land and cuts | Not built; the same machinery as streets |
+| Any of these during play | Unity assembles buildings from parts at runtime and rebuilds only the chunk that changed | Not built: buildings are still meshed in Blender per year |
+
+What keeps change local: layout is data in the setting pack, buildings are assembled from parts, the ground is computed from the land and its cuts, and the world is cut into chunks by plot. What would make it hard, and is avoided: geometry placed by hand in the shipped game (hand block-ins are references, then turned into facts), baked lighting, and meshes that span many plots. Until the engine's fabric pass models buildings and land, the dated facts come from fixtures.
+
+**An early test, before the town grows:** the corner across four dates, rebuilt live in Unity from its facts, including a house demolished and replaced, two plots merged, and the quay pushed out into the basin. It proves runtime assembly and local rebuilds on a small scale.
+
 ## The town around the centre
 
 | District | Where | Grain | What it adds to the game |
