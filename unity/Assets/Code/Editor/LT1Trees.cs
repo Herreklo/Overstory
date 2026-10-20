@@ -106,7 +106,9 @@ namespace Overstory.EditorTools
                 }
                 // a birch's twigs and young branches are dark purple-brown up to two or three centimetres; the white
                 // bark comes with age on the limbs and the trunk
-                m.SetVector("_TwigRadius", new Vector4(0.012f, 0.045f, 0f, 0f));
+                // a birch's twigs are dark purple-brown; its bark turns white as the wood thickens past about a
+                // centimetre, white by two (a limb of four or five centimetres is white, never a dark rod)
+                m.SetVector("_TwigRadius", new Vector4(0.007f, 0.02f, 0f, 0f));
                 // the bark's pigment: the downy's a grey white (weathered, lichen-dimmed), the silver's a clean white
                 bool silver = species == "silver_birch";
                 // white must stay white: the silver in drizzle the brightest thing under the sky, the downy a step
@@ -114,12 +116,13 @@ namespace Overstory.EditorTools
                 m.SetColor("_BarkLight", silver ? new Color(0.94f, 0.93f, 0.90f) : new Color(0.82f, 0.81f, 0.78f));
                 m.SetColor("_BarkBand", silver ? new Color(0.76f, 0.74f, 0.71f) : new Color(0.62f, 0.60f, 0.57f));
                 // an old trunk's foot: the silver's breaks black and fissured; the downy's only greys and roughens
-                m.SetVector("_Foot", new Vector4(0.16f, 4.5f, silver ? 1.0f : 0.35f, 0f));
+                // the foot: the silver's greys and splits in black fissures, higher; the downy's only greys
+                m.SetVector("_Foot", new Vector4(0.16f, silver ? 4.5f : 4.0f, silver ? 1.0f : 0.4f, silver ? 0.85f : 0.15f));
                 // the foot's dark: deep, never black, so its form still reads; its islands a grey the bark shows through
                 // (colours set here are sRGB, as the eye sees them: Unity takes them to linear)
                 // a dark grey-brown in its fissures, never black; its plates a mid grey that takes the light
-                m.SetColor("_FootCrack", new Color(0.30f, 0.28f, 0.26f));
-                m.SetColor("_FootPlate", new Color(0.54f, 0.52f, 0.49f));
+                m.SetColor("_FootCrack", new Color(0.33f, 0.31f, 0.30f));
+                m.SetColor("_FootPlate", new Color(0.66f, 0.64f, 0.61f));
                 m.SetVector("_Relief", new Vector4(0.006f, 0.01f, 0f, 0f));
                 // lichen: the downy birch on this damp coast carries it in grey-green patches; the silver little
                 m.SetColor("_Lichen", silver ? new Color(0.62f, 0.64f, 0.56f, 0.15f) : new Color(0.60f, 0.63f, 0.52f, 0.7f));

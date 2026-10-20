@@ -564,9 +564,11 @@ def _shape_cell(kind, rng):
         x = xs - 0.5
         arm = np.abs(x)
         slope = rng.uniform(0.4, 0.7)
-        line = 0.6 - slope * arm + 0.02 * edge
-        width = rng.uniform(0.05, 0.08) * np.clip(1.0 - arm / 0.46, 0, 1) ** 0.8 + 0.005
-        d = np.abs(yu - line) - width
+        # a wedge: thick over the branch, its arms tapering to points down either side (the bark wrinkled over the
+        # collar), never a thin V
+        line = 0.66 - slope * arm + 0.02 * edge
+        width = rng.uniform(0.16, 0.22) * np.clip(1.0 - arm / 0.46, 0, 1) ** 1.3 + 0.006
+        d = np.maximum(yu - line, line - width - yu)
         cv = np.clip(0.5 - d * n / 2.0, 0, 1) * (arm < 0.46 * rng.uniform(0.8, 1.0))
         cover = np.maximum(cover, cv)
         light = np.where(cv > 0.5, dark + 0.08, light)

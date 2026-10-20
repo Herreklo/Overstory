@@ -54,13 +54,13 @@ import tree_growth as G  # noqa: E402
 # least flare_min_radius thick: a twig's flare is not seen). lobe_size, lobe_weight: each mass cut into lobes about so many metres
 # across (on a grown tree), whose own volumes shade the cards by so much of their normal. places: for each place in the crown (top: above top_z of its height; core; low; high skin), the pairs of
 # atlas cells its two crossed cards may carry. top_tilt: how far the cards inside a mass's top (deeper than top_tilt_depth) lean to the sky (degrees), for steep
-# views.
+# views. hug_gap, hug_len: a branch within hug_gap (m) of a stem's bark for more than hug_len along it is not drawn.
 PARTS = {
     "birch": dict(sag=0.08, taper=0.55, flare=0.3, flare_branch=0.22, flare_min_radius=0.008, occlusion=0.05, seam=0.5, atlas="clusters", lobe=0.8, lobe_gap=0.36,
                   marks=True, mark_min_radius=0.02, mark_scale=1.6, lenticel_spacing=0.6,
                   cluster_size=(1.3, 1.15, 1.05, 0.85), crossed=True, edge_gap=0.22, edge_depth=0.2,
                   masses="limbs", seam_cut=0.95, core_depth=0.45, core_keep=0.55, top_tilt=50.0,
-                  lobe_size=2.2, lobe_weight=0.7, top_z=0.66, top_tilt_depth=0.15,
+                  lobe_size=2.2, lobe_weight=0.7, top_z=0.66, top_tilt_depth=0.15, hug_gap=0.12, hug_len=0.5, hug_stem=0.025,
                   places=dict(core=((0, 1), (1, 0)), top=((0, 1), (1, 0)), low=((2, 3),), high=((3, 2),)), lose_tips=40, hang=False, card=(0.50, 0.48), card_u=(0.03, 0.97), cells=4,
                   per_node=2, along=1, droop=0.7, leaf_years=999, leaf_tips=24, draw_tips=2.5, draw_tips_per_m=0.9, winter_tips=3.0, reach=99.0, hang_reach=0.3,
                   bark=(0.30, 0.60), max_cards=4200, grow_to=80),
@@ -108,12 +108,71 @@ def read(species, seed, age, quality, events=(), exposure=0.0, origin="planted")
     tl["start_grown"], tl["end_grown"] = t["start"].astype(np.float64), t["end"].astype(np.float64)
     tl["age"] = age
     sag(tl, pipe, parts, G.SPECIES[species]["tip_radius"])
+    hugging(tl, parts)
     kids = {}
     for i in range(1, len(tl["parent"])):
-        if alive[i]:
+        if tl["alive"][i]:
             kids.setdefault(int(tl["parent"][i]), []).append(i)
     tl["children_of"] = kids
     return tl
+
+
+def hugging(tl, parts):
+    """A branch that runs along a stem close to its bark for more than a short way (a twig hanging straight down a
+    trunk's face, a limb lying along it) is left out with all it carries: in life it would rub on the bark and die,
+    and drawn it reads as a rod or a tail on the trunk. Within hug_gap of the bark of a stem (the trunk, or a limb at
+    least hug_stem thick of a lower order), for more than hug_len along its own length, its first two widths of the
+    wood it leaves excepted."""
+    gap, max_len = parts.get("hug_gap", 0.0), parts.get("hug_len", 0.0)
+    if gap <= 0:
+        return
+    parent, order, alive, start, end, r = tl["parent"], tl["order"], tl["alive"], tl["start"], tl["end"], tl["r"]
+
+    def near(points, stems):
+        A, B = start[stems], end[stems]
+        R = r[stems] * (1.0 + np.where(order[stems] == 0, parts.get("taper", 0.0), 0.0))
+        AB = B - A
+        L2 = np.maximum((AB * AB).sum(1), 1e-12)
+        out = np.zeros(len(points), dtype=bool)
+        for k in range(0, len(points), 1024):
+            P = points[k:k + 1024]
+            t = np.clip(((P[:, None, :] - A[None]) * AB[None]).sum(2) / L2[None], 0, 1)
+            d = np.linalg.norm(P[:, None, :] - (A[None] + t[..., None] * AB[None]), axis=2) - R[None]
+            out[k:k + 1024] = (d < gap).any(1)
+        return out
+
+    # the stems a branch may hug: the trunk, and every limb thick enough to read as one, of a lower order than it
+    close = np.zeros(len(parent), dtype=bool)
+    for o in range(1, int(order.max()) + 1):
+        cand = np.nonzero(alive & (order == o))[0]
+        stems = np.nonzero(alive & (order < o) & ((order == 0) | (r >= parts.get("hug_stem", 0.025))))[0]
+        if len(cand) and len(stems):
+            close[cand] = near(end[cand], stems)
+    seg = np.linalg.norm(end - start, axis=1)
+    kids = {}
+    for i in range(1, len(parent)):
+        if alive[i]:
+            kids.setdefault(int(parent[i]), []).append(i)
+    dropped = 0
+    for c in chains(tl):
+        if c[0] == 0 or order[c[0]] == 0:
+            continue
+        p = int(parent[c[0]])
+        skip = 2.0 * 2.0 * float(r[p])
+        run, along = 0.0, 0.0
+        for i in c:
+            along += seg[i]
+            if along > skip and close[i]:
+                run += seg[i]
+        if run > max_len:
+            stack = [c[0]]
+            while stack:
+                j = stack.pop()
+                if alive[j]:
+                    alive[j] = False
+                    stack.extend(kids.get(j, ()))
+            dropped += 1
+    tl["hugging_dropped"] = dropped
 
 
 def sag(tl, pipe, parts, tip):
@@ -472,12 +531,8 @@ def branch_mesh(tl, parts, H, vols=None, needed=None):
             d0 /= max(np.linalg.norm(d0), 1e-9)
             sin_t = float(np.linalg.norm(np.cross(pa, d0)))
             pts, rad, appear = junction_rings(pts, rad, appear, Rp, parts["flare_branch"], sin_t)
-            if rad[min(1, len(rad) - 1)] > 0.6 * Rp:
-                # a fork of near-equal stems: the stem leaving begins a little down inside the wood below the fork
-                # (the two merge downward), so its start never shows on the side of the other
-                pts = np.vstack([pts[0] - pa * 1.5 * Rp, pts])
-                rad = np.concatenate([[min(rad[0], 0.85 * Rp)], rad])
-                appear = np.concatenate([[appear[0]], appear])
+            # its first ring, on the parent's axis, inside the parent's wood: never wider than it
+            rad[0] = min(rad[0], 0.85 * Rp)
         if c[0] == 0:
             # the trunk thickens towards its foot (the wind's lever on the crown is greatest there; the pipe model alone
             # gives a pole), then flares into the ground, the flare in rings near the ground so it curves
@@ -573,7 +628,7 @@ def mark_mesh(tl, parts, seed):
         out /= np.linalg.norm(out)
         side = np.cross(a, out)
         R = nr[p]
-        span = min(w / max(R, 1e-3), 1.8)
+        span = min(w / max(R, 1e-3), 1.3)
         shear = (h01(key, 51) - 0.5) * 0.3
         flip = h01(key, 52) < 0.5
         centre = end[p] + a * lift
