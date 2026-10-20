@@ -1,0 +1,4 @@
+# The full-size frames and their greyscale copies are rebuilt by LT1Trees.Frames (after blender/generators/tree.py);
+# the sheets and the one-eighth copies are kept.
+*/*.png
+!*/*-eighth.png

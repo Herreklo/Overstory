@@ -17,3 +17,6 @@ Thumbs.db
 # Python
 __pycache__/
 *.pyc
+
+# Grown tree timelines: regrown the same from their seed
+blender/cache/

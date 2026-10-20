@@ -10,7 +10,7 @@ namespace Overstory.EditorTools
     public class ArtImport : AssetPostprocessor
     {
         // raise when the rules change, so Unity re-imports the art under them
-        public override uint GetVersion() => 2;
+        public override uint GetVersion() => 3;
 
         void OnPreprocessModel()
         {
@@ -49,6 +49,27 @@ namespace Overstory.EditorTools
 
         void OnPreprocessTexture()
         {
+            if (assetPath.StartsWith("Assets/Art/Trees/"))
+            {
+                // a tree's painted parts are masks the tree shader colours, not colours; the leaf sprays keep their
+                // coverage in every mip (Castano's coverage-preserving mips), so a crown does not thin with distance
+                var tt = (TextureImporter)assetImporter;
+                bool spray = assetPath.EndsWith("_leaves.png");
+                tt.textureType = TextureImporterType.Default;
+                tt.sRGBTexture = false;
+                tt.mipmapEnabled = true;
+                tt.mipMapsPreserveCoverage = spray;
+                tt.alphaTestReferenceValue = 0.5f;
+                tt.alphaSource = spray ? TextureImporterAlphaSource.FromInput : TextureImporterAlphaSource.None;
+                tt.alphaIsTransparency = false;
+                tt.filterMode = UnityEngine.FilterMode.Trilinear;
+                tt.anisoLevel = 4;
+                tt.wrapMode = spray ? UnityEngine.TextureWrapMode.Clamp : UnityEngine.TextureWrapMode.Repeat;
+                // the leaf ids must not bleed between leaves under block compression
+                tt.textureCompression = spray ? TextureImporterCompression.Uncompressed : TextureImporterCompression.CompressedHQ;
+                tt.isReadable = false;
+                return;
+            }
             if (!assetPath.StartsWith("Assets/Art/Palette/"))
                 return;
             var t = (TextureImporter)assetImporter;

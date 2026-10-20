@@ -25,6 +25,7 @@ Units: metres, z up, the trunk's foot at the origin; years from the seed's first
 from __future__ import annotations
 
 import math
+import os
 import random
 import sys
 from dataclasses import dataclass, field
@@ -43,11 +44,18 @@ UP = np.array([0.0, 0.0, 1.0])
 # are shorter in proportion to its height until full_size, as a seedling's are a few centimetres. setpoint: the angle
 # above level each order's shoots steer towards (the gravitropic set-point), at the crown's top and at its foot, and
 # steer how much of the difference a shoot makes up per internode: a limb can sag at its base and turn up at its tip.
+# curl: how far each year's shoot bends its own seeded way, per internode (the leader's, then the branches'): a year's
+# shoot is an arc, and the years together make a limb's S-curves and a trunk's slow sweep (wobble alone averages out to
+# a straight line).
 # shed: a branch dies when its buds' mean light has been under this share of open sky for so many years running (the
 # species' shade tolerance), or when it has no buds left. long_min: a side bud makes a long shoot only with resource for
 # so many internodes; below it, it stays a short shoot that only bears leaves (most of a birch's buds), so the year's
 # growth goes into a few limbs and the crown stays open. self_prune: the share of the tree's height, young and grown,
-# below which it sheds its limbs (birch prunes itself; an open-grown spruce keeps its skirt). light: the foliage's extinction per bud in a cell, how much
+# below which it sheds its limbs (birch prunes itself; an open-grown spruce keeps its skirt). masses: the crown's plan
+# of masses, a painter's blocking of the crown, seeded per tree and scaled with its height: one crowning the top
+# (height, half-width, half-height as shares of the tree's height) and two to four lower and to the sides (heights,
+# distances out from the trunk, sizes); growth is drawn into them (a bud outside makes only outside of its share and
+# leans towards the nearest by pull), so the crown is a few masses with sky between them, never one ball. light: the foliage's extinction per bud in a cell, how much
 # the others in a bud's own cell crowd it, and for how many years a shoot keeps its needles or leaves and so shades.
 SPECIES = {
     # Norway spruce, Picea abies. Excurrent: one leader all its life, a whorl of 3 to 6 branches at the top of each
@@ -59,6 +67,7 @@ SPECIES = {
         internode=0.14, shoot=0.30, full_size=3.5, alpha=2.0, apical=(0.60, 0.56, 80),
         whorl=(3, 6), whorl_angle=74.0, side_angle=48.0, side_p=0.8, along_p=0.45, along_vigour=0.3, max_order=2,
         setpoint=((90, 90), (18, -22), (-30, -45), (-40, -50)), steer=0.18, light_pull=0.20, jitter=0.05,
+        curl=(0.5, 2.2),
         envelope="cone", width=(0.34, 0.17), crown_base=(0.0, 0.03), self_prune=(0.0, 0.0),
         shed=(0.10, 4), bud_life=3, tip_radius=0.0032, pipe=2.2, light=(0.30, 0.25, 6),
     ),
@@ -71,9 +80,11 @@ SPECIES = {
         internode=0.22, shoot=0.35, full_size=3.0, alpha=2.0, apical=(0.58, 0.50, 40),
         phyllotaxis=144.0, lateral_angle=42.0, max_order=4, long_min=2.2,
         setpoint=((90, 90), (55, 35), (30, 10), (10, -5), (-5, -20), (-15, -30)), steer=0.15, light_pull=0.25,
-        jitter=0.08,
-        envelope="dome", width=(0.20, 0.26), crown_base=(0.0, 0.0), self_prune=(0.05, 0.32),
-        shed=(0.30, 2), bud_life=6, tip_radius=0.0055, pipe=2.4, light=(0.22, 0.25, 2),
+        jitter=0.08, curl=(1.3, 5.0),
+        envelope="dome", width=(0.30, 0.36), crown_base=(0.0, 0.0), self_prune=(0.05, 0.24),
+        masses=dict(top=(0.84, 0.19, 0.15), sides=(2, 4), side_z=(0.40, 0.68), side_off=(0.17, 0.27),
+                    side_r=(0.12, 0.17), outside=0.6, pull=0.3),
+        shed=(0.30, 2), bud_life=6, tip_radius=0.0075, pipe=2.4, light=(0.22, 0.25, 2),
     ),
 }
 
@@ -141,7 +152,7 @@ class Timeline:
             for y, r in nd.radius.items():
                 radius[nd.id, y] = r
         np.savez_compressed(
-            path, version=self.version, species=self.species, seed=self.seed, years=self.years,
+            path, version=self.version, species=self.species, seed=self.seed, years=self.years, quality=self.quality,
             parent=np.array([nd.parent for nd in self.nodes], dtype=np.int32),
             start=np.array([nd.start for nd in self.nodes], dtype=np.float32),
             end=np.array([nd.end for nd in self.nodes], dtype=np.float32),
@@ -161,6 +172,37 @@ def radius_at(nd, year):
 
 
 # -- the crown's envelope: where growth may go, scaled with the tree's height ----------------------------------------
+
+def masses(sp, seed):
+    """The tree's plan of crown masses: (centre, (half-width, half-height)), as shares of its height, seeded."""
+    plan = sp.get("masses")
+    if not plan:
+        return []
+    rng = random.Random(f"{VERSION}:masses:{seed}")
+    z, rh, rv = plan["top"]
+    out = [(np.array([rng.uniform(-0.03, 0.03), rng.uniform(-0.03, 0.03), z]), (rh, rv))]
+    n = rng.randint(*plan["sides"])
+    a0 = rng.uniform(0.0, 360.0)
+    for k in range(n):
+        a = math.radians(a0 + k * 360.0 / n + rng.uniform(-35.0, 35.0))
+        off = rng.uniform(*plan["side_off"])
+        r = rng.uniform(*plan["side_r"])
+        out.append((np.array([math.cos(a) * off, math.sin(a) * off, rng.uniform(*plan["side_z"])]), (r, r * rng.uniform(0.75, 0.95))))
+    return out
+
+
+def in_mass(p, plan, H):
+    """How far inside the plan's nearest mass a point is (1 at a centre, 0 at the skin, below 0 outside), which mass,
+    and the way to its centre."""
+    best, which, way = -1e9, -1, np.zeros(3)
+    for k, (c, (rh, rv)) in enumerate(plan):
+        d = p - c * H
+        e = math.sqrt((d[0] / (rh * H)) ** 2 + (d[1] / (rh * H)) ** 2 + (d[2] / (rv * H)) ** 2)
+        if 1.0 - e > best:
+            best, which, way = 1.0 - e, k, -d
+    n = np.linalg.norm(way)
+    return best, which, (way / n if n > 1e-9 else way)
+
 
 def envelope_ok(p, sp, H, H_full):
     """Inside the species' crown for a tree of height H that will grow to H_full. Simple solids for now; the
@@ -320,10 +362,12 @@ def tilt(d, towards, deg):
 
 # -- growing -----------------------------------------------------------------------------------------------------------
 
-def grow(species, seed, years=60, site=(), quality=1.0):
+def grow(species, seed, years=60, site=(), quality=1.0, wind=(0.0, 0.0, 0.0)):
     """Grow a tree of the species for so many years. site: obstacles that cast full shade, as axis-aligned boxes
     (x0, y0, z0, x1, y1, z1) in the tree's frame: a house beside it, a wall. quality: the site's, from its soil and
-    shelter (1 a good, sheltered garden; about 0.4 a birch on a knoll in the sea wind)."""
+    shelter (1 a good, sheltered garden; about 0.4 a birch on a knoll in the sea wind). wind: the prevailing wind at
+    the site (x, y the way it blows, z its strength, 0 sheltered to 1 the open coast): every shoot leans with it, so
+    an exposed tree leans away from the sea."""
     sp = SPECIES[species]
     tl = Timeline(species, seed, quality)
     H_full = sp["height"] * quality
@@ -338,6 +382,9 @@ def grow(species, seed, years=60, site=(), quality=1.0):
     first.radius[0] = sp["tip_radius"]
     tl.nodes.append(first)
     buds = [Bud(0, first.end.copy(), UP.copy(), 0, True, "0", 0)]
+    plan = masses(sp, seed)
+    w = np.array([wind[0], wind[1], 0.0])
+    push = (w / np.linalg.norm(w) * wind[2] * 0.06) if np.linalg.norm(w) > 1e-9 else np.zeros(3)
     starved = {}                                          # branch base -> years in a row its buds have been starved
 
     for year in range(1, years + 1):
@@ -383,7 +430,11 @@ def grow(species, seed, years=60, site=(), quality=1.0):
         shed_any = False
         for nd in nodes:
             if nd.died is None and nd.parent >= 0 and nd.order > nodes[nd.parent].order and year - nd.born > 1:
-                if nd.start[2] < prune_below and year - nd.born > 2:
+                # how big the branch has grown at its base: self-pruning takes small branches; a limb dies slowly,
+                # over years in proportion to its size (all at once only in a storm, which is an event)
+                r_base = radius_at(nd, year - 1)
+                big = r_base / max(sp["tip_radius"] * 4.0, 1e-6)
+                if nd.start[2] < prune_below and year - nd.born > 2 and big < 1.0:
                     kill(tl, nd.id, year)
                     shed_any = True
                     continue
@@ -391,7 +442,7 @@ def grow(species, seed, years=60, site=(), quality=1.0):
                     starved.pop(nd.id, None)
                     continue
                 starved[nd.id] = starved.get(nd.id, 0) + 1
-                if nb[nd.id] == 0 or starved[nd.id] >= years_starved:
+                if nb[nd.id] == 0 or starved[nd.id] >= years_starved * max(1.0, big):
                     kill(tl, nd.id, year)
                     shed_any = True
         if shed_any:
@@ -432,6 +483,12 @@ def grow(species, seed, years=60, site=(), quality=1.0):
         for bd in buds:
             rng = rng_for(bd.key, year)
             raw = bd.resource * bd.vigour * per_light
+            if plan and bd.order > 0:
+                # drawn into the crown's masses: outside them a bud makes only a part of its share, leaning in
+                m, _, inward = in_mass(bd.pos, plan, H)
+                if m < 0:
+                    raw *= sp["masses"]["outside"]
+                    bd.way = unit(bd.way + sp["masses"]["pull"] * inward)
             n = int(raw + rng.random()) if bd.apical or raw >= sp.get("long_min", 0.0) else 0
             leader = bd.order == 0 and bd.apical and year < sp["leader_until"]
             exact = None
@@ -444,7 +501,7 @@ def grow(species, seed, years=60, site=(), quality=1.0):
                 if year - bd.born <= sp["bud_life"] or leader:
                     kept.append(bd)
                 continue
-            new = shoot(tl, sp, bd, n, exact or length, year, H, H_full, rng, exact=exact is not None)
+            new = shoot(tl, sp, bd, n, exact or length, year, H, H_full, rng, exact=exact is not None, push=push)
             if new is None:
                 bd.born = year                      # at the crown's edge: a living shoot that cannot extend
                 kept.append(bd)
@@ -471,12 +528,15 @@ def grow(species, seed, years=60, site=(), quality=1.0):
     return tl
 
 
-def shoot(tl, sp, bd, n, length, year, crown_h, H_full, rng, exact=False):
+def shoot(tl, sp, bd, n, length, year, crown_h, H_full, rng, exact=False, push=np.zeros(3)):
     """Grow n internodes of about the length from a bud; return the new buds, or None if it could not grow at all."""
     nodes = tl.nodes
     parent_id, pos, d = bd.node, bd.pos.copy(), bd.dir.copy()
     order = bd.order
     hi, lo = sp["setpoint"][min(order, len(sp["setpoint"]) - 1)]
+    # this year's shoot bends its own way: an axis across it and a rate, both seeded
+    curl_axis = rotate(side_of(d), d, rng.uniform(0.0, 360.0))
+    curl = rng.gauss(0.0, sp["curl"][min(order, 1)])
     new_buds = []
     made = 0
     for i in range(n):
@@ -486,7 +546,8 @@ def shoot(tl, sp, bd, n, length, year, crown_h, H_full, rng, exact=False):
         set_to = lo + (hi - lo) * min(max(pos[2] / max(crown_h, 1e-3), 0.0), 1.0)
         turn = (set_to - math.degrees(math.asin(max(-1.0, min(1.0, d[2]))))) * sp["steer"]
         d2 = tilt(d, UP if turn > 0 else -UP, abs(turn)) if abs(turn) > 1e-3 else d
-        d2 = unit(d2 + sp["light_pull"] * toward + jitter)
+        d2 = rotate(d2, curl_axis, curl)
+        d2 = unit(d2 + sp["light_pull"] * toward + jitter + push)
         end = pos + d2 * length * (1.0 if exact else 0.85 + 0.3 * rng.random())
         if not envelope_ok(end, sp, crown_h * 1.02, H_full):
             break
@@ -587,6 +648,25 @@ def sketch(tl, ages, path, px_per_m=22):
         d.text((i * w + 6, h + 6), f"{tl.species} {tl.seed}: {y} years, {tl.height(y):.1f} m", fill=(30, 30, 30))
     sheet.save(path)
     return path
+
+
+CACHE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "cache", "trees")
+
+
+def cached(species, seed, years, quality=1.0):
+    """The timeline's arrays (as saved), grown once and kept in blender/cache/trees (not in git: it regrows the same)."""
+    import hashlib
+    # a changed habit, or a change to this simulator, regrows
+    with open(os.path.abspath(__file__), "rb") as f:
+        code = f.read()
+    habit = hashlib.sha1(repr(sorted(SPECIES[species].items())).encode() + code).hexdigest()[:8]
+    path = os.path.join(CACHE, f"{species}-{seed}-q{quality:.2f}-{years}y-{VERSION}-{habit}.npz")
+    if not os.path.exists(path):
+        os.makedirs(CACHE, exist_ok=True)
+        tl = grow(species, seed, years, quality=quality)
+        check(tl)
+        tl.save(path)
+    return dict(np.load(path))
 
 
 if __name__ == "__main__":

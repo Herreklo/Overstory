@@ -446,7 +446,7 @@ namespace Overstory.EditorTools
         public static readonly string[] Moods = { "hopeless", "hopeful", "grand", "sad", "gritty", "success" };
 
         /// <summary>The rig: 17:50 on Friday 20 October 1989, the sun five degrees down, a bank of sea fog on the water.</summary>
-        static LightRig NightRig()
+        internal static LightRig NightRig()
         {
             Directory.CreateDirectory(Lights);
             AssetDatabase.Refresh();
@@ -596,7 +596,7 @@ namespace Overstory.EditorTools
         public static readonly string[] Styles = { "nocturne", "luminous", "painted", "game" };
 
         /// <summary>Three candidate styles, to be judged beside the unstylised look on the same frames.</summary>
-        static void WriteStyles()
+        internal static void WriteStyles()
         {
             Directory.CreateDirectory(Lights + "/Styles");
             AssetDatabase.Refresh();
