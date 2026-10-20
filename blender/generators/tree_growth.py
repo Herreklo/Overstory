@@ -85,7 +85,7 @@ SPECIES = {
         kind="broadleaf", height=16.0, growth=(0.050, 1.5), leader_until=999,
         internode=0.22, shoot=0.35, full_size=3.0, alpha=2.0, apical=(0.64, 0.58, 40),
         phyllotaxis=144.0, lateral_angle=42.0, max_order=4, long_min=1.4, acrotony=(2, 1.3, 0.35),
-        setpoint=((90, 90), (78, 52), (46, 14), (16, -8), (-8, -24), (-15, -30)), steer=0.15, light_pull=0.25,
+        setpoint=((90, 90), (66, 38), (30, 0), (0, -20), (-15, -30), (-20, -35)), steer=0.15, light_pull=0.25,
         light_up=0.3, jitter=0.08, curl=(1.0, 3.5), variety=1.0, tip_loss=(0.04, 0.10), flag=0.85,
         envelope="dome", width=(0.19, 0.27), lobing=0.6, crown_base=(0.0, 0.0), self_prune=(0.05, 0.34),
         masses=dict(top=(0.86, 0.17, 0.13), sides=(3, 4), side_z=(0.36, 0.70), side_off=(0.20, 0.30),
@@ -725,8 +725,9 @@ def shoot(tl, sp, bd, n, length, year, crown_h, H_full, rng, exact=False, push=n
         parent_id, pos = nd.id, end
     if made == 0:
         return None
-    if sp["kind"] == "broadleaf" and sp.get("acrotony"):
-        # acrotony: the side buds near the tip of a year's shoot are the strong ones (they make next year's long
+    if sp["kind"] == "broadleaf" and sp.get("acrotony") and order >= 1:
+        # acrotony (on branches; the trunk's leader keeps its dominance, so a planted tree keeps one stem): the side
+        # buds near the tip of a year's shoot are the strong ones (they make next year's long
         # shoots, so a branch forks near its end each year and builds a hierarchy); those lower down are weak and
         # mostly stay short shoots
         k_strong, strong, weak = sp["acrotony"]
