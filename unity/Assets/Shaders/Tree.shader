@@ -27,12 +27,10 @@ Shader "Overstory/Tree"
         _Turned ("Leaves turned", Color) = (0.86, 0.62, 0.12, 1)
         _Late ("Leaves late", Color) = (0.50, 0.32, 0.10, 1)
         _Season ("Season: x turned (0 to 1), y fallen (0 to 1)", Vector) = (0.6, 0.25, 0, 0)
-        _Through ("Light through the leaves (rgb tint, a strength)", Color) = (1.0, 0.85, 0.45, 0.9)
+        _Through ("Light through the leaves (a strength; its colour is the light's and the leaf's)", Color) = (1, 1, 1, 0.9)
         _Cutoff ("Coverage cut", Range(0, 1)) = 0.5
-        _Hold ("Leaves: how much of their own hue they hold in dim light (dusk)", Range(0, 1)) = 0.6
         _MassShadow ("Leaves: how far out towards the sun their shadow is read (m)", Float) = 8.0
         _InnerGlow ("Leaves: the light bounced and passed inside a sunlit crown", Range(0, 2)) = 0.0
-        _LeafSkyTint ("Leaves: how much of the sky's tint their shade takes", Range(0, 2)) = 0.35
         _SunPale ("Leaves: how far the sun's light pales their colour", Range(0, 1)) = 0.35
         _Scatter ("Leaves: light passed leaf to leaf into a sunlit crown's shade", Range(0, 2)) = 0.6
         _SkyThrough ("Leaves: the sky's light through them from behind (an overcast day's glow)", Range(0, 2)) = 0.35
@@ -59,10 +57,8 @@ Shader "Overstory/Tree"
         float4 _Season;
         half4 _Through;
         half _Cutoff;
-        half _Hold;
         float _MassShadow;
         half _InnerGlow;
-        half _LeafSkyTint;
         half _SunPale;
         half _Scatter;
         half _SkyThrough;
@@ -338,11 +334,12 @@ Shader "Overstory/Tree"
                     // lower, then the half-tone at the turn, then shade (a painter's four planes on a lit mass)
                     half lit = (smoothstep(-0.32h, -0.14h, ndl) * 0.36h + smoothstep(0.1h, 0.26h, ndl) * 0.34h
                               + smoothstep(0.42h, 0.62h, ndl) * 0.30h) * shadow;
-                    // the sky's light on leaves keeps only a little of its tint: under an overcast sky a leaf's own
-                    // colour is at its truest (a yellow birch in the rain is yellow, not olive)
+                    // the sky term, shade in the sky's colour, by the same rule as every surface in the town: how much
+                    // of the sky's tint shade takes is the light's (the rig's), never the object's (SEASON's lesson:
+                    // per-object shadow tints break whenever the light changes)
                     half3 sky = OS_SkyTerm(b, n);
                     half skyLum = dot(sky, half3(0.2126h, 0.7152h, 0.0722h));
-                    sky = max(skyLum + (sky - skyLum) * _LeafSkyTint, 0.0h);
+                    sky = max(skyLum + (sky - skyLum) * _OS_ShadowChroma, 0.0h);
                     // a mass's top takes the sky, its underside is in its own shade: two flat values with a narrow soft
                     // edge between (Firewatch's two values a form), decided by where the card sits on its mass, never
                     // leaf by leaf
@@ -353,15 +350,10 @@ Shader "Overstory/Tree"
                     // in the sun a leaf's colour is lifted towards the light's, not deepened: highlights go paler,
                     // never cadmium (a painter's lit foliage)
                     half3 litAlbedo = lerp(s.albedo, dot(s.albedo, half3(0.2126h, 0.7152h, 0.0722h)).xxx, _SunPale);
-                    // shade kept clean (a painter's shade on yellow foliage is a warm sienna-umber, never a darkened
-                    // yellow, which reads as olive dirt): the same value, its hue turned warmer and its chroma kept
-                    half lumA = dot(s.albedo, half3(0.2126h, 0.7152h, 0.0722h));
-                    half3 shadePig = s.albedo * half3(1.04h, 0.92h, 0.80h);
-                    shadePig *= lumA / max(dot(shadePig, half3(0.2126h, 0.7152h, 0.0722h)), 1e-3h);
                     // and lit from within: in a sunlit crown light passes leaf to leaf, so the shade side of a mass
-                    // glows with the leaves' own colour (only while the crown has sun)
-                    half3 scatter = shadePig * shadePig * sun.color * _Scatter * shadow * (1.0h - saturate(lit));
-                    colour = shadePig * sky + scatter + litAlbedo * sun.color * lit * lerp(0.75h, 1.0h, seen);
+                    // glows with the leaves' own colour times the sun's (only while the crown has sun)
+                    half3 scatter = s.albedo * s.albedo * sun.color * _Scatter * shadow * (1.0h - saturate(lit));
+                    colour = s.albedo * sky + scatter + litAlbedo * sun.color * lit * lerp(0.75h, 1.0h, seen);
                     // the inside of a sunlit crown glows: light bounced leaf to leaf and through the leaves, warm with
                     // their colour, so its shade sits near half the lit side, not a hole (only while the crown has sun)
                     half3 glowc = lerp(s.albedo, dot(s.albedo, half3(0.2126h, 0.7152h, 0.0722h)).xxx, 0.45h);
@@ -409,13 +401,6 @@ Shader "Overstory/Tree"
                 half3 behind = OS_SkyFor(-id.viewDirectionWS);          // the sky beyond the leaf, seen through it
                 // strongest through a mass's lit skin, weaker under it, so the glow never flattens the mass's two values
                 colour += glass * behind * b.sky * b.town * m.b * _SkyThrough * lerp(0.4h, 1.0h, top) * isLeaf;
-                // a painter's hold on local colour: in dim or strongly coloured light (dusk, deep shade) the leaves
-                // keep some of their own hue at the light's brightness, so a yellow birch reads yellow, never as a
-                // green summer tree; the more the dimmer
-                half lum = dot(colour, half3(0.2126h, 0.7152h, 0.0722h));
-                half3 own = s.albedo / max(dot(s.albedo, half3(0.2126h, 0.7152h, 0.0722h)), 1e-3h) * lum;
-                // only as the light fails (dusk): by day the shade takes the sky's blue, as a painter's does
-                colour = lerp(colour, own, _Hold * (1.0h - saturate(lum * 5.0h)));
             #endif
                 colour = OS_Atmosphere(colour, input.positionWS);
             #if defined(_OS_LEAVES)

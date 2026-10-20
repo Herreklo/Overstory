@@ -48,12 +48,13 @@ namespace Overstory.EditorTools
             // downy birch on the coast on 20 October: most leaves turned an ochre gold (greyed, never cadmium), the
             // last still olive, the first a dull brown, never orange or red; nearly half fallen, from the inside and
             // below, so the limbs show
-            // a clear yellow-ochre, muted as the coast and Stålenhag's birches are (a birch in the rain is the clearest
-            // colour in the street, never a loud one; the sun pales it, so it never goes cadmium)
-            ["birch"] = (new Color(0.40f, 0.42f, 0.20f), new Color(0.72f, 0.61f, 0.32f), new Color(0.50f, 0.39f, 0.21f),
+            // the pigment a strong yellow-ochre: the light mutes it on a grey day to the coast's and Stålenhag's
+            // birches (shade takes the light's colour, never a tint of the leaf's own), and the sun pales it, so it
+            // never goes cadmium
+            ["birch"] = (new Color(0.40f, 0.42f, 0.20f), new Color(0.74f, 0.53f, 0.25f), new Color(0.50f, 0.33f, 0.18f),
                          new Vector4(0.70f, 0.40f, 0f, 0f)),     // two curtains in five gone, a few still green
             // the silver birch turns as the downy does on this coast
-            ["silver_birch"] = (new Color(0.40f, 0.42f, 0.20f), new Color(0.72f, 0.61f, 0.32f), new Color(0.50f, 0.39f, 0.21f),
+            ["silver_birch"] = (new Color(0.40f, 0.42f, 0.20f), new Color(0.74f, 0.53f, 0.25f), new Color(0.50f, 0.33f, 0.18f),
                                 new Vector4(0.70f, 0.40f, 0f, 0f)),
         };
 
@@ -88,28 +89,26 @@ namespace Overstory.EditorTools
                     m.SetColor("_Turned", s.turned);
                     m.SetColor("_Late", s.late);
                     m.SetVector("_Season", s.season);
-                    m.SetFloat("_Hold", 0.15f);
                     // every setting written here, so the material is what this code says (a material keeps the values
                     // it was first saved with, and a changed shader default never reaches it)
                     m.SetFloat("_InnerGlow", 0f);
                     m.SetFloat("_MassShadow", 8f);
-                    // a grey day's sky gives the leaves its light, little of its grey; light through them from
-                    // behind and a mass's underside not sunk let a yellow birch glow in the rain
-                    m.SetFloat("_LeafSkyTint", 0.15f);
+                    // light through them from behind and a mass's underside not sunk let a yellow birch glow in the
+                    // rain; the shade's colour is the light's (the rig's), never set here
                     m.SetFloat("_SkyThrough", 0.65f);
                     m.SetFloat("_UnderFloor", 0.6f);
                     m.SetFloat("_MassSplit", -0.05f);
                     m.SetFloat("_SunPale", 0.45f);
                     m.SetFloat("_Scatter", 0.32f);
                     m.SetFloat("_Cutoff", 0.5f);
-                    m.SetColor("_Through", new Color(1f, 0.85f, 0.45f, 0.9f));
+                    m.SetColor("_Through", new Color(1f, 1f, 1f, 0.9f));     // the light's own colour
                 }
                 // a birch's twigs and young branches are dark purple-brown up to two or three centimetres; the white
                 // bark comes with age on the limbs and the trunk
                 m.SetVector("_TwigRadius", new Vector4(0.012f, 0.045f, 0f, 0f));
                 // a birch's twigs are a purple-grey brown, and seen through the leaves they are lost in them: lighter
                 // than bark's dark marks, never black lines
-                m.SetColor("_Twig", new Color(0.36f, 0.27f, 0.27f));
+                m.SetColor("_Twig", new Color(0.42f, 0.34f, 0.34f));
                 m.enableInstancing = true;
                 EditorUtility.SetDirty(m);
                 return m;

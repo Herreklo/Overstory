@@ -56,7 +56,7 @@ PARTS = {
     "birch": dict(sag=0.08, taper=0.55, occlusion=0.05, seam=0.5, atlas="clusters", lobe=0.8, lobe_gap=0.36,
                   cluster_size=(1.3, 1.15, 1.05, 0.85), crossed=True, edge_gap=0.22, edge_depth=0.2,
                   masses="limbs", seam_cut=0.95, core_depth=0.45, core_keep=0.55, top_tilt=50.0,
-                  lobe_size=2.2, lobe_weight=0.7,
+                  lobe_size=2.2, lobe_weight=0.7, top_z=0.66,
                   places=dict(core=((0, 1), (1, 0)), top=((0, 1), (1, 0)), low=((2, 3),), high=((3, 2),)), lose_tips=40, hang=False, card=(0.50, 0.48), card_u=(0.03, 0.97), cells=4,
                   per_node=2, along=1, droop=0.7, leaf_years=999, leaf_tips=24, draw_tips=2.5, draw_tips_per_m=0.9, winter_tips=3.0, reach=99.0, hang_reach=0.3,
                   bark=(0.30, 0.60), max_cards=4200, grow_to=80),
@@ -745,8 +745,8 @@ def lobe_mesh(tl, parts, age, seed, H):
         for twin, turn in enumerate(twins):
             face = G.rotate(face_mass, up_w, turn)
             face /= max(np.linalg.norm(face), 1e-9)
-            if parts.get("top_tilt") and on_top and twin == 0:
-                # on a mass's top one card of the pair tilts to the sky, its foliage lying out over the mass, so the
+            if parts.get("top_tilt") and on_top:
+                # on a mass's top both cards of the pair lean to the sky, their foliage lying out over the mass, so the
                 # crown has a face from the city camera's steep views (upright cards are edge-on from above)
                 tt = math.radians(parts["top_tilt"])
                 face = face * math.cos(tt) + up_w * math.sin(tt)
@@ -1162,7 +1162,7 @@ def build(species, seed, age, quality=1.0, unity=None, events=(), exposure=0.0, 
     nz = nrm[:, 2]
     # deep in the crown a branch is in the foliage's shade, but a painter keeps it a dark-mid tone, never black against
     # the sky in a gap
-    sky = np.clip((0.5 + 0.5 * nz) * (1.0 - 0.3 * dv), 0.3, 1.0)
+    sky = np.clip((0.5 + 0.5 * nz) * (1.0 - 0.3 * dv), 0.5, 1.0)
     # alpha: the season from which a point of wood shows (0 always; a twig deep in the foliage shows as it falls)
     col = np.stack([sky, np.clip(0.5 - 0.5 * nz, 0, 1), 1.0 - 0.5 * dv, APPEAR[loops]], -1).astype(np.float32)
     attr = me.color_attributes.new("bake", "FLOAT_COLOR", "CORNER")

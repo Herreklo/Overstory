@@ -105,7 +105,7 @@ def twig_cover(xs, ys, twigs, widths, px_per_m):
 def atlas(path, twig_path, kinds, paint_one, paint_bare, tag, seed):
     """A cluster atlas (2 by 2 cells, each painted at CELL and written at half) and its bare twigs on the same cells.
     paint_one(rng, kind) returns ((id, light, thick, cover), twigs); paint_bare(rng, twigs) the bare twigs' coverage.
-    Channels: R each leaf's id (0 the twig), G light within the cluster, B thickness, A coverage; the twigs' A only.
+    Channels: R each leaf's id, G light within the cluster, B thickness, A coverage (leaves only); the twigs' A only.
     Coverage is averaged on the way down and a leaf's id never blurs into another's (each texel takes the highest)."""
     import random
     out = np.zeros((1024, 1024, 4), np.float32)
@@ -113,6 +113,10 @@ def atlas(path, twig_path, kinds, paint_one, paint_bare, tag, seed):
     for c, kind in enumerate(kinds):
         r = random.Random(f"{tag}-{seed}-{c}")
         (lid, light, thick, cover), twigs = paint_one(r, kind)
+        # the leaf cards carry leaves only: a bare twig painted on a card is a line a third of a pixel wide at the
+        # street stop, which an alpha cut breaks into dashes floating in the air; the drawn branches carry the wood,
+        # and the bare twigs are on the twig atlas, shown as the leaves fall
+        cover = np.where(lid > 0.03, cover, 0.0)
         cov = downsample(cover, 2)
         w = np.maximum(cov, 1e-4)
         ids = lid.reshape(512, 2, 512, 2).max(axis=(1, 3))
