@@ -135,7 +135,13 @@ CONTOURS = [
     (2.2, [(56, -160), (150, -150), (240, -140), (300, -134), (334, -128)]),  # the mainland's Barrel Quay
     # the mainland west of the sund: the pub quay's upper street, then the fire grid's slope
     (8.0, [(60, -186), (150, -176), (250, -160), (300, -150)]),
-    (12.0, [(90, -300), (200, -300), (330, -280), (500, -260)]),
+    # Watch Knoll: a hill over Holm Street, its summit near the harbour side (the Fire Watch), a ridge falling
+    # gently south-west towards the Grid, a rock face on its harbour side
+    (None, [(112, -304, 46.0), (150, -338, 40.0), (196, -380, 31.0), (240, -424, 24.0), (276, -470, 20.0)]),
+    (30.0, [(88, -312), (104, -336), (140, -372), (184, -410)]),
+    (30.0, [(140, -300), (174, -322), (214, -356), (250, -398)]),
+    (16.0, [(70, -320), (96, -366), (150, -416), (200, -460)]),
+    (12.0, [(200, -300), (330, -280), (500, -260)]),
     (22.0, [(100, -440), (250, -430), (400, -410), (600, -390)]),
     (32.0, [(110, -600), (300, -580), (500, -560), (700, -540)]),
     (40.0, [(0, -780), (300, -760), (700, -720)]),
@@ -198,10 +204,6 @@ OUTCROPS = [
 # Rock with an outline of its own: a plateau of bare rock inside an irregular polygon, falling at its edge over
 # the face's width, its top tilted and broken in steps; the outline, not a circle, is what reads.
 ROCKS = [
-    dict(name="Watch Knoll", top=30.0, face=5.0, tilt=(0.0, 0.0), steps=2.0,
-         outline=[(92, -300), (104, -284), (124, -280), (142, -288), (164, -282), (186, -296), (204, -312), (214, -336),
-                  (206, -360), (212, -384), (196, -404), (170, -408), (150, -398), (128, -404), (104, -394), (90, -372),
-                  (96, -350), (84, -330)]),
     dict(name="the corner's knuckle", top=12.6, face=1.4, tilt=(0.0, 0.0), steps=0.6,
          outline=[(52.4, 31.0), (58.0, 30.4), (63.6, 32.0), (66.4, 37.0), (65.0, 42.4), (66.0, 46.6), (60.6, 48.2),
                   (54.0, 47.4), (51.8, 43.0), (52.6, 37.4)]),
@@ -212,22 +214,30 @@ VALLEYS = [
     # the stream from the forest hill's saddle down to the east harbour's head, in a green valley
     dict(name="the stream valley", depth=9.0, width=26.0, line=[(520, 640), (420, 650), (320, 630), (200, 590), (110, 560)]),
     # the lake's valley, carrying the railway south from the station
-    dict(name="the railway's valley", depth=7.0, width=40.0, line=[(740, -40), (860, 0), (980, 80), (1100, 160), (1300, 200)]),
+    # the railway's valley: low and broad enough for a line at a train's grade (at most 1.5%), wide curves,
+    # into a tunnel under the High Moor at about (1500, 260)
+    dict(name="the railway's valley", depth=16.0, width=70.0, line=[(740, -40), (860, 0), (980, 80), (1100, 160), (1300, 230), (1500, 260)]),
 ]
 UPLAND_VALLEYS = [  # valleys reaching into the upland from the town's side, the ridge left whole above them
     dict(name="the farm valley", depth=18.0, width=55.0, line=[(780, -500), (950, -530), (1100, -560), (1300, -600), (1460, -620)]),
     dict(name="the quarry valley", depth=20.0, width=50.0, line=[(760, 280), (920, 300), (1080, 330), (1300, 350), (1500, 380)]),
     dict(name="the east valley", depth=16.0, width=50.0, line=[(820, 920), (950, 950), (1060, 980), (1260, 1020), (1420, 1040)]),
 ]
-RAILWAY = [(700, -170), (780, -60), (860, 0), (980, 80), (1100, 160), (1300, 200)]  # the station by the lake
+# the line: the station by the Mere at about 6 m, up the valley at about 1%, curves of 300 m and more, into the
+# tunnel under the High Moor; a goods line from the yard on to Barrel Quay
+RAILWAY = [(700, -170), (760, -90), (840, -10), (960, 70), (1100, 160), (1300, 230), (1500, 260)]
+RAILWAY_TUNNEL = (1500, 260)
+RAILWAY_START_Z = 7.0
+RAILWAY_GRADE = 0.012
+GOODS_LINE = [(700, -170), (560, -200), (420, -190), (330, -134), (240, -138)]
 CLIFFS = [
+    # Watch Knoll's face over Holm Street: the houses back onto the rock (the high side to the left of travel)
+    dict(name="Watch Knoll's face", top=34.0, base=14.0, width=4.0, line=[(158, -298), (132, -280), (104, -270), (80, -276)]),
     # the bluff: the old town hill's point, a rock face over the bay, about 20 m, high side inland
     dict(name="the bluff", top=26.0, base=2.0, width=5.0, line=[(-250, 20), (-286, 46), (-316, 90), (-334, 140), (-328, 196), (-302, 252)]),
-    # the knoll's face over Holm Street, north-east side
-    dict(name="the knoll's face", top=24.0, base=9.0, width=4.0, line=[(104, -296), (128, -280), (160, -276), (190, -286)]),
 ]
 CLEFTS = [  # narrow cuts in rock, made after the rock: the knoll's cleft, where the steps go up from Holm Street
-    dict(name="the knoll's cleft", depth=9.0, width=3.5, line=[(112, -292), (136, -318), (150, -340), (168, -366)]),
+    dict(name="the Crack", depth=8.0, width=3.0, line=[(112, -262), (116, -276), (120, -290)]),
 ]
 GULLIES = [  # where the streams come down the old town's west slope to the Basin
     dict(x=49.3, depth=2.0, width=8.0, y0=10.0, y1=170.0),
@@ -466,10 +476,25 @@ def heights(X, Y):
         inside = _inside(poly, Xs, Ys)
         d = _poly_dist(Xs, Ys, poly)
         sd = np.where(inside, -d, d)  # negative inside the outline
-        top = r["top"] - r["steps"] * np.floor(_noise(Xs, Ys, 14.0, 77) * 2.6)  # a top broken into ledges
+        top = r["top"] - r["steps"] * np.floor(_noise(Xs, Ys, 34.0, 77) * 2.2)  # a top broken into a few broad ledges
         k = _smoothstep(r["face"], 0.0, sd)
         Zs = Z[sel]
         Z[sel] = np.where(sd < r["face"], np.maximum(Zs, Zs + (top - Zs) * k), Zs)
+    # the railway: cutting and bank at its grade; a tunnel where the cutting would pass fourteen metres
+    pts, acc = [], 0.0
+    for k, (xr, yr) in enumerate(RAILWAY):
+        if k:
+            acc += math.hypot(xr - RAILWAY[k - 1][0], yr - RAILWAY[k - 1][1])
+        pts.append((xr, yr, RAILWAY_START_Z + RAILWAY_GRADE * acc))
+    d, zr = _line_dist_z(X, Y, pts)
+    near = d < 30.0
+    if near.any():
+        cut = Z - zr
+        bed = d < 6.0
+        tunnel = cut > 14.0
+        side = np.clip((d - 6.0) / 1.5, 0.0, None)  # banks at about two in three
+        Zr = np.where(bed, zr, np.where(cut > 0, np.minimum(Z, zr + side), np.maximum(Z, zr - side)))
+        Z = np.where(near & ~tunnel, Zr, Z)
     for c in CLEFTS:
         d = _poly_dist(X, Y, c["line"], closed=False)
         Z -= c["depth"] * np.exp(-(d / c["width"]) ** 2) * _smoothstep(4.0, 12.0, Z)

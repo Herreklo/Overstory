@@ -122,6 +122,49 @@ The set pieces that make the centre worth exploring, each with its size and its 
 | The edge | Between the forest and the town | Allotments, a football ground, a scout hut | Weekends, children | Shouts, a ball |
 | Gull Island and the Teeth | The Roads | Low rock, heather, a few cabins | Seen from everywhere; a boat trip | Sea |
 
+## What stands where, and why
+
+A town's map is the record of how its people moved and what each place was good for. The rules this town follows, as Stavanger, Bergen and Copenhagen did:
+- **The oldest at the meeting of land and sea.** The cathedral, the bishop's seat, Market Square and the oldest merchants' houses stand at the Basin's head, where the country road came down to the harbour. Round the square, later, the town's institutions: the bank, the hotel, the post office, the town hall.
+- **Work on the water.** Sea houses on the quays; the fish quay and the market hall at the head; boatyards and slips in the coves; the cannery and the rope walk on flat shore at the town's edge, where there was room and the smell could go.
+- **Homes on the slope behind.** The old wooden town on Herring Hill, within a few minutes' walk of the quays, its lanes along the contours and its steps down the gullies.
+- **Churches and schools on higher ground;** the villas on the heights after 1880, with the view and upwind of the smoke.
+- **Workers by their work.** Tin Town over the cannery, Ropewalk over the rope walk and the brewery.
+- **The newer town where there was flat land** and where fires and clearances made room: the Grid after the fires, New Town after the renewal.
+- **Big uses at the edges,** where growth stalled: the station by the Mere, the hospital, the cemetery, the football ground, the Supply Base on deep water.
+
+## How people moved, and how it changed
+
+| Era | How people and goods moved | What it left in the town of 1989 |
+| --- | --- | --- |
+| Before about 1850 | On foot and by boat. Goods came by sea, so the quay was the main street. | Lanes along the contours; stepped lanes down the gullies to the water; the square where the country road met the harbour; the Basin full of boats |
+| Horse and cart, to the 1920s | The country roads came into town down the valleys at grades a horse could pull (under about 10%), with bends on the steep parts. | The old roads are the main streets out of town and keep their curves and their names: the King's Road down Plough Valley to the square, the coast road west to the fishing village, the ridge road east past Ropewalk |
+| The railway, from 1878 | Trains need gentle grades (at most 1 to 2%) and wide curves (300 m or more), so the line follows the lowest ground: up the railway's valley along the Mere, through a tunnel under the High Moor. The station stands on the first flat ground at the edge of the old centre, by the Mere, as Stavanger's does by Breiavatnet; a goods line runs on to the quays. | The station and its square; the goods yard in the railway's valley; old rails set in the cobbles of Barrel Quay; the line as an edge the town grew up to and stopped at |
+| Steamers and ferries, from the 1850s | The coastal steamers and the island ferries called at the outer quays. | Ferry Point; the Penny Ferry across the Basin since 1876 |
+| Buses, from the 1920s | Buses from the station square out along the old roads. | The bus station in New Town |
+| Cars, from the 1950s | Roads widened; the renewal plans cut a road through the old centre and cleared blocks for it, half carried out before conservation stopped them; quays turned into car parks; a ring road begun. | A street that widens and stops; a car park where houses stood; the tunnel under the Bluff; the High Bridge (1978) and the motorway |
+| The 1970s and 80s | The centre's main streets closed to cars and made pedestrian streets. | The pedestrian street in the Grid; the quays half car park, half promenade |
+
+## Why the buildings are as they are
+
+Every building has a reason for its form, from what it was built for, and a life after that. A building that looks strange must be strange for a reason a player could find out. Stavanger and Copenhagen show the pattern: a building outlives its first purpose and takes the next one its form allows (Brand's low-road buildings change most).
+
+| Type | Built for, and when | Why its form | What it became |
+| --- | --- | --- | --- |
+| The sea house (sjøhus) | Herring: salting, barrels, nets and sails; the 1700s to the 1870s | Gable to the quay so many share a short waterfront; three or four storeys, 20 to 25 m deep; a hoist beam in the gable and a loading door on every floor, straight from the boats; a stone ground floor at the quay for the wet work | Chandlers and stores; oil-supply firms' depots in the 1970s; pubs and restaurants from the early 1980s; offices and flats later (Skagenkaien in Stavanger; Nyhavn's warehouse turned hotel in Copenhagen) |
+| The merchant's house on the quay | A merchant's family above, the business below, a store in the yard; the early 1800s | Two or three storeys, broad and symmetrical on the quay road, a gateway to the yard | Shops, a café, a bar, an office, flats above |
+| The small house of the old town | Fishermen, coopers, sailors and their families; the 1800s | One and a half storeys, about 10 by 7.5 m, placed as each owner could on the slope, a yard behind, rooms let to lodgers | Worn down, then saved by conservation in the 1950s and 60s; artists and young families from the 1970s; dearer every decade (Gamle Stavanger; Copenhagen's Nyboder) |
+| The cannery | Canning sprats and herring; from the 1870s | Long halls along the quay for the line from boat to tin, a chimney for the boilers and the smoking ovens, a yard for the barrels | Closing in the 1980s; a museum, offices, flats and studios later (Stavanger's canning museum) |
+| The rope walk | Spinning rope for the fleet; the 1800s | A single shed 200 to 300 m long and only a few metres wide, because a rope was spun in one length | Storage, then studios and a long café, or pulled down (Copenhagen's rope walk on Holmen) |
+| The brewery | Beer; the late 1800s | Brick halls, a tower for the brewing by gravity, cellars cut into the hill | Empty in 1989; an arts venue in the 1990s (Tou in Stavanger; Carlsberg's district in Copenhagen) |
+| The boathouse (naust) | Hauling boats out of the water; any time | Long and low at the shore, gable to the water, just wide enough for one boat | Summer cabins, studios, a sauna |
+| The market hall | Fish and vegetables on the square; around 1900 | An open hall with a broad roof, one side to the water | A food hall later |
+| The townhouse in the Grid | Shops below and rented flats above, after the fires; the 1860s to the 1900s | Two to three storeys round a yard, rebuilt in rows to fire rules | Chains, banks, cafés below; flats and offices above |
+| The villa | A merchant's or captain's family; 1880 to 1910 | Detached in a big garden, a tower or veranda for the view | Lawyers' offices, consulates, an oil company's guest house |
+| The post-war and seventies block | Offices, the department store, the hotel; 1950 to 1980 | Concrete and glass, flat roofs, set back from the old street lines | Half empty after the crash; rebuilt or reclad later |
+| The supply base shed | Oil service; the 1970s | Steel sheds and open yards by deep water | Empty after the crash, then the next boom |
+| The bunker | The German coastal defence, 1940 to 1945 | Concrete in the rock, tunnels between gun positions | Sealed, opened by children, used for storage and parties, a museum later |
+
 ## Wonder and adventure
 
 The town must never read as a plain grey harbour town. Beside its everyday life it holds things of great scale, secrets and places that stop you, each grounded in the region's real history, so wonder is never invented against the facts:

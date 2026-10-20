@@ -34,6 +34,17 @@ dr.polygon([P(*p) for p in H.LANDING], outline=(190, 60, 40), width=3)
 COL = {"corner": (214, 96, 64), "row": (60, 60, 60), "warehouse": (110, 80, 50), "landmark": (90, 60, 140)}
 for b in H.BUILDINGS:
     dr.polygon([P(*p) for p in H.footprint(b)], fill=COL.get(b["role"], (60, 60, 60)), outline=(250, 250, 250))
+for _, poly, z in H.SMALL_PLACES:
+    dr.polygon([P(*p) for p in poly], outline=(190, 60, 40), width=2)
+DCOL = {"boat": (40, 70, 120), "wheelhouse": (40, 70, 120), "tall ship": (40, 70, 120), "pontoon": (40, 70, 120),
+        "wall": (150, 120, 90), "shed": (110, 90, 70), "stoop": (190, 60, 40)}
+for d in H.DETAILS:
+    if d["kind"] in ("line", "mast"):
+        continue
+    c, s_ = __import__("math").cos(__import__("math").radians(d["a"])), __import__("math").sin(__import__("math").radians(d["a"]))
+    hl, hw = max(d["l"], 0.8) / 2, max(d["w"], 0.8) / 2
+    pts = [(d["x"] + u * c - v * s_, d["y"] + u * s_ + v * c) for u, v in ((-hl, -hw), (hl, -hw), (hl, hw), (-hl, hw))]
+    dr.polygon([P(*q) for q in pts], fill=DCOL.get(d["kind"], (20, 20, 20)))
 f = ImageFont.truetype("/System/Library/Fonts/Supplemental/Arial.ttf", 22)
 for x, y, t in [(60, -90, "the Basin"), (-120, -200, "the Holm"), (150, -330, "Watch Knoll"), (380, -100, "Market Square"),
                 (440, 0, "cathedral"), (400, -350, "the Grid"), (60, 120, "Herring Hill"), (250, -470, "Broad Street")]:
