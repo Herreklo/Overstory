@@ -1,4 +1,4 @@
-"""The downy birch's painted parts: its leaf sprays and its bark, as mask textures the tree shader colours.
+"""The downy birch's painted parts (Betula pubescens): its foliage and its bark, as mask textures the tree shader colours.
 
     python blender/parts/trees/birch/paint.py [unity project]      (numpy only; writes PNGs)
 
@@ -12,12 +12,13 @@ toothed, 3 to 5 cm long on a stalk of about 1.5 cm. Channels (linear data, not c
 - B: thickness, for the light through the leaves (a leaf's middle thick, its edge thin; the twig none);
 - A: coverage, antialiased.
 
-Clusters (birch_clusters.png, the atlas the tree's cards carry, four cells): the foliage as the birch carries it, in
-drapes (a twig arching over, fine twigs falling from it, bold flat leaves along them), dense in a mass's core and
-sparse at its skin, long and short (CLUSTERS; the assembler reads each cell's anchor from there). The same channels as
-the leaves; G is the drape's own light (lit along the arch, one mid value below, shading softly to the tips). Its bare
-twigs (birch_twigs.png, the same cells; A coverage): the drape's twigs and finer ones off them, the winter crown's
-haze, shown as each card's leaves fall.
+Clusters (birch_clusters.png, the atlas the tree's cards carry, four cells): the foliage as a downy birch carries it,
+on sprays that go out and up (a twig rising out of the crown, side twigs climbing and spreading, every tip only
+nodding), bold flat leaves along them, dense in a mass's core and sparse at its skin, long and short (CLUSTERS; the
+assembler reads each cell's anchor from there). Channels as every tree's cluster atlas (blender/parts/trees/
+painting.py); G is the spray's own light (lit along its upper edge, one mid value below, a soft shade underneath).
+Its bare twigs (birch_twigs.png, the same cells): the spray's twigs and finer ones going out and up, the winter
+crown's haze, shown as each card's leaves fall.
 
 Bark (birch_bark.png, 512 by 1024, tiling; u round the stem, v along it, one tile 0.3 m round and 0.6 m along):
 - R: the bark's lightness, white with soft grey bands;
@@ -30,52 +31,21 @@ Painted with numpy on a supersampled grid, deterministic from fixed seeds, so th
 
 import math
 import os
-import struct
 import sys
-import zlib
 
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, os.path.dirname(HERE))
+from painting import CELL, atlas, curve, downsample, leaf_px, leaf_width, twig_cover, write_png  # noqa: E402
+
 SEED = 1989
-
-
-def write_png(path, rgba):
-    """rgba: uint8 array (h, w, 4)."""
-    h, w, _ = rgba.shape
-    raw = b"".join(b"\x00" + rgba[y].tobytes() for y in range(h))
-
-    def chunk(tag, data):
-        c = struct.pack(">I", len(data)) + tag + data
-        return c + struct.pack(">I", zlib.crc32(tag + data) & 0xFFFFFFFF)
-
-    png = b"\x89PNG\r\n\x1a\n" + chunk(b"IHDR", struct.pack(">IIBBBBB", w, h, 8, 6, 0, 0, 0))
-    png += chunk(b"IDAT", zlib.compress(raw, 9)) + chunk(b"IEND", b"")
-    os.makedirs(os.path.dirname(path), exist_ok=True)
-    with open(path, "wb") as f:
-        f.write(png)
-    return path
-
-
-def downsample(a, k):
-    h, w = a.shape[:2]
-    return a.reshape(h // k, k, w // k, k, *a.shape[2:]).mean(axis=(1, 3))
 
 
 # -- leaves -------------------------------------------------------------------------------------------------------------
 
-CELL = 1024          # supersampled cell (written at 512)
 CARD = 0.42          # metres across a card
 PX = CELL / CARD     # pixels per metre while painting
-
-
-def leaf_width(t):
-    """Half-width of a downy birch leaf along its length (t 0 at the stalk, 1 at the tip), as a share of its length:
-    rounded at the base, widest about a third along, tapering to a point, with coarse double teeth."""
-    t = np.clip(t, 0, 1)
-    base = np.maximum(np.sin(np.pi * t ** 0.72), 0.0) ** 0.85 * (1.0 - 0.32 * t)
-    teeth = 0.045 * np.abs(np.sin(t * np.pi * 9.0)) + 0.02 * np.abs(np.sin(t * np.pi * 18.0 + 0.7))
-    return 0.37 * base * (1.0 - teeth * (t > 0.08))
 
 
 def _twig(rng, x0, y0, ang, length, curl, n=14):
@@ -342,102 +312,84 @@ def clumps(path):
     return write_png(path, (np.clip(atlas, 0, 1) * 255 + 0.5).astype(np.uint8))
 
 
-# -- clusters: a twig's foliage as a drape ----------------------------------------------------------------------------
+# -- clusters: a downy birch's sprays --------------------------------------------------------------------------------
 
 CLUSTER = 0.8        # metres across a cluster card's cell (as painted; the card is sized by the assembler)
 KPX = CELL / CLUSTER # pixels per metre while painting
 
-# A birch's foliage hangs in drapes: a twig arcs in and droops, and from it a few fine twigs hang, small leaves
-# scattered along them, so the drape is a soft veil, open between its strands, with no cap and no closed outline (a
-# closed shape repeated round a crown reads as one big leaf, or a jellyfish). Each kind: where its twig comes in (the
-# anchor, as shares of the cell from its top left; the assembler hangs the card so this point lies on the shoot's
-# end and turns it so the drape falls out from the crown), its width and length (shares of the cell), how many twigs
-# hang from it, and how densely they are leaved (the leaves' spacing along a twig, m; and whether each node bears a
-# pair). The core of a mass is dense drapes; its skin sparse ones, long and short.
+# A downy birch's foliage is carried on sprays that go out and up: a twig comes in from inside the crown and rises
+# outward, side twigs off it climb on its upper side and spread on its lower, and every tip only nods (a silver
+# birch's hang in curtains; that is its own part). Bold flat leaves along them (Firewatch's rule). Each kind: where its
+# twig comes in (the anchor, as shares of the cell from its top left; the assembler hangs the card so this point lies
+# on the shoot's end and turns it so the painting's right is the way out of the crown), how far the spray reaches out
+# and how far it rises (shares of the cell), how many side twigs, and how densely they are leaved (the leaves' spacing
+# along a twig, m; and whether each node bears a pair). Dense in a mass's core, sparse at its skin, long and short.
 CLUSTERS = {
-    "core-long": dict(anchor=(0.2, 0.22), width=0.72, length=0.95, twigs=6, spacing=0.034, pairs=True, hang=True),
-    "core": dict(anchor=(0.2, 0.24), width=0.74, length=0.78, twigs=6, spacing=0.034, pairs=True, hang=True),
-    "skin-long": dict(anchor=(0.24, 0.22), width=0.6, length=0.92, twigs=4, spacing=0.05, pairs=False, hang=True),
-    "skin": dict(anchor=(0.24, 0.24), width=0.62, length=0.68, twigs=3, spacing=0.05, pairs=False, hang=True),
+    "core-long": dict(anchor=(0.12, 0.8), reach=0.8, rise=0.55, twigs=6, spacing=0.034, pairs=True, outward=True),
+    "core": dict(anchor=(0.14, 0.78), reach=0.66, rise=0.5, twigs=5, spacing=0.034, pairs=True, outward=True),
+    "skin-long": dict(anchor=(0.12, 0.76), reach=0.82, rise=0.45, twigs=4, spacing=0.05, pairs=False, outward=True),
+    "skin": dict(anchor=(0.16, 0.74), reach=0.58, rise=0.42, twigs=3, spacing=0.05, pairs=False, outward=True),
 }
 KINDS = ("core-long", "core", "skin-long", "skin")    # the atlas's cells, in order (the assembler picks by place)
 
 
-def _curve(p0, p1, p2, n):
-    t = np.linspace(0.0, 1.0, n)[:, None]
-    return (1 - t) ** 2 * p0 + 2 * (1 - t) * t * p1 + t ** 2 * p2
-
-
-def _drape(rng, spec, n):
-    """A drape's twigs: the twig comes in at the anchor, rises and arches over and down, as a birch's branchlet does;
-    fine twigs fall from points along the arch (and from its end), so the drape's top is the arch's curve, never a
-    straight rod; each falls its own length, swaying and splaying a little, with a few finer ones off it. Returns
-    (points in pixels, part) with part "main", "hang" or "fine"."""
-    A = np.array(spec["anchor"]) * n
-    W, L = spec["width"] * n, spec["length"] * n
-    top = A[1] - rng.uniform(0.13, 0.17) * n                         # the arch's crown, above the anchor
-    E = np.array([A[0] + W * rng.uniform(0.8, 0.95), A[1] + rng.uniform(0.15, 0.3) * L])
-    main = _curve(A, np.array([A[0] + 0.35 * (E[0] - A[0]), 2 * top - (A[1] + E[1]) / 2]), E, 24)
-    out = [(main, "main")]
-    k = spec["twigs"]
-    for j in range(k):
-        t = 0.2 + 0.8 * (j + rng.uniform(0.0, 0.8)) / k
-        P = main[min(int(t * (len(main) - 1)), len(main) - 1)]
-        bottom = A[1] + L - 0.2 * n
-        length = max(bottom - P[1], 0.1 * n) * rng.uniform(0.4, 1.0)
-        sway = rng.uniform(-0.1, 0.16) * W
-        Q = np.array([P[0] + sway, P[1] + length])
-        # leaving the arch outward a little before it falls
-        pts = _curve(P, np.array([P[0] + rng.uniform(0.02, 0.08) * W, P[1] + 0.25 * length]), Q, 16)
-        out.append((pts, "hang"))
-        for _ in range(rng.randint(1, 3)):
-            u = rng.uniform(0.2, 0.7)
-            q = pts[int(u * (len(pts) - 1))]
-            sd = rng.choice((-1, 1))
-            R = q + np.array([sd * rng.uniform(0.04, 0.09) * n, rng.uniform(0.05, 0.13) * n])
-            out.append((_curve(q, np.array([(q[0] + R[0]) / 2 + sd * 0.015 * n, q[1] + 0.005 * n]), R, 8), "fine"))
+def _nod(pts, depth):
+    """The last stretch of a twig turned down a little under its leaves: a nod, never a hang."""
+    t = np.linspace(0.0, 1.0, len(pts))
+    out = pts.copy()
+    out[:, 1] += depth * np.clip((t - 0.7) / 0.3, 0, 1) ** 2
     return out
 
 
-def _leaf_px(xs, ys, bx, by, ang, length, fore):
-    """The pixels of one bold birch leaf on its stalk (its blade and stalk masks, and its bounds)."""
-    n = xs.shape[0]
-    stalk = 0.22 * length
-    r = int(stalk + length + 4)
-    y0, y1 = max(int(by) - r, 0), min(int(by) + r, n)
-    x0, x1 = max(int(bx) - r, 0), min(int(bx) + r, n)
-    if y0 >= y1 or x0 >= x1:
-        return None
-    X, Y = xs[y0:y1, x0:x1], ys[y0:y1, x0:x1]
-    ca, sa = math.cos(ang), math.sin(ang)
-    u = (X - bx) * ca + (Y - by) * sa
-    v = -(X - bx) * sa + (Y - by) * ca
-    t = (u - stalk) / length
-    half = leaf_width(np.clip(t, 0, 1)) * length * fore * 1.15
-    blade = (t >= 0) & (t <= 1) & (np.abs(v) <= half)
-    return (slice(y0, y1), slice(x0, x1)), blade
+def _spray(rng, spec, n):
+    """A downy birch's spray: the twig comes in at the anchor and rises outward, nodding at its tip; side twigs off it
+    in turn, those on its upper side climbing, those on its lower spreading level, each nodding; a few finer ones off
+    those. Returns (points in pixels, part) with part "main", "side" or "fine"."""
+    A = np.array(spec["anchor"]) * n
+    reach, rise = spec["reach"] * n, spec["rise"] * n
+    E = A + np.array([reach * rng.uniform(0.9, 1.0), -rise * rng.uniform(0.85, 1.0)])
+    main = _nod(curve(A, A + np.array([0.35 * (E[0] - A[0]), 0.75 * (E[1] - A[1])]), E, 24), 0.05 * n)
+    out = [(main, "main")]
+    k = spec["twigs"]
+    for j in range(k):
+        t = 0.2 + 0.7 * (j + rng.uniform(0.0, 0.7)) / k
+        i = min(int(t * (len(main) - 1)), len(main) - 2)
+        P = main[i]
+        tan = math.atan2(main[i + 1][1] - P[1], main[i + 1][0] - P[0])
+        upper = j % 2 == 0
+        a = tan - math.radians(rng.uniform(30, 50)) if upper else tan + math.radians(rng.uniform(25, 45))
+        L = reach * rng.uniform(0.3, 0.5) * (1.0 - 0.35 * t)
+        Q = P + L * np.array([math.cos(a), math.sin(a)])
+        side = _nod(curve(P, (P + Q) / 2 + np.array([0.0, -0.04 * L if upper else 0.02 * L]), Q, 12), 0.03 * n)
+        out.append((side, "side"))
+        for _ in range(rng.randint(0, 2)):
+            u = rng.uniform(0.35, 0.75)
+            m = int(u * (len(side) - 2))
+            tan2 = math.atan2(side[m + 1][1] - side[m][1], side[m + 1][0] - side[m][0])
+            a2 = tan2 + rng.choice((-1, 1)) * math.radians(rng.uniform(25, 45))
+            R = side[m] + 0.45 * L * (1 - u) * np.array([math.cos(a2), math.sin(a2)])
+            out.append((_nod(curve(side[m], (side[m] + R) / 2, R, 8), 0.015 * n), "fine"))
+    return out
 
 
 def paint_cluster(rng, kind):
-    """One drape in one cell: the foliage of one twig, as a birch carries it. Its twig arcs in at the top from the
-    anchor, where the drawn twig ends; bold birch leaves (Firewatch's rule: a stylised leaf, larger than life at 8 to
-    10 cm, flat, crisp) hang along every fine twig, densely in a core drape and sparsely in a skin drape, so it is a
-    veil of distinct leaves, never a closed shape and never a fine noise. Its own light is
-    a small modulation of the crown's: lit along the top where the sky reaches, one mid value down the strands, and a
-    soft shade towards their tips, each leaf one value. Returns (id, light, thick, cover) supersampled, and the twigs."""
+    """One spray in one cell: the foliage of one shoot, as a downy birch carries it, rising out of the crown. Its twig
+    comes in at the anchor, where the drawn twig ends, bare for a little so the spray is seen to grow from it; bold
+    birch leaves (Firewatch's rule: a stylised leaf, larger than life at 8 to 10 cm, flat, crisp) hang from their
+    stalks along every twig, densely in a core spray and sparsely in a skin spray, so it is an open spray of distinct
+    leaves, never a closed shape and never a fine noise. Its own light is a small modulation of the crown's: lit along
+    the spray's upper edge where the sky reaches, one mid value below, a soft shade at its underside, each leaf one
+    value. Returns (id, light, thick, cover) supersampled, and the twigs."""
     n = CELL
     spec = CLUSTERS[kind]
     ys, xs = np.mgrid[0:n, 0:n].astype(np.float32)
-    twigs = _drape(rng, spec, n)
-    A = np.array(spec["anchor"]) * n
-    L = spec["length"] * n
+    twigs = _spray(rng, spec, n)
     strokes = []                                       # (x, y, angle, length, fore)
     for pts, part in twigs:
         seg = np.linalg.norm(np.diff(pts, axis=0), axis=1)
         acc = np.concatenate([[0.0], np.cumsum(seg)])
         Lt = acc[-1]
-        # the arc where the twig comes in stays bare for a little: the drape is seen to hang from it
-        d = (0.08 * n if part == "main" else 0.01 * KPX) + rng.uniform(0, 0.01) * KPX
+        d = (0.07 * n if part == "main" else 0.01 * KPX) + rng.uniform(0, 0.01) * KPX
         side = 1
         sp = spec["spacing"] * (1.3 if part == "fine" else 1.0)
         while d < Lt:
@@ -447,106 +399,68 @@ def paint_cluster(rng, kind):
             tan = math.atan2(pts[i + 1][1] - pts[i][1], pts[i + 1][0] - pts[i][0])
             for sd in ((side, -side) if spec["pairs"] and rng.random() < 0.6 else (side,)):
                 a = tan + sd * math.radians(rng.uniform(30, 65))
-                vx, vy = math.cos(a), math.sin(a) + 1.2               # leaves hang from their stalks
+                vx, vy = math.cos(a), math.sin(a) + 0.8               # leaves hang a little from their stalks
                 strokes.append((p[0], p[1], math.atan2(vy, vx) + rng.gauss(0, 0.25),
                                 rng.uniform(0.08, 0.105) * KPX * (1 - 0.2 * d / Lt), rng.uniform(0.7, 1.0)))
             side = -side
             d += sp * KPX * rng.uniform(0.75, 1.25)
+    # each leaf's place in the spray, top to bottom, within its own column: the upper edge lit, the underside shaded
+    xs_ = np.array([st[0] for st in strokes])
+    ys_ = np.array([st[1] for st in strokes])
+    bins = np.clip((xs_ / (0.08 * n)).astype(int), 0, 12)
+    rel = np.zeros(len(strokes))
+    for b_ in set(bins.tolist()):
+        m = bins == b_
+        top, bot = ys_[m].min(), ys_[m].max()
+        rel[m] = (ys_[m] - top) / max(bot - top, 0.05 * n)
 
-    arch = min(p[1] for pts, part in twigs if part == "main" for p in pts)
+    def value(r):
+        if r < 0.25 + rng.uniform(-0.06, 0.06):
+            return 1.0
+        return 0.82 * (1.0 - 0.16 * float(np.clip((r - 0.55) / 0.45, 0, 1)))
 
-    def value(y):
-        r = (y - arch) / L
-        if r < 0.18 + rng.uniform(-0.05, 0.05):
-            return 1.0                                  # lit along the arch, where the sky reaches
-        return 0.82 * (1.0 - 0.16 * float(np.clip((r - 0.45) / 0.5, 0, 1)))  # mid, shading softly to the tips
-
-    # painted from the bottom up, so the upper leaves overlap the lower like shingles
     leaf_id = np.zeros((n, n), np.float32)
     light = np.zeros((n, n), np.float32)
     thick = np.zeros((n, n), np.float32)
     cover = np.zeros((n, n), np.float32)
-    tw = _twig_cover(xs, ys, twigs, (0.0030, 0.0020, 0.0014))
+    tw = twig_cover(xs, ys, twigs, (0.0030, 0.0020, 0.0014), KPX)
     bare = tw > 0.5
     light[bare], thick[bare], cover[bare] = 0.45, 0.2, 1.0
-    for x, y, a, l, fo in sorted(strokes, key=lambda st: -st[1]):
-        px = _leaf_px(xs, ys, x, y, a, l, fo)
+    # painted from the bottom up, so the upper leaves overlap the lower like shingles
+    for j in sorted(range(len(strokes)), key=lambda q: -strokes[q][1]):
+        x, y, a, l, fo = strokes[j]
+        px = leaf_px(xs, ys, x, y, a, l, fo)
         if not px:
             continue
         sl, m = px
         leaf_id[sl][m] = 0.06 + 0.94 * rng.random()
-        light[sl][m] = value(y) + rng.uniform(-0.02, 0.02)
+        light[sl][m] = value(rel[j]) + rng.uniform(-0.02, 0.02)
         thick[sl][m] = 0.75
         cover[sl][m] = 1.0
     return (leaf_id, light, thick, cover), twigs
 
 
-def _twig_cover(xs, ys, twigs, widths):
-    """The spray's twigs as coverage, each order at its width (m) at its foot, thinning to its tip."""
-    cover = np.zeros(xs.shape, np.float32)
-    for pts, part in twigs:
-        order = 0 if part == "main" else 2 if part == "fine" else 1     # the twig, its side twigs and tips, fine
-        w0 = widths[min(order, len(widths) - 1)] * KPX
-        m = len(pts)
-        for i, (p0, p1) in enumerate(zip(pts, pts[1:])):
-            _line(cover, xs, ys, [tuple(p0), tuple(p1)], max(w0 * (1.0 - 0.55 * i / m), 1.4))
-    return cover
-
-
-def paint_fan(rng, twigs):
-    """The cluster's twigs bare, as the winter crown's haze: the same fan from the anchor, and finer twigs off every
-    twig, so a bare crown is a soft tone with an ascending grain (Stalenhag's birches), each fan visibly the drawn
-    twig's own ends."""
+def paint_bare(rng, twigs):
+    """The spray's twigs bare, the winter crown's haze: the same twigs and finer ones off them, going out and up, so
+    a bare downy birch is a soft tone with an ascending grain (Stalenhag's birches), each spray the drawn twig's own
+    ends."""
     n = CELL
     ys, xs = np.mgrid[0:n, 0:n].astype(np.float32)
     fine = []
     for pts, part in twigs:
-        for t in np.arange(0.25, 0.95, 0.12 if part == "main" else 0.2):
+        for t in np.arange(0.25, 0.95, 0.14 if part == "main" else 0.22):
             i = int(t * (len(pts) - 2))
             tan = pts[i + 1] - pts[i]
-            a = math.atan2(tan[1], tan[0]) + rng.choice((-1, 1)) * math.radians(rng.uniform(25, 45))
+            a = math.atan2(tan[1], tan[0]) - rng.uniform(0.0, 1.0) * math.radians(40)
             L = rng.uniform(0.03, 0.06) * KPX
-            q = pts[i] + L * np.array([math.cos(a), math.sin(a) + 0.6])            # hanging twigs
-            fine.append((np.array([pts[i], (pts[i] + q) / 2 + np.array([0, 0.15 * L]), q]), "fine"))
-    return _twig_cover(xs, ys, twigs + fine, (0.0032, 0.0020, 0.0012))
+            q = pts[i] + L * np.array([math.cos(a), math.sin(a)])
+            fine.append((np.array([pts[i], (pts[i] + q) / 2, q]), "fine"))
+    return twig_cover(xs, ys, twigs + fine, (0.0030, 0.0018, 0.0011), KPX)
 
 
 def clusters(path, twig_path):
-    """The cluster atlas (birch_clusters.png) and its bare twigs on the same cells (birch_twigs.png)."""
-    import random
-    atlas = np.zeros((1024, 1024, 4), np.float32)
-    bare = np.zeros((1024, 1024, 4), np.float32)
-    for c, kind in enumerate(KINDS):
-        r = random.Random(f"birch-clusters-{SEED}-{c}")
-        (lid, light, thick, cover), twigs_ = paint_cluster(r, kind)
-        cov = downsample(cover, 2)
-        w = np.maximum(cov, 1e-4)
-        ids = lid.reshape(512, 2, 512, 2).max(axis=(1, 3))
-        cell = np.stack([ids, downsample(light * cover, 2) / w, downsample(thick * cover, 2) / w, cov], -1)
-        y0, x0 = (c // 2) * 512, (c % 2) * 512
-        atlas[y0:y0 + 512, x0:x0 + 512] = cell
-        tc = downsample(paint_fan(r, twigs_), 2)
-        bare[y0:y0 + 512, x0:x0 + 512] = np.stack([np.zeros_like(tc), np.full_like(tc, 0.8), np.zeros_like(tc), tc], -1)
-    write_png(twig_path, (np.clip(bare, 0, 1) * 255 + 0.5).astype(np.uint8))
-    return write_png(path, (np.clip(atlas, 0, 1) * 255 + 0.5).astype(np.uint8))
-
-
-def _line(cover, xs, ys, pts, width):
-    """Paint a polyline of the given width (pixels) into the coverage, antialiased by distance."""
-    n = cover.shape[0]
-    for (x0, y0), (x1, y1) in zip(pts, pts[1:]):
-        r = int(width + 3)
-        ya, yb = max(int(min(y0, y1)) - r, 0), min(int(max(y0, y1)) + r, n)
-        xa, xb = max(int(min(x0, x1)) - r, 0), min(int(max(x0, x1)) + r, n)
-        if ya >= yb or xa >= xb:
-            continue
-        X, Y = xs[ya:yb, xa:xb], ys[ya:yb, xa:xb]
-        dx, dy = x1 - x0, y1 - y0
-        L2 = dx * dx + dy * dy + 1e-6
-        t = np.clip(((X - x0) * dx + (Y - y0) * dy) / L2, 0, 1)
-        d = np.hypot(X - (x0 + t * dx), Y - (y0 + t * dy))
-        cov = np.clip(width / 2 + 0.5 - d, 0, 1)
-        cover[ya:yb, xa:xb] = np.maximum(cover[ya:yb, xa:xb], cov)
+    """The downy birch's spray atlas (birch_clusters.png) and its bare twigs on the same cells (birch_twigs.png)."""
+    return atlas(path, twig_path, KINDS, paint_cluster, paint_bare, "birch-sprays", SEED)
 
 
 # -- bark -------------------------------------------------------------------------------------------------------------

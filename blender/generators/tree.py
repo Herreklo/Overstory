@@ -46,14 +46,21 @@ import tree_growth as G  # noqa: E402
 # cluster atlas's cards by kind (as the atlas's cells, in metres on a grown tree); edge_gap: the spacing of the extra
 # small sprays that line the limbs' ends (where the crown is under edge_depth deep), so a limb's end is lined with
 # light, broken sprays, never one tuft on a bare stick; crossed: each cluster two cards crossed about the vertical.
+# masses: "limbs" makes the crown's masses from its main limbs' foliage (else from where the foliage lies); seam: how
+# wide the seam of sky between two masses is (cards nearly as deep in a neighbour as in their own), and seam_cut the
+# share of the cards there taken out; core_depth, core_keep: how deep in its mass a card is core, and the share of the
+# core kept.
 PARTS = {
-    "birch": dict(sag=0.12, taper=0.55, occlusion=0.05, seam=0.3, atlas="clusters", lobe=0.8, lobe_gap=0.36,
-                  cluster_size=(1.3, 1.15, 1.05, 0.85), crossed=True, edge_gap=0.22, edge_depth=0.2, lose_tips=40, hang=False, card=(0.50, 0.48), card_u=(0.03, 0.97), cells=4,
+    "birch": dict(sag=0.12, taper=0.55, occlusion=0.05, seam=0.5, atlas="clusters", lobe=0.8, lobe_gap=0.36,
+                  cluster_size=(1.3, 1.15, 1.05, 0.85), crossed=True, edge_gap=0.22, edge_depth=0.2,
+                  masses="limbs", seam_cut=0.95, core_depth=0.45, core_keep=0.35, lose_tips=40, hang=False, card=(0.50, 0.48), card_u=(0.03, 0.97), cells=4,
                   per_node=2, along=1, droop=0.7, leaf_years=999, leaf_tips=24, draw_tips=2.5, draw_tips_per_m=0.9, winter_tips=3.0, reach=99.0, hang_reach=0.3,
                   bark=(0.30, 0.60), max_cards=4200, grow_to=80),
     "spruce": dict(card=(0.60, 0.40), cells=4, per_node=2, droop=0.25, leaf_years=7, leaf_tips=30, draw_tips=3.0, draw_tips_per_m=0.45,
                    bark=(0.30, 0.50), max_cards=8000, grow_to=100),
 }
+# the silver birch: the birch's fitting, carrying its own drapes (blender/parts/trees/silver_birch)
+PARTS["silver_birch"] = dict(PARTS["birch"])
 
 
 def h01(*k):
@@ -610,14 +617,14 @@ def ranked_fall(tl, raw):
 
 def anchors(species):
     """Where each cell of the species' cluster atlas has its twig come in (x, y as shares of the cell from its top
-    left), and which cells hang, from its painted parts (blender/parts/trees/<species>/paint.py), so the card and the
+    left), and in which the painting's right is the way out of the crown, from its painted parts (blender/parts/trees/<species>/paint.py), so the card and the
     painting always agree."""
     import importlib.util
     path = os.path.join(HERE, "..", "parts", "trees", species, "paint.py")
     spec = importlib.util.spec_from_file_location(f"paint_{species}", path)
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)
-    return [mod.CLUSTERS[k]["anchor"] for k in mod.KINDS], [mod.CLUSTERS[k]["hang"] for k in mod.KINDS]
+    return [mod.CLUSTERS[k]["anchor"] for k in mod.KINDS], [mod.CLUSTERS[k]["outward"] for k in mod.KINDS]
 
 
 def lobe_mesh(tl, parts, age, seed, H):
@@ -638,7 +645,12 @@ def lobe_mesh(tl, parts, age, seed, H):
     ids, pts = ids[keep], pts[keep]
     centres = pts - np.array([0.0, 0.0, 0.38 * size])     # a curtain hangs from its shoot: its top at the shoot
     k = int(min(6, max(3, round(3 + (H - 6) / 5))))
-    which = spatial_masses(centres, k, seed)
+    if parts.get("masses") == "limbs":
+        # the crown's masses are its main limbs' foliage: each first-order limb's cards a group, the groups merged by
+        # nearness into a few masses, as a painter sees a birch's crown in the limbs that carry it
+        which = masses(centres, limbs(tl)[ids], k)
+    else:
+        which = spatial_masses(centres, k, seed)
     vols = volumes(centres, which, k)
     trees = hulls(centres, which, k)
     edge = np.zeros(len(ids), dtype=bool)
@@ -670,8 +682,13 @@ def lobe_mesh(tl, parts, age, seed, H):
             e_own = np.linalg.norm((own[1].T @ (centres[j] - own[0])) / own[2])
             e = [np.linalg.norm((v[1].T @ (centres[j] - v[0])) / v[2]) for m, v in enumerate(vols) if v is not None and m != which[j]]
             ratio = min(e) / max(e_own, 1e-6) if e else 9.0
-            keep.append(not (ratio < 1.0 + seam and h01(seed, i, 15) < 0.9))
+            keep.append(not (ratio < 1.0 + seam and h01(seed, i, 15) < parts.get("seam_cut", 0.9)))
         keep = np.array(keep)
+        ids, centres, which, edge = ids[keep], centres[keep], which[keep], edge[keep]
+    if parts.get("core_keep") is not None:
+        # a mass's core only adds weight: thinned hard, so the mass is its skin, and limbs and sky show through it
+        keep = np.array([vols[w] is None or volume_depth(vols[w], c) < parts["core_depth"]
+                         or h01(seed, i, 23) < parts["core_keep"] for i, c, w in zip(ids, centres, which)])
         ids, centres, which, edge = ids[keep], centres[keep], which[keep], edge[keep]
     V, F, UV0, UV1, NR, COL = [], [], [], [], [], []
     ATTACH = []                                         # per card: where it hangs from, how deep, when it falls
@@ -733,7 +750,7 @@ def lobe_mesh(tl, parts, age, seed, H):
             mirror = h01(seed, i, 3) >= 0.5
             if anchor is not None:
                 if hangs[cell]:
-                    # a hanging cluster's twig arches out of the crown: the painting's right is the way out
+                    # the cluster grows out of the crown: the painting's right is the way out
                     mirror = float(np.dot(side, out)) < 0.0
                 ax, ay = anchor[cell]
                 lx, ly = (0.5 - ax if mirror else ax - 0.5), 0.5 - ay

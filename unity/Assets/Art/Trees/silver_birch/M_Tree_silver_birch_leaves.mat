@@ -1,0 +1,65 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!21 &2100000
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: M_Tree_silver_birch_leaves
+  m_Shader: {fileID: 4800000, guid: e9bd3f11aa734484b857d4bf6df7f15c, type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords:
+  - _OS_LEAVES
+  m_InvalidKeywords:
+  - _ALPHATOMASK_ON
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 1
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_LockedProperties: 
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs:
+    - _Bark:
+        m_Texture: {fileID: 2800000, guid: 1e523a56bd20b4cb7a544c0f8af0f4d9, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Spray:
+        m_Texture: {fileID: 2800000, guid: 9f2702223e4f54e999207d0581b3024d, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Twigs:
+        m_Texture: {fileID: 2800000, guid: 2515db5694b4940028024be5848059ac, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    m_Ints: []
+    m_Floats:
+    - _AlphaToMask: 1
+    - _Cutoff: 0.5
+    - _Hold: 0.15
+    - _InnerGlow: 0
+    - _LeafSkyTint: 0.35
+    - _Leaves: 1
+    - _MassShadow: 8
+    - _Scatter: 0.32
+    - _SunPale: 0.45
+    m_Colors:
+    - _BarkBand: {r: 0.54999995, g: 0.53, b: 0.5, a: 1}
+    - _BarkLight: {r: 0.86, g: 0.85, b: 0.82, a: 1}
+    - _Foot: {r: 0.16, g: 6, b: 1, a: 0}
+    - _FootCrack: {r: 0.059999965, g: 0.054999977, b: 0.049999982, a: 1}
+    - _FootPlate: {r: 0.35999998, g: 0.34999996, b: 0.32999998, a: 1}
+    - _Green: {r: 0.4, g: 0.42, b: 0.2, a: 1}
+    - _Late: {r: 0.44, g: 0.37, b: 0.24, a: 1}
+    - _Season: {r: 0.78, g: 0.4, b: 0, a: 0}
+    - _Through: {r: 1, g: 0.85, b: 0.45, a: 0.9}
+    - _Turned: {r: 0.64, g: 0.55, b: 0.29, a: 1}
+    - _Twig: {r: 0.36, g: 0.27, b: 0.27, a: 1}
+    - _TwigRadius: {r: 0.012, g: 0.045, b: 0, a: 0}
+  m_BuildTextureStacks: []
+  m_AllowLocking: 1

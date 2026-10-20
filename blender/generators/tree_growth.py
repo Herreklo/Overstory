@@ -98,6 +98,11 @@ SPECIES = {
         hand=(0.25, (4, 8), (3, 5), (16.0, 30.0)),
     ),
 }
+# Silver birch, Betula pendula: the planted garden and park birch of the town. A leader kept, branches that rise and
+# arch over, the fine twigs hanging in long curtains as it ages, whiter bark breaking black at the foot. Its habit
+# starts as the planted birch's habit found so far (which already arches and hangs); what sets it apart from the
+# downy birch's is found in look tests.
+SPECIES["silver_birch"] = dict(SPECIES["birch"])
 
 
 def character(sp, seed, age_full, exposure, push):

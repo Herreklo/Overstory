@@ -30,7 +30,10 @@ namespace Overstory.EditorTools
         const float Lens28 = 46.4f, Lens35 = 37.8f;
 
         /// <summary>The trees on the sheet: species, seed, age.</summary>
-        static readonly (string species, int seed, int age)[] Sheet = { ("birch", 1, 15), ("birch", 1, 30), ("birch", 1, 60) };
+        static (string species, int seed, int age)[] Sheet
+        {
+            get { string sp = Arg("-species", "birch"); return new[] { (sp, 1, 15), (sp, 1, 30), (sp, 1, 60) }; }
+        }
 
         /// <summary>A model's name, with any dated events in it (tree.py: tree_birch_s1_a60_cut50).</summary>
         static string ModelSuffix = "";
@@ -47,10 +50,13 @@ namespace Overstory.EditorTools
             // below, so the limbs show
             ["birch"] = (new Color(0.40f, 0.42f, 0.20f), new Color(0.64f, 0.55f, 0.29f), new Color(0.44f, 0.37f, 0.24f),
                          new Vector4(0.78f, 0.40f, 0f, 0f)),     // two curtains in five gone
+            // the silver birch turns as the downy does on this coast
+            ["silver_birch"] = (new Color(0.40f, 0.42f, 0.20f), new Color(0.64f, 0.55f, 0.29f), new Color(0.44f, 0.37f, 0.24f),
+                                new Vector4(0.78f, 0.40f, 0f, 0f)),
         };
 
         /// <summary>Which painted leaves each species' cards carry: its sprays, or its clumps.</summary>
-        static readonly Dictionary<string, string> Atlas = new() { ["birch"] = "clusters" };
+        static readonly Dictionary<string, string> Atlas = new() { ["birch"] = "clusters", ["silver_birch"] = "clusters" };
 
         public static (Material bark, Material leaves) Materials(string species)
         {
@@ -206,7 +212,7 @@ namespace Overstory.EditorTools
         /// and the sprays' own twigs), all in the corner's 16:00 light, so only the tree changes.
         ///
         ///     Unity -batchmode -quit -projectPath unity -executeMethod Overstory.EditorTools.LT1Trees.Seasons
-        ///         [-moment 1300-drizzle] [-ages 60] [-seasons 01-january]
+        ///         [-species silver_birch] [-moment 1300-drizzle] [-ages 60] [-seasons 01-january]
         ///
         /// -moment draws the sheet in another of the corner's lights (the grey drizzle judges form without the low
         /// sun's flattery); its frames are named with it.
@@ -237,7 +243,8 @@ namespace Overstory.EditorTools
             var shot = ScriptableObject.CreateInstance<CameraShot>();
             string dir = Path.GetFullPath(Path.Combine(Application.dataPath, "..", "..", "reviews", "lt1", "trees", "seasons"));
             Directory.CreateDirectory(dir);
-            var (bark, leaves) = Materials("birch");
+            string species = Arg("-species", "birch");
+            var (bark, leaves) = Materials(species);
             var seasons = new (string name, Color green, Vector4 season)[]
             {
                 ("05-may", new Color(0.50f, 0.58f, 0.20f), new Vector4(0f, 0.55f, 0f, 0f)),     // half out: a pale haze
@@ -252,7 +259,7 @@ namespace Overstory.EditorTools
                 {
                     if (!Wanted("-ages", age.ToString()))
                         continue;
-                    var tree = Place(root, "birch", 1, age, spot, 0f);
+                    var tree = Place(root, species, 1, age, spot, 0f);
                     float h = 0f;
                     foreach (var r in tree.GetComponentsInChildren<MeshRenderer>())
                         h = Mathf.Max(h, r.bounds.max.y - spot.z);
@@ -273,7 +280,7 @@ namespace Overstory.EditorTools
                         stage.shot = shot;
                         stage.Apply();
                         string light = moment == "1600-low-sun" ? "" : $"-{moment}";
-                        string file = Path.Combine(dir, $"birch-s1-a{age}-{name}{light}.png");
+                        string file = Path.Combine(dir, $"{species}-s1-a{age}-{name}{light}.png");
                         LT1Render.Still(stage.view, file, grey: true, eighth: true, msaa: 4);
                         Debug.Log($"[LT1Trees] {file}");
                     }
@@ -283,7 +290,7 @@ namespace Overstory.EditorTools
             finally
             {
                 urp.shadowDistance = reach;
-                Materials("birch");   // back to 20 October
+                Materials(species);   // back to 20 October
                 Object.DestroyImmediate(root.gameObject);
                 Object.DestroyImmediate(shot);
             }
