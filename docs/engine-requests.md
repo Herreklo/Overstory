@@ -30,6 +30,8 @@ Each request: what is needed, why the game needs it, and what the player would s
 
 ## Later, for the engine
 
+- **Several places in one world** (`docs/ideas/world-map.md`): towns and cities as setting packs side by side, routes between them with travel time, and people who move between them. An idea for after the starter town, not a request yet.
+
 9. **Vacancy, rent and cheap space.** How long a building has stood empty, what it costs to rent, and who takes cheap space (bands, artists, bars) and who pushes them out when the area changes. The player would see a rehearsal room in an old warehouse, and the venue that closes when flats go up next door.
 10. **Vehicles and boats with owners.** Who owns which car or boat, when they bought it, new or used. The player would read wealth, age and routine from the cars on a street.
 

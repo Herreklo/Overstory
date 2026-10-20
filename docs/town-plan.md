@@ -19,6 +19,8 @@ This is the starter town. Later come other towns, bigger cities and metropolises
 
 **What a metropolis adds, to be designed for now and built later:** towers and deep blocks, so the camera needs stops for height and streets that are canyons; transit in layers (metro, elevated rail, stations as nodes); many districts, each with its own heart laid out by hand and its body grown by rules; crowds by the thousand (`docs/living-world.md`, Crowds); streaming and levels of detail so a whole city holds its frame rate. The starter town is built so these can be added without starting again: the town is data in a setting pack, parts are families, and the city view is built to stream.
 
+**Its place in the world.** The starter town has a latitude, longitude and time zone (Stavanger's: 58.97°N, 5.73°E, Central European Time), and its light is computed from them, so every later city's light is a fact of where it stands. Its routes out (the ferry quay, the station, the airport, the motorway) are the doors to a world map later (`docs/ideas/world-map.md`).
+
 ## Size
 
 The town is the size of Stavanger in 1989: about 95,000 people over a built area of about 5 by 4 km, with farms, a beach and the fjord at its edges. Its centre, around the basin and about 1.3 km across, is planned area by area below; the town around it is planned by district (The town around the centre). The centre is laid out by hand in clay. The districts around it are laid out by rules learned from the centre and from the real map, and checked in clay from the far stop. Exit criterion 5 (a street at city scale holds its look and frame rate) is tested on the whole town, not on the corner.
