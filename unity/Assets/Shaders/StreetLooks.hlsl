@@ -11,6 +11,54 @@
 float4 _OS_SkyAmb;      // what the open sky gives a face that looks straight up
 float4 _OS_HorizonAmb;  // what it gives a face that looks at the horizon
 float4 _OS_GroundAmb;   // what the ground bounces back up
+float4 _OS_SunSideAmb;  // what the horizon on the sun's side gives a wall facing it (a 0: the same all round)
+float4 _OS_TownBounce;  // what the town's walls and ground give back, in place of the sky they hide
+
+// The town's sky map (Overstory.Scenes.SkyMap): its height from above
+TEXTURE2D(_OS_SkyMap);
+SAMPLER(sampler_OS_SkyMap);
+float4 _OS_SkyMapRect;  // xy the map's corner (world x, z), z 1 / its size, w 1 when v reads from the top
+float _OS_SkyMapOn;
+
+// How much of a face's open sky the town leaves open, 0 to 1: the horizon the town makes round it, found in eight
+// directions out to about 60 m, each weighted by how much the face looks that way. A lane's floor at the foot of
+// two walls keeps a strip of sky; a wall's foot in a yard keeps less; a roof or the open quay keeps it all.
+half OS_TownSky(float3 positionWS, half3 n)
+{
+    if (_OS_SkyMapOn < 0.5)
+        return 1.0h;
+    float3 o = positionWS + n * 0.6; // off the face, so a wall does not hide itself
+    float2 uv = (o.xz - _OS_SkyMapRect.xy) * _OS_SkyMapRect.z;
+    if (any(uv < 0.0) || any(uv > 1.0))
+        return 1.0h;
+    half up = abs(n.y);
+    float2 nh = n.xz / max(length(n.xz), 1e-4);
+    const float reach[8] = { 1.0, 2.0, 3.5, 6.0, 10.0, 17.0, 30.0, 56.0 };
+    half open = 0.0h, full = 0.0h;
+    [unroll]
+    for (int k = 0; k < 8; k++)
+    {
+        float a = (k + 0.5) * 0.785398;
+        float2 dir = float2(cos(a), sin(a));
+        half w = saturate(up + (1.0h - up) * dot(dir, nh));
+        float tanMax = 0.0;
+        [unroll]
+        for (int j = 0; j < 8; j++)
+        {
+            float2 q = uv + dir * reach[j] * _OS_SkyMapRect.z;
+            q.y = _OS_SkyMapRect.w > 0.5 ? 1.0 - q.y : q.y;
+            float h = SAMPLE_TEXTURE2D_LOD(_OS_SkyMap, sampler_OS_SkyMap, q, 0).r;
+            tanMax = max(tanMax, (h - o.y - 0.2) / reach[j]);
+        }
+        float alpha = atan(tanMax);
+        // the sky left over the town's horizon: cos^2 for a face looking up, the vertical case for a wall
+        half flat = (half)(cos(alpha) * cos(alpha));
+        half wall = (half)(1.0 - (2.0 * alpha + sin(2.0 * alpha)) / PI);
+        open += w * lerp(wall, flat, up);
+        full += w;
+    }
+    return full > 1e-3 ? open / full : 1.0h;
+}
 
 float _OS_ShadowChroma; // look D: how strongly shade takes the sky's colour (1 as the light gives it)
 
@@ -36,6 +84,7 @@ struct OSBake
     half sky;
     half ground;
     half open;
+    half town;  // the share of that sky the town round it leaves open (OS_TownSky), 1 for the part alone
 };
 
 OSBake OS_ReadBake(half4 c)
@@ -44,20 +93,31 @@ OSBake OS_ReadBake(half4 c)
     b.sky = c.r;
     b.ground = c.g;
     b.open = c.b;
+    b.town = 1.0h;
     return b;
 }
 
-// The sky colour a face sees: the horizon for walls, the zenith for roofs.
+// The sky colour a face sees: the zenith for roofs; for walls the horizon, warm on the sun's side and cool away.
 half3 OS_SkyFor(half3 n)
 {
-    return lerp(_OS_HorizonAmb.rgb, _OS_SkyAmb.rgb, saturate(n.y));
+    half3 horizon = _OS_HorizonAmb.rgb;
+    float2 h = n.xz;
+    float hl = length(h);
+    if (_OS_SunSideAmb.a > 0.5 && hl > 1e-3)
+    {
+        float2 sun = _OS_SunDir.xz / max(length(_OS_SunDir.xz), 1e-4);
+        half toward = (half)(dot(h / hl, sun) * 0.5 + 0.5);
+        horizon = lerp(_OS_HorizonAmb.rgb, _OS_SunSideAmb.rgb, toward * toward);
+    }
+    return lerp(horizon, _OS_SkyAmb.rgb, saturate(n.y));
 }
 
-// The shared sky term, unshaped: what reaches a face from open sky and open ground, plus a little
-// for crevices. Look A uses it as is; look B shapes the split between sky and ground with its ramp.
+// The shared sky term, unshaped: what reaches a face from the sky the town leaves open, from the town itself where it
+// hides the sky, and from open ground, plus a little for crevices. Look A uses it as is; look B shapes the split
+// between sky and ground with its ramp.
 half3 OS_SkyTerm(OSBake b, half3 n)
 {
-    half3 light = b.sky * OS_SkyFor(n) + b.ground * _OS_GroundAmb.rgb;
+    half3 light = b.sky * (b.town * OS_SkyFor(n) + (1.0h - b.town) * _OS_TownBounce.rgb) + b.ground * _OS_GroundAmb.rgb;
     return light * lerp(0.55h, 1.0h, b.open);
 }
 

@@ -24,6 +24,8 @@ float4 _OS_FogMid;       // rgb: the colour of the air at middle distance (linea
 float4 _OS_FogFar;       // rgb: the colour of the air far off (linear), a: the distance at which it takes over
 float4 _OS_FogParams;    // x density per metre at the base height, y falloff per metre of height, z base height, w most it may hide
 float4 _OS_FogSun;       // rgb: extra colour towards the sun (linear), w: how tight that glow is
+float4 _OS_Haze;         // x the low haze's density per metre at sea level, y the height over which it thins to a third
+float4 _OS_HazeColor;    // rgb: its colour (linear)
 float4 _OS_SunDir;       // xyz: towards the sun
 float4 _OS_PavingMeanUV; // xy: the palette UV of setts_mean, the tone a sett pavement averages to
 float _OS_Clay;          // 1: every surface one matte grey, to judge shape and composition alone
@@ -131,10 +133,7 @@ StreetSurface OS_WaterSurface(float3 positionWS, half4 colour, half smoothness, 
     s.metallic = 0;
     s.normalWS = normalize(half3(-hx * strength, 2.0 * e, -hz * strength));
     if (_OS_Clay > 0.5)
-    {
-        s.albedo = 0.16;
-        s.smoothness = 0.55;
-    }
+        s.albedo = 0.10; // dark and as glossy as water, so in clay it still reads as water under the sky
     return s;
 }
 
@@ -170,17 +169,25 @@ half OS_CloudCover(float c, float extraSoft)
     return (half)smoothstep(1.0 - _OS_Clouds.x - soft, 1.0 - _OS_Clouds.x + soft, c);
 }
 
+// The mean density along a straight path through air that thins exponentially with height (k per metre, from the
+// base height), relative to the density at the base.
+float OS_MeanDensity(float3 v, float k, float base)
+{
+    float a = exp(-k * (_WorldSpaceCameraPos.y - base));
+    float kdh = k * v.y;
+    return abs(kdh) > 1e-3 ? a * (1.0 - exp(-kdh)) / kdh : a;
+}
+
 // Aerial perspective and height fog: the air thickens with distance and thins with height, and glows
-// towards the sun. Applied the same way to every look, to water and to emissive light.
+// towards the sun; a low haze lies on the water and thins quickly up the hill. Applied the same way to
+// every look, to water and to emissive light.
 half3 OS_Atmosphere(half3 colour, float3 positionWS)
 {
     float3 v = positionWS - _WorldSpaceCameraPos;
     float d = length(v);
-    float k = max(_OS_FogParams.y, 1e-4);
-    float a = exp(-k * (_WorldSpaceCameraPos.y - _OS_FogParams.z));
-    float kdh = k * v.y;
-    float meanDensity = abs(kdh) > 1e-3 ? a * (1.0 - exp(-kdh)) / kdh : a;
-    float hidden = min(1.0 - exp(-_OS_FogParams.x * d * meanDensity), _OS_FogParams.w);
+    float tauAir = _OS_FogParams.x * d * OS_MeanDensity(v, max(_OS_FogParams.y, 1e-4), _OS_FogParams.z);
+    float tauHaze = _OS_Haze.x * d * OS_MeanDensity(v, 1.0 / max(_OS_Haze.y, 1.0), 0.0);
+    float hidden = min(1.0 - exp(-(tauAir + tauHaze)), _OS_FogParams.w);
     if (_OS_AirBands > 0.5)
     {
         // distance laid in flat layers, each a step of air, the edges soft like a wiped block
@@ -191,7 +198,8 @@ half3 OS_Atmosphere(half3 colour, float3 positionWS)
     // the air changes colour with distance, in layers, never one grey (Firewatch, Sable)
     // a designed ramp, as Firewatch's fog: near, middle and far each the colour the hour gives them
     half3 air = lerp(_OS_FogColor.rgb, _OS_FogMid.rgb, smoothstep(0.0, max(_OS_FogMid.a, 1.0), d));
-    air = lerp(air, _OS_FogFar.rgb, smoothstep(_OS_FogMid.a, max(_OS_FogFar.a, _OS_FogMid.a + 1.0), d)) + _OS_FogSun.rgb * sun;
+    air = lerp(air, _OS_FogFar.rgb, smoothstep(_OS_FogMid.a, max(_OS_FogFar.a, _OS_FogMid.a + 1.0), d));
+    air = lerp(air, _OS_HazeColor.rgb, tauHaze / max(tauAir + tauHaze, 1e-5)) + _OS_FogSun.rgb * sun;
     return lerp(colour, air, hidden);
 }
 

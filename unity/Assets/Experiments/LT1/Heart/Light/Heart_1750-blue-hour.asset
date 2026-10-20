@@ -1,0 +1,80 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 786fea6a47b704eeeab3813c905b0577, type: 3}
+  m_Name: Heart_1750-blue-hour
+  m_EditorClassIdentifier: Assembly-CSharp::Overstory.Scenes.LightRig
+  sunFromClock: 1
+  year: 1989
+  month: 10
+  day: 20
+  hour: 17.833334
+  utcOffset: 1
+  latitude: 58.97
+  longitude: 5.73
+  streetAxisCompass: 190
+  sunBearing: 292.20282
+  sunElevation: -4.938803
+  sunColour: {r: 0, g: 0, b: 0, a: 1}
+  sunIntensity: 0
+  shadowStrength: 0
+  zenith: {r: 0.16, g: 0.24, b: 0.44, a: 1}
+  horizon: {r: 0.5, g: 0.46, b: 0.56, a: 1}
+  belowHorizon: {r: 0.1, g: 0.1, b: 0.13, a: 1}
+  skyCurve: 0.45
+  sunGlow: {r: 0.78, g: 0.42, b: 0.22, a: 1}
+  sunGlowPower: 4
+  ambientSky: {r: 0.24, g: 0.32, b: 0.54, a: 1}
+  ambientEquator: {r: 0.26, g: 0.3, b: 0.46, a: 1}
+  ambientGround: {r: 0.11, g: 0.11, b: 0.13, a: 1}
+  ambientSunSide: {r: 0.44, g: 0.36, b: 0.42, a: 1}
+  townBounce: {r: 0.1, g: 0.1, b: 0.13, a: 1}
+  ambientIntensity: 1
+  fogColour: {r: 0.26, g: 0.3, b: 0.44, a: 1}
+  fogMidColour: {r: 0.33, g: 0.35, b: 0.5, a: 1}
+  fogMidDistance: 300
+  fogFarColour: {r: 0.48, g: 0.44, b: 0.56, a: 1}
+  fogFarDistance: 2500
+  fogDensity: 0.0007
+  fogHeightFalloff: 0.012
+  fogBaseHeight: 0
+  fogMaxOpacity: 0.85
+  fogSunColour: {r: 0.4, g: 0.24, b: 0.18, a: 1}
+  fogSunPower: 4
+  hazeColour: {r: 0.4, g: 0.42, b: 0.54, a: 1}
+  hazeDensity: 0.003
+  hazeHeight: 18
+  shafts: 0
+  shaftReach: 0.6
+  shaftDecay: 0.965
+  shaftThreshold: 0.5
+  wetness: 0
+  cloudCover: 0.3
+  cloudSize: 2400
+  cloudSoftness: 0.12
+  cloudHeight: 1400
+  highCloud: 0.45
+  antiGlow: {r: 0.32, g: 0.22, b: 0.34, a: 1}
+  windowGlow: 0
+  lampsOn: 0
+  lampGlow: 0
+  lampIntensity: 0
+  windowSpill: 0
+  postExposure: 0.35
+  contrast: 6
+  saturation: 0
+  temperature: 0
+  tint: 0
+  colourFilter: {r: 1, g: 1, b: 1, a: 1}
+  bloomIntensity: 0
+  bloomThreshold: 1.1
+  reflectionStrength: 1
+  clock: 0

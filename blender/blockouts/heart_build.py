@@ -516,29 +516,8 @@ def build(unity=None):
                     t = (i + 0.5) / n
                     top = az + rise * ((i + 1) / n if rise > 0 else i / n) + 0.02
                     steps.obox(ax + (bx - ax) * t, ay + (by - ay) * t, a, run / n + 0.02, lane["width"], top - abs(rise) / n - 0.3, top)
-        if lane["kind"] in ("lane", "steps") and lane["width"] <= 8.0:
-            s, total = 1.0, H.length(pts)
-            while s < total - 1.0:
-                p = H.at_s(pts, s)
-                if p is None:
-                    break
-                x, y, z, a = p
-                nx, ny = -math.sin(math.radians(a)), math.cos(math.radians(a))
-                for side in (1, -1):
-                    ex, ey = x + nx * (hw + 0.3) * side, y + ny * (hw + 0.3) * side
-                    out = ground(x + nx * (hw + 3.0) * side, y + ny * (hw + 3.0) * side)
-                    if out - z > 1.0:
-                        walls.obox(ex, ey, a, 2.05, 0.45, z - 0.3, min(out, z + 4.0))
-                    elif z - out > 1.0:
-                        walls.obox(ex, ey, a, 2.05, 0.45, out - 0.3, z + 0.9)
-                s += 2.0
-    # walls round the Landing and the small places where they stand over the ground
-    for poly, z in [(H.LANDING, H.LANDING_Z)] + [(p, z) for _, p, z in H.SMALL_PLACES] + H.YARDS:
-        for (x1, y1), (x2, y2) in zip(poly, poly[1:] + poly[:1]):
-            mx, my = (x1 + x2) / 2, (y1 + y2) / 2
-            out = ground(mx + (mx - sum(p[0] for p in poly) / len(poly)) * 0.2, my + (my - sum(p[1] for p in poly) / len(poly)) * 0.2)
-            if z - out > 0.8:
-                walls.obox(mx, my, math.degrees(math.atan2(y2 - y1, x2 - x1)), math.hypot(x2 - x1, y2 - y1), 0.45, out - 0.3, z + 0.9)
+    for w in H.ground_walls(ground):
+        walls.obox(w["x"], w["y"], w["a"], w["l"], w["w"], w["z0"], w["z1"])
 
     corner = Mesh("buildings_corner")
     houses = Mesh("buildings_heart")

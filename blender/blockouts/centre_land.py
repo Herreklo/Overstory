@@ -135,14 +135,9 @@ CONTOURS = [
     (2.2, [(56, -160), (150, -150), (240, -140), (300, -134), (334, -128)]),  # the mainland's Barrel Quay
     # the mainland west of the sund: the pub quay's upper street, then the fire grid's slope
     (8.0, [(60, -186), (150, -176), (250, -160), (300, -150)]),
-    # Watch Knoll: a hill over Holm Street, its summit near the harbour side (the Fire Watch), a ridge falling
-    # gently south-west towards the Grid, a rock face on its harbour side
-    (None, [(112, -304, 46.0), (150, -338, 40.0), (196, -380, 31.0), (240, -424, 24.0), (276, -470, 20.0)]),
-    (30.0, [(88, -312), (104, -336), (140, -372), (184, -410)]),
-    (30.0, [(140, -300), (174, -322), (214, -356), (250, -398)]),
-    (16.0, [(70, -320), (96, -366), (150, -416), (200, -460)]),
+    # (Watch Knoll is not drawn by contours: it is a dome over the solved land, KNOLL below)
     (12.0, [(200, -300), (330, -280), (500, -260)]),
-    (22.0, [(100, -440), (250, -430), (400, -410), (600, -390)]),
+    (22.0, [(260, -430), (400, -410), (600, -390)]),
     (32.0, [(110, -600), (300, -580), (500, -560), (700, -540)]),
     (40.0, [(0, -780), (300, -760), (700, -720)]),
     # the ridge behind the fire grid: broad, with a spur towards the cove and a notch where a road crosses
@@ -244,13 +239,11 @@ OLD_ROADS = [
 ]
 GOODS_LINE = [(700, -170), (560, -200), (420, -190), (330, -134), (240, -138)]
 CLIFFS = [
-    # Watch Knoll's face over Holm Street: the houses back onto the rock (the high side to the left of travel)
-    dict(name="Watch Knoll's face", top=34.0, base=14.0, width=4.0, line=[(158, -298), (132, -280), (104, -270), (80, -276)]),
     # the bluff: the old town hill's point, a rock face over the bay, about 20 m, high side inland
     dict(name="the bluff", top=26.0, base=2.0, width=5.0, line=[(-250, 20), (-286, 46), (-316, 90), (-334, 140), (-328, 196), (-302, 252)]),
 ]
 CLEFTS = [  # narrow cuts in rock, made after the rock: the knoll's cleft, where the steps go up from Holm Street
-    dict(name="the Crack", depth=8.0, width=3.0, line=[(112, -262), (116, -276), (120, -290)]),
+    dict(name="the Crack", depth=5.0, width=2.6, line=[(132, -252), (136, -268), (139, -286)]),
 ]
 GULLIES = [  # where the streams come down the old town's west slope to the Basin
     dict(x=49.3, depth=2.0, width=8.0, y0=10.0, y1=170.0),
@@ -300,6 +293,44 @@ def _line_dist_z(X, Y, pts):
         best = np.where(closer, d, best)
         zb = np.where(closer, z1 + (z2 - z1) * t, zb)
     return best, zb
+
+
+# Watch Knoll (after Valberget): a rounded rock hill, its crown where the Fire Watch stands. A drawn line or a cliff in
+# a height field makes a knife ridge, a plateau or a striped curtain; a hill is a dome. Its reach differs by side
+# (street axes: 0 is +x, 90 is +y): steep in stepped rock towards Holm Street (+y) and the sea (-x), steady towards
+# Broad Street (+x), and a long gentle back to the south-west (-y). Where it is rock, the slope breaks into ledges.
+# The bedrock's grain runs across the hill (strike, degrees in street axes), so its ledges are bands that cross it
+# at a slant, not rings; low lobes and hollows (seeded) keep it from reading as a mound.
+KNOLL = dict(x=140.0, y=-318.0, top=44.0, base=8.0, crown=9.0,
+             reach={0: 100.0, 90: 92.0, 180: 80.0, 270: 165.0},
+             rock={0: 0.25, 90: 1.0, 180: 1.0, 270: 0.0}, ledge=5.5,
+             lobes=[(2, 0.10, 0.7), (3, 0.08, 2.1), (5, 0.04, 4.4)], strike=35.0, dip=0.22)
+
+
+def _by_side(table, phi):
+    """A value for each side (degrees in street axes), blended round the hill so no seam shows."""
+    num = den = 0.0
+    for a, v in table.items():
+        w = np.maximum(np.cos(np.radians(phi - a)), 0.0) ** 2 + 1e-6
+        num = num + w * v
+        den = den + w
+    return num / den
+
+
+def _knoll(X, Y):
+    k = KNOLL
+    dx, dy = X - k["x"], Y - k["y"]
+    d = np.hypot(dx, dy)
+    phi = np.degrees(np.arctan2(dy, dx))
+    lobed = 1.0 + sum(a * np.cos(n * np.radians(phi) + ph) for n, a, ph in k["lobes"])
+    t = np.maximum(d - k["crown"], 0.0) / (_by_side(k["reach"], phi) * lobed)
+    z = k["base"] + (k["top"] - k["base"]) * np.exp(-(1.6 * t) ** 2)
+    # rock: benches and short faces on the steep sides, about a storey and a half apart, following the grain
+    rock = _by_side(k["rock"], phi) * _smoothstep(0.15, 0.35, t) * (1.0 - _smoothstep(0.9, 1.15, t))
+    sx, sy = np.cos(np.radians(k["strike"] + 90.0)), np.sin(np.radians(k["strike"] + 90.0))
+    q = (z + k["dip"] * (dx * sx + dy * sy)) / k["ledge"]
+    stepped = k["ledge"] * (np.floor(q) + _smoothstep(0.55, 1.0, q - np.floor(q))) - k["dip"] * (dx * sx + dy * sy)
+    return z + (stepped - z) * 0.7 * rock, 1.0 - _smoothstep(1.0, 1.6, t)
 
 
 def _smoothstep(a, b, v):
@@ -419,9 +450,25 @@ def _solve():
     return Z
 
 
+def _rounded(G):
+    """The solve pins each drawn line to whole 4 m cells, which leaves stairs along a diagonal ridge or slope.
+    A light blur over the land, three passes of a 3 x 3 binomial (about 5 m), rounds them; the sea stays put, and so
+    does Herring Hill, whose terraces and rows are traced from its contours as drawn."""
+    x0, y0, x1, y1 = DOMAIN
+    GX, GY = np.meshgrid(np.arange(x0, x1 + 2.0, 4.0)[:G.shape[0]], np.arange(y0, y1 + 2.0, 4.0)[:G.shape[1]], indexing="ij")
+    herring_hill = (GX > -360.0) & (GX < 320.0) & (GY > -30.0) & (GY < 360.0)
+    keep = water_mask(GX, GY) | _inside(LAKE_LINE, GX, GY) | herring_hill
+    for _ in range(3):
+        P = np.pad(G, 1, mode="edge")
+        B = (4.0 * P[1:-1, 1:-1] + 2.0 * (P[:-2, 1:-1] + P[2:, 1:-1] + P[1:-1, :-2] + P[1:-1, 2:])
+             + P[:-2, :-2] + P[2:, 2:] + P[:-2, 2:] + P[2:, :-2]) / 16.0
+        G = np.where(keep, G, B)
+    return G
+
+
 def _base_surface(X, Y):
     if "Z" not in _GRID:
-        _GRID["Z"] = _solve()
+        _GRID["Z"] = _rounded(_solve())
     G = _GRID["Z"]
     x0, y0 = DOMAIN[0], DOMAIN[1]
     step = 4.0
@@ -439,6 +486,8 @@ def heights(X, Y):
     X = np.asarray(X, dtype=float)
     Y = np.asarray(Y, dtype=float)
     Z = _base_surface(X, Y)
+    zk, reach = _knoll(X, Y)
+    Z = Z + np.maximum(zk - Z, 0.0) * reach  # the hill stands on the land; past its foot it adds nothing
 
     # streams cut the old town's west slope; seeded unevenness off the quays
     for g in GULLIES:

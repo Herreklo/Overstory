@@ -137,6 +137,7 @@ Shader "Overstory/Street"
                 OSBake b = OS_ReadBake(half4(1, 0, 1, 1));
             #else
                 OSBake b = OS_ReadBake(input.bake);
+                b.town = OS_TownSky(input.positionWS, s.normalWS);
             #endif
 
             #if defined(_OS_LOOK_B)

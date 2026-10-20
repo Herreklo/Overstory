@@ -10,6 +10,18 @@ namespace Overstory.Scenes
     [CreateAssetMenu(menuName = "Overstory/Light rig")]
     public class LightRig : ScriptableObject
     {
+        [Header("When and where (the sun is set from these when the clock is on)")]
+        [Tooltip("Set the sun from the date, the local hour and the place, never by hand.")]
+        public bool sunFromClock = false;
+        public int year = 1989, month = 10, day = 20;
+        [Tooltip("Local clock time in hours, e.g. 16.5 for half past four.")]
+        public float hour = 16f;
+        [Tooltip("Hours the local clock is ahead of UTC on that date (Norway 1989: +1 in winter time, +2 in summer time).")]
+        public float utcOffset = 1f;
+        public float latitude = 58.97f, longitude = 5.73f;
+        [Tooltip("The compass bearing of the street's +x axis, so the sun can be given in street axes.")]
+        public float streetAxisCompass = 190f;
+
         [Header("Sun")]
         [Tooltip("Compass bearing of the sun in degrees, measured in street axes: 0 along the street (+x), 90 towards the back of the plots (+y).")]
         public float sunBearing = 200f;
@@ -30,6 +42,10 @@ namespace Overstory.Scenes
         public Color ambientSky = new Color(0.6f, 0.64f, 0.7f);
         public Color ambientEquator = new Color(0.55f, 0.57f, 0.6f);
         public Color ambientGround = new Color(0.3f, 0.31f, 0.3f);
+        [Tooltip("What the horizon on the sun's side gives a wall that faces it; the equator colour is the side away. Clear: the same all round.")]
+        public Color ambientSunSide = Color.clear;
+        [Tooltip("What the town's own walls and ground give back into its lanes and yards, in place of the sky they hide.")]
+        public Color townBounce = new Color(0.3f, 0.3f, 0.3f);
         public float ambientIntensity = 1f;
 
         [Header("Air")]
@@ -50,6 +66,12 @@ namespace Overstory.Scenes
         [Range(0, 1)] public float fogMaxOpacity = 0.9f;
         public Color fogSunColour = Color.black;
         public float fogSunPower = 8f;
+        [Tooltip("The colour of the low haze that lies on the water and thins up the hill.")]
+        public Color hazeColour = new Color(0.8f, 0.8f, 0.8f);
+        [Tooltip("Optical density of the haze per metre at sea level. 0: none.")]
+        public float hazeDensity = 0f;
+        [Tooltip("The height in metres over which the haze thins to a third.")]
+        public float hazeHeight = 20f;
 
         [Header("Light rays")]
         [Tooltip("How strongly the sky's light streams past what stands against it, looking towards the sun.")]
@@ -67,6 +89,10 @@ namespace Overstory.Scenes
         public float cloudSize = 160f;
         [Range(0.01f, 0.5f)] public float cloudSoftness = 0.08f;
         public float cloudHeight = 900f;
+        [Tooltip("A high, thin layer (cirrus): it casts no shadow but catches a low sun.")]
+        [Range(0, 1)] public float highCloud = 0f;
+        [Tooltip("The glow low in the sky opposite a low sun (the belt of Venus).")]
+        public Color antiGlow = Color.black;
 
         [Header("Lit windows and lamps")]
         [Tooltip("Brightness of lit windows, open shopfronts and light-box signs. 0 by day.")]
@@ -93,6 +119,19 @@ namespace Overstory.Scenes
         [Header("Clock")]
         [Tooltip("The scene's own clock for moving water, in seconds. Fixed per rig so a still is repeatable.")]
         public float clock = 0f;
+
+        /// <summary>When the clock is on, sets the sun's bearing (in street axes) and elevation from the date, hour and place.</summary>
+        public void SetSunFromClock()
+        {
+            if (!sunFromClock)
+                return;
+            var (azimuth, elevation) = Daylight.Sun(year, month, day, hour, utcOffset, latitude, longitude);
+            // street bearings run from +x towards +y; on the compass that is anticlockwise from the +x axis's bearing
+            sunBearing = Mathf.Repeat(streetAxisCompass - (float)azimuth, 360f);
+            sunElevation = (float)elevation;
+        }
+
+        void OnValidate() => SetSunFromClock();
 
         /// <summary>Unit vector towards the sun, in street axes (x along, y back, z up).</summary>
         public Vector3 SunDirectionStreet

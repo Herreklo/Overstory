@@ -17,6 +17,7 @@ namespace Overstory.EditorTools
     ///     blender -b --factory-startup --python blender/blockouts/heart_build.py -- unity
     ///     Unity -batchmode -quit -projectPath unity -executeMethod Overstory.EditorTools.LT1Heart.Scene
     ///     Unity -batchmode -quit -projectPath unity -executeMethod Overstory.EditorTools.LT1Heart.Frames
+    ///     Unity -batchmode -quit -projectPath unity -executeMethod Overstory.EditorTools.LT1Heart.LightFrames [-frames 1,5] [-hours 1600]
     ///
     /// The renderer and materials are LT1's; this touches neither.
     /// </summary>
@@ -28,6 +29,7 @@ namespace Overstory.EditorTools
         const string Materials = "Assets/Art/Materials";
         const string Palette = "Assets/Art/Palette";
         const string Rig = "Assets/Experiments/LT1/Corner/Corner_Oct20_1700.asset";
+        const string Lights = Dir + "/Light";
 
         const float Lens35 = 37.8f, Lens28 = 46.4f, Lens50 = 27.0f;
 
@@ -48,7 +50,19 @@ namespace Overstory.EditorTools
             ("6-from-the-roads", new Vector3(-720f, -120f, 8f), new Vector3(100f, 60f, 22f), Lens50),
             // from Lookout Park over the Roads: Bridge Island, the High Bridge, the platform in the fjord
             ("7-from-lookout-park", new Vector3(26f, 214f, 58f), new Vector3(-2100f, 1500f, 60f), Lens35),
+            // the middle stop over the Basin's head, at Watch Knoll and the Fire Watch above Holm Street
+            ("8-watch-knoll", new Vector3(10f, -110f, 42f), new Vector3(140f, -330f, 26f), Lens35),
         };
+
+        /// <summary>The frames named after -frames on the command line (by number, e.g. -frames 5,8), or all.</summary>
+        static bool Wanted(string name)
+        {
+            var args = System.Environment.GetCommandLineArgs();
+            int i = System.Array.IndexOf(args, "-frames");
+            if (i < 0 || i + 1 >= args.Length)
+                return true;
+            return System.Array.IndexOf(args[i + 1].Split(','), name.Split('-')[0]) >= 0;
+        }
 
         public static void Scene()
         {
@@ -95,8 +109,6 @@ namespace Overstory.EditorTools
                     continue;
                 var go = (GameObject)PrefabUtility.InstantiatePrefab(model, heart.transform);
                 bool isWater = model.name.StartsWith("water");
-                if (isWater)
-                    water = ClayWater();
                 foreach (var r in go.GetComponentsInChildren<MeshRenderer>())
                 {
                     var mats = new Material[r.sharedMaterials.Length];
@@ -108,8 +120,24 @@ namespace Overstory.EditorTools
                 n++;
             }
 
+            // the town's sky map over the heart (street x -390 to 540, y -480 to 330), half a metre a texel
+            var skyMap = heart.AddComponent<SkyMap>();
+            skyMap.enabled = false;
+            skyMap.town = heart.transform;
+            skyMap.centre = new Vector2(75f, -75f);
+            skyMap.size = 1024f;
+            skyMap.resolution = 2048;
+            skyMap.enabled = true;
+
+            var probe = new GameObject("Sky reflection").AddComponent<ReflectionProbe>();
+            probe.size = new Vector3(20000f, 4000f, 20000f);
+            probe.resolution = 256;
+            probe.hdr = true;
+
             var stage = new GameObject("Stage").AddComponent<StreetStage>();
             stage.enabled = false;
+            stage.skyMap = skyMap;
+            stage.skyReflection = probe;
             stage.sun = sun;
             stage.view = cam;
             stage.volume = volume;
@@ -145,8 +173,23 @@ namespace Overstory.EditorTools
             stage.rig = rig;
             stage.clay = true;
             stage.look = "P";
+            var map = stage.skyMap;
+            stage.skyMap = null; // the flat clay: lit as if every point saw the whole sky, as the clay was first judged
+            var waters = new List<(MeshRenderer, Material[])>();
+            var clayWater = ClayWater();
+            foreach (var r in Object.FindObjectsByType<MeshRenderer>(FindObjectsSortMode.None))
+                if (r.gameObject.name.StartsWith("water") || (r.transform.parent != null && r.transform.parent.name.StartsWith("water")))
+                {
+                    waters.Add((r, r.sharedMaterials));
+                    var m = new Material[r.sharedMaterials.Length];
+                    for (int i = 0; i < m.Length; i++)
+                        m[i] = clayWater;
+                    r.sharedMaterials = m;
+                }
             foreach (var (name, _, _, _) in Shots)
             {
+                if (!Wanted(name))
+                    continue;
                 stage.shot = AssetDatabase.LoadAssetAtPath<CameraShot>($"{Dir}/Views/Heart_{name}.asset");
                 stage.Apply();
                 string file = Path.Combine(dir, $"heart-clay-{name}.png");
@@ -154,6 +197,259 @@ namespace Overstory.EditorTools
                 Debug.Log($"[LT1Heart] {file}");
             }
             Object.DestroyImmediate(rig);
+            stage.skyMap = map;
+            foreach (var (r, m) in waters)
+                r.sharedMaterials = m;
+        }
+
+        // -- light, air and atmosphere (docs/experiments.md, LT1, light on the clay) ------------------------------
+
+        /// <summary>The colour script: four hours of 20 October 1989, the sun from the clock (Norway on winter time, UTC+1).</summary>
+        public static readonly string[] Hours = { "0930-morning", "1300-drizzle", "1600-low-sun", "1750-blue-hour" };
+
+        /// <summary>Writes the four rigs. Their colours are chosen as an artist would; the sun is the clock's.</summary>
+        public static void Rigs()
+        {
+            Directory.CreateDirectory(Lights);
+            AssetDatabase.Refresh();
+            Asset<LightRig>($"{Lights}/Heart_{Hours[0]}.asset", r =>
+            {
+                // a clear cold morning: the sun low in the south-east behind Herring Hill, the old town in its own shade,
+                // a white haze on the water
+                Clock(r, 9.5f);
+                Sun(r, C(1.0f, 0.86f, 0.70f), 2.4f, 1f);
+                Sky(r, C(0.40f, 0.55f, 0.76f), C(0.80f, 0.82f, 0.84f), C(0.25f, 0.26f, 0.28f), 0.55f, C(0.95f, 0.80f, 0.62f), 6f, Color.black);
+                Shade(r, C(0.46f, 0.57f, 0.76f), C(0.56f, 0.60f, 0.68f), C(0.82f, 0.76f, 0.66f), C(0.32f, 0.31f, 0.29f), C(0.40f, 0.38f, 0.35f), 0.7f);
+                Air(r, C(0.66f, 0.70f, 0.76f), C(0.74f, 0.77f, 0.82f), C(0.84f, 0.86f, 0.88f), 0.0006f, C(0.70f, 0.60f, 0.48f), 5f);
+                Haze(r, C(0.86f, 0.88f, 0.90f), 0.0035f, 12f);
+                Clouds(r, 0.2f, 0.12f, 0.25f);
+                Grade(r, 0.05f, 8f, 0f, 0.1f);
+            });
+            Asset<LightRig>($"{Lights}/Heart_{Hours[1]}.asset", r =>
+            {
+                // grey drizzle at midday: the sun a pale disc behind the cloud, light from the whole sky, the far shore gone
+                Clock(r, 13f);
+                Sun(r, C(0.92f, 0.94f, 0.97f), 0.45f, 0.35f);
+                Sky(r, C(0.60f, 0.63f, 0.67f), C(0.75f, 0.77f, 0.79f), C(0.30f, 0.31f, 0.32f), 0.7f, C(0.12f, 0.12f, 0.11f), 3f, Color.black);
+                Shade(r, C(0.72f, 0.75f, 0.80f), C(0.62f, 0.65f, 0.68f), C(0.66f, 0.68f, 0.70f), C(0.32f, 0.33f, 0.33f), C(0.30f, 0.31f, 0.32f), 1.0f);
+                Air(r, C(0.62f, 0.66f, 0.70f), C(0.70f, 0.73f, 0.76f), C(0.76f, 0.78f, 0.80f), 0.0014f, C(0.05f, 0.05f, 0.05f), 3f);
+                r.fogMidDistance = 220f;
+                r.fogFarDistance = 1500f;
+                r.fogMaxOpacity = 0.92f;
+                Haze(r, C(0.78f, 0.80f, 0.82f), 0.004f, 25f);
+                Clouds(r, 0.97f, 0.15f, 0f);
+                r.cloudHeight = 900f;
+                r.wetness = 0.85f;
+                Grade(r, 0.2f, 4f, -5f, 0f);
+            });
+            Asset<LightRig>($"{Lights}/Heart_{Hours[2]}.asset", r =>
+            {
+                // the corner's light: the sun 8 degrees high in the south-west after a day of showers, the cloud
+                // breaking in the west, a little haze off the fjord
+                Clock(r, 16f);
+                Sun(r, C(1.0f, 0.72f, 0.46f), 3.0f, 1f);
+                Sky(r, C(0.33f, 0.46f, 0.68f), C(0.94f, 0.80f, 0.63f), C(0.24f, 0.23f, 0.24f), 0.5f, C(1.0f, 0.62f, 0.34f), 7f, C(0.12f, 0.08f, 0.10f));
+                Shade(r, C(0.40f, 0.51f, 0.72f), C(0.50f, 0.53f, 0.62f), C(0.80f, 0.64f, 0.50f), C(0.33f, 0.29f, 0.25f), C(0.46f, 0.38f, 0.31f), 0.62f);
+                Air(r, C(0.60f, 0.60f, 0.66f), C(0.76f, 0.69f, 0.66f), C(0.90f, 0.80f, 0.70f), 0.0006f, C(0.86f, 0.56f, 0.32f), 5f);
+                Haze(r, C(0.88f, 0.78f, 0.68f), 0.0025f, 16f);
+                Clouds(r, 0.32f, 0.12f, 0.35f);
+                r.wetness = 0.25f;
+                Grade(r, 0.1f, 10f, 0f, 0.2f);
+            });
+            Asset<LightRig>($"{Lights}/Heart_{Hours[3]}.asset", r =>
+            {
+                // blue hour: the sun five degrees down, an orange glow low in the west, the pink band in the east,
+                // the high cloud still lit
+                Clock(r, 17f + 50f / 60f);
+                Sun(r, Color.black, 0f, 0f);
+                Sky(r, C(0.16f, 0.24f, 0.44f), C(0.50f, 0.46f, 0.56f), C(0.10f, 0.10f, 0.13f), 0.45f, C(0.78f, 0.42f, 0.22f), 4f, C(0.32f, 0.22f, 0.34f));
+                Shade(r, C(0.24f, 0.32f, 0.54f), C(0.26f, 0.30f, 0.46f), C(0.44f, 0.36f, 0.42f), C(0.11f, 0.11f, 0.13f), C(0.10f, 0.10f, 0.13f), 1.0f);
+                Air(r, C(0.26f, 0.30f, 0.44f), C(0.33f, 0.35f, 0.50f), C(0.48f, 0.44f, 0.56f), 0.0007f, C(0.40f, 0.24f, 0.18f), 4f);
+                Haze(r, C(0.40f, 0.42f, 0.54f), 0.003f, 18f);
+                Clouds(r, 0.3f, 0.12f, 0.45f);
+                Grade(r, 0.35f, 6f, 0f, 0f);
+            });
+            AssetDatabase.SaveAssets();
+            foreach (var h in Hours)
+            {
+                var r = AssetDatabase.LoadAssetAtPath<LightRig>($"{Lights}/Heart_{h}.asset");
+                Debug.Log($"[LT1Heart] {h}: sun {r.sunElevation:F1} degrees high, street bearing {r.sunBearing:F0}");
+            }
+        }
+
+        static Color C(float r, float g, float b) => new Color(r, g, b);
+
+        static void Clock(LightRig r, float hour)
+        {
+            r.sunFromClock = true;
+            r.year = 1989;
+            r.month = 10;
+            r.day = 20;
+            r.hour = hour;
+            r.utcOffset = 1f; // summer time ended on 24 September 1989
+            r.latitude = 58.97f;
+            r.longitude = 5.73f;
+            r.streetAxisCompass = 190f;
+            r.SetSunFromClock();
+        }
+
+        static void Sun(LightRig r, Color colour, float intensity, float shadow)
+        {
+            r.sunColour = colour;
+            r.sunIntensity = intensity;
+            r.shadowStrength = shadow;
+        }
+
+        static void Sky(LightRig r, Color zenith, Color horizon, Color below, float curve, Color glow, float glowPower, Color anti)
+        {
+            r.zenith = zenith;
+            r.horizon = horizon;
+            r.belowHorizon = below;
+            r.skyCurve = curve;
+            r.sunGlow = glow;
+            r.sunGlowPower = glowPower;
+            r.antiGlow = anti;
+        }
+
+        static void Shade(LightRig r, Color sky, Color away, Color sunSide, Color ground, Color town, float intensity)
+        {
+            r.ambientSky = sky;
+            r.ambientEquator = away;
+            r.ambientSunSide = sunSide;
+            r.ambientGround = ground;
+            r.townBounce = town;
+            r.ambientIntensity = intensity;
+        }
+
+        static void Air(LightRig r, Color near, Color middle, Color far, float density, Color sun, float sunPower)
+        {
+            r.fogColour = near;
+            r.fogMidColour = middle;
+            r.fogMidDistance = 300f;
+            r.fogFarColour = far;
+            r.fogFarDistance = 2500f;
+            r.fogDensity = density;
+            r.fogHeightFalloff = 0.012f;
+            r.fogBaseHeight = 0f;
+            r.fogMaxOpacity = 0.85f;
+            r.fogSunColour = sun;
+            r.fogSunPower = sunPower;
+        }
+
+        static void Haze(LightRig r, Color colour, float density, float height)
+        {
+            r.hazeColour = colour;
+            r.hazeDensity = density;
+            r.hazeHeight = height;
+        }
+
+        static void Clouds(LightRig r, float cover, float softness, float high)
+        {
+            r.cloudCover = cover;
+            r.cloudSize = 2400f; // big masses, as a painter simplifies a sky; their shadows lie on the town in broad patches
+            r.cloudSoftness = softness;
+            r.cloudHeight = 1400f;
+            r.highCloud = high;
+        }
+
+        static void Grade(LightRig r, float exposure, float contrast, float saturation, float bloom)
+        {
+            r.postExposure = exposure;
+            r.contrast = contrast;
+            r.saturation = saturation;
+            r.temperature = 0f;
+            r.tint = 0f;
+            r.colourFilter = Color.white;
+            r.bloomIntensity = bloom;
+            r.bloomThreshold = 1.1f;
+        }
+
+        /// <summary>
+        /// The light frames (reviews/lt1/heart/light/&lt;hour&gt;/): every camera at every hour, in clay with the town's sky
+        /// map, in colour, greyscale and at one-eighth. Sun shadows reach as far as the stop needs.
+        /// </summary>
+        public static void LightFrames()
+        {
+            Rigs();
+            EditorSceneManager.OpenScene(ScenePath, OpenSceneMode.Single);
+            var stage = Object.FindAnyObjectByType<StreetStage>();
+            stage.clay = true;
+            stage.look = "P";
+            if (stage.skyMap != null)
+                stage.skyMap.Build();
+            CheckSkyMap(stage.skyMap);
+            var urp = (UniversalRenderPipelineAsset)GraphicsSettings.currentRenderPipeline;
+            float reach = urp.shadowDistance;
+            try
+            {
+                foreach (var hour in Hours)
+                {
+                    if (!WantedHour(hour))
+                        continue;
+                    string dir = Path.GetFullPath(Path.Combine(Application.dataPath, "..", "..", "reviews", "lt1", "heart", "light", hour));
+                    Directory.CreateDirectory(dir);
+                    stage.rig = AssetDatabase.LoadAssetAtPath<LightRig>($"{Lights}/Heart_{hour}.asset");
+                    foreach (var (name, pos, target, _) in Shots)
+                    {
+                        if (!Wanted(name))
+                            continue;
+                        urp.shadowDistance = Mathf.Clamp(Vector3.Distance(pos, target) * 2.2f, 150f, 2000f);
+                        stage.shot = AssetDatabase.LoadAssetAtPath<CameraShot>($"{Dir}/Views/Heart_{name}.asset");
+                        stage.Apply();
+                        string file = Path.Combine(dir, $"heart-{hour}-{name}.png");
+                        LT1Render.Still(stage.view, file, grey: true, eighth: true);
+                        Debug.Log($"[LT1Heart] {file}");
+                    }
+                }
+            }
+            finally
+            {
+                urp.shadowDistance = reach;
+            }
+        }
+
+        static bool WantedHour(string hour)
+        {
+            var args = System.Environment.GetCommandLineArgs();
+            int i = System.Array.IndexOf(args, "-hours");
+            if (i < 0 || i + 1 >= args.Length)
+                return true;
+            return System.Array.IndexOf(args[i + 1].Split(','), hour.Split('-')[0]) >= 0;
+        }
+
+        /// <summary>
+        /// Proves the sky map lies the right way round: the Fire Watch's top must read about 60 m where it stands,
+        /// and the map must not show it mirrored. Writes the map as a picture beside the frames.
+        /// </summary>
+        static void CheckSkyMap(SkyMap map)
+        {
+            if (map == null || !map.Built)
+            {
+                Debug.LogWarning("[LT1Heart] no sky map");
+                return;
+            }
+            // the Fire Watch stands at street (140, -318); with the map mirrored in v it would read at z = 2 * centre - z
+            float at = map.Probe(140f, -318f), mirror = map.Probe(140f, 2f * map.centre.y + 318f);
+            Debug.Log($"[LT1Heart] sky map, sampled as the street shader samples it: the Fire Watch reads {at:F1} m, its mirror {mirror:F1} m");
+            if (!(at > 50f))
+                Debug.LogError("[LT1Heart] the sky map is not the right way round (or the Fire Watch has moved)");
+            var h = map.ReadHeights();
+            if (h.Length == 0)
+                return;
+            int n = map.resolution;
+            var tex = new Texture2D(n, n, TextureFormat.RGB24, false, false);
+            var px = new Color32[n * n];
+            for (int i = 0; i < px.Length; i++)
+            {
+                byte g = (byte)Mathf.Clamp(Mathf.RoundToInt((h[i] + 2f) * 3.2f), 0, 255);
+                px[i] = h[i] < -500f ? new Color32(40, 60, 90, 255) : new Color32(g, g, g, 255);
+            }
+            tex.SetPixels32(px);
+            tex.Apply();
+            string dir = Path.GetFullPath(Path.Combine(Application.dataPath, "..", "..", "reviews", "lt1", "heart", "light"));
+            Directory.CreateDirectory(dir);
+            File.WriteAllBytes(Path.Combine(dir, "sky-map.png"), tex.EncodeToPNG());
+            Object.DestroyImmediate(tex);
         }
 
         /// <summary>The water for clay frames: dark and glossy, outside the clay switch, so it reads as water.</summary>

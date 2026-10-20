@@ -19,6 +19,10 @@ namespace Overstory.Scenes
         public Camera view;
         public Volume volume;
         public Material sky;
+        [Tooltip("The town's sky map: how much sky each point of the town sees. Optional.")]
+        public SkyMap skyMap;
+        [Tooltip("A probe that sees only the sky, captured again whenever the light changes, so water and wet stone reflect this hour's sky. Optional.")]
+        public ReflectionProbe skyReflection;
 
         [Header("The shared palette")]
         public Texture2D paletteAlbedo;
@@ -149,6 +153,11 @@ namespace Overstory.Scenes
 
         void SetLight(LightRig r)
         {
+            r.SetSunFromClock();
+            if (skyMap != null)
+                skyMap.Bind();
+            else
+                Shader.SetGlobalFloat("_OS_SkyMapOn", 0f);
             Vector3 toSun = StreetSpace.ToUnity(r.SunDirectionStreet).normalized;
 
             if (sun != null)
@@ -170,7 +179,18 @@ namespace Overstory.Scenes
                 sky.SetFloat("_Curve", r.skyCurve);
                 sky.SetColor("_SunGlow", r.sunGlow);
                 sky.SetFloat("_SunGlowPower", r.sunGlowPower);
+                sky.SetColor("_AntiGlow", r.antiGlow);
+                sky.SetFloat("_HighCloud", r.highCloud);
                 RenderSettings.skybox = sky;
+            }
+            if (skyReflection != null)
+            {
+                skyReflection.mode = ReflectionProbeMode.Realtime;
+                skyReflection.refreshMode = ReflectionProbeRefreshMode.ViaScripting;
+                skyReflection.timeSlicingMode = ReflectionProbeTimeSlicingMode.NoTimeSlicing;
+                skyReflection.cullingMask = 0; // the sky alone
+                skyReflection.clearFlags = ReflectionProbeClearFlags.Skybox;
+                skyReflection.RenderProbe();
             }
 
             RenderSettings.fog = false; // the air is our own (OS_Atmosphere), the same for every look
@@ -187,6 +207,9 @@ namespace Overstory.Scenes
             Shader.SetGlobalVector("_OS_SkyAmb", Linear(r.ambientSky) * r.ambientIntensity);
             Shader.SetGlobalVector("_OS_HorizonAmb", Linear(r.ambientEquator) * r.ambientIntensity);
             Shader.SetGlobalVector("_OS_GroundAmb", Linear(r.ambientGround) * r.ambientIntensity);
+            var side = Linear(r.ambientSunSide) * r.ambientIntensity;
+            Shader.SetGlobalVector("_OS_SunSideAmb", new Vector4(side.x, side.y, side.z, r.ambientSunSide.a > 0f ? 1f : 0f));
+            Shader.SetGlobalVector("_OS_TownBounce", Linear(r.townBounce) * r.ambientIntensity);
             var skyLight = Linear(r.ambientSky);
             Shader.SetGlobalVector("_OS_Rim", new Vector4(skyLight.x, skyLight.y, skyLight.z, rim));
             // the air far off; a rig without a far distance keeps one colour of air
@@ -204,6 +227,9 @@ namespace Overstory.Scenes
             Shader.SetGlobalVector("_OS_CloudDrift", Vector4.zero); // the wind will move it, from the clock
             Shader.SetGlobalVector("_OS_FogColor", Linear(r.fogColour));
             Shader.SetGlobalVector("_OS_FogParams", new Vector4(r.fogDensity, r.fogHeightFalloff, r.fogBaseHeight, r.fogMaxOpacity));
+            var hz = Linear(r.hazeColour);
+            Shader.SetGlobalVector("_OS_HazeColor", new Vector4(hz.x, hz.y, hz.z, 1f));
+            Shader.SetGlobalVector("_OS_Haze", new Vector4(r.hazeDensity, r.hazeHeight, 0f, 0f));
             var fs = Linear(r.fogSunColour);
             Shader.SetGlobalVector("_OS_FogSun", new Vector4(fs.x, fs.y, fs.z, r.fogSunPower));
 
