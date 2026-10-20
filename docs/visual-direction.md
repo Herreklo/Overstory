@@ -23,6 +23,16 @@ The direction is painterly realism. Simon Stålenhag leads: real proportions, mu
 
 Mostly painted timber, with brick, stone and concrete where era, purpose, wealth or rules put them: brick canneries and a masonry belt from fire rules, stone banks and churches, functionalist render, oil-era concrete and glass. Landmarks tend to be the masonry ones. Each material ages in its own way.
 
+## Areas
+
+The town is made of areas, each with its own grain: what stands there, how close, on what ground.
+- The waterfront: flat, made ground at the water. Quays, warehouses, workshops and shops with open, lit ground floors; the work's own clutter only where work happens. The densest and busiest area, and the one whose uses turn over fastest.
+- The hill: houses on rock, in rows that follow the contours, with lanes, steps, yards, walls and trees between them, looser as it climbs.
+- The crown: the high rock, where landmarks stand behind their walls (a church, a merchant's house), seen against the land. It makes the town's silhouette.
+- The land beyond: heath, forest, mountains and the fjord, in layers of air.
+- Roads wind round the rock rather than cutting through it. Areas meet at seams (a lane leaving the quay, a road climbing round a cliff), and the seams are where the town reads best.
+- Areas change at their own speed as the town grows from village to city: the waterfront's uses turn over, the hill fills in, new areas grow at the edges. The town is a working town, not a postcard fishing village.
+
 ## Ground and nature
 
 - The town stands on rock and climbs. Height difference is everywhere: lanes in flights of steps, houses on plinths that take up the slope, walls holding yards, bedrock breaking through where it was too hard to cut. Level ground is made (quays, yards, terraces) and shows it.
