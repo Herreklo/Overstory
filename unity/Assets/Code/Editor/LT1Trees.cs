@@ -100,6 +100,13 @@ namespace Overstory.EditorTools
                     m.SetFloat("_SkyThrough", 0.65f);
                     m.SetFloat("_UnderFloor", 0.5f);
                     m.SetFloat("_MassSplit", -0.05f);
+                    // each lobe's lit side in two planes: its cap (its own facing above CapSplit) and its sides a step
+                    // lower; each card turns at its own seeded height (set here: a material keeps the values it was
+                    // saved with, never the shader's later defaults)
+                    m.SetFloat("_CapSplit", 0.4f);
+                    m.SetFloat("_SideValue", 0.45f);
+                    m.SetFloat("_SplitJitter", 0.3f);
+                    m.SetFloat("_SprayLight", 0.5f);
                     m.SetFloat("_SunPale", 0.45f);
                     m.SetFloat("_Scatter", 0.12f);     // a little: the shade side stays the sky's, cool
                     m.SetFloat("_Cutoff", 0.5f);
@@ -112,7 +119,9 @@ namespace Overstory.EditorTools
                 // bark comes with age on the limbs and the trunk
                 // a birch's twigs are dark purple-brown; its bark turns white as the wood thickens past about a
                 // centimetre, white by two (a limb of four or five centimetres is white, never a dark rod)
-                m.SetVector("_TwigRadius", new Vector4(0.007f, 0.02f, 0f, 0f));
+                // (white by 1.2 cm: inner shoots a centimetre or two thick drawn twig-dark read as straight dark rods
+                // through the crown from 12 m)
+                m.SetVector("_TwigRadius", new Vector4(0.004f, 0.012f, 0f, 0f));
                 // the bark's pigment: the downy's a grey white (weathered, lichen-dimmed), the silver's a clean white
                 bool silver = species == "silver_birch";
                 // white must stay white: the silver in drizzle the brightest thing under the sky, the downy a step
@@ -137,7 +146,7 @@ namespace Overstory.EditorTools
                 // lichen: the downy birch on this damp coast carries it in grey-green patches; the silver little
                 m.SetColor("_Lichen", silver ? new Color(0.62f, 0.64f, 0.56f, 0.15f) : new Color(0.60f, 0.63f, 0.52f, 0.7f));
                 // the downy's broad grey-brown mottle (reference 04); the silver's white is clean
-                m.SetColor("_Mottle", new Color(0.52f, 0.49f, 0.45f, silver ? 0f : 0.85f));
+                m.SetColor("_Mottle", new Color(0.56f, 0.53f, 0.49f, silver ? 0f : 0.7f));
                 // the marks' pigment a dark grey-brown, never black: lit as the bark, they take the shade's colour
                 m.SetColor("_MarkDark", new Color(0.24f, 0.22f, 0.21f));
                 m.SetColor("_MarkLight", new Color(0.42f, 0.40f, 0.38f));

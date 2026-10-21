@@ -224,7 +224,9 @@ Shader "Overstory/Tree"
         // a spray's own light (its lit upper leaves over a mid value) a share of the atlas's: at the raised views it
         // speckled every lobe alike, louder than the lobes' own light (the lobe, not the leaf, carries the value)
         c *= lerp(1.0h, 0.25h + 0.75h * m.g, _SprayLight);
-        s.albedo = m.r > 0.03h ? c : _Twig.rgb * (0.6h + 0.4h * m.g);
+        // a twig painted among a card's leaves takes their colour a step darker while they hang (drawn twig-dark it
+        // hatched every lobe with hair from the city camera); bare, the twigs are the twigs' own colour (below)
+        s.albedo = m.r > 0.03h ? c : c * 0.62h;
         // where the leaves are gone and the bare twigs show, the twigs' colour
         half leafHere = OS_LeafCover(m, extra);
         if (leafHere < _Cutoff)
@@ -247,9 +249,14 @@ Shader "Overstory/Tree"
             // silver's white gone dull
             // (broader round the stem than along it; its edge frayed by the outer bark's horizontal grain, never a
             // smooth stain)
-            half mn = (half)(OS_Noise(float2(lu * 3.4 + 7.3, positionWS.y * 4.5)) * 0.6 + OS_Noise(float2(lu * 8.0 + 2.9, positionWS.y * 11.0)) * 0.25
-                          + OS_Noise(float2(lu * 9.0 + 5.1, positionWS.y * 40.0)) * 0.15);
-            half mottle = smoothstep(0.52h, 0.58h, mn) * saturate((half)((r - 0.03) / 0.06));
+            // (many patches a hand or two across, ragged: a few broad ones read as decals with ruled edges)
+            // (the octaves turned against each other: on one grid a threshold cuts the noise's squares)
+            float2 mq = float2(lu, positionWS.y);
+            float2 mr = float2(mq.x * 0.8 - mq.y * 0.6, mq.x * 0.6 + mq.y * 0.8);
+            float2 ms = float2(mq.x * 0.5 + mq.y * 0.87, mq.y * 0.5 - mq.x * 0.87);
+            half mn = (half)(OS_Noise(mq * float2(6.5, 7.5) + 7.3) * 0.5 + OS_Noise(mr * float2(15.0, 17.0) + 2.9) * 0.3
+                          + OS_Noise(ms * float2(37.0, 41.0) + 5.1) * 0.2);
+            half mottle = smoothstep(0.5h, 0.64h, mn) * saturate((half)((r - 0.03) / 0.06));
             bark = lerp(bark, _Mottle.rgb, mottle * _Mottle.a);
             bark = lerp(bark, _Lichen.rgb, lichen * _Lichen.a);
         }
