@@ -52,7 +52,7 @@ At today's rate a thousand stairs would take about 19 hours to generate and 16 G
    4. Add distance levels by measured error, cut the flight into chunks of a few metres, and cast shadows from proxies.
    5. Measure triangles and frame time at every judging view, before and after.
    6. *Friday:* a strict review (Fable), and the proof sheet for Øystein: the gully before and after at eye level, the street stop, 12 m and the city camera, with the numbers. This is the new foundations' first milestone.
-4. *If the week runs short,* the cut comes from the end: the levels and proxies move to the next week. The architecture, the tools and the scale test do not move.
+4. *If the week runs short,* the cut comes from the end: the levels and proxies move to the next week. The architecture, the tools and the scale test do not move. The studies' own estimates put the full port of the gully at 16 to 22 Opus-days (`docs/research/inputs/2-generation-performance.md`), so the week should expect to reach the first stages (the stages split, the hashes unchanged, history as a function) rather than the whole port. Friday's milestone is whatever is honestly complete, reviewed.
 
 **What the architecture decides** (`docs/building-blocks.md`; decided with reasons, nothing built in it):
 - *The generator framework:*
@@ -86,6 +86,8 @@ At today's rate a thousand stairs would take about 19 hours to generate and 16 G
   - where generation runs and how fast, per building and per kilometre of street: cached, deterministic, on demand near the camera;
   - what a new city's pack must bring, and what carries over;
   - memory, disk and streaming by chunk.
+- *Open to every game:* Overstory is a world for many games (`docs/living-world.md`, the three dials). The architecture checks itself against three example games and must lock none of them out: a manager (a football club or a band, with a world around it), an exploration game, and a family across generations. These are examples, not a choice of game.
+- *Where each stage runs* (raised by the generation digest): play changes the record, and the 3D world must show it. But a built game can't run Blender, import FBX at runtime or ship GPL code (`bpypolyskel`). So which stages run offline and which run inside the game is decided from `docs/research/where-generation-runs.md` and the scale test's numbers.
 - *What changes in existing work:* the stairs and walls, the birches, and how the houses start (House A built by the generator, then twelve more from the same parts).
 
 **Budget:**
