@@ -230,10 +230,12 @@ def lay(spec, seed=1):
             joint = (kind == 0) & (piece["edge"] < 0.05) & (P[:, 1] > 0.04)
             damp = np.where(back, np.clip((along - 0.8) / 0.15, 0.3, 1.0), 0.0) + np.where(joint & ~back, 1.0, 0.0) \
                 + np.where(kind == 4, 1.0, 0.0) + np.where(kind == 5, 0.3, 0.0) + np.where(kind == 6, 1.0, 0.0)
+            # (each step its own: how wet its bed is, and luck; the same dash on every step read as a ladder from above)
+            damp = damp * step_wet
             if not foot_on:
-                damp = damp + 0.7 * np.clip(1.0 - (z0 + P[:, 2] - zfoot) / 0.04, 0.0, 1.0)
+                damp = damp + 0.7 * np.clip(1.0 - (z0 + P[:, 2] - zfoot) / 0.04, 0.0, 1.0) * step_wet
             else:
-                damp = damp + np.where(kind == 2, 0.7 * np.clip(1.0 - (z0 + P[:, 2] - zfoot) / 0.04, 0.0, 1.0), 0.0)
+                damp = damp + np.where(kind == 2, 0.7 * np.clip(1.0 - (z0 + P[:, 2] - zfoot) / 0.04, 0.0, 1.0) * step_wet, 0.0)
             moss_y = np.where(back | joint | (kind == 4) | (kind == 6) | (not foot_on), min(bare_y, bed_y), bare_y)
             # (feet land on a tread's front half: its back corner is untrodden even in the middle of a busy flight)
             # (moss thins where people walk even at a tread's back and a step's foot: brooms, boots and grit; the green
@@ -264,7 +266,7 @@ def lay(spec, seed=1):
             # less towards its top; a bed none
             if foot_on:
                 sky = np.where((kind == 0) | cement, 0.95 - 0.4 * np.clip((along - 0.75) / 0.25, 0.0, 1.0),
-                               np.where(kind == 1, 0.85, np.where(kind == 2, 0.7, 0.35)))
+                               np.where(kind == 1, 0.75, np.where(kind == 2, 0.7, 0.35)))
             else:
                 hh = np.clip((z0 + P[:, 2] - zfoot) / max(h, 1e-3), 0.0, 1.0)
                 sky = np.where(kind == 3, 0.35, np.where(kind == 6, 0.6, 0.8 - 0.2 * hh))
@@ -324,6 +326,7 @@ def lay(spec, seed=1):
             rng = random.Random(f"{spec['lane']}-{seed}-{fi}-{i}")
             st = life[i]
             bed_y = YEAR - st["reset"]
+            step_wet = float(np.clip(0.35 + 0.75 * wet[i] * random.Random(f"{spec['lane']}-{fi}-{i}-moss").uniform(0.3, 1.3), 0.15, 1.2))
             cemented = bool(st["mortar"]) and st["mortar"][0] == "cement"
             off = st["settled"] + 0.003
             z_top = a[2] + (i + 1) * h + err[i + 1]
@@ -452,13 +455,12 @@ def lay(spec, seed=1):
                     point(f"{spec['lane']}-{fi}-{i}-{x:.3f}", xj, s_a, s_b - s_a, 2 * gap + 0.02, True, zl,
                           YEAR - filled[1])
                 else:
-                    fill(xj, gap + 0.008, s_a, s_b, z_top - 0.016, bed_y)
+                    fill(xj, gap + 0.004, s_a, s_b, z_top - 0.004, bed_y)
                 if how == "block":
-                    # (a crack holds dirt and moss a hair in from the face, as a joint does, so it never opens on the void)
-                    cast = YEAR - filled[1] if filled and filled[0] == "cement" else None
-                    fill_front(xj, gap + (0.003 if cast is not None else (0.0015 if crack else 0.004)),
-                               i * g + (0.004 if cast is not None else (0.004 if crack else 0.01)),
-                               zfoot, z_top - 0.012, bed_y, cast)
+                    # (a joint and a crack hold dirt and moss at the face, so neither opens on the void; the crew's
+                    # pointing shows on the tread, its front joint filled as the others: a pale upright strip read as
+                    # a plank)
+                    fill_front(xj, gap + (0.0015 if crack else 0.003), i * g + 0.002, zfoot, z_top - 0.006, bed_y, None)
             prev_tops = tops
         # the life as the flight's record: each step's last bed and joints, and its slabs' repairs
         record = []

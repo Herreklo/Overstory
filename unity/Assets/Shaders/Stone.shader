@@ -17,7 +17,7 @@ Shader "Overstory/Stone"
         _Fresh ("The rock freshly split, unweathered", Color) = (0.25, 0.27, 0.30, 1)
         _Edge ("Its split faces: the laminae, a little warmer", Color) = (0.38, 0.37, 0.36, 1)
         _GrainMap ("The rock's painted grain (r a bedding plane's lightness, g its relief, b a split face's lightness, a its relief; a metre a tile)", 2D) = "grey" {}
-        _Grain ("Grain: x the bedding plane's contrast, y the split face's, z per-slab variation", Vector) = (1.0, 1.0, 0.10, 0)
+        _Grain ("Grain: x the bedding plane's contrast, y the split face's, z per-piece value, w per-piece hue", Vector) = (1.0, 1.0, 0.10, 0)
         _Weather ("Years for the rock to weather to its pigment", Float) = 60
         _Polish ("Polish: x how much darker the worn skin, y its smoothness", Vector) = (0.18, 0.42, 0, 0)
         _Relief ("Relief: x the grain's depth (m), y lichen's crust (m)", Vector) = (0.0015, 0.0012, 0, 0)
@@ -92,6 +92,12 @@ Shader "Overstory/Stone"
         rock = lerp(_Fresh.rgb, rock, saturate(years / _Weather));
         rock *= saturate(1.0h + tone * 2.0h + ((half)var - 0.5h) * (half)_Grain.z * 2.0h);
         rock = lerp(rock, rock * half3(1.18h, 0.98h, 0.80h), rust * 0.6h);
+        // each piece its own hue where the stone is mixed (rubble: rusty, greenish, blue-grey; a quarry's chosen slabs
+        // stay one rock, w = 0)
+        half hp = frac((half)var * 7.13h);
+        half3 tint = hp < 0.25h ? half3(1.12h, 0.99h, 0.86h) : (hp < 0.5h ? half3(0.96h, 1.02h, 0.95h)
+                   : (hp < 0.75h ? half3(0.95h, 0.98h, 1.05h) : half3(1.0h, 1.0h, 1.0h)));
+        rock *= lerp(half3(1.0h, 1.0h, 1.0h), tint, (half)_Grain.w);
         // polish: the weathered skin worn off where feet go, the rock beneath darker and smoother
         rock *= 1.0h - (half)_Polish.x * hist.r;
         half smooth = lerp(0.14h, (half)_Polish.y, hist.r);

@@ -44,7 +44,8 @@ half3 OS_LichenAt(float2 q, half years, half seed, float footprint)
 {
     // the crusts: a warped field over the plane, its quantile set so the covered share follows the years (its spread
     // as measured: mean 0.5, deviation about 0.14)
-    float k = 1.0 / 0.07;
+    // (colonies a few centimetres across, merging into fields: at 0.7 mm a year a century's rosette is about 8 cm)
+    float k = 1.0 / 0.05;
     float2 w = float2(OS_Noise(q * k * 0.6 + seed * 5.1), OS_Noise(q * k * 0.6 + 9.7 + seed * 2.3)) - 0.5;
     float2 qq = q * k + w * 1.8;
     half field = (half)(OS_Noise(qq) * 0.55 + OS_Noise(qq * 2.3 + 4.4) * 0.3 + OS_Noise(qq * 5.1 + 1.3) * 0.15);
@@ -63,7 +64,8 @@ half3 OS_LichenAt(float2 q, half years, half seed, float footprint)
     half fr = field + lobe * 0.06h + crumb * 0.035h;
     half coverNear = smoothstep(th - 0.004h, th + 0.004h, fr);
     half crowd = smoothstep(0.55h, 0.72h, (half)OS_Noise(q * 6.0 + seed * 1.7));
-    half rim = coverNear * (1.0h - smoothstep(th + 0.004h, th + 0.018h, fr)) * crowd * 0.6h;
+    // (a faint darker rim on every lobed edge, stronger where colonies crowd and meet: the board, 06)
+    half rim = coverNear * (1.0h - smoothstep(th + 0.004h, th + 0.018h, fr)) * lerp(0.25h, 0.6h, crowd);
     const float cell = 0.03;
     float2 p2 = q / cell;
     float2 h2 = OS_GrowthHash2(floor(p2) + seed * 11.3);
@@ -76,9 +78,18 @@ half3 OS_LichenAt(float2 q, half years, half seed, float footprint)
     half f = field + lobe * 0.04h;
     half cover = lerp(smoothstep(th - 0.05h, th + 0.04h, f), coverNear, near);
     rim *= near;
+    // further still (12 m and up), the same lichen as a few large soft fields where colonies are dense, at about half
+    // the contrast: a low-pass of its own field, never its spots (hundreds of small pale spots read as speckle)
+    half big = (half)OS_Noise(q * k * 0.28 + seed * 3.9);
+    half thB = 0.5h + 0.18h * (half)(log(pq / (1.0h - pq)) / 1.702);
+    half coverBig = smoothstep(thB - 0.1h, thB + 0.1h, big) * 0.65h;
+    half mid = saturate((half)((footprint - 0.005) / 0.006));
+    cover = lerp(cover, coverBig, mid);
     half age = saturate((f - th) / 0.1h) * saturate(years / 100.0h);
-    half far = saturate((half)((footprint - 0.002) / 0.008));
-    cover = lerp(cover, share, far);
+    // (only once a colony is smaller than a pixel: from the street stop and 12 m the fields still show as soft pale
+    // shapes where they are; faded to a mean earlier, the old run's lichen vanished and the history read inverted)
+    half far = saturate((half)((footprint - 0.025) / 0.03));
+    cover = lerp(cover, share * 0.65h, far);
     return half3(cover, age * (1.0h - far), rim * (1.0h - far));
 }
 
@@ -109,7 +120,7 @@ OSGrowth OS_GrowthLayer(half3 albedo, half smoothness, float2 q, half lichenYear
         half areole = (half)OS_Noise(q * 700.0 + seed * 3.3);
         half mot = (half)OS_Noise(q * 28.0 + seed * 2.1);
         half dots = smoothstep(0.87h, 0.9h, (half)OS_Noise(q * 140.0 + seed * 5.3));
-        half3 crust = lerp(_OS_Lichen.rgb, _OS_LichenOld.rgb, saturate(li.y + (mot - 0.5h) * 0.8h)) * (0.9h + 0.16h * areole);
+        half3 crust = lerp(_OS_Lichen.rgb, _OS_LichenOld.rgb, saturate(li.y + (mot - 0.5h) * 0.8h)) * (0.96h + 0.06h * areole);
         crust *= 1.0h - 0.3h * dots;
         lich = lerp(lich, crust, near);
     }

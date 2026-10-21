@@ -92,6 +92,32 @@ namespace Overstory.EditorTools
             return m;
         }
 
+        /// <summary>
+        /// The cheek walls' rubble: the rock that came out of cutting the gully, laid dry, not the stair's chosen
+        /// slabs (an element shares the town's systems, never another's look): warmer, every stone its own value and
+        /// hue (some rusty, some greenish, some blue-grey), rougher, its upright faces weathered sooner.
+        /// </summary>
+        public static Material RubbleMaterial(bool grey)
+        {
+            string path = $"{Art}/M_Stone_rubble.mat";
+            var m = AssetDatabase.LoadAssetAtPath<Material>(path);
+            if (m == null)
+            {
+                m = new Material(Material(grey));
+                AssetDatabase.CreateAsset(m, path);
+            }
+            m.CopyPropertiesFromMaterial(Material(grey));
+            m.SetColor("_Stone", new Color(0.54f, 0.52f, 0.49f));
+            m.SetColor("_Fresh", new Color(0.44f, 0.44f, 0.44f));
+            m.SetColor("_Edge", new Color(0.56f, 0.53f, 0.49f));
+            m.SetVector("_Grain", new Vector4(0.45f, 0.35f, 0.42f, 0.65f));    // (w: each stone's own hue)
+            m.SetFloat("_Weather", 70f);
+            m.SetVector("_Polish", new Vector4(0f, 0.3f, 0f, 0f));
+            m.SetFloat("_Porosity", 0.75f);
+            EditorUtility.SetDirty(m);
+            return m;
+        }
+
         /// <summary>The stair stood where its mesh was laid from (its street origin), the clay steps hidden.</summary>
         static (GameObject go, Vector3 origin) Place(string which, Material mat)
         {
@@ -118,8 +144,72 @@ namespace Overstory.EditorTools
                 if (r.gameObject.name == "steps" && !Flag("-clay-steps"))
                     r.enabled = false;
             if (!Flag("-clay-steps"))
+            {
                 SinkGround(info);
+                // the cheek walls (blender/generators/wall.py), where they are built, in place of the clay's
+                string wfbx = $"{Art}/stone_{which}_cheeks.fbx";
+                var wmodel = AssetDatabase.LoadAssetAtPath<GameObject>(wfbx);
+                if (wmodel != null)
+                {
+                    var wgo = (GameObject)PrefabUtility.InstantiatePrefab(wmodel);
+                    wgo.transform.SetPositionAndRotation(StreetSpace.ToUnity(origin), Quaternion.identity);
+                    var rubble = RubbleMaterial(mat.GetFloat("_Grey") > 0.5f);
+                    foreach (var r in wgo.GetComponentsInChildren<MeshRenderer>())
+                    {
+                        r.sharedMaterial = rubble;
+                        r.shadowCastingMode = ShadowCastingMode.On;
+                    }
+                    foreach (var mf in wgo.GetComponentsInChildren<MeshFilter>())
+                        mf.transform.SetLocalPositionAndRotation(Vector3.zero, Quaternion.identity);
+                    CutClayWalls(info);
+
+                }
+            }
             return (go, origin);
+        }
+
+        /// <summary>The clay's walls along the flights, cut away where the stone walls stand (in memory, for the frames).</summary>
+        static void CutClayWalls(Info info)
+        {
+            if (info.flights == null)
+                return;
+            foreach (var mf in Object.FindObjectsByType<MeshFilter>(FindObjectsSortMode.None))
+            {
+                if (mf.gameObject.name != "walls")
+                    continue;
+                var mesh = Object.Instantiate(mf.sharedMesh);
+                var v = mesh.vertices;
+                var l2w = mf.transform.localToWorldMatrix;
+                for (int sub = 0; sub < mesh.subMeshCount; sub++)
+                {
+                    var tris = mesh.GetTriangles(sub);
+                    var keep = new System.Collections.Generic.List<int>(tris.Length);
+                    for (int t = 0; t < tris.Length; t += 3)
+                    {
+                        var c = (l2w.MultiplyPoint3x4(v[tris[t]]) + l2w.MultiplyPoint3x4(v[tris[t + 1]]) + l2w.MultiplyPoint3x4(v[tris[t + 2]])) / 3f;
+                        bool cut = false;
+                        foreach (var f in info.flights)
+                        {
+                            var a = new Vector2(f.a[0], f.a[1]);
+                            var d = new Vector2(f.b[0] - f.a[0], f.b[1] - f.a[1]);
+                            float run = d.magnitude;
+                            var up = d / run;
+                            var p = new Vector2(c.x, c.z) - a;
+                            float s = Vector2.Dot(p, up), tt = Mathf.Abs(up.y * p.x - up.x * p.y);
+                            if (s > -0.5f && s < run + 0.5f && tt < f.width / 2 + 1.4f)
+                                cut = true;
+                        }
+                        if (!cut)
+                        {
+                            keep.Add(tris[t]);
+                            keep.Add(tris[t + 1]);
+                            keep.Add(tris[t + 2]);
+                        }
+                    }
+                    mesh.SetTriangles(keep, sub);
+                }
+                mf.sharedMesh = mesh;
+            }
         }
 
         /// <summary>
