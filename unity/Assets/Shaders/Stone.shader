@@ -133,7 +133,7 @@ Shader "Overstory/Stone"
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
             // a third of the screen's occlusion (its reach is set for walls: in a flight of 17 cm rises it darkened every
             // riser and every tread's back to near black); the stone's own shade under a nosing is baked
-            #define OS_OCCLUSION 0.35h
+            #define OS_OCCLUSION 0.2h
             #include "StreetLooks.hlsl"
 
             struct Attributes
@@ -206,7 +206,8 @@ Shader "Overstory/Stone"
                 half wet = (half)_OS_Wetness * saturate((up + 0.1h) / 0.6h);
                 // moss and lichen soak it up: darker a little, never glossy
                 s.albedo *= lerp(1.0h, 1.0h - 0.5h * lerp(_Porosity, 0.3h, so.growth), wet);
-                s.smoothness = lerp(s.smoothness, max(s.smoothness, 0.5h), wet * (1.0h - so.growth));
+                // wet slate glosses where feet polished it; its rough skin elsewhere only a little
+                s.smoothness = lerp(s.smoothness, max(s.smoothness, lerp(0.3h, 0.72h, input.history.r)), wet * (1.0h - so.growth));
                 half pool = smoothstep(0.5h, 0.85h, input.history.a) * saturate((half)_OS_Wetness * 1.5h - 0.4h) * step(0.8h, up);
                 s.albedo = lerp(s.albedo, s.albedo * 0.7h, pool);
                 s.smoothness = lerp(s.smoothness, 0.96h, pool);

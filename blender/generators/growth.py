@@ -28,10 +28,10 @@ def lichen_years(years_bare, traffic, exposed=None):
 
 def moss(damp, traffic, years_bare, sheltered=None):
     """Moss: where the surface stays damp (a joint, an inside corner, a wall's foot, a north face), is not trodden,
-    and has had the years to fill in (about forty to be full). sheltered (optional, 0 to 1) adds where the town or a
+    and has had the years to fill in (about sixty to be full). sheltered (optional, 0 to 1) adds where the town or a
     tree shades it (the shader also reads the sky map, so this is for shelter the generator knows of itself).
     0 to 1."""
     m = np.clip(damp, 0.0, 1.0)
     if sheltered is not None:
         m = m * (0.7 + 0.5 * np.clip(sheltered, 0.0, 1.0))
-    return np.clip(m * (1.0 - 0.85 * np.clip(traffic, 0.0, 1.0)) * np.minimum(np.asarray(years_bare, float) / 40.0, 1.0), 0.0, 1.0)
+    return np.clip(m * (1.0 - 0.85 * np.clip(traffic, 0.0, 1.0)) * np.minimum(np.asarray(years_bare, float) / 60.0, 1.0), 0.0, 1.0)

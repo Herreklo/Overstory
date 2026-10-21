@@ -11,18 +11,20 @@ namespace Overstory.World
     /// </summary>
     public static class GrowthPack
     {
-        public static Color Lichen = new Color(0.74f, 0.74f, 0.68f);
-        public static Color LichenOld = new Color(0.56f, 0.58f, 0.51f);
+        public static Color Lichen = new Color(0.64f, 0.65f, 0.60f);       // a pale grey crust, never white
+        public static Color LichenOld = new Color(0.55f, 0.57f, 0.51f);
+        public static Color LichenRim = new Color(0.30f, 0.30f, 0.29f);    // map lichen's dark prothallus, seen as a line
         /// <summary>x growth (m a year), y the size of a patch (m), z how much of a quiet surface it takes.</summary>
         public static Vector4 LichenRate = new Vector4(0.0007f, 0.11f, 0.85f, 0f);
-        public static Color Moss = new Color(0.44f, 0.54f, 0.16f);     // wet moss on this coast: a bright yellow-green
-        public static Color MossOld = new Color(0.40f, 0.40f, 0.18f);
+        public static Color Moss = new Color(0.36f, 0.45f, 0.14f);     // wet moss on this coast: a mid green
+        public static Color MossOld = new Color(0.31f, 0.33f, 0.15f);
 
         /// <summary>Set the pack's growth for every shader in the town.</summary>
         public static void Apply()
         {
             Shader.SetGlobalColor("_OS_Lichen", Lichen.linear);
             Shader.SetGlobalColor("_OS_LichenOld", LichenOld.linear);
+            Shader.SetGlobalColor("_OS_LichenRim", LichenRim.linear);
             Shader.SetGlobalVector("_OS_LichenRate", LichenRate);
             Shader.SetGlobalColor("_OS_Moss", Moss.linear);
             Shader.SetGlobalColor("_OS_MossOld", MossOld.linear);

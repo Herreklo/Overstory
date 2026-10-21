@@ -31,12 +31,13 @@ def _noise1(rng, n, freqs):
     return out
 
 
-def _noise2(rng, x, y, scale, octaves=3):
-    """Smooth value-like noise in [-1, 1] from summed rotated sines (no grid, so no squares)."""
+def _noise2(rng, x, y, scale, octaves=3, along=None):
+    """Smooth value-like noise in [-1, 1] from summed rotated sines (no grid, so no squares); along (radians) keeps
+    every octave's stripes near that heading, so its features run that way (a cleavage's ridges)."""
     out = np.zeros_like(x)
     amp, tot = 1.0, 0.0
     for o in range(octaves):
-        a = rng.random() * math.pi
+        a = rng.random() * math.pi if along is None else along + rng.uniform(-0.15, 0.15)
         k = (2 ** o) / scale
         u = x * math.cos(a) + y * math.sin(a)
         v = -x * math.sin(a) + y * math.cos(a)
@@ -64,9 +65,14 @@ def slab(seed, width, depth, thick, front_round=0.012, side_round=0.006, layers=
     # the outline: each edge wanders inward by its own amount along it (never outward, so the slab keeps its size
     # as the generator fits it), its corners knocked
     def edge_offsets(n, length):
-        o = _noise1(rng, n, [(rng.uniform(0.6, 1.4), 1.0), (rng.uniform(2.5, 4.0), 0.45), (rng.uniform(7, 11), 0.18)])
-        o = (o - o.min()) / max(np.ptp(o), 1e-9) * edge_jag
+        # a split edge breaks in straight runs with angular turns (a smooth wobble read as a lobed tongue): a
+        # piecewise-linear line through a few random breaks, then a little fine roughness
         t = np.linspace(0, 1, n)
+        k = max(2, int(round(length / 0.25)) + rng.randint(0, 2))
+        bt = np.sort(np.concatenate([[0.0, 1.0], [rng.random() for _ in range(k - 1)]]))
+        bv = np.array([rng.random() for _ in bt])
+        o = np.interp(t, bt, bv) + 0.15 * _noise1(rng, n, [(rng.uniform(9, 14), 1.0)])
+        o = (o - o.min()) / max(np.ptp(o), 1e-9) * edge_jag
         for end in (0.0, 1.0):
             c = chip * rng.uniform(0.3, 1.2)
             w = rng.uniform(0.05, 0.12) / max(length, 0.1)
@@ -92,7 +98,7 @@ def slab(seed, width, depth, thick, front_round=0.012, side_round=0.006, layers=
     Y = front + (back - front) * T
     # the top: a bedding plane, warped, falling a little to the front to shed water, a layer lower where it flaked
     Z = thick + warp * _noise2(rng, X, Y, 0.9) - 0.004 * (1.0 - T)
-    fl = _noise2(rng, X, Y, 0.35, octaves=4)
+    fl = _noise2(rng, X, Y, 0.35, octaves=4, along=0.0)
     step_ = rng.uniform(0.004, 0.009)
     if flake > 0:
         th = np.quantile(fl, 1.0 - flake)

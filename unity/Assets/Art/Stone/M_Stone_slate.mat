@@ -31,8 +31,8 @@ Material:
     m_Floats:
     - _Grey: 1
     - _History: 0
-    - _Porosity: 0.5
-    - _Weather: 60
+    - _Porosity: 0.85
+    - _Weather: 100
     m_Colors:
     - _Edge: {r: 0.58, g: 0.565, b: 0.55, a: 1}
     - _Fresh: {r: 0.38, g: 0.4, b: 0.43, a: 1}

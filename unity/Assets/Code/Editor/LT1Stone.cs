@@ -72,10 +72,10 @@ namespace Overstory.EditorTools
             m.SetColor("_Edge", new Color(0.58f, 0.565f, 0.55f));
             m.SetTexture("_GrainMap", AssetDatabase.LoadAssetAtPath<Texture2D>($"{Art}/slate_grain.png"));
             m.SetVector("_Grain", new Vector4(1.0f, 1.0f, 0.14f, 0f));
-            m.SetFloat("_Weather", 60f);
+            m.SetFloat("_Weather", 100f);
             m.SetVector("_Polish", new Vector4(0.18f, 0.42f, 0f, 0f));
             m.SetVector("_Relief", new Vector4(0.0016f, 0.0012f, 0f, 0f));
-            m.SetFloat("_Porosity", 0.5f);
+            m.SetFloat("_Porosity", 0.85f);     // wet, the slate goes near black (the board, 02)
             m.SetFloat("_Grey", grey ? 1f : 0f);
             m.SetFloat("_History", Flag("-history") ? 1f : Flag("-albedo") ? 2f : 0f);
             m.enableInstancing = true;

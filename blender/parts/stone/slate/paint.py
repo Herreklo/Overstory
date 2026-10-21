@@ -3,11 +3,12 @@
 and turn, so no two stones repeat.
 
     slate_grain.png (2048 px, about half a millimetre a pixel):
-    R  a bedding plane's lightness about 0.5: broad blotches, a mottle, faint streaks along the bedding, the rock's
-       flecks (pale mica, dark grains), a few quartz veins, pits
-    G  its relief (0.5 the plane): the flecks and pits sunk or raised, the streaks as faint ridges
-    B  a split face's lightness: its laminae, thin layers each its own tone, wavering, with the same flecks
-    A  the split face's relief: each layer standing a little in or out
+    R  a bedding plane's lightness about 0.5: a smooth cleavage face in two or three soft values, a few long ridges
+       along the bedding, the odd pale quartz vein
+    G  its relief (0.5 the plane): the ridges raised, a soft mottle, the slightest tooth
+    B  a split face's lightness: the rock broken across its bedding in plates a centimetre or three thick, each its
+       own tone, a parting where one stands proud of the next
+    A  the split face's relief: each plate standing in or out, the break rough across
 
 The stone's pigment, its weathering and everything that reads as history are the shader's and the facts', never
 painted here. Numpy only; deterministic from the seed.
@@ -69,43 +70,41 @@ def soft_lines(rng, n, width_px, length=(0.15, 0.6), curve=0.08):
 
 def paint(path):
     rng = np.random.default_rng(SEED)
-    # -- a bedding plane --
-    broad = band(rng, 1.0, 4.0, 0.6)                     # blotches a quarter to a metre across
-    mottle = band(rng, 6.0, 30.0, 0.6)                   # a mottle of a few centimetres
-    streak = band(rng, 15.0, 120.0, 0.4, aniso=(1.0, 0.12))    # faint streaks along the bedding (x)
-    grain = band(rng, 150.0, 700.0, 0.2)                 # the rock's own grain, a millimetre or two
-    L = 0.5 + 0.055 * broad + 0.06 * mottle + 0.035 * streak + 0.05 * grain
-    # flecks: pale mica and dark grains, a few in a hundred, a pixel or two across
-    fl = band(rng, 400.0, 1000.0, 0.0)
-    pale = np.clip((fl - 2.2) / 0.6, 0, 1)
-    dark = np.clip((-fl - 2.3) / 0.6, 0, 1)
-    L += 0.16 * pale - 0.18 * dark
-    # a few quartz veins, pale and thin
-    veins = soft_lines(np.random.default_rng(SEED + 1), 5, 3.0)
-    L += 0.2 * veins
-    # pits: small dark hollows where a grain fell out
-    pit_f = band(rng, 120.0, 300.0, 0.0)
-    pits = np.clip((pit_f - 2.6) / 0.4, 0, 1)
-    L -= 0.15 * pits
-    R = 0.5 + 0.18 * grain + 0.12 * mottle + 0.12 * streak + 0.1 * pale - 0.25 * pits - 0.05 * dark
-    R = 0.5 + (R - 0.5) * 0.9
-    # -- a split face: laminae along x, layers each its own tone, wavering --
-    v = np.arange(N)[:, None] / N                        # up the face (rows)
-    warp = 0.0022 * band(rng, 2.0, 10.0, 0.8) + 0.0008 * band(rng, 20.0, 60.0, 0.5)
-    vv = (v + warp) % 1.0
-    # the layers: random thicknesses 1.5 to 7 mm, each a tone and a standing in or out
+    # -- a bedding plane: a smooth cleavage face in two or three values, a few long ridges along the bedding, the
+    # odd pale vein; no fine speckle (it read as granite) --
+    broad = band(rng, 1.0, 4.0, 0.6)                     # values a quarter to a metre across
+    mottle = band(rng, 4.0, 14.0, 0.8)                   # a soft mottle of a few centimetres
+    # two or three values: the broad field stepped softly, so a slab carries planes of tone, not a cloud
+    v = 0.7 * broad + 0.3 * mottle
+    steps = np.tanh(2.2 * v) / np.tanh(2.2)
+    ridge_f = band(rng, 6.0, 40.0, 0.5, aniso=(1.0, 0.08))        # long ridges along the bedding (x)
+    ridges = np.clip((np.abs(ridge_f) - 1.6) / 0.5, 0, 1)
+    fine = band(rng, 120.0, 400.0, 0.3)                  # the slightest tooth, for the light, barely in the tone
+    L = 0.5 + 0.09 * steps + 0.03 * mottle - 0.04 * ridges + 0.012 * fine
+    veins = soft_lines(np.random.default_rng(SEED + 1), 4, 2.5)
+    L += 0.14 * veins
+    R = 0.5 + 0.18 * ridges + 0.08 * mottle + 0.06 * fine
+    # -- a split face: the rock broken across its bedding, stepping in plates a centimetre or three thick, each
+    # standing in or out, a few thin partings between; never a fine even grain (it read as wood) --
+    vv_ = np.arange(N)[:, None] / N
+    warp = 0.0015 * band(rng, 2.0, 8.0, 0.8)
+    vv = (vv_ + warp) % 1.0
     lrng = np.random.default_rng(SEED + 2)
     edges = [0.0]
     while edges[-1] < 1.0:
-        edges.append(edges[-1] + lrng.uniform(0.0015, 0.007))
+        edges.append(edges[-1] + lrng.uniform(0.008, 0.03))
     edges = np.array(edges) / edges[-1]
     tones = lrng.normal(0.0, 1.0, len(edges))
     stands = lrng.normal(0.0, 1.0, len(edges))
     idx = np.clip(np.searchsorted(edges, vv) - 1, 0, len(edges) - 2)
     within = (vv - edges[idx]) / np.maximum(edges[idx + 1] - edges[idx], 1e-6)
-    seam = np.exp(-((np.minimum(within, 1.0 - within)) / 0.12) ** 2)        # a dark fine line between layers
-    E = 0.5 + 0.07 * tones[idx] + 0.035 * mottle + 0.04 * grain - 0.12 * seam + 0.1 * pale - 0.12 * dark
-    A = 0.5 + 0.16 * stands[idx] - 0.2 * seam + 0.1 * grain
+    # a parting only where a plate's edge stands proud of the next (not every boundary)
+    proud = (stands[idx] - stands[np.clip(idx + 1, 0, len(stands) - 1)]) > 0.6
+    seam = np.exp(-((1.0 - within) / 0.06) ** 2) * proud
+    # the broken face itself: rough across, in plates (a hackly break), not smooth
+    hack = band(rng, 30.0, 150.0, 0.5, aniso=(0.4, 1.0))
+    E = 0.5 + 0.06 * tones[idx] + 0.04 * hack + 0.03 * mottle - 0.14 * seam
+    A = 0.5 + 0.2 * stands[idx] - 0.25 * seam + 0.12 * hack
     rgba = np.stack([L, R, E, A], -1)
     return write_png(path, (np.clip(rgba, 0, 1) * 255 + 0.5).astype(np.uint8))
 
