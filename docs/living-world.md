@@ -50,12 +50,15 @@ Each kind of scene is a social practice: a rehearsal, a dinner, a gig, an interv
 
 ## People
 
-**One good base, many parameters.** One well-made base body and skeleton, bought or commissioned. Everything else is generated:
+**One good base, many parameters.** One free base body and skeleton (MPFB, built on in-house; no commissions), its machinery kept and its surface replaced (`docs/research/characters.md`). Everything else is generated:
 - **Body:** height, build, posture and ageing set from the person's own values, inherited from parents, so children look like their parents.
 - **Clothes:** a few modular pieces per slot, chosen by money, work, era and taste. Clothes are evidence the player learns to read.
 - **Faces:** painted rather than rigged; expressions are swapped textures the engine's emotional state can choose.
+- **Voices:** scenes are written, not voiced (Øystein, 22 October). Faces carry expression and never lip-sync. Voices are heard only as the town's murmur, never as words.
 
-**Animation:** a small library on the shared skeleton, with procedural layers driven by traits and state: how upright someone stands, how big their gestures are, how much they fidget, where they look, how close they stand. Few animations, thousands of distinct people, and posture becomes evidence. Stepped animation, as in stop motion, makes library and captured motion look handmade. Scenes are staged like theatre, so less walking needs animating.
+**Animation:** a small library on the shared skeleton, with procedural layers on top: how upright someone stands, how big their gestures are, how much they fidget, where they look, how close they stand. The layers are driven mostly by the person's state now (tired, hurried, carrying, grieving). Traits take only the share strangers can truly read, since motion mapped straight from a trait hands the player a verdict (`docs/research/behaviour-on-screen.md`). Few animations, thousands of distinct people, and posture becomes evidence.
+
+The motion comes from free libraries: MPFB's game rig, CMU, 100STYLE, and Mixamo once its terms are checked. It is edited by hand against video of people doing the same thing. There are no motion-capture sessions (Øystein, 22 October: there are thousands of videos of people doing things). Videos are studied as reference; motion is lifted from footage only where its licence allows. Whether people move smoothly or stepped is judged on frames. The research favours smooth motion with the style in the poses (`docs/research/animation-and-motion.md`). Scenes are staged like theatre, so less walking needs animating.
 
 ## Crowds
 
