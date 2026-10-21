@@ -155,6 +155,16 @@ The steps keep their numbers, since other docs cite them. Step 1 is reopened on 
      - hover and inspect as placeholders;
      - the best ways of showing time from 1f.
 
+     Its play questions are settled by testing variants side by side, never by opinion (Øystein, on the camera: "we have to test this"):
+     - a walker or a drone in the lanes;
+     - what counts as "you saw it" from a raised view;
+     - good viewpoints discovered or marked;
+     - how far eye level reaches;
+     - a walk mode at eye level;
+     - whether people react to the camera.
+
+     Each variant is a switch in the greybox. The playtest programme compares them with agent players first, then Øystein and his testers.
+
      It is judged by playing it. It feeds the choice of the first game, and it can start once 1f has its clay corner. Before it starts, its play is researched at the same depth as the building blocks (Øystein: "we need to be extremely clever and do deep research how other games do things; master craftsmanship, finesse"). The studies are `camera-and-composition.md`, `collision-and-navigation.md`, `play-craft.md` (feel, focus, guidance, transitions, narrow streets) and `interface-and-inspection.md`, with the options in `docs/ideas/first-game-options.md`. The playtest itself is designed in `docs/research/playtesting.md` (Øystein: "the playtest will be extremely important"): the programme, the tools the greybox needs (a note key, exact replays from determinism, telemetry), what to measure, and what is worth trying. Opus writes it first; Fable reviews and extends it after the usage reset.
 
    Then the landing's setts, the kerb and the plinths.

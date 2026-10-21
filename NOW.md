@@ -39,8 +39,8 @@ What is open and what is next. Every session reads this page first, so it stays 
   - judge them for beauty by strict review and for readability by the cold readers.
 
   The perception findings in `docs/research/time-on-screen.md` are constraints, not the answer: change is found where something visibly jumps; hold everything but the year; a cut invites a cause.
-- the greybox's play (`docs/research/collision-and-navigation.md`). Recommended: a walk mode at eye level (yes), and people who don't react to the camera (no), unless the game makes the player a person in the town.
-- the camera's play (`docs/research/camera-and-composition.md`): a walker or a drone in the lanes; what counts as "you saw" from raised views; whether good views are found or marked; how far eye level reaches. Each has a recommendation in the study.
+- the walk mode at eye level, and whether people react to the camera, are tested in the greybox too (`docs/plan.md`, 1g).
+- the camera's play is settled by testing in the greybox, not by opinion (Øystein: "we have to test this"). See `docs/plan.md`, 1g.
 - which game comes first. Nothing is decided. The interface study designed for an observer (one of the three examples in `docs/living-world.md`, the three dials) as a test case; its play choices are defaults kept for when a game is designed (`docs/research/interface-and-inspection.md`, For Øystein).
 
 **Look and craft questions are ours** (Øystein, 22 October: "You have to figure these things out. As long as we are critical and only aim for high quality, this should answer itself."). They are decided on frames and motion sheets, with strict reviews, and Øystein judges the milestones. This covers the night sky's colour, lamp glass and the tonemapper; the brush's size by octaves and any boil; and near ground cover as strokes or blades.
