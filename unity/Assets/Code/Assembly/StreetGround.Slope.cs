@@ -293,7 +293,7 @@ namespace Overstory.Assembly
             float fu = u - i, fv = v - j;
             fu = fu * fu * (3f - 2f * fu);
             fv = fv * fv * (3f - 2f * fv);
-            float H(int a, int b) => Hash.Unit(Hash.Of(h, Hash.Key(a), Hash.Key(b)));
+            float H(int a, int b) => (float)Hash.Unit(Hash.Of(h, Hash.Key(a), Hash.Key(b)));
             return Mathf.Lerp(Mathf.Lerp(H(i, j), H(i + 1, j), fu), Mathf.Lerp(H(i, j + 1), H(i + 1, j + 1), fu), fv);
         }
 
@@ -336,7 +336,7 @@ namespace Overstory.Assembly
             int i = Mathf.FloorToInt(u);
             float f = u - i;
             f = f * f * (3f - 2f * f);
-            return Mathf.Lerp(Hash.Unit(Hash.Of(h, Hash.Key(i))), Hash.Unit(Hash.Of(h, Hash.Key(i + 1))), f);
+            return Mathf.Lerp((float)Hash.Unit(Hash.Of(h, Hash.Key(i))), (float)Hash.Unit(Hash.Of(h, Hash.Key(i + 1))), f);
         }
     }
 }

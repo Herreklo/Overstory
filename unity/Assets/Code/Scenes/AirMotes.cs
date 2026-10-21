@@ -1,3 +1,4 @@
+using Overstory.Core;
 using UnityEngine;
 using UnityEngine.Rendering;
 
@@ -39,7 +40,8 @@ namespace Overstory.Scenes
             meshRenderer.shadowCastingMode = ShadowCastingMode.Off;
             meshRenderer.receiveShadows = false;
             meshRenderer.sharedMaterial = material;
-            var rng = new System.Random(seed);
+            // (the hash spec's stream, never System.Random: the same motes on every .NET)
+            var rng = new Hash.Stream(Hash.Of(Hash.Key(seed), "air motes"));
             var pos = new Vector3[count * 4];
             var corner = new Vector2[count * 4];
             var data = new Vector2[count * 4];
@@ -47,9 +49,9 @@ namespace Overstory.Scenes
             Vector2[] corners = { new(-1, -1), new(1, -1), new(1, 1), new(-1, 1) };
             for (int i = 0; i < count; i++)
             {
-                var p = new Vector3((float)rng.NextDouble(), (float)rng.NextDouble(), (float)rng.NextDouble());
-                float r = (float)rng.NextDouble();
-                float size = 0.5f + 1.5f * Mathf.Pow((float)rng.NextDouble(), 3f); // mostly small, a few larger
+                var p = new Vector3((float)rng.Unit(), (float)rng.Unit(), (float)rng.Unit());
+                float r = (float)rng.Unit();
+                float size = 0.5f + 1.5f * Mathf.Pow((float)rng.Unit(), 3f); // mostly small, a few larger
                 for (int k = 0; k < 4; k++)
                 {
                     pos[i * 4 + k] = p;
