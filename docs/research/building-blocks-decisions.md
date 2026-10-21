@@ -378,7 +378,7 @@ The steps add to 13.5 to 17.5 Opus-days for the whole port, and 6.5 to 8 through
 
 ## 14. Questions for Øystein
 
-Only scope, play and permissions; each with a recommendation.
+Only scope, play and permissions; each with a recommendation. **Answered (Øystein, 21 October): all four as recommended.**
 
 1. **The reach of "English" over proper names.** Signs and street text are English (decided). The fixtures still hold "Vik Jernvare" and streets with ø. *Recommendation:* English placeholders for every proper name too, until you name things yourself; every name lives in `packs/stavanger-1989/names.json` and nothing else refers to it; the lettering supports æ, ø and å from the start, so your names can be Norwegian later without a change anywhere else.
 2. **Hand-split wall stones, only if memory forces it.** `NOW.md` decides repetition: libraries only for what was mass-produced (bricks, roof tiles, factory windows and doors, catalogue houses, setts), everything hand-made for one place its own. The one case it leaves open is hand-split wall stones not made to standard sizes. They stay their own: unique fitted pieces made in the player per chunk, costing memory and build time, never disk. One stair with its walls is 816,000 triangles and 36 MB at full detail today; levels and the 4 m chunk hold that only near the camera, against a 1.0 GB geometry pool. *Recommendation:* ask nothing now. Only if the scale test's memory for unique close chunks breaks the pool, ask whether those stones may come from a large library where no repeat can be found, with the measured numbers and a repeat-finding check on the golden views. *Changed after the strict review:* the first draft asked for a reading `NOW.md` already gives.

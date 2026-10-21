@@ -55,11 +55,6 @@ Then, on Opus:
 ## Waiting for Øystein
 
 **What goes to Øystein** (scope, play and permissions only, each with a recommendation; everything else is decided, recorded with its reasons, and shown to him as finished work he can overturn):
-- **the architecture's questions** (`docs/research/building-blocks-decisions.md` §14). Every other architecture decision is made and recorded with its reasons, and he can overturn any:
-  - *"English" over proper names:* recommended English placeholders for every name, in one `names.json`, lettering ready for æ, ø and å;
-  - *wall stones hand-split but not to standard sizes,* only if the scale test's memory for unique close chunks needs it: from a large library where no repeat can be found? Recommended only if the number forces it;
-  - *when the painted far town's look test runs:* recommended after the gully port, before House A's far level;
-  - *rewriting git history* after generated FBX leave the tree: recommended not now; revisit at LT1's merge;
 - the town system's scope and the eras after 1989 (`docs/town-system.md`);
 - his OK for reference downloads (Stavanger's rock, water, city-archive photos for houses and dress, and the large GDC decks the studies could not open), each listed with its source and size first;
 - the walk mode at eye level, and whether people react to the camera, are tested in the greybox too (`docs/plan.md`, 1g).
@@ -77,6 +72,12 @@ Then, on Opus:
 ## Decided (22 October; don't reopen without Øystein)
 
 - **The architecture's decisions are delegated** (Øystein: "I trust you know how to handle this feedback, and based on a good analysis make the correct decisions moving forward"). Only taste, scope and play go to him.
+- **The architecture's four questions, answered as recommended** (Øystein, 21 October; `docs/research/building-blocks-decisions.md` §14):
+  - every proper name is an English placeholder for now, kept in `packs/stavanger-1989/names.json`, with lettering ready for æ, ø and å;
+  - hand-split wall stones stay unique; a large library is asked about only if the scale test's memory for unique close chunks breaks the pool;
+  - the painted far town's look test runs after the gully port and before House A's far level;
+  - git history isn't rewritten now; revisit at LT1's merge.
+- **Work runs without waiting for Øystein** (21 October, evening: "I just want you to handle things tonight, unless it is super important, you can just continue working"). Sessions carry the plan on, start the next step when the one before reports, and bring him only what is truly his.
 - **The reference machine** is an ordinary computer, the M4 Mac mini: 60 fps at 1440p at default settings, with no gaming PC needed (`docs/foundations.md`).
 - **Cold readers are model readers,** in the engine's blind method (`docs/foundations.md`).
 - **How years pass in play** depends on the game, from a week to generations. The screen follows the record, and play changes the record (`docs/town-system.md`).
