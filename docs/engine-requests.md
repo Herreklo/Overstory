@@ -141,6 +141,8 @@ In order of need, 32 and 33 come first. They are cheap now and costly to retrofi
 Decided with Øystein (21 October): the engine requests that come out of the playtests are gathered and sent to Understory together, once the paper playtests and the greybox's first round are done. Each one is backed by what the tests showed. Øystein carries them over, or asks us to comment on the engine's Overstory-labelled issue. Candidates so far, to confirm by the tests:
 - **Crime and its aftermath.** Theft beyond the till skims the engine already makes; death that is not natural; suspicion, inquests and the police as a place of work. Rule 8 and "evidence, not verdicts" still hold: no sensationalism, and accounts may be wrong.
 - **A sports club as a kind of group,** with matches as events, as the bands have rehearsals and gigs.
+- **Events before the present, exported** (`docs/ideas/stories-in-the-world.md`). The old bank's six café attempts from 1960 to 1979, and the feud behind them, are lost from the export, yet they explain the 1989 town.
+- **Stock quirks kept apart from lived acts.** Three people in world 9989 each paint over the old boathouse door. Drawing it would invent a mystery nobody lived (extends request 20).
 
 ## Overstory's own
 
