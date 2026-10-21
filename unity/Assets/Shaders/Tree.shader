@@ -43,6 +43,10 @@ Shader "Overstory/Tree"
         _SkyThrough ("Leaves: the sky's light through them from behind (an overcast day's glow)", Range(0, 2)) = 0.35
         _UnderFloor ("Leaves: the sky's light on a mass's underside, as a share of its top's", Range(0, 1)) = 0.5
         _MassSplit ("Leaves: where a mass turns from its lit top to its shaded underside (its normal's height)", Range(-1, 1)) = -0.05
+        _CapSplit ("Leaves: where a lobe's lit top turns from its cap (facing the sky) to its sides (the lobe's own facing, baked in the colour's alpha)", Range(-1, 1)) = 0.4
+        _SideValue ("Leaves: the sky's light on a mass's sides, as a share of its cap's", Range(0, 1)) = 0.62
+        _SprayLight ("Leaves: how much of a spray's own painted light shows (the lobe's carries the value)", Range(0, 1)) = 0.5
+        _SplitJitter ("Leaves: how far each card's own turn to shade strays from the mass's (its normal's height)", Range(0, 1)) = 0.3
     }
 
     HLSLINCLUDE
@@ -71,6 +75,10 @@ Shader "Overstory/Tree"
         half _SkyThrough;
         half _UnderFloor;
         half _MassSplit;
+        half _SplitJitter;
+        half _SprayLight;
+        half _CapSplit;
+        half _SideValue;
         half4 _MarkDark;
         half4 _MarkLight;
         float4 _Relief;
@@ -190,7 +198,9 @@ Shader "Overstory/Tree"
         half3 c = lerp(lerp(_Green.rgb, _Turned.rgb, t), _Late.rgb, late);
         half k = frac((half)extra.x * 13.7h) - 0.5h;
         c *= 1.0h + half3(0.05h, 0.02h, -0.04h) * k;
-        c *= 0.25h + 0.75h * m.g;
+        // a spray's own light (its lit upper leaves over a mid value) a share of the atlas's: at the raised views it
+        // speckled every lobe alike, louder than the lobes' own light (the lobe, not the leaf, carries the value)
+        c *= lerp(1.0h, 0.25h + 0.75h * m.g, _SprayLight);
         s.albedo = m.r > 0.03h ? c : _Twig.rgb * (0.6h + 0.4h * m.g);
         // where the leaves are gone and the bare twigs show, the twigs' colour
         half leafHere = OS_LeafCover(m, extra);
@@ -426,7 +436,7 @@ Shader "Overstory/Tree"
             #if defined(_OS_LEAVES)
                 // what a card sees of the sky, flattened to two values: a mass's skin open, its core one darker
                 // interior (Oga's dark inner mass behind the lit ones, never a hollow)
-                b.sky = lerp(0.58h, 1.0h, smoothstep(0.42h, 0.56h, b.sky));
+                b.sky = lerp(0.66h, 1.0h, smoothstep(0.42h, 0.56h, b.sky));     // (a darker interior went near-black: shade goes cool, never black)
             #endif
 
             #if defined(_OS_LEAVES)
@@ -434,8 +444,16 @@ Shader "Overstory/Tree"
                 // with a narrow half-tone where the plane turns from the light, a warm band at the turn, no brush noise;
                 // the sun's shadow only from what stands outside the mass (read three metres towards the light)
                 half3 colour;
-                // where the card sits on its mass: its top (1) or its underside (0), with a narrow soft edge between
-                half top = smoothstep(_MassSplit - 0.06h, _MassSplit + 0.06h, n.y);
+                // where the card sits on its mass: its top (1) or its underside (0), with a narrow soft edge between;
+                // each card turns at its own height on the mass (seeded), so the edge between light and shade follows
+                // the cards' shapes, as Oga's shade follows the clumps (on the ellipsoid alone it was a ruled ellipse,
+                // a mass's underside a flying saucer seen through the gap below it)
+                half jit = (frac((half)input.extra.x * 91.7h + (half)input.extra.y * 37.3h) - 0.5h) * _SplitJitter;
+                half top = smoothstep(_MassSplit - 0.06h, _MassSplit + 0.06h, n.y + jit);
+                // and the lit top in two planes: its cap, facing the sky, and its sides, turned from it (the sky term
+                // stylised on the facing, as every surface's: research rule 2), so from above each lobe is a lit cap
+                // ringed by a mid value, never one flat top across the crown
+                half cap = smoothstep(_CapSplit - 0.06h, _CapSplit + 0.06h, (half)input.bake.a * 2.0h - 1.0h + jit);
                 {
                     Light sun = GetMainLight(id.shadowCoord, id.positionWS, half4(1, 1, 1, 1));
                     half ndl = dot(n, sun.direction);
@@ -455,7 +473,7 @@ Shader "Overstory/Tree"
                     // a mass's top takes the sky, its underside is in its own shade: two flat values with a narrow soft
                     // edge between (Firewatch's two values a form), decided by where the card sits on its mass, never
                     // leaf by leaf
-                    sky *= lerp(_UnderFloor, 1.1h, top);
+                    sky *= lerp(_UnderFloor, 1.1h * lerp(_SideValue, 1.0h, cap), top);
                     // the sky's light by what the card sees of the sky through the crown (baked); the sun's by its own
                     // shadow, a little dimmed deep inside
                     half seen = saturate(b.sky);
@@ -510,9 +528,13 @@ Shader "Overstory/Tree"
                 colour += glass * _Through.rgb * main.color * through * m.b * _Through.a * isLeaf;
                 // and the sky's own light through a thin leaf, from the side it does not face: on a grey day the whole
                 // crown is lit from behind by the bright sky, which is why a yellow birch glows in the rain
-                half3 behind = OS_SkyFor(-id.viewDirectionWS);          // the sky beyond the leaf, seen through it
+                // the light beyond the leaf, seen through it: the sky's looking up through a crown, the ground's
+                // looking down into one (from a raised view the sky glowed through every leaf alike, and the crown's
+                // planes went flat)
+                half3 beyond = -id.viewDirectionWS;
+                half3 behind = lerp(_OS_GroundAmb.rgb, OS_SkyFor(beyond), smoothstep(-0.25h, 0.15h, beyond.y));
                 // strongest through a mass's lit skin, weaker under it, so the glow never flattens the mass's two values
-                colour += glass * behind * b.sky * b.town * m.b * _SkyThrough * lerp(0.4h, 1.0h, top) * isLeaf;
+                colour += glass * behind * b.sky * b.town * m.b * _SkyThrough * lerp(0.4h, lerp(_SideValue, 1.0h, cap), top) * isLeaf;
             #endif
                 colour = OS_Atmosphere(colour, input.positionWS);
             #if defined(_OS_LEAVES)

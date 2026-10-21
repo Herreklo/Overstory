@@ -57,11 +57,11 @@ import tree_growth as G  # noqa: E402
 # atlas cells its two crossed cards may carry. top_tilt: how far the cards inside a mass's top (deeper than top_tilt_depth) lean to the sky (degrees), for steep
 # views. hug_gap, hug_len: a branch within hug_gap (m) of a stem's bark for more than hug_len along it is not drawn.
 PARTS = {
-    "birch": dict(sag=0.08, fair=(0.002, 0.03), taper=0.55, flare=0.3, flare_branch=0.22, flare_min_radius=0.008, occlusion=0.05, seam=0.5, atlas="clusters", lobe=0.8, lobe_gap=0.36,
+    "birch": dict(sag=0.08, fair=(0.002, 0.03), taper=0.55, flare=0.3, flare_branch=0.22, flare_min_radius=0.008, occlusion=0.05, seam=0.3, atlas="clusters", lobe=0.8, lobe_gap=0.36,
                   marks=True, mark_min_radius=0.02, mark_scale=2.0, lenticel_spacing=0.24, mark_min_height=0.6,
                   cluster_size=(1.3, 1.15, 1.05, 0.85), crossed=True, edge_gap=0.22, edge_depth=0.2,
-                  masses="limbs", seam_cut=0.95, core_depth=0.45, core_keep=0.55, top_tilt=50.0,
-                  lobe_size=2.2, lobe_weight=0.7, lobe_seam=0.25, lobe_flat=0.35, top_z=0.66, top_tilt_depth=0.15, hug_gap=0.12, hug_len=0.5, hug_stem=0.025, rod_len=3.0, rod_r=0.03, rod_bare=0.8, rod_order=2,
+                  masses="limbs", seam_cut=0.7, core_depth=0.45, core_keep=0.55, top_tilt=50.0,
+                  lobe_size=2.2, lobe_weight=0.7, lobe_seam=0.4, lobe_seam_cut=0.8, lobe_shrink=0.4, lobe_flat=0.35, top_z=0.66, top_tilt_depth=0.15, hug_gap=0.12, hug_len=0.5, hug_stem=0.025, rod_len=3.0, rod_r=0.03, rod_bare=0.8, rod_order=2,
                   spur_r=0.025, spur_keep=0.5,
                   places=dict(core=((0, 1), (1, 0)), top=((0, 1), (1, 0)), low=((2, 3),), high=((3, 2),)), lose_tips=40, hang=False, card=(0.50, 0.48), card_u=(0.03, 0.97), cells=4,
                   per_node=2, along=1, droop=0.7, leaf_years=999, leaf_tips=24, draw_tips=2.5, draw_tips_per_m=0.9, winter_tips=3.0, reach=99.0, hang_reach=0.3,
@@ -71,7 +71,9 @@ PARTS = {
 }
 # the silver birch: the birch's fitting, carrying its own drapes (blender/parts/trees/silver_birch; Øystein preferred
 # them, full and arching, to open strands with a rising top), its branches giving more under their weight
-PARTS["silver_birch"] = dict(PARTS["birch"], sag=0.12, lenticel_spacing=0.36, mark_scale=2.6, lobe_seam=0.0)
+PARTS["silver_birch"] = dict(PARTS["birch"], sag=0.12, lenticel_spacing=0.36, mark_scale=2.6, lobe_seam=0.0, lobe_shrink=0.0, seam=0.5,
+                            seam_cut=0.95)     # (its drapes hang in tiers with sky between; the downy's seams are
+                                               # narrower and broken, a clean seam under its top read as a slot)
 
 
 def h01(*k):
@@ -1175,7 +1177,7 @@ def lobe_mesh(tl, parts, age, seed, H):
                 e_own = np.linalg.norm((own[1].T @ (centres[j] - own[0])) / own[2])
                 es = [np.linalg.norm((v[1].T @ (centres[j] - v[0])) / v[2]) for m2, v in enumerate(lobe_vols)
                       if v is not None and m2 != lobe_of[j]]
-                if es and min(es) / max(e_own, 1e-6) < 1.0 + parts["lobe_seam"] and h01(seed, int(ids[j]), 24) < 0.65:
+                if es and min(es) / max(e_own, 1e-6) < 1.0 + parts["lobe_seam"] and h01(seed, int(ids[j]), 24) < parts.get("lobe_seam_cut", 0.65):
                     keep[j] = False
             ids, centres, which, edge, lobe_of = ids[keep], centres[keep], which[keep], edge[keep], lobe_of[keep]
     V, F, UV0, UV1, NR, COL = [], [], [], [], [], []
@@ -1199,16 +1201,24 @@ def lobe_mesh(tl, parts, age, seed, H):
         # edge-on (a card turned edge-on fades: a spray at the crown's sides would vanish and leave its branch bare)
         twins = (-45.0, 45.0) if parts.get("crossed") else (0.0,)
         face_mass = face
-        on_top = vol is not None and (centres[j] - vol[0])[2] > 0.25 * vol[2].max()
         depth_top = volume_depth(vol, centres[j]) if vol is not None else 0.0
+        # how far the pair leans: none below a quarter of the mass's height above its middle or at its skin, fully in
+        # its upper core, easing in between (a step at one height read from the street as a flat dark ceiling with a
+        # ruled edge under the crown's top)
+        tilt_k = 0.0
+        if vol is not None:
+            hz = float((centres[j] - vol[0])[2]) / max(float(vol[2].max()), 1e-6)
+            d0 = parts.get("top_tilt_depth", 0.0)
+            tilt_k = float(np.clip((hz - 0.25) / 0.35, 0.0, 1.0) * np.clip((depth_top - d0) / 0.2, 0.0, 1.0))
+        on_top = tilt_k > 0.0
         for twin, turn in enumerate(twins):
             face = G.rotate(face_mass, up_w, turn)
             face /= max(np.linalg.norm(face), 1e-9)
-            if parts.get("top_tilt") and on_top and depth_top > parts.get("top_tilt_depth", 0.0):
+            if parts.get("top_tilt") and on_top:
                 # inside a mass's top both cards of the pair lean to the sky, their foliage lying out over the mass, so
                 # the crown has a face from the city camera's steep views (upright cards are edge-on from above); its
                 # skin stays upright, so from the street the top's edge is foliage, never a leaning plane
-                tt = math.radians(parts["top_tilt"])
+                tt = math.radians(parts["top_tilt"]) * tilt_k
                 face = face * math.cos(tt) + up_w * math.sin(tt)
                 face /= max(np.linalg.norm(face), 1e-9)
             side = np.cross(up_w, face)
@@ -1221,6 +1231,11 @@ def lobe_mesh(tl, parts, age, seed, H):
             # a hierarchy in each mass: big lobes at its core, smaller towards its skin and smallest at its tips
             depth_j = volume_depth(vol, centres[j]) if vol is not None else 0.3
             s_ = size * (0.75 + 0.6 * min(depth_j * 2.2, 1.0)) * (0.85 + 0.3 * h01(seed, i, 14))
+            if parts.get("lobe_shrink") and lobe_vols and lobe_vols[lobe_of[j]] is not None:
+                # and in each lobe: smaller towards its rim, so a card at one lobe's edge never bridges the seam to the
+                # next (cards a metre wide on lobes two across closed every seam, and the crown read as one field)
+                ld = volume_depth(lobe_vols[lobe_of[j]], centres[j])
+                s_ *= 1.0 - parts["lobe_shrink"] * (1.0 - min(ld * 2.0, 1.0))
             # which curtain: round or wide on a mass's top, long ones hanging at the crown's outer lower edge, small at
             # the skin (the atlas: 0 round, 1 tall, 2 wide, 3 small)
             zr = float(np.clip(centres[j][2] / max(H, 1e-3), 0.0, 1.0))
@@ -1275,6 +1290,10 @@ def lobe_mesh(tl, parts, age, seed, H):
             lv = lobe_vols[lobe_of[j]] if lobe_vols else None
             for p in corners:
                 n = volume_normal(vol, p, lift) if vol is not None else face
+                # the lobe's own facing, unlifted and unmixed (in the bake's alpha): where on its lobe the corner sits,
+                # so the shader lights each lobe's cap above its sides (in the mixed normal a lobe's rim on top of a
+                # mass still faced the sky, and from above the crown was one value)
+                own_up = float(volume_normal(lv, p, 0.0)[2]) if lv is not None else (float(volume_normal(vol, p, 0.0)[2]) if vol is not None else 1.0)
                 if lv is not None:
                     # the lobe's own turn from the sky, set in its mass's
                     nl = volume_normal(lv, p, lift)
@@ -1292,7 +1311,8 @@ def lobe_mesh(tl, parts, age, seed, H):
                 # shades from a sky-lit top to a dark underside, as a painter blocks a tree)
                 zc = float(np.clip(p[2] / max(H, 1e-3), 0.0, 1.0))
                 crown = 0.55 + 0.45 * np.clip((zc - 0.25) / 0.6, 0.0, 1.0)
-                COL.append((float((0.25 + 0.75 * (1.0 - dep) ** 1.2) * crown), float(np.clip(0.15 + 0.35 * max(-n[2], 0.0), 0, 1)), 1.0, 1.0))
+                COL.append((float((0.25 + 0.75 * (1.0 - dep) ** 1.2) * crown), float(np.clip(0.15 + 0.35 * max(-n[2], 0.0), 0, 1)), 1.0,
+                            0.5 + 0.5 * own_up))
     # the season is the share of this tree's foliage fallen (or, in spring, not yet out): each card's place in the
     # fall order becomes its rank among them, so 0.4 is two curtains in five gone, inside and low first
     if ATTACH:

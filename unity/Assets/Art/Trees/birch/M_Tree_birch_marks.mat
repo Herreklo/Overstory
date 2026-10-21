@@ -44,6 +44,7 @@ Material:
     m_Ints: []
     m_Floats:
     - _AlphaToMask: 1
+    - _CapSplit: 0.5
     - _Cutoff: 0.5
     - _InnerGlow: 0
     - _Leaves: 0
@@ -52,7 +53,10 @@ Material:
     - _MassSplit: -0.05
     - _Occlusion: 0.3
     - _Scatter: 0.12
+    - _SideValue: 0.8
     - _SkyThrough: 0.65
+    - _SplitJitter: 0.3
+    - _SprayLight: 0.5
     - _SunPale: 0.45
     - _UnderFloor: 0.5
     m_Colors:
