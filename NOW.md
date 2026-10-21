@@ -41,6 +41,16 @@ Fable's limit returns with the reset. The judgement work done on Opus while it w
    - how it runs in practice, with a real example;
    - what it costs and what it caught;
    - its template (briefs, digests, the decision register, the pre-mortem, the paper-playtest method, the usage log);
+   - **research in full**, as its own section:
+     - the two tracks, subject and craft;
+     - the bar every study is held to (primary sources, marked claims, concrete for the stack, no thin sections);
+     - how a study is briefed and checked;
+     - the coverage map, with gaps that block building;
+     - research just in time, and stop-and-study when work reveals a gap;
+     - the staged method (a scout, a shared source list, notes, a fresh writer);
+     - what a study costs;
+     - what research caught (the stairs' missing craft, where generation runs);
+     - the full list of this week's studies as examples;
    - links to the files in Overstory's repo.
 
    Posted on #60, and kept in `docs/notes/`.
