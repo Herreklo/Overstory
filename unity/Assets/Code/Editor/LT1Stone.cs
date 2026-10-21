@@ -85,6 +85,7 @@ namespace Overstory.EditorTools
             m.SetColor("_CementOld", new Color(0.54f, 0.53f, 0.50f));
             m.SetColor("_CementFilm", new Color(0.25f, 0.28f, 0.22f));
             m.SetColor("_Soil", new Color(0.32f, 0.30f, 0.26f));     // (a joint at Dale is dark, 7 to 12% of white, never black)
+            m.SetColor("_Streak", new Color(0.24f, 0.26f, 0.21f));   // (water's film on a face: algae and grime, dark green-grey)
             m.SetFloat("_Grey", grey ? 1f : 0f);
             m.SetFloat("_History", Flag("-history") ? 1f : Flag("-albedo") ? 2f : Flag("-normals") ? 3f : 0f);
             m.enableInstancing = true;
@@ -112,7 +113,7 @@ namespace Overstory.EditorTools
             m.SetColor("_Edge", new Color(0.56f, 0.53f, 0.49f));
             m.SetVector("_Grain", new Vector4(0.45f, 0.35f, 0.42f, 0.65f));    // (w: each stone's own hue)
             m.SetFloat("_Weather", 70f);
-            m.SetVector("_Polish", new Vector4(0f, 0.3f, 0f, 0f));
+            m.SetVector("_Polish", new Vector4(0.08f, 0.45f, 0f, 0f));    // (hand-worn: a coping's inner edge, darker and smoother)
             m.SetFloat("_Porosity", 0.75f);
             EditorUtility.SetDirty(m);
             return m;

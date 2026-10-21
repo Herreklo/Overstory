@@ -37,7 +37,7 @@ YEAR = ST.YEAR
 # 14): the lane they line, the stone, when they were built, who kept them and how well, and the works their records
 # hold.
 WALLS = {
-    "gully_cheeks": dict(lane="Gully Steps", stone="slate", built=1874,
+    "gully_cheeks": dict(lane="Gully Steps", stone="slate", built=1874, footfall=ST.FLIGHTS["gully"]["footfall"],
                          upkeep=[dict(by="town", since=1874, care=0.4), dict(by="town", since=1946, care=0.3),
                                  dict(by="town", since=1965, care=0.2)],
                          # (the lane's water ran behind the lower wall on the bank's side until it bulged)
@@ -88,7 +88,7 @@ def lay(spec, seed=1):
         ground = ground_near(f)
         out = dict(V=[], F=[], COL=[], UV0=[], UV1=[], UV2=[], UV3=[])
 
-        def put(P, kind, uv, rng, bare_y, bed_y, exposed, damp, sky, flip):
+        def put(P, kind, uv, rng, bare_y, bed_y, exposed, damp, sky, flip, water=None, touch=None):
             """A piece already placed in the flight's frame (s along, t across, z up), its history from its facts."""
             X = (a[0] - origin[0]) + right[0] * P[:, 1] + up[0] * P[:, 0]
             Y = (a[1] - origin[1]) + right[1] * P[:, 1] + up[1] * P[:, 0]
@@ -96,15 +96,19 @@ def lay(spec, seed=1):
             base = sum(len(v) for v in out["V"])
             out["V"].append(np.stack([X, Y, Z], -1))
             out["F"].extend(tuple(base + q for q in (reversed(face) if flip else face)) for face in uv["F"])
-            lichen = GR.lichen_years(bare_y, np.zeros(len(P)), exposed)
+            # touch: hands on a coping at hand height, boots at a wall's foot (the uses' other contacts): polish
+            # where it is touched, and no lichen
+            touch = np.zeros(len(P)) if touch is None else np.clip(touch, 0.0, 1.0)
+            lichen = GR.lichen_years(bare_y, touch, exposed)
             lichen = np.where(kind == 6, 0.0, lichen)
             moss = GR.moss(damp, np.zeros(len(P)), np.where((kind == 6) | (kind == 4), bed_y, bare_y))
-            out["COL"].append(np.stack([np.zeros(len(P)), lichen, moss, np.zeros(len(P))], -1))
+            out["COL"].append(np.stack([touch * 0.85, lichen, moss, np.zeros(len(P))], -1))
             off = np.array([rng.uniform(0, 7), rng.uniform(0, 7)])
             out["UV0"].append(uv["UV"] + off)
             var = rng.random()
             out["UV1"].append(np.stack([np.full(len(P), bare_y / 200.0), np.full(len(P), var)], -1))
-            out["UV2"].append(np.stack([kind.astype(float), np.full(len(P), var)], -1))
+            # the water layer: how much water lies or runs here (see the copings and the courses below)
+            out["UV2"].append(np.stack([kind.astype(float), np.clip(water if water is not None else np.full(len(P), 0.2), 0, 1)], -1))
             out["UV3"].append(np.stack([sky, np.full(len(P), 0.3)], -1))
 
         # (one panel was rebuilt, on the side whose bank stands highest: the water ran behind that wall)
@@ -146,6 +150,30 @@ def lay(spec, seed=1):
             # patchwork between: a few stones fallen and left (care falling), one hole patched in cement
             fallen = [wrng.uniform(0.0, run) for _ in range(wrng.randint(1, 3))]
             patched = wrng.uniform(0.0, run)
+            # the copings' layout first: their joints and low ends are where the water off the top runs down the face
+            crng0 = random.Random(f"{spec['lane']}-copelay-{seed}-{fi}-{side}")
+            copes, s_c = [], -0.3
+            while s_c < run + 0.3:
+                e_c = min(s_c + crng0.uniform(0.45, 1.0), run + 0.3)
+                copes.append((s_c, e_c))
+                s_c = e_c
+            drips = [(e_c, crng0.uniform(0.4, 1.0)) for _, e_c in copes[:-1]] + \
+                    [(crng0.uniform(-0.3, run + 0.3), crng0.uniform(0.2, 0.6)) for _ in range(int(run / 1.5) + 1)]
+
+            # how much people lean on this wall: a parapet at hand height beside a steep flight is the stair's
+            # handrail
+            use = float(np.clip(slope * 1.6, 0.3, 1.0)) * (spec.get("footfall", 50000) / 50000.0) ** 0.5
+
+            def face_water(sv, zv):
+                """Water down a wall's face: streaks under the copings' joints and low points, strongest near the top,
+                and the splash and damp at its foot."""
+                streak = np.zeros(len(sv))
+                for sj, k_ in drips:
+                    streak = np.maximum(streak, k_ * np.exp(-((sv - sj) / 0.07) ** 2))
+                tops = np.array([top(q) for q in sv])
+                bases = np.array([base(q) for q in sv])
+                w_ = (0.12 + 0.88 * streak) * (0.45 + 0.55 * np.exp(-np.clip(tops - zv, 0.0, None) / 0.6))
+                return np.clip(w_ + 0.6 * np.clip(1.0 - (zv - bases) / 0.35, 0.0, 1.0), 0.0, 1.0)
             # the courses
             z = 0.0
             below = []
@@ -184,15 +212,19 @@ def lay(spec, seed=1):
                         exposed = np.clip(0.4 + 0.6 * (hgt - base(sm)) / max(top(sm) - base(sm), 0.3), 0.3, 1.0)
                         damp = np.clip(1.0 - (hgt - base(sm)) / 0.35, 0.0, 1.0) * 0.8
                         sky = np.full(len(P), 0.7)
+                        # (boots scuff a wall's face just above each tread, most where the flight is steep)
+                        above = zv - step_top(sv)
+                        scuff = np.clip(1.0 - np.abs(above - 0.06) / 0.14, 0.0, 1.0) * 0.5 * use
                         put(P, stn["kind"], dict(F=stn["F"], UV=np.stack([V[:, 0], V[:, 1] + z], -1)), srng,
                             bare, YEAR - (panel["year"] if in_panel else spec["built"]), exposed, damp, sky,
-                            flip=(side == 1))
+                            flip=(side == 1), water=face_water(sv, zv), touch=scuff)
                         # where it stands free (a parapet over the drop), its back is a face too
                         if not bool(np.interp(sm, ss, retain.astype(float)) > 0.5):
                             tb = side * (W / 2 + 0.006 + DEPTH - setback + V[:, 2] + srng.uniform(-0.004, 0.006))
                             Pb = np.stack([sv, tb, zv], -1)
                             put(Pb, stn["kind"], dict(F=stn["F"], UV=np.stack([V[:, 0] + 3.1, V[:, 1] + z], -1)), srng,
-                                bare, YEAR - spec["built"], exposed, damp, sky, flip=(side == -1))
+                                bare, YEAR - spec["built"], exposed, damp, sky, flip=(side == -1),
+                                water=face_water(sv, zv))
                     joints.append(e)
                     s_cur = e
                 below = joints
@@ -221,13 +253,9 @@ def lay(spec, seed=1):
                     damp = np.clip(1.0 - hgt / 0.8, 0.35, 1.0)
                     yrs = YEAR - (panel["year"] if in_panel else (1979 if cem else spec["built"]))
                     put(P, kind, dict(F=[(0, 1, 2, 3)], UV=P[:, [0, 2]]), random.Random(f"back-{fi}-{side}-{j}-{zf0}"),
-                        yrs, yrs, np.full(4, 0.5), damp, np.full(4, 0.45), flip=(side == 1))
+                        yrs, yrs, np.full(4, 0.5), damp, np.full(4, 0.45), flip=(side == 1), water=np.full(4, 0.9))
             # the copings: slabs laid flat along the top, their fronts a little proud of the face
-            s_cur = -0.3
-            c = 0
-            while s_cur < run + 0.3:
-                L_ = wrng.uniform(0.45, 1.0)
-                e = min(s_cur + L_, run + 0.3)
+            for c, (s_cur, e) in enumerate(copes):
                 sm = (s_cur + e) / 2
                 thick = wrng.uniform(0.07, 0.1)
                 crng = random.Random(f"{spec['lane']}-cope-{seed}-{fi}-{side}-{c}")
@@ -246,10 +274,17 @@ def lay(spec, seed=1):
                 sky = np.where(pc["kind"] == 0, 0.95, np.where(pc["kind"] == 3, 0.35, 0.75))
                 in_panel = panel is not None and panel["s"][0] <= sm <= panel["s"][1]
                 bare = YEAR - (panel["year"] - crng.randint(15, 40) if in_panel else spec["built"])
+                # (a coping is laid with a fall to the bank: water lingers at its back and in its joints, its crown
+                # dries first; its front face takes the drip)
+                xin = np.minimum(V[:, 0], (e - s_cur) - V[:, 0])
+                w_cope = np.where(pc["kind"] == 0, np.clip(np.maximum(np.clip((along - 0.6) / 0.4, 0, 1),
+                                                                      np.clip(1.0 - xin / 0.05, 0, 1) * 0.8), 0.12, 1.0),
+                                  np.where(pc["kind"] == 2, 0.5, 0.3))
+                # hands on the coping's inner edge where it is at hand height above the steps (about 0.95 m)
+                hand = float(np.clip(1.0 - abs((top(sm) - float(step_top(sm))) - 0.95) / 0.35, 0.0, 1.0))
+                edge_in = np.where(pc["kind"] == 0, np.clip(1.0 - V[:, 1] / 0.12, 0.0, 1.0), np.where(pc["kind"] == 1, 1.0, 0.0))
                 put(P, pc["kind"], dict(F=pc["F"], UV=pc["UV"]), crng, bare, YEAR - spec["built"],
-                    np.full(len(P), 1.0), damp, sky, flip=(side == 1))
-                s_cur = e
-                c += 1
+                    np.full(len(P), 1.0), damp, sky, flip=(side == 1), water=w_cope, touch=hand * edge_in * use)
         meshes.append((f"stone_{spec['lane'].lower().replace(' ', '_')}_walls_{fi}",
                        dict(V=np.concatenate(out["V"]), F=out["F"], COL=np.concatenate(out["COL"]),
                             UV0=np.concatenate(out["UV0"]), UV1=np.concatenate(out["UV1"]),

@@ -38,6 +38,12 @@ Every hard surface (stone, timber, brick, render, concrete, asphalt, roofs) is d
 6. damage and repair: the thing's upkeep (`docs/upkeep.md`: left alone, patched, worked in a campaign, renewed; each repair its own material and date, spread as its causes spread; `upkeep.py`, the parts in `blender/parts/repair/`);
 7. weather (wet, frost, snow and ice, fallen leaves, litter).
 
+**Water and gravity order the stains, the weather and the growth** (Øystein, 22 October: "think about how rain, moss etc works; gravity"). Each generator bakes, per point, how much water lies or runs there (the water layer, UV2.y on stone): rain lands on what faces up, runs to the low edges and joints, drips off copings and nosings and streaks down the faces below (most under joints and low points, strongest near the top), gathers in hollows, joints and at every wall's foot (the splash and the damp), and dries from the crowns and edges first. Wetness after rain, run-off streaks of algae and grime, moss and algae follow it; lichen takes the dry, lit, exposed places between. An even rule for every up-facing surface, or growth from a noise field, reads as the same pattern everywhere (camouflage).
+
+**Wear follows every contact of use, not only feet:** footfall on what is walked on (polish, a hollow, rounded nosings), hands on what is held (a stair's parapet coping at hand height, a door's handle side, a railing), boots and bags at a wall's foot beside a flight, wheels at a corner, sitting on a step or a sill; each polishes, darkens and clears growth where it touches, from the uses (`docs/living-fabric.md`).
+
+Lichen grows as rosettes: each colony from a point in its own year, spreading about a third of a millimetre a year, merging where colonies meet and stopping at a stone's edge (`Growth.hlsl`); from past the street stop, a film over each stone as much as its years and quiet give.
+
 Shade is the light's, never the object's (SEASON's lesson, `docs/research/colour-and-shading.md`, rule 1): every surface is lit by the town's one shade function (`OS_ShadeP`, `StreetLooks.hlsl`), and no layer carries a shadow tint. A layer's dark (a joint, a nosing's underside) is its occlusion, baked or the light's.
 
 ## The living fabric

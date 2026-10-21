@@ -8,7 +8,7 @@
 // Vertex data (stone.py): UV4 x polish, y lichen years / 200; UV5 x moss, y water held; UV0 the grain (the top in
 // metres, the split faces round and up); UV1 x years since its surface was bare (laid, cast) / 200, y a seed for the
 // piece; UV2 x the face (0 top, 1 rounded edge, 2 split face, 3 bed; 4 cement pointing, 5 a cement dab, 6 a joint's soil), y the
-// slab's variation; UV3 the bake (x sky, y ground).
+// water layer (how much water lies or runs there, 0 to 1); UV3 the bake (x sky, y ground).
 Shader "Overstory/Stone"
 {
     Properties
@@ -26,6 +26,7 @@ Shader "Overstory/Stone"
         _CementOld ("Cement after forty years of weather and grime", Color) = (0.50, 0.50, 0.48, 1)
         _CementFilm ("The algae film on damp cement", Color) = (0.24, 0.27, 0.21, 1)
         _Soil ("The soil a joint holds where its pointing has gone", Color) = (0.17, 0.15, 0.12, 1)
+        _Streak ("The film water leaves where it runs down a face: algae and grime", Color) = (0.20, 0.22, 0.18, 1)
         [Toggle] _Grey ("Grey light: every layer's pigment one grey (to judge form)", Float) = 0
         _History ("Debug: show the history as colour (r polish, g lichen years, b moss)", Float) = 0
     }
@@ -46,6 +47,7 @@ Shader "Overstory/Stone"
         half4 _CementOld;
         half4 _CementFilm;
         half4 _Soil;
+        half4 _Streak;
         half _Grey;
         half _History;
     CBUFFER_END
@@ -74,7 +76,8 @@ Shader "Overstory/Stone"
         half growth;       // how much growth covers it (stays matt when wet)
     };
 
-    StoneOut OS_StoneSurface(float2 g, half4 hist, half kind, half years, half var, float3 positionWS, half sky)
+    StoneOut OS_StoneSurface(float2 g, half4 hist, half kind, half years, half var, float3 positionWS, half sky,
+                             half water, half up)
     {
         StoneOut o;
         half face = step(1.5h, kind) * step(kind, 2.5h);
@@ -147,8 +150,18 @@ Shader "Overstory/Stone"
             moss = saturate(hist.b * (0.5h + 1.2h * lost));
         }
 
+        // the water layer: where water runs down a face it leaves streaks of algae film and grime, long and vertical,
+        // strongest under the drips (the face's own plane: q.x along it, q.y up), building over the years; lichen
+        // keeps to the dry places between, moss and algae follow the wet
+        half facing = 1.0h - saturate(abs(up) * 1.6h);
+        half sN = (half)(OS_Noise(float2(q.x * 26.0, q.y * 2.2) + var * 5.3) * 0.7 + OS_Noise(float2(q.x * 70.0, q.y * 5.0)) * 0.3);
+        half streak = smoothstep(0.35h, 0.75h, water * 0.85h + sN * 0.45h - 0.2h) * facing * saturate(years / 25.0h);
+        rock = lerp(rock, _Streak.rgb, streak * 0.6h);
+        half lichenYears = hist.g * 200.0h * (1.0h - 0.85h * saturate(water * 1.2h - 0.1h));
+        moss = saturate(moss * (0.7h + 0.6h * water));
+
         // growth: nature's thin layer (Growth.hlsl), from where and how long the stone's facts give
-        OSGrowth gr = OS_GrowthLayer(rock, smooth, q, hist.g * 200.0h, moss, sky, var, positionWS);
+        OSGrowth gr = OS_GrowthLayer(rock, smooth, q, lichenYears, moss, sky, var, positionWS);
         rock = gr.albedo;
         smooth = gr.smoothness;
         h += gr.height * (half)(_Relief.y / max(_Relief.x, 1e-5));
@@ -248,8 +261,9 @@ Shader "Overstory/Stone"
                 half3 n = normalize(input.normalWS);
                 half years = (half)input.piece.x * 200.0h;
                 half town = OS_TownSky(input.positionWS, n);
-                StoneOut so = OS_StoneSurface(input.uv, input.history, (half)input.piece.z, years, (half)input.piece.w,
-                                              input.positionWS, town);
+                half water = (half)input.piece.w;
+                StoneOut so = OS_StoneSurface(input.uv, input.history, (half)input.piece.z, years, (half)input.piece.y,
+                                              input.positionWS, town, water, n.y);
                 n = OS_BumpStone(input.positionWS, n, so.height * (half)_Relief.x);
 
                 StreetSurface s;
@@ -261,7 +275,10 @@ Shader "Overstory/Stone"
                 // the weather: rain wets what faces the sky, the rock darkening by its porosity and glossing; water
                 // stands where it is hollow and in the back corners
                 half up = n.y;
-                half wet = (half)_OS_Wetness * saturate((up + 0.1h) / 0.6h);
+                // (wet by the water layer: in rain everything is damp and the runoff paths most; as it dries, only
+                // where water lingers stays wet: the hollows, joints, streak paths and feet; the crowns dry first.
+                // One even sheen on every up-facing surface read as the same wet everywhere)
+                half wet = saturate(((half)_OS_Wetness - 0.55h * (1.0h - water)) / 0.45h) * lerp(0.65h, 1.0h, saturate(up * 2.0h));
                 // moss and lichen soak it up: darker a little, never glossy
                 s.albedo *= lerp(1.0h, 1.0h - 0.5h * lerp(_Porosity, _Porosity * 0.9h, so.growth), wet);
                 // wet slate glosses where feet polished it; its rough skin elsewhere only a little

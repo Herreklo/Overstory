@@ -617,11 +617,11 @@
  "walls": [
   {
    "name": "stone_gully_steps_walls_0",
-   "tris": 132640
+   "tris": 132460
   },
   {
    "name": "stone_gully_steps_walls_1",
-   "tris": 436282
+   "tris": 436496
   }
  ]
 }

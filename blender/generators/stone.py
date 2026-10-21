@@ -260,7 +260,20 @@ def lay(spec, seed=1):
             out["UV0"].append(uv)
             var = rng.random()
             out["UV1"].append(np.stack([np.full(len(P), bare_y / 200.0), np.full(len(P), var)], -1))
-            out["UV2"].append(np.stack([kind.astype(float), np.full(len(P), var)], -1))
+            # the water layer (docs/foundations.md, The shared surface layers, 4 and 7): how much water lies or runs
+            # here. On a tread it lingers in the dish, the joints and against the riser above, and the crown dries
+            # first; the nosing sheds it; a front takes what runs over the nosing above it, most down the worn middle
+            # where the dish drains and at its joints, strongest just under the nosing; a joint's soil holds it
+            zz = z0 + P[:, 2]
+            water_top = np.clip(np.maximum.reduce([np.where(back, (along - 0.8) / 0.2, 0.0), np.where(joint, 0.8, 0.0),
+                                                   worn / 0.004]), 0.12, 1.0)
+            run_over = (0.2 + 0.8 * np.clip(walking(across) * 0.9, 0.0, 1.0)) * \
+                (0.5 + 0.5 * np.exp(-np.clip(z_top - zz, 0.0, None) / 0.08))
+            water = np.where(kind == 0, water_top, np.where(kind == 1, 0.3, np.where(kind == 2, run_over,
+                             np.where(kind >= 4, 0.9, 0.2))))
+            if not foot_on:
+                water = np.where(kind == 2, run_over, water)
+            out["UV2"].append(np.stack([kind.astype(float), np.clip(water, 0.0, 1.0)], -1))
             # what each point sees of the sky within the flight (the town's own shade comes from its sky map): a
             # tread open but for its back corner under the riser above; a riser in the shadow of the nosing over it,
             # less towards its top; a bed none
