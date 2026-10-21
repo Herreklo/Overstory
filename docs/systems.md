@@ -76,11 +76,11 @@ Every system, material and kind is studied twice before it is built (`CLAUDE.md`
 | Water, wear, growth, repairs | `repairs.md`, `stone.md`, `nature.md` | `materials-at-scale.md`, `history-in-things.md` |
 | History in things | `world-that-remembers.md`, `house-changes.md`, `repairs.md` | `history-in-things.md` |
 | Tiers, instancing, quality control | `tools-and-performance.md` (thin) | `performance-at-scale.md` |
-| Kits and generators | `generating-the-past.md` (thin) | `kits-and-generation.md` (running) |
+| Kits and generators | `generating-the-past.md` (thin) | `kits-and-generation.md` |
 | Towns and cities | `urban-design.md`, `city-forces.md`, `city-types.md`, `town-change.md`, `stavanger-centre.md` | `kits-and-generation.md`, `urban-design.md` |
-| Stone, made | `stone.md`, `repairs.md` | `materials-at-scale.md`, `performance-at-scale.md`, `kits-and-generation.md` (running) |
+| Stone, made | `stone.md`, `repairs.md` | `materials-at-scale.md`, `performance-at-scale.md`, `kits-and-generation.md` |
 | Land, rock, water, coast | `nature.md`, `stone.md` | `land-rock-and-water.md` |
-| Buildings and their parts | `house-changes.md`, `wooden-town-architecture.md` | `kits-and-generation.md` (running), `materials-at-scale.md` |
+| Buildings and their parts | `house-changes.md`, `wooden-town-architecture.md` | `kits-and-generation.md`, `materials-at-scale.md` |
 | Trees and nature | `trees.md`, `vegetation.md`, `park-trees.md`, `nature.md` | `performance-at-scale.md`, `animation-and-motion.md` (wind); ground cover craft: **gap**, before plan step 3 |
 | People as models | `people.md`, `people-deep-dive.md` | `characters.md` |
 | Behaviour on screen | `people.md` (thin) | `behaviour-on-screen.md` (search budget ran out: its Gaps list sources to close) |
