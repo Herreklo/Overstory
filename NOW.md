@@ -52,6 +52,12 @@ The studies of fun, AI playtesting and play craft, the clay time test (1f) and t
   The perception findings in `docs/research/time-on-screen.md` are constraints, not the answer: change is found where something visibly jumps; hold everything but the year; a cut invites a cause.
 - the walk mode at eye level, and whether people react to the camera, are tested in the greybox too (`docs/plan.md`, 1g).
 - the camera's play is settled by testing in the greybox, not by opinion (Øystein: "we have to test this"). See `docs/plan.md`, 1g.
+- the people in the playtests (`docs/research/playtesting.md`). Recommended:
+  - a neutral friend moderates sessions with strangers;
+  - strangers are recruited without a budget, as the study suggests;
+  - voice recordings only with consent.
+
+  Method choices are ours: no reloading in tests, and the record shown only after scoring.
 - which game comes first. Nothing is decided. The interface study designed for an observer (one of the three examples in `docs/living-world.md`, the three dials) as a test case; its play choices are defaults kept for when a game is designed (`docs/research/interface-and-inspection.md`, For Øystein).
 
 **Look and craft questions are ours** (Øystein, 22 October: "You have to figure these things out. As long as we are critical and only aim for high quality, this should answer itself."). They are decided on frames and motion sheets, with strict reviews, and Øystein judges the milestones. This covers the night sky's colour, lamp glass and the tonemapper; the brush's size by octaves and any boil; and near ground cover as strokes or blades.

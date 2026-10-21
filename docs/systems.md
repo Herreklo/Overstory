@@ -94,7 +94,7 @@ Every system, material and kind is studied twice before it is built (`CLAUDE.md`
 | Collision and navigation (where people and the camera can go, footing on treads and slopes) | `reach_check.py` (ways only) | `collision-and-navigation.md` |
 | Camera and composition | `visual-direction.md` | `camera-and-composition.md` (search budget ran out: Naughty Dog, Insomniac, Mario Odyssey, the alley cameras of Assassin's Creed, Hitman and Uncharted, and BG3's Lower City still to read, after the reset) |
 | Management and data interfaces: tables, boards, calendars, inboxes, ledgers (a manager game's desk) | `interface-and-inspection.md` (reading the world only) | **gap**, studied once the first game is chosen or the greybox needs it |
-| Playtesting: the programme, tools and what is worth trying | `docs/foundations.md` (Cold readers) | `playtesting.md` (running; Fable review after the reset) |
+| Playtesting: the programme, tools and what is worth trying | `docs/foundations.md` (Cold readers) | `playtesting.md` (Fable review after the reset; Blizzard, Insomniac, Riot and Sawyer's reactivity testing unread: the search budget ran out) |
 | Play craft: feel, focus, guidance, transitions, narrow streets | `living-world.md` | `play-craft.md` (Øystein: "extremely clever... master craftsmanship, finesse"; GDC Vault was down: the slides to read after the reset) |
 | Sound and music | `scenes-and-sound.md` (thin) | **gap**, before scenes |
 | Interface and reading the world | `interface.md` (thin) | `interface-and-inspection.md` (hover, inspect, the why-probe, the journal; what every part carries for picking) |
