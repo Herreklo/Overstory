@@ -82,7 +82,7 @@ Every system, material and kind is studied twice before it is built (`CLAUDE.md`
 | Land, rock, water, coast | `nature.md`, `stone.md` | `land-rock-and-water.md` (running) |
 | Buildings and their parts | `house-changes.md`, `wooden-town-architecture.md` | `kits-and-generation.md` (running), `materials-at-scale.md` |
 | Trees and nature | `trees.md`, `vegetation.md`, `park-trees.md`, `nature.md` | `performance-at-scale.md`, `animation-and-motion.md` (wind; running); ground cover craft: **gap**, before plan step 3 |
-| People as models | `people.md`, `people-deep-dive.md` | `characters.md` (running) |
+| People as models | `people.md`, `people-deep-dive.md` | `characters.md` |
 | Behaviour on screen | `people.md` (thin) | `behaviour-on-screen.md` (running) |
 | Animation and motion | `what-moves.md` (thin) | `animation-and-motion.md` (running) |
 | Street things, vehicles, boats | `between-buildings.md`, `what-moves.md` (thin) | **gap**, before plan step 6 |
