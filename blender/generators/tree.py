@@ -61,7 +61,7 @@ PARTS = {
                   marks=True, mark_min_radius=0.02, mark_scale=2.0, lenticel_spacing=0.24, mark_min_height=0.6,
                   cluster_size=(1.3, 1.15, 1.05, 0.85), crossed=True, billboard=True, edge_gap=0.22, edge_depth=0.2,
                   masses="limbs", seam_cut=0.7, core_depth=0.45, core_keep=0.9, top_tilt=50.0,
-                  crown_gradient=0.6, lobe_size=3.6, lobe_weight=0.7, lobe_seam=0.4, lobe_seam_cut=0.8, lobe_shrink=0.4, lobe_flat=0.35, top_z=0.66, top_tilt_depth=0.15, hug_gap=0.12, hug_len=0.5, hug_stem=0.025, rod_len=3.0, rod_r=0.03, rod_bare=0.8, rod_order=2,
+                  crown_gradient=0.6, lone_n=3, lone_r=1.0, lone_reach=0.5, lobe_size=3.6, lobe_weight=0.7, lobe_seam=0.4, lobe_seam_cut=0.8, lobe_shrink=0.4, lobe_flat=0.35, top_z=0.66, top_tilt_depth=0.15, hug_gap=0.12, hug_len=0.5, hug_stem=0.025, rod_len=3.0, rod_r=0.03, rod_bare=0.8, rod_order=2,
                   spur_r=0.025, spur_keep=0.5,
                   places=dict(core=((0, 1), (1, 0)), top=((0, 1), (1, 0)), low=((2, 3),), high=((3, 2),)), lose_tips=40, hang=False, card=(0.50, 0.48), card_u=(0.03, 0.97), cells=4,
                   per_node=2, along=1, droop=0.7, leaf_years=999, leaf_tips=24, draw_tips=2.5, draw_tips_per_m=0.9, winter_tips=3.0, reach=99.0, hang_reach=0.3,
@@ -72,6 +72,8 @@ PARTS = {
 # the silver birch: the birch's fitting, carrying its own drapes (blender/parts/trees/silver_birch; Øystein preferred
 # them, full and arching, to open strands with a rising top), its branches giving more under their weight
 PARTS["silver_birch"] = dict(PARTS["birch"], sag=0.12, lenticel_spacing=0.36, mark_scale=2.6, lobe_seam=0.0, lobe_shrink=0.0, seam=0.5,
+                            card_facing="corner",     # (a drape's facing blended corner to corner: one value a card,
+                                                      # each drape read as a flat cut-out from above)
                             seam_cut=0.95)     # (its drapes hang in tiers with sky between; the downy's seams are
                                                # narrower and broken, a clean seam under its top read as a slot)
 
@@ -1150,6 +1152,21 @@ def lobe_mesh(tl, parts, age, seed, H):
         keep = np.array([vols[w] is None or volume_depth(vols[w], c) < parts["core_depth"] or c[2] > vols[w][0][2]
                          or h01(seed, i, 23) < parts["core_keep"] for i, c, w in zip(ids, centres, which)])
         ids, centres, which, edge = ids[keep], centres[keep], which[keep], edge[keep]
+    if parts.get("lone_n"):
+        # a lone spray, out in the air on a twig too fine to draw at the street stop, reads as a clump floating free:
+        # one with fewer than lone_n others within lone_r that hangs more than lone_reach along undrawn twigs from
+        # drawn wood is left out
+        draw_t = drawn_tips(parts, H)
+        seg = np.linalg.norm(tl["end"] - tl["start"], axis=1)
+        undrawn = np.zeros(len(tl["parent"]))
+        for i_ in range(1, len(tl["parent"])):
+            if tl["alive"][i_]:
+                undrawn[i_] = 0.0 if tl["tips"][i_] >= draw_t else undrawn[tl["parent"][i_]] + seg[i_]
+        r2 = (parts.get("lone_r", 1.0) * scale) ** 2
+        near = np.array([int((np.sum((centres - c) ** 2, axis=1) < r2).sum()) - 1 for c in centres])
+        keep = ~((near < parts["lone_n"]) & (undrawn[ids] > parts.get("lone_reach", 0.5)))
+        tl["lone_dropped"] = int((~keep).sum())
+        ids, centres, which, edge = ids[keep], centres[keep], which[keep], edge[keep]
     # lobes: each mass cut into lobes about lobe_size across, each a smooth volume of its own, so every lobe has its
     # lit top and its shaded underside (Oga's shade follows each lobe's outline, never a band across the mass); with
     # lobe_seam, the leaves where two lobes meet thinned, so the lobes stand apart with sky and dark pockets between
@@ -1305,7 +1322,7 @@ def lobe_mesh(tl, parts, age, seed, H):
                 # mass still faced the sky, and from above the crown was one value)
                 # (one value a card, at its middle: blended corner to corner, the edge between cap and side was an
                 # airbrushed blotch across the cards, never a painted edge)
-                pc = np.mean(corners, axis=0)
+                pc = np.mean(corners, axis=0) if parts.get("card_facing", "mid") == "mid" else p
                 own_up = float(volume_normal(lv, pc, 0.0)[2]) if lv is not None else (float(volume_normal(vol, pc, 0.0)[2]) if vol is not None else 1.0)
                 if lv is not None:
                     # the lobe's own turn from the sky, set in its mass's

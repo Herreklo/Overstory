@@ -527,6 +527,12 @@ Shader "Overstory/Tree"
                 // and below its sides, its underside: a lobe lit on top, a mid value across its front, dark beneath
                 // (one value for front and underside, a lobe seen from the street was dark in its middle)
                 half lobeFront = smoothstep(_LobeUnderSplit - 0.06h, _LobeUnderSplit + 0.06h, (half)input.bake.a * 2.0h - 1.0h + jit);
+                // seen from above, a lobe's underside and a mass's lower skin show the upper sides of their leaves: they
+                // take the front's value (cards face the eye, and from the city camera undersides at the rim read as a
+                // dark speckled fringe)
+                half fromAbove = smoothstep(0.35h, 0.75h, (half)id.viewDirectionWS.y);
+                top = max(top, fromAbove);
+                lobeFront = max(lobeFront, fromAbove);
                 {
                     Light sun = GetMainLight(id.shadowCoord, id.positionWS, half4(1, 1, 1, 1));
                     half ndl = dot(n, sun.direction);
