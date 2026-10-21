@@ -63,12 +63,6 @@ The studies of fun, the clay time test (1f) and the measuring tools are committe
 **What goes to Øystein** (scope, play and permissions only, each with a recommendation; everything else is decided, recorded with its reasons, and shown to him as finished work he can overturn):
 - the town system's scope and the eras after 1989 (`docs/town-system.md`);
 - his OK for reference downloads (Stavanger's rock, water, city-archive photos for houses and dress, and the large GDC decks the studies could not open), each listed with its source and size first;
-- **showing time passing: open, to be explored creatively** (Øystein, 22 October: "there are many cool ways to show time progressing, we should try to be very creative here"):
-  - generate many ideas, wide;
-  - prototype the best few on the corner through the years (step 4);
-  - judge them for beauty by strict review and for readability by the cold readers.
-
-  The perception findings in `docs/research/time-on-screen.md` are constraints, not the answer: change is found where something visibly jumps; hold everything but the year; a cut invites a cause.
 - the walk mode at eye level, and whether people react to the camera, are tested in the greybox too (`docs/plan.md`, 1g).
 - the camera's play is settled by testing in the greybox, not by opinion (Øystein: "we have to test this"). See `docs/plan.md`, 1g.
 - the people in the playtests (`docs/research/playtesting.md`). Recommended:
@@ -93,6 +87,7 @@ The studies of fun, the clay time test (1f) and the measuring tools are committe
   - Era content is made only for what survives into 1989 (buildings and their parts, stone, trees, old signs).
   - A game that starts earlier adds its own eras.
 - **The player's acts change the 3D world** as anyone's do, through the record (Øystein: "they should definitely be reflected in the 3d environment"). Whether the player's own mark is also made noticeable is part of the creative exploration of time.
+- **Showing time: repainted stroke by stroke leads; the toggle in place is the baseline it must beat** (Øystein, 21 October, on 1f's sheet). In 1f, stroke by stroke found 7 of 8 changes with no false claim, against 6 for the toggle and 3 for the window. That was one reader each, so both go to more readers and to people as a switch in the greybox (1g). The photograph held at its spot stays, for close views only. The exploration stays wide (Øystein: "there are many cool ways to show time progressing, we should try to be very creative here"), within the constraints in `docs/research/time-on-screen.md`.
 - **Signs and street text are in English** (Øystein, 22 October), lettered in each era's styles.
 - **Scenes are written, not voiced.** No motion-capture sessions: motion comes from free libraries, edited against video (`docs/living-world.md`).
 - **The town stands on Stavanger's phyllite** (`docs/stone.md`).

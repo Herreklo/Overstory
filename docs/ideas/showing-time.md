@@ -84,3 +84,5 @@ Scored against the constraints that bite hardest (3: the jump visible; 5: the bu
 - **A window into another year:** the pane the player holds over a place, the other year inside it; and the same pane as a photograph held at its spot, the diegetic form.
 
 What each showed, and how the readers and the review judged it, is in `docs/experiments.md` (LT1f).
+
+**Taken forward (Øystein, 21 October):** repainted stroke by stroke leads, and the toggle is the baseline it must beat. Both go into the greybox as a switch (`docs/plan.md`, 1g). The window's photograph held at its spot is kept for close views. The rest of this list stays open for the creative exploration.

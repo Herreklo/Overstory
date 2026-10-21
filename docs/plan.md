@@ -160,7 +160,7 @@ The steps keep their numbers, since other docs cite them. Step 1 is reopened on 
      - the free camera;
      - blockout people, driven by the real engine run when it arrives (`docs/engine-requests.md`, request 36), else by authored fixtures;
      - hover and inspect as placeholders;
-     - the best ways of showing time from 1f.
+     - showing time from 1f as a switch: repainted stroke by stroke (leading) against the toggle in place (the baseline it must beat), with more readers than 1f's one each.
 
      Its play questions are settled by testing variants side by side, never by opinion (Øystein, on the camera: "we have to test this"):
      - a walker or a drone in the lanes;

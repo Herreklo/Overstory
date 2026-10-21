@@ -24,7 +24,7 @@ The corner's five houses are built from their diaries at 1989, 2000, 2010 and 20
 
 Form carries the big changes. The rest comes with the first house parts: coats and wear, shop glass and lettering, a trace on every copy, and parts that look their decade. What owners did after 1989 is a research gap, studied before step 4.
 
-## For you to judge
+## Judged (Øystein, 21 October)
 
-- Which way of showing time to take further: repainted stroke by stroke (ours, and it read best) or the toggle (the evidence's baseline).
-- Whether the photograph held at its spot is worth keeping for close views.
+- Repainted stroke by stroke goes forward as the lead. The toggle stays as the baseline it must beat, and the two are compared with more readers and with people in the greybox (1g).
+- The photograph held at its spot is kept, for close views only.
