@@ -65,6 +65,7 @@ Choose the model by the kind of work, and say in one line when a step calls for 
 | `docs/foundations.md` | What every system shares: the judging views, detail tiers and budgets, the shared surface layers, packs and facts |
 | `docs/living-world.md` | How places, people and history are shown |
 | `docs/town-plan.md` | The first town: its land, areas, paths, nodes and landmarks, and the order they are laid out in clay |
+| `docs/town-system.md` | How every town is laid out and changes: dated plan units, plots with cycles, plans and building rules, the past grown to the start year |
 | `docs/living-fabric.md` | How the town's fabric lives: one record and runner for every made or planted thing, flow through shared fields, the history budget per view |
 | `docs/upkeep.md` | How things are kept and repaired after they are made, shared by every system |
 | `docs/building-system.md` | How buildings are generated from dated diaries |
