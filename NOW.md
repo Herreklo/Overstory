@@ -108,6 +108,10 @@ At today's rate a thousand stairs would take about 19 hours to generate and 16 G
 - the night sky's colour, lamp glass and the tonemapper, judged on frames when the light is rebuilt;
 - the brush's size stepped by octaves, so strokes stay within a factor of two on screen (recommended; one line of `docs/visual-direction.md`), and no boil on anything that stands still. Both are judged on motion sheets;
 - his OK for reference downloads (Stavanger's rock, water, city-archive photos for houses and dress, and the large GDC decks the studies could not open), each listed with its source and size first;
+- how players compare years (play, defaults per game; `docs/research/time-on-screen.md`). Recommended:
+  - an archive photograph, or the player's own, held up at its spot and toggled in place;
+  - a time-lapse allowed as spectacle, but bracketed by dated stills and never the only passage;
+  - the player's own acts never marked in the world, shown in the journal and the why-probe instead;
 - near ground cover as painted strokes or fine blades (recommended: strokes, confirmed by the first look test);
 - whether signs and street text stay in Norwegian and are translated on inspection (recommended: yes; `docs/research/fronts-windows-and-signs.md`).
 
