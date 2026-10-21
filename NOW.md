@@ -49,6 +49,11 @@ What is open and what is next. Every session reads this page first, so it stays 
 - **The reference machine** is an ordinary computer, the M4 Mac mini: 60 fps at 1440p at default settings, with no gaming PC needed (`docs/foundations.md`).
 - **Cold readers are model readers,** in the engine's blind method (`docs/foundations.md`).
 - **How years pass in play** depends on the game, from a week to generations. The screen follows the record, and play changes the record (`docs/town-system.md`).
+- **Show from 1989, remember from 1870** (Øystein, 22 October: "things will change, grow older, deteriorate, trees will grow, stairs will be worn down, shops will open, but in the future, not 100 years in the past as well"):
+  - The world on screen starts in 1989 and changes forward: ageing, wear, growth, works, and shops opening and closing.
+  - The past exists only as the starting record that explains 1989's look: when each thing was built, repaired and kept, and by whom. It is generated once by rule and never rendered.
+  - Era content is made only for what survives into 1989 (buildings and their parts, stone, trees, old signs).
+  - A game that starts earlier adds its own eras.
 - **The player's acts change the 3D world** as anyone's do, through the record (Øystein: "they should definitely be reflected in the 3d environment"). Whether the player's own mark is also made noticeable is part of the creative exploration of time.
 - **Signs and street text are in English** (Øystein, 22 October), lettered in each era's styles.
 - **Scenes are written, not voiced.** No motion-capture sessions: motion comes from free libraries, edited against video (`docs/living-world.md`).

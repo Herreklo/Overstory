@@ -259,7 +259,7 @@ Each step ends in something judged in Unity from the views, then the strict revi
 4. **The feet and water fields** for the corner, from the diaries and the roofs; the gully, the wall and the setts rebuilt from them. *Judged:* the moss line follows the drips and the polish follows the door.
 5. **House A's coats and front.** Keepers and uses in the diary; coat cycles from care; the shopfront's fit, strip and ghost; the sign as a record. *Judged:* the corner shop's four states at 12 m and the street stop.
 6. **D's yard and the heath.** Nature on care; the path to A's door. *Judged:* the yard's three years since 1986.
-7. **The corner through the years** (the plan's step 4): 1935, 1960, 1989, 2020 rebuilt live; cold readers date it; the history budget measured.
+7. **The corner through the years** (the plan's step 4), forward from 1989: 1989, 2000, 2010 and 2020 rebuilt live (show from 1989, remember from 1870: the past is the starting record, never rendered). Cold readers read it, and the history budget is measured.
 8. **One foreign part** through the same life.
 9. **The cannery street at the city view** (the plan's step 6): a closed works and the street round it, the first flow at town scale.
 

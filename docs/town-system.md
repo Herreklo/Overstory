@@ -71,6 +71,8 @@ Where the better-off live is a pack dial, set by what the centre offers that the
 
 ## 3. Growing the past, then playing forward
 
+The grown past is the starting record only: it explains how the 1989 town looks, and it is generated once by rule and never rendered (Øystein, 22 October: show from 1989, remember from 1870).
+
 1. **The frame:** the land and its old lines before the oldest act.
 2. **The first routes:** the sea and the quay as the matrix; ridge and coast paths; the country road at a horse's grade.
 3. **The script,** read from the pack's timeline. Empty years are skipped; plots step yearly from the first town-sized act (1800 here).

@@ -313,7 +313,7 @@ Change is cheap as long as one rule holds: everything that can change is a dated
 
 What keeps change local: layout is data in the setting pack, buildings are assembled from parts, the ground is computed from the land and its cuts, and the world is cut into chunks by plot. What would make it hard, and is avoided: geometry placed by hand in the shipped game (hand block-ins are references, then turned into facts), baked lighting, and meshes that span many plots. Until the engine's fabric pass models buildings and land, the dated facts come from fixtures.
 
-**Early tests, before the town grows:** the corner across four dates, rebuilt live in Unity from its facts, including a house demolished and replaced, two plots merged, and the quay pushed out into the basin; it proves runtime assembly and local rebuilds. Then the town's edge from the far stop in 1935, 1960, 1989 and 2020, in clay: farms becoming a garden suburb, the estate laid out, the bridge opening the island; it proves expansion and the traces it leaves.
+**Early tests, before the town grows:** the corner across four dates, rebuilt live in Unity from its facts, including a house demolished and replaced, two plots merged, and the quay pushed out into the basin; it proves runtime assembly and local rebuilds. Then the town's edge from the far stop at four dates from 1989, in clay: new estates, works and renewals as the engine and the pack's plans make them. It proves expansion and the traces it leaves. The world on screen starts in 1989; the past is its starting record (`NOW.md`, Decided).
 
 ## The town around the centre
 

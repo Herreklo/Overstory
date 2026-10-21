@@ -118,12 +118,12 @@ The steps keep their numbers, since other docs cite them. Step 1 is reopened on 
    - 1d, the corner's land (natural ground plus dated acts, breaklines, the rock knuckle);
    - 1e, the gully and walls re-fitted, then the birches. This is mostly porting, keeping their facts, rules, style and review findings.
 
-   - 1f, the game's question tested early, in clay (`CLAUDE.md`, Working in the right order: biggest risk first). The corner's houses are built from their diaries at 1935, 1960, 1989 and 2020 by the test-quality generator. Two or three of the most promising ways of showing time are prototyped, from a wide creative exploration. Cold readers read them (criteria 1 and 4) before any final house part is made. It needs none of the architecture, so it can start as soon as there is room, and its findings shape the houses and the history budget.
+   - 1f, the game's question tested early, in clay (`CLAUDE.md`, Working in the right order: biggest risk first). The corner's houses are built from their diaries at 1989, 2000, 2010 and 2020 by the test-quality generator. The diaries need events after 1988 first: none has any yet. Two or three of the most promising ways of showing time are prototyped, from a wide creative exploration. Cold readers read them (criteria 1 and 4) before any final house part is made. It needs none of the architecture, so it can start as soon as there is room, and its findings shape the houses and the history budget.
 
    Then the landing's setts, the kerb and the plinths.
 2. *Buildings, built right the first time:* House A by the generator, twelve more from the same parts, then the corner's five houses; coats, windows and signs; a first cold reader.
 3. *The corner's ground and things:* heath, D's yard, moss and grass, the lamp, the handrail; the corner complete in four lights.
-4. *The corner through the years* (1935, 1960, 1989, 2020): cold readers date it, and it is checked against the engine's front door (`rH28`).
+4. *The corner through the years, forward from 1989* (1989, 2000, 2010, 2020; show from 1989, remember from 1870). Cold readers read the 1989 frame against its record and the changes between years, and it is checked against the engine's front door (`rH28`). The content after 1989 is researched just before this step.
 5. *People, in-house on free bases;* the first scene outdoors, on the gully steps at night (criterion 3); a playable camera test.
 6. *The heart at the city view:* land and water, paving, the town's things, generated streets; frame time measured each time a part joins (criterion 5).
 7. *Nature's living parts,* and the trees' open list.
@@ -206,7 +206,7 @@ A world for many games has no end: new towns, eras and packs are open-ended cont
   Clay is structure only. The sketches of the night of 20 October (`blender/tools/grow_town.py`, `fixtures/lt1-town.json`, the terrain module, the light-ray pass, the dramatic rigs) are sketches to learn from, not a base. The last look Øystein judged a step forward is commit `4c7215a` (look P on Harbour Row).
 - **Asset gate:** reached on 20 October and told to Øystein. Parts are made one at a time against their reference boards, with Øystein's OK before references are downloaded.
 - **Later experiments:** LT2, a small venue at night with two people talking; LT3, the street through the years with seasons and weather (`docs/experiments.md`).
-- **1989 to today** (Øystein): the systems run to any year, but the content after 1989 is missing: research and the pack's catalogue (`docs/research/town-change.md`), so the world has something to change into and a setting can start later (#23).
+- **After 1989** (needed before step 4, since the world on screen starts in 1989 and moves forward): the content after 1989 is missing. It needs research and the pack's catalogue (`docs/research/town-change.md`: the oil-money years, restored stairs, universal design's ramps and rails, cafés, graffiti), so the world has something to change into.
 - **Waiting for Øystein:** in `NOW.md`.
 
 ## Running things
