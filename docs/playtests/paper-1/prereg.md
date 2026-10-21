@@ -129,7 +129,7 @@ On a lives-driven world: lives that pay in understanding but never in play make 
 
 ## Amendments
 
-### 1. From 72 runs to 24 (21 October, 21:30, before any concept session)
+### 1. From 72 runs to 24 (21 October, 21:13, before any concept session)
 
 **Why.** Calibration showed what the method costs. Between 20:22 and 21:10 the 5-hour window went from 16% to 75% and the weekly budget (all models) from 5% to 20%, with calibration, the cards and the setups the main users. A concept run costs about 1.2% of the week, so the 72 runs as designed would take about 90%. The week's budget also carries the architecture's port and the camera research, which come first (`NOW.md`). The figures are in `usage.md`. The lead session chose the lean design, A, and set its conditions.
 

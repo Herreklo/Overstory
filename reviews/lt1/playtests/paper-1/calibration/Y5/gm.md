@@ -32,3 +32,20 @@ Calibration run. Player kind: sceptic. Twin run: X5 (same opening, same queue). 
 
 ## Log
 - R0: opening sent (r0-screen.md). Waiting for r1-act.md. Credits 14. Citations 0. Clock 06:00.
+- R0: player spawn refused by the harness (concurrent subagent limit, 20, reached; told not to retry). No player started; no rounds run. Waiting for the lead to relaunch.
+- R0 (relaunch): fresh sonnet player spawned with the round 0 spawn message (gm-brief, The player). Credits 14. Citations 0. Clock 06:00.
+- R1 (r1-act.md, 3 turns, pull 5). T1 Korsak approve: CARD (queue 1, all valid) correct, +5; clock 06:00 -> 07:15.
+- R1 T2 Ostrova deny, no question: CARD (queue 2, no work pass) correct, +5; not asked, so her line is not given; no bribe in the card; clock -> 08:30.
+- R1 T3 Halbert, one question then deny: CARD (queue 3, asked once: "A clerk's slip, surely.") deny correct, +5; clock 08:30 + 75 + 15 -> 10:00. Question minutes used: 15 of the 45 before entrant 9 is lost.
+- R1 state: earned 15, savings 14, citations 0. r1-screen.md written (entrants 4 to 6). Fresh player spawned for round 2.
+- R2 (r2-act.md, 3 turns, pull 5). T1 Brasko detain, no question: CARD (queue 4, forged passport; detaining a forger is correct, +5 pay, +5 guards) +5, bonus 5 owed at shift end; clock 10:00 + 75 + 10 -> 11:25. Which guard takes him: GM-SIMULATED (card silent; 1 sergeant, 2 the other guard; seed calibration-Y5-r2-t1-guard; roll 1) -> Danik. Brasko not asked, so no line.
+- R2 T2 Dubova deny, no question: CARD (queue 5, birth date mismatch; deny is correct by the rules) +5; not asked, so her account is not given; clock -> 12:40.
+- R2 T3 Liskov approve: CARD (queue 6, all valid) +5; Danik's offer delivered as the card's line, during the inspection; clock -> 13:55.
+- R2 state: earned 30, bonus owed 5, savings 14, citations 0. Extra minutes used 25 (one question, one detention); entrant 7 at 13:55, 8 at 15:10, 9 at 16:25 if nothing more is added; by the card, more than 45 extra minutes in all loses entrant 9. r2-screen.md written with the bills line request. Fresh player spawned for round 3.
+- R3 (r3-act.md, 3 turns, pull 6, bills line: rent, medicine, food, heat; skip heat if 10 short). T1 Moravec, one question then approve: CARD (queue 7, all valid; approve is correct; if approved, Danik says nothing) +5; her answer to the question GM-SIMULATED (card gives no answer; she was in the queue and nobody spoke to her, said in character, no new fact); clock 13:55 + 75 + 15 -> 15:25.
+- R3 T2 Soler deny, coins pushed back: CARD (queue 8, permit expired 1982.11.26; deny correct) +5; clock -> 16:40.
+- R3 T3 Volkov: reached at 16:40, before 17:00 (extra minutes 40 in all, within the card's 45). Deny: CARD (queue 9, passport expired) +5; clock -> 17:55.
+- R3 shift end: CARD (approved Moravec: Danik walks past without a word; her article in the next morning's paper, naming no one). Pay 9 x 5 = 45, detention bonus 5, citations 0, Danik's 10 not earned. Savings 14 + 50 = 64; bills paid in full (55); remaining 9.
+- R3 family: medicine -> son well (CARD). Food and heat paid -> uncle and mother-in-law well: GM-SIMULATED (card states only what an unpaid bill does; recovery when paid follows Papers, Please's own rule). Wife well.
+- R3: r3-screen.md written with the plan's exit questions, the round 3 marks line and the exit line. Fresh player spawned for the exit.
+- Exit: exit.md written (overall pull 5; would play day 8 only to see whether Danik acts; best: Danik's offer and the next morning's column; worst: the risk never became real, warnings untouched, sums slack, family a table). Player's memory file created by the player. Game 1 complete. Next: Saltlight, new game message for calibration/weak-Y5.
