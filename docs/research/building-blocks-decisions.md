@@ -353,7 +353,7 @@ Re-estimated against these decisions. The register's studies put the full port a
 | 6 | The picking spike (1 to 1.5 days) and the grey walker (1 to 2 days) | | next week, with the C# core |
 | 7 | Measure before and after at every judging view; the strict review; the proof sheet | 1 day | Friday, on whatever is honestly complete |
 
-Seven and a half to ten Opus-days against three. Friday's milestone is steps 0 to 2 reviewed, with step 3 as far as it has got and its A/B shown as is. The architecture, the tools and the scale test do not move. Nothing in C# this week.
+The steps add to 13.5 to 17.5 Opus-days for the whole port, and 6.5 to 8 through step 3 (corrected by the session from the table; the first draft said 7.5 to 10). The week has three. Friday's milestone is steps 0 to 2 reviewed, with step 3 as far as it has got and its A/B shown as is. The architecture, the tools and the scale test do not move. No stage is ported to C# this week; the only C# change is matching `Hash.cs` to the hash spec (step 0b).
 
 ## 14. Questions for Øystein
 

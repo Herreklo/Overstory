@@ -14,6 +14,44 @@ Results that surprised us or might be new, newest first. Each says what the evid
 
 ---
 
+## LT1, the building blocks' architecture (21 October)
+
+**Status:** decided; a strict review to follow. Step 1a. The design is `docs/building-blocks.md`, its reasons `docs/research/building-blocks-decisions.md`.
+
+**The question:** what must the foundations be so every kind is built once, right, and holds for a bigger city and the three example games (a manager, an exploration game, a family across generations)?
+
+**How it was made:**
+- an Opus register of 123 decisions from fourteen studies and five digests (`docs/research/building-blocks-inputs.md`);
+- a Fable pre-mortem of the architecture (`docs/research/pre-mortem-architecture.md`);
+- Opus packets of the code and of the surrounding docs;
+- Fable's decisions, each firm or provisional.
+
+**The outcome, kept:**
+- Parts are made offline; the town is assembled in the player, C# becoming the one source stage by stage after parity.
+- Contracts are JSON Schema files, with golden fixtures and migrations.
+- History is a function of the record and the date: maps hold rates, reset years and age offsets, and a jump costs a uniform.
+- Ids are stable down to slot and fill. One dated slot-and-fill record serves windows, coats and repairs.
+- Five levels switched by error in pixels; chunks of 4, 32, 64 and 128 m; shadows from proxies.
+- Budgets in milliseconds, megabytes and triangles, per pass and per kilometre, on the 16 GB M4.
+
+**Where it overruled the studies' leans:**
+- kind files at the repo root, `kinds/`, not `blender/kinds/`, since both languages read them;
+- a rate change rebakes a map region on the GPU, not the chunk's mesh;
+- the far shell may cache an output bake, the one exception to inputs-only maps;
+- the painted far town replaces conventional far levels per kind, whether or not the atlas is painted;
+- Python's hash is the spec, C# matching it;
+- a strict review accepts baselines while building, Øystein the milestone sheets;
+- pieces may repeat where no viewer can find it; things never do;
+- the word `engine` retires as a provenance value, leaving four.
+
+**What we drop:** the statements listed in `docs/building-blocks.md` (What this changes), among them offline-only life, vertex-baked city life, "years since" per coat, the tiers' switch distances, LFS for generated files and `random.Random`.
+
+**Still provisional:** every budget (the harness run and the scale test); byte widths and the history carrier (the gully's A/B at 3.2); map density and unit sizes (the scale test); repetition (Øystein's reading and a look test); the painted atlas (its look test, when Øystein chooses); picking (the spike).
+
+**The port re-estimated:** 13.5 to 17.5 Opus-days for the whole port, 6.5 to 8 through history as a function, against the plan's three. The cut line is step 3, history as a function: Friday shows steps 0 to 2 reviewed and step 3 as far as it got.
+
+---
+
 ## LT1f: the corner through the years, in clay
 
 **Status:** a first round run and recorded (22 October); the strict review and Øystein's judgement to come. Step 1f of `docs/plan.md`: the game's question tested early, before any final house part is made. It needs none of the building blocks' architecture and does not decide any of it.
