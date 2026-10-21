@@ -25,7 +25,7 @@ What is open and what is next. Every session reads this page first, so it stays 
   - *Wednesday to Friday:* the gully ported onto the building blocks as the proof, ending in a strict review and a before-and-after sheet for Øystein.
 
   The goal, the days, the architecture's scope, the baselines, the cut line and the budget are in `docs/plan.md`.
-- **Who starts it:** the chat that wrote this plan starts both Monday sessions when Øystein says go. Otherwise any new session that reads this page can start them.
+- **Who starts it:** a scheduled task (`overstory-architecture`, in the app's Scheduled section) starts the architecture in a fresh session on Thursday 22 October at 08:00. That's after Øystein's free usage reset on the evening of the 21st, so the week begins three days early. If usage hasn't been reset, the task stops without starting. Any new session that reads this page can also start the work.
 - **Before Monday (started 22 October, with the week's last budget):** Opus agents are digesting the fourteen studies into `docs/research/inputs/`: a bar check, the decisions each proposes, what every part must carry, the conflicts between studies and the unknowns. A consolidated decision register follows in `docs/research/building-blocks-inputs.md`, so Monday's Fable session starts straight on judgement. The measuring tools are being built (mesh hashes, golden views at the player's size, the frame-time harness, motion sheets; `docs/measuring.md`), so Monday's tools session may find them done. Each is committed as it lands; anything unfinished is picked up on Monday.
 
 ## Waiting for Øystein
