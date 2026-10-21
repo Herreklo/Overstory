@@ -50,6 +50,8 @@ Shader "Overstory/Tree"
         _LeafSheen ("Leaves: the sky seen in their gloss (a share of the sky's light, its colour)", Range(0, 0.3)) = 0.0
         _LobeUnderSplit ("Leaves: where a lobe's front turns to its underside (its own facing)", Range(-1, 1)) = -0.25
         _LobeUnderValue ("Leaves: the sky's light on a lobe's underside, as a share of its cap's", Range(0, 1)) = 0.42
+        _SkyRamp ("Leaves: the baked sky openness mapped from x to y onto the interior and skin (a wide ramp keeps the crown's top-to-skirt gradient)", Vector) = (0.42, 0.56, 0, 0)
+        _ShadeCool ("Leaves: how far a shaded plane takes the sky's own hue (a power of it)", Range(0, 4)) = 0
         _SprayLight ("Leaves: how much of a spray's own painted light shows (the lobe's carries the value)", Range(0, 1)) = 0.5
         _SplitJitter ("Leaves: how far each card's own turn to shade strays from the mass's (its normal's height)", Range(0, 1)) = 0.3
     }
@@ -85,6 +87,8 @@ Shader "Overstory/Tree"
         half _LeafSheen;
         half _LobeUnderSplit;
         half _LobeUnderValue;
+        float4 _SkyRamp;
+        half _ShadeCool;
         half _CapSplit;
         half _SideValue;
         half4 _MarkDark;
@@ -121,12 +125,16 @@ Shader "Overstory/Tree"
     // world round the trunk, never the bark's tile.
     half3 OS_TreeFoot(float3 positionWS, float r, float z)
     {
-        float u = positionWS.x + positionWS.z;
+        // round the stem: the arc (metres) from the tree's own axis (x + z repeated on a cylinder's far half, and
+        // every pattern there was a mirror image: hearts and crosses)
+        float3 po = TransformWorldToObject(positionWS);
+        float u = atan2(po.z, po.x) * max(r, 0.05) * 1.4142;
         half up = saturate(1.0h - (half)(z / max(_Foot.y * r, 0.05)));          // 1 at the ground, 0 at its top
         half age = saturate((half)(r / _Foot.x));
         half reach = (half)OS_Noise(float2(u * 2.3, 0.0)) * 0.6h + (half)OS_Noise(float2(u * 9.0 + 2.7, 0.0)) * 0.4h;
-        // many small plates (the reference's crust), white between them down to the ground: none closes into one
-        half f = (half)(OS_Noise(float2(u * 28.0, positionWS.y * 4.5)) * 0.6 + OS_Noise(float2(u * 52.0 + 3.1, positionWS.y * 9.0)) * 0.4);
+        // many small plates (the reference's crust), white between them down to the ground: none closes into one;
+        // about as tall as wide, a little taller (six times finer round the stem than along it, they were drips)
+        half f = (half)(OS_Noise(float2(u * 13.0, positionWS.y * 8.0)) * 0.6 + OS_Noise(float2(u * 31.0 + 3.1, positionWS.y * 21.0)) * 0.4);
         // torn edges: a fine jag where the white bark ends
         f += 0.07h * ((half)OS_Noise(float2(u * 120.0, positionWS.y * 60.0)) - 0.5h);
         // the threshold falls towards the ground and with each fissure's own reach: more of the bark dark lower down,
@@ -493,7 +501,7 @@ Shader "Overstory/Tree"
             #if defined(_OS_LEAVES)
                 // what a card sees of the sky, flattened to two values: a mass's skin open, its core one darker
                 // interior (Oga's dark inner mass behind the lit ones, never a hollow)
-                b.sky = lerp(0.66h, 1.0h, smoothstep(0.42h, 0.56h, b.sky));     // (a darker interior went near-black: shade goes cool, never black)
+                b.sky = lerp(0.66h, 1.0h, smoothstep(_SkyRamp.x, _SkyRamp.y, b.sky));     // (a darker interior went near-black: shade goes cool, never black)
             #endif
 
             #if defined(_OS_LEAVES)
@@ -538,6 +546,11 @@ Shader "Overstory/Tree"
                     // edge between (Firewatch's two values a form), decided by where the card sits on its mass, never
                     // leaf by leaf
                     sky *= lerp(_UnderFloor, 1.1h * lerp(lerp(_LobeUnderValue, _SideValue, lobeFront), 1.0h, cap), top);
+                    // a shaded plane sees less of the sky's brightest and more of its colour: the sky's own hue,
+                    // stronger the deeper the plane's shade (rules 1 and 4: shade cools by the light, never lifts)
+                    half3 skyHue = sky / max(dot(sky, half3(0.2126h, 0.7152h, 0.0722h)), 1e-3h);
+                    half shadeK = (1.0h - cap * top) * _ShadeCool;
+                    sky *= pow(max(skyHue, 1e-3h), shadeK) / max(dot(pow(max(skyHue, 1e-3h), shadeK), half3(0.2126h, 0.7152h, 0.0722h)), 1e-3h);
                     // the sky's light by what the card sees of the sky through the crown (baked); the sun's by its own
                     // shadow, a little dimmed deep inside
                     half seen = saturate(b.sky);

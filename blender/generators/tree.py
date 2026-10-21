@@ -61,7 +61,7 @@ PARTS = {
                   marks=True, mark_min_radius=0.02, mark_scale=2.0, lenticel_spacing=0.24, mark_min_height=0.6,
                   cluster_size=(1.3, 1.15, 1.05, 0.85), crossed=True, billboard=True, edge_gap=0.22, edge_depth=0.2,
                   masses="limbs", seam_cut=0.7, core_depth=0.45, core_keep=0.55, top_tilt=50.0,
-                  lobe_size=2.2, lobe_weight=0.7, lobe_seam=0.4, lobe_seam_cut=0.8, lobe_shrink=0.4, lobe_flat=0.35, top_z=0.66, top_tilt_depth=0.15, hug_gap=0.12, hug_len=0.5, hug_stem=0.025, rod_len=3.0, rod_r=0.03, rod_bare=0.8, rod_order=2,
+                  lobe_size=3.6, lobe_weight=0.7, lobe_seam=0.4, lobe_seam_cut=0.8, lobe_shrink=0.4, lobe_flat=0.35, top_z=0.66, top_tilt_depth=0.15, hug_gap=0.12, hug_len=0.5, hug_stem=0.025, rod_len=3.0, rod_r=0.03, rod_bare=0.8, rod_order=2,
                   spur_r=0.025, spur_keep=0.5,
                   places=dict(core=((0, 1), (1, 0)), top=((0, 1), (1, 0)), low=((2, 3),), high=((3, 2),)), lose_tips=40, hang=False, card=(0.50, 0.48), card_u=(0.03, 0.97), cells=4,
                   per_node=2, along=1, droop=0.7, leaf_years=999, leaf_tips=24, draw_tips=2.5, draw_tips_per_m=0.9, winter_tips=3.0, reach=99.0, hang_reach=0.3,

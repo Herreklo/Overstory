@@ -108,6 +108,10 @@ namespace Overstory.EditorTools
                     m.SetFloat("_SideValue", 0.68f);
                     m.SetFloat("_LobeUnderSplit", -0.25f);
                     m.SetFloat("_LobeUnderValue", 0.4f);
+                    // the crown's whole gradient, open top to shaded skirt, kept (a narrow ramp flattened it to two)
+                    m.SetVector("_SkyRamp", new Vector4(0.42f, 0.56f, 0f, 0f));
+                    // shaded planes cool by the sky's own hue
+                    m.SetFloat("_ShadeCool", 0f);     // (at 2 it lightened the shade and turned it yellow-green: off)
                     m.SetFloat("_SplitJitter", 0.3f);
                     // a spray's own painted light: the downy's at half (it speckled the lobes), the silver's drapes
                     // nearly whole (at half each drape was one flat fill, a paper cut-out from the city camera)

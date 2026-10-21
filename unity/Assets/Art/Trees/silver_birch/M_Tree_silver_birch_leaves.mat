@@ -60,6 +60,7 @@ Material:
     - _MassSplit: -0.05
     - _Occlusion: 1
     - _Scatter: 0.12
+    - _ShadeCool: 0
     - _SideValue: 0.68
     - _SkyThrough: 0.65
     - _SplitJitter: 0.3
@@ -80,6 +81,7 @@ Material:
     - _Mottle: {r: 0.56, g: 0.53, b: 0.49, a: 0}
     - _Relief: {r: 0.006, g: 0.01, b: 0, a: 0}
     - _Season: {r: 0.7, g: 0.62, b: 0, a: 0}
+    - _SkyRamp: {r: 0.42, g: 0.56, b: 0, a: 0}
     - _Through: {r: 1, g: 1, b: 1, a: 0.9}
     - _Turned: {r: 0.74, g: 0.59, b: 0.29, a: 1}
     - _Twig: {r: 0.42, g: 0.34, b: 0.34, a: 1}
