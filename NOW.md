@@ -26,7 +26,7 @@ What is open and what is next. Every session reads this page first, so it stays 
 
   The goal, the days, the architecture's scope, the baselines, the cut line and the budget are in `docs/plan.md`.
 - **Who starts it:** the chat that wrote this plan starts both Monday sessions when Øystein says go. Otherwise any new session that reads this page can start them.
-- **Before Monday:** all fourteen craft studies and the token study are in; the token study's rules are in `CLAUDE.md`. The interface study is being written: hovering, inspecting and asking why (`docs/research/interface-and-inspection.md`; Øystein: "we have not talked about ui etc yet"). It is committed as it lands.
+- **Before Monday (started 22 October, with the week's last budget):** Opus agents are digesting the fourteen studies into `docs/research/inputs/`: a bar check, the decisions each proposes, what every part must carry, the conflicts between studies and the unknowns. A consolidated decision register follows in `docs/research/building-blocks-inputs.md`, so Monday's Fable session starts straight on judgement. The measuring tools are being built (mesh hashes, golden views at the player's size, the frame-time harness, motion sheets; `docs/measuring.md`), so Monday's tools session may find them done. The interface study is being written (`docs/research/interface-and-inspection.md`; Øystein: "we have not talked about ui etc yet"). Each is committed as it lands; anything unfinished is picked up on Monday.
 
 ## Waiting for Øystein
 
