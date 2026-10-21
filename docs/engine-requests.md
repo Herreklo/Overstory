@@ -136,6 +136,12 @@ In order of need, 32 and 33 come first. They are cheap now and costly to retrofi
    - *Meanwhile:* fixtures, `authored`; in the editor, the engine under Node beside Unity, read through the front door.
    - The player would see a decision taken in play reach the street while the dated card is still on screen.
 
+## After the playtests: a bundle for Understory
+
+Decided with Øystein (21 October): the engine requests that come out of the playtests are gathered and sent to Understory together, once the paper playtests and the greybox's first round are done. Each one is backed by what the tests showed. Øystein carries them over, or asks us to comment on the engine's Overstory-labelled issue. Candidates so far, to confirm by the tests:
+- **Crime and its aftermath.** Theft beyond the till skims the engine already makes; death that is not natural; suspicion, inquests and the police as a place of work. Rule 8 and "evidence, not verdicts" still hold: no sensationalism, and accounts may be wrong.
+- **A sports club as a kind of group,** with matches as events, as the bands have rehearsals and gigs.
+
 ## Overstory's own
 
 These are presentation, built here from the engine's facts: how a building diary looks, trips and footfall at street level (worn steps, parked cars outside homes where people are in), and hourly weather, heating and lit rooms inside a scene. What they need from the engine is in the front door's habits (#22). Until then the LT1 fixture's `lit` block says which floors are lit at blue hour, and why.
