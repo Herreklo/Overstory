@@ -93,6 +93,7 @@ Every system, material and kind is studied twice before it is built (`CLAUDE.md`
 | Time on screen: one place across years | `history-in-things.md`, `town-change.md`, `living-fabric.md` | `time-on-screen.md` |
 | Collision and navigation (where people and the camera can go, footing on treads and slopes) | `reach_check.py` (ways only) | `collision-and-navigation.md` (running) |
 | Camera and composition | `visual-direction.md` | `camera-and-composition.md` (running) |
+| Playtesting: the programme, tools and what is worth trying | `docs/foundations.md` (Cold readers) | `playtesting.md` (running; Fable review after the reset) |
 | Play craft: feel, focus, guidance, transitions, narrow streets | `living-world.md` | `play-craft.md` (running; Øystein: "extremely clever... master craftsmanship, finesse") |
 | Sound and music | `scenes-and-sound.md` (thin) | **gap**, before scenes |
 | Interface and reading the world | `interface.md` (thin) | `interface-and-inspection.md` (hover, inspect, the why-probe, the journal; what every part carries for picking) |
