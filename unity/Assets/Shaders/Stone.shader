@@ -98,7 +98,7 @@ Shader "Overstory/Stone"
         // relief: the painted grain's, smoothed where feet have polished it
         // (a split face is rough: its plates stand proud by several millimetres, so raking light breaks it into small
         // lights and shadows; as shallow as a bedding plane, the block fronts read as smooth wooden planks)
-        half h = relief * (1.0h - hist.r * 0.7h) * lerp(1.0h, 2.2h, face);
+        half h = relief * (1.0h - hist.r * 0.7h);
 
         // cement, a repair's own material and date (kind 4 pointing, 5 a dab; upkeep.py, docs/upkeep.md): pale and
         // warm the day it was struck, its sand showing; greyer with grime over the years, a film of algae where it
@@ -116,13 +116,14 @@ Shader "Overstory/Stone"
         }
         else if (kind > 3.5h)
         {
-            half sand = (half)OS_Noise(q * 260.0 + var * 17.0);
+            // (painted: its value and its age; no sand or crazing to speckle it)
+            half sand = 0.5h;
             // (on this coast grime and a film come in a few years: half grey by six, near its old grey by twenty)
             half grime = 1.0h - exp(-years / 9.0h);
-            half3 cem = lerp(_Cement.rgb, _CementOld.rgb, grime) * (0.9h + 0.2h * sand);
+            half3 cem = lerp(_Cement.rgb, _CementOld.rgb, grime);
             half film = saturate(hist.b * 1.6h) * grime * smoothstep(0.3h, 0.7h, (half)OS_Noise(q * 12.0 + var * 5.0));
             cem = lerp(cem, _CementFilm.rgb, film * 0.7h);
-            half craze = smoothstep(0.03h, 0.0h, abs((half)OS_Noise(q * 38.0 + var * 9.0) - 0.5h)) * grime;
+            half craze = 0.0h;
             cem *= 1.0h - 0.25h * craze;
             half lost = 0.0h;
             if (kind < 4.5h)
@@ -253,7 +254,7 @@ Shader "Overstory/Stone"
                 half up = n.y;
                 half wet = (half)_OS_Wetness * saturate((up + 0.1h) / 0.6h);
                 // moss and lichen soak it up: darker a little, never glossy
-                s.albedo *= lerp(1.0h, 1.0h - 0.5h * lerp(_Porosity, 0.3h, so.growth), wet);
+                s.albedo *= lerp(1.0h, 1.0h - 0.5h * lerp(_Porosity, 0.6h, so.growth), wet);
                 // wet slate glosses where feet polished it; its rough skin elsewhere only a little
                 s.smoothness = lerp(s.smoothness, max(s.smoothness, lerp(0.3h, 0.85h, input.history.r)), wet * (1.0h - so.growth));
                 half pool = smoothstep(0.5h, 0.85h, input.history.a) * saturate((half)_OS_Wetness * 1.5h - 0.4h) * step(0.8h, up);

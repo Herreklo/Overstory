@@ -246,7 +246,11 @@ namespace Overstory.EditorTools
                         urp.shadowDistance = 120f;
                         stage.shot = shot;
                         stage.Apply();
-                        string file = Path.Combine(dir, $"gully-{view}{(grey ? "-greylight" : "")}{(Flag("-history") ? "-history" : "")}{(Flag("-albedo") ? "-albedo" : "")}{(Flag("-normals") ? "-normals" : "")}{(Flag("-nostyle") ? "-nostyle" : "")}.png");
+                        // -paint: the clay kept, the style's brushwork on (clay alone judges the light; the painted
+                        // language is judged with the brush)
+                        if (Flag("-paint"))
+                            Shader.SetGlobalVector("_OS_Paint", new Vector4(stage.wrap, stage.muting, stage.grime, stage.brush));
+                        string file = Path.Combine(dir, $"gully-{view}{(grey ? "-greylight" : "")}{(Flag("-history") ? "-history" : "")}{(Flag("-albedo") ? "-albedo" : "")}{(Flag("-normals") ? "-normals" : "")}{(Flag("-paint") ? "-paint" : "")}{(Flag("-nostyle") ? "-nostyle" : "")}.png");
                         LT1Render.Still(stage.view, file, grey: true, eighth: true, msaa: 4);
                         Debug.Log($"[LT1Stone] {file}");
                     }

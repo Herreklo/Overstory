@@ -162,6 +162,14 @@ def slab(seed, width, depth, thick, front_round=0.012, side_round=0.006, layers=
         idx = np.clip(np.searchsorted(bt, np.linspace(0, 1, n), side="right") - 1, 0, len(bv) - 1)
         return bv[idx]
     rad = rad * steps_along(nring, max(3, nring // 6), 0.25, 1.7)
+    # and knocked hard in a few places along the front, where a load or a frost took a piece of the arris
+    knock = np.zeros(nring)
+    for _ in range(rng.randint(0, 2 + int(width))):
+        c_ = rng.randrange(nring)
+        L_ = rng.randint(2, 4)
+        idx = (np.arange(c_ - L_, c_ + L_ + 1)) % nring
+        knock[idx] = np.maximum(knock[idx], rng.uniform(0.008, 0.02) * np.clip(1.0 - np.abs(np.arange(-L_, L_ + 1)) / (L_ + 0.5), 0, 1))
+    rad = rad + np.where(side_of == 0, knock, knock * 0.4)
     per = np.concatenate([[0.0], np.cumsum(np.linalg.norm(np.diff(P, axis=0), axis=1))])
 
     rings = [np.array(ring)]
@@ -200,13 +208,17 @@ def slab(seed, width, depth, thick, front_round=0.012, side_round=0.006, layers=
         return np.interp(np.linspace(0, 1, n), bt, bv)
     z_edge = zt - rad
     prev_out = rad.copy()
+    last_ring = (z_edge, rad.copy())
     for k, hk in enumerate(list(heights) + [0.0]):
         # each layer's standing in or out wanders along the edge; at the front more (it was split, then dressed only
         # on top), at the back least
         # each plate stands in or out by its own amount and breaks off abruptly along the edge (a smooth offset
         # along the whole edge read as planed striations)
-        lay = steps_along(nring, max(2, nring // 10), -1.0, 1.0) + 0.2 * _noise1(rng, nring, [(rng.uniform(6, 10), 1.0)])
-        amp = np.where(side_of == 0, 0.012, np.where(side_of == 2, 0.002, 0.008))
+        # each plate's face in flat facets: straight runs between kinks along the edge (a stepped or smooth offset
+        # read as boards or soap), standing in or out by up to a couple of centimetres on a thick block
+        amp_f = float(np.clip(thick * 0.08, 0.012, 0.022))
+        lay = kinks(nring, max(3, nring // 5), 1.0)
+        amp = np.where(side_of == 0, amp_f, np.where(side_of == 2, 0.002, amp_f * 0.65))
         outk = rad + amp * lay - 0.002 * k
         # a parting shows only where a plate has broken away; elsewhere the face runs on from the plate above (each
         # parting along the whole edge at one height read as ruled boards), and the bedding wanders a little
@@ -217,13 +229,30 @@ def slab(seed, width, depth, thick, front_round=0.012, side_round=0.006, layers=
         # a ledge: the layer's top edge at the old setback, then its own face below it
         pairs = ((zk + 0.002, prev_out), (zk, outk)) if hk > 0 else ((zk, outk),)
         for zz, oo in pairs:
+            # a tall band of a plate is lumpy down its height too: a facet ring every five centimetres, each
+            # standing in or out of the straight lean between the band's top and bottom (one flat band a plate read
+            # as stacked pancakes)
+            za, oa = last_ring
+            n_mid = int(np.clip(np.mean(za - np.maximum(zz, 0.0)) / 0.05, 0, 6))
+            for m_ in range(1, n_mid + 1):
+                f_ = m_ / (n_mid + 1)
+                zm = za + (np.maximum(zz, 0.0) - za) * f_
+                om = oa + (oo - oa) * f_ + amp * 0.55 * kinks(nring, max(3, nring // 2), 1.0)
+                Rm = np.concatenate([P + nrm * om[:, None], zm[:, None]], -1)
+                V.append(Rm)
+                kind.append(np.full(nring, 2, dtype=np.int8))
+                edge.append(np.zeros(nring))
+                rings.append(np.arange(base, base + nring))
+                base += nring
             R = np.concatenate([P + nrm * oo[:, None], np.maximum(zz, 0.0)[:, None]], -1)
             V.append(R)
             kind.append(np.full(nring, 2, dtype=np.int8))
             edge.append(np.zeros(nring))
             rings.append(np.arange(base, base + nring))
             base += nring
-        prev_out = outk
+            last_ring = (np.maximum(zz, 0.0), oo)
+        # and each plate leans in or out from its top to its bottom, so the next parting starts where it ends
+        prev_out = outk + amp * 0.7 * kinks(nring, max(2, nring // 7), 1.0)
     # the faces between consecutive rings (round the slab's border, whose points follow its grid)
     for ra, rb in zip(rings, rings[1:]):
         for k in range(nring):

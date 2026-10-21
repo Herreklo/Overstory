@@ -45,23 +45,12 @@ half3 OS_LichenAt(float2 q, half years, half seed, float footprint)
                * (0.65h + 0.7h * frac(seed * 7.31h));
     half pq = clamp(1.0h - share, 0.002h, 0.998h);
     half th = 0.5h + 0.138h * (half)(log(pq / (1.0h - pq)) / 1.702);
-    half f = field + lobe * 0.06h + crumb * 0.035h;
-    half cover = smoothstep(th - 0.004h, th + 0.004h, f);
-    // the dark line only where colonies crowd and meet (map lichen's prothallus), never round every crust (a dark
-    // outline round each read as camouflage decals)
-    half crowd = smoothstep(0.55h, 0.72h, (half)OS_Noise(q * 6.0 + seed * 1.7));
-    half rim = cover * (1.0h - smoothstep(th + 0.004h, th + 0.018h, f)) * crowd * 0.6h;
-    // a few young colonies between, a centimetre or less, lobed
-    const float cell = 0.03;
-    float2 p2 = q / cell;
-    float2 h2 = OS_GrowthHash2(floor(p2) + seed * 11.3);
-    half r2 = saturate(years / 40.0h) * (0.12h + 0.18h * (half)h2.y);
-    if (h2.x < share * 0.18h)
-    {
-        half d2 = (half)length(frac(p2) - 0.5) / max(r2, 1e-3h) + lobe * 1.2h + crumb * 0.8h;
-        half young = 1.0h - smoothstep(0.85h, 1.0h, d2);
-        cover = max(cover, young);
-    }
+    // painted, not photographed (docs/visual-direction.md; the board, 26: Stålenhag's lichen as soft spots): a field
+    // with a lobed outline and a soft edge, one pale value; no crumbs, plates, dots, outlines or seedling flecks
+    // (each read as speckle from every view)
+    half f = field + lobe * 0.04h;
+    half cover = smoothstep(th - 0.05h, th + 0.04h, f);
+    half rim = 0.0h;
     half age = saturate((f - th) / 0.1h) * saturate(years / 100.0h);
     half far = saturate((half)((footprint - 0.002) / 0.008));
     cover = lerp(cover, share, far);
@@ -86,12 +75,9 @@ OSGrowth OS_GrowthLayer(half3 albedo, half smoothness, float2 q, half lichenYear
     float footprint = max(length(ddx(positionWS)), length(ddy(positionWS)));
     half3 li = OS_LichenAt(q, lichenYears, seed, footprint);
     // the crust: cracked into tiny plates (areoles) a millimetre or two across
-    half areole = (half)OS_Noise(q * 700.0 + seed * 3.3);
-    // a crust's inside is never one flat pale: older and greyer in places, a few dark fruiting dots
-    half mottle = (half)OS_Noise(q * 28.0 + seed * 2.1);
-    half dots = smoothstep(0.87h, 0.9h, (half)OS_Noise(q * 140.0 + seed * 5.3));
-    half3 lich = lerp(_OS_Lichen.rgb, _OS_LichenOld.rgb, saturate(li.y + (mottle - 0.5h) * 0.8h)) * (0.9h + 0.16h * areole);
-    lich *= 1.0h - 0.3h * dots;
+    // one pale value, older and greyer towards a colony's middle, broadly
+    half mottle = (half)OS_Noise(q * 9.0 + seed * 2.1);
+    half3 lich = lerp(_OS_Lichen.rgb, _OS_LichenOld.rgb, saturate(li.y * 0.8h + (mottle - 0.5h) * 0.4h));
     lich = lerp(lich, _OS_LichenRim.rgb, li.z);
     albedo = lerp(albedo, lich, li.x);
     smoothness = lerp(smoothness, 0.08h, li.x);
@@ -123,7 +109,7 @@ OSGrowth OS_GrowthLayer(half3 albedo, half smoothness, float2 q, half lichenYear
     half3 mossc = lerp(_OS_MossOld.rgb, _OS_Moss.rgb, saturate(dome * 1.3h - 0.1h) * (0.6h + 0.4h * fresh));
     albedo = lerp(albedo, mossc, cover);
     smoothness = lerp(smoothness, 0.05h, cover);
-    h += cover * (0.6h + 1.8h * dome);
+    h += cover * (0.3h + 0.8h * dome);
     g.albedo = albedo;
     g.smoothness = smoothness;
     g.height = h;

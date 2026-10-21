@@ -274,6 +274,15 @@ def lay(spec, seed=1):
                          UV=Vq[:, :2] + xc)
             put(Vq, piece, random.Random(f"fill-{xc:.3f}-{s_a:.3f}"), xc, s_a, z, True, 0, YEAR - spec["built"], bed_y)
 
+        def fill_bed(key, x_a, s_f, length, width, zl, bed_y):
+            """Soil and moss along a block's foot, in the bed joint where it stands on the step below."""
+            pc = CE.pointing(key, length, width)
+            V = pc["V"].copy()
+            t = np.clip(V[:, 0] / max(length, 1e-6), 0.0, 1.0)
+            V[:, 2] = np.interp(t, np.linspace(0, 1, len(zl)), zl) + 0.001
+            pc["kind"] = np.full(len(V), 6, dtype=np.int8)
+            put(V, pc, random.Random(key), x_a, s_f, 0.0, True, 0, YEAR - spec["built"], bed_y)
+
         def fill_front(xc, half, s_f, z0, z1, bed_y, cast=None):
             """The same joint where it comes down a block's front: soil and moss a centimetre in (an open joint read
             as a black slit), or the crew's cement pointing struck to the face."""
@@ -339,6 +348,14 @@ def lay(spec, seed=1):
                     P = settler(rng, w, off * 0.5)(piece["V"])
                     put(P, piece, rng, -W / 2 + edges_r[k] + jl, i * g + ovh + rng.uniform(-0.004, 0.004), zfoot - sunk, False,
                         YEAR - spec["built"], YEAR - spec["built"], bed_y)
+            # the bed line at a block's foot, where it stands on the step below: soil and moss where no crew pointed
+            # it (lime pointing washes out in a few decades; the board, 06)
+            if how == "block" and not cemented and prev_tops:
+                s_f = i * g + 0.004
+                xs = np.linspace(-W / 2, W / 2, 24)
+                zl = np.array([top_line(prev_tops, x, [s_f - 0.01])[0] for x in xs])
+                zl = np.where(zl < -1e8, zfoot, zl)
+                fill_bed(f"{spec['lane']}-{fi}-{i}-bed", -W / 2, s_f, W, 0.022, zl, bed_y)
             # a step reset in cement: its bed pointed where its front stands on the step below
             if cemented and prev_tops:
                 s_f = i * g + ovh - 0.006
@@ -374,6 +391,13 @@ def lay(spec, seed=1):
                 s0 = i * g + rng.uniform(-0.01, 0.01)
                 fr, sr = rng.uniform(0.004, 0.008), rng.uniform(0.003, 0.006)
                 fk, ch, jg = rng.uniform(0.3, 0.5), rng.uniform(0.008, 0.02), rng.uniform(0.008, 0.014)
+                nl_ = None
+                if how == "block":
+                    # a thick block: its front one rough lumpy plate or two (the board, 06: no stacked laminae on a
+                    # step's front), its arris crisp and knocked (rounded all along, every block read as dough); the
+                    # walking line's wear rounds its own nosings
+                    fr, sr, jg, nl_ = rng.uniform(0.006, 0.01), rng.uniform(0.004, 0.007), rng.uniform(0.008, 0.012), 2
+                    ch = rng.uniform(0.012, 0.025)
                 for pa, pb, half in parts:
                     w = pb - pa
                     broken = None
@@ -383,7 +407,7 @@ def lay(spec, seed=1):
                     # split slate: crisp edges, its corners knocked, a layer flaked off here and there (rounded, every
                     # tread read as a bar of soap); its wear rounds the walking line's nosing on its own
                     piece = SL.slab(key + (f"-{half}" if half else ""), w, depth, t_tr, front_round=fr, side_round=sr,
-                                    flake=fk, chip=ch, edge_jag=jg, broken=broken)
+                                    flake=fk, chip=ch, edge_jag=jg, broken=broken, layers=nl_)
                     dx = pa - x_a
                     P = tf(piece["V"], dx)
                     if half == "b":
