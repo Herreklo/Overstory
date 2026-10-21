@@ -1,0 +1,959 @@
+{
+ "stone_bishop_s_steps.fbx": {
+  "tool": "mesh_hash 1",
+  "hash": "6d048f37cf1d5d5d",
+  "triangles": 579169,
+  "meshes": {
+   "stone_bishop's_steps_0": {
+    "hash": "c52f1f83bca8d428",
+    "vertices": 45025,
+    "corners": 175911,
+    "triangles": 86065,
+    "channels": {
+     "edges": "39630a134fde9112",
+     "indices": "d5b3a3b2dbec9709",
+     "normals": "19c2dc6e90ef20b9",
+     "other": "146128264614c1fc",
+     "positions": "71e216e04c31d953",
+     "uv0": "3bba90664afbee88",
+     "uv1": "97d84f2799e16fd4",
+     "uv2": "de62c7f1aca1e902",
+     "uv3": "15c89bc1979ea975",
+     "uv4": "e296f46d8b13be7d",
+     "uv5": "484e1fb29370d9a8",
+     "transform": "e3b0c44298fc1c14"
+    }
+   },
+   "stone_bishop's_steps_1": {
+    "hash": "642f401df06ca023",
+    "vertices": 104205,
+    "corners": 411131,
+    "triangles": 201393,
+    "channels": {
+     "edges": "ec7f5d197706e155",
+     "indices": "cb01777d370cd620",
+     "normals": "4ea23cc1cd0d43ed",
+     "other": "146128264614c1fc",
+     "positions": "d4e398fa27975a18",
+     "uv0": "cb9de73e26f7b6ef",
+     "uv1": "23714cf24180828d",
+     "uv2": "5af6dcba6760a561",
+     "uv3": "c7b8703b330ab6bb",
+     "uv4": "72510e9a2a245383",
+     "uv5": "ac4a608d2a5ebac9",
+     "transform": "e3b0c44298fc1c14"
+    }
+   },
+   "stone_bishop's_steps_2": {
+    "hash": "95d2b19d454d5d4c",
+    "vertices": 150890,
+    "corners": 595583,
+    "triangles": 291711,
+    "channels": {
+     "edges": "f42475c3b880b23b",
+     "indices": "fe96de1abdec0015",
+     "normals": "eaf75dfe8ff7b7b3",
+     "other": "146128264614c1fc",
+     "positions": "5e14066082b773d0",
+     "uv0": "30b0b34ce717629d",
+     "uv1": "5d92d4bbe0046945",
+     "uv2": "f1776f9e5bf118df",
+     "uv3": "c799fbea1d534928",
+     "uv4": "b02847bd651dd3b1",
+     "uv5": "2b81e66dcffa3118",
+     "transform": "e3b0c44298fc1c14"
+    }
+   }
+  }
+ },
+ "stone_gully_steps.fbx": {
+  "tool": "mesh_hash 1",
+  "hash": "babe291de7a32bb1",
+  "triangles": 361282,
+  "meshes": {
+   "stone_gully_steps_0": {
+    "hash": "c2367573f6eba322",
+    "vertices": 51250,
+    "corners": 199995,
+    "triangles": 97985,
+    "channels": {
+     "edges": "4622d5c3d93046d3",
+     "indices": "971f73367f6510e2",
+     "normals": "c66d3772691d9217",
+     "other": "146128264614c1fc",
+     "positions": "263d96d4f2b997cf",
+     "uv0": "89f42a549bf45efa",
+     "uv1": "256e4d194c64c654",
+     "uv2": "aa2a4a7675e3a6db",
+     "uv3": "cdb7a91250b8136a",
+     "uv4": "0b1f250c923c2bb1",
+     "uv5": "942001ae0ab719d2",
+     "transform": "e3b0c44298fc1c14"
+    }
+   },
+   "stone_gully_steps_1": {
+    "hash": "f8852ccb4a495c79",
+    "vertices": 135629,
+    "corners": 536527,
+    "triangles": 263297,
+    "channels": {
+     "edges": "505101f71ea5a02a",
+     "indices": "2ebe65aaa87ae5eb",
+     "normals": "e9e8c4bacdea892b",
+     "other": "146128264614c1fc",
+     "positions": "3ab086f212b448f3",
+     "uv0": "d33bfd4e8f62772f",
+     "uv1": "e329a67b06b618d1",
+     "uv2": "e5af310ad547009d",
+     "uv3": "8e80d1906e4b68f8",
+     "uv4": "fbe968113c6ef88b",
+     "uv5": "5d026654023fbb59",
+     "transform": "e3b0c44298fc1c14"
+    }
+   }
+  }
+ },
+ "stone_passage_at_110.fbx": {
+  "tool": "mesh_hash 1",
+  "hash": "2f19d51a59ed963d",
+  "triangles": 171758,
+  "meshes": {
+   "stone_passage_at_110_0": {
+    "hash": "1c657c9eddf4e585",
+    "vertices": 86676,
+    "corners": 353630,
+    "triangles": 171758,
+    "channels": {
+     "edges": "43c5c8df6ba74944",
+     "indices": "3b2f0b647bfcc002",
+     "normals": "02bbe3bdfb7a86f7",
+     "other": "146128264614c1fc",
+     "positions": "5d8b3e2f2a6d5546",
+     "uv0": "6674489e31d6507b",
+     "uv1": "9d331a38b0515f12",
+     "uv2": "c8f0a209a25f4d49",
+     "uv3": "06ce962dcab16188",
+     "uv4": "8264279d59714a9b",
+     "uv5": "11f6fc3b81835ada",
+     "transform": "e3b0c44298fc1c14"
+    }
+   }
+  }
+ },
+ "stone_passage_at_92.fbx": {
+  "tool": "mesh_hash 1",
+  "hash": "5576bafbb4478022",
+  "triangles": 54598,
+  "meshes": {
+   "stone_passage_at_92_0": {
+    "hash": "45bd9096fcdaedef",
+    "vertices": 27589,
+    "corners": 112532,
+    "triangles": 54598,
+    "channels": {
+     "edges": "f44a64f31920eac1",
+     "indices": "72da1a18dde5b45e",
+     "normals": "136b7aee69256d4b",
+     "other": "146128264614c1fc",
+     "positions": "59a030b7bd75252d",
+     "uv0": "87a1e92307cf43e8",
+     "uv1": "e46d7bc3cc6ae441",
+     "uv2": "309d43ae558c23c5",
+     "uv3": "ceabcd84d21d8026",
+     "uv4": "7c57d0592c796376",
+     "uv5": "c2b58dc9f9d424ee",
+     "transform": "e3b0c44298fc1c14"
+    }
+   }
+  }
+ },
+ "stone_passage_at__172.fbx": {
+  "tool": "mesh_hash 1",
+  "hash": "b52c373902695179",
+  "triangles": 54280,
+  "meshes": {
+   "stone_passage_at_-172_0": {
+    "hash": "59f116e2643806ef",
+    "vertices": 27344,
+    "corners": 111760,
+    "triangles": 54280,
+    "channels": {
+     "edges": "0cd5b2c5d58fd5a3",
+     "indices": "00af087687566572",
+     "normals": "aedbbffce1666945",
+     "other": "146128264614c1fc",
+     "positions": "d5e606e8b5d5dfd6",
+     "uv0": "f708c55619b6d68c",
+     "uv1": "ec0c98e3c85d72d7",
+     "uv2": "d0d747e8eb87364d",
+     "uv3": "fd10917e20eb8236",
+     "uv4": "bfdf30b05e4c2484",
+     "uv5": "3fd8cd62fb29ed9c",
+     "transform": "e3b0c44298fc1c14"
+    }
+   }
+  }
+ },
+ "stone_stair_lane_2.fbx": {
+  "tool": "mesh_hash 1",
+  "hash": "028cb4a9fde9074f",
+  "triangles": 426780,
+  "meshes": {
+   "stone_stair-lane_2_0": {
+    "hash": "81e1b1aaa1a56e1a",
+    "vertices": 31537,
+    "corners": 128040,
+    "triangles": 62532,
+    "channels": {
+     "edges": "ac99dbf2bc0e4cb6",
+     "indices": "d5e6a77bd2a85ce3",
+     "normals": "86e2882eea24a08e",
+     "other": "146128264614c1fc",
+     "positions": "15ae995777a1413c",
+     "uv0": "2f238800f9684f18",
+     "uv1": "2fc32eb7b2ca7dd7",
+     "uv2": "a6d36657745762c9",
+     "uv3": "a2284af6768987dd",
+     "uv4": "7731047f93f98e00",
+     "uv5": "34d0aabd21f8d599",
+     "transform": "e3b0c44298fc1c14"
+    }
+   },
+   "stone_stair-lane_2_0_setts": {
+    "hash": "e882fb872e3fb242",
+    "vertices": 207419,
+    "corners": 768968,
+    "triangles": 364248,
+    "channels": {
+     "edges": "ea092fb0970f4ab5",
+     "indices": "a26fddc2f12155c4",
+     "normals": "8626aba012a84516",
+     "other": "146128264614c1fc",
+     "positions": "a9424d3ca51331bc",
+     "uv0": "e4b30e348dba0574",
+     "uv1": "ec5f957bc598368d",
+     "uv2": "263ea683380223a5",
+     "uv3": "5570b9c239f7da06",
+     "uv4": "d5239eeb05007a40",
+     "uv5": "d7d868626e4b2e1c",
+     "transform": "e3b0c44298fc1c14"
+    }
+   }
+  }
+ },
+ "stone_stair_lane_6.fbx": {
+  "tool": "mesh_hash 1",
+  "hash": "8ee0b95564563793",
+  "triangles": 393132,
+  "meshes": {
+   "stone_stair-lane_6_0": {
+    "hash": "367bec37a6d22abb",
+    "vertices": 29778,
+    "corners": 120868,
+    "triangles": 59052,
+    "channels": {
+     "edges": "09800bdcbc0fcfb5",
+     "indices": "444f2aa6c43d8416",
+     "normals": "3c6b50bb35a633e9",
+     "other": "146128264614c1fc",
+     "positions": "220069669796d229",
+     "uv0": "3d2f7d0e541bc6af",
+     "uv1": "a7ec62cd3cbc665f",
+     "uv2": "91a0f62957bac10d",
+     "uv3": "744afa67564ff63c",
+     "uv4": "4e76b6de243527af",
+     "uv5": "30892894f8fe57d0",
+     "transform": "e3b0c44298fc1c14"
+    }
+   },
+   "stone_stair-lane_6_0_setts": {
+    "hash": "6dea28758f7401f8",
+    "vertices": 190240,
+    "corners": 705280,
+    "triangles": 334080,
+    "channels": {
+     "edges": "36d8f7aa2a0abd90",
+     "indices": "82e66e042a1e29af",
+     "normals": "0d84353af9a74fac",
+     "other": "146128264614c1fc",
+     "positions": "a5c1027b2ba5e38e",
+     "uv0": "13f2cf9031176503",
+     "uv1": "de48a99abe8102c9",
+     "uv2": "7b1f2e0141a3813c",
+     "uv3": "6486015a6d46af78",
+     "uv4": "a4ae0227909bd680",
+     "uv5": "2e89f475d73f9b97",
+     "transform": "e3b0c44298fc1c14"
+    }
+   }
+  }
+ },
+ "stone_tanner_s_steps.fbx": {
+  "tool": "mesh_hash 1",
+  "hash": "71c155102586ae5b",
+  "triangles": 708740,
+  "meshes": {
+   "stone_tanner's_steps_0": {
+    "hash": "c39cd6ad53c060bc",
+    "vertices": 69591,
+    "corners": 275384,
+    "triangles": 135082,
+    "channels": {
+     "edges": "ba105ec2a664ca05",
+     "indices": "8ba105c136781a0a",
+     "normals": "8ed89f419a37a12b",
+     "other": "146128264614c1fc",
+     "positions": "2addcee6f5fbe031",
+     "uv0": "25c1f72d96378d05",
+     "uv1": "792b358ef0a76227",
+     "uv2": "1ed93b8ec046f428",
+     "uv3": "69ef3c1d757f03c9",
+     "uv4": "0792cb9a0a218aa1",
+     "uv5": "3ae9c53b7b14878c",
+     "transform": "e3b0c44298fc1c14"
+    }
+   },
+   "stone_tanner's_steps_1": {
+    "hash": "0defb90c724d3708",
+    "vertices": 118717,
+    "corners": 469160,
+    "triangles": 230058,
+    "channels": {
+     "edges": "8f66d273cad9dc6d",
+     "indices": "5cd97b86ac401938",
+     "normals": "9c72e5b83939f332",
+     "other": "146128264614c1fc",
+     "positions": "54eb8071870cabd5",
+     "uv0": "373dc7dd6e6c3fc9",
+     "uv1": "8cb8df095db5aa60",
+     "uv2": "912c7f4e984fdca2",
+     "uv3": "e46ed3290faa47b7",
+     "uv4": "3a5d591a8e58a3e4",
+     "uv5": "667e503bbbcda6c4",
+     "transform": "e3b0c44298fc1c14"
+    }
+   },
+   "stone_tanner's_steps_2": {
+    "hash": "fa7b110f8d47bb54",
+    "vertices": 177347,
+    "corners": 700768,
+    "triangles": 343600,
+    "channels": {
+     "edges": "a3e77866a51cd040",
+     "indices": "b11dda53624f84a8",
+     "normals": "1718b4dfd77ca1e1",
+     "other": "146128264614c1fc",
+     "positions": "4d32792ac54b039e",
+     "uv0": "f74e22fc555e1e5a",
+     "uv1": "a47be5f687048ff3",
+     "uv2": "431de51caf90c191",
+     "uv3": "56d1ccd83dfc21c0",
+     "uv4": "ff1e7dab1590d28b",
+     "uv5": "5a040443328e9369",
+     "transform": "e3b0c44298fc1c14"
+    }
+   }
+  }
+ },
+ "stone_the_crack.fbx": {
+  "tool": "mesh_hash 1",
+  "hash": "d8d24068d419b30f",
+  "triangles": 544665,
+  "meshes": {
+   "stone_the_crack_0": {
+    "hash": "49816b4c00f172d5",
+    "vertices": 14731,
+    "corners": 57536,
+    "triangles": 28146,
+    "channels": {
+     "edges": "dfb36c5e88206752",
+     "indices": "b600fd7b14a0a4af",
+     "normals": "379adfdf7fcdcf57",
+     "other": "146128264614c1fc",
+     "positions": "b99414bfc050d05b",
+     "uv0": "dedf2d1969313244",
+     "uv1": "da295cfbe518156b",
+     "uv2": "2ca9a18210035314",
+     "uv3": "91f772b960d2cf98",
+     "uv4": "0724e8a7e68c9ae1",
+     "uv5": "da8ea6b26e2fc139",
+     "transform": "e3b0c44298fc1c14"
+    }
+   },
+   "stone_the_crack_1": {
+    "hash": "c1ab17eee07451dd",
+    "vertices": 2802,
+    "corners": 11368,
+    "triangles": 5562,
+    "channels": {
+     "edges": "677df65817ab75d0",
+     "indices": "e06b36d388e3da04",
+     "normals": "244f4bab4ce11ebc",
+     "other": "146128264614c1fc",
+     "positions": "d2b1565e9b89274c",
+     "uv0": "4c23846c853f5813",
+     "uv1": "53e35b1484ca74ca",
+     "uv2": "94d61e4f4feaca34",
+     "uv3": "2d8197eb03cf91ba",
+     "uv4": "da51c51d7dbd4e71",
+     "uv5": "817eb7ad12f89907",
+     "transform": "e3b0c44298fc1c14"
+    }
+   },
+   "stone_the_crack_10": {
+    "hash": "05b50d8ccdbd2d99",
+    "vertices": 12033,
+    "corners": 47654,
+    "triangles": 23340,
+    "channels": {
+     "edges": "c0ebf336b7a3a9bd",
+     "indices": "18c590e00039e438",
+     "normals": "69b288069c9f3883",
+     "other": "146128264614c1fc",
+     "positions": "1d6d32a7e79a09f9",
+     "uv0": "31eef2fbf554a6d6",
+     "uv1": "08d492b01cf1d9f5",
+     "uv2": "81157898079a7ea7",
+     "uv3": "9bf9dca42196d26c",
+     "uv4": "9df6f81cb4aa3211",
+     "uv5": "ca3d1cd748e7bb30",
+     "transform": "e3b0c44298fc1c14"
+    }
+   },
+   "stone_the_crack_12": {
+    "hash": "a54a6aa3ab2a1053",
+    "vertices": 15177,
+    "corners": 59720,
+    "triangles": 29250,
+    "channels": {
+     "edges": "af42e64ed91abb7c",
+     "indices": "3815679891b25174",
+     "normals": "a6634322caf703a5",
+     "other": "146128264614c1fc",
+     "positions": "7c065932569f34e5",
+     "uv0": "7574d9d9628715ff",
+     "uv1": "6f0f26b21c1ec502",
+     "uv2": "5eeef21bcd8846ae",
+     "uv3": "aa9ba79d60c2b3fc",
+     "uv4": "507e6c7e3280ba94",
+     "uv5": "1030e9178d4c52ee",
+     "transform": "e3b0c44298fc1c14"
+    }
+   },
+   "stone_the_crack_13": {
+    "hash": "74d962cb660eb658",
+    "vertices": 18285,
+    "corners": 71114,
+    "triangles": 34774,
+    "channels": {
+     "edges": "561b961360712858",
+     "indices": "cd8d52c33fd665aa",
+     "normals": "96e5c98e816e2df2",
+     "other": "146128264614c1fc",
+     "positions": "d20b1d224ba18b9d",
+     "uv0": "cb40c911d6ce5b46",
+     "uv1": "0f895f02c3c0b330",
+     "uv2": "2b07346e013d9b45",
+     "uv3": "b0e3c3e9130bc204",
+     "uv4": "6ee1e96611c9c713",
+     "uv5": "948764c8c866ccfd",
+     "transform": "e3b0c44298fc1c14"
+    }
+   },
+   "stone_the_crack_14": {
+    "hash": "3bed122098b493b5",
+    "vertices": 20345,
+    "corners": 79194,
+    "triangles": 38734,
+    "channels": {
+     "edges": "50c58e5f7fefb7a0",
+     "indices": "d8268f45bd99f41b",
+     "normals": "2cd8a3651d61064e",
+     "other": "146128264614c1fc",
+     "positions": "0d631b245e5ad77d",
+     "uv0": "29ec29ab2b5fcbcb",
+     "uv1": "9f3e83ddd5a0b1f6",
+     "uv2": "4d3c81a3ff6792c3",
+     "uv3": "3efc324638d48b3b",
+     "uv4": "d22d5383311aad49",
+     "uv5": "1c1b5cbd447ce403",
+     "transform": "e3b0c44298fc1c14"
+    }
+   },
+   "stone_the_crack_15": {
+    "hash": "8f7cc62f4d0b551c",
+    "vertices": 14168,
+    "corners": 56002,
+    "triangles": 27448,
+    "channels": {
+     "edges": "578d3e86c0dbb6c0",
+     "indices": "a46d14bbadf7ece0",
+     "normals": "92a5374fd27b9844",
+     "other": "146128264614c1fc",
+     "positions": "b6458a820d324c33",
+     "uv0": "9d6b1b5bc9e4bb4e",
+     "uv1": "429af72c7cdb2910",
+     "uv2": "f9b2b7e8f68f8732",
+     "uv3": "ee92b5e6b4931c72",
+     "uv4": "6a1da9648914e517",
+     "uv5": "c75b2461e72455bd",
+     "transform": "e3b0c44298fc1c14"
+    }
+   },
+   "stone_the_crack_17": {
+    "hash": "80085ade7f1f5f52",
+    "vertices": 17233,
+    "corners": 67392,
+    "triangles": 32988,
+    "channels": {
+     "edges": "0ff4232abfb501ce",
+     "indices": "95c7ab2f70b94823",
+     "normals": "9c9f8a7aefe3903d",
+     "other": "146128264614c1fc",
+     "positions": "63a1ec3c55e1b7b8",
+     "uv0": "0e8079c2faeadcf3",
+     "uv1": "d71efd9da7d8d9d8",
+     "uv2": "f7b0764c92621648",
+     "uv3": "d56f207847a996b0",
+     "uv4": "ad19a691fed2fe83",
+     "uv5": "e03b853524b56c60",
+     "transform": "e3b0c44298fc1c14"
+    }
+   },
+   "stone_the_crack_18": {
+    "hash": "32b45a7dcba0cde4",
+    "vertices": 14575,
+    "corners": 57833,
+    "triangles": 28367,
+    "channels": {
+     "edges": "8f993f57775b2f26",
+     "indices": "561e04cb10a14942",
+     "normals": "803d3f5c1edd3632",
+     "other": "146128264614c1fc",
+     "positions": "0719c373bdba3a3b",
+     "uv0": "42734695dd6e3368",
+     "uv1": "04b59002fd94dcd7",
+     "uv2": "038a678d78e54f06",
+     "uv3": "4113fb38ae0c134e",
+     "uv4": "8719c9f7e31e033c",
+     "uv5": "adb59a2f765bd3cb",
+     "transform": "e3b0c44298fc1c14"
+    }
+   },
+   "stone_the_crack_19": {
+    "hash": "af4c13d7c284cd1d",
+    "vertices": 15470,
+    "corners": 61564,
+    "triangles": 30240,
+    "channels": {
+     "edges": "021f036df0e3fdbf",
+     "indices": "548d4178123663ae",
+     "normals": "e617752b88762ad3",
+     "other": "146128264614c1fc",
+     "positions": "ef0f5302721c5220",
+     "uv0": "bd952b10e4ea7536",
+     "uv1": "fbef27c1e929fe42",
+     "uv2": "76ef554738c219fd",
+     "uv3": "02076e107e03e192",
+     "uv4": "903817e62541a494",
+     "uv5": "2f04044652809cd6",
+     "transform": "e3b0c44298fc1c14"
+    }
+   },
+   "stone_the_crack_1_setts": {
+    "hash": "6fa438f8c32d077c",
+    "vertices": 19557,
+    "corners": 72504,
+    "triangles": 34344,
+    "channels": {
+     "edges": "5a24d812641734ae",
+     "indices": "d72e15d8a1c524a3",
+     "normals": "95adb087d1500a6d",
+     "other": "146128264614c1fc",
+     "positions": "a1528edfbafe52e0",
+     "uv0": "84394c2dd0f90bdb",
+     "uv1": "e3bf25f0f8d30b35",
+     "uv2": "d75150d4802b7268",
+     "uv3": "690b6f7b4c645de9",
+     "uv4": "b38c74b79ec791ce",
+     "uv5": "7fe5bb1b810f9b3b",
+     "transform": "e3b0c44298fc1c14"
+    }
+   },
+   "stone_the_crack_2": {
+    "hash": "d2e6630bf922b440",
+    "vertices": 14829,
+    "corners": 58959,
+    "triangles": 28957,
+    "channels": {
+     "edges": "455ba705e22a8c72",
+     "indices": "fd999e4f7b910e06",
+     "normals": "679a3bd07a55a509",
+     "other": "146128264614c1fc",
+     "positions": "3de85e8e86884d11",
+     "uv0": "05553e7a25e97d6b",
+     "uv1": "f23684ada07ec742",
+     "uv2": "1799c1dbbea4848a",
+     "uv3": "ddb361232c70291b",
+     "uv4": "09976e6bd10fadcf",
+     "uv5": "b2920d63746910b8",
+     "transform": "e3b0c44298fc1c14"
+    }
+   },
+   "stone_the_crack_3": {
+    "hash": "02763fd6d5a65394",
+    "vertices": 13679,
+    "corners": 54367,
+    "triangles": 26673,
+    "channels": {
+     "edges": "7adb8356b43eb9bc",
+     "indices": "c7dc45f80f99be3c",
+     "normals": "56d0e8d72f2bd223",
+     "other": "146128264614c1fc",
+     "positions": "5f5f3d743c141947",
+     "uv0": "f43bc7b57022313a",
+     "uv1": "e282711e32694b7b",
+     "uv2": "e1e8524f6f9df6e5",
+     "uv3": "e4a48f449625de16",
+     "uv4": "ec328e198bfc1287",
+     "uv5": "9a29981a9b000f5c",
+     "transform": "e3b0c44298fc1c14"
+    }
+   },
+   "stone_the_crack_4": {
+    "hash": "190f0cf6332289bd",
+    "vertices": 13879,
+    "corners": 54902,
+    "triangles": 26928,
+    "channels": {
+     "edges": "7cb96e97a957d796",
+     "indices": "ee6ec37eec881c72",
+     "normals": "ff80d91ab4ffab33",
+     "other": "146128264614c1fc",
+     "positions": "fd87114cb6911ce9",
+     "uv0": "beb39315595320e7",
+     "uv1": "a651bcb1d004b6eb",
+     "uv2": "40db5392ad2d4a04",
+     "uv3": "d2ef9bf7d9da8d04",
+     "uv4": "4457c36ac4e46b74",
+     "uv5": "0ecdfd0a2e261271",
+     "transform": "e3b0c44298fc1c14"
+    }
+   },
+   "stone_the_crack_5": {
+    "hash": "6748c5e86c297cac",
+    "vertices": 17773,
+    "corners": 69039,
+    "triangles": 33773,
+    "channels": {
+     "edges": "c4a5686ef36a5db2",
+     "indices": "10fcb68a304a27e4",
+     "normals": "cd86a0d51d19d881",
+     "other": "146128264614c1fc",
+     "positions": "fa12caff02bb3f6e",
+     "uv0": "647ece06438fcaa0",
+     "uv1": "39badfa0cb191aed",
+     "uv2": "60e5452755214171",
+     "uv3": "9de3428359d8e664",
+     "uv4": "02f223835386df32",
+     "uv5": "f3b07d677f56753c",
+     "transform": "e3b0c44298fc1c14"
+    }
+   },
+   "stone_the_crack_6": {
+    "hash": "f064f96f767e62a7",
+    "vertices": 18450,
+    "corners": 71810,
+    "triangles": 35136,
+    "channels": {
+     "edges": "32511c9032323b74",
+     "indices": "e4581f1b9a39b920",
+     "normals": "42cfe459ae8b18f2",
+     "other": "146128264614c1fc",
+     "positions": "366a5508e28cd5ed",
+     "uv0": "070154aa2c76813b",
+     "uv1": "6775cc6235e20b74",
+     "uv2": "5bf4b9e5a6a36d6a",
+     "uv3": "eb219eb46e2ed9de",
+     "uv4": "b35cf4126c59dc00",
+     "uv5": "55a570c24e093718",
+     "transform": "e3b0c44298fc1c14"
+    }
+   },
+   "stone_the_crack_7": {
+    "hash": "adf24174e9948e85",
+    "vertices": 15973,
+    "corners": 62588,
+    "triangles": 30648,
+    "channels": {
+     "edges": "4609d6d08772f7cb",
+     "indices": "781781b427014d9b",
+     "normals": "753cd45065f56e7e",
+     "other": "146128264614c1fc",
+     "positions": "fa8feee560ad2234",
+     "uv0": "f7e3a7fe99fcd60d",
+     "uv1": "f95c3fe7aef00df5",
+     "uv2": "7ee00ffa2ae4be60",
+     "uv3": "9424363ae6710ffa",
+     "uv4": "7634fd8fc70a4b06",
+     "uv5": "c9dc5b1d4cfdab74",
+     "transform": "e3b0c44298fc1c14"
+    }
+   },
+   "stone_the_crack_8": {
+    "hash": "887f0e2fba9e1b65",
+    "vertices": 13527,
+    "corners": 53860,
+    "triangles": 26420,
+    "channels": {
+     "edges": "849a815d87f4c595",
+     "indices": "1743772502963cf4",
+     "normals": "d56414034055d260",
+     "other": "146128264614c1fc",
+     "positions": "89382a46e408acfa",
+     "uv0": "13cbaada38440955",
+     "uv1": "103e3802fce3aa49",
+     "uv2": "515c0e4de0e685e8",
+     "uv3": "7be758db77033bb2",
+     "uv4": "a8829301508c182c",
+     "uv5": "c7208101b260e3e0",
+     "transform": "e3b0c44298fc1c14"
+    }
+   },
+   "stone_the_crack_9": {
+    "hash": "6797417a695ac127",
+    "vertices": 11813,
+    "corners": 46793,
+    "triangles": 22937,
+    "channels": {
+     "edges": "ba3a578a24a5950f",
+     "indices": "c6525ed238f8193d",
+     "normals": "04f15d8fb8f07504",
+     "other": "146128264614c1fc",
+     "positions": "5ba60ae3d30947bb",
+     "uv0": "db991d8a650499b7",
+     "uv1": "9e8b1e65c564e6c9",
+     "uv2": "5f75d451615880e3",
+     "uv3": "383cc3761f08c8c0",
+     "uv4": "895c858560639646",
+     "uv5": "252102783a8bad4a",
+     "transform": "e3b0c44298fc1c14"
+    }
+   }
+  }
+ },
+ "stone_the_hundred_steps.fbx": {
+  "tool": "mesh_hash 1",
+  "hash": "ed8b862cefa36b66",
+  "triangles": 756665,
+  "meshes": {
+   "stone_the_hundred_steps_0": {
+    "hash": "9bc1336bb0c5609b",
+    "vertices": 85069,
+    "corners": 335612,
+    "triangles": 164482,
+    "channels": {
+     "edges": "2133e08a28e16124",
+     "indices": "41d6560a17ec00e9",
+     "normals": "fa9e77e13a8f5b09",
+     "other": "146128264614c1fc",
+     "positions": "48698f55adab9fb5",
+     "uv0": "210216376c15039f",
+     "uv1": "33c2db437163e696",
+     "uv2": "4f6efc16c0b7fbb2",
+     "uv3": "1dee7fb84d3d4311",
+     "uv4": "2f2034427f9b841c",
+     "uv5": "8619e425383937e1",
+     "transform": "e3b0c44298fc1c14"
+    }
+   },
+   "stone_the_hundred_steps_1": {
+    "hash": "5cb8e2227d518ff2",
+    "vertices": 96421,
+    "corners": 377413,
+    "triangles": 184949,
+    "channels": {
+     "edges": "6b963bdf50d2e4c3",
+     "indices": "b105659cba74f5f1",
+     "normals": "00b4a6971419bae9",
+     "other": "146128264614c1fc",
+     "positions": "171bcff5cd9fd09e",
+     "uv0": "d765dda0c33a2f68",
+     "uv1": "64f5613793717c4d",
+     "uv2": "b12ffd613348d6f6",
+     "uv3": "9d05095bb7580cee",
+     "uv4": "54da7f0a7d45a645",
+     "uv5": "922d157b48e92173",
+     "transform": "e3b0c44298fc1c14"
+    }
+   },
+   "stone_the_hundred_steps_2": {
+    "hash": "d87c4d4ce44d1377",
+    "vertices": 80834,
+    "corners": 317918,
+    "triangles": 155804,
+    "channels": {
+     "edges": "add1bf605ce2c142",
+     "indices": "10b3010f5c3ebac9",
+     "normals": "dee7c98406024e14",
+     "other": "146128264614c1fc",
+     "positions": "5d428688871eb1b5",
+     "uv0": "1535e3f3958f5c00",
+     "uv1": "8e491a3940dd19ba",
+     "uv2": "ebd2d4e3c54645a9",
+     "uv3": "3ff78789b898f4b7",
+     "uv4": "02d0a22f8c7447e8",
+     "uv5": "b1ce5425f86706b0",
+     "transform": "e3b0c44298fc1c14"
+    }
+   },
+   "stone_the_hundred_steps_3": {
+    "hash": "0a1607eaa1dc4e1c",
+    "vertices": 18380,
+    "corners": 74642,
+    "triangles": 36438,
+    "channels": {
+     "edges": "ca4df0a0bb948647",
+     "indices": "6eb88c1a3dab4093",
+     "normals": "2dfd79f2b30a5e02",
+     "other": "146128264614c1fc",
+     "positions": "b56cb8f911916fec",
+     "uv0": "a73ce3ad6d21c3c1",
+     "uv1": "012a5ebc37707937",
+     "uv2": "edebe07b52fba414",
+     "uv3": "be6eebd538fde726",
+     "uv4": "4d2658a54b1b0c94",
+     "uv5": "23139cac7a720314",
+     "transform": "e3b0c44298fc1c14"
+    }
+   },
+   "stone_the_hundred_steps_3_setts": {
+    "hash": "1926c50019854e6b",
+    "vertices": 122426,
+    "corners": 453872,
+    "triangles": 214992,
+    "channels": {
+     "edges": "444b077c97303a20",
+     "indices": "7e750b20694baa27",
+     "normals": "d863fdc8ad163ae5",
+     "other": "146128264614c1fc",
+     "positions": "fb8886ec1fc172d0",
+     "uv0": "49ce92eba4e58da6",
+     "uv1": "ae3b1b0fc3e3a7a2",
+     "uv2": "f6328f8ad2df7f42",
+     "uv3": "ac6450cbc6a0a44b",
+     "uv4": "96a5eb7244a0520b",
+     "uv5": "ff9bbf534d85a5a2",
+     "transform": "e3b0c44298fc1c14"
+    }
+   }
+  }
+ },
+ "stone_the_path_to_lookout_park.fbx": {
+  "tool": "mesh_hash 1",
+  "hash": "85ab65c9421507c5",
+  "triangles": 803967,
+  "meshes": {
+   "stone_the_path_to_lookout_park_0": {
+    "hash": "af0a9fdbdef577b6",
+    "vertices": 43040,
+    "corners": 175445,
+    "triangles": 85189,
+    "channels": {
+     "edges": "de60ed5df31a6122",
+     "indices": "f79d6906be6cf4d2",
+     "normals": "f2f7b0c94c269667",
+     "other": "146128264614c1fc",
+     "positions": "73a6e6467984a975",
+     "uv0": "760c13fc7a3ac17e",
+     "uv1": "41d728f5612c0d39",
+     "uv2": "5c99dac68e12c89b",
+     "uv3": "c04a279be8b9d626",
+     "uv4": "15fdcacd8a097768",
+     "uv5": "a91ab2d8dc442933",
+     "transform": "e3b0c44298fc1c14"
+    }
+   },
+   "stone_the_path_to_lookout_park_1": {
+    "hash": "ef83e52f0e0a92ae",
+    "vertices": 62218,
+    "corners": 253730,
+    "triangles": 123350,
+    "channels": {
+     "edges": "c534a486b2a1c862",
+     "indices": "62bc8c6027fb1b7a",
+     "normals": "a6825cc7721eb1b3",
+     "other": "146128264614c1fc",
+     "positions": "120203e7fed719a6",
+     "uv0": "e38075fbaa17e624",
+     "uv1": "3c751659ab7c2a8a",
+     "uv2": "fee5f4f157bd7354",
+     "uv3": "c66bf51de6e2c08e",
+     "uv4": "9558cfbcf47ad0a4",
+     "uv5": "35da878e385df586",
+     "transform": "e3b0c44298fc1c14"
+    }
+   },
+   "stone_the_path_to_lookout_park_2": {
+    "hash": "db3822e7c1c667d6",
+    "vertices": 72794,
+    "corners": 294368,
+    "triangles": 143036,
+    "channels": {
+     "edges": "4bc6bdae59ba6f56",
+     "indices": "72d9b1740325716f",
+     "normals": "dc23c1e933386ec0",
+     "other": "146128264614c1fc",
+     "positions": "0988bf0c0189acd0",
+     "uv0": "d14a0aab4823b248",
+     "uv1": "472be27100d5f1c8",
+     "uv2": "b0d5763fe6f0b821",
+     "uv3": "8d4c793e95d446d3",
+     "uv4": "fded159cb3929ebf",
+     "uv5": "7ce3e87d03c80179",
+     "transform": "e3b0c44298fc1c14"
+    }
+   },
+   "stone_the_path_to_lookout_park_3": {
+    "hash": "ea20009fe55f7163",
+    "vertices": 60340,
+    "corners": 245312,
+    "triangles": 119608,
+    "channels": {
+     "edges": "a04d1c9759717481",
+     "indices": "262cb962d336f13b",
+     "normals": "24bd6cf1b3c91bda",
+     "other": "146128264614c1fc",
+     "positions": "11067dd4bc955273",
+     "uv0": "3be61af69b728544",
+     "uv1": "55c97f395af50601",
+     "uv2": "15c5ccab6dae4a0d",
+     "uv3": "3613b5bd4ebc7f1e",
+     "uv4": "84807b9256977a76",
+     "uv5": "49aaa20483b864bc",
+     "transform": "e3b0c44298fc1c14"
+    }
+   },
+   "stone_the_path_to_lookout_park_3_setts": {
+    "hash": "4f41a03142821945",
+    "vertices": 189502,
+    "corners": 702544,
+    "triangles": 332784,
+    "channels": {
+     "edges": "c92853a6c6f088da",
+     "indices": "4aa8f4a1e519bdbf",
+     "normals": "ee0fdd9b1eeb52ca",
+     "other": "146128264614c1fc",
+     "positions": "12dec94d080be63c",
+     "uv0": "e941aef1adae3a8f",
+     "uv1": "db4d7d3a8e5f9871",
+     "uv2": "5ee9e0c80237f805",
+     "uv3": "db0b16a7f74cface",
+     "uv4": "add057ad9c33d6eb",
+     "uv5": "7f21b4287589bb28",
+     "transform": "e3b0c44298fc1c14"
+    }
+   }
+  }
+ }
+}

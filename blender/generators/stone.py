@@ -783,6 +783,9 @@ def build(which, unity=None, seed=1, spec=None, folder=""):
         with open(path[:-4] + ".json", "w") as fh:
             json.dump(info, fh, indent=1)
         print("FBX", path)
+        sys.path.append(os.path.join(HERE, "..", "tools"))
+        import mesh_hash  # noqa: E402
+        mesh_hash.write_manifest(path)     # the mesh hashes beside the export (blender/tools/mesh_hash.py)
     return info
 
 
