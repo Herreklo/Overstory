@@ -246,8 +246,10 @@ Merged across the four pages, these are fifteen decisions for the design lead, r
 ### For Øystein
 
 1. **Where the town system enters the plan, and what he sees (scope).** Recommended: data and measures now beside the corner (T0, T1, no visuals); the clay tests beside the corner's buildings (T2, T3); the heart's geometry at step 6. It would run as the trees did, strict reviews as the gate, with Øystein seeing three milestones: the three types, the regrow, the plan stopped part way. It fixes facts the corner leans on without slowing it.
-2. **How years pass in play: decided (Øystein, 22 October), per game.** It depends on the game: one game spans a week, another a year, another generations. Overstory is a world for many games, so the town system and the building blocks support every span. That sets four requirements:
-   - The state at any date is the same however it was reached: by a jump of decades, by years skipped between chapters, or day by day. History is a function of the record and the date, never of the frames played.
+2. **How years pass in play: decided (Øystein, 22 October), per game.** It depends on the game: one game spans a week, another a year, another generations. Overstory is a world for many games, so the town system and the building blocks support every span. That sets these requirements:
+   - The screen follows the record. With the same record and the same date, the town is drawn the same whether it was watched day by day or reached by a jump. Wear, growth and repairs are worked out from the record, never piled up frame by frame in the renderer, so a jump is cheap and a saved game reloads exactly.
+   - Play changes the record. The player's acts and the outcomes of scenes are events like any other, so two playthroughs reach different towns.
+   - Living through years may make a different history from jumping over them: events only scenes create, more detail where the player has been. Whether it does is the engine's to decide. Overstory draws whatever the record holds.
    - Every system answers at every resolution. Hours and days come from weather, light, scene state and a poster put up. Months and seasons come from growth, leaves, upkeep and a shop opening. Decades and generations come from plans, works, demolition and rebuilding.
    - What a span cannot show is still true. A week-long game shows wear it will never see grow, and a generations game passes over the week's posters.
    - How a jump is shown on screen is chosen by the game from what `docs/research/time-on-screen.md` finds.
