@@ -7,7 +7,8 @@ Plain Python, no Blender: the resolver alone says what each house is in each yea
 - HOUSES: the five houses, each with its letter, its id in fixtures/lt1-corner.json and its place in the heart.
 - diaries(arm): the five diaries. Arm "real" is the record; arm "shuffled" (the control) moves each house's later
   history, everything after its standing house was built, to another house, renumbered and otherwise unchanged.
-- parts(plan): the readers' checklist (roof, upper windows, ground floor, additions, care) and each item's state in
+- parts(plan): the readers' checklist (roof, upper windows, ground floor: every opening at street level on any
+  wall, additions, care) and each item's state in
   the record: original, changed or neglected (care: kept or neglected). `drawn` is what clay shows for it: a restored
   copy is drawn exactly as the original it copies, so it is "changed" in the record and "original" on screen.
 - changes(diary, t0, t1): what happened between two years, event by event, with its cause, and whether clay draws it
@@ -101,7 +102,7 @@ def parts(plan):
     cells = [c for c in plan["cells"] if standing(c)]
     windows = [c for c in cells if c["part"]["type"] == "window"]
     upper = [c for c in windows if c.get("row", 0) >= 1]
-    ground = [c for c in cells if c["facade"] in ("front", "bislag") and c.get("row", 0) == 0]
+    ground = [c for c in cells if c.get("row", 0) == 0 and c["part"]["type"] in ("window", "door", "inner_door", "shopfront")]
     out = {}
     out["roof"] = dict(state="original" if plan["main"]["roof"]["event"] == built else "changed")
     out["roof"]["drawn"] = out["roof"]["state"]

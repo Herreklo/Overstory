@@ -154,7 +154,8 @@ C = borrowed(203, 1203, "The corner's C: a cooper's chalet house of 1879 with ch
 C["events"] += [
     later(3, 1998, "restored", "two_owners", "the upper flat's new owners put back copies of the 1879 windows", windows="original", scope="upper", amount=0),
     later(4, 1998, "repainted", "upkeep", "painted with the upper flat's windows"),
-    later(5, 2011, "windows_replaced", "old_style", "the ground-floor flat's owner fits factory 'old style' windows in the front", scope="ground"),
+    later(5, 2011, "windows_replaced", "old_style", "the ground-floor flat's owner fits factory 'old style' windows in the back wall, "
+          "the one that faces down the lane", scope="back"),
     later(6, 2013, "repainted", "upkeep", "upkeep"),
 ]
 D = borrowed(107, 1107, "The corner's D: a fisherman's house of 1828, empty and boarded since 1986; let go further (1995); bought and restored (2007).")

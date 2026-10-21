@@ -488,9 +488,9 @@
      "year": 2011,
      "kind": "windows_replaced",
      "params": {
-      "scope": "ground"
+      "scope": "back"
      },
-     "cause": "the ground-floor flat's owner fits factory 'old style' windows in the front",
+     "cause": "the ground-floor flat's owner fits factory 'old style' windows in the back wall, the one that faces down the lane",
      "rule": "old_style",
      "provenance": "authored"
     },

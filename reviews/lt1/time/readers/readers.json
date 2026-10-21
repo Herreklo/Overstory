@@ -1,0 +1,65 @@
+[
+ {
+  "id": "S1",
+  "arm": "scene",
+  "role": "resident",
+  "first": "1",
+  "model": "sonnet"
+ },
+ {
+  "id": "S2",
+  "arm": "scene",
+  "role": "historian",
+  "first": "1",
+  "model": "sonnet"
+ },
+ {
+  "id": "S3",
+  "arm": "scene",
+  "role": "player",
+  "first": "1",
+  "model": "sonnet"
+ },
+ {
+  "id": "P1",
+  "arm": "page",
+  "role": "resident",
+  "first": "1",
+  "model": "sonnet"
+ },
+ {
+  "id": "P2",
+  "arm": "page",
+  "role": "historian",
+  "first": "1",
+  "model": "sonnet"
+ },
+ {
+  "id": "P3",
+  "arm": "page",
+  "role": "player",
+  "first": "1",
+  "model": "sonnet"
+ },
+ {
+  "id": "X1",
+  "arm": "shuffled",
+  "role": "resident",
+  "first": "1",
+  "model": "sonnet"
+ },
+ {
+  "id": "X2",
+  "arm": "shuffled",
+  "role": "historian",
+  "first": "1",
+  "model": "sonnet"
+ },
+ {
+  "id": "X3",
+  "arm": "shuffled",
+  "role": "player",
+  "first": "1",
+  "model": "sonnet"
+ }
+]
