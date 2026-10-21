@@ -39,11 +39,7 @@ What is open and what is next. Every session reads this page first, so it stays 
   - judge them for beauty by strict review and for readability by the cold readers.
 
   The perception findings in `docs/research/time-on-screen.md` are constraints, not the answer: change is found where something visibly jumps; hold everything but the year; a cut invites a cause.
-- the interface's play choices for the observer game (`docs/research/interface-and-inspection.md`), each recommended:
-  - the observer carries a 1989 camera, and its photographs compare years in place (one idea among the creative exploration of time);
-  - the observer never sees the engine's truth during play, at most after a chapter and clearly marked;
-  - a reading of a person is never confirmed, and a fact counts as confirmed only when two independent sources agree;
-  - players may name strangers.
+- which game comes first. Nothing is decided. The interface study designed for an observer (one of the three examples in `docs/living-world.md`, the three dials) as a test case; its play choices are defaults kept for when a game is designed (`docs/research/interface-and-inspection.md`, For Øystein).
 
 **Look and craft questions are ours** (Øystein, 22 October: "You have to figure these things out. As long as we are critical and only aim for high quality, this should answer itself."). They are decided on frames and motion sheets, with strict reviews, and Øystein judges the milestones. This covers the night sky's colour, lamp glass and the tonemapper; the brush's size by octaves and any boil; and near ground cover as strokes or blades.
 
