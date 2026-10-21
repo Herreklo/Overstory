@@ -11,9 +11,9 @@ Look at the locators first. Then, for every frame, look at the whole view and th
 
 **Task 1.** For each view, put its four frames in order from earliest to latest, and say in which year you think each was seen (to the nearest year you can; we score it to the decade). Say what told you, and how sure you are.
 
-Answer with one JSON block, and nothing after it:
+Answer with one JSON block, and nothing after it (the angle brackets stand for your answers; years as plain numbers):
 
 ```json
-{"order": {"eye": {"sequence": ["X", "W", "Z", "Y"], "years": {"W": 1975, "X": 1960, "Y": 2010, "Z": 1990}, "confidence": 2, "because": "..."},
+{"order": {"eye": {"sequence": ["<earliest code>", "<next>", "<next>", "<latest>"], "years": {"W": <year>, "X": <year>, "Y": <year>, "Z": <year>}, "confidence": <1 to 3>, "because": "..."},
            "street": {...}, "12m": {...}, "city": {...}}}
 ```
