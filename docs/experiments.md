@@ -16,7 +16,7 @@ Results that surprised us or might be new, newest first. Each says what the evid
 
 ## LT1, the building blocks' architecture (21 October)
 
-**Status:** decided; a strict review to follow. Step 1a. The design is `docs/building-blocks.md`, its reasons `docs/research/building-blocks-decisions.md`.
+**Status:** decided; the strict review's fixes applied (ready after fixes: 4 must, 15 should, 6 could; `docs/research/building-blocks-review.md`). Step 1a. The design is `docs/building-blocks.md`, its reasons `docs/research/building-blocks-decisions.md`.
 
 **The question:** what must the foundations be so every kind is built once, right, and holds for a bigger city and the three example games (a manager, an exploration game, a family across generations)?
 
@@ -41,8 +41,9 @@ Results that surprised us or might be new, newest first. Each says what the evid
 - the painted far town replaces conventional far levels per kind, whether or not the atlas is painted;
 - Python's hash is the spec, C# matching it;
 - a strict review accepts baselines while building, Øystein the milestone sheets;
-- pieces may repeat where no viewer can find it; things never do;
 - the word `engine` retires as a provenance value, leaving four.
+
+After the strict review, repetition follows `NOW.md`'s decided wording: libraries only for what was mass-produced, everything hand-made for one place its own; only hand-split wall stones may go to Øystein, and only if the scale test's memory forces it.
 
 **What we drop:** the statements listed in `docs/building-blocks.md` (What this changes), among them offline-only life, vertex-baked city life, "years since" per coat, the tiers' switch distances, LFS for generated files and `random.Random`.
 

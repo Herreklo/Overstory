@@ -10,7 +10,7 @@ The stack: Blender 4.x Python offline; Unity 6000.6, URP 17.6, C# with Burst. Th
 
 1. **Parts are made offline; the town is assembled in the player.** Fixed parts are judged meshes from Blender. Fitted parts are judged functions. Plan, life, placement, fitted geometry, extrinsic bakes and cheap checks run in C# in the player.
 2. **Contracts are files, not prose.** JSON Schema in `schemas/`, golden fixtures per stage, parity tested in data at every stage boundary before any mesh.
-3. **History is a function of the record and the date.** Maps hold inputs (rates, reset years, age offsets). The date is a shader global, so a jump costs one uniform. The far shell alone caches an output bake, invalidated by the change query.
+3. **History is a function of the record and the date.** Maps hold inputs (rates, reset years, age offsets). The date is a shader global, so a jump costs one uniform. Every far shell carries its own atlas, painted or plain, and alone caches an output bake, invalidated by the change query.
 4. **Ids are stable down to slot and fill; pieces are derived.** Record ids are typed strings, never reused. Piece and pick indices exist only at draw time.
 5. **Budgets are in milliseconds, megabytes and triangles, per pass and per kilometre, on 16 GB.** All provisional, but a line exists for each before geometry moves. The frame is pixel-bound today, so shaders are budgeted and A/B'd before triangles are ported.
 
@@ -34,13 +34,13 @@ Reasons: decisions §0, §1.
 
 ## Contracts and where files live
 
-**Schemas** are hand-written JSON Schema (draft 2020-12). A dozen types do not justify code generation. Python validates with `jsonschema` (MIT). C# types are hand-written twins, held to the schemas by parity tests over `fixtures/golden/<kind>/<stage>.json`.
+**Schemas** are hand-written JSON Schema (draft 2020-12). Python validates with `jsonschema` (MIT). C# types are hand-written twins, held to the schemas by parity tests over `fixtures/golden/<kind>/<stage>.json`.
 
 | File in `schemas/` | Describes |
 | --- | --- |
-| `record.schema.json` | any record: id, kind, provenance, precision, lifespan, events, links, pins |
+| `record.schema.json` | any record: id, kind, provenance, precision, lifespan, events, links, keeper and care, pins |
 | `kind.schema.json` | a kind: stage parameters, slots, families, levels and budgets, motion, affordances, fields read and written |
-| `part.schema.json` | a family: `made_as`, era, sizes, fit modes, pivot, sockets, removal mark, variants, error and budget per level, shadow, collision and motion roles, intrinsic channels, lifecycle |
+| `part.schema.json` | a family: `made_as`, era, sizes, fit modes, pivot, sockets, removal mark, variants, error and budget per level, shadow, collision and motion roles, intrinsic channels, each procedural mark's smallest feature (which sets its texel), lifecycle |
 | `plan.schema.json` | an instance: part path, variant, seed, placement in mm, fit, placing event, chunk id |
 | `slot.schema.json`, `interval.schema.json` | slots and fills; life intervals (from, to, reset year, rate, age offset, cause) |
 | `channels.json`, `maps.json`, `layers.json` | the vertex and texel channels with byte widths; the map and layer registries |
@@ -53,9 +53,9 @@ Reasons: decisions §0, §1.
 
 **Versioning.** Every record file carries `schemaVersion`. `tools/migrate.py` runs `migrations/NNN_<name>.py` on every fixture, and a check fails if any is behind. C# reads only the current version. The curated 1989 town and its pins migrate by the same scripts, so a rule change never kills it.
 
-**The hash chain** (`tools/hashes.py`, later `Hashes.cs`): `schemaVersion`, `rulesetVersion` (kind file and part function versions) and `worldSeed`, then the record, plan, life, mesh and bake hashes. Each is a cache key, and a stage with unchanged inputs is skipped.
+**The hash chain** (`tools/hashes.py`, later `Hashes.cs`): `schemaVersion`, `rulesetVersion` (kind file and part function versions) and `worldSeed`, then the record, plan, life and mesh hashes, then `bakeVersion` (the `OS_History` include, the layer curves, the bake and shell-bake code, the shaders) and the bake hash. Each is a cache key, and a stage with unchanged inputs is skipped.
 
-**Generated files are rebuilt, not tracked.** FBX, chunks, library meshes and tree timelines leave git; hash manifests, part sources and golden baselines stay, in plain git until LFS is reachable. The tree drops its 385 MB of FBX at 3.1. History is not rewritten.
+**Generated files are rebuilt, not tracked.** FBX, chunks, library meshes and tree timelines leave git; hash manifests and part sources stay. Golden baselines keep one current baseline per kind, view and light in git, at the size judged; a superseded one leaves the tree and stays as its hash in the manifest. Plain git until LFS is reachable. The tree drops its 385 MB of FBX at 3.1. History is not rewritten.
 
 Reasons: decisions §2, §10.
 
@@ -63,7 +63,7 @@ Reasons: decisions §2, §10.
 
 The same building looks the same until its history changes it. Five rules hold in Python and C#, and in HLSL where a layout is evaluated at a point:
 1. Seeds come from stable ids (part path and purpose) through SplitMix64. Never `random.Random`, which may change between Python versions, and never keys from formatted floats, which re-draw neighbours when a piece moves. A replaced part takes a new id and so a new seed.
-2. Choices use only integers, the four operations and square root.
+2. Choices use only integers, the four operations and square root. A transcendental may place a vertex, never choose.
 3. Plans and life are integers: mm, per mille, years and months.
 4. Geometry is compared by tolerance.
 5. Everything sorts by stable id.
@@ -89,11 +89,11 @@ The record admits every kind as data: parts, plants, signs, rooms, lights, garme
 | Slot | `bld-101/op-n1-2`, `st-gully/tr-17`, `bld-101/sf-n` | the plan stage by the kind's rule in `naming.md`; semantic, never a positional counter | regeneration; a renaming rule change ships a migration |
 | Fill | `<slot>/<n>` in date order | appended, never renumbered | regeneration; an out-of-order insertion is a migration |
 | Piece | `<fill>#<i>` | the geometry stage | its fill's rules version only |
-| Pick index | 32 bits: 12 chunk or cell, 20 piece or instance | the assembler at draw time | one chunk build; never stored |
+| Pick index | 32 bits, split by path (under the vertex layout) | the assembler at draw time | one build of its unit; never stored |
 
 `tools/id_check.py` bumps `rulesetVersion`, regenerates, and fails if any record, slot or fill id is lost or born. Pins attach to slot and fill ids. A second pack's ids take its pack id as a prefix at load. A pick resolves through the chunk's table to a record and part path, then to the hierarchy level that suits the distance.
 
-**Every record and event carries** its place among the five kinds of thing on screen; provenance as `simulated`, `generated-past`, `derived` or `authored`; precision (year, decade, month); actor; weight; where.
+**Every record and event carries** its place among the five kinds of thing on screen; provenance as `simulated`, `generated-past`, `derived` or `authored`; precision (year, decade, month); actor; weight; where. Every record also names its keeper and its care.
 
 **Checks and lifecycle.** `tools/validate_record.py` checks fills against their slot's dates and size, date order, actor, era, provenance, well-formed unique ids, that nothing is deleted, and the facts contract's hand-off rules. A family is `draft`, `judged`, `library`, `deprecated` or `removed`; a removed one keeps its last judged mesh and function as a tombstone, so old records still draw.
 
@@ -108,43 +108,68 @@ Reasons: decisions §4.
 | Slot | Content | Format | Bytes |
 | --- | --- | --- | --- |
 | Position | | Float32×3 | 12 |
-| Normal | | SNorm16×4 | 8 |
+| Normal | w is padding | SNorm16×4 | 8 |
 | UV0 | grain, metric per piece | Float16×2 | 4 |
 | UV1 | atlas address into the chunk's maps | UNorm16×2 | 4 |
 | UV2 | mark coordinate, continuous along a run (the brush) | Float32×2 | 8 |
-| UV3 | piece index, edge distance | UNorm16×2 | 4 |
-| UV4 | face kind, hollow rate, flutter weight or element depth, spare | UNorm8×4 | 4 |
+| UV3 | piece index; edge distance in tenths of a mm | UInt16×2 | 4 |
+| UV4 | face kind, hollow rate, flutter weight or element depth, own occlusion | UNorm8×4 | 4 |
 | UV5, optional | rest position, for deforming and wind-moved parts | Float16×4 | 8 |
-| UV6, optional | element index and depth (trees, people, flexible parts) | UNorm16×2 | 4 |
+| UV6, optional | element index and depth (trees, people, flexible parts) | UInt16×2 | 4 |
 
-That is 44 bytes, 56 with both options. Shells (L3, L4) carry 28: position, normal, atlas UV, and per triangle the thing index, part slot and material class in UV1 and UV3. The light's inputs sit in the place map, not the vertex.
+That is 44 bytes, 56 with both options. The light's inputs sit in the place pages, not the vertex.
+
+**Shells** (L3, L4) carry 28 bytes. Their ids are constant over each triangle: vertices split where an id changes, and the shader reads them without interpolation.
+
+| Slot | Content | Format | Bytes |
+| --- | --- | --- | --- |
+| Position | | Float32×3 | 12 |
+| Normal | w is padding | SNorm16×4 | 8 |
+| UV1 | address in the shell atlas | UNorm16×2 | 4 |
+| UV3 | thing index in the cell; part slot (10 bits) and material class (6 bits) | UInt16×2 | 4 |
+
+**The tangent frame.** No tangent is stored. Each shader derives the frame per pixel from the screen derivatives of the UV set its normal detail lives in: UV1 for the bent normal, the maps' relief and the shell's normal atlas; UV0 for a material's grain normal. The same holds at every level. *Provisional:* the gully's A/B at L2 and on shells, where coarse triangles may facet; if they do, a MikkTSpace tangent in SNorm8×4 (4 bytes) joins the layout.
 
 **Per instance.** A kit instance under the GPU Resident Drawer carries its transform and the 32-bit Renderer Shader User Value: the pick index, which also indexes a per-cell `StructuredBuffer` of facts (record and part, seed, reset year, care, season and hue, wind phase, coat-table offset). Swarms (setts, slates, tufts, litter) use our own BatchRendererGroup: transform, part and species, seed and rank, wind phase, field tile. People are skinned, on their own path. *Provisional.*
 
+**The pick index** is a `UInt32` (*provisional:* the picking spike).
+
+| Bits | Field |
+| --- | --- |
+| 31 to 30 | path: chunk (L0, L1), cell (L2, L3), block (L4), kit instance |
+| 29 to 16 | resident unit slot, 16,384 |
+| 15 to 0 | piece, thing or instance in the unit, 65,536: UV3's piece index, a shell's thing index, or the cell's facts buffer |
+
+A unit with more than 65,536 takes a second slot. Swarms pick through tile and seed, people by their own path. Lamps, boats, flags and laundry are kit instances and pick through the user value.
+
 **History maps store inputs:** rates (or the fields that make them) and age offsets per texel, reset years per piece and repair surface. Each layer is its material's curve at rate × (date − reset + offset). So a jump costs a uniform, and a watched town draws as a jumped one.
 - Maps serve every level, from the atlas UV. Per vertex sit only piece constants and what moves geometry (a hollow's rate), so no hand-over between carriers must match. *Provisional.*
-- The unit is the draw chunk. Texels: 2 cm walked stone, 4 cm walls and trims, 8 cm roofs and ground (a kilometre of fronts is 280 MB at 1 cm, 4 to 18 MB at 4 to 8). *Provisional.*
+- The unit is the draw chunk. A part's texel comes from its material's target and its marks' smallest feature: 2 cm walked stone, 4 cm walls and trims, 8 cm roofs and ground. A chunk that mixes them packs each part's rectangle at its own texel into one set of pages, addressed by UV1; packing and mip gutters waste about 15 %. *Provisional.*
 - A rate change (a gutter, a fallen neighbour, falling care) rebakes the map region on the GPU, not the unchanged mesh. The chunk's invalidation table says per act which pages, instances and whether the mesh it dirties. Rebakes run behind the dated card, 2 ms GPU per 1024×512 page (*provisional*).
-- Intrinsic channels (face kind, edge distance, own occlusion) are in the mesh. Extrinsic ones (years, feet, water, damp, care) are per instance, field tile or map, so a library sett carries its own lane's years.
-- The light's inputs (sky seen, ground seen, openness, weather exposure) live in the place map, with a two-channel bent normal at L0 to L2. Shells drop the bent normal; impostors have their own atlas.
-- The exception: from L3 a shell caches an output bake of pigment with slow history, invalidated per thing by the change query; drift stays live from the index map's reset year. A cached evaluation is still the function. Format reserved at 3.1; the bake comes with the painted far town's test.
+- Intrinsic channels (face kind, edge distance, own occlusion) are in the mesh. Extrinsic ones are per instance, field tile or map, so a library sett carries its own lane's years: reset years in the chunk's piece table (by UV3's piece index) or the facts buffer, care in the facts buffer, feet and water held in P0. Damp is the shade's, from water held and the weather.
+- The light's inputs (sky seen, ground seen, openness, weather exposure) live in the place pages P0 and P1, with a two-channel bent normal at L0 to L2. Shells drop the bent normal; impostors have their own atlas.
+- Every shell carries its atlas (albedo and normal at the date, the light's inputs, the index), painted or plain. It is the one exception to inputs-only maps: the shell caches an output bake of pigment with slow history, invalidated per thing by the change query; drift stays live from the index's reset year. A cached evaluation is still the function. Format reserved at 3.1; the bake comes with the gully's shell.
 
-**The map registry** (`maps.json`) names each map's owner, unit, texel, format, readers and rebuild trigger. *Fields* are coarse and owned by the land. *Place maps* are fine and owned by the chunk, sampled from the fields and the chunk's geometry.
+**The map registry** (`maps.json`) names each map's channels, owner, unit, texel, format, readers and rebuild trigger. *Fields* are coarse and owned by the land. *Place maps* are fine and owned by the chunk, sampled from the fields and the chunk's geometry.
 
-| Map | Owner, unit | Texel | Format | Read by | Rebuilt when |
-| --- | --- | --- | --- | --- | --- |
-| Height and sky | land, 64 m | 0.5 m heart, 2 m beyond | R16 + RG8 | far shadows, horizon, light | a ground act |
-| Ground (soil, seasonal albedo, wet) | land, 64 m | 0.25 to 0.5 m | RGBA8 | feet of rock, walls, plinths; blade roots; seen ground | a ground act, the season |
-| Fields (soil, flow, wetness, wind and salt, sun dose, made ground, feet) | land, 64 m | 0.5 to 1 m heart, 2 to 4 m beyond | `Texture2DArray` | place-map bakes, placer, deposits | an act, the feet plan, the decade |
-| Place P0 (feet, water held, sky seen, ground seen) | chunk | 2, 4, 8 cm | RGBA8 → BC7 | every shader, via `OS_History` | geometry, a neighbour's rain shadow |
-| History H1 (rates of polish, lichen, moss; age offset) | chunk | same | RGBA8 → BC7 | same | a reset, a rate change |
-| History H2, reserved (wash, deposit, splash, carrier, contact) | chunk | same | RGBA8 | same | when the layer lands |
-| Bent normal | chunk | same | RG8 (BC5) | the shade | geometry |
-| Deposits (leaves, litter) | chunk | 8 cm | R8 | ground, plants | the day's wind, feet, keepers |
-| Shell atlas (albedo, normal, light and weather, index) | 32 m cell | 3 to 5 cm | BC3, BC5, BC3, R8G8 | shells, blocks | the change query names the thing |
-| Impostor atlas | species, library | fixed | BC7 | far trees | the species' timeline |
+| Map | Channels | Owner, unit | Texel | Format | Read by | Rebuilt when |
+| --- | --- | --- | --- | --- | --- | --- |
+| Height and sky | height; sky seen, horizon angle | land, 64 m | 0.5 m heart, 2 m beyond | R16 + RG8 | far shadows, horizon, light | a ground act |
+| Ground | R soil, G seasonal albedo (an index into the material's range), B wet, A reserved | land, 64 m | 0.25 to 0.5 m | RGBA8 | feet of rock, walls, plinths; blade roots; seen ground | a ground act, the season |
+| Fields | a slice each: soil, flow, wetness, wind and salt, sun dose, made ground, feet | land, 64 m | 0.5 to 1 m heart, 2 to 4 m beyond | `Texture2DArray`, R8 or R16 | place-map bakes, placer, deposits | an act, the feet plan, the decade |
+| Place P0 | R feet, G water held, B sky seen, A ground seen | chunk | 2, 4, 8 cm | RGBA8 → BC7 | every shader, via `OS_History` | geometry, a neighbour's rain shadow |
+| Place P1 | R openness, G weather exposure, B and A reserved | chunk | same | RGBA8 → BC7 | same | geometry, a neighbour |
+| History H1 | R polish rate, G lichen rate, B moss rate, A age offset | chunk | same | RGBA8 → BC7 | same | a reset, a rate change |
+| History H2, story chunks | R wash, G deposit, B splash, A contact | chunk | same | RGBA8 → BC7 | same | the history budget; a rate change |
+| History H3, story chunks, reserved | R carrier (from the water bake), G soot, B salt, A reserved | chunk | same | RGBA8 → BC7 | same | when the layer lands |
+| Bent normal | RG direction | chunk | same | RG8 → BC5 | the shade | geometry |
+| Deposits | leaves and litter | chunk | 8 cm | R8 → BC4 | ground, plants | the day's wind, feet, keepers |
+| Shell atlas | albedo at the date; normal; sky seen, ground seen, openness, weather exposure; index (R thing in the cell, G reset year from the pack's first year) | 32 m cell | 3 to 5 cm | BC3, BC5, BC3, R8G8 uncompressed | shells, blocks | the change query names the thing |
+| Impostor atlas | the impostor baker's | species, library | fixed | BC7 | far trees | the species' timeline |
 
 **The layer registry** (`layers.json`) names each layer's page and channel, inputs, curve owner (the material record) and reset rule. Every shader reads layers through one `OS_History(address, layer)` in one include. A new layer (soot, salt, rust runs, carried stains, splash bands, failing coats) takes a reserved channel or a new page and touches that include, never a kind.
+
+**History where the stories are.** P0, P1, H1 and the bent normal are the shared weathering bake on every chunk: true and quiet. H2 and H3 are allocated per chunk by the history budget per view: the change query's weight, summed over the judged views that see a chunk, ranks the chunks, and the highest get the story pages up to a cap. A chunk without them reads each of their layers as its material's quiet mean through `OS_History`. Adding a layer to a kind later is a registry entry and a rebake, never a rebuild. *Provisional:* the cap, at most a fifth of resident chunks and 0.2 GB, settled by the years sheet and cold readers.
 
 **Keeping history honest.** A superposition validator (newer over older) and a two-date diff that fails any pixel outside the change list. Fine marks threshold fields with noise in the mark coordinate, fading to the mean by footprint. The brush anchors to UV2, since in world space it slides on what moves (*provisional*). One budget counts histories, acts and motion, by the change query's weight.
 
@@ -158,7 +183,7 @@ Reasons: decisions §5.
 | --- | --- | --- | --- |
 | L0 close | eye level, under about 8 m | full fitted geometry, maps at full texel | 4 m chunk |
 | L1 near | street stop, to about 20 m | the generator's second level from the same seed and outline (a tread from 1,100 to 100 to 150 triangles) | 4 m chunk |
-| L2 street | 12 m view, to 50 to 80 m | coarse pieces, relief in the maps' normal; the piece map is also the pick map | runs of 3 to 5 m in the 32 m cell |
+| L2 street | 12 m view, to 50 to 80 m | coarse pieces, relief in the maps' normal; the piece map is also the pick map | one mesh per 32 m cell, merged from runs of 3 to 5 m cached by hash |
 | L3 shell | about 50 to 200 m | the thing's coarse mesh from its plan (a house 500 to 1,500 triangles, a flight a stepped ribbon), the shell atlas | 32 m cell, one mesh, one atlas page |
 | L4 block | city camera, beyond about 200 m | about 100 triangles a house, the atlas's small mips | 128 m block |
 
@@ -166,19 +191,21 @@ The tiers in `docs/foundations.md` are judging bands, not switch distances. Tree
 
 **Making levels.** Fitted parts make their own in the generator, so they exist in the player. Natural stone and land use meshoptimizer (MIT) with attribute weights and locked borders. Decimate (weighs no attributes) and Mesh LOD (editor-only, melts joints) serve only offline library parts that pass the A/B. *Provisional.*
 
-**Units,** powers of two in metres, each with an id in the plan: 4 m draw-and-rebuild chunks at L0 and L1, cut at piece boundaries; 32 m cells at L2 and L3; 64 m land and streaming chunks (two cells); 128 m blocks (four cells). A change rebuilds the chunk, not the thing. GPU occlusion culls by bounding sphere, so a 33 m flight drawn whole is never culled. *Provisional:* the sizes.
+**Units,** powers of two in metres, each with an id in the plan: 4 m draw-and-rebuild chunks at L0 and L1, cut at piece boundaries; 32 m cells at L2 and L3; 64 m land and streaming chunks (two cells); 128 m blocks (four cells). A change rebuilds the chunk, not the thing; at L2 it regenerates its run and re-merges the cell. GPU occlusion culls by bounding sphere, so a 33 m flight drawn whole is never culled. *Provisional:* the sizes.
 
-**Repetition.** Things never repeat. Pieces may, where no viewer can find it: metres apart, turned or mirrored, re-weathered by their own place. Unique is only what wear or a hand shaped for one spot (worn treads, carved stones, bespoke joinery). Factory-made pieces come from small libraries, hand-made ones from large. One stair with its walls is 816,000 triangles and 36 MB today, which cannot scale. A repeat-finding check on golden views measures it. *Provisional.*
+**Precision.** Records and plans hold positions as integers in mm. Meshes are Float32 relative to their own unit's corner, so a 128 m block holds 0.02 mm. Units are placed from the plan relative to a world origin, rebased to the camera's 64 m chunk when the camera passes 2 km from it; within 2 km a float holds 0.25 mm. Shaders that read absolute position (wind, fields) get the origin as a split global; marks read UV2 and ids, so a rebase moves none. *Provisional:* the rebase's hitch, measured in the scale test.
+
+**Repetition.** Only what really was mass-produced repeats. Bricks, roof tiles, factory windows and doors, catalogue houses, and setts (hand-split but to standard sizes) come from libraries, each instance varied by placement, wear and history. Everything made by hand for one place is its own: a unique fitted piece, made in the player per chunk from its record and seed, costing build time and memory, never disk. One stair with its walls is 816,000 triangles and 36 MB at full detail today; the levels and the 4 m chunk keep unique pieces at full detail only near the camera. A repeat-finding check on golden views proves no library piece is found. *Provisional:* only hand-split wall stones not made to standard sizes, which stay their own unless the scale test's memory for unique close chunks breaks the geometry pool; then Øystein decides whether they may come from a large library where no repeat can be found.
 
 **Hand-over.** A dithered cross-fade, never animated, since that breaks the Resident Drawer. Both sides share marks, seed and history address, and switch where values match. At L2 to L3 it fades per cell with hysteresis. *Provisional.*
 
 **Instancing.** The Resident Drawer with the user value draws kit parts and street things; our own BatchRendererGroup draws swarms; no Entities. One 32-bit value indexes both the facts buffer and the pick table. Shaders use `#pragma target 4.5`, `DOTS_INSTANCING_ON`, `LOD_FADE_CROSSFADE` and `unity_RendererUserValue`. Burst, Collections and Mathematics are in `manifest.json`. *Provisional:* the Drawer can be slower when GPU-bound, and MSAA turns depth priming off.
 
-**Shadows from proxies.** L0 and L1 never cast. L2 casts in the first cascades, L3 and L4 beyond. Small parts, tufts and litter never cast. Each chunk has a caster proxy. Today the cascades draw the town twice more (15 million triangles against 5.5).
+**Shadows from proxies.** L0 and L1 never cast. L2 casts in the first cascades, L3 and L4 beyond. Small parts, tufts and litter never cast. Each chunk has a caster proxy. Trees cast from their opaque cores and lobes, never from leaf cards. People, boats, lamps, flags and laundry cast from a coarse level of their own in the first cascades only; a lamp's light casts by its tier. Today the cascades draw the town twice more (15 million triangles against 5.5).
 
 **Rows by hash.** Slate courses and sett rows come from a per-row hash evaluated alike in C# and HLSL, so far levels draw the same slates without a bake.
 
-**The painted far town.** Shells and blocks are built either way; unpainted, they are the district level from the same data. A look test decides only whether the atlas is painted (anisotropic Kuwahara on albedo and normal, one direction map) or plain. Reserved at 3.1: aligned cells; a per-thing atlas rectangle in the chunk format; per-triangle ids on shells; the shell's channels; `_OS_BAKE` in every shader (unlit albedo at the date, normal, history, ids), shared with the light's debug views; the cached bake; per-cell cross-fade. If it passes it costs 18 to 20 days against 35 to 40 for conventional far levels (the study's estimate). *Provisional:* the test, 5 to 7 days (four arms, three lights, motion sheets, M4 timing, cold readers, six drop rules), timed by Øystein.
+**The painted far town.** Shells and blocks are built either way; unpainted, they are the district level from the same data. A look test decides only whether the atlas is painted (anisotropic Kuwahara on albedo and normal, one direction map) or plain. Reserved at 3.1: aligned cells; a per-thing atlas rectangle in the chunk format; per-triangle ids on shells; the shell's channels; `_OS_BAKE` in every shader (unlit albedo at the date, normal, history, ids), shared with the light's debug views; the cached bake; per-cell cross-fade. The shell level costs 18 to 20 days once, painted or plain, against 35 to 40 for far levels per kind (the study's estimate). Painting is about 3 of those days, so the test decides the look and those days only. *Provisional:* the test, 5 to 7 days (four arms, three lights, motion sheets, M4 timing, cold readers, six drop rules), timed by Øystein.
 
 Reasons: decisions §6.
 
@@ -194,12 +221,14 @@ All provisional, replaced by the harness's run with passes toggled and by the sc
 | Shadow cascades from proxies | 2.0 | |
 | Sky, atmosphere, air | 1.5 | low sun's extra 55 to 65 ms is a bug, found first |
 | Lights and spill | 1.0 | 8 to 16 shadowed spots |
-| GTAO, SSR and water | 1.0 each | |
+| GTAO | 1.0 | indirect light only |
+| SSR and water | 1.0 | URP's own SSR, temporal filtering off |
 | Trees and alpha-tested layers | 1.0 | one birch costs 10 to 16 today: the first target |
 | Post (grading, dither, focus stencil) | 0.8 | |
 | MSAA 4× resolve | 0.5 | |
 | Id readback, UI | 0.2 | |
 | Reserve | 2.7 | holds people's share until the grey walker is measured |
+| **Sum** | **16.7** | 14.0 in passes and 2.7 reserve |
 
 **Triangles per judging view** (millions visible after culling; ceilings 2 million and 3,000 draws).
 
@@ -222,13 +251,17 @@ Each kind's export check: each level at most 60 % of the one before, and a media
 | --- | --- | --- | --- |
 | Geometry in the streaming radius | 1.0 | Library parts, material arrays | 1.0 |
 | Place and history maps | 0.8 | Chunk cache; a second date or record | 0.5 |
-| Shell atlases (if painted) | 1.0 | People | 0.5 |
+| Shell atlases, painted or plain | 1.0 | People | 0.5 |
 | Fields, ground, height | 0.2 | Render targets, MSAA 4× | 0.3 |
 | | | Engine, code, audio, UI | 0.7 |
 
-**Disk per kilometre** (both sides, about 250 houses): maps 4 to 18 MB at 4 to 8 cm, plus about 1 MB a flight of walked stone at 2 cm; instance records about 30 MB; shell atlases 115 MB at 5 cm or 320 MB at 3 cm; chunks 20 to 40 MB. So 0.2 to 0.4 GB with painted shells, under 0.1 GB without. The 1989 centre's shipped cache is about 1 GB.
+Place and history maps hold the four base pages on every resident chunk and the story pages within their cap.
+
+**Disk per kilometre** (both sides, about 250 houses, about 14,000 m² of surface): place and history pages 13 to 51 MB at 8 to 4 cm (four base pages at a byte a texel, story pages on a fifth of chunks, mips included), plus about 4 MB a flight of walked stone at 2 cm; instance records about 30 MB; shell atlases 115 MB at 5 cm or 320 MB at 3 cm; chunks 20 to 40 MB. So 0.2 to 0.45 GB, painted or plain. The disk cache stores every page compressed, so a revisit skips the bake; the shipped heart cache carries them all, and elsewhere pages bake on the GPU at first build. The 1989 centre's shipped cache is about 1 GB.
 
 **Build time** (C# worker time): a 4 m chunk 10 to 50 ms; a house under 20 ms at test quality; a kilometre of street 1 to 5 s; a thirty-year jump across a district under 1 s, the first view's 20 to 50 things built behind the dated card. A house at final quality is unknown until House A.
+
+**Streaming a frame** (*provisional:* the scale test's walk and fast camera rise): at most 1.5 ms of main thread for swaps and renderer changes; at most 8 MB uploaded (meshes and pages); at most 64 renderers added or removed under the Resident Drawer, which holds one per 4 m chunk and level, about 10,000 resident; page compression on the GPU, at most one page a frame, from the reserve. Past a limit the coarser level stays a frame longer; nothing hitches.
 
 **The authoring loop.** A look change on one kind is seen in under 3 minutes (one chunk regenerated, imported, one golden view compared). The gully's full sheet takes under 10 minutes. A loop over budget is fixed before the port goes on.
 
@@ -260,17 +293,18 @@ Reasons: decisions §8.
 **Materials.**
 - Causes split by shape. Records and outlines (signs, posters, a removed shopfront's line, rust below a fixing) are dated mesh decals from one atlas per family, drawn by the host's stack and baked into the shell far off; decals stack and pick. Water-borne stains are carriers in the water bake, running down the flow path across parts and fading from the removal year (*provisional*). URP's Decal Projector is only for transient scene state.
 - One material record per material in `packs/<pack>/materials/`: identity, pigment, grain script and seed, tooling, water profile, wear, growth affinity, paint failure, city bake, albedo range, porosity, smoothness, translucency, scatter, a curve per process, texel targets, an acoustic class (reserved). Families sit in a `Texture2DArray`. An editor step writes the Unity asset from the record.
-- Coats are fills with their year, read against the date, up to eight a wall in a data texture by wall id. "Years since" would rebake on every jump.
+- Coats are fills with their year, read against the date, up to eight a wall in a data texture by wall id.
 - A board-and-trim atlas, 4 by 1 m at 1 mm; boards stay geometry at L0 and L1 for the low sun (*provisional*). Hex-tiling for concrete, asphalt and ground (*provisional*).
 
 **Plants.** Opaque first: no cards or shells near, cards only where few overlap, cut to outline. One placer, one presence law: present when potential(fields, facts, date) > rank(seed). The gully exports joint lines, growth faces, traps, climbable regions and keep-clear zones. Plants are records with keepers' calendars. Wind-ready marks: bark from UV5's rest position, a motion-vector pass. Growth stays offline; a change beside a tree applies as events (*provisional*). A deposit field per chunk.
 
-**Land and water.** Natural ground is layers. Made ground is dated acts applied in date order, run in the player, since a game may build a road. Terrain is mesh in 64 m chunks with breaklines and rings, not Unity Terrain. Foot lines are breaklines and footprints. Natural stone is its own kind. The ground shades through `OS_ShadeP` with few materials drawn from fields; slow edges are mesh, fast ones shader (*provisional*). Water is opaque meshes with baked depth and Gerstner waves from wind and fetch, SSR first.
+**Land and water.** Natural ground is layers. Made ground is dated acts applied in date order, run in the player, since a game may build a road. Terrain is mesh in 64 m chunks with breaklines and rings. Foot lines are breaklines and footprints. Natural stone is its own kind. The ground shades through `OS_ShadeP` with few materials drawn from fields; slow edges are mesh, fast ones shader (*provisional*). Water is opaque meshes with baked depth and Gerstner waves from wind and fetch. It reflects through URP 17.6's own Screen Space Reflection renderer feature (on in `PC_Renderer`, behind the `URP_SCREEN_SPACE_REFLECTION` define), with temporal filtering off; planar reflection only if that fails (*provisional:* the harness and a motion sheet).
 
 **Motion and affordances.**
 - One motion class per element: still, hinged, swinging, flexible, floating, emitting. The anchor class is derived; a flag says card or skinned.
 - People's identity numbers are in the contract; their far mesh and archetypes are *provisional*. The gait seed is in identity from birth. Faces keep both routes open, with blend shapes kept on import.
 - Affordances are dated sockets read at the date: treads, walking line, landings, handrails, sit, lean, stand, sills, shelter, grips. Every walked surface registers a walking line to the feet field.
+- Flags, laundry, smoke and splashes step on twos from a shared clock; people and the camera stay smooth (`docs/research/what-moves.md`). *Provisional:* a motion sheet.
 - Wind is one field, a pure function of position and absolute time. Every motion is a function of the record and absolute time; cloth is the one warm-started exception.
 - Clips and rules are engine-neutral data.
 
@@ -319,7 +353,7 @@ Reasons: decisions §10.
 
 ## A new city's pack
 
-A pack (`packs/<city-year>/`) brings: `metrics.json` (storeys, openings, rises, kerbs, thicknesses, grid, by era); `eras.json` (shared with the engine); `materials/`; part families with their era content; `geology.json` and `climate.json` (rock, ice vector, foliation, joints, tide, fetch, splash, wind, latitude, longitude); `lamps.json`; `lettering/`; the record catalogue; the field guide; population and dress tables; `names.json`, every placeholder name; `tooling.json`; the curated start record and its pins.
+A pack (`packs/<city-year>/`) brings: `metrics.json` (storeys, openings, rises, kerbs, thicknesses, grid, by era); `eras.json` (Overstory's own pack data, offered to the engine through `docs/engine-requests.md`, never written into Understory); `materials/`; part families with their era content; `geology.json` and `climate.json` (rock, ice vector, foliation, joints, tide, fetch, splash, wind, latitude, longitude); `lamps.json`; `lettering/`; the record catalogue; the field guide; population and dress tables; `names.json`, every placeholder name; `tooling.json`; the curated start record and its pins.
 
 Everything else carries over: schemas, kinds, stages, shaders, the shared systems, checks, the chunk format and the interface. A foreign-pack part is a data check only until step 10.
 
@@ -355,8 +389,8 @@ Reasons: decisions §12.
 | `docs/building-system.md` | "The shader reads one number per coat: years since it was applied" |
 | `docs/foundations.md` | the tier table's switch distances; merged "runs of parts (a flight, a wall, a house)" as the merge unit |
 | `docs/visual-direction.md` | the brush's one world size |
-| `docs/research/stone.md` | "Every piece its own seeded instance, so nothing repeats" (pending Øystein's reading) |
-| `CLAUDE.md` | Practical: "Large binary files (renders, FBX) go through Git LFS", which becomes "generated binaries are rebuilt, not tracked; baselines in plain git until LFS is reachable"; the Docs table gains this file |
+| `docs/research/stone.md` | "Every piece its own seeded instance, so nothing repeats", which becomes: setts and other mass-produced pieces from libraries, everything hand-made for one place its own |
+| `CLAUDE.md` | Practical: "Large binary files (renders, FBX) go through Git LFS", which becomes "generated binaries are rebuilt, not tracked; baselines in plain git until LFS is reachable"; Standing rules: the generator "does not invent their geometry", which becomes "a fixed part is a judged mesh; a fitted part is a judged function; the generator places only judged parts and never invents one"; the Docs table gains this file |
 | `blender-generators` skill | parts as `.blend` through LFS; `random.Random(seed)`; the 1 m grid; `kit_<family>_<variant>_<lod>`; "wear, dirt and age set by Unity, not baked"; `blender/validate.py`; export to `Assets/Art/Kit/`; 2,000 triangles for LOD0 |
 | `unity-conventions` skill | `PlaceGrammar.cs`, `Code/Characters/`; "GPU instancing, static batching"; "one shared hash" (true again after 3.0); "Unity never decides" (Unity assembles and fits, and still never invents a fact) |
 | `docs/measuring.md` | "only Øystein accepts a baseline" |
@@ -370,15 +404,19 @@ Reasons: decisions §10.
 | Item | Default built on | Settled by | When |
 | --- | --- | --- | --- |
 | Vertex byte widths | the layout table | the gully's A/B | 3.2 |
+| Tangent frame | derived from UV derivatives | the gully's A/B at L2 and on shells | 3.2 |
+| Pick index split | 2, 14 and 16 bits | the picking spike | during the port |
 | Per-instance data; picking and readback | user value plus a facts buffer per cell; id render round the cursor | the picking spike, tested against raycasts on full meshes | during the port |
 | History carrier | maps at every level | the gully's A/B in grey light at eye level, FLIP within threshold | 3.2 |
 | Map density and unit | 2, 4, 8 cm; the draw chunk | the scale test with synthetic maps at both densities; BC7 in a smooth field | 3.2; unit 3.4 |
 | Map rebake cost | 2 ms GPU per 1024×512 page | one page baked and compressed in the scale test's player | the scale test |
+| Mixed texels in a chunk | each part's rectangle at its own texel | packing waste in the scale test | 3.2 |
+| Story pages | a fifth of resident chunks, 0.2 GB | the years sheet, cold readers | step 4 |
 | The brush | anchored to UV2 | a motion sheet | after the port |
 | Level boundaries, hand-over | error under a pixel; dithered cross-fade | motion sheets at one sample a pixel | 3.4 |
 | Levels for library parts | generator levels, meshoptimizer | the Mesh LOD test on the gully's FBX | 3.4 |
 | Unit sizes | 4, 32, 64, 128 m | the scale test: rebuild per chunk, demand rate, cache per km | 3.4 |
-| Repetition | things never repeat; unfound pieces may | Øystein's reading, a stretched-stone look test, the repeat check | before 3.4 (stone); House A (boards, rooms) |
+| Repetition | libraries only for what was mass-produced; everything hand-made for one place its own | the scale test's memory for unique close chunks; Øystein only for hand-split wall stones, only if that breaks the pool | the scale test |
 | Resident Drawer | on | the harness A/B | 3.4 |
 | Painted far town | shells built, atlas plain | the look test | Øystein's call |
 | Frame, triangle, memory, disk, build budgets | the tables above | the harness run and the scale test | the measuring week |
@@ -392,6 +430,10 @@ Reasons: decisions §10.
 | Birch cost; regrowth in play | opaque first; growth offline | the harness; a measurement | now; step 7 |
 | People's far mesh, archetypes | identity numbers in the contract | the recognition test, crowds of 500 and 2,000 | step 5 |
 | Collision and navigation | proxy per chunk, navmesh per 64 m cell | a short craft study | before the grey walker |
+| Streaming a frame | 1.5 ms main thread, 8 MB, 64 renderers | the scale test's walk and camera rise | the scale test |
+| Origin rebase | at 2 km, to the camera's 64 m chunk | the scale test | the scale test |
+| Flags and laundry | stepped on twos | a motion sheet | before the wind |
+| Water reflection | URP's SSR, no temporal filtering | the harness, a motion sheet | step 6 |
 | Shipped cache against on demand | ship the heart's start date | demand rate against build rate | the scale test |
 | A house at final quality | unknown | House A | House A |
 | Pins across a rules change | on slot and fill ids | the first `rulesetVersion` bump | the first bump |
