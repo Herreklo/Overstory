@@ -7,7 +7,7 @@
 //
 // Vertex data (stone.py): UV4 x polish, y lichen years / 200; UV5 x moss, y water held; UV0 the grain (the top in
 // metres, the split faces round and up); UV1 x years since its surface was bare (laid, cast) / 200, y a seed for the
-// piece; UV2 x the face (0 top, 1 rounded edge, 2 split face, 3 bed; 4 cement pointing, 5 a cement dab), y the
+// piece; UV2 x the face (0 top, 1 rounded edge, 2 split face, 3 bed; 4 cement pointing, 5 a cement dab, 6 a joint's soil), y the
 // slab's variation; UV3 the bake (x sky, y ground).
 Shader "Overstory/Stone"
 {
@@ -96,14 +96,25 @@ Shader "Overstory/Stone"
         rock *= 1.0h - (half)_Polish.x * hist.r;
         half smooth = lerp(0.14h, (half)_Polish.y, hist.r);
         // relief: the painted grain's, smoothed where feet have polished it
-        half h = relief * (1.0h - hist.r * 0.7h);
+        // (a split face is rough: its plates stand proud by several millimetres, so raking light breaks it into small
+        // lights and shadows; as shallow as a bedding plane, the block fronts read as smooth wooden planks)
+        half h = relief * (1.0h - hist.r * 0.7h) * lerp(1.0h, 2.2h, face);
 
         // cement, a repair's own material and date (kind 4 pointing, 5 a dab; upkeep.py, docs/upkeep.md): pale and
         // warm the day it was struck, its sand showing; greyer with grime over the years, a film of algae where it
         // stays damp, fine crazing; pointing crumbling out of its joint with the years, the soil behind showing (and
         // the moss taking it) where it has gone
         half moss = hist.b;
-        if (kind > 3.5h)
+        if (kind > 5.5h)
+        {
+            // a joint's filling (kind 6): soil washed in and held there, damp, the moss's own ground
+            half crumb = (half)OS_Noise(q * 90.0 + var * 13.0);
+            rock = _Soil.rgb * (0.8h + 0.4h * crumb);
+            smooth = 0.12h;
+            h = (crumb - 0.5h) * 0.6h;
+            moss = saturate(hist.b * 1.3h);
+        }
+        else if (kind > 3.5h)
         {
             half sand = (half)OS_Noise(q * 260.0 + var * 17.0);
             // (on this coast grime and a film come in a few years: half grey by six, near its old grey by twenty)
@@ -272,7 +283,9 @@ Shader "Overstory/Stone"
                 half3 colour = OS_ShadeA(id, s, b);
             #endif
                 colour = OS_Atmosphere(colour, input.positionWS);
-                if (_History > 1.5)
+                if (_History > 2.5)
+                    colour = normalize(input.normalWS) * 0.5h + 0.5h;
+                else if (_History > 1.5)
                     colour = so.albedo * 0.6h;
                 else if (_History > 0.5)
                     colour = input.piece.z > 3.5 ? half3(0.9h, 0.45h, 0.0h)

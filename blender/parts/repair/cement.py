@@ -17,17 +17,17 @@ import random
 import numpy as np
 
 
-def dab(seed, front, side, reach, height, skin=0.012, rays=14, rings=(0.0, 0.06, 0.15, 0.3, 0.55, 0.75, 0.9, 1.0)):
+def dab(seed, front, side, reach, height, skin=0.012, rays=14, rings=(0.0, 0.06, 0.15, 0.3, 0.55, 0.75, 0.9, 1.0), deep=None):
     """A lump of cement pressed into a corner broken off a step: it fills the break up to the stone's broken edge
     (front(x): how far the edge lies back from the nosing's line at x along the step; side(y): how far in from the
     slab's end at y back from the nosing; both the slab part's own outline, the break only, 0 where it is whole), its
     top struck roughly level with the stone and domed where the trowel lifted, a thin skin feathered onto the stone
     round it that sinks under the stone's top at an uneven line, its front and outer side carried down below the
-    break's floor with a rounded shoulder. reach: (x, y) how far the break reaches. Meshed in a fan from the corner, so
+    break's floor (deep, or most of the slab) with a 2 to 4 mm shoulder. reach: (x, y) how far the break reaches. Meshed in a fan from the corner, so
     its edge follows the break. The broken corner at (0, 0); x along the step, y back from the nosing, z up to the
     stone's top at height."""
     rng = random.Random(f"dab-{seed}")
-    c = np.array([-0.003, -0.004])
+    c = np.array([-0.001, -0.001])      # (struck flush with the old faces, never a lip)
     w_amp, w_f, w_ph = rng.uniform(0.5, 0.9), rng.uniform(5, 9), rng.uniform(0, 6)
 
     def inside(P):
@@ -50,11 +50,12 @@ def dab(seed, front, side, reach, height, skin=0.012, rays=14, rings=(0.0, 0.06,
             T.append(np.clip(inside(p[None])[0] / sk + 1.0, 0.0, 1.0))      # 0 at the skin's edge, 1 in the break
     Vt, T = np.array(Vt), np.array(T)
     nr = len(rings)
-    proud = rng.uniform(0.0005, 0.002)
-    Z = height - 0.004 + (0.004 + proud) * T ** 0.7 + 0.0008 * np.sin(Vt[:, 0] * rng.uniform(150, 260) + Vt[:, 1] * rng.uniform(80, 160))
+    # struck flush with the stone's top, the trowel's strokes a fraction of a millimetre (a lumpy top read as putty)
+    proud = rng.uniform(0.0, 0.0005)
+    Z = height - 0.004 + (0.004 + proud) * T ** 0.7 + 0.0003 * np.sin(Vt[:, 0] * rng.uniform(150, 260) + Vt[:, 1] * rng.uniform(80, 160))
     # its front and outer side rounded where the trowel turned
-    sh = rng.uniform(0.005, 0.01)
-    Z -= sh * np.maximum(np.clip(1.0 - (Vt[:, 1] - c[1]) / 0.015, 0, 1), np.clip(1.0 - (Vt[:, 0] - c[0]) / 0.015, 0, 1)) ** 1.5 * (T > 0.99)
+    sh = rng.uniform(0.002, 0.004)
+    Z -= sh * np.maximum(np.clip(1.0 - (Vt[:, 1] - c[1]) / 0.006, 0, 1), np.clip(1.0 - (Vt[:, 0] - c[0]) / 0.006, 0, 1)) ** 1.5 * (T > 0.99)
     top = np.column_stack([Vt, Z])
     gid = lambda k, j: k * nr + j
     F = []
@@ -66,8 +67,8 @@ def dab(seed, front, side, reach, height, skin=0.012, rays=14, rings=(0.0, 0.06,
                 F.append((gid(k, j), gid(k, j + 1), gid(k + 1, j + 1), gid(k + 1, j)))
     # the skirt: the front ray and the side ray carried down below the break's floor, as far as the break goes,
     # rounded over at its shoulder, a little bellied where the cement slumped before it set, its face uneven
-    floor = height - max(height * 0.9, 0.03)
-    rows = [(0.35, 0.003), (0.65, 0.0025), (1.0, 0.0)]      # (how far down, how far out)
+    floor = height - (deep if deep is not None else max(height * 0.9, 0.03)) - 0.003
+    rows = [(0.35, 0.0006), (0.65, 0.0004), (1.0, 0.0)]      # (how far down, how far out: flush, a hair's belly)
     V = [top]
     base = len(top)
     for ray, facing in ((0, "y"), (rays - 1, "x")):
@@ -78,7 +79,7 @@ def dab(seed, front, side, reach, height, skin=0.012, rays=14, rings=(0.0, 0.06,
             P = top[ring].copy()
             z_top = P[:, 2].copy()
             P[:, 2] = z_top + (floor - z_top) * depth_
-            jig = np.array([rng.uniform(-0.0015, 0.0015) for _ in ring]) * (depth_ < 1.0)
+            jig = np.array([rng.uniform(-0.0004, 0.0004) for _ in ring]) * (depth_ < 1.0)
             P[:, :2] += out_ * (belly + jig)[:, None]
             V.append(P)
             cur = list(range(base, base + len(ring)))

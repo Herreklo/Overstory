@@ -11,8 +11,8 @@ namespace Overstory.World
     /// </summary>
     public static class GrowthPack
     {
-        public static Color Lichen = new Color(0.64f, 0.65f, 0.60f);       // a pale grey crust, never white
-        public static Color LichenOld = new Color(0.55f, 0.57f, 0.51f);
+        public static Color Lichen = new Color(0.76f, 0.77f, 0.73f);       // a pale grey crust, never white (the board, 06: about 2.4 times the stone's value)
+        public static Color LichenOld = new Color(0.66f, 0.68f, 0.62f);
         public static Color LichenRim = new Color(0.30f, 0.30f, 0.29f);    // map lichen's dark prothallus, seen as a line
         /// <summary>x growth (m a year), y the size of a patch (m), z how much of a quiet surface it takes.</summary>
         public static Vector4 LichenRate = new Vector4(0.0007f, 0.11f, 0.85f, 0f);

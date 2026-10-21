@@ -70,12 +70,12 @@ namespace Overstory.EditorTools
             m.shader = Shader.Find("Overstory/Stone");
             // the town's own rock (the board, 02, 03, 06): weathered to a blue-grey, freshly split darker and bluer;
             // its split faces a little warmer
-            m.SetColor("_Stone", new Color(0.56f, 0.565f, 0.57f));
+            m.SetColor("_Stone", new Color(0.50f, 0.505f, 0.51f));     // (weathered slate, a mid-dark grey under its lichen; the board, 06)
             m.SetColor("_Fresh", new Color(0.38f, 0.40f, 0.43f));
             m.SetColor("_Edge", new Color(0.58f, 0.565f, 0.55f));
             m.SetTexture("_GrainMap", AssetDatabase.LoadAssetAtPath<Texture2D>($"{Art}/slate_grain.png"));
             // (the bedding plane's soft values at full strength read as cloud shadows across every tread)
-            m.SetVector("_Grain", new Vector4(0.4f, 0.35f, 0.14f, 0f));
+            m.SetVector("_Grain", new Vector4(0.4f, 0.2f, 0.14f, 0f));
             m.SetFloat("_Weather", 100f);
             m.SetVector("_Polish", new Vector4(0.06f, 0.42f, 0f, 0f));     // the worn line clean, scarcely darker
             m.SetVector("_Relief", new Vector4(0.0016f, 0.0012f, 0f, 0f));
@@ -84,9 +84,9 @@ namespace Overstory.EditorTools
             m.SetColor("_Cement", new Color(0.72f, 0.71f, 0.67f));
             m.SetColor("_CementOld", new Color(0.54f, 0.53f, 0.50f));
             m.SetColor("_CementFilm", new Color(0.25f, 0.28f, 0.22f));
-            m.SetColor("_Soil", new Color(0.16f, 0.14f, 0.11f));
+            m.SetColor("_Soil", new Color(0.32f, 0.30f, 0.26f));     // (a joint at Dale is dark, 7 to 12% of white, never black)
             m.SetFloat("_Grey", grey ? 1f : 0f);
-            m.SetFloat("_History", Flag("-history") ? 1f : Flag("-albedo") ? 2f : 0f);
+            m.SetFloat("_History", Flag("-history") ? 1f : Flag("-albedo") ? 2f : Flag("-normals") ? 3f : 0f);
             m.enableInstancing = true;
             EditorUtility.SetDirty(m);
             return m;
@@ -159,6 +159,8 @@ namespace Overstory.EditorTools
                         // under the foot of every riser (3 cm in from the nosings, rises a centimetre off), and a
                         // little beside the flight up to the treads' own level
                         float inner = f.a[2] + (s - 0.03f) * slope - 0.12f;
+                        if (s < f.tread + 0.1f)
+                            inner = Mathf.Max(inner, f.a[2] - 0.02f);     // (under the first step the lane meets its foot)
                         float beside = Mathf.Clamp01((t - f.width / 2) / 1.6f);
                         float limit = inner + beside * (0.12f + f.rise);
                         if (wp.y > limit)
@@ -244,7 +246,7 @@ namespace Overstory.EditorTools
                         urp.shadowDistance = 120f;
                         stage.shot = shot;
                         stage.Apply();
-                        string file = Path.Combine(dir, $"gully-{view}{(grey ? "-greylight" : "")}{(Flag("-history") ? "-history" : "")}{(Flag("-albedo") ? "-albedo" : "")}{(Flag("-nostyle") ? "-nostyle" : "")}.png");
+                        string file = Path.Combine(dir, $"gully-{view}{(grey ? "-greylight" : "")}{(Flag("-history") ? "-history" : "")}{(Flag("-albedo") ? "-albedo" : "")}{(Flag("-normals") ? "-normals" : "")}{(Flag("-nostyle") ? "-nostyle" : "")}.png");
                         LT1Render.Still(stage.view, file, grey: true, eighth: true, msaa: 4);
                         Debug.Log($"[LT1Stone] {file}");
                     }

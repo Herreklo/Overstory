@@ -47,14 +47,16 @@ def _noise2(rng, x, y, scale, octaves=3, along=None):
     return out / tot
 
 
+# A corner broken off slate leaves flat faces, not a scoop: the rock parts along straight planes (a curved bite read as
+# a bent plank).
 def bite_front(x, size):
-    """How far a broken corner's bite reaches back from the nosing, at x from the broken end (m)."""
-    return size * 0.75 * np.clip(1.0 - np.abs(x) / (size * 1.3), 0.0, 1.0) ** 0.6
+    """How far a broken corner's bite reaches back from the nosing, at x from the broken end (m): a straight cut."""
+    return size * 0.75 * np.clip(1.0 - np.abs(x) / (size * 1.3), 0.0, 1.0)
 
 
 def bite_side(y, size):
-    """How far a broken corner's bite reaches in from the slab's end, at y back from the nosing (m)."""
-    return size * 0.8 * np.clip(1.0 - np.asarray(y) / (size * 1.1), 0.0, 1.0) ** 0.6
+    """How far a broken corner's bite reaches in from the slab's end, at y back from the nosing (m): a straight cut."""
+    return size * 0.8 * np.clip(1.0 - np.asarray(y) / (size * 1.1), 0.0, 1.0)
 
 
 def slab(seed, width, depth, thick, front_round=0.012, side_round=0.006, layers=None, warp=0.003, flake=0.35,
@@ -62,7 +64,8 @@ def slab(seed, width, depth, thick, front_round=0.012, side_round=0.006, layers=
     """One slab. front_round, side_round: the radius its edges are rounded to (m); layers: how many split layers
     show in its edges (2 to 4 from its thickness if None); warp: how far its top departs from a plane (m); flake:
     the share of its top a layer lower where one flaked off; chip: how deep its corners are knocked (m); edge_jag:
-    how far its split outline wanders (m).
+    how far its split outline wanders (m); broken: (side "l" or "r", size, depth or None): a corner broken off its
+    nosing, down to the bedding plane nearest depth (through the whole slab if None).
 
     Returns V (n, 3), F (list of index tuples), and per vertex: kind (0 top, 1 rounded edge, 2 split face, 3 bed),
     edge (on the top: distance to its outline, m; elsewhere 0), s (on the faces: distance round the outline from the
@@ -94,15 +97,12 @@ def slab(seed, width, depth, thick, front_round=0.012, side_round=0.006, layers=
     o_left = edge_offsets(nv, depth)
     o_right = edge_offsets(nv, depth)
     # a corner broken off its nosing (upkeep.py: a dropped load, a frost): an angular bite out of the front and the
-    # side at one end, its faces fresh split
+    # side at one end, its faces fresh split, down to a bedding plane (the slab whole below it)
+    o_whole = (o_front.copy(), o_left.copy(), o_right.copy())
+    bite_depth = None
     if broken:
-        side, size = broken
-        tx = np.linspace(0.0, width, nu)
-        o_front = o_front + bite_front(tx - (0.0 if side == "l" else width), size)
-        if side == "l":
-            o_left = o_left + bite_side(ys, size)
-        else:
-            o_right = o_right + bite_side(ys, size)
+        side, size = broken[0], broken[1]
+        bite_depth = broken[2] if len(broken) > 2 else None
     r_front = front_round * rng.uniform(0.7, 1.3)
     r_side = side_round * rng.uniform(0.6, 1.4)
 
@@ -116,6 +116,9 @@ def slab(seed, width, depth, thick, front_round=0.012, side_round=0.006, layers=
     back = depth - o_back[None, :] - 0.003
     X = left + (right - left) * S
     Y = front + (back - front) * T
+    # the outline as it was before the break, for the faces below it
+    X0 = (o_whole[1][:, None] + r_side) + ((width - o_whole[2][:, None] - r_side) - (o_whole[1][:, None] + r_side)) * S
+    Y0 = (o_whole[0][None, :] + r_front) + (back - (o_whole[0][None, :] + r_front)) * T
     # the top: a bedding plane, warped, falling a little to the front to shed water, a layer lower where it flaked
     Z = thick + warp * _noise2(rng, X, Y, 0.9) - 0.004 * (1.0 - T)
     fl = _noise2(rng, X, Y, 0.35, octaves=4, along=0.0)
@@ -139,11 +142,15 @@ def slab(seed, width, depth, thick, front_round=0.012, side_round=0.006, layers=
            [gid(i, nv - 1) for i in range(nu - 2, -1, -1)] + [gid(0, j) for j in range(nv - 2, 0, -1)]
     top = V[0]
     P = top[ring][:, :2]
+    P0 = np.stack([X0.ravel(), Y0.ravel()], -1)[ring]
     nring = len(ring)
-    # outward normals round the border (in plan)
-    d = np.roll(P, -1, axis=0) - np.roll(P, 1, axis=0)
-    nrm = np.stack([d[:, 1], -d[:, 0]], -1)
-    nrm /= np.maximum(np.linalg.norm(nrm, axis=1, keepdims=True), 1e-9)
+
+    def normals_of(Q):
+        """Outward normals round a border (in plan)."""
+        d = np.roll(Q, -1, axis=0) - np.roll(Q, 1, axis=0)
+        n_ = np.stack([d[:, 1], -d[:, 0]], -1)
+        return n_ / np.maximum(np.linalg.norm(n_, axis=1, keepdims=True), 1e-9)
+    nrm, nrm0 = normals_of(P), normals_of(P0)
     # which edge each border point is on: the front rounds most, the back least
     side_of = np.array([0] * nu + [1] * (nv - 1) + [2] * (nu - 1) + [3] * (nv - 2))
     rad = np.where(side_of == 0, r_front, np.where(side_of == 2, 0.003, r_side))
@@ -174,6 +181,23 @@ def slab(seed, width, depth, thick, front_round=0.012, side_round=0.006, layers=
     # the split face: its layers, each standing a little in or out, down to the bed
     nl = layers or max(2, min(4, int(round(thick / 0.05))))
     heights = np.sort(np.array([rng.uniform(0.15, 0.85) for _ in range(nl - 1)]))[::-1]
+    # a break tapers down through the layers: the top one loses the most, each below it less, until at its depth
+    # the slab is whole, so it dies out in a few small steps along the bedding planes (one full-size ledge at the
+    # break's floor read as the ghost of the unbroken step)
+    floor_frac = 1.0 - bite_depth / thick if bite_depth is not None else -1.0
+
+    def bitten(frac):
+        """How much of the break a layer at this height (a fraction of the slab's) has lost: 1 at the top, 0 at
+        the break's depth and below."""
+        if floor_frac < 0.0:
+            return 1.0
+        return float(np.clip((frac - floor_frac) / max(1.0 - floor_frac, 1e-3), 0.0, 1.0)) ** 0.8
+
+    def kinks(n, k, amp):
+        """A line wandering in straight runs with angular kinks (a smooth wander read as wood grain)."""
+        bt = np.sort(np.concatenate([[0.0, 1.0], [rng.random() for _ in range(k)]]))
+        bv = np.array([rng.uniform(-1.0, 1.0) for _ in bt]) * amp
+        return np.interp(np.linspace(0, 1, n), bt, bv)
     z_edge = zt - rad
     prev_out = rad.copy()
     for k, hk in enumerate(list(heights) + [0.0]):
@@ -184,9 +208,15 @@ def slab(seed, width, depth, thick, front_round=0.012, side_round=0.006, layers=
         lay = steps_along(nring, max(2, nring // 10), -1.0, 1.0) + 0.2 * _noise1(rng, nring, [(rng.uniform(6, 10), 1.0)])
         amp = np.where(side_of == 0, 0.012, np.where(side_of == 2, 0.002, 0.008))
         outk = rad + amp * lay - 0.002 * k
-        zk = z_edge * hk if hk > 0 else np.zeros(nring)
+        # a parting shows only where a plate has broken away; elsewhere the face runs on from the plate above (each
+        # parting along the whole edge at one height read as ruled boards), and the bedding wanders a little
+        if hk > 0:
+            closed = steps_along(nring, max(3, nring // 8), 0.0, 1.0) < 0.5
+            outk = np.where(closed, prev_out, outk)
+        zk = z_edge * np.clip(hk + kinks(nring, max(3, nring // 12), 0.03), 0.05, 0.95) if hk > 0 else np.zeros(nring)
         # a ledge: the layer's top edge at the old setback, then its own face below it
-        for zz, oo in ((zk + 0.002, prev_out), (zk, outk)) if hk > 0 else ((zk, outk),):
+        pairs = ((zk + 0.002, prev_out), (zk, outk)) if hk > 0 else ((zk, outk),)
+        for zz, oo in pairs:
             R = np.concatenate([P + nrm * oo[:, None], np.maximum(zz, 0.0)[:, None]], -1)
             V.append(R)
             kind.append(np.full(nring, 2, dtype=np.int8))
@@ -211,6 +241,28 @@ def slab(seed, width, depth, thick, front_round=0.012, side_round=0.006, layers=
     V = np.concatenate(V)
     kind = np.concatenate(kind)
     edge = np.concatenate(edge)
+    # the break: a plane cut across the corner (slate parts along planes), the top layer losing the most and each
+    # below it less, down to the break's depth, every point inside a layer's corner triangle moved onto its cut
+    corner = None
+    if broken:
+        cx = 0.0 if side == "l" else width
+        sgn = 1.0 if side == "l" else -1.0
+        b_, a_ = size * 1.3, size * 0.75                # along the step from the end, back from the nosing
+        ff = np.array([bitten(z / max(thick, 1e-6)) for z in V[:, 2]])
+        B, A = b_ * ff, a_ * ff
+        u, v = np.abs(V[:, 0] - cx), V[:, 1]
+        ok = (B > 1e-4) & (A > 1e-4)
+        q = np.where(ok, u / np.maximum(B, 1e-6) + v / np.maximum(A, 1e-6), 9.0)
+        inside = q < 1.0
+        nx, ny = 1.0 / np.maximum(B, 1e-6), 1.0 / np.maximum(A, 1e-6)
+        nn = np.hypot(nx, ny)
+        d = (1.0 - q) / nn
+        V[inside, 0] = cx + sgn * (u + d * nx / nn)[inside]
+        V[inside, 1] = (v + d * ny / nn)[inside]
+        # where the stone's own front and end stand at the corner, and the cut, for a dab fitted to it
+        corner = dict(side=side, along=b_, back=a_, depth=bite_depth if bite_depth is not None else thick,
+                      front=float((o_front[0] if side == "l" else o_front[-1]) + r_front),
+                      end=float((o_left[0] if side == "l" else o_right[0]) + r_side))
     # round the outline for each ring's points (faces' u), and the top in metres
     s_all = np.zeros(len(V))
     for r_ in rings[1:]:
@@ -220,4 +272,4 @@ def slab(seed, width, depth, thick, front_round=0.012, side_round=0.006, layers=
     outline = dict(x=np.linspace(0.0, width, nu), front=o_front + r_front, y=np.array(ys, float),
                    left=o_left + r_side, right=o_right + r_side)
     return dict(V=V, F=F, kind=kind, edge=edge, s=s_all, UV=UV, width=width, depth=depth, thick=thick,
-                front_round=r_front, outline=outline)
+                front_round=r_front, outline=outline, corner=corner)
