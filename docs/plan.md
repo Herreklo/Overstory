@@ -142,7 +142,10 @@ The steps keep their numbers, since other docs cite them. Step 1 is reopened on 
    - 1f+, paper playtests with agent players (Øystein: "can you playtest as well... really analyse the concepts, what feels fun, what feels engaging"):
      - a game-master agent runs each first-game concept in text, from real simulated lives where possible (Understory's published records, read-only);
      - five player agents of different kinds, on two models, play 20 to 30 turns each and think aloud, marking curiosity, engagement, boredom, confusion and the wish to quit;
-     - an analyst compares the concepts by engagement over time, the loops that held, and how much reading people and history mattered;
+     - first, a design panel (a systems designer, a narrative and RPG designer, an experience designer) takes each concept apart: the core loop; hours 1, 10 and 100; the player's motivations; where it turns into a chore; which game does each part best;
+     - an analyst compares the concepts by engagement over time, repetition, fulfilment (whether choices showed consequences the player cared about), and whether the lives and the town's history actually change what the player decides;
+     - the panel redesigns, or merges the strongest parts of two concepts into a hybrid, and the game master replays; a sceptic argues to kill the weakest;
+     - the output is ranked concepts with their sessions, and what the greybox should test first (Øystein: "put yourself in the mind of a game developer in this sandbox, and really push it");
      - Fable reviews it after the reset.
 
      Agent players find confusion, dead stretches and broken loops; they can't feel fun, so Øystein and his testers have the final word. Later, agent players play the greybox first.
