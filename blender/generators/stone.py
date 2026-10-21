@@ -34,6 +34,9 @@ import slab as SL  # noqa: E402
 import cement as CE  # noqa: E402
 import growth as GR  # noqa: E402
 import upkeep as UP  # noqa: E402
+import water as WT  # noqa: E402
+import wear as WR  # noqa: E402
+from wear import walking  # noqa: E402
 
 YEAR = 1989
 
@@ -102,14 +105,6 @@ def widths(rng, total, below, lo=0.7, hi=2.3, below2=()):
                 all(min((abs(c - d) for d in drift), default=9.0) > 0.2 for c in cuts):
             return edges
     return edges
-
-
-def walking(a):
-    """Where people walk across a flight (0 one side, 1 the other): mostly the middle, in two lanes, up and down,
-    never the very edges; 1 at the busiest."""
-    # (on a flight 3.2 m wide people keep to the middle metre and a half to two; its edges stay quiet)
-    p = 0.55 * np.exp(-((a - 0.4) / 0.12) ** 2) + 0.55 * np.exp(-((a - 0.6) / 0.12) ** 2) + 0.15 * np.exp(-((a - 0.5) / 0.22) ** 2)
-    return np.clip(p / 0.71, 0.0, 1.0)
 
 
 def settler(rng, w, off):
@@ -196,18 +191,15 @@ def lay(spec, seed=1):
             across = np.clip((x0 + P[:, 0] + W / 2) / W, 0.0, 1.0)
             along = np.clip((s0 + P[:, 1]) / g - np.floor((s0 + 0.02) / g), 0.0, 1.5)
             top = (kind == 0) & foot_on
-            # wear: footfall times years over the stone's hardness, where feet go: across the walking line, on the
-            # front half of a tread where the foot lands, and over the nosing, which rounds
+            # wear (wear.py): footfall times years over the stone's hardness, where feet go: across the walking line,
+            # on the front half of a tread where the foot lands, and over the nosing, which rounds
             foot = walking(across) * (0.45 + 0.55 * np.exp(-((along - 0.3) / 0.35) ** 2))
-            depth_mm = stone["wear"] * (spec["footfall"] / 1e5) * (worn_y / 100.0)
-            worn = depth_mm / 1000.0 * foot
+            worn = WR.depth(stone["wear"], spec["footfall"], worn_y, foot)
             nose = foot_on & ((kind == 1) | ((kind == 0) & (piece["edge"] < 0.03) & (P[:, 1] < 0.05)))
             P = P.copy()
-            # (the dish subtracts; the nosing's arris takes the heel and toe of every step and rounds several times faster
-            # than the tread hollows (docs/research/stone.md: nosings rounded), never bowing the front out)
-            P[:, 2] -= np.where(top, worn, 0.0) + np.where(nose, worn * 4.0 * walking(across), 0.0)
-            polish = np.where(foot_on & ((kind <= 1) | (kind == 5)),
-                              np.clip(1.0 - np.exp(-spec["footfall"] * min(worn_y, 40) / 4e5), 0.0, 1.0) * foot, 0.0)
+            # (the dish subtracts; the nosing's arris rounds faster than the tread hollows, never bowing the front out)
+            P[:, 2] -= np.where(top, worn, 0.0) + np.where(nose, WR.nosing(worn, walking(across)), 0.0)
+            polish = np.where(foot_on & ((kind <= 1) | (kind == 5)), WR.polish(spec["footfall"], worn_y, foot), 0.0)
             polish = np.maximum(polish, np.where(foot_on & (kind <= 1), polish0, 0.0))
             # growth (nature's, docs/nature.md, Growth on surfaces): lichen where it is quiet for its years; on a
             # riser's face too, above where boots scuff its foot; moss where it stays damp: the strip in front of the
@@ -260,17 +252,15 @@ def lay(spec, seed=1):
             out["UV0"].append(uv)
             var = rng.random()
             out["UV1"].append(np.stack([np.full(len(P), bare_y / 200.0), np.full(len(P), var)], -1))
-            # the water layer (docs/foundations.md, The shared surface layers, 4 and 7): how much water lies or runs
-            # here. On a tread it lingers in the dish, the joints and against the riser above, and the crown dries
-            # first; the nosing sheds it; a front takes what runs over the nosing above it, most down the worn middle
-            # where the dish drains and at its joints, strongest just under the nosing; a joint's soil holds it
+            # the water layer (water.py): on a tread water lingers in the dish, the joints and against the step above,
+            # and the crown dries first; the nosing sheds it; a front takes what runs over the nosing above it, most
+            # down the worn middle where the dish drains, strongest just under the nosing; a joint's soil holds it
             zz = z0 + P[:, 2]
-            water_top = np.clip(np.maximum.reduce([np.where(back, (along - 0.8) / 0.2, 0.0), np.where(joint, 0.8, 0.0),
-                                                   worn / 0.004]), 0.12, 1.0)
-            run_over = (0.2 + 0.8 * np.clip(walking(across) * 0.9, 0.0, 1.0)) * \
-                (0.5 + 0.5 * np.exp(-np.clip(z_top - zz, 0.0, None) / 0.08))
+            water_top = WT.on_top(back=np.where(back, (along - 0.8) / 0.2, 0.0), joint=np.where(joint, 0.8, 0.0),
+                                  hollow=worn / 0.004)
+            run_over = WT.over_edge(walking(across) * 0.9, z_top - zz)
             water = np.where(kind == 0, water_top, np.where(kind == 1, 0.3, np.where(kind == 2, run_over,
-                             np.where(kind >= 4, 0.9, 0.2))))
+                             np.where(kind >= 4, WT.HOLDS, 0.2))))
             if not foot_on:
                 water = np.where(kind == 2, run_over, water)
             out["UV2"].append(np.stack([kind.astype(float), np.clip(water, 0.0, 1.0)], -1))

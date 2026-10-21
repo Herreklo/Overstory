@@ -79,7 +79,9 @@ namespace Overstory.EditorTools
             m.SetFloat("_Weather", 100f);
             m.SetVector("_Polish", new Vector4(0.06f, 0.42f, 0f, 0f));     // the worn line clean, scarcely darker
             m.SetVector("_Relief", new Vector4(0.0016f, 0.0012f, 0f, 0f));
-            m.SetFloat("_Porosity", 0.85f);     // wet, the slate goes near black (the board, 02)
+            // its answer to water (Water.hlsl): dense slate darkens near black wet (the board, 02), glazes where feet
+            // polished it, sheds water and dries fast, streaks a little
+            m.SetVector("_Water", new Vector4(0.85f, 1.0f, 0.2f, 0.55f));
             // the repairs' cement (upkeep.py): a little paler and warmer than the slate even when old, greying with grime
             m.SetColor("_Cement", new Color(0.72f, 0.71f, 0.67f));
             m.SetColor("_CementOld", new Color(0.54f, 0.53f, 0.50f));
@@ -114,7 +116,8 @@ namespace Overstory.EditorTools
             m.SetVector("_Grain", new Vector4(0.45f, 0.35f, 0.42f, 0.65f));    // (w: each stone's own hue)
             m.SetFloat("_Weather", 70f);
             m.SetVector("_Polish", new Vector4(0.08f, 0.45f, 0f, 0f));    // (hand-worn: a coping's inner edge, darker and smoother)
-            m.SetFloat("_Porosity", 0.75f);
+            // (rubble: mixed, more porous; darkens unevenly, takes less glaze, dries slower, streaks more)
+            m.SetVector("_Water", new Vector4(0.75f, 0.6f, 0.5f, 0.9f));
             EditorUtility.SetDirty(m);
             return m;
         }
@@ -287,6 +290,7 @@ namespace Overstory.EditorTools
             bool grey = Flag("-grey");
             // the pack's growth (lichen, moss), set once for the whole town
             GrowthPack.Apply();
+            WaterPack.Apply();
             // -detail painted|real: one end of "true up close, painted from afar" everywhere, to compare
             string detail = Arg("-detail", "");
             Shader.SetGlobalFloat("_OS_NearForce", detail == "painted" ? 1f : detail == "real" ? 2f : 0f);

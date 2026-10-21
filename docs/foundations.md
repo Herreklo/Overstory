@@ -32,8 +32,8 @@ Every hard surface (stone, timber, brick, render, concrete, asphalt, roofs) is d
 
 1. pigment and grain (the material's, painted at our scale, seeded per piece, never tiling);
 2. tooling or finish (how it was made);
-3. wear and polish (from footfall and use, and years);
-4. stains (run-off, algae film, rust, soot, salt);
+3. wear and polish (from footfall and every other contact of use, and years; `wear.py`);
+4. stains (run-off, algae film, rust, soot, salt; run-off from the water layer, `Water.hlsl`);
 5. growth: nature's (`docs/nature.md`, Growth on surfaces; `growth.py`, `Growth.hlsl`, the pack's `GrowthPack`);
 6. damage and repair: the thing's upkeep (`docs/upkeep.md`: left alone, patched, worked in a campaign, renewed; each repair its own material and date, spread as its causes spread; `upkeep.py`, the parts in `blender/parts/repair/`);
 7. weather (wet, frost, snow and ice, fallen leaves, litter).
@@ -43,6 +43,17 @@ Every hard surface (stone, timber, brick, render, concrete, asphalt, roofs) is d
 **Wear follows every contact of use, not only feet:** footfall on what is walked on (polish, a hollow, rounded nosings), hands on what is held (a stair's parapet coping at hand height, a door's handle side, a railing), boots and bags at a wall's foot beside a flight, wheels at a corner, sitting on a step or a sill; each polishes, darkens and clears growth where it touches, from the uses (`docs/living-fabric.md`).
 
 Lichen grows as rosettes: each colony from a point in its own year, spreading about a third of a millimetre a year, merging where colonies meet and stopping at a stone's edge (`Growth.hlsl`); from past the street stop, a film over each stone as much as its years and quiet give.
+
+**Each system has one home, the same shape for every system** (Øystein, 22 October: separate the systems in a way that makes sense; water behaves differently on different materials). Where a cause acts is baked by the generators from facts and shape, how it is drawn is one shader include every surface's shader uses, what varies by place or material is the setting pack's or the material's own:
+
+| System | Where (generator side) | How it is drawn | What the pack or the material brings |
+| --- | --- | --- | --- |
+| Water | `blender/generators/water.py`: where it lands, runs, drips, pools and lingers | `Water.hlsl`: wet now, the film, pools, run-off streaks | each material's water profile (how dark wet, how glossy its film, how long it holds water, how readily it stains); the shared materials' in `WaterPack` (cement, soil, growth) |
+| Wear | `wear.py`: feet, hands, boots, wheels | the polish channel | the material's hardness and polish |
+| Growth | `growth.py`: where and how long | `Growth.hlsl` | `GrowthPack`: the species, their pigments and rates |
+| Damage and repair | `upkeep.py`; the repair parts in `blender/parts/repair/` | the repair materials' kinds | the era's materials (`docs/upkeep.md`) |
+| Detail by distance | — | `Detail.hlsl` (`OS_Near`) | — |
+| Light | the bakes (sky, ground) | `StreetLooks.hlsl` (`OS_ShadeP`) | the rigs |
 
 Shade is the light's, never the object's (SEASON's lesson, `docs/research/colour-and-shading.md`, rule 1): every surface is lit by the town's one shade function (`OS_ShadeP`, `StreetLooks.hlsl`), and no layer carries a shadow tint. A layer's dark (a joint, a nosing's underside) is its occlusion, baked or the light's.
 

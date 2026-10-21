@@ -11,23 +11,14 @@
 //
 // Include after StreetSurface.hlsl (OS_Hash, OS_Noise).
 
+#include "Detail.hlsl"
+
 half4 _OS_Lichen;        // rgb the crust's pigment
 half4 _OS_LichenOld;     // rgb an old patch's centre
 half4 _OS_LichenRim;     // rgb the dark rim where a colony meets bare stone or a neighbour
 float4 _OS_LichenRate;   // x growth (m a year), y the size of a patch (m), z how much of a quiet surface it takes
 half4 _OS_Moss;          // rgb fresh moss
 half4 _OS_MossOld;       // rgb moss grown old, browner
-
-float _OS_NearForce;     // debug: 0 by distance, 1 painted everywhere, 2 the near detail everywhere
-
-// How near a pixel is, for the detail it can carry: true up close, painted from afar (docs/visual-direction.md). 1
-// within a couple of metres at eye level (a pixel about a millimetre on the surface), 0 by about seven (four), so
-// by the street stop every mark is its painted shape.
-half OS_Near(float footprint)
-{
-    half n = 1.0h - saturate((half)((footprint - 0.0012) / 0.0028));
-    return _OS_NearForce > 1.5 ? 1.0h : (_OS_NearForce > 0.5 ? 0.0h : n);
-}
 
 float2 OS_GrowthHash2(float2 p)
 {

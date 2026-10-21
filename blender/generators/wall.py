@@ -27,6 +27,8 @@ sys.path.insert(0, HERE)
 sys.path.insert(0, os.path.join(HERE, "..", "parts", "stone", "slate"))
 sys.path.insert(0, os.path.join(HERE, "..", "blockouts"))
 import growth as GR  # noqa: E402
+import water as WT  # noqa: E402
+import wear as WR  # noqa: E402
 import slab as SL  # noqa: E402
 import wallstone as WS  # noqa: E402
 import stone as ST  # noqa: E402
@@ -157,23 +159,20 @@ def lay(spec, seed=1):
                 e_c = min(s_c + crng0.uniform(0.45, 1.0), run + 0.3)
                 copes.append((s_c, e_c))
                 s_c = e_c
-            drips = [(e_c, crng0.uniform(0.4, 1.0)) for _, e_c in copes[:-1]] + \
-                    [(crng0.uniform(-0.3, run + 0.3), crng0.uniform(0.2, 0.6)) for _ in range(int(run / 1.5) + 1)]
+            # (water off the copings drips at their joints and at a few low points along their fronts)
+            drip_list = WT.drips([e_c for _, e_c in copes[:-1]], [crng0.uniform(0.4, 1.0) for _ in copes[:-1]]) + \
+                WT.drips([crng0.uniform(-0.3, run + 0.3) for _ in range(int(run / 1.5) + 1)],
+                         [crng0.uniform(0.2, 0.6) for _ in range(int(run / 1.5) + 1)])
 
             # how much people lean on this wall: a parapet at hand height beside a steep flight is the stair's
             # handrail
             use = float(np.clip(slope * 1.6, 0.3, 1.0)) * (spec.get("footfall", 50000) / 50000.0) ** 0.5
 
             def face_water(sv, zv):
-                """Water down a wall's face: streaks under the copings' joints and low points, strongest near the top,
-                and the splash and damp at its foot."""
-                streak = np.zeros(len(sv))
-                for sj, k_ in drips:
-                    streak = np.maximum(streak, k_ * np.exp(-((sv - sj) / 0.07) ** 2))
+                """Water down a wall's face (water.py): streaks under the copings' drips, the splash at its foot."""
                 tops = np.array([top(q) for q in sv])
                 bases = np.array([base(q) for q in sv])
-                w_ = (0.12 + 0.88 * streak) * (0.45 + 0.55 * np.exp(-np.clip(tops - zv, 0.0, None) / 0.6))
-                return np.clip(w_ + 0.6 * np.clip(1.0 - (zv - bases) / 0.35, 0.0, 1.0), 0.0, 1.0)
+                return WT.down_face(sv, tops - zv, zv - bases, drip_list)
             # the courses
             z = 0.0
             below = []
@@ -214,7 +213,7 @@ def lay(spec, seed=1):
                         sky = np.full(len(P), 0.7)
                         # (boots scuff a wall's face just above each tread, most where the flight is steep)
                         above = zv - step_top(sv)
-                        scuff = np.clip(1.0 - np.abs(above - 0.06) / 0.14, 0.0, 1.0) * 0.5 * use
+                        scuff = WR.boots(above, use)
                         put(P, stn["kind"], dict(F=stn["F"], UV=np.stack([V[:, 0], V[:, 1] + z], -1)), srng,
                             bare, YEAR - (panel["year"] if in_panel else spec["built"]), exposed, damp, sky,
                             flip=(side == 1), water=face_water(sv, zv), touch=scuff)
@@ -253,7 +252,7 @@ def lay(spec, seed=1):
                     damp = np.clip(1.0 - hgt / 0.8, 0.35, 1.0)
                     yrs = YEAR - (panel["year"] if in_panel else (1979 if cem else spec["built"]))
                     put(P, kind, dict(F=[(0, 1, 2, 3)], UV=P[:, [0, 2]]), random.Random(f"back-{fi}-{side}-{j}-{zf0}"),
-                        yrs, yrs, np.full(4, 0.5), damp, np.full(4, 0.45), flip=(side == 1), water=np.full(4, 0.9))
+                        yrs, yrs, np.full(4, 0.5), damp, np.full(4, 0.45), flip=(side == 1), water=np.full(4, WT.HOLDS))
             # the copings: slabs laid flat along the top, their fronts a little proud of the face
             for c, (s_cur, e) in enumerate(copes):
                 sm = (s_cur + e) / 2
@@ -281,7 +280,7 @@ def lay(spec, seed=1):
                                                                       np.clip(1.0 - xin / 0.05, 0, 1) * 0.8), 0.12, 1.0),
                                   np.where(pc["kind"] == 2, 0.5, 0.3))
                 # hands on the coping's inner edge where it is at hand height above the steps (about 0.95 m)
-                hand = float(np.clip(1.0 - abs((top(sm) - float(step_top(sm))) - 0.95) / 0.35, 0.0, 1.0))
+                hand = WR.hands(top(sm) - float(step_top(sm)), 1.0)
                 edge_in = np.where(pc["kind"] == 0, np.clip(1.0 - V[:, 1] / 0.12, 0.0, 1.0), np.where(pc["kind"] == 1, 1.0, 0.0))
                 put(P, pc["kind"], dict(F=pc["F"], UV=pc["UV"]), crng, bare, YEAR - spec["built"],
                     np.full(len(P), 1.0), damp, sky, flip=(side == 1), water=w_cope, touch=hand * edge_in * use)
