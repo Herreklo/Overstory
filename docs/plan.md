@@ -161,7 +161,8 @@ The steps keep their numbers, since other docs cite them. Step 1 is reopened on 
      - good viewpoints discovered or marked;
      - how far eye level reaches;
      - a walk mode at eye level;
-     - whether people react to the camera.
+     - whether people react to the camera;
+     - from `docs/research/play-craft.md`: whether the walker has a body; whether the clock runs while the player reads; whether it slows when someone followed acts; whether notices say only that something exists.
 
      Each variant is a switch in the greybox. The playtest programme compares them with agent players first, then Øystein and his testers.
 
