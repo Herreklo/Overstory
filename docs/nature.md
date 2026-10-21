@@ -13,6 +13,33 @@ Nothing is scattered. Every plant stands where the ground, the weather and peopl
 
 From these, a place's plant community follows: coastal heath on thin, dry, windy ground that sheep have grazed for centuries; moss and lichen on rock; rushes and bog in the wet hollows; thrift and salt grass on the shore; lawn, lilac, currants, roses and an apple tree in a tended garden; nettles, cow parsley and young birch where a garden has been left; moss between the setts of a quiet lane and none in a busy one; fields, stone walls and hay on the farms.
 
+## Growth on surfaces
+
+What grows on the town's surfaces (lichen, moss, algae, grass in the joints, ferns in a wall) is one system with the
+ground cover, and every surface uses it: stone first, then timber walls, roofs, bark and concrete. The causes are the
+same everywhere and computed one way (`blender/generators/growth.py`): light (the sky map, which way a face looks),
+damp (joints, inside corners, a wall's foot, drips, a north face), the years since the surface was bare (built,
+relaid, cleaned, repainted), disturbance (feet, mowing, sweeping) and the surface's chemistry (acid or lime, rich or
+poor in nutrients). The surface decides which species win, from the setting pack's lists:
+
+- *Acid rock and stone* (granite, the town's slaty rock): crustose lichens, pale crusts spreading and merging over a
+  century (map lichen about 0.7 mm a year); cushion moss (Grimmia) on wall tops; orange Xanthoria where birds perch.
+- *Paving and setts*: silver moss and grass in the joints, which stand feet; bare along the walking line; chewing-gum
+  lichen (Lecanora muralis) on quiet slabs.
+- *Lime mortar*: wall-rue fern and Tortula moss, only where there is lime; a fern in a wall says how it was built.
+- *Painted timber and render*: green algae low on north walls where rain splashes, streaks under drips; reset by the
+  painter.
+- *Roofs*: moss cushions on north slopes and under trees, lichen on old tiles.
+- *Bark*: leafy and beard lichens in the clean, humid west-coast air (Hypogymnia, Usnea), Xanthoria on nutrient-rich
+  bark, moss on the trunk's wet side and its foot, more with age.
+- *Lawn, bog and heath* are not a layer on a surface but plant communities on the ground, placed by the fields below;
+  they read the same causes (a shaded, wet lawn goes to moss).
+
+Thin growth (crusts, films, mats) is drawn on the surface by one shared shader layer (`Growth.hlsl`), with the
+species' pigments and rates set once for the town by the pack (`GrowthPack`); thick growth (grass tufts, moss
+cushions, ferns, weeds) is nature's own parts, placed by the same potentials. Where and how long are each surface's
+facts; what reads as history (lichen the size of eighty quiet years, a wall cleaned in 1975) is a fact with a date.
+
 ## Variety, with reason
 
 Variety comes from the reasons, not from noise:

@@ -55,7 +55,7 @@ Every hard surface is drawn by the same stack, each layer from its cause, so a n
 2. **Tooling**: how it was dressed (split, hewn, sawn), on its faces.
 3. **Wear and polish**: from the footfall map and the years; real geometry for the hollow and the rounded nosing, polish in the shading.
 4. **Stains**: run-off streaks, green film, rust, soot, salt bloom.
-5. **Growth**: lichen discs sized by their years, moss in joints and at feet, grass and ferns in cracks (ferns only in lime mortar).
+5. **Growth**: nature's, not stone's (`docs/nature.md`, Growth on surfaces): the stone's facts give where and how long (lichen on what is quiet for its years, moss in the joints and at the feet, grass and ferns in cracks, ferns only in lime mortar), the pack's species what grows there, one shared layer draws it.
 6. **Damage and repair**: cracks, spalls, bulges; screeds, indents, patches, new stone, each its own material and date.
 7. **Weather**: wet (darker, glossier, water in the hollows), frost, snow and ice, fallen leaves, litter where people pass.
 
