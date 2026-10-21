@@ -91,7 +91,7 @@ Every system, material and kind is studied twice before it is built (`CLAUDE.md`
 | Weather, seasons and effects | `trees.md` (seasons), `lighting-and-colour.md` (partly) | **gap**, before plan step 9 (with smoke, steam, spray and fire) |
 | The painted look in motion | `colour-and-shading.md`, `visual-direction.md` | `painted-marks-in-motion.md` |
 | Time on screen: one place across years | `history-in-things.md`, `town-change.md`, `living-fabric.md` | `time-on-screen.md` |
-| Collision and navigation (where people and the camera can go, footing on treads and slopes) | `reach_check.py` (ways only) | `collision-and-navigation.md` (running) |
+| Collision and navigation (where people and the camera can go, footing on treads and slopes) | `reach_check.py` (ways only) | `collision-and-navigation.md` |
 | Camera and composition | `visual-direction.md` | `camera-and-composition.md` (running) |
 | Management and data interfaces: tables, boards, calendars, inboxes, ledgers (a manager game's desk) | `interface-and-inspection.md` (reading the world only) | **gap**, studied once the first game is chosen or the greybox needs it |
 | Playtesting: the programme, tools and what is worth trying | `docs/foundations.md` (Cold readers) | `playtesting.md` (running; Fable review after the reset) |
