@@ -92,12 +92,12 @@ At today's rate a thousand stairs would take about 19 hours to generate and 16 G
 - *What changes in existing work:* the stairs and walls, the birches, and how the houses start (House A built by the generator, then twelve more from the same parts).
 
 **Leaner without losing brilliance** (Øystein, 22 October: "we need to make the game leaner, I fear; is it possible without losing visual brilliance?"). The proposals and where each stands:
-1. *Paint the far town:* past about 50 m, a painted backdrop baked from the near models for each date, instead of distance versions for every kind. To confirm with Øystein.
-2. *Make the 1989 town once,* curated, with records by rule, instead of growing two centuries plot by plot. To confirm with Øystein. It also removes the pre-mortem's risk that Overstory becomes the engine.
+1. *Paint the far town:* past about 50 m, a painted backdrop baked from the near models for each date, instead of distance versions for every kind. Øystein: "I would have to see this, but sounds promising." It becomes a look test in the foundations: the corner's far view as a baked backdrop beside conventional distance versions, judged by Øystein.
+2. *Make the 1989 town once,* curated, with records by rule, instead of growing two centuries plot by plot. Decided (Øystein: "as long as we can change this later"). The 1989 town is stored as records that can be regenerated, edited, or replaced later by a growth simulation or by the engine's own past. It also removes the pre-mortem's risk that Overstory becomes the engine.
 3. *Libraries only where things were factory-made:* each house type and era gets its own kit (decided; see `NOW.md`).
 4. *Concentrate the history:* rich where the budget points the eye, one shared weathering bake elsewhere. To confirm with Øystein.
 5. *A dense town, not a metropolis, for now:* decided.
-6. *Art-directed moods* that blend, instead of every hour in every weather. To confirm with Øystein.
+6. *Moods:* withdrawn. The lighting study's way is already the leaner one: the light derived from a sky model for any hour and weather, with a few art keys on top, replaces about sixty-five hand-typed settings an hour. Every hour and weather then comes nearly free, and a mood is a set of art keys.
 7. *People:* their own research project with great care (Øystein). No shortcut.
 8. *Eye level for every part:* open. The cost of eye level is measured per kind during the gully port and the first house, then decided with numbers.
 
