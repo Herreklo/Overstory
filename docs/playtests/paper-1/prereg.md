@@ -126,3 +126,30 @@ On a lives-driven world: lives that pay in understanding but never in play make 
 - **Failed players** are restarted with the same message (`gm-brief.md`). A player that reads beyond its screens, or acts on a fact no screen gave, compromises its run. A run the harness stops before round 4 is excluded and, usage allowing, rerun from round 0 with its memory file restored. A run ended by the card's own failure (sacked, folded, the loft lost) is a result: its exit runs, and its measures cover the rounds played.
 - **A usage cut** stops at a wave's end with everything pushed; the roster puts the controlled concepts first. A concept with one arm done gets no comparison; one not played is marked so, not placed by the panel.
 - **Amendments** go below, dated and reasoned. One made after its data exists is marked post hoc, and what it adds is exploratory.
+
+## Amendments
+
+### 1. From 72 runs to 24 (21 October, 21:30, before any concept session)
+
+**Why.** Calibration showed what the method costs. Between 20:22 and 21:10 the 5-hour window went from 16% to 75% and the weekly budget (all models) from 5% to 20%, with calibration, the cards and the setups the main users. A concept run costs about 1.2% of the week, so the 72 runs as designed would take about 90%. The week's budget also carries the architecture's port and the camera research, which come first (`NOW.md`). The figures are in `usage.md`. The lead session chose the lean design, A, and set its conditions.
+
+**The design now.** Three concepts, each with its control. They are the panel's top two and the club, the concept with a domain loop of its own. Four kinds an arm: the sceptic (5), the optimiser (6), the explorer (4) and the concept's genre fan, the Football Manager devotee (1) for the club and the Baldur's Gate 3 player (2) for the paper and the mystery. The explorer is the mystery's own genre fan, so the mystery's fourth seat goes to the role-player.
+
+| Concept | Kinds | Cohort X plays | Cohort Y plays | Cold start |
+| --- | --- | --- | --- | --- |
+| journalist | 2, 4, 5, 6 | b (on) | a (off) | 2 |
+| mystery | 2, 4, 5, 6 | b (off) | a (on) | none (its cold kind, 3, no longer plays) |
+| football | 1, 4, 5, 6 | b (on) | a (off) | 4 |
+
+Arms, models and the twins' matched starts are as before (`arms.md`, `roster.md`). Each player keeps one order, and its two cohorts' twins play each concept at the same point in it. Kinds 2 and 4 play the mystery and then the paper; kinds 5 and 6 play the paper and then the mystery, so both decisive concepts run from the start and their order is counterbalanced across kinds. The club comes last for kinds 4, 5 and 6, and is kind 1's only concept. Runs go in that priority: the paper and the mystery, lives on and off, then the club.
+
+**Not tested.** The band, the restorer, a life and its heirs, and the role in the town are not played. Their cards and the panel's notes stand as design work. In the report they are marked "not tested" and are never scored, ranked or placed by the panel. Their hypotheses (B1 to B4, R1 to R3, Fa1 to Fa4, Rp1 and Rp2) lapse, as does F2's half that rests on the journalist (it stands: football against the journalist). The other runs of options B and C wait until after Monday's reset, and run only if these results leave the ranking open. The report names them as a follow-up.
+
+**What loses power.**
+- Each arm has four runs, not six. Counts written "n of six" scale to the same share of four, rounded up: four of six becomes three of four, five of six becomes four of four, three of six becomes two of four. Point thresholds stay as written; with four pairs a concept's gap rests on fewer pairs, and a single pair moves it more.
+- The cozy player plays no concept, so nothing here speaks for calm, low-punishment play. Three of the four kinds are the hardest judges (the sceptic, the optimiser, the explorer), which tilts taste measures down against the panel's six-kind expectation.
+- The Football Manager devotee plays only the club, and the role-player plays only the paper and the mystery, so neither gives a comparison across all three concepts. The explorer, the sceptic and the optimiser do.
+- The mystery has no cold start, so its first-minutes reading rests on the tutorial for every player.
+- The ranking covers three concepts. It can't say where the untested four would fall.
+
+**Stopping.** A run that has started is played to its end and committed. No new run starts while the weekly budget is above 55% or the 5-hour window above 90%; then the round stops, commits and reports what is left, resuming after the next 5-hour reset where only the window stopped it. The kindness check, the game master's audit, the measures and the models are unchanged. The second scorer of ready today and potential is the main session's Fable review, which this round's report leaves to it.
