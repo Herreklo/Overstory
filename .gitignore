@@ -30,3 +30,6 @@ reviews/perf/**/frames.csv
 reviews/perf/**/*.png
 reviews/perf/**/player.log
 reviews/motion/current/
+
+# Local Python tools (FLIP, ffmpeg via imageio-ffmpeg)
+.venv/

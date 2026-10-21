@@ -157,3 +157,10 @@ Nothing was installed for these tools. These would make them better, each with i
 - **The harness's switches** (`docs/research/performance-at-scale.md`, The performance harness, 5): the Resident Drawer and GPU occlusion, MSAA against none, the shadows' reach and cascades, the sun's beams, a forced level per kind. Each is an A/B on the same segments, as the birch already is.
 - **Hashes from every generator.** `stone.py` and `wall.py` write them; the trees, the houses and the clay should too as they are ported onto the building blocks.
 - **Golden views of more than the gully**, as each kind joins: the birch, the corner's houses, the clay heart from its stops.
+
+## Local tools (installed 21 October, with Øystein's OK)
+
+These live in a project virtual environment, `.venv/` (not in git). To recreate it: `python3 -m venv .venv && .venv/bin/pip install flip-evaluator imageio-ffmpeg`.
+- **NVIDIA FLIP** (`flip-evaluator`, from github.com/NVlabs/flip): the reference image comparison, used to check `golden_compare.py`'s approximation. Run it as `.venv/bin/flip`, or import `flip_evaluator` from `.venv/bin/python`.
+- **ffmpeg**, bundled by `imageio-ffmpeg`, so no Homebrew is needed. It turns motion sheets into videos. The path is printed by `.venv/bin/python -c "import imageio_ffmpeg; print(imageio_ffmpeg.get_ffmpeg_exe())"`.
+- **Git LFS is not installed,** on purpose: `.gitattributes` keeps renders in plain git because LFS isn't reachable from the cloud workspace. The repository's size is handled by the architecture's decision to keep generated meshes out of git.
