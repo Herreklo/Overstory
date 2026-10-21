@@ -23,13 +23,13 @@ Everything runs on the reference machine (`docs/foundations.md`): the Mac mini w
 - The gully (stairs and cheek walls) built twice into scratch folders hashes the same: stairs `babe291de7a32bb1`, cheek walls `55e3f8fc8958493e`. Each build takes 72 s for the stairs and 71 s for the walls.
 - A vertex moved by a tenth of a millimetre, exported through the generators' own FBX settings, changes that mesh's positions and normals and nothing else; the same file exported twice unchanged hashes the same (`selftest`).
 
-**Baseline.** The manifests for the committed stone are in `unity/Assets/Art/Stone/mesh-hashes.json` and `Variety/mesh-hashes.json` (13 files). The gully's: stairs `91e31a9c9d6f7786` (361,282 triangles in two meshes), cheek walls `73020f2dc2ab1b3f` (454,924).
+**Baseline** (22 October). The manifests for the committed stone are in `unity/Assets/Art/Stone/mesh-hashes.json` and `Variety/mesh-hashes.json` (13 files). The gully's, exported from today's generators: stairs `babe291de7a32bb1` (361,282 triangles in two meshes), cheek walls `55e3f8fc8958493e` (451,594). Until 21 October the committed gully hashed stairs `91e31a9c9d6f7786` and walls `73020f2dc2ab1b3f` (454,924), which no generator made (below).
 
-**What the hashes found.** The committed gully is not what its generators build.
+**What the hashes found** (21 October). The committed gully was not what its generators build.
 - The stairs: built from the generators at their own commit (`200d596`) or at today's, they hash `babe291de7a32bb1`, not the committed `91e31a9c9d6f7786`. Most vertices sit up to 4.9 cm elsewhere (mean about 1 cm), and the face kinds (UV2), the bake (UV3), polish and lichen (UV4) and moss and water (UV5) differ; the grain and the years (UV0, UV1) are the same. The FBX on disk was written ten minutes before its commit; why it differs is not known (the code changed after the export, or something outside the commit did, such as Blender's version or a part's file), and two builds today agree with each other bit for bit.
 - The cheek walls: at their own commit they rebuild exactly; since the door paths of `800085a` (a way to D now climbs to a point on the ways) one wall has 3,330 fewer triangles.
 
-So the golden views below show the committed FBX, which no generator now makes. Before the gully is ported onto the building blocks (whose first rule is that the gully's geometry hash must not change), the gully should be exported again from today's generators, looked at, and its golden views accepted again.
+So on 22 October the gully was exported again from today's generators (two builds bit for bit the same), its golden views rendered and looked at, and both accepted as the baseline (Golden views, Baseline). The port's first rule, that the gully's geometry hash must not change, is measured against these hashes.
 
 ## Golden views and player-size stills
 
@@ -58,7 +58,20 @@ renders into `reviews/golden/current/` (about 15 s for all fifteen frames) and c
 - A test-only change, the slate's weathered colour a shade warmer on the stair (`LT1Golden.Views -tweak`, in memory, never saved), fails every frame: mean 0.001 (the street stop, where the stair is small) to 0.014 (on the steps), worst pixel 0.08 to 0.15. The heat maps show it on the stair's stones and nowhere else, not on the cheek walls or the clay.
 - The metric's own test (`golden_compare.py -- selftest`): identical images score zero everywhere, a small patch of changed colour scores inside the patch and nowhere far from it, and a larger change scores higher.
 
-**Baseline.** `reviews/golden/baseline/gully/<light>/<view>.png`, fifteen frames, 44 MB, with `frames.json` (size, MSAA, warm-up, Unity version, GPU). They are in plain git: Git LFS is not installed on this machine, and `.gitattributes` keeps renders out of it because LFS uploads cannot be reached from the cloud workspace.
+**Baseline** (accepted 22 October). `reviews/golden/baseline/gully/<light>/<view>.png`, fifteen frames, 45 MB, with `frames.json` (size, MSAA, warm-up, Unity version, GPU). They are in plain git: Git LFS is not installed on this machine, and `.gitattributes` keeps renders out of it because LFS uploads cannot be reached from the cloud workspace.
+
+Why it changed: the gully is now the one today's generators build (Mesh hashes, What the hashes found).
+- Against the first baseline (21 October, the old FBX) every frame differs: mean 0.002 to 0.005 at the street stop, 12 m and the city camera; 0.015 to 0.019 at the foot of the steps; 0.044 to 0.046 on them. Worst pixels 0.31 to 0.98, where stones moved by a pixel or two.
+- The old FBX put back renders the first baseline bit for bit, so the geometry is the whole difference.
+- The new frames render bit-identically twice.
+- A fresh Fable agent judged seven blind pairs of native-size crops where the frames differ most (`reviews/golden/rebaseline-2026-10-22.md`). It found every pair equal: the differences are the generator's own noise (stone positions, which face kind lands where, where moss falls), each as plausible as the other, so both builds are fit to be the reference.
+- It accepted the new one on the main session's brief.
+
+**Known defects, frozen into the baseline** (shared by both builds; fixing one is a deliberate change to the reference, not a regression):
+- the left cheek wall's low end reads as see-through thin slabs at the street stop, and as a black band between the wall and the tread ends from 12 m (the wall's skins seem to have no end cap);
+- where a stone's end stands proud of its neighbour, the joint is a flat black bar with no end face; it stripes the flight with dark ticks at the street stop;
+- the lichen reads as decals in grey light: a uniform bright rim, and young rosettes all coin-round and one size;
+- one-pixel bedding lines on the big riser catch the wet gloss: likely to shimmer.
 
 ## The frame-time harness
 

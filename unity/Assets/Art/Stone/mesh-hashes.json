@@ -1,46 +1,46 @@
 {
  "stone_gully.fbx": {
   "tool": "mesh_hash 1",
-  "hash": "91e31a9c9d6f7786",
+  "hash": "babe291de7a32bb1",
   "triangles": 361282,
   "meshes": {
    "stone_gully_steps_0": {
-    "hash": "10eb94297630645f",
+    "hash": "c2367573f6eba322",
     "vertices": 51250,
     "corners": 199995,
     "triangles": 97985,
     "channels": {
      "edges": "4622d5c3d93046d3",
      "indices": "971f73367f6510e2",
-     "normals": "d1df6b4509b578e6",
+     "normals": "c66d3772691d9217",
      "other": "146128264614c1fc",
-     "positions": "1116d4508e04a4b7",
+     "positions": "263d96d4f2b997cf",
      "uv0": "89f42a549bf45efa",
      "uv1": "256e4d194c64c654",
-     "uv2": "95e92fa68624fcb7",
-     "uv3": "bf81b5f3993181e5",
-     "uv4": "98ee204084578ea5",
-     "uv5": "446532b6c94dd80d",
+     "uv2": "aa2a4a7675e3a6db",
+     "uv3": "cdb7a91250b8136a",
+     "uv4": "0b1f250c923c2bb1",
+     "uv5": "942001ae0ab719d2",
      "transform": "e3b0c44298fc1c14"
     }
    },
    "stone_gully_steps_1": {
-    "hash": "d479e0e3366385a7",
+    "hash": "f8852ccb4a495c79",
     "vertices": 135629,
     "corners": 536527,
     "triangles": 263297,
     "channels": {
      "edges": "505101f71ea5a02a",
      "indices": "2ebe65aaa87ae5eb",
-     "normals": "a85a8141b82313eb",
+     "normals": "e9e8c4bacdea892b",
      "other": "146128264614c1fc",
-     "positions": "4643973d44d7f48a",
+     "positions": "3ab086f212b448f3",
      "uv0": "d33bfd4e8f62772f",
      "uv1": "e329a67b06b618d1",
-     "uv2": "e6a32c27e38dfc8f",
-     "uv3": "e590d764a7115f15",
-     "uv4": "448959563060c446",
-     "uv5": "7fc50897b6e23da8",
+     "uv2": "e5af310ad547009d",
+     "uv3": "8e80d1906e4b68f8",
+     "uv4": "fbe968113c6ef88b",
+     "uv5": "5d026654023fbb59",
      "transform": "e3b0c44298fc1c14"
     }
    }
@@ -48,8 +48,8 @@
  },
  "stone_gully_cheeks.fbx": {
   "tool": "mesh_hash 1",
-  "hash": "73020f2dc2ab1b3f",
-  "triangles": 454924,
+  "hash": "55e3f8fc8958493e",
+  "triangles": 451594,
   "meshes": {
    "stone_gully_steps_walls_0": {
     "hash": "c1342adb1a0b7def",
@@ -72,22 +72,22 @@
     }
    },
    "stone_gully_steps_walls_1": {
-    "hash": "586afc33c985bc99",
-    "vertices": 192717,
-    "corners": 702468,
-    "triangles": 322464,
+    "hash": "ba9883c8c511e7d9",
+    "vertices": 190687,
+    "corners": 695142,
+    "triangles": 319134,
     "channels": {
-     "edges": "2c01af351481bb33",
-     "indices": "792d26713bc9ff17",
-     "normals": "0ae5ddb7cffb28bd",
+     "edges": "adc7488eb0ae68d2",
+     "indices": "7044b17ea197271e",
+     "normals": "cd61a8b890b1c0d5",
      "other": "146128264614c1fc",
-     "positions": "2660177334fbcfbd",
-     "uv0": "5f9b5f1caf64b4a3",
-     "uv1": "ac0791590ec03238",
-     "uv2": "43a4b33cf57f46b9",
-     "uv3": "6ed73cbf34f1001b",
-     "uv4": "ee068445435e572c",
-     "uv5": "4ec8a97f65b0364c",
+     "positions": "2952c3acf11224ec",
+     "uv0": "6a9d57e183c5edca",
+     "uv1": "d248eef024d65630",
+     "uv2": "0ee892af05477824",
+     "uv3": "6686a5d042fa70ea",
+     "uv4": "207e12e09e35ed07",
+     "uv5": "1800281757eb633c",
      "transform": "e3b0c44298fc1c14"
     }
    }
