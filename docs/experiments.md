@@ -14,6 +14,58 @@ Results that surprised us or might be new, newest first. Each says what the evid
 
 ---
 
+## LT1f: the corner through the years, in clay
+
+**Status:** open (22 October). Step 1f of `docs/plan.md`: the game's question tested early, before any final house part is made. It needs none of the building blocks' architecture and does not decide any of it.
+
+**The question:** can cold readers tell, from the corner on screen, which parts of its five houses are old, changed or neglected, and read what changed between 1989, 2000, 2010 and 2020; and do they understand it better than from the same facts on the page? It moves exit criteria 1 and 4, and through the pairs of years, 3.
+
+**What is built:**
+- *The facts, first.* What would make the test lie is fixed before anything is drawn (`docs/research/inputs/5-buildings-fronts-time.md`, §5 and §6):
+  - House B joins the corner's fixture, with the house that burned before it, so "rebuilt after a fire" is a dated fact.
+  - Classical houses no longer roll a mansard by seed: on D or E it would claim a roof raise the record does not hold.
+  - Every house gets events from 1989 to 2020, authored by named rules of real practice (`docs/research/house-changes.md`, `town-change.md`) and labelled `authored`, since the engine does not model buildings yet: repaints on a kept house's cycle, a shop opened and one closed, a house let go, one restored, windows restored in two steps by two owners, an extension.
+  - A shop no longer deletes the windows it covers, so a closed shop's windows can return. Dated cells are left to the architecture.
+- *The corner at four dates.* The five houses built by the test-quality generator from their diaries at 1989, 2000, 2010 and 2020, at the corner's real proportions (`gentle`). They stand in the heart's clay at the corner's places, in place of their grey masses: A and B on Harbour Row at the foot of Gully Steps, C beside the Landing, D on the knuckle, E at the top. Nothing else differs between the years.
+- *Ways of showing time.* At least twenty ideas, ranked against the time study's constraints and our style; the best two or three prototyped in Unity, in clay.
+
+**How it is judged:**
+- *The frames.* Four views, stored as data and the same in every year: eye level (1.65 m) on Harbour Row at the foot of the lane; the street stop (2.8 m) on Gully Steps; 12 m over the quay road, up the lane; the city camera, pulled out and steep. One sun for all four years: 20 October at 15:00 UTC, 8° up at 234°. That is 16:00 on the clock in 1989, when Norway was on winter time, and 17:00 in 2000, 2010 and 2020, when summer time still ran on 20 October. Cloud shadows are off, so nothing but the year moves. Clay (every surface one matte grey) in the game's style, at the player's size: 2560 by 1440, one sample a pixel with the game's MSAA (`PlayerFrame`), never rendered larger and averaged down.
+- *The readers* (`docs/foundations.md`, Cold readers): fresh agents on Sonnet, a model other than the maker's (Opus), told only that these are views of a town, each seeing the frames as tiles at the player's pixel size. Three roles: someone who has walked such a street all their life, a building historian, a player of exploration games. Nine readers in three arms, one of each role in each arm:
+  - *scene first:* the frames, then the page;
+  - *page first:* the page, then the frames. The page is the corner's record as text, every dated event with its cause, as the cause view would print it;
+  - *shuffled:* frames rendered with each house's later history (everything after the standing house was built) moved to another house, scored against the true record.
+- *The tasks* (`docs/research/time-on-screen.md`, The corner through the years; `docs/research/history-in-things.md`, §10):
+  1. Order the four frames of each view, shuffled and undated, and date each to a decade.
+  2. With the dates: mark each house's roof, upper windows, ground floor, additions and overall care as original, changed later or neglected, each with a confidence.
+  3. Say what changed between each pair of years, and why.
+  4. Say what happened to each house.
+  5. Say whether the corner grew busier or quieter, and better or worse kept, between each pair.
+
+  The scene-first and page-first readers answer 2 to 5 after each medium, then say which told them more, and whether either misled them.
+- *The order.* The pack, the briefs and the key are committed before any reader starts. The key is the record: the changes per pair of years and each part's state per year, exported from the resolved plans. A coder agent codes the free text against the key, blind to the arm, and a script scores everything.
+- *The bar.* It is provisional, from `docs/foundations.md` and the time study. This round reports against it; it is not yet a gate.
+  - Parts marked right: at least four in five of the parts a reader marks, counted over the parts clay can draw. Coats and paint are in the record but not in clay, and are scored apart.
+  - Order: every reader in an arm puts every view in order (four in five at a gate).
+  - Dating: within a decade where a dated part is in view.
+  - Changes found: at least two of three of the budgeted changes a pair.
+  - False history claims: at most one a frame on average, none held with high confidence.
+  - Direction: right between every pair of years.
+  - Shuffled: parts marked right, against the true record, fall by at least thirty points.
+  - Criterion 4: scene readers at least as right about what happened as page readers, not misled (no contradiction of the record held with confidence), and preferring the scene.
+- *The ways of showing time* are judged for beauty and against the constraints by a strict review (Fable if available, else Opus, noted). For readability, one fresh reader per way sees only that way's frames and says what changed, when and why.
+
+**What would change our minds:**
+- If the clay is read well and the shuffled arm falls by thirty points, form alone (windows, shopfronts, boarding, extensions) carries a house's history, and the house parts can be made in the order the plan has them. If the shuffled arm scores as well, readers read conventions (small means old, boarded means poor), not our facts, and the histories need stronger, more particular marks before any part is made.
+- If clay carries the changes of form but misses care and paint, the coats and wear layers carry criterion 1, and they come with the first house parts, not after them.
+- If a single frame reads restored copies as original but the pairs read them right, showing time is needed for criterion 1 as well as 3, and the history budget counts changes across a jump as well as at one date.
+- If page readers do as well on every task, the scene adds nothing in clay, and criterion 4 waits for materials. If scene readers are misled where page readers are not, the drawing claims more than the record holds, and the rule that drew it is tightened.
+- If readers find more than three changes a pair at the street stop without loss, the budget of three is too low for clay at this grain; if they find fewer than two, it is too high.
+
+**What it does not test:** final materials and parts (the windows, doors and shopfronts are the test generator's); colour, coats and wear (clay has none); people, cars and lit windows (this is the fabric-only arm); trees and the ground's growth (the heart's clay has none); the toggle and other transitions in motion (model readers see stills; people test them in the engine's human test); other lights and seasons; the time study's season, camera and false-cause controls (a later round); frame rate.
+
+---
+
 ## LT3: the street through the years
 
 **Status:** planned, after LT2. The question and the rest of the entry are written when it starts.
