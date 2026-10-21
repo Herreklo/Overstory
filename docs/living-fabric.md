@@ -107,6 +107,17 @@ SimCity's GlassBox ran its simulation on the same split, agents and maps that un
 
 Every derived quantity is a continuous function of the year except at a dated work or event. The shader reads years since a layer was reset, so two views a year apart differ a little, and a work is the only step. The life runs year by year (today the runner steps by decade and draws a year inside it; yearly steps cost nothing and make the years sheet smooth).
 
+### Big change: quarters, the underground, demolition, slow building
+
+(Øystein, 22 October: "should the town make it possible to include big renovations, an entire residential quarter changed, underground things, removing historical buildings, slow building processes?") Yes: they are the same record at a larger scope, with four extensions, and nothing built before them may assume a frozen plan.
+
+1. **The plan is dated.** Every street, plot and building carries its years (there from 1874, cleared in 1967, a block on its ground from 1971), and the generators read the plan at a year. A quarter cleared and rebuilt is the plan's own history; a scheme carried out in part leaves its scar (a widened end, a stepped building line, a lone block). Stavanger's 1946 centre plan ("tear down and build") and the fight that saved Gamle Stavanger are the setting's precedent.
+2. **Works take time.** A large work has dated phases (hoarding, the excavation, the frame, scaffolding, the finished building), each a state of its site, so a site that runs from 1984 to 1987 stands in the world and changes the street round it (the feet field detours, the hoarding gathers posters). Building-site parts are a part family of their own.
+3. **Demolition leaves what it leaves:** the neighbour's gable laid bare (old wallpaper, flue marks, a roof line), a fallow lot that becomes a car park, foundations in the grass, a kerb line that remembers the houses.
+4. **The underground is things too:** water and sewer mains, gas, cables, the tunnel, cellars and shelters, each with its route and years, seen on the surface by their traces (covers by era, trench strips, vents, portals) and whole only in a scene that goes down.
+
+Who decides is the engine's (requests 14 and 21: the council's plans, developers and money); what it costs is content (building-site parts, new building eras) and regenerating the chunks a change touches, offline.
+
 ## 2. Flow: worked examples
 
 The vocabulary, so every chain is made of the same verbs:

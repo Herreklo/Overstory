@@ -19,6 +19,8 @@ import numpy as np
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.join(HERE, "..", "parts", "stone", "slate"))
 import slab as SL  # noqa: E402
+sys.path.insert(0, os.path.join(HERE, "..", "parts", "stone", "granite"))
+import sett as ST_  # noqa: E402
 
 
 def patch(seed, kw, width=2.2, length=1.6):
@@ -40,12 +42,11 @@ def patch(seed, kw, width=2.2, length=1.6):
             w = min(L, width / 2 - x)
             if w < 0.05:
                 break
-            p = SL.slab(f"sett-{seed}-{y:.3f}-{x:.3f}", w - rng.uniform(0.005, 0.009), rw - rng.uniform(0.005, 0.008),
-                        0.11, grid=0.03, **kw)
+            p = ST_.sett(f"{seed}-{y:.3f}-{x:.3f}", w - rng.uniform(0.005, 0.009), rw - rng.uniform(0.005, 0.008), **kw)
             V = p["V"].copy()
             V[:, 0] += x
             V[:, 1] += y
-            V[:, 2] += rng.uniform(-0.004, 0.004) - 0.11 + (V[:, 0] - x) * rng.uniform(-0.03, 0.03)
+            V[:, 2] += rng.uniform(-0.004, 0.004) + (V[:, 0] - x) * rng.uniform(-0.03, 0.03)
             base = sum(len(v) for v in V_all)
             V_all.append(V)
             F_all.extend(tuple(base + q for q in f) for f in p["F"])
@@ -82,7 +83,7 @@ def main():
     bsdf.inputs["Roughness"].default_value = 0.85
     ob.data.materials.append(mat)
     # the sand bed between them
-    bpy.ops.mesh.primitive_plane_add(size=6, location=(0, 0.8, -0.012))
+    bpy.ops.mesh.primitive_plane_add(size=6, location=(0, 0.8, -0.016))
     sand = bpy.data.materials.new("sand")
     sand.use_nodes = True
     sand.node_tree.nodes["Principled BSDF"].inputs["Base Color"].default_value = (0.1, 0.1, 0.1, 1)
@@ -111,7 +112,7 @@ def main():
         sc.camera = cam
         sc.render.filepath = out[:-4] + f"-{name}.png"
         bpy.ops.render.render(write_still=True)
-    print("SHEET", out)
+    print("SHEET", out, "tris", sum(len(f.vertices) - 2 for f in ob.data.polygons), "setts", len(ob.data.polygons) // 41)
 
 
 main()
