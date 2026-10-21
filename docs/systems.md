@@ -91,6 +91,7 @@ Every system, material and kind is studied twice before it is built (`CLAUDE.md`
 | Weather, seasons and effects | `trees.md` (seasons), `lighting-and-colour.md` (partly) | **gap**, before plan step 9 (with smoke, steam, spray and fire) |
 | The painted look in motion | `colour-and-shading.md`, `visual-direction.md` | `painted-marks-in-motion.md` |
 | Time on screen: one place across years | `history-in-things.md`, `town-change.md`, `living-fabric.md` | `time-on-screen.md` |
+| Collision and navigation (where people and the camera can go, footing on treads and slopes) | `reach_check.py` (ways only) | **gap**, found by the decision register; before people walk (plan step 5) and the play camera |
 | Camera and composition | `visual-direction.md` | **gap**, before the play camera |
 | Sound and music | `scenes-and-sound.md` (thin) | **gap**, before scenes |
 | Interface and reading the world | `interface.md` (thin) | `interface-and-inspection.md` (hover, inspect, the why-probe, the journal; what every part carries for picking) |
