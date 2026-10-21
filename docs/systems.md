@@ -80,7 +80,7 @@ Every system, material and kind is studied twice before it is built (`CLAUDE.md`
 | Towns and cities | `urban-design.md`, `city-forces.md`, `city-types.md`, `town-change.md`, `stavanger-centre.md` | `kits-and-generation.md`, `urban-design.md` |
 | Stone, made | `stone.md`, `repairs.md` | `materials-at-scale.md`, `kits-and-generation.md`, `performance-at-scale.md` (running) |
 | Land, rock, water, coast | `nature.md`, `stone.md` | `land-rock-and-water.md` (running) |
-| Buildings and their parts | `house-changes.md`, `wooden-town-architecture.md` (running) | `kits-and-generation.md`, `materials-at-scale.md` (running) |
+| Buildings and their parts | `house-changes.md`, `wooden-town-architecture.md` | `kits-and-generation.md` (running), `materials-at-scale.md` |
 | Trees and nature | `trees.md`, `vegetation.md`, `park-trees.md`, `nature.md` | `animation-and-motion.md` (wind), `performance-at-scale.md` (running); ground cover craft: **gap**, before plan step 3 |
 | People as models | `people.md`, `people-deep-dive.md` | `characters.md` (running) |
 | Behaviour on screen | `people.md` (thin) | `behaviour-on-screen.md` (running) |

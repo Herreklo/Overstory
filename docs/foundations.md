@@ -13,6 +13,26 @@ Every part, and every assembly of parts, is judged from the same views, so no pa
 - From several headings, in three lights (grey drizzle, the 16:00 low sun after showers, the blue hour), in colour, greyscale and at one-eighth; with the form alone in grey light (every pigment one grey) when a look will not converge.
 - Measured where it can be: the value spread of a form (`blender/tools/crown_value.py` for crowns), triangle and texture counts against the tier's budget, and frame time when a part joins the corner.
 
+## Cold readers
+
+Whether history reads (criterion 1 in `CLAUDE.md`) is judged by cold readers, never by the maker. The method is the engine's blind reading (`docs/method/reading.md` in Understory), and the tasks, controls and failures are those in `docs/research/history-in-things.md`, section 10. Øystein decided (22 October) that model readers stand in for strangers.
+
+- **The readers.** Fresh agents with nothing but the frames and a brief, on a model other than the one that made the work. Each reads in a role: someone who has walked such a street all their life, a building historian, a player of exploration games. The historian is there because experts and the public read aged things most differently. Three readers for a round while building; six at a gate (two per role, across two models).
+- **The material.** Frames from the judging views at the player's pixel size, cut into tiles so a reader sees every pixel a player would. A reader that sees less than a player makes the test stricter, never easier. The brief says only that these are views of a town.
+- **The order.** The pack, the brief and the key (the histories on show, exported by the cause view) are committed before the reading. A coder agent codes the free text against the key without knowing which arm a frame came from: the real one, layers off or facts shuffled. A script scores everything before anyone looks at the frames again.
+- **The bar at a gate.** At the street stop and 12 m:
+  - at least four in five of the parts marked old, changed or neglected are right;
+  - at least two in three of the histories in the budget are found;
+  - pairs are ordered right at least four times in five where the record differs by twenty years or more;
+  - at most one false history claim per frame on average, and none held with high confidence;
+  - on the years strip, the direction is right between every pair of years.
+
+  With the facts shuffled, parts marked right must fall by at least thirty points, or readers are reading conventions rather than our facts. With the history layers off, false claims set the baseline, and the real frames may not exceed it. A round while building reports the same numbers without a bar.
+- **Where a model reader may differ from a person.** It shares the maker's associations, and it knows building history better than most of the public. The shuffled-facts control is the guard against both. People still read when the engine runs its human test: Overstory's ten-minute task rides on it (`docs/engine-requests.md`). Where people and the model panel disagree, people win, and the panel's brief or roles change.
+- **Criterion 4** needs readers of its own, half shown the scene first and half the page, since a reader who has read the page already knows what happened.
+
+Results go in `docs/experiments.md` against the frames.
+
 ## Detail by tier
 
 One part, its facts and its seed, drawn at four tiers, the same thing at each, never a different claim:
