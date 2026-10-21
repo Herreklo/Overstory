@@ -1303,7 +1303,10 @@ def lobe_mesh(tl, parts, age, seed, H):
                 # the lobe's own facing, unlifted and unmixed (in the bake's alpha): where on its lobe the corner sits,
                 # so the shader lights each lobe's cap above its sides (in the mixed normal a lobe's rim on top of a
                 # mass still faced the sky, and from above the crown was one value)
-                own_up = float(volume_normal(lv, p, 0.0)[2]) if lv is not None else (float(volume_normal(vol, p, 0.0)[2]) if vol is not None else 1.0)
+                # (one value a card, at its middle: blended corner to corner, the edge between cap and side was an
+                # airbrushed blotch across the cards, never a painted edge)
+                pc = np.mean(corners, axis=0)
+                own_up = float(volume_normal(lv, pc, 0.0)[2]) if lv is not None else (float(volume_normal(vol, pc, 0.0)[2]) if vol is not None else 1.0)
                 if lv is not None:
                     # the lobe's own turn from the sky, set in its mass's
                     nl = volume_normal(lv, p, lift)

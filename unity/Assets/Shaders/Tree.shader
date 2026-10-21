@@ -413,7 +413,8 @@ Shader "Overstory/Tree"
                 half alpha = saturate((cover - _Cutoff) / max(fwidth(cover), 1e-4h) + 0.5h);
                 // where only bare twigs are, they are a soft tone: their coverage as it is, dithered over the samples
                 if (leafCover < _Cutoff)
-                    alpha = saturate(twigCover * 2.4h) * smoothstep(0.12h, 0.38h, facing);
+                    alpha = saturate(twigCover * 1.3h) * smoothstep(0.12h, 0.38h, facing);     // (a soft haze: drawn
+                                                                                              // fuller, bare drapes hatched the gold)
                 clip(alpha - 0.06h - 0.1h * OS_Hash(input.positionCS.xy));
                 // a card shades as its mass: the same normal seen from either side
                 half3 n = normalize(input.normalWS);
@@ -498,6 +499,9 @@ Shader "Overstory/Tree"
                 // stylised on the facing, as every surface's: research rule 2), so from above each lobe is a lit cap
                 // ringed by a mid value, never one flat top across the crown
                 half cap = smoothstep(_CapSplit - 0.06h, _CapSplit + 0.06h, (half)input.bake.a * 2.0h - 1.0h + jit);
+                // a mass's own top is always cap: lobes interpenetrate, and a card on the crown's top could sit on a
+                // neighbouring lobe's side (a dark patch where the crown is lightest)
+                cap = max(cap, smoothstep(0.74h, 0.84h, n.y));
                 {
                     Light sun = GetMainLight(id.shadowCoord, id.positionWS, half4(1, 1, 1, 1));
                     half ndl = dot(n, sun.direction);
