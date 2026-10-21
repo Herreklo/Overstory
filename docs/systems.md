@@ -75,13 +75,13 @@ Every system, material and kind is studied twice before it is built (`CLAUDE.md`
 | Light and colour | `colour-and-shading.md`, `masters-of-colour.md` (thin) | `lighting-and-colour.md` (running) |
 | Water, wear, growth, repairs | `repairs.md`, `stone.md`, `nature.md` | `materials-at-scale.md`, `history-in-things.md` |
 | History in things | `world-that-remembers.md`, `house-changes.md`, `repairs.md` | `history-in-things.md` |
-| Tiers, instancing, quality control | `tools-and-performance.md` (thin) | `performance-at-scale.md` (running) |
+| Tiers, instancing, quality control | `tools-and-performance.md` (thin) | `performance-at-scale.md` |
 | Kits and generators | `generating-the-past.md` (thin) | `kits-and-generation.md` (running) |
 | Towns and cities | `urban-design.md`, `city-forces.md`, `city-types.md`, `town-change.md`, `stavanger-centre.md` | `kits-and-generation.md`, `urban-design.md` |
-| Stone, made | `stone.md`, `repairs.md` | `materials-at-scale.md`, `kits-and-generation.md`, `performance-at-scale.md` (running) |
+| Stone, made | `stone.md`, `repairs.md` | `materials-at-scale.md`, `performance-at-scale.md`, `kits-and-generation.md` (running) |
 | Land, rock, water, coast | `nature.md`, `stone.md` | `land-rock-and-water.md` (running) |
 | Buildings and their parts | `house-changes.md`, `wooden-town-architecture.md` | `kits-and-generation.md` (running), `materials-at-scale.md` |
-| Trees and nature | `trees.md`, `vegetation.md`, `park-trees.md`, `nature.md` | `animation-and-motion.md` (wind), `performance-at-scale.md` (running); ground cover craft: **gap**, before plan step 3 |
+| Trees and nature | `trees.md`, `vegetation.md`, `park-trees.md`, `nature.md` | `performance-at-scale.md`, `animation-and-motion.md` (wind; running); ground cover craft: **gap**, before plan step 3 |
 | People as models | `people.md`, `people-deep-dive.md` | `characters.md` (running) |
 | Behaviour on screen | `people.md` (thin) | `behaviour-on-screen.md` (running) |
 | Animation and motion | `what-moves.md` (thin) | `animation-and-motion.md` (running) |
