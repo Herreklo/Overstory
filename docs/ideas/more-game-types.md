@@ -31,6 +31,15 @@ A game type is strong here when its loop feeds on these four, and weak when it w
 - **Crime sandboxes** built on violence: they run against Rule 8 and against "evidence, not verdicts".
 - **A pure city builder of traffic and zoning:** our strength is people and history, not throughput.
 
+## Øystein's read (21 October)
+
+The postal carrier, the restorer and the photographer: "sounds a bit boring, but ok". As standalone games they are lenses with too little at stake. What grips is people you care about, conflict, pressure, and choices that cost something. So they are tested as mechanics inside stronger games, not alone:
+- the camera as the journalist's or detective's tool, whose photos are evidence that can be printed;
+- the postal round as the way into the murder mystery;
+- restoration as a thread in the family saga.
+
+The Courier's editor stays a standalone candidate: deadlines, a rival paper, printing about people you know, and a town whose beliefs shift with every edition.
+
 ## Recommended for round 2
 
 These four have the strongest loops on what exists today:
