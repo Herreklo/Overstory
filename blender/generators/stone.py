@@ -529,11 +529,17 @@ def make(name, m):
     return ob
 
 
-def build(which, unity=None, seed=1):
+def slug(name):
+    return "".join(c if c.isalnum() else "_" for c in name.lower()).strip("_")
+
+
+def build(which, unity=None, seed=1, spec=None, folder=""):
+    """One stair: the beauty corner's own by its key in FLIGHTS, or any flight in the plan from its spec (stair_facts),
+    written to Assets/Art/Stone/<folder>/stone_<which>.fbx and .json."""
     import bpy
     for ob in list(bpy.data.objects):
         bpy.data.objects.remove(ob, do_unlink=True)
-    spec = FLIGHTS[which]
+    spec = spec or FLIGHTS[which]
     meshes, origin = lay(spec, seed)
     obs = [make(name, m) for name, m in meshes]
     info = dict(name=f"stone_{which}", origin=[float(v) for v in origin],
@@ -543,7 +549,7 @@ def build(which, unity=None, seed=1):
     print("STONE", {k: v for k, v in info.items() if k != "flights"},
           [(f["name"], f["steps"], f["tris"]) for f in info["flights"]])
     if unity:
-        path = os.path.join(unity, "Assets", "Art", "Stone", f"stone_{which}.fbx")
+        path = os.path.join(unity, "Assets", "Art", "Stone", folder, f"stone_{which}.fbx")
         os.makedirs(os.path.dirname(path), exist_ok=True)
         bpy.ops.object.select_all(action="DESELECT")
         for ob in obs:
@@ -564,4 +570,24 @@ if __name__ == "__main__":
     argv = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else []
     which = argv[0] if argv else "gully"
     unity = argv[1] if len(argv) > 1 else os.path.join(HERE, "..", "..", "unity")
-    build(which, unity)
+    if which == "variety":
+        # every named flight in the plan (or the default twelve), each from its own facts, into Art/Stone/Variety
+        import heart_layout as H
+        import stair_facts as SF
+        sys.path.insert(0, os.path.join(HERE, "..", "tools"))
+        names = argv[2:] or ["Gully Steps", "Tanner's Steps", "Bishop's Steps", "the Hundred Steps",
+                             "the path to Lookout Park", "passage at -172", "passage at 92", "passage at 110",
+                             "stair-lane 2", "stair-lane 6", "the way to D (1107, empty since 1986)", "the Crack"]
+        for nm in names:
+            lane = next((l for l in H.LANES if l["name"] == nm), None)
+            sp = SF.facts_for(lane) if lane else None
+            if sp is None:
+                continue
+            info = build(slug(nm), unity, spec=dict(sp), folder="Variety")
+            facts = dict(name=nm, built=sp["built"], built_as=sp.get("built_as"), finish=sp.get("finish", "split"),
+                         footfall=sp["footfall"], keepers=[[u["by"], u["since"], u["care"]] for u in sp["upkeep"]],
+                         works=[[w["kind"], w["year"]] for w in sp["works"]])
+            with open(os.path.join(unity, "Assets", "Art", "Stone", "Variety", f"stone_{slug(nm)}.facts.json"), "w") as fh:
+                json.dump(facts, fh, indent=1)
+    else:
+        build(which, unity)

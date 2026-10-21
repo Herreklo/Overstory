@@ -123,9 +123,9 @@ namespace Overstory.EditorTools
         }
 
         /// <summary>The stair stood where its mesh was laid from (its street origin), the clay steps hidden.</summary>
-        static (GameObject go, Vector3 origin) Place(string which, Material mat)
+        static (GameObject go, Vector3 origin) Place(string which, Material mat, string folder = "")
         {
-            string fbx = $"{Art}/stone_{which}.fbx";
+            string fbx = $"{Art}/{folder}stone_{which}.fbx";
             var model = AssetDatabase.LoadAssetAtPath<GameObject>(fbx);
             if (model == null)
                 throw new FileNotFoundException($"no stair at {fbx}: run blender/generators/stone.py first");
@@ -141,8 +141,12 @@ namespace Overstory.EditorTools
             // the importer turns each child half round (its axis conversion); the mesh itself is already in street
             // order (x across, y up, z along), so the children are set straight (a tree never showed it: it looks the
             // same turned round)
+            // (a single-mesh FBX is imported as one object: straighten it in place, never move it to the origin)
             foreach (var mf in go.GetComponentsInChildren<MeshFilter>())
-                mf.transform.SetLocalPositionAndRotation(Vector3.zero, Quaternion.identity);
+                if (mf.transform == go.transform)
+                    mf.transform.rotation = Quaternion.identity;
+                else
+                    mf.transform.SetLocalPositionAndRotation(Vector3.zero, Quaternion.identity);
             // the clay steps the stone replaces
             foreach (var r in Object.FindObjectsByType<MeshRenderer>(FindObjectsSortMode.None))
                 if (r.gameObject.name == "steps" && !Flag("-clay-steps"))
@@ -150,6 +154,8 @@ namespace Overstory.EditorTools
             if (!Flag("-clay-steps"))
             {
                 SinkGround(info);
+                if (folder != "")
+                    return (go, origin);
                 // the cheek walls (blender/generators/wall.py), where they are built, in place of the clay's
                 string wfbx = $"{Art}/stone_{which}_cheeks.fbx";
                 var wmodel = AssetDatabase.LoadAssetAtPath<GameObject>(wfbx);
@@ -358,6 +364,88 @@ namespace Overstory.EditorTools
             {
                 urp.shadowDistance = reach;
                 Object.DestroyImmediate(go);
+                Object.DestroyImmediate(shot);
+            }
+        }
+
+        /// <summary>
+        /// The stair generator's variety sheet in the game's light (docs/foundations.md: the variety sheet, reviewed
+        /// once per kind of thing): every flight in Assets/Art/Stone/Variety (stone.py -- variety), each placed where
+        /// the plan has it in the clay town and photographed from the same place, a person at its foot a little to
+        /// one side looking up its first metres, with the style's brushwork on, into reviews/lt1/stone/variety/.
+        /// </summary>
+        public static void Variety()
+        {
+            LT1Heart.Rigs();
+            LT1Heart.WriteStyles();
+            AssetDatabase.SaveAssets();
+            EditorSceneManager.OpenScene(HeartScene, OpenSceneMode.Single);
+            var stage = Object.FindAnyObjectByType<StreetStage>();
+            stage.clay = true;
+            stage.look = "P";
+            stage.style = AssetDatabase.LoadAssetAtPath<Style>($"{Lights}/Styles/Style_game.asset");
+            if (stage.skyMap != null)
+                stage.skyMap.Build();
+            var urp = (UniversalRenderPipelineAsset)GraphicsSettings.currentRenderPipeline;
+            float reach = urp.shadowDistance;
+            GrowthPack.Apply();
+            WaterPack.Apply();
+            Shader.SetGlobalFloat("_OS_NearForce", 0f);
+            var mat = Material(false);
+            AssetDatabase.SaveAssets();
+            var shot = ScriptableObject.CreateInstance<CameraShot>();
+            string outDir = Path.GetFullPath(Path.Combine(Application.dataPath, "..", "..", "reviews", "lt1", "stone", "variety"));
+            string srcDir = Path.Combine(Application.dataPath, "Art", "Stone", "Variety");
+            try
+            {
+                foreach (var json in Directory.GetFiles(srcDir, "stone_*.json"))
+                {
+                    if (json.EndsWith(".facts.json"))
+                        continue;
+                    string which = Path.GetFileNameWithoutExtension(json).Substring("stone_".Length);
+                    if (Arg("-only", "") != "" && !which.Contains(Arg("-only", "")))
+                        continue;
+                    var (go, _) = Place(which, mat, "Variety/");
+                    var info = JsonUtility.FromJson<Info>(File.ReadAllText(json));
+                    var f = info.flights[0];
+                    var a = new Vector3(f.a[0], f.a[1], f.a[2]);
+                    var d2 = new Vector2(f.b[0] - f.a[0], f.b[1] - f.a[1]);
+                    float run = d2.magnitude;
+                    var d = new Vector3(d2.x / run, d2.y / run, 0f);
+                    var right = new Vector3(d.y, -d.x, 0f);
+                    float slope = (f.b[2] - f.a[2]) / run;
+                    try
+                    {
+                        foreach (var moment in new[] { "1300-drizzle", "1600-low-sun" })
+                        {
+                            if (!Wanted("-moments", moment))
+                                continue;
+                            stage.rig = AssetDatabase.LoadAssetAtPath<LightRig>($"{Lights}/Heart_{moment}.asset");
+                            shot.position = a - d * 3.2f + right * 0.9f + new Vector3(0f, 0f, 1.65f);
+                            shot.target = a + d * 3.0f + new Vector3(0f, 0f, slope * 3.0f * 0.75f + 0.2f);
+                            shot.verticalFov = Lens28;
+                            shot.near = 0.1f;
+                            shot.far = 9000f;
+                            urp.shadowDistance = 120f;
+                            stage.shot = shot;
+                            stage.Apply();
+                            Shader.SetGlobalVector("_OS_Paint", new Vector4(stage.wrap, stage.muting, stage.grime, stage.brush));
+                            string dir = Path.Combine(outDir, moment);
+                            Directory.CreateDirectory(dir);
+                            string file = Path.Combine(dir, $"{which}.png");
+                            LT1Render.Still(stage.view, file, grey: false, eighth: false, msaa: 4);
+                            Debug.Log($"[LT1Stone.Variety] {file}");
+                        }
+                    }
+                    finally
+                    {
+                        Object.DestroyImmediate(go);
+                    }
+                }
+            }
+            finally
+            {
+                urp.shadowDistance = reach;
                 Object.DestroyImmediate(shot);
             }
         }

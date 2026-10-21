@@ -1,0 +1,30 @@
+{
+ "name": "stair-lane 6",
+ "built": 1912,
+ "built_as": "block",
+ "finish": "dressed",
+ "footfall": 18812,
+ "keepers": [
+  [
+   "town",
+   1912,
+   0.55
+  ],
+  [
+   "town",
+   1946,
+   0.42
+  ],
+  [
+   "town",
+   1965,
+   0.31
+  ]
+ ],
+ "works": [
+  [
+   "campaign",
+   1956
+  ]
+ ]
+}

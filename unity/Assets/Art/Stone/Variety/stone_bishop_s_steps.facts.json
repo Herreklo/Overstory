@@ -1,0 +1,30 @@
+{
+ "name": "Bishop's Steps",
+ "built": 1891,
+ "built_as": "block",
+ "finish": "dressed",
+ "footfall": 24911,
+ "keepers": [
+  [
+   "town",
+   1891,
+   0.65
+  ],
+  [
+   "town",
+   1930,
+   0.44
+  ],
+  [
+   "town",
+   1965,
+   0.52
+  ]
+ ],
+ "works": [
+  [
+   "campaign",
+   1914
+  ]
+ ]
+}

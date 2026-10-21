@@ -1,0 +1,30 @@
+{
+ "name": "the Hundred Steps",
+ "built": 1895,
+ "built_as": "block",
+ "finish": "rough",
+ "footfall": 21253,
+ "keepers": [
+  [
+   "society",
+   1895,
+   0.55
+  ],
+  [
+   "town",
+   1934,
+   0.3
+  ],
+  [
+   "town",
+   1968,
+   0.2
+  ]
+ ],
+ "works": [
+  [
+   "campaign",
+   1940
+  ]
+ ]
+}

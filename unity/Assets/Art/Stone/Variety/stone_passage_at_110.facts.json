@@ -1,0 +1,25 @@
+{
+ "name": "passage at 110",
+ "built": 1872,
+ "built_as": "tread_on_riser",
+ "finish": "split",
+ "footfall": 8538,
+ "keepers": [
+  [
+   "owner",
+   1872,
+   0.6
+  ],
+  [
+   "owner",
+   1925,
+   0.16
+  ],
+  [
+   "owner",
+   1969,
+   0.41
+  ]
+ ],
+ "works": []
+}

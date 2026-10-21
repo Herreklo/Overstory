@@ -1,0 +1,25 @@
+{
+ "name": "the Crack",
+ "built": 1900,
+ "built_as": "block",
+ "finish": "rough",
+ "footfall": 4411,
+ "keepers": [
+  [
+   "town",
+   1900,
+   0.25
+  ],
+  [
+   "town",
+   1946,
+   0.19
+  ],
+  [
+   "town",
+   1965,
+   0.15
+  ]
+ ],
+ "works": []
+}
