@@ -89,7 +89,7 @@ Every system, material and kind is studied twice before it is built (`CLAUDE.md`
 | Windows, glass, signs, lettering, records | `interface.md` (thin), `wooden-town-architecture.md` | `fronts-windows-and-signs.md` (what is seen through windows, lit windows, signs by era, street records; search budget ran out for some games: its Gaps) |
 | Interiors | `scenes-and-sound.md` (thin) | the view through windows in `fronts-windows-and-signs.md`; rooms: **gap**, before plan step 8 |
 | Weather, seasons and effects | `trees.md` (seasons), `lighting-and-colour.md` (partly) | **gap**, before plan step 9 (with smoke, steam, spray and fire) |
-| The painted look in motion | `colour-and-shading.md`, `visual-direction.md` | `painted-marks-in-motion.md` (running) |
+| The painted look in motion | `colour-and-shading.md`, `visual-direction.md` | `painted-marks-in-motion.md` |
 | Time on screen: one place across years | `history-in-things.md`, `town-change.md`, `living-fabric.md` | `time-on-screen.md` (running) |
 | Camera and composition | `visual-direction.md` | **gap**, before the play camera |
 | Sound and music | `scenes-and-sound.md` (thin) | **gap**, before scenes |

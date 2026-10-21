@@ -54,7 +54,8 @@ At today's rate a thousand stairs would take about 19 hours to generate and 16 G
    - *The tools* run on Opus in its own session:
      - the frame-time harness on the corner (`Overstory.Perf.PerfRunner`, a macOS player build at 1440p, the judging views in three lights; performance study, steps 1 and 8);
      - mesh hashes for every export;
-     - the golden views of today's gully, the baseline every change is compared against with FLIP.
+     - the golden views of today's gully, the baseline every change is compared against with FLIP;
+     - a motion-sheet renderer: 60 fps video at 1440p with one sample per pixel, plus stills scaled to the player's footprint. Every judged frame so far was rendered at twice the size and averaged down. That hid shimmer and crawling marks and set distance fades 1.5 times too far, and no mark has ever been judged moving (`docs/research/painted-marks-in-motion.md`). The golden views use it too.
 2. *Tuesday: the scale test, then the architecture's review.*
    - *The scale test* generates a district several square kilometres across in clay, from the test-quality house generator and the clay ground. The harness measures it for build time, memory, disk and frame time at the street stop, 12 m and the city camera. Its numbers settle where generation runs and how the town streams; the architecture leaves those provisional until then.
    - *The review:* a fresh strict review of the architecture (Fable), then Øystein's questions in one message, each with a recommendation.
@@ -105,6 +106,7 @@ At today's rate a thousand stairs would take about 19 hours to generate and 16 G
 **What goes to Øystein** (taste, scope and play only, each with a recommendation; everything else is decided, recorded with its reasons, and shown to him as finished work he can overturn):
 - the town system's scope and the eras after 1989 (`docs/town-system.md`);
 - the night sky's colour, lamp glass and the tonemapper, judged on frames when the light is rebuilt;
+- the brush's size stepped by octaves, so strokes stay within a factor of two on screen (recommended; one line of `docs/visual-direction.md`), and no boil on anything that stands still. Both are judged on motion sheets;
 - his OK for reference downloads (Stavanger's rock, water, city-archive photos for houses and dress), each listed with its source and size first;
 - whether signs and street text stay in Norwegian and are translated on inspection (recommended: yes; `docs/research/fronts-windows-and-signs.md`).
 
