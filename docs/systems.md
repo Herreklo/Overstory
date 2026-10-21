@@ -76,7 +76,7 @@ Every system, material and kind is studied twice before it is built (`CLAUDE.md`
 | Water, wear, growth, repairs | `repairs.md`, `stone.md`, `nature.md` | `materials-at-scale.md`, `history-in-things.md` |
 | History in things | `world-that-remembers.md`, `house-changes.md`, `repairs.md` | `history-in-things.md` |
 | Tiers, instancing, quality control | `tools-and-performance.md` (thin) | `performance-at-scale.md` |
-| Kits and generators | `generating-the-past.md` (thin) | `kits-and-generation.md` |
+| Kits and generators | `generating-the-past.md` (thin) | `kits-and-generation.md`, `where-generation-runs.md` |
 | Towns and cities | `urban-design.md`, `city-forces.md`, `city-types.md`, `town-change.md`, `stavanger-centre.md` | `kits-and-generation.md`, `urban-design.md` |
 | Stone, made | `stone.md`, `repairs.md` | `materials-at-scale.md`, `performance-at-scale.md`, `kits-and-generation.md` |
 | Land, rock, water, coast | `nature.md`, `stone.md` | `land-rock-and-water.md` |
