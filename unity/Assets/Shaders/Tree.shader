@@ -139,7 +139,9 @@ Shader "Overstory/Tree"
         f += 0.07h * ((half)OS_Noise(float2(u * 120.0, positionWS.y * 60.0)) - 0.5h);
         // the threshold falls towards the ground and with each fissure's own reach: more of the bark dark lower down,
         // never all of it
-        half t = 0.95h - 0.47h * up - 0.25h * (reach - 0.5h);
+        // (closing near the ground into a near-continuous dark base with white islands, reference 05; spatter that
+        // stopped short of the ground read as no foot at all)
+        half t = 0.95h - 0.66h * pow(up, 0.8h) - 0.25h * (reach - 0.5h);
         half dark = smoothstep(t - 0.02h, t + 0.02h, f) * smoothstep(0.02h, 0.12h, up);
         // broken across by bands of the white bark left (the reference's plates, never long spikes)
         half breaks = smoothstep(0.7h, 0.74h, (half)OS_Noise(float2(u * 6.0 + 9.3, positionWS.y * 11.0))) * (1.0h - up);
