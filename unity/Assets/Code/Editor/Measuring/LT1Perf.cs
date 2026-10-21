@@ -27,7 +27,9 @@ namespace Overstory.EditorTools
     ///
     ///     Unity -batchmode -quit -projectPath unity -executeMethod Overstory.EditorTools.LT1Perf.Build
     ///         [-runs 2] [-norun] [-out reviews/perf/2026-10-26] [-perf-frames 150] [-perf-warmup 30] [-perf-rounds 2]
-    ///         [-perf-settle 600] [-perf-only street,high]
+    ///         [-perf-settle 600] [-perf-only street,high] [-perf-passes all,-sky,...,bare] [-perf-scenes empty,corner]
+    ///         [-perf-views street,high] [-perf-empty-views street] [-perf-shots all|some]
+    ///         [-district /abs/path/to/district] [-perf-district-views street,city]
     ///
     /// The player is run from the logged-in session (rendering needs the GPU and the screen); the Unity editor must not be
     /// open on unity/. Player settings changed for the build (frame timing stats, full screen at 2560 by 1440, running in
@@ -104,6 +106,11 @@ namespace Overstory.EditorTools
             runner.withoutBirchesIn = new[] { "1600-low-sun" };
             runner.keep = new[] { Shader.Find("Hidden/Overstory/TownHeight"), Shader.Find("Hidden/Overstory/SkyMapProbe") }
                 .Where(s => s != null).ToArray();
+            runner.rendererData = AssetDatabase.LoadAssetAtPath<UniversalRendererData>("Assets/Settings/PC_Renderer.asset");
+            runner.flat = new Material(Shader.Find("Universal Render Pipeline/Unlit")) { name = "Flat (the pass study)" };
+            // the scale test's district (loaded only when the player is given -district <dir>), drawn with the street's material
+            runner.district = new GameObject("District (the scale test)").AddComponent<DistrictLoader>();
+            runner.district.material = AssetDatabase.LoadAssetAtPath<Material>("Assets/Art/Materials/M_Street.mat");
 
             Directory.CreateDirectory(Path.Combine(Application.dataPath, "..", Generated));
             AssetDatabase.Refresh();
@@ -190,7 +197,9 @@ namespace Overstory.EditorTools
                 "-screen-fullscreen", "1", "-screen-width", "2560", "-screen-height", "1440",
                 "-perf-out", dir, "-perf-label", label, "-logFile", Path.Combine(dir, "player.log"),
             };
-            foreach (var flag in new[] { "-perf-frames", "-perf-warmup", "-perf-rounds", "-perf-settle", "-perf-only" })
+            foreach (var flag in new[] { "-perf-frames", "-perf-warmup", "-perf-rounds", "-perf-settle", "-perf-only",
+                                         "-perf-passes", "-perf-scenes", "-perf-views", "-perf-empty-views", "-perf-shots",
+                                         "-district", "-perf-district-views", "-perf-offscreen-scale" })
                 if (Cli.Arg(flag, null) != null)
                 {
                     args.Add(flag);

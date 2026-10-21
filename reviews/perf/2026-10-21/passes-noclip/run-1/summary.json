@@ -1,0 +1,2235 @@
+{
+    "label": "run 1",
+    "started": "2026-10-21 21:34:38",
+    "unity": "6000.6.6f1",
+    "device": "Mac16,10",
+    "gpu": "Apple M4",
+    "api": "Metal",
+    "screen": "2560x1440",
+    "fullscreen": "FullScreenWindow",
+    "quality": "PC",
+    "seconds": 171.4798092,
+    "msaa": 4,
+    "vsync": 0,
+    "warmUp": 15,
+    "framesPerSegment": 40,
+    "rounds": 2,
+    "settle": 300,
+    "renderScale": 1.0,
+    "offscreenScale": 1.0,
+    "frameTimingStats": true,
+    "segments": [
+        {
+            "name": "eye-foot@1300-drizzle",
+            "view": "eye-foot",
+            "light": "1300-drizzle",
+            "scene": "corner",
+            "passes": "all",
+            "birches": true,
+            "frames": 80,
+            "cpu_ms": {
+                "median": 27.207583,
+                "p95": 32.875375,
+                "p99": 33.353042,
+                "max": 33.353042,
+                "mean": 27.9137651
+            },
+            "cpu_main_ms": {
+                "median": 0.405042,
+                "p95": 0.567666,
+                "p99": 2.41725,
+                "max": 2.41725,
+                "mean": 0.44352145
+            },
+            "cpu_render_ms": {
+                "median": 0.404376,
+                "p95": 0.45525,
+                "p99": 0.548125,
+                "max": 0.548125,
+                "mean": 0.41268585
+            },
+            "gpu_ms": {
+                "median": 47.169625002425164,
+                "p95": 53.50325000472367,
+                "p99": 55.021916690748185,
+                "max": 55.021916690748185,
+                "mean": 43.80618802024401
+            },
+            "round_medians_ms": [
+                25.784166,
+                27.370917
+            ],
+            "offscreen_ms": {
+                "median": 32.034483333333334,
+                "p95": 33.94055,
+                "p99": 33.94055,
+                "max": 33.94055,
+                "mean": 32.20480138888889
+            },
+            "counters": [
+                {
+                    "name": "draws",
+                    "median": 142,
+                    "max": 142
+                },
+                {
+                    "name": "setpass",
+                    "median": 64,
+                    "max": 64
+                },
+                {
+                    "name": "triangles",
+                    "median": 15518343,
+                    "max": 15518343
+                },
+                {
+                    "name": "vertices",
+                    "median": 15293561,
+                    "max": 15293561
+                },
+                {
+                    "name": "shadow_casters",
+                    "median": 66,
+                    "max": 66
+                },
+                {
+                    "name": "mem_total_used",
+                    "median": 239741164,
+                    "max": 239769836
+                },
+                {
+                    "name": "mem_total_reserved",
+                    "median": 581189632,
+                    "max": 581189632
+                },
+                {
+                    "name": "mem_gfx_used",
+                    "median": -1,
+                    "max": -1
+                },
+                {
+                    "name": "mem_gc_used",
+                    "median": 2777088,
+                    "max": 2805760
+                },
+                {
+                    "name": "mem_system_used",
+                    "median": 1527516088,
+                    "max": 1534184376
+                }
+            ]
+        },
+        {
+            "name": "street@1300-drizzle",
+            "view": "street",
+            "light": "1300-drizzle",
+            "scene": "corner",
+            "passes": "all",
+            "birches": true,
+            "frames": 80,
+            "cpu_ms": {
+                "median": 30.368833,
+                "p95": 35.9685,
+                "p99": 36.139209,
+                "max": 36.139209,
+                "mean": 31.185231249999998
+            },
+            "cpu_main_ms": {
+                "median": 0.433375,
+                "p95": 0.59075,
+                "p99": 0.986916,
+                "max": 0.986916,
+                "mean": 0.4589937875
+            },
+            "cpu_render_ms": {
+                "median": 0.420375,
+                "p95": 0.508874,
+                "p99": 0.67925,
+                "max": 0.67925,
+                "mean": 0.42892643750000004
+            },
+            "gpu_ms": {
+                "median": 53.72354167047888,
+                "p95": 59.719041688367724,
+                "p99": 60.47183333430439,
+                "max": 60.47183333430439,
+                "mean": 48.89159114391077
+            },
+            "round_medians_ms": [
+                29.283958,
+                30.837583
+            ],
+            "offscreen_ms": {
+                "median": 35.64636666666667,
+                "p95": 37.671366666666664,
+                "p99": 37.671366666666664,
+                "max": 37.671366666666664,
+                "mean": 36.10915277777778
+            },
+            "counters": [
+                {
+                    "name": "draws",
+                    "median": 142,
+                    "max": 284
+                },
+                {
+                    "name": "setpass",
+                    "median": 65,
+                    "max": 65
+                },
+                {
+                    "name": "triangles",
+                    "median": 15012472,
+                    "max": 30024944
+                },
+                {
+                    "name": "vertices",
+                    "median": 14860322,
+                    "max": 29720644
+                },
+                {
+                    "name": "shadow_casters",
+                    "median": 66,
+                    "max": 132
+                },
+                {
+                    "name": "mem_total_used",
+                    "median": 240834796,
+                    "max": 240871660
+                },
+                {
+                    "name": "mem_total_reserved",
+                    "median": 581189632,
+                    "max": 581189632
+                },
+                {
+                    "name": "mem_gfx_used",
+                    "median": -1,
+                    "max": -1
+                },
+                {
+                    "name": "mem_gc_used",
+                    "median": 3870720,
+                    "max": 3907584
+                },
+                {
+                    "name": "mem_system_used",
+                    "median": 1527860152,
+                    "max": 1539541944
+                }
+            ]
+        },
+        {
+            "name": "high@1300-drizzle",
+            "view": "high",
+            "light": "1300-drizzle",
+            "scene": "corner",
+            "passes": "all",
+            "birches": true,
+            "frames": 80,
+            "cpu_ms": {
+                "median": 34.0185,
+                "p95": 39.136417,
+                "p99": 39.780458,
+                "max": 39.780458,
+                "mean": 34.788445837500014
+            },
+            "cpu_main_ms": {
+                "median": 0.404708,
+                "p95": 0.584375,
+                "p99": 1.074083,
+                "max": 1.074083,
+                "mean": 0.42948597499999996
+            },
+            "cpu_render_ms": {
+                "median": 0.41075,
+                "p95": 0.481042,
+                "p99": 0.680124,
+                "max": 0.680124,
+                "mean": 0.42210198749999994
+            },
+            "gpu_ms": {
+                "median": 61.61612505093217,
+                "p95": 67.82125000609085,
+                "p99": 69.12745832232758,
+                "max": 69.12745832232758,
+                "mean": 55.408107812399976
+            },
+            "round_medians_ms": [
+                32.85275,
+                34.864584
+            ],
+            "offscreen_ms": {
+                "median": 39.630950000000006,
+                "p95": 42.328583333333334,
+                "p99": 42.328583333333334,
+                "max": 42.328583333333334,
+                "mean": 40.51814166666666
+            },
+            "counters": [
+                {
+                    "name": "draws",
+                    "median": 130,
+                    "max": 260
+                },
+                {
+                    "name": "setpass",
+                    "median": 59,
+                    "max": 118
+                },
+                {
+                    "name": "triangles",
+                    "median": 13805321,
+                    "max": 27610642
+                },
+                {
+                    "name": "vertices",
+                    "median": 13827936,
+                    "max": 27655872
+                },
+                {
+                    "name": "shadow_casters",
+                    "median": 54,
+                    "max": 108
+                },
+                {
+                    "name": "mem_total_used",
+                    "median": 239806700,
+                    "max": 239843564
+                },
+                {
+                    "name": "mem_total_reserved",
+                    "median": 581189632,
+                    "max": 581189632
+                },
+                {
+                    "name": "mem_gfx_used",
+                    "median": -1,
+                    "max": -1
+                },
+                {
+                    "name": "mem_gc_used",
+                    "median": 2842624,
+                    "max": 2879488
+                },
+                {
+                    "name": "mem_system_used",
+                    "median": 1527516088,
+                    "max": 1536887736
+                }
+            ]
+        },
+        {
+            "name": "eye-foot@1300-drizzle/bare",
+            "view": "eye-foot",
+            "light": "1300-drizzle",
+            "scene": "corner",
+            "passes": "bare",
+            "birches": true,
+            "frames": 80,
+            "cpu_ms": {
+                "median": 10.898584,
+                "p95": 11.571709,
+                "p99": 11.778292,
+                "max": 11.778292,
+                "mean": 10.949456774999998
+            },
+            "cpu_main_ms": {
+                "median": 0.236335,
+                "p95": 0.302167,
+                "p99": 0.429917,
+                "max": 0.429917,
+                "mean": 0.24077817499999993
+            },
+            "cpu_render_ms": {
+                "median": 0.088416,
+                "p95": 0.104,
+                "p99": 0.119082,
+                "max": 0.119082,
+                "mean": 0.08938422499999997
+            },
+            "gpu_ms": {
+                "median": 31.60462499363348,
+                "p95": 33.74016669113189,
+                "p99": 34.17295834515244,
+                "max": 34.17295834515244,
+                "mean": 32.337635941803455
+            },
+            "round_medians_ms": [
+                10.554666,
+                11.284583
+            ],
+            "offscreen_ms": {
+                "median": 12.576133333333333,
+                "p95": 13.440433333333333,
+                "p99": 13.440433333333333,
+                "max": 13.440433333333333,
+                "mean": 12.92835
+            },
+            "counters": [
+                {
+                    "name": "draws",
+                    "median": 20,
+                    "max": 40
+                },
+                {
+                    "name": "setpass",
+                    "median": 7,
+                    "max": 14
+                },
+                {
+                    "name": "triangles",
+                    "median": 2744340,
+                    "max": 5488680
+                },
+                {
+                    "name": "vertices",
+                    "median": 2687605,
+                    "max": 5375210
+                },
+                {
+                    "name": "shadow_casters",
+                    "median": 0,
+                    "max": 0
+                },
+                {
+                    "name": "mem_total_used",
+                    "median": 240296049,
+                    "max": 240325445
+                },
+                {
+                    "name": "mem_total_reserved",
+                    "median": 581189632,
+                    "max": 581189632
+                },
+                {
+                    "name": "mem_gfx_used",
+                    "median": -1,
+                    "max": -1
+                },
+                {
+                    "name": "mem_gc_used",
+                    "median": 3469312,
+                    "max": 3493888
+                },
+                {
+                    "name": "mem_system_used",
+                    "median": 1095076768,
+                    "max": 1095420832
+                }
+            ]
+        },
+        {
+            "name": "street@1300-drizzle/bare",
+            "view": "street",
+            "light": "1300-drizzle",
+            "scene": "corner",
+            "passes": "bare",
+            "birches": true,
+            "frames": 80,
+            "cpu_ms": {
+                "median": 11.442084,
+                "p95": 12.170875,
+                "p99": 12.787333,
+                "max": 12.787333,
+                "mean": 11.466092187500005
+            },
+            "cpu_main_ms": {
+                "median": 0.239666,
+                "p95": 0.302833,
+                "p99": 0.403583,
+                "max": 0.403583,
+                "mean": 0.24310519999999997
+            },
+            "cpu_render_ms": {
+                "median": 0.089834,
+                "p95": 0.140125,
+                "p99": 0.171791,
+                "max": 0.171791,
+                "mean": 0.09505571249999999
+            },
+            "gpu_ms": {
+                "median": 33.42900000279769,
+                "p95": 35.54108337266371,
+                "p99": 35.92287498759106,
+                "max": 35.92287498759106,
+                "mean": 33.849566669232445
+            },
+            "round_medians_ms": [
+                11.092458,
+                11.766792
+            ],
+            "offscreen_ms": {
+                "median": 13.188816666666668,
+                "p95": 14.0906,
+                "p99": 14.0906,
+                "max": 14.0906,
+                "mean": 13.479054166666666
+            },
+            "counters": [
+                {
+                    "name": "draws",
+                    "median": 20,
+                    "max": 20
+                },
+                {
+                    "name": "setpass",
+                    "median": 7,
+                    "max": 7
+                },
+                {
+                    "name": "triangles",
+                    "median": 2744340,
+                    "max": 2744340
+                },
+                {
+                    "name": "vertices",
+                    "median": 2687605,
+                    "max": 2687605
+                },
+                {
+                    "name": "shadow_casters",
+                    "median": 0,
+                    "max": 0
+                },
+                {
+                    "name": "mem_total_used",
+                    "median": 240911223,
+                    "max": 240953580
+                },
+                {
+                    "name": "mem_total_reserved",
+                    "median": 581189632,
+                    "max": 581189632
+                },
+                {
+                    "name": "mem_gfx_used",
+                    "median": -1,
+                    "max": -1
+                },
+                {
+                    "name": "mem_gc_used",
+                    "median": 3952640,
+                    "max": 3989504
+                },
+                {
+                    "name": "mem_system_used",
+                    "median": 1081789344,
+                    "max": 1096715168
+                }
+            ]
+        },
+        {
+            "name": "high@1300-drizzle/bare",
+            "view": "high",
+            "light": "1300-drizzle",
+            "scene": "corner",
+            "passes": "bare",
+            "birches": true,
+            "frames": 80,
+            "cpu_ms": {
+                "median": 15.175083,
+                "p95": 15.87025,
+                "p99": 16.426833,
+                "max": 16.426833,
+                "mean": 15.217275512499992
+            },
+            "cpu_main_ms": {
+                "median": 0.234376,
+                "p95": 0.306125,
+                "p99": 0.352708,
+                "max": 0.352708,
+                "mean": 0.24004068750000002
+            },
+            "cpu_render_ms": {
+                "median": 0.086499,
+                "p95": 0.099917,
+                "p99": 0.112001,
+                "max": 0.112001,
+                "mean": 0.08779422499999998
+            },
+            "gpu_ms": {
+                "median": 44.57366664428264,
+                "p95": 46.77862499374896,
+                "p99": 47.1147500211373,
+                "max": 47.1147500211373,
+                "mean": 44.88809791364474
+            },
+            "round_medians_ms": [
+                14.778,
+                15.691167
+            ],
+            "offscreen_ms": {
+                "median": 17.702450000000002,
+                "p95": 18.54791666666667,
+                "p99": 18.54791666666667,
+                "max": 18.54791666666667,
+                "mean": 17.92251805555556
+            },
+            "counters": [
+                {
+                    "name": "draws",
+                    "median": 20,
+                    "max": 20
+                },
+                {
+                    "name": "setpass",
+                    "median": 7,
+                    "max": 7
+                },
+                {
+                    "name": "triangles",
+                    "median": 2744340,
+                    "max": 2744340
+                },
+                {
+                    "name": "vertices",
+                    "median": 2687605,
+                    "max": 2687605
+                },
+                {
+                    "name": "shadow_casters",
+                    "median": 0,
+                    "max": 0
+                },
+                {
+                    "name": "mem_total_used",
+                    "median": 239833588,
+                    "max": 239859948
+                },
+                {
+                    "name": "mem_total_reserved",
+                    "median": 581189632,
+                    "max": 581189632
+                },
+                {
+                    "name": "mem_gfx_used",
+                    "median": -1,
+                    "max": -1
+                },
+                {
+                    "name": "mem_gc_used",
+                    "median": 2875392,
+                    "max": 2895872
+                },
+                {
+                    "name": "mem_system_used",
+                    "median": 1083739040,
+                    "max": 1084214176
+                }
+            ]
+        },
+        {
+            "name": "eye-foot@1600-low-sun",
+            "view": "eye-foot",
+            "light": "1600-low-sun",
+            "scene": "corner",
+            "passes": "all",
+            "birches": true,
+            "frames": 80,
+            "cpu_ms": {
+                "median": 80.574834,
+                "p95": 86.815416,
+                "p99": 87.504916,
+                "max": 87.504916,
+                "mean": 81.26625156249999
+            },
+            "cpu_main_ms": {
+                "median": 0.398875,
+                "p95": 0.47946,
+                "p99": 0.526375,
+                "max": 0.526375,
+                "mean": 0.40606455000000014
+            },
+            "cpu_render_ms": {
+                "median": 0.413042,
+                "p95": 0.447751,
+                "p99": 0.485458,
+                "max": 0.485458,
+                "mean": 0.41368194999999996
+            },
+            "gpu_ms": {
+                "median": 154.28287500981241,
+                "p95": 161.5657500224188,
+                "p99": 163.55612501502037,
+                "max": 163.55612501502037,
+                "mean": 137.1557677113742
+            },
+            "round_medians_ms": [
+                79.198292,
+                81.806417
+            ],
+            "offscreen_ms": {
+                "median": 95.0603,
+                "p95": 96.10696666666666,
+                "p99": 96.10696666666666,
+                "max": 96.10696666666666,
+                "mean": 94.91570000000002
+            },
+            "counters": [
+                {
+                    "name": "draws",
+                    "median": 147,
+                    "max": 147
+                },
+                {
+                    "name": "setpass",
+                    "median": 67,
+                    "max": 67
+                },
+                {
+                    "name": "triangles",
+                    "median": 15852678,
+                    "max": 15852678
+                },
+                {
+                    "name": "vertices",
+                    "median": 15606773,
+                    "max": 15606773
+                },
+                {
+                    "name": "shadow_casters",
+                    "median": 70,
+                    "max": 70
+                },
+                {
+                    "name": "mem_total_used",
+                    "median": 239868335,
+                    "max": 239909295
+                },
+                {
+                    "name": "mem_total_reserved",
+                    "median": 581189632,
+                    "max": 581189632
+                },
+                {
+                    "name": "mem_gfx_used",
+                    "median": -1,
+                    "max": -1
+                },
+                {
+                    "name": "mem_gc_used",
+                    "median": 2904064,
+                    "max": 2945024
+                },
+                {
+                    "name": "mem_system_used",
+                    "median": 1530776504,
+                    "max": 1532545976
+                }
+            ]
+        },
+        {
+            "name": "street@1600-low-sun",
+            "view": "street",
+            "light": "1600-low-sun",
+            "scene": "corner",
+            "passes": "all",
+            "birches": true,
+            "frames": 80,
+            "cpu_ms": {
+                "median": 84.453042,
+                "p95": 89.711583,
+                "p99": 90.171042,
+                "max": 90.171042,
+                "mean": 85.115333325
+            },
+            "cpu_main_ms": {
+                "median": 0.448667,
+                "p95": 0.789374,
+                "p99": 1.382751,
+                "max": 1.382751,
+                "mean": 0.49132381249999996
+            },
+            "cpu_render_ms": {
+                "median": 0.43,
+                "p95": 0.529209,
+                "p99": 0.749666,
+                "max": 0.749666,
+                "mean": 0.44700373749999994
+            },
+            "gpu_ms": {
+                "median": 162.94587502488866,
+                "p95": 167.59979166090488,
+                "p99": 167.7868750412017,
+                "max": 167.7868750412017,
+                "mean": 144.55269635291188
+            },
+            "round_medians_ms": [
+                84.342584,
+                84.641833
+            ],
+            "offscreen_ms": {
+                "median": 99.23218333333334,
+                "p95": 100.1175,
+                "p99": 100.1175,
+                "max": 100.1175,
+                "mean": 99.27751805555556
+            },
+            "counters": [
+                {
+                    "name": "draws",
+                    "median": 143,
+                    "max": 286
+                },
+                {
+                    "name": "setpass",
+                    "median": 66,
+                    "max": 132
+                },
+                {
+                    "name": "triangles",
+                    "median": 15036472,
+                    "max": 30072944
+                },
+                {
+                    "name": "vertices",
+                    "median": 14908322,
+                    "max": 29816644
+                },
+                {
+                    "name": "shadow_casters",
+                    "median": 66,
+                    "max": 132
+                },
+                {
+                    "name": "mem_total_used",
+                    "median": 240972445,
+                    "max": 241076655
+                },
+                {
+                    "name": "mem_total_reserved",
+                    "median": 581189632,
+                    "max": 581189632
+                },
+                {
+                    "name": "mem_gfx_used",
+                    "median": -1,
+                    "max": -1
+                },
+                {
+                    "name": "mem_gc_used",
+                    "median": 4009984,
+                    "max": 4046848
+                },
+                {
+                    "name": "mem_system_used",
+                    "median": 1534888888,
+                    "max": 1541426104
+                }
+            ]
+        },
+        {
+            "name": "high@1600-low-sun",
+            "view": "high",
+            "light": "1600-low-sun",
+            "scene": "corner",
+            "passes": "all",
+            "birches": true,
+            "frames": 80,
+            "cpu_ms": {
+                "median": 87.743625,
+                "p95": 92.415083,
+                "p99": 92.544667,
+                "max": 92.544667,
+                "mean": 88.53072811249997
+            },
+            "cpu_main_ms": {
+                "median": 0.425583,
+                "p95": 0.876833,
+                "p99": 1.34475,
+                "max": 1.34475,
+                "mean": 0.469902525
+            },
+            "cpu_render_ms": {
+                "median": 0.419792,
+                "p95": 0.560542,
+                "p99": 0.751709,
+                "max": 0.751709,
+                "mean": 0.4403978125
+            },
+            "gpu_ms": {
+                "median": 171.05112504214048,
+                "p95": 175.05720834014937,
+                "p99": 175.67237501498312,
+                "max": 175.67237501498312,
+                "mean": 150.4857239597186
+            },
+            "round_medians_ms": [
+                87.767708,
+                87.575125
+            ],
+            "offscreen_ms": {
+                "median": 103.22843333333334,
+                "p95": 104.07095,
+                "p99": 104.07095,
+                "max": 104.07095,
+                "mean": 103.26295694444445
+            },
+            "counters": [
+                {
+                    "name": "draws",
+                    "median": 131,
+                    "max": 262
+                },
+                {
+                    "name": "setpass",
+                    "median": 60,
+                    "max": 120
+                },
+                {
+                    "name": "triangles",
+                    "median": 13829321,
+                    "max": 27658642
+                },
+                {
+                    "name": "vertices",
+                    "median": 13875936,
+                    "max": 27751872
+                },
+                {
+                    "name": "shadow_casters",
+                    "median": 54,
+                    "max": 108
+                },
+                {
+                    "name": "mem_total_used",
+                    "median": 239993864,
+                    "max": 240019887
+                },
+                {
+                    "name": "mem_total_reserved",
+                    "median": 581189632,
+                    "max": 581189632
+                },
+                {
+                    "name": "mem_gfx_used",
+                    "median": -1,
+                    "max": -1
+                },
+                {
+                    "name": "mem_gc_used",
+                    "median": 2965504,
+                    "max": 2990080
+                },
+                {
+                    "name": "mem_system_used",
+                    "median": 1534888888,
+                    "max": 1535577016
+                }
+            ]
+        },
+        {
+            "name": "eye-foot@1600-low-sun-nobirch",
+            "view": "eye-foot",
+            "light": "1600-low-sun",
+            "scene": "corner",
+            "passes": "all",
+            "birches": false,
+            "frames": 80,
+            "cpu_ms": {
+                "median": 79.736625,
+                "p95": 85.57625,
+                "p99": 85.731291,
+                "max": 85.731291,
+                "mean": 80.54822863749999
+            },
+            "cpu_main_ms": {
+                "median": 0.396001,
+                "p95": 0.465208,
+                "p99": 0.655708,
+                "max": 0.655708,
+                "mean": 0.4050609499999999
+            },
+            "cpu_render_ms": {
+                "median": 0.396582,
+                "p95": 0.42625,
+                "p99": 0.522791,
+                "max": 0.522791,
+                "mean": 0.4000834000000001
+            },
+            "gpu_ms": {
+                "median": 154.3287499807775,
+                "p95": 158.85862498544157,
+                "p99": 159.77525000926107,
+                "max": 159.77525000926107,
+                "mean": 136.7824036438833
+            },
+            "round_medians_ms": [
+                79.650917,
+                79.736625
+            ],
+            "offscreen_ms": {
+                "median": 93.59145000000001,
+                "p95": 94.03545000000001,
+                "p99": 94.03545000000001,
+                "max": 94.03545000000001,
+                "mean": 93.65990972222222
+            },
+            "counters": [
+                {
+                    "name": "draws",
+                    "median": 133,
+                    "max": 133
+                },
+                {
+                    "name": "setpass",
+                    "median": 53,
+                    "max": 53
+                },
+                {
+                    "name": "triangles",
+                    "median": 15345762,
+                    "max": 15345762
+                },
+                {
+                    "name": "vertices",
+                    "median": 15166331,
+                    "max": 15166331
+                },
+                {
+                    "name": "shadow_casters",
+                    "median": 62,
+                    "max": 62
+                },
+                {
+                    "name": "mem_total_used",
+                    "median": 240018702,
+                    "max": 240059662
+                },
+                {
+                    "name": "mem_total_reserved",
+                    "median": 581189632,
+                    "max": 581189632
+                },
+                {
+                    "name": "mem_gfx_used",
+                    "median": -1,
+                    "max": -1
+                },
+                {
+                    "name": "mem_gc_used",
+                    "median": 2990080,
+                    "max": 3031040
+                },
+                {
+                    "name": "mem_system_used",
+                    "median": 1534888888,
+                    "max": 1535560632
+                }
+            ]
+        },
+        {
+            "name": "street@1600-low-sun-nobirch",
+            "view": "street",
+            "light": "1600-low-sun",
+            "scene": "corner",
+            "passes": "all",
+            "birches": false,
+            "frames": 80,
+            "cpu_ms": {
+                "median": 74.023333,
+                "p95": 79.857166,
+                "p99": 80.668334,
+                "max": 80.668334,
+                "mean": 74.98728021249997
+            },
+            "cpu_main_ms": {
+                "median": 0.407208,
+                "p95": 0.515583,
+                "p99": 0.600125,
+                "max": 0.600125,
+                "mean": 0.41493541250000004
+            },
+            "cpu_render_ms": {
+                "median": 0.394251,
+                "p95": 0.449041,
+                "p99": 0.483416,
+                "max": 0.483416,
+                "mean": 0.3987697750000001
+            },
+            "gpu_ms": {
+                "median": 144.1200416884385,
+                "p95": 148.04937498411164,
+                "p99": 148.97187502356246,
+                "max": 148.97187502356246,
+                "mean": 127.14604948050692
+            },
+            "round_medians_ms": [
+                74.092,
+                73.94575
+            ],
+            "offscreen_ms": {
+                "median": 87.35746666666667,
+                "p95": 88.85956666666668,
+                "p99": 88.85956666666668,
+                "max": 88.85956666666668,
+                "mean": 87.6311
+            },
+            "counters": [
+                {
+                    "name": "draws",
+                    "median": 129,
+                    "max": 258
+                },
+                {
+                    "name": "setpass",
+                    "median": 52,
+                    "max": 52
+                },
+                {
+                    "name": "triangles",
+                    "median": 14529556,
+                    "max": 29059112
+                },
+                {
+                    "name": "vertices",
+                    "median": 14467880,
+                    "max": 28935760
+                },
+                {
+                    "name": "shadow_casters",
+                    "median": 58,
+                    "max": 116
+                },
+                {
+                    "name": "mem_total_used",
+                    "median": 240059662,
+                    "max": 240100622
+                },
+                {
+                    "name": "mem_total_reserved",
+                    "median": 581189632,
+                    "max": 581189632
+                },
+                {
+                    "name": "mem_gfx_used",
+                    "median": -1,
+                    "max": -1
+                },
+                {
+                    "name": "mem_gc_used",
+                    "median": 3031040,
+                    "max": 3072000
+                },
+                {
+                    "name": "mem_system_used",
+                    "median": 1530727352,
+                    "max": 1537067960
+                }
+            ]
+        },
+        {
+            "name": "high@1600-low-sun-nobirch",
+            "view": "high",
+            "light": "1600-low-sun",
+            "scene": "corner",
+            "passes": "all",
+            "birches": false,
+            "frames": 80,
+            "cpu_ms": {
+                "median": 75.117875,
+                "p95": 79.681459,
+                "p99": 80.076834,
+                "max": 80.076834,
+                "mean": 75.6645208375
+            },
+            "cpu_main_ms": {
+                "median": 0.408208,
+                "p95": 0.572666,
+                "p99": 0.782667,
+                "max": 0.782667,
+                "mean": 0.42604106250000007
+            },
+            "cpu_render_ms": {
+                "median": 0.393917,
+                "p95": 0.447708,
+                "p99": 0.569958,
+                "max": 0.569958,
+                "mean": 0.40155878749999985
+            },
+            "gpu_ms": {
+                "median": 146.05841669254005,
+                "p95": 150.04062501247972,
+                "p99": 150.39483335567638,
+                "max": 150.39483335567638,
+                "mean": 128.91627709032036
+            },
+            "round_medians_ms": [
+                75.247625,
+                74.963375
+            ],
+            "offscreen_ms": {
+                "median": 87.79155000000002,
+                "p95": 88.93133333333334,
+                "p99": 88.93133333333334,
+                "max": 88.93133333333334,
+                "mean": 87.99734583333334
+            },
+            "counters": [
+                {
+                    "name": "draws",
+                    "median": 121,
+                    "max": 121
+                },
+                {
+                    "name": "setpass",
+                    "median": 50,
+                    "max": 50
+                },
+                {
+                    "name": "triangles",
+                    "median": 13482185,
+                    "max": 26964370
+                },
+                {
+                    "name": "vertices",
+                    "median": 13570052,
+                    "max": 27140104
+                },
+                {
+                    "name": "shadow_casters",
+                    "median": 50,
+                    "max": 100
+                },
+                {
+                    "name": "mem_total_used",
+                    "median": 241157390,
+                    "max": 241173774
+                },
+                {
+                    "name": "mem_total_reserved",
+                    "median": 581189632,
+                    "max": 581189632
+                },
+                {
+                    "name": "mem_gfx_used",
+                    "median": -1,
+                    "max": -1
+                },
+                {
+                    "name": "mem_gc_used",
+                    "median": 4128768,
+                    "max": 4145152
+                },
+                {
+                    "name": "mem_system_used",
+                    "median": 1522338744,
+                    "max": 1533070264
+                }
+            ]
+        },
+        {
+            "name": "eye-foot@1600-low-sun/bare",
+            "view": "eye-foot",
+            "light": "1600-low-sun",
+            "scene": "corner",
+            "passes": "bare",
+            "birches": true,
+            "frames": 80,
+            "cpu_ms": {
+                "median": 11.260875,
+                "p95": 11.688833,
+                "p99": 11.928833,
+                "max": 11.928833,
+                "mean": 11.3038703
+            },
+            "cpu_main_ms": {
+                "median": 0.234876,
+                "p95": 0.301833,
+                "p99": 0.392999,
+                "max": 0.392999,
+                "mean": 0.238294125
+            },
+            "cpu_render_ms": {
+                "median": 0.086917,
+                "p95": 0.104,
+                "p99": 0.151417,
+                "max": 0.151417,
+                "mean": 0.0894067
+            },
+            "gpu_ms": {
+                "median": 33.40237500378862,
+                "p95": 33.8164166896604,
+                "p99": 34.17258337140083,
+                "max": 34.17258337140083,
+                "mean": 33.36321197784855
+            },
+            "round_medians_ms": [
+                11.275,
+                11.233458
+            ],
+            "offscreen_ms": {
+                "median": 13.347783333333334,
+                "p95": 13.573716666666668,
+                "p99": 13.573716666666668,
+                "max": 13.573716666666668,
+                "mean": 13.384931944444444
+            },
+            "counters": [
+                {
+                    "name": "draws",
+                    "median": 20,
+                    "max": 20
+                },
+                {
+                    "name": "setpass",
+                    "median": 7,
+                    "max": 7
+                },
+                {
+                    "name": "triangles",
+                    "median": 2744340,
+                    "max": 2744340
+                },
+                {
+                    "name": "vertices",
+                    "median": 2687605,
+                    "max": 2687605
+                },
+                {
+                    "name": "shadow_casters",
+                    "median": 0,
+                    "max": 0
+                },
+                {
+                    "name": "mem_total_used",
+                    "median": 240058070,
+                    "max": 240100165
+                },
+                {
+                    "name": "mem_total_reserved",
+                    "median": 581189632,
+                    "max": 581189632
+                },
+                {
+                    "name": "mem_gfx_used",
+                    "median": -1,
+                    "max": -1
+                },
+                {
+                    "name": "mem_gc_used",
+                    "median": 3035136,
+                    "max": 3072000
+                },
+                {
+                    "name": "mem_system_used",
+                    "median": 1085770680,
+                    "max": 1090243536
+                }
+            ]
+        },
+        {
+            "name": "street@1600-low-sun/bare",
+            "view": "street",
+            "light": "1600-low-sun",
+            "scene": "corner",
+            "passes": "bare",
+            "birches": true,
+            "frames": 80,
+            "cpu_ms": {
+                "median": 11.804375,
+                "p95": 12.397334,
+                "p99": 13.277958,
+                "max": 13.277958,
+                "mean": 11.838489575
+            },
+            "cpu_main_ms": {
+                "median": 0.227209,
+                "p95": 0.322458,
+                "p99": 0.371958,
+                "max": 0.371958,
+                "mean": 0.23867032499999996
+            },
+            "cpu_render_ms": {
+                "median": 0.086125,
+                "p95": 0.128625,
+                "p99": 0.140917,
+                "max": 0.140917,
+                "mean": 0.09004948750000001
+            },
+            "gpu_ms": {
+                "median": 34.94737501023337,
+                "p95": 36.0423750244081,
+                "p99": 36.56833327841014,
+                "max": 36.56833327841014,
+                "mean": 34.919561457354575
+            },
+            "round_medians_ms": [
+                11.848792,
+                11.788208
+            ],
+            "offscreen_ms": {
+                "median": 13.9044,
+                "p95": 14.143016666666668,
+                "p99": 14.143016666666668,
+                "max": 14.143016666666668,
+                "mean": 13.916130555555554
+            },
+            "counters": [
+                {
+                    "name": "draws",
+                    "median": 20,
+                    "max": 40
+                },
+                {
+                    "name": "setpass",
+                    "median": 7,
+                    "max": 14
+                },
+                {
+                    "name": "triangles",
+                    "median": 2744340,
+                    "max": 5488680
+                },
+                {
+                    "name": "vertices",
+                    "median": 2687605,
+                    "max": 5375210
+                },
+                {
+                    "name": "shadow_casters",
+                    "median": 0,
+                    "max": 0
+                },
+                {
+                    "name": "mem_total_used",
+                    "median": 240095345,
+                    "max": 240122092
+                },
+                {
+                    "name": "mem_total_reserved",
+                    "median": 581189632,
+                    "max": 581189632
+                },
+                {
+                    "name": "mem_gfx_used",
+                    "median": -1,
+                    "max": -1
+                },
+                {
+                    "name": "mem_gc_used",
+                    "median": 3072000,
+                    "max": 3092480
+                },
+                {
+                    "name": "mem_system_used",
+                    "median": 1086540752,
+                    "max": 1090948048
+                }
+            ]
+        },
+        {
+            "name": "high@1600-low-sun/bare",
+            "view": "high",
+            "light": "1600-low-sun",
+            "scene": "corner",
+            "passes": "bare",
+            "birches": true,
+            "frames": 80,
+            "cpu_ms": {
+                "median": 15.685125,
+                "p95": 16.127416,
+                "p99": 16.19925,
+                "max": 16.19925,
+                "mean": 15.694308862499994
+            },
+            "cpu_main_ms": {
+                "median": 0.231959,
+                "p95": 0.286875,
+                "p99": 0.298624,
+                "max": 0.298624,
+                "mean": 0.23302182499999993
+            },
+            "cpu_render_ms": {
+                "median": 0.084958,
+                "p95": 0.095417,
+                "p99": 0.102459,
+                "max": 0.102459,
+                "mean": 0.08542497499999999
+            },
+            "gpu_ms": {
+                "median": 46.56325001269579,
+                "p95": 47.185625007841736,
+                "p99": 47.525333357043564,
+                "max": 47.525333357043564,
+                "mean": 46.39754427407752
+            },
+            "round_medians_ms": [
+                15.708041,
+                15.663125
+            ],
+            "offscreen_ms": {
+                "median": 18.400333333333332,
+                "p95": 18.52575,
+                "p99": 18.52575,
+                "max": 18.52575,
+                "mean": 18.398623611111113
+            },
+            "counters": [
+                {
+                    "name": "draws",
+                    "median": 20,
+                    "max": 20
+                },
+                {
+                    "name": "setpass",
+                    "median": 7,
+                    "max": 7
+                },
+                {
+                    "name": "triangles",
+                    "median": 2744340,
+                    "max": 2744340
+                },
+                {
+                    "name": "vertices",
+                    "median": 2687605,
+                    "max": 2687605
+                },
+                {
+                    "name": "shadow_casters",
+                    "median": 0,
+                    "max": 0
+                },
+                {
+                    "name": "mem_total_used",
+                    "median": 240116599,
+                    "max": 240153413
+                },
+                {
+                    "name": "mem_total_reserved",
+                    "median": 581189632,
+                    "max": 581189632
+                },
+                {
+                    "name": "mem_gfx_used",
+                    "median": -1,
+                    "max": -1
+                },
+                {
+                    "name": "mem_gc_used",
+                    "median": 3092480,
+                    "max": 3125248
+                },
+                {
+                    "name": "mem_system_used",
+                    "median": 1086180304,
+                    "max": 1091308496
+                }
+            ]
+        },
+        {
+            "name": "eye-foot@1750-blue-hour",
+            "view": "eye-foot",
+            "light": "1750-blue-hour",
+            "scene": "corner",
+            "passes": "all",
+            "birches": true,
+            "frames": 80,
+            "cpu_ms": {
+                "median": 24.564125,
+                "p95": 26.133166,
+                "p99": 26.789791,
+                "max": 26.789791,
+                "mean": 24.677028637499994
+            },
+            "cpu_main_ms": {
+                "median": 0.360291,
+                "p95": 0.426001,
+                "p99": 0.580958,
+                "max": 0.580958,
+                "mean": 0.36514933749999995
+            },
+            "cpu_render_ms": {
+                "median": 0.379708,
+                "p95": 0.415334,
+                "p99": 0.466833,
+                "max": 0.466833,
+                "mean": 0.38353756250000004
+            },
+            "gpu_ms": {
+                "median": 45.978875015862286,
+                "p95": 49.254249955993146,
+                "p99": 49.89737499272451,
+                "max": 49.89737499272451,
+                "mean": 40.690768752392614
+            },
+            "round_medians_ms": [
+                24.617,
+                24.506041
+            ],
+            "offscreen_ms": {
+                "median": 27.619566666666667,
+                "p95": 27.900116666666666,
+                "p99": 27.900116666666666,
+                "max": 27.900116666666666,
+                "mean": 27.615729166666668
+            },
+            "counters": [
+                {
+                    "name": "draws",
+                    "median": 76,
+                    "max": 76
+                },
+                {
+                    "name": "setpass",
+                    "median": 50,
+                    "max": 50
+                },
+                {
+                    "name": "triangles",
+                    "median": 5490395,
+                    "max": 5490395
+                },
+                {
+                    "name": "vertices",
+                    "median": 5380355,
+                    "max": 5380355
+                },
+                {
+                    "name": "shadow_casters",
+                    "median": 0,
+                    "max": 0
+                },
+                {
+                    "name": "mem_total_used",
+                    "median": 241214277,
+                    "max": 241252588
+                },
+                {
+                    "name": "mem_total_reserved",
+                    "median": 581189632,
+                    "max": 581189632
+                },
+                {
+                    "name": "mem_gfx_used",
+                    "median": -1,
+                    "max": -1
+                },
+                {
+                    "name": "mem_gc_used",
+                    "median": 4186112,
+                    "max": 4222976
+                },
+                {
+                    "name": "mem_system_used",
+                    "median": 1565592528,
+                    "max": 1569983440
+                }
+            ]
+        },
+        {
+            "name": "street@1750-blue-hour",
+            "view": "street",
+            "light": "1750-blue-hour",
+            "scene": "corner",
+            "passes": "all",
+            "birches": true,
+            "frames": 80,
+            "cpu_ms": {
+                "median": 26.467,
+                "p95": 27.78075,
+                "p99": 29.438708,
+                "max": 29.438708,
+                "mean": 26.605898437500002
+            },
+            "cpu_main_ms": {
+                "median": 0.353876,
+                "p95": 0.404167,
+                "p99": 0.413667,
+                "max": 0.413667,
+                "mean": 0.3518641750000001
+            },
+            "cpu_render_ms": {
+                "median": 0.378458,
+                "p95": 0.405167,
+                "p99": 0.414708,
+                "max": 0.414708,
+                "mean": 0.3762297375
+            },
+            "gpu_ms": {
+                "median": 49.75249996641651,
+                "p95": 53.1073750462383,
+                "p99": 54.07150002429262,
+                "max": 54.07150002429262,
+                "mean": 43.68016667140182
+            },
+            "round_medians_ms": [
+                26.490291,
+                26.341
+            ],
+            "offscreen_ms": {
+                "median": 30.363500000000002,
+                "p95": 30.61305,
+                "p99": 30.61305,
+                "max": 30.61305,
+                "mean": 30.307602777777777
+            },
+            "counters": [
+                {
+                    "name": "draws",
+                    "median": 76,
+                    "max": 76
+                },
+                {
+                    "name": "setpass",
+                    "median": 50,
+                    "max": 50
+                },
+                {
+                    "name": "triangles",
+                    "median": 5490395,
+                    "max": 5490395
+                },
+                {
+                    "name": "vertices",
+                    "median": 5380355,
+                    "max": 5380355
+                },
+                {
+                    "name": "shadow_casters",
+                    "median": 0,
+                    "max": 0
+                },
+                {
+                    "name": "mem_total_used",
+                    "median": 241209818,
+                    "max": 241236204
+                },
+                {
+                    "name": "mem_total_reserved",
+                    "median": 581189632,
+                    "max": 581189632
+                },
+                {
+                    "name": "mem_gfx_used",
+                    "median": -1,
+                    "max": -1
+                },
+                {
+                    "name": "mem_gc_used",
+                    "median": 4182016,
+                    "max": 4206592
+                },
+                {
+                    "name": "mem_system_used",
+                    "median": 1563659216,
+                    "max": 1579305936
+                }
+            ]
+        },
+        {
+            "name": "high@1750-blue-hour",
+            "view": "high",
+            "light": "1750-blue-hour",
+            "scene": "corner",
+            "passes": "all",
+            "birches": true,
+            "frames": 80,
+            "cpu_ms": {
+                "median": 30.025542,
+                "p95": 30.952042,
+                "p99": 31.034875,
+                "max": 31.034875,
+                "mean": 30.032592175
+            },
+            "cpu_main_ms": {
+                "median": 0.363501,
+                "p95": 0.403626,
+                "p99": 0.454875,
+                "max": 0.454875,
+                "mean": 0.35931569999999996
+            },
+            "cpu_render_ms": {
+                "median": 0.374833,
+                "p95": 0.401334,
+                "p99": 0.419292,
+                "max": 0.419292,
+                "mean": 0.37536871250000003
+            },
+            "gpu_ms": {
+                "median": 56.595958361867815,
+                "p95": 60.197750048246235,
+                "p99": 60.696000000461936,
+                "max": 60.696000000461936,
+                "mean": 48.200631770305336
+            },
+            "round_medians_ms": [
+                30.053417,
+                29.941666
+            ],
+            "offscreen_ms": {
+                "median": 34.18053333333334,
+                "p95": 34.38613333333333,
+                "p99": 34.38613333333333,
+                "max": 34.38613333333333,
+                "mean": 34.183576388888895
+            },
+            "counters": [
+                {
+                    "name": "draws",
+                    "median": 76,
+                    "max": 76
+                },
+                {
+                    "name": "setpass",
+                    "median": 50,
+                    "max": 50
+                },
+                {
+                    "name": "triangles",
+                    "median": 5490395,
+                    "max": 5490395
+                },
+                {
+                    "name": "vertices",
+                    "median": 5380355,
+                    "max": 5380355
+                },
+                {
+                    "name": "shadow_casters",
+                    "median": 0,
+                    "max": 0
+                },
+                {
+                    "name": "mem_total_used",
+                    "median": 241238490,
+                    "max": 241277164
+                },
+                {
+                    "name": "mem_total_reserved",
+                    "median": 581189632,
+                    "max": 581189632
+                },
+                {
+                    "name": "mem_gfx_used",
+                    "median": -1,
+                    "max": -1
+                },
+                {
+                    "name": "mem_gc_used",
+                    "median": 4210688,
+                    "max": 4247552
+                },
+                {
+                    "name": "mem_system_used",
+                    "median": 1571834832,
+                    "max": 1578961872
+                }
+            ]
+        },
+        {
+            "name": "eye-foot@1750-blue-hour/bare",
+            "view": "eye-foot",
+            "light": "1750-blue-hour",
+            "scene": "corner",
+            "passes": "bare",
+            "birches": true,
+            "frames": 80,
+            "cpu_ms": {
+                "median": 11.253167,
+                "p95": 11.576125,
+                "p99": 11.62375,
+                "max": 11.62375,
+                "mean": 11.285867712500002
+            },
+            "cpu_main_ms": {
+                "median": 0.236458,
+                "p95": 0.299167,
+                "p99": 0.320959,
+                "max": 0.320959,
+                "mean": 0.23787355000000013
+            },
+            "cpu_render_ms": {
+                "median": 0.085541,
+                "p95": 0.104875,
+                "p99": 0.128708,
+                "max": 0.128708,
+                "mean": 0.08812458749999996
+            },
+            "gpu_ms": {
+                "median": 33.33220834610984,
+                "p95": 33.84087496669963,
+                "p99": 33.95612497115508,
+                "max": 33.95612497115508,
+                "mean": 33.3308119828871
+            },
+            "round_medians_ms": [
+                11.265458,
+                11.223708
+            ],
+            "offscreen_ms": {
+                "median": 13.338433333333334,
+                "p95": 13.49515,
+                "p99": 13.49515,
+                "max": 13.49515,
+                "mean": 13.350126388888887
+            },
+            "counters": [
+                {
+                    "name": "draws",
+                    "median": 20,
+                    "max": 40
+                },
+                {
+                    "name": "setpass",
+                    "median": 7,
+                    "max": 14
+                },
+                {
+                    "name": "triangles",
+                    "median": 2744340,
+                    "max": 5488680
+                },
+                {
+                    "name": "vertices",
+                    "median": 2687605,
+                    "max": 5375210
+                },
+                {
+                    "name": "shadow_casters",
+                    "median": 0,
+                    "max": 0
+                },
+                {
+                    "name": "mem_total_used",
+                    "median": 241275767,
+                    "max": 241301740
+                },
+                {
+                    "name": "mem_total_reserved",
+                    "median": 581189632,
+                    "max": 581189632
+                },
+                {
+                    "name": "mem_gfx_used",
+                    "median": -1,
+                    "max": -1
+                },
+                {
+                    "name": "mem_gc_used",
+                    "median": 4251648,
+                    "max": 4272128
+                },
+                {
+                    "name": "mem_system_used",
+                    "median": 1164512208,
+                    "max": 1169034192
+                }
+            ]
+        },
+        {
+            "name": "street@1750-blue-hour/bare",
+            "view": "street",
+            "light": "1750-blue-hour",
+            "scene": "corner",
+            "passes": "bare",
+            "birches": true,
+            "frames": 80,
+            "cpu_ms": {
+                "median": 11.803458,
+                "p95": 12.191959,
+                "p99": 12.394958,
+                "max": 12.394958,
+                "mean": 11.781532800000003
+            },
+            "cpu_main_ms": {
+                "median": 0.230124,
+                "p95": 0.296834,
+                "p99": 0.342834,
+                "max": 0.342834,
+                "mean": 0.23575166249999993
+            },
+            "cpu_render_ms": {
+                "median": 0.088751,
+                "p95": 0.122791,
+                "p99": 0.136667,
+                "max": 0.136667,
+                "mean": 0.09063483750000004
+            },
+            "gpu_ms": {
+                "median": 34.84824998304248,
+                "p95": 35.300749994348735,
+                "p99": 35.5684999958612,
+                "max": 35.5684999958612,
+                "mean": 34.74136927034124
+            },
+            "round_medians_ms": [
+                11.651917,
+                11.837209
+            ],
+            "offscreen_ms": {
+                "median": 13.876533333333334,
+                "p95": 14.28125,
+                "p99": 14.28125,
+                "max": 14.28125,
+                "mean": 13.920904166666666
+            },
+            "counters": [
+                {
+                    "name": "draws",
+                    "median": 20,
+                    "max": 20
+                },
+                {
+                    "name": "setpass",
+                    "median": 7,
+                    "max": 7
+                },
+                {
+                    "name": "triangles",
+                    "median": 2744340,
+                    "max": 2744340
+                },
+                {
+                    "name": "vertices",
+                    "median": 2687605,
+                    "max": 2687605
+                },
+                {
+                    "name": "shadow_casters",
+                    "median": 0,
+                    "max": 0
+                },
+                {
+                    "name": "mem_total_used",
+                    "median": 241299930,
+                    "max": 241337157
+                },
+                {
+                    "name": "mem_total_reserved",
+                    "median": 581189632,
+                    "max": 581189632
+                },
+                {
+                    "name": "mem_gfx_used",
+                    "median": -1,
+                    "max": -1
+                },
+                {
+                    "name": "mem_gc_used",
+                    "median": 4272128,
+                    "max": 4308992
+                },
+                {
+                    "name": "mem_system_used",
+                    "median": 1095207840,
+                    "max": 1169443792
+                }
+            ]
+        },
+        {
+            "name": "high@1750-blue-hour/bare",
+            "view": "high",
+            "light": "1750-blue-hour",
+            "scene": "corner",
+            "passes": "bare",
+            "birches": true,
+            "frames": 80,
+            "cpu_ms": {
+                "median": 15.617417,
+                "p95": 15.945709,
+                "p99": 16.157125,
+                "max": 16.157125,
+                "mean": 15.6187692625
+            },
+            "cpu_main_ms": {
+                "median": 0.236585,
+                "p95": 0.295916,
+                "p99": 0.315416,
+                "max": 0.315416,
+                "mean": 0.23981973749999996
+            },
+            "cpu_render_ms": {
+                "median": 0.086917,
+                "p95": 0.100291,
+                "p99": 0.115833,
+                "max": 0.115833,
+                "mean": 0.08791671249999998
+            },
+            "gpu_ms": {
+                "median": 46.3917083106935,
+                "p95": 47.11058334214613,
+                "p99": 47.49299999093637,
+                "max": 47.49299999093637,
+                "mean": 46.2456619781733
+            },
+            "round_medians_ms": [
+                15.613333,
+                15.647041
+            ],
+            "offscreen_ms": {
+                "median": 18.281366666666667,
+                "p95": 18.447016666666666,
+                "p99": 18.447016666666666,
+                "max": 18.447016666666666,
+                "mean": 18.2986625
+            },
+            "counters": [
+                {
+                    "name": "draws",
+                    "median": 20,
+                    "max": 20
+                },
+                {
+                    "name": "setpass",
+                    "median": 7,
+                    "max": 7
+                },
+                {
+                    "name": "triangles",
+                    "median": 2744340,
+                    "max": 2744340
+                },
+                {
+                    "name": "vertices",
+                    "median": 2687605,
+                    "max": 2687605
+                },
+                {
+                    "name": "shadow_casters",
+                    "median": 0,
+                    "max": 0
+                },
+                {
+                    "name": "mem_total_used",
+                    "median": 241332724,
+                    "max": 241371372
+                },
+                {
+                    "name": "mem_total_reserved",
+                    "median": 581189632,
+                    "max": 581189632
+                },
+                {
+                    "name": "mem_gfx_used",
+                    "median": -1,
+                    "max": -1
+                },
+                {
+                    "name": "mem_gc_used",
+                    "median": 4308992,
+                    "max": 4341760
+                },
+                {
+                    "name": "mem_system_used",
+                    "median": 1088539600,
+                    "max": 1093127120
+                }
+            ]
+        }
+    ],
+    "district": {
+        "dir": "",
+        "size": 0.0,
+        "core": 0.0,
+        "chunk": 0.0,
+        "plots": 0,
+        "chunks": 0,
+        "meshes": 0,
+        "fileBytes": 0,
+        "vertexBytes": 0,
+        "indexBytes": 0,
+        "l0Triangles": 0,
+        "shellTriangles": 0,
+        "groundTriangles": 0,
+        "loadSeconds": 0.0,
+        "readMs": {
+            "median": 0.0,
+            "p95": 0.0,
+            "p99": 0.0,
+            "max": 0.0,
+            "mean": 0.0
+        },
+        "uploadMs": {
+            "median": 0.0,
+            "p95": 0.0,
+            "p99": 0.0,
+            "max": 0.0,
+            "mean": 0.0
+        },
+        "chunkMs": {
+            "median": 0.0,
+            "p95": 0.0,
+            "p99": 0.0,
+            "max": 0.0,
+            "mean": 0.0
+        },
+        "coreChunkMs": {
+            "median": 0.0,
+            "p95": 0.0,
+            "p99": 0.0,
+            "max": 0.0,
+            "mean": 0.0
+        },
+        "mbPerSecond": 0.0,
+        "rssBefore": 0,
+        "rssAfter": 0,
+        "monoBefore": 0,
+        "monoAfter": 0,
+        "msEach": [],
+        "bytesEach": [],
+        "coreEach": []
+    },
+    "bench": {
+        "chunk": "",
+        "triangles": 0,
+        "vertices": 0,
+        "parts": 0,
+        "repeats": 0,
+        "burst": false,
+        "placeManagedMs": {
+            "median": 0.0,
+            "p95": 0.0,
+            "p99": 0.0,
+            "max": 0.0,
+            "mean": 0.0
+        },
+        "placeBurstMs": {
+            "median": 0.0,
+            "p95": 0.0,
+            "p99": 0.0,
+            "max": 0.0,
+            "mean": 0.0
+        },
+        "uploadMs": {
+            "median": 0.0,
+            "p95": 0.0,
+            "p99": 0.0,
+            "max": 0.0,
+            "mean": 0.0
+        },
+        "pageWidth": 0,
+        "pageHeight": 0,
+        "pageFormat": "",
+        "pageDrawMs": {
+            "median": 0.0,
+            "p95": 0.0,
+            "p99": 0.0,
+            "max": 0.0,
+            "mean": 0.0
+        },
+        "pageReadbackMs": {
+            "median": 0.0,
+            "p95": 0.0,
+            "p99": 0.0,
+            "max": 0.0,
+            "mean": 0.0
+        },
+        "pageCompressMs": {
+            "median": 0.0,
+            "p95": 0.0,
+            "p99": 0.0,
+            "max": 0.0,
+            "mean": 0.0
+        },
+        "pageCompressFastMs": {
+            "median": 0.0,
+            "p95": 0.0,
+            "p99": 0.0,
+            "max": 0.0,
+            "mean": 0.0
+        }
+    }
+}

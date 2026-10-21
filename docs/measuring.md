@@ -110,8 +110,77 @@ It adds about 507,000 triangles a frame over every pass, 14 draw calls and 8 sha
 What the baseline says, for the building blocks:
 - Against 60 frames a second at 1440p (16.7 ms), today's corner is one and a half to two and a half times over in drizzle and the blue hour, and five to six times over in low sun.
 - A frame holds about 15 million triangles with the sun's shadows and 5.5 million without them: the four shadow cascades draw the town about twice more. The foundations' budget is 2 million visible.
-- Low sun costs about two and a half times drizzle on the same triangles, so something drawn only in low sun costs about 55 to 65 ms. The sun's beams and light shafts are the suspects; it is the first A/B switch to add.
+- Low sun costs about two and a half times drizzle on the same triangles, so something drawn only in low sun costs about 55 to 65 ms. It is the sun's beams (The pass budget, below).
 - The birch, one tree, costs 10 to 16 ms wherever it is in view (an eighth to a sixth of the frame) and 25 ms where its crown fills the frame (a fifth): the dearest thing on screen, as the ground cover study estimated.
+
+## The pass budget
+
+**What it measures.** What each pass of the pipeline costs on the M4 at 1440p, so the architecture's frame budget by pass (`docs/building-blocks.md`, Budgets) rests on numbers. The harness draws each segment with every pass on, then with each pass alone turned off, then with every pass off (`bare`: the opaque geometry lit by the sun alone, no shadows, no MSAA). A pass's cost is the difference in offscreen time. The passes are the sky, the sun's shadow map, SSAO, SSR, the four full-screen passes (sun beams, fog lights, the key block, the palette), post-processing, MSAA 4×, the air's motes, and the opaque and depth textures the pipeline copies. It does this for the corner and for an empty frame (the corner with every renderer hidden: the sky, the lights and post alone, where a fixed cost shows without the geometry's noise). Three A/Bs follow from the first answers: every frame drawn offscreen at half the width and height (a quarter of the pixels, every vertex; `-perf-offscreen-scale 0.5`), so the pixels' share of a cost shows; the street shader without its leaf cards' `clip()`; and the bare corner drawn in a flat unlit material (`flat`), so the street shader's own cost shows.
+
+**How to run it.**
+
+    tools/perf.sh -runs 1 -out reviews/perf/<date>/passes -perf-frames 60 -perf-warmup 20 -perf-rounds 2 \
+        -perf-passes all,-sky,-shadows,-ssao,-ssr,-beams,-foglights,-keyblock,-palette,-post,-msaa,-motes,-opaquetex,-depthtex,-fullscreen,bare \
+        -perf-scenes empty,corner -perf-views eye-foot,street,into12,high -perf-empty-views street,high -perf-shots some
+    python3 tools/pass_budget.py reviews/perf/<date>/passes/run-1 > reviews/perf/<date>/passes/passes.md
+
+It measures for about 42 minutes (280 segments, two rounds each). `-perf-shots some` keeps a screenshot of every configuration at the first view, which shows each switch does what it says (checked: without the sky the top is flat, bare changes everything, without post the grade moves, without the beams the empty low-sun frame changes and the street stop barely does).
+
+**Accuracy.** Within a segment the offscreen time holds within about 2.4% (median 95th percentile over median). Between segments the M4's clocks wander, so a pass's cost in the corner is known to about ±1.5 ms (some show as small negatives) and to about ±0.1 ms on the empty frame. A pass under about 1.5 ms in the corner is read from the empty frame.
+
+**The answers** (21 October; `reviews/perf/2026-10-21/passes/passes.md`, with `passes-half/`, `passes-noclip/` and `passes-flat/` beside it):
+
+| Offscreen ms, the street stop | Drizzle | Low sun | Blue hour |
+| --- | --- | --- | --- |
+| Every pass on | 37.3 | 102.1 | 30.0 |
+| The empty frame, every pass on (sky, lights, post, nothing drawn) | 8.5 | 49.0 | 9.2 |
+| Bare: the opaque geometry alone, 2.74 million triangles, 20 draws | 14.6 | 14.3 | 14.5 |
+| Bare in a flat unlit material | 2.0 | 1.9 | 1.9 |
+| Sun's shadows | 7.1 | 32.4 | (none) |
+| Sun beams | (idle) | 64.3 (40.2 empty) | 1.0 |
+| MSAA 4× | 4.9 | 6.5 | 5.4 (1.8 empty) |
+| SSAO | 2.8 | 4.3 | 2.4 (0.7 empty) |
+| SSR | 2.0 | 3.9 | 3.2 (2.3 empty) |
+| Fog lights, key block, palette (no lamp lit, look D off: their colour copies) | 0.5 to 0.7 each (empty) | 1.1 to 1.4 each | 0.8 to 0.9 each |
+| Post | 0.3 | 3.6 | 1.2 |
+| The birch (low sun, with and without) | | 12.6 | |
+
+The sky, the opaque and depth textures and the motes are each under the noise (the sky 1.5 to 2.4 ms on the empty frame, behind the town hidden by it). The other views agree: `passes.md` holds every view.
+
+**What owns the floor** (the blue hour, 30 ms at the street stop, no shadows):
+- *The opaque pass is about half of it, and it is the shaders, not the triangles.* Bare, the geometry costs 14.5 ms. Drawn in a flat unlit material, the same 2.74 million triangles in the same 20 draws cost 1.9 ms in every view and light. So about 12.5 ms of the bare frame (85 to 90 %) is the street, stone and tree shaders' own work, and rasterising the triangles and their overdraw is under 2 ms. At half the width and height the bare frame costs 6.8 ms, so about 10.3 ms of it scales with pixels and 4.2 ms does not: the shading is mostly per pixel. Every opaque fragment runs the atmosphere's haze march (`OS_Atmosphere`, `StreetSurface.hlsl:267`: twelve steps along the view ray, each with two noise lookups) besides its surface and light; it is the first suspect, not yet measured on its own.
+- *The leaf cards' `clip()` is not it.* With `OS_CardClip` removed from the street shader the bare frame is 13.2 to 13.9 ms against 14.3 to 14.6, and the whole frame within the noise: at most about a millisecond.
+- *The rest is the screen-space passes and MSAA:* MSAA 5.4, SSR 3.2, SSAO 2.4, the four full-screen passes about 2.6 (each pays about 0.5 ms for its colour copy even when it does nothing), post 1.2. Two thirds of the whole frame scales with pixels: at half the width and height it costs 14.9 ms, so 20.1 ms is per pixel and 9.9 ms is not.
+- *An empty frame already costs 7 to 9 ms* (49 in low sun): over half the 16.7 before anything is drawn. SSR alone is 2.3 ms with nothing to reflect, and MSAA 1.8.
+- *MSAA's cost barely shrinks with the pixels* (5.4 ms at full size, 3.3 at half the width and height): it is paid at the triangles' edges, and today's triangles are small enough that most pixels hold an edge. The foundations' rule of a median visible triangle of ten pixels or more would cut it.
+
+**What costs low sun its extra 55 to 65 ms: the sun beams.** Turned off, the frame drops 64 ms in the corner and 40 ms on the empty frame (`SunBeams.shader`: a 40-step march along every pixel's ray, each step a soft shadow-map tap). The shadows' 31 to 32 ms in low sun, against 5 to 7 in drizzle where the beams are idle, are most likely the beams' taps too (with the shadows off the beams have no map to sample); an A/B with both off would split them. Post in low sun (2.8 to 4.7 ms against about 1 in the other lights) is the second, smaller unknown.
+
+**Proposed budget by pass on the M4** (GPU ms at 1440p, against the provisional one in `docs/building-blocks.md`, Budgets; today's cost is the street stop's in the light where it is dearest):
+
+| Pass | Provisional | Today | Proposed | What it takes |
+| --- | --- | --- | --- | --- |
+| Opaque geometry | 5.0 | 14.5 (1.9 flat) | 5.0 | the shaders' per-pixel work from about 10 ms to about 3: the haze out of every fragment (a low-resolution volume or the vertex), then each shader A/B'd flat |
+| Sun's shadows | 2.0 | 7.1 | 2.0 | fewer cascades, proxies as casters, the far cascades cached |
+| Sky, atmosphere, air | 1.5 | 2.4 + beams 64.3 | 1.5 | the beams at a quarter of the pixels, 12 to 16 steps, one hard tap with a blue-noise offset, upsampled by depth: about 0.5 |
+| Lights and spill | 1.0 | not lit here | 1.0 | unmeasured |
+| GTAO | 1.0 | 4.3 | 1.0 | at half resolution |
+| SSR and water | 1.0 | 3.9 (2.3 empty) | 1.0 | at half resolution, only where the surface is wet or water |
+| Trees and alpha-tested layers | 1.0 | the birch 12.6 | 1.0 | unchanged: the birch's own fix |
+| Full-screen passes | (none) | 2.6 to 3.8 | 0.4 | fog lights, key block and palette in one pass, folded into post's, skipped when idle |
+| Post | 0.8 | 3.6 | 0.8 | low sun's extra 2 to 3 ms found |
+| Anti-aliasing | 0.5 | MSAA 4× 6.5 | 0.8 | MSAA 4× cannot reach it: see below |
+| Id readback, UI | 0.2 | | 0.2 | |
+| Reserve | 2.7 | | 2.0 | |
+| **Sum** | **16.7** | **102.1 (low sun)** | **16.7** | |
+
+Every measured pass but the sky is over twice its budget in at least one light, so by the foundations' own rule each gets a fix before any triangle work. In order of what they save: the beams (about 60 ms in low sun), the birch (about 11), the opaque shaders (about 9), MSAA (about 6), shadows (about 5), SSAO and SSR (about 3 each), post in low sun (about 3), the full-screen passes (about 2).
+
+**Two findings change architecture decisions** (for the main session; `docs/building-blocks.md` is not this page's to change):
+- *Anti-aliasing.* "MSAA 4× native" (Rendering, and the decisions table) costs 3.4 to 6.5 ms at the corner against its 0.5 ms line, and 1.4 to 1.8 on an empty frame. The candidates, each without temporal accumulation: SMAA or another spatial filter at native resolution, MSAA 2×, or fewer pixels with FSR 1. Judged by the motion sheets' shimmer measure and the golden views, not by cost alone.
+- *The triangle budget is not the frame's floor.* Today's 2.74 million triangles draw in under 2 ms flat; the shaders and the screen-space passes are the floor. The per-view triangle ceilings still matter for shadows, MSAA's edges and memory, but the port's first frame budget is the shaders'. A per-shader flat A/B (street, stone, tree) is the next switch.
+
+The proposed numbers are provisional until each fix is A/B'd on the harness.
 
 ## Motion sheets and the shimmer measure
 
@@ -154,7 +223,7 @@ Nothing was installed for these tools. These would make them better, each with i
 ## Still to come
 
 - **The swim test** (`docs/research/painted-marks-in-motion.md`, Look tests, 2): each frame warped onto the next by its motion vectors and what is left measured, so a mark that slides on its surface is told from one that only aliases. It needs depth or motion vectors written beside each frame of a motion sheet.
-- **The harness's switches** (`docs/research/performance-at-scale.md`, The performance harness, 5): the Resident Drawer and GPU occlusion, MSAA against none, the shadows' reach and cascades, the sun's beams, a forced level per kind. Each is an A/B on the same segments, as the birch already is.
+- **The harness's other switches** (`docs/research/performance-at-scale.md`, The performance harness, 5): the Resident Drawer and GPU occlusion, the shadows' reach and cascades, a forced level per kind, each shader drawn flat in turn (street, stone, tree), and each anti-aliasing candidate against MSAA 4×. Each is an A/B on the same segments, as the passes and the birch already are.
 - **Hashes from every generator.** `stone.py` and `wall.py` write them; the trees, the houses and the clay should too as they are ported onto the building blocks.
 - **Golden views of more than the gully**, as each kind joins: the birch, the corner's houses, the clay heart from its stops.
 
