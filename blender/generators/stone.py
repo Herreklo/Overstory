@@ -55,7 +55,7 @@ JOINT = (0.010, 0.025)
 # the tread's nosing standing out over the riser (a dark line under every step, from close by and from the city
 # camera alike); or one thick block a step, its front the riser
 BUILT = {
-    "tread_on_riser": dict(tread=(0.06, 0.085), overhang=(0.025, 0.045), riser=(0.06, 0.08)),
+    "tread_on_riser": dict(tread=(0.085, 0.12), overhang=(0.02, 0.035), riser=(0.06, 0.08)),
     "block": dict(bed=0.06),
 }
 
@@ -106,7 +106,7 @@ def settle(rng, P, w):
     px, py = P[:, 0] - w / 2, P[:, 1].copy()
     P[:, 0] = px * cy - py * sy + w / 2
     P[:, 1] = px * sy + py * cy
-    P[:, 2] += (P[:, 0] - w / 2) * math.radians(rng.uniform(-0.5, 0.5)) - rng.uniform(0.0, 0.006)
+    P[:, 2] += (P[:, 0] - w / 2) * math.radians(rng.uniform(-1.0, 1.0)) - rng.uniform(0.0, 0.01)
     return P
 
 
@@ -153,12 +153,13 @@ def lay(spec, seed=1):
             # riser's foot
             traffic = walking(across) if foot_on else walking(across) * (1.0 - np.clip((z0 + P[:, 2] - zfoot) / 0.05, 0.0, 0.8))
             lichen = GR.lichen_years(years, np.where(foot_on, traffic, traffic * 0.75))
-            back = (kind == 0) & foot_on & (along > 0.8)
+            back = (kind == 0) & foot_on & (along > 0.68)
             joint = (kind == 0) & (piece["edge"] < 0.05) & (P[:, 1] > 0.04)
-            damp = np.where(back, 1.0, 0.0) + np.where(joint & ~back, 0.6, 0.0)
+            damp = np.where(back, 1.0, 0.0) + np.where(joint & ~back, 0.8, 0.0)
             if not foot_on:
                 damp = damp + 0.7 * np.clip(1.0 - (z0 + P[:, 2] - zfoot) / 0.04, 0.0, 1.0)
-            moss = GR.moss(damp, walking(across), years)
+            # (feet land on a tread's front half: its back corner is untrodden even in the middle of a busy flight)
+            moss = GR.moss(damp, walking(across) * np.where(foot_on, np.exp(-((np.clip(along, 0, 1) - 0.3) / 0.35) ** 2), 1.0), years)
             held = np.clip(worn / 0.008, 0.0, 1.0) * top + 0.35 * back
             X = (a[0] - origin[0]) + right[0] * (x0 + P[:, 0]) + up[0] * (s0 + P[:, 1])
             Y = (a[1] - origin[1]) + right[1] * (x0 + P[:, 0]) + up[1] * (s0 + P[:, 1])
@@ -185,17 +186,20 @@ def lay(spec, seed=1):
                                np.where(kind == 1, 0.85, np.where(kind == 2, 0.6, 0.1)))
             else:
                 hh = np.clip((z0 + P[:, 2] - zfoot) / max(h, 1e-3), 0.0, 1.0)
-                sky = np.where(kind == 3, 0.1, 0.55 - 0.2 * hh)
+                sky = np.where(kind == 3, 0.1, 0.78 - 0.25 * hh)
             ground = np.where(kind == 0, 0.12, np.where(kind == 3, 0.6, 0.3))
             out["UV3"].append(np.stack([sky, ground], -1))
 
+        # each step's top a little off the flight's even line (an old flight's rises are never all alike); its ends on it
+        erng = random.Random(f"{spec['lane']}-{seed}-{fi}-rises")
+        err = [0.0] + [erng.uniform(-0.012, 0.012) for _ in range(n - 1)] + [0.0]
         for i in range(n):
             rng = random.Random(f"{spec['lane']}-{seed}-{fi}-{i}")
             relaid = next((e for e in spec["events"] if e["kind"] == "relaid" and e["flight"] == fi and e["step"] == i), None)
             laid = relaid["year"] if relaid else spec["built"]
             years = YEAR - laid
-            z_top = a[2] + (i + 1) * h
-            zfoot = a[2] + i * h
+            z_top = a[2] + (i + 1) * h + err[i + 1]
+            zfoot = a[2] + i * h + err[i]
             if how == "tread_on_riser":
                 B = BUILT[how]
                 t_tr = rng.uniform(*B["tread"])
@@ -223,15 +227,27 @@ def lay(spec, seed=1):
                 # the tread: a slab laid on it, its nosing over the riser
                 edges = widths(rng, W, below_t)
                 below_t = edges[1:-1]
+                # an old tread cracked across in places: a fine joint where it broke, its two halves settling apart
+                gaps = [rng.uniform(*JOINT) / 2 for _ in edges]
+                if not relaid and years > 40:
+                    for k in range(len(edges) - 1):
+                        if edges[k + 1] - edges[k] > 0.85 and rng.random() < 0.3:
+                            c = edges[k] + (edges[k + 1] - edges[k]) * rng.uniform(0.35, 0.65)
+                            edges = sorted(edges + [c])
+                            gaps = gaps[:k + 1] + [rng.uniform(0.002, 0.004)] + gaps[k + 1:]
+                            break
                 for k in range(len(edges) - 1):
-                    jl = rng.uniform(*JOINT) / 2 if k > 0 else 0.0
-                    jr = rng.uniform(*JOINT) / 2 if k < len(edges) - 2 else 0.0
+                    jl = gaps[k] if k > 0 else 0.0
+                    jr = gaps[k + 1] if k < len(edges) - 2 else 0.0
                     w = edges[k + 1] - edges[k] - jl - jr
                     depth = g + LAP + rng.uniform(-0.02, 0.03)
+                    # split slate: crisp edges, its corners knocked, a layer flaked off here and there (rounded, every
+                    # tread read as a bar of soap); its wear rounds the walking line's nosing on its own
                     piece = SL.slab(f"{spec['lane']}-{seed}-{fi}-{i}-{k}", w, depth, t_tr,
-                                    front_round=0.004 if relaid else rng.uniform(0.008, 0.018),
-                                    side_round=0.003 if relaid else rng.uniform(0.004, 0.01),
-                                    flake=0.15 if relaid else rng.uniform(0.25, 0.45))
+                                    front_round=0.003 if relaid else rng.uniform(0.004, 0.008),
+                                    side_round=0.003 if relaid else rng.uniform(0.003, 0.006),
+                                    flake=0.15 if relaid else rng.uniform(0.35, 0.55),
+                                    chip=0.03 if relaid else rng.uniform(0.04, 0.07), edge_jag=0.02)
                     P = settle(rng, piece["V"], w)
                     put(P, piece, rng, -W / 2 + edges[k] + jl, i * g + rng.uniform(-0.01, 0.01), z_top - t_tr, laid, True, years)
             else:

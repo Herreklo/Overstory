@@ -10,7 +10,7 @@ namespace Overstory.EditorTools
     public class ArtImport : AssetPostprocessor
     {
         // raise when the rules change, so Unity re-imports the art under them
-        public override uint GetVersion() => 4;
+        public override uint GetVersion() => 5;
 
         void OnPreprocessModel()
         {
@@ -74,6 +74,23 @@ namespace Overstory.EditorTools
                 // the leaf ids must not bleed between leaves under block compression
                 tt.textureCompression = spray || twigs ? TextureImporterCompression.Uncompressed : TextureImporterCompression.CompressedHQ;
                 tt.isReadable = false;
+                return;
+            }
+            if (assetPath.StartsWith("Assets/Art/Stone/"))
+            {
+                // a stone's painted grain: data the stone shader reads (lightness and relief, top and split faces),
+                // tiling, sharp at a low grazing look (anisotropic), never compressed into blocks
+                var st = (TextureImporter)assetImporter;
+                st.textureType = TextureImporterType.Default;
+                st.sRGBTexture = false;
+                st.mipmapEnabled = true;
+                st.alphaSource = TextureImporterAlphaSource.FromInput;
+                st.alphaIsTransparency = false;
+                st.filterMode = UnityEngine.FilterMode.Trilinear;
+                st.anisoLevel = 8;
+                st.wrapMode = UnityEngine.TextureWrapMode.Repeat;
+                st.textureCompression = TextureImporterCompression.Uncompressed;
+                st.isReadable = false;
                 return;
             }
             if (!assetPath.StartsWith("Assets/Art/Palette/"))

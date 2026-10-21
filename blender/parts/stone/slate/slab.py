@@ -93,7 +93,7 @@ def slab(seed, width, depth, thick, front_round=0.012, side_round=0.006, layers=
     # the top: a bedding plane, warped, falling a little to the front to shed water, a layer lower where it flaked
     Z = thick + warp * _noise2(rng, X, Y, 0.9) - 0.004 * (1.0 - T)
     fl = _noise2(rng, X, Y, 0.35, octaves=4)
-    step_ = rng.uniform(0.003, 0.007)
+    step_ = rng.uniform(0.004, 0.009)
     if flake > 0:
         th = np.quantile(fl, 1.0 - flake)
         Z -= step_ * np.clip((fl - th) / 0.08, 0.0, 1.0)

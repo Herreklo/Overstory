@@ -11,14 +11,14 @@
    "steps": 29,
    "rise": 0.172,
    "tread": 0.352,
-   "tris": 79752
+   "tris": 80730
   },
   {
    "name": "stone_gully_steps_1",
    "steps": 47,
    "rise": 0.17,
    "tread": 0.711,
-   "tris": 149102
+   "tris": 150526
   }
  ]
 }

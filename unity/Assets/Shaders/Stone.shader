@@ -15,7 +15,8 @@ Shader "Overstory/Stone"
         _Stone ("The rock's pigment, weathered (eye colour)", Color) = (0.36, 0.37, 0.39, 1)
         _Fresh ("The rock freshly split, unweathered", Color) = (0.25, 0.27, 0.30, 1)
         _Edge ("Its split faces: the laminae, a little warmer", Color) = (0.38, 0.37, 0.36, 1)
-        _Grain ("Grain: x the top's mottle, y the faces' laminae, z per-slab variation", Vector) = (0.16, 0.22, 0.10, 0)
+        _GrainMap ("The rock's painted grain (r a bedding plane's lightness, g its relief, b a split face's lightness, a its relief; a metre a tile)", 2D) = "grey" {}
+        _Grain ("Grain: x the bedding plane's contrast, y the split face's, z per-slab variation", Vector) = (1.0, 1.0, 0.10, 0)
         _Weather ("Years for the rock to weather to its pigment", Float) = 60
         _Polish ("Polish: x how much darker the worn skin, y its smoothness", Vector) = (0.18, 0.42, 0, 0)
         _Relief ("Relief: x the grain's depth (m), y lichen's crust (m)", Vector) = (0.0015, 0.0012, 0, 0)
@@ -43,6 +44,8 @@ Shader "Overstory/Stone"
     #include "StreetSurface.hlsl"
     #include "Growth.hlsl"
 
+    TEXTURE2D(_GrainMap); SAMPLER(sampler_GrainMap);
+
     // The light bent by a height on the surface (the surface gradient, from screen derivatives).
     half3 OS_BumpStone(float3 positionWS, half3 n, float height)
     {
@@ -59,6 +62,7 @@ Shader "Overstory/Stone"
         half3 albedo;
         half smoothness;
         half height;       // for the bump
+        half growth;       // how much growth covers it (stays matt when wet)
     };
 
     StoneOut OS_StoneSurface(float2 g, half4 hist, half kind, half years, half var, float3 positionWS, half sky)
@@ -67,18 +71,23 @@ Shader "Overstory/Stone"
         half face = step(1.5h, kind) * step(kind, 2.5h);
         // the grain: on a bedding plane a soft mottle and a faint streak; on a split face thin stacked laminae
         float2 q = g;
-        half mott = (half)(OS_Noise(q * 2.3 + var * 17.0) * 0.6 + OS_Noise(q * 7.1 + 5.3) * 0.4) - 0.5h;
-        half streak = (half)OS_Noise(float2(q.x * 1.3, q.y * 19.0) + var * 3.1) - 0.5h;
-        half lam = (half)(OS_Noise(float2(q.x * 0.9 + var * 9.0, q.y * 52.0)) * 0.7 + OS_Noise(float2(q.x * 3.0, q.y * 140.0)) * 0.3) - 0.5h;
-        half tone = lerp(mott * 0.7h + streak * 0.3h, lam, face);
+        // the grain, painted at our scale (blender/parts/stone/slate/paint.py): a bedding plane's or a split face's
+        // lightness and relief, in the piece's own plane at its own offset and turn
+        half4 gm = SAMPLE_TEXTURE2D(_GrainMap, sampler_GrainMap, q);
+        half tone = lerp((gm.r - 0.5h) * (half)_Grain.x, (gm.b - 0.5h) * (half)_Grain.y, face);
+        half relief = lerp(gm.g, gm.a, face) - 0.5h;
+        // iron in the rock rusting in sparse spots (the stone's own texture, claiming nothing)
+        half rust = smoothstep(0.74h, 0.8h, (half)OS_Noise(q * 9.0 + var * 41.0)) * smoothstep(0.45h, 0.6h, (half)OS_Noise(q * 47.0));
         half3 rock = lerp(_Stone.rgb, _Edge.rgb, face * 0.7h);
         // weathering: fresh rock dark and blue, weathered to its paler grey skin over the years
         rock = lerp(_Fresh.rgb, rock, saturate(years / _Weather));
-        rock *= 1.0h + tone * lerp((half)_Grain.x, (half)_Grain.y, face) * 2.0h + ((half)var - 0.5h) * (half)_Grain.z * 2.0h;
+        rock *= saturate(1.0h + tone * 2.0h + ((half)var - 0.5h) * (half)_Grain.z * 2.0h);
+        rock = lerp(rock, rock * half3(1.18h, 0.98h, 0.80h), rust * 0.6h);
         // polish: the weathered skin worn off where feet go, the rock beneath darker and smoother
         rock *= 1.0h - (half)_Polish.x * hist.r;
         half smooth = lerp(0.14h, (half)_Polish.y, hist.r);
-        half h = tone * lerp(0.6h, 1.0h, face) * (1.0h - hist.r * 0.8h);
+        // relief: the painted grain's, smoothed where feet have polished it
+        half h = relief * (1.0h - hist.r * 0.7h);
 
         // growth: nature's thin layer (Growth.hlsl), from where and how long the stone's facts give
         OSGrowth gr = OS_GrowthLayer(rock, smooth, q, hist.g * 200.0h, hist.b, sky, var, positionWS);
@@ -89,6 +98,7 @@ Shader "Overstory/Stone"
         o.albedo = rock;
         o.smoothness = smooth;
         o.height = h;
+        o.growth = gr.cover;
         return o;
     }
     ENDHLSL
@@ -121,6 +131,9 @@ Shader "Overstory/Stone"
             #pragma multi_compile_instancing
 
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
+            // a third of the screen's occlusion (its reach is set for walls: in a flight of 17 cm rises it darkened every
+            // riser and every tread's back to near black); the stone's own shade under a nosing is baked
+            #define OS_OCCLUSION 0.35h
             #include "StreetLooks.hlsl"
 
             struct Attributes
@@ -191,8 +204,9 @@ Shader "Overstory/Stone"
                 // stands where it is hollow and in the back corners
                 half up = n.y;
                 half wet = (half)_OS_Wetness * saturate((up + 0.1h) / 0.6h);
-                s.albedo *= lerp(1.0h, 1.0h - 0.5h * _Porosity, wet);
-                s.smoothness = lerp(s.smoothness, max(s.smoothness, 0.5h), wet);
+                // moss and lichen soak it up: darker a little, never glossy
+                s.albedo *= lerp(1.0h, 1.0h - 0.5h * lerp(_Porosity, 0.3h, so.growth), wet);
+                s.smoothness = lerp(s.smoothness, max(s.smoothness, 0.5h), wet * (1.0h - so.growth));
                 half pool = smoothstep(0.5h, 0.85h, input.history.a) * saturate((half)_OS_Wetness * 1.5h - 0.4h) * step(0.8h, up);
                 s.albedo = lerp(s.albedo, s.albedo * 0.7h, pool);
                 s.smoothness = lerp(s.smoothness, 0.96h, pool);
@@ -220,7 +234,9 @@ Shader "Overstory/Stone"
                 half3 colour = OS_ShadeA(id, s, b);
             #endif
                 colour = OS_Atmosphere(colour, input.positionWS);
-                if (_History > 0.5)
+                if (_History > 1.5)
+                    colour = so.albedo * 0.6h;
+                else if (_History > 0.5)
                     colour = half3(input.history.r, input.history.g * 2.0h, input.history.b) * 0.5h;
                 outColor = half4(colour, 1);
             #ifdef _WRITE_RENDERING_LAYERS

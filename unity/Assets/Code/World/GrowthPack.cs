@@ -15,8 +15,8 @@ namespace Overstory.World
         public static Color LichenOld = new Color(0.56f, 0.58f, 0.51f);
         /// <summary>x growth (m a year), y the size of a patch (m), z how much of a quiet surface it takes.</summary>
         public static Vector4 LichenRate = new Vector4(0.0007f, 0.11f, 0.85f, 0f);
-        public static Color Moss = new Color(0.30f, 0.38f, 0.13f);
-        public static Color MossOld = new Color(0.34f, 0.32f, 0.16f);
+        public static Color Moss = new Color(0.44f, 0.54f, 0.16f);     // wet moss on this coast: a bright yellow-green
+        public static Color MossOld = new Color(0.40f, 0.40f, 0.18f);
 
         /// <summary>Set the pack's growth for every shader in the town.</summary>
         public static void Apply()

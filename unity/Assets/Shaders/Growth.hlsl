@@ -40,13 +40,15 @@ half2 OS_LichenAt(float2 q, half years, half seed, float footprint)
     half pq = clamp(1.0h - share, 0.002h, 0.998h);
     half th = 0.5h + 0.138h * (half)(log(pq / (1.0h - pq)) / 1.702);
     half f = field + fine * 0.08h;
-    half cover = smoothstep(th - 0.02h, th + 0.02h, f);
+    // the crust's edge breaks into grains and islets (crisp, it read as a flat paint fill)
+    half grain = (half)OS_Noise(q * 420.0 + seed * 13.0) - 0.5h;
+    half cover = smoothstep(th - 0.012h, th + 0.012h, f + grain * 0.05h);
     // young colonies: a few small spots ahead of the patches
     float2 p2 = q / 0.03;
     float2 h2 = OS_GrowthHash2(floor(p2) + seed * 11.3);
     half r2 = 0.25h + 0.2h * (half)h2.y;
     if (h2.x < share * 0.12h)
-        cover = max(cover, 1.0h - smoothstep(0.75h, 1.0h, (half)length(frac(p2) - 0.5) / r2 + fine * 0.4h));
+        cover = max(cover, 1.0h - smoothstep(0.75h, 1.0h, (half)length(frac(p2) - 0.5) / r2 + fine * 1.1h + grain * 0.5h));
     half age = saturate((f - th) / 0.12h) * saturate(years / 90.0h);
     half far = saturate((half)((footprint - 0.004) / 0.02));
     cover = lerp(cover, share * 0.9h, far);
@@ -58,6 +60,7 @@ struct OSGrowth
     half3 albedo;      // the surface's pigment with its growth on it
     half smoothness;
     half height;       // what the growth adds to the surface's relief (in the surface's own units)
+    half cover;        // how much of the surface the growth covers (moss and lichen stay matt in the rain)
 };
 
 // The thin growth on a surface: its pigment and smoothness in, the same with lichen and moss on it out. q the
@@ -69,7 +72,7 @@ OSGrowth OS_GrowthLayer(half3 albedo, half smoothness, float2 q, half lichenYear
     OSGrowth g;
     float footprint = max(length(ddx(positionWS)), length(ddy(positionWS)));
     half2 li = OS_LichenAt(q, lichenYears, seed, footprint);
-    half3 lich = lerp(_OS_Lichen.rgb, _OS_LichenOld.rgb, li.y) * (0.92h + 0.16h * (half)OS_Noise(q * 40.0));
+    half3 lich = lerp(_OS_Lichen.rgb, _OS_LichenOld.rgb, li.y) * (0.86h + 0.18h * (half)OS_Noise(q * 40.0) + 0.1h * (half)OS_Noise(q * 300.0));
     albedo = lerp(albedo, lich, li.x);
     smoothness = lerp(smoothness, 0.08h, li.x);
     half h = li.x * 0.8h;
@@ -84,6 +87,7 @@ OSGrowth OS_GrowthLayer(half3 albedo, half smoothness, float2 q, half lichenYear
     g.albedo = albedo;
     g.smoothness = smoothness;
     g.height = h;
+    g.cover = saturate(max(li.x, cover));
     return g;
 }
 

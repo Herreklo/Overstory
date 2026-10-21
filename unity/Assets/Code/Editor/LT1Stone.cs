@@ -70,13 +70,14 @@ namespace Overstory.EditorTools
             m.SetColor("_Stone", new Color(0.56f, 0.565f, 0.57f));
             m.SetColor("_Fresh", new Color(0.38f, 0.40f, 0.43f));
             m.SetColor("_Edge", new Color(0.58f, 0.565f, 0.55f));
-            m.SetVector("_Grain", new Vector4(0.24f, 0.28f, 0.12f, 0f));
+            m.SetTexture("_GrainMap", AssetDatabase.LoadAssetAtPath<Texture2D>($"{Art}/slate_grain.png"));
+            m.SetVector("_Grain", new Vector4(1.0f, 1.0f, 0.14f, 0f));
             m.SetFloat("_Weather", 60f);
             m.SetVector("_Polish", new Vector4(0.18f, 0.42f, 0f, 0f));
-            m.SetVector("_Relief", new Vector4(0.0025f, 0.0012f, 0f, 0f));
+            m.SetVector("_Relief", new Vector4(0.0016f, 0.0012f, 0f, 0f));
             m.SetFloat("_Porosity", 0.5f);
             m.SetFloat("_Grey", grey ? 1f : 0f);
-            m.SetFloat("_History", Flag("-history") ? 1f : 0f);
+            m.SetFloat("_History", Flag("-history") ? 1f : Flag("-albedo") ? 2f : 0f);
             m.enableInstancing = true;
             EditorUtility.SetDirty(m);
             return m;
@@ -120,7 +121,7 @@ namespace Overstory.EditorTools
             var stage = Object.FindAnyObjectByType<StreetStage>();
             stage.clay = true;
             stage.look = "P";
-            stage.style = AssetDatabase.LoadAssetAtPath<Style>($"{Lights}/Styles/Style_game.asset");
+            stage.style = Flag("-nostyle") ? null : AssetDatabase.LoadAssetAtPath<Style>($"{Lights}/Styles/Style_game.asset");
             if (stage.skyMap != null)
                 stage.skyMap.Build();
             if (stage.townLights != null)
@@ -180,7 +181,7 @@ namespace Overstory.EditorTools
                         urp.shadowDistance = 120f;
                         stage.shot = shot;
                         stage.Apply();
-                        string file = Path.Combine(dir, $"gully-{view}{(grey ? "-greylight" : "")}{(Flag("-history") ? "-history" : "")}.png");
+                        string file = Path.Combine(dir, $"gully-{view}{(grey ? "-greylight" : "")}{(Flag("-history") ? "-history" : "")}{(Flag("-albedo") ? "-albedo" : "")}{(Flag("-nostyle") ? "-nostyle" : "")}.png");
                         LT1Render.Still(stage.view, file, grey: true, eighth: true, msaa: 4);
                         Debug.Log($"[LT1Stone] {file}");
                     }
