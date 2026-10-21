@@ -86,7 +86,7 @@ Every system, material and kind is studied twice before it is built (`CLAUDE.md`
 | Behaviour on screen | `people.md` (thin) | `behaviour-on-screen.md` (search budget ran out: its Gaps list sources to close) |
 | Animation and motion | `what-moves.md` (thin) | `animation-and-motion.md` |
 | Street things, vehicles, boats, animals | `between-buildings.md`, `what-moves.md` (thin) | **gap**, before plan step 6 (animals: gulls, cats, dogs, with it) |
-| Windows, glass, signs, lettering, records | `interface.md` (thin), `wooden-town-architecture.md` | `fronts-windows-and-signs.md` (running; what is seen through windows, lit windows, signs by era, street records) |
+| Windows, glass, signs, lettering, records | `interface.md` (thin), `wooden-town-architecture.md` | `fronts-windows-and-signs.md` (what is seen through windows, lit windows, signs by era, street records; search budget ran out for some games: its Gaps) |
 | Interiors | `scenes-and-sound.md` (thin) | the view through windows in `fronts-windows-and-signs.md`; rooms: **gap**, before plan step 8 |
 | Weather, seasons and effects | `trees.md` (seasons), `lighting-and-colour.md` (partly) | **gap**, before plan step 9 (with smoke, steam, spray and fire) |
 | The painted look in motion | `colour-and-shading.md`, `visual-direction.md` | `painted-marks-in-motion.md` (running) |

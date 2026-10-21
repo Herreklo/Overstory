@@ -56,6 +56,22 @@ Choose the model by the kind of work, and say in one line when a step calls for 
 - **Opus 5.5:** building once designed: generators, the Unity side, debugging, docs.
 - **Sonnet 5.5:** mechanical work with a check behind it: batch renders, moves, exports and status that the stress test or a hash proves unchanged.
 
+## Using tokens well
+
+Usage is a bottleneck (Øystein, 22 October), but quality is never traded for it. Strict reviews at milestones, research before building and judging in the engine all stay; only waste goes. Measured in October:
+- fourteen research agents used about 450,000 tokens each;
+- a long session re-reads its whole context (270,000 tokens) on every turn;
+- every session and many agents read `NOW.md`, which had grown to 7,000 tokens.
+
+The rules:
+- One job per session, in a fresh context, handed over through a short `NOW.md`. Always-read files stay short; history goes to `docs/experiments.md`.
+- Start from the synthesis (`docs/building-blocks.md`, a study's "In short"), then open only the section a decision needs. Read files in ranges and logs by their tail.
+- Briefs name the sections and facts an agent needs. Run at most three or four large agents at once, and aim research at a gap before its step.
+- The model fits the job (above); Fable has its own weekly limit.
+- Numbers first, eyes second. The harness, golden views, hashes and value spreads do the first pass; reviewers look at chosen sheets and crops.
+- Rework costs most: research the craft, try a quick sheet, measure before judging, decide before building.
+- Check usage at the start of each day. When it runs low, stop at a milestone boundary with everything pushed.
+
 ## Docs
 
 `docs/` describes the current design: how it works and why. History lives in `docs/experiments.md` and git. No rejected alternatives. Research and ideas are inputs to the design, kept in `docs/research/` and `docs/ideas/`; when a look test changes a rating or a rule, update them.
