@@ -16,7 +16,7 @@ Results that surprised us or might be new, newest first. Each says what the evid
 
 ## LT1f: the corner through the years, in clay
 
-**Status:** open (22 October). Step 1f of `docs/plan.md`: the game's question tested early, before any final house part is made. It needs none of the building blocks' architecture and does not decide any of it.
+**Status:** a first round run and recorded (22 October); the strict review and Øystein's judgement to come. Step 1f of `docs/plan.md`: the game's question tested early, before any final house part is made. It needs none of the building blocks' architecture and does not decide any of it.
 
 **The question:** can cold readers tell, from the corner on screen, which parts of its five houses are old, changed or neglected, and read what changed between 1989, 2000, 2010 and 2020; and do they understand it better than from the same facts on the page? It moves exit criteria 1 and 4, and through the pairs of years, 3.
 
@@ -63,6 +63,56 @@ Results that surprised us or might be new, newest first. Each says what the evid
 - If readers find more than three changes a pair at the street stop without loss, the budget of three is too low for clay at this grain; if they find fewer than two, it is too high.
 
 **What it does not test:** final materials and parts (the windows, doors and shopfronts are the test generator's); colour, coats and wear (clay has none); people, cars and lit windows (this is the fabric-only arm); trees and the ground's growth (the heart's clay has none); the toggle and other transitions in motion (model readers see stills; people test them in the engine's human test); other lights and seasons; the time study's season, camera and false-cause controls (a later round); frame rate.
+
+**Outcome (22 October, one round while building; the sheet for Øystein is `reviews/lt1/time/sheet.md`):**
+- *Built.* The facts are fixed: B and its fire are in the record, there is no seeded mansard, and the diaries run to 2020. A shop keeps the windows it covers, and the stress test passes to 2020 (`docs/building-system.md`). The five houses stand in the heart's clay at four dates, the frames rendered at the player's size (`LT1Time`, `reviews/lt1/time/frames/`). The pack, briefs and key were committed before any reader started. Nine Sonnet readers took part, one of each role in each of three arms, with one more reader for each of two ways of showing time. A Sonnet coder coded all 287 claims blind to the arm, and `time_score.py` scores them (`reviews/lt1/time/readers/scores.md`).
+- *Against the bar* (scene arm unless named):
+  - Order: 11 of 12 views right. One reader swapped two 12 m frames that differ only at D and E. Pass.
+  - Dating: 0 of 48 frames within a decade. Every reader put the frames between 1885 and 1965, a century early, from the houses' styles. Clay holds no part made after 1989 that looks it. Fail.
+  - Parts marked right, of those marked: 80, 75 and 88 per cent against what clay draws (mean 81); 86, 77 and 84 against the record. By part: care 95 per cent, roof 89, upper windows 82, additions 72, ground floor 67. Borderline: one reader is under four in five.
+  - Changes found: 6 of the 8 changes clay draws, for each reader (75 per cent). Pass.
+  - False history claims: 0.12 to 0.31 a frame, so under one. But two readers each held one with high confidence, so this fails. One of the two is C's 2011 windows called its "front" windows: they are in the wall that faces the lane, which the record calls the back, so it is a naming slip more than a false history.
+  - Direction: only the activity is scored, since care goes both ways in every pair. Each reader got 1 of 3 right. Fail. The café's closing in 2009 does not show in clay, so readers saw 2000 to 2010 as busier and 2010 to 2020 as quieter (A's shopfront going).
+  - Shuffled: parts marked right against the true record fell from 81 to 49 per cent, 32 points (the bar is 30). Against what the shuffled frames showed, readers scored 80 per cent, as the scene arm did. Pass: readers read the drawing, not conventions.
+  - Criterion 4: fail in clay. All six readers who saw both media said the record told them more. On parts they were level (scene 82 per cent, page 83). The page found every change and made no false claim; the scene found 75 per cent and made a few.
+- *What reads in clay:* boarding, at every view down to the city camera, and changes of form at eye level, the street stop and 12 m. Those are a shopfront fitted or taken out, a veranda added, windows boarded or unboarded, and a gable window renewed. The D-to-E swap of the empty house was read by every reader. So was A's window rhythm returning when the shop went: "a shopfront cut across two bays is plainly a later insertion".
+- *What does not read in clay:*
+  - paint and care short of boarding (A's forty years without paint, D's leaking roof);
+  - a house empty but not boarded (E from 1993: all three readers had it lived in, in 2000);
+  - whether a shop is open (the café's closing; B's open bakery read as "shuttered", because its test-quality shopfront looks blank);
+  - a copy from an original (C's 1998 copies, its 2011 factory "old style" windows and D's 2007 copies all read as old or careful work);
+  - the date.
+- *What misled:*
+  - Juxtaposition invited a cause: all three scene readers guessed, with low confidence, that a household moved from E to D, because one was boarded as the other opened. That is the time study's "a cut invites a cause", seen in stills.
+  - The undrawn closing put the cause of A's shopfront going in the wrong decade.
+  - The page's words disagreed with the part. The page said "a balcony", and the generator draws a glazed veranda with a balcony. Page readers flagged it, and the coder's record now uses the part's words.
+- *The ways of showing time* (`docs/ideas/showing-time.md`, 25 ideas ranked; prototypes in `reviews/lt1/time/ways/`):
+  - the toggle in place: animated pairs. Its stills are the scene arm's dated strip, with 75 per cent of changes found.
+  - repainted, stroke by stroke: each recorded change brushed in over its house in date order, dated and lettered. Its one reader found 7 of 8 changes with no false claim. That reader noted that a tag (E, 1993) promised a change it could not see.
+  - a window into another year: a round pane, or a photograph held at the spot, showing the earlier year aligned. Its one reader found 3 of 8: panes over small, distant houses covered most of the house and left little of the later year to compare.
+
+  Pointing from the record within the budget raised what was found and added no false claim. A pointer at a change clay cannot show is a promise the picture breaks. These are one reader each, so they are indications, not results.
+- *Protocol faults found:*
+  - Two readers (one scene, one shuffled) compared pixels with code in part 1. Part 2 forbade it, but their orderings are tainted.
+  - Readers spawned in the project carry its `CLAUDE.md`. One reader said so. None used it to date the frames, which were dated a century early.
+  - The direction task needs a defined measure, since our pairs mix decline and repair.
+  - The key's drawn flag comes from rules, not the render. It marked E's empty 1993 house as drawn (the curtains go), but at 75 m nothing shows.
+- *Measured:* outside the five houses, 0.2 to 0.6 per cent of each frame changes between two dates. That is the changed houses' shadows and the sky map's openness. Inside A, with no event, 0.4 per cent of the eye view changes, from sag that grows with age. Model readers comparing pixels used that drift to order near-identical frames.
+
+**What we keep and what it means:**
+- *For the houses (plan step 2):*
+  - Form carries the big changes; the care, the date and a shop's life need the coats and wear layers, readable shop glass and lettering, and parts that look their decade. So these come with the first house parts, not after them.
+  - The shelf for parts after 1995 (old forms again) gives readers no date. The research on house changes stops at 1989 (`docs/research/house-changes.md`); what owners and the town did from 1989 to 2020 is a research gap, studied before step 4. Datable things are likely candidates: heat pumps, dishes, new glazing and signs (unverified).
+  - A copy must be identifiable on close inspection, as the charters ask: a restored part needs its own trace (newer coat, crisper edges), or a single frame reads it as original.
+  - An empty house must show it before it is boarded. That is the ground's history (the yard growing over) and dark windows at dusk.
+- *For the history budget:* readers found about two changes a pair where two or three were drawn, and pointing at three a pair added none false. The budget of one, two, three stands.
+- *For the architecture (step 1a):*
+  - Every drawn pixel must name its part. The window had to use the house's changed pixels as a stand-in.
+  - The diff check must allow each change's shadow and sky-openness footprint, and count sag that grows with age as drift, as a rate against the date rather than a bake.
+  - Cells need dated lives. The covered-cell fix still keeps one `original` a cell.
+  - The change query's "drawn" must come from what the view shows, not from rules.
+- *For showing time:* repainted stroke by stroke and the toggle go on to the strict review and to people. The window's diegetic form, the photograph held at the spot, is kept for close views only.
+- *Not yet judged:* beauty, by strict review and by Øystein; people, in the engine's human test.
 
 ---
 
