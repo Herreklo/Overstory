@@ -106,10 +106,12 @@ At today's rate a thousand stairs would take about 19 hours to generate and 16 G
 **What goes to Øystein** (scope, play and permissions only, each with a recommendation; everything else is decided, recorded with its reasons, and shown to him as finished work he can overturn):
 - the town system's scope and the eras after 1989 (`docs/town-system.md`);
 - his OK for reference downloads (Stavanger's rock, water, city-archive photos for houses and dress, and the large GDC decks the studies could not open), each listed with its source and size first;
-- how players compare years (play, defaults per game; `docs/research/time-on-screen.md`). Recommended:
-  - an archive photograph, or the player's own, held up at its spot and toggled in place;
-  - a time-lapse allowed as spectacle, but bracketed by dated stills and never the only passage;
-  - the player's own acts never marked in the world, shown in the journal and the why-probe instead;
+- **showing time passing: open, to be explored creatively** (Øystein, 22 October: "there are many cool ways to show time progressing, we should try to be very creative here"):
+  - generate many ideas, wide;
+  - prototype the best few on the corner through the years (step 4);
+  - judge them for beauty by strict review and for readability by the cold readers.
+
+  The perception findings in `docs/research/time-on-screen.md` are constraints, not the answer: change is found where something visibly jumps; hold everything but the year; a cut invites a cause.
 - the interface's play choices, once `docs/research/interface-and-inspection.md` is in.
 
 **Look and craft questions are ours** (Øystein, 22 October: "You have to figure these things out. As long as we are critical and only aim for high quality, this should answer itself."). They are decided on frames and motion sheets, with strict reviews, and Øystein judges the milestones. This covers the night sky's colour, lamp glass and the tonemapper; the brush's size by octaves and any boil; and near ground cover as strokes or blades.
@@ -130,6 +132,7 @@ At today's rate a thousand stairs would take about 19 hours to generate and 16 G
 - **The reference machine** is an ordinary computer, the M4 Mac mini: 60 fps at 1440p at default settings, with no gaming PC needed (`docs/foundations.md`).
 - **Cold readers are model readers,** in the engine's blind method (`docs/foundations.md`).
 - **How years pass in play** depends on the game, from a week to generations. The screen follows the record, and play changes the record (`docs/town-system.md`).
+- **The player's acts change the 3D world** as anyone's do, through the record (Øystein: "they should definitely be reflected in the 3d environment"). Whether the player's own mark is also made noticeable is part of the creative exploration of time.
 - **Signs and street text are in English** (Øystein, 22 October), lettered in each era's styles.
 - **Scenes are written, not voiced.** No motion-capture sessions: motion comes from free libraries, edited against video (`docs/living-world.md`).
 - **The town stands on Stavanger's phyllite** (`docs/stone.md`).
