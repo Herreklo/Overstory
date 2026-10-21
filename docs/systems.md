@@ -81,7 +81,7 @@ Every system, material and kind is studied twice before it is built (`CLAUDE.md`
 | Stone, made | `stone.md`, `repairs.md` | `materials-at-scale.md`, `performance-at-scale.md`, `kits-and-generation.md` |
 | Land, rock, water, coast | `nature.md`, `stone.md` | `land-rock-and-water.md` |
 | Buildings and their parts | `house-changes.md`, `wooden-town-architecture.md` | `kits-and-generation.md`, `materials-at-scale.md` |
-| Trees and nature | `trees.md`, `vegetation.md`, `park-trees.md`, `nature.md` | `performance-at-scale.md`, `animation-and-motion.md` (wind); `ground-cover-and-plants.md` (running; ground cover, plants, and the trees re-checked against the reference machine) |
+| Trees and nature | `trees.md`, `vegetation.md`, `park-trees.md`, `nature.md` | `performance-at-scale.md`, `animation-and-motion.md` (wind); `ground-cover-and-plants.md` (ground cover, plants, and the trees re-checked against the reference machine; three large decks unopened: its Gaps) |
 | People as models | `people.md`, `people-deep-dive.md` | `characters.md` |
 | Behaviour on screen | `people.md` (thin) | `behaviour-on-screen.md` (search budget ran out: its Gaps list sources to close) |
 | Animation and motion | `what-moves.md` (thin) | `animation-and-motion.md` |

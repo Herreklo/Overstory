@@ -57,7 +57,7 @@ At today's rate a thousand stairs would take about 19 hours to generate and 16 G
      - the golden views of today's gully, the baseline every change is compared against with FLIP;
      - a motion-sheet renderer: 60 fps video at 1440p with one sample per pixel, plus stills scaled to the player's footprint. Every judged frame so far was rendered at twice the size and averaged down. That hid shimmer and crawling marks and set distance fades 1.5 times too far, and no mark has ever been judged moving (`docs/research/painted-marks-in-motion.md`). The golden views use it too.
 2. *Tuesday: the scale test, then the architecture's review.*
-   - *The scale test* generates a district several square kilometres across in clay, from the test-quality house generator and the clay ground. The harness measures it for build time, memory, disk and frame time at the street stop, 12 m and the city camera. Its numbers settle where generation runs and how the town streams; the architecture leaves those provisional until then.
+   - *The scale test* generates a district several square kilometres across in clay, from the test-quality house generator and the clay ground. The harness measures it for build time, memory, disk and frame time at the street stop, 12 m and the city camera. Its numbers settle where generation runs and how the town streams; the architecture leaves those provisional until then. The harness also measures the birches in the corner, which the ground cover study estimates are the dearest pixels in the frame (their eye-facing cards are alpha-tested, which Apple's GPUs shade before they can be hidden; `docs/research/ground-cover-and-plants.md`).
    - *The review:* a fresh strict review of the architecture (Fable), then Øystein's questions in one message, each with a recommendation.
    - *The skills follow the architecture:* `blender-generators` still says hand-modelled `.blend` files and a 1 m grid; `unity-conventions`; the docs table in `CLAUDE.md`.
 3. *Wednesday to Friday: the gully on the building blocks (Opus).* Each step is checked against the golden views and the harness before the next:
@@ -107,7 +107,8 @@ At today's rate a thousand stairs would take about 19 hours to generate and 16 G
 - the town system's scope and the eras after 1989 (`docs/town-system.md`);
 - the night sky's colour, lamp glass and the tonemapper, judged on frames when the light is rebuilt;
 - the brush's size stepped by octaves, so strokes stay within a factor of two on screen (recommended; one line of `docs/visual-direction.md`), and no boil on anything that stands still. Both are judged on motion sheets;
-- his OK for reference downloads (Stavanger's rock, water, city-archive photos for houses and dress), each listed with its source and size first;
+- his OK for reference downloads (Stavanger's rock, water, city-archive photos for houses and dress, and the large GDC decks the studies could not open), each listed with its source and size first;
+- near ground cover as painted strokes or fine blades (recommended: strokes, confirmed by the first look test);
 - whether signs and street text stay in Norwegian and are translated on inspection (recommended: yes; `docs/research/fronts-windows-and-signs.md`).
 
 **Budget:**
