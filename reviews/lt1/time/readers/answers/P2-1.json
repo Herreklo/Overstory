@@ -1,0 +1,95 @@
+{"parts": {
+"A": {
+ "1989": {"roof": ["original", 3], "upper windows": ["original", 3], "ground floor": ["changed", 3], "additions": ["none", 3], "care": ["neglected", 2]},
+ "2000": {"roof": ["original", 3], "upper windows": ["original", 3], "ground floor": ["changed", 3], "additions": ["none", 3], "care": ["kept", 3]},
+ "2010": {"roof": ["original", 3], "upper windows": ["original", 3], "ground floor": ["changed", 2], "additions": ["none", 3], "care": ["kept", 1]},
+ "2020": {"roof": ["original", 3], "upper windows": ["original", 3], "ground floor": ["changed", 2], "additions": ["none", 3], "care": ["kept", 3]}
+},
+"B": {
+ "1989": {"roof": ["original", 3], "upper windows": ["original", 3], "ground floor": ["original", 3], "additions": ["none", 3], "care": ["kept", 3]},
+ "2000": {"roof": ["original", 3], "upper windows": ["original", 3], "ground floor": ["changed", 3], "additions": ["none", 3], "care": ["kept", 2]},
+ "2010": {"roof": ["original", 3], "upper windows": ["original", 3], "ground floor": ["changed", 3], "additions": ["changed", 3], "care": ["kept", 3]},
+ "2020": {"roof": ["original", 3], "upper windows": ["original", 3], "ground floor": ["changed", 2], "additions": ["changed", 3], "care": ["kept", 3]}
+},
+"C": {
+ "1989": {"roof": ["original", 3], "upper windows": ["changed", 3], "ground floor": ["changed", 3], "additions": ["none", 3], "care": ["unsure", 1]},
+ "2000": {"roof": ["original", 3], "upper windows": ["changed", 2], "ground floor": ["changed", 3], "additions": ["none", 3], "care": ["kept", 3]},
+ "2010": {"roof": ["original", 3], "upper windows": ["changed", 2], "ground floor": ["changed", 3], "additions": ["none", 3], "care": ["kept", 2]},
+ "2020": {"roof": ["original", 3], "upper windows": ["changed", 2], "ground floor": ["changed", 3], "additions": ["none", 3], "care": ["kept", 3]}
+},
+"D": {
+ "1989": {"roof": ["original", 1], "upper windows": ["neglected", 3], "ground floor": ["neglected", 3], "additions": ["changed", 2], "care": ["neglected", 3]},
+ "2000": {"roof": ["neglected", 3], "upper windows": ["neglected", 3], "ground floor": ["neglected", 3], "additions": ["changed", 2], "care": ["neglected", 3]},
+ "2010": {"roof": ["original", 1], "upper windows": ["changed", 1], "ground floor": ["changed", 2], "additions": ["changed", 2], "care": ["kept", 3]},
+ "2020": {"roof": ["original", 1], "upper windows": ["changed", 1], "ground floor": ["changed", 2], "additions": ["changed", 2], "care": ["kept", 2]}
+},
+"E": {
+ "1989": {"roof": ["original", 3], "upper windows": ["changed", 2], "ground floor": ["changed", 2], "additions": ["none", 3], "care": ["kept", 1]},
+ "2000": {"roof": ["original", 2], "upper windows": ["changed", 1], "ground floor": ["changed", 1], "additions": ["none", 3], "care": ["neglected", 3]},
+ "2010": {"roof": ["original", 2], "upper windows": ["neglected", 3], "ground floor": ["neglected", 3], "additions": ["none", 3], "care": ["neglected", 3]},
+ "2020": {"roof": ["original", 1], "upper windows": ["neglected", 3], "ground floor": ["neglected", 3], "additions": ["none", 3], "care": ["neglected", 3]}
+}},
+"changes": {
+"1989-2000": [
+ {"house": "A", "what": "whole house repainted (first coat since 1949), so it looks fresher and kept", "why": "the cafe's owners bought the house in 1996 and painted it", "confidence": 3},
+ {"house": "B", "what": "a shopfront across two window bays appears in the ground floor (Quay Bakery)", "why": "owners let the ground floor as a bakery in 1997 as trade came back to the quay road", "confidence": 3},
+ {"house": "C", "what": "upper-floor windows change from the cheap 1971 ones to copies of the 1879 originals, and the house is repainted", "why": "the upper flat's new owners restored it in 1998", "confidence": 3},
+ {"house": "D", "what": "stays empty and boarded but decays further; the roof now lets in water", "why": "heirs cannot agree to sell (1995)", "confidence": 2},
+ {"house": "E", "what": "goes from lived-in to empty and starts to look let go", "why": "the last owner died in 1993 and the heirs live away", "confidence": 3}
+],
+"2000-2010": [
+ {"house": "A", "what": "the cafe closes and the shopfront stands empty (shopfront itself unchanged)", "why": "the cafe moved to a bigger room on the square as the quay road's trade went up the hill (2009)", "confidence": 3},
+ {"house": "B", "what": "a balcony over the lane is added and the house repainted", "why": "the owners added it in 2003", "confidence": 3},
+ {"house": "D", "what": "boards come off all windows and doors, new copies of the old windows go in, the house is repainted and lived in again", "why": "a young family bought the empty house in 2007 and restored it with the city's help", "confidence": 3},
+ {"house": "E", "what": "all windows and doors boarded up", "why": "boarded after a break-in in 2008", "confidence": 3}
+],
+"2010-2020": [
+ {"house": "A", "what": "the shopfront is removed and the ground floor gets copies of the 1912 windows; the house is repainted and becomes a home", "why": "no one rented the shop after the oil-price fall; owners made it a flat and the city's wooden-town rules asked for copies of the 1912 windows (2016)", "confidence": 3},
+ {"house": "B", "what": "repainted", "why": "routine upkeep (2017)", "confidence": 3},
+ {"house": "C", "what": "new factory 'old style' windows in the back wall facing down the lane, then the house is repainted", "why": "the ground-floor flat's owner replaced the back windows (2011); upkeep repaint (2013)", "confidence": 3},
+ {"house": "E", "what": "still empty and boarded, with nothing done to it", "why": "heirs leave it empty (still empty in 2015)", "confidence": 2}
+]},
+"stories": {
+"A": [
+ {"claim": "Built 1912 as a two-storey jugend house with a mansard roof for a cannery owner.", "confidence": 3},
+ {"claim": "In 1931 the cannery owner's widow let the ground floor as a shop and a shopfront was fitted across two bays; Vik Jernvare ironmongers traded there until 1974.", "confidence": 3},
+ {"claim": "The shop stood empty from 1974 to 1988, and the house had no repaint between 1949 and 1996.", "confidence": 3},
+ {"claim": "A cafe opened in 1988 (low rent after the crash); its owners bought the house and repainted it in 1996.", "confidence": 3},
+ {"claim": "The cafe left in 2009 for the square because the quay road's trade had gone up the hill, leaving the shop empty.", "confidence": 3},
+ {"claim": "In 2016 the shopfront was taken out and the ground floor made into a flat with copies of the 1912 windows it had covered, because the city's wooden-town rules asked for it, and the house was repainted; the house is now residential again.", "confidence": 3}
+],
+"B": [
+ {"claim": "The original 1884 Swiss-chalet boat-builder's house burned down in a chimney fire in 1935; what stands now is the 1936 functionalist two-storey flat-roofed rebuild.", "confidence": 3},
+ {"claim": "It was repainted in 1987 by new owners.", "confidence": 3},
+ {"claim": "In 1997 a shopfront across two bays was fitted for Quay Bakery as trade returned to the quay road; no closure is recorded, so it probably still trades.", "confidence": 2},
+ {"claim": "A balcony over the lane was added in 2003 and the house repainted; it was repainted again in 2017, so it is steadily kept.", "confidence": 3},
+ {"claim": "It is the only house of the five rebuilt in a modern style, with no old fabric from before 1936.", "confidence": 3}
+],
+"C": [
+ {"claim": "Built 1879 as a storey-and-a-half Swiss-chalet house for a cooper.", "confidence": 3},
+ {"claim": "In 1971 all its windows were replaced cheaply.", "confidence": 3},
+ {"claim": "In 1998 the upper flat's new owners put back copies of the 1879 windows on the upper floor and repainted; the ground floor kept its 1971 windows.", "confidence": 3},
+ {"claim": "The house is now divided into an upper and a ground-floor flat with separate owners.", "confidence": 2},
+ {"claim": "In 2011 the ground-floor flat's owner fitted factory 'old style' windows in the back wall, which faces down the lane, so that wall is later and not authentic.", "confidence": 3},
+ {"claim": "It was repainted in 1998 and 2013 and is well kept.", "confidence": 3}
+],
+"D": [
+ {"claim": "Built 1828 by a fisherman as a storey-and-a-half empire-style house on the rock outcrop; the oldest house of the five.", "confidence": 3},
+ {"claim": "A lean-to shed was added at the back in 1950, and the front windows were replaced in 1965.", "confidence": 3},
+ {"claim": "In 1986 the owner died, the heirs in Oslo left it empty, and all windows and doors were boarded up.", "confidence": 3},
+ {"claim": "It stood empty and neglected for 21 years; by 1995 the heirs could not agree to sell and the roof was leaking.", "confidence": 3},
+ {"claim": "A young family bought it in 2007; the boards came down and, with the city's help, it was restored with copies of the old windows still in the gables, and repainted.", "confidence": 3},
+ {"claim": "Since 2007 nothing more is recorded, so it is presumably lived in and kept.", "confidence": 2}
+],
+"E": [
+ {"claim": "Built 1826 by a fisherman as a small storey-and-a-half empire-style house at the top of the lane; the oldest house of the five.", "confidence": 3},
+ {"claim": "Its front windows were replaced in 1965, so it has non-original windows to the street.", "confidence": 3},
+ {"claim": "It was lived in until the last owner died in 1993; the heirs live away and have left it empty.", "confidence": 3},
+ {"claim": "It was boarded up in 2008 after a break-in, and it was still empty in 2015, so the boards are probably still up in 2020.", "confidence": 3},
+ {"claim": "No repainting or repair is recorded, so the house has had no upkeep for decades and closes the view up the lane in a derelict state.", "confidence": 2}
+]},
+"direction": {
+"1989-2000": {"activity": "busier", "care": "better kept"},
+"2000-2010": {"activity": "same", "care": "better kept"},
+"2010-2020": {"activity": "quieter", "care": "better kept"}
+}}

@@ -1,0 +1,87 @@
+{"parts": {
+ "A": {
+  "1989": {"roof": ["unsure", 1], "upper windows": ["original", 2], "ground floor": ["changed", 3], "additions": ["changed", 1], "care": ["kept", 2]},
+  "2000": {"roof": ["unsure", 1], "upper windows": ["original", 2], "ground floor": ["changed", 3], "additions": ["changed", 1], "care": ["kept", 2]},
+  "2010": {"roof": ["unsure", 1], "upper windows": ["original", 2], "ground floor": ["changed", 3], "additions": ["changed", 1], "care": ["kept", 2]},
+  "2020": {"roof": ["unsure", 1], "upper windows": ["original", 2], "ground floor": ["changed", 1], "additions": ["changed", 1], "care": ["kept", 2]}
+ },
+ "B": {
+  "1989": {"roof": ["changed", 1], "upper windows": ["original", 2], "ground floor": ["original", 2], "additions": ["none", 1], "care": ["kept", 2]},
+  "2000": {"roof": ["changed", 1], "upper windows": ["original", 2], "ground floor": ["changed", 3], "additions": ["none", 1], "care": ["kept", 2]},
+  "2010": {"roof": ["changed", 1], "upper windows": ["original", 2], "ground floor": ["changed", 3], "additions": ["changed", 3], "care": ["kept", 2]},
+  "2020": {"roof": ["changed", 1], "upper windows": ["original", 2], "ground floor": ["changed", 3], "additions": ["changed", 3], "care": ["kept", 2]}
+ },
+ "C": {
+  "1989": {"roof": ["original", 1], "upper windows": ["original", 1], "ground floor": ["original", 2], "additions": ["none", 2], "care": ["kept", 2]},
+  "2000": {"roof": ["original", 1], "upper windows": ["changed", 2], "ground floor": ["original", 2], "additions": ["none", 2], "care": ["kept", 2]},
+  "2010": {"roof": ["original", 1], "upper windows": ["changed", 2], "ground floor": ["original", 2], "additions": ["none", 2], "care": ["kept", 2]},
+  "2020": {"roof": ["original", 1], "upper windows": ["changed", 2], "ground floor": ["changed", 3], "additions": ["none", 2], "care": ["kept", 2]}
+ },
+ "D": {
+  "1989": {"roof": ["original", 1], "upper windows": ["neglected", 3], "ground floor": ["neglected", 3], "additions": ["changed", 1], "care": ["neglected", 2]},
+  "2000": {"roof": ["original", 1], "upper windows": ["neglected", 3], "ground floor": ["neglected", 3], "additions": ["changed", 1], "care": ["neglected", 2]},
+  "2010": {"roof": ["original", 1], "upper windows": ["original", 1], "ground floor": ["original", 1], "additions": ["changed", 1], "care": ["kept", 2]},
+  "2020": {"roof": ["original", 1], "upper windows": ["original", 1], "ground floor": ["original", 1], "additions": ["changed", 1], "care": ["kept", 2]}
+ },
+ "E": {
+  "1989": {"roof": ["unsure", 1], "upper windows": ["original", 1], "ground floor": ["original", 1], "additions": ["none", 1], "care": ["kept", 2]},
+  "2000": {"roof": ["unsure", 1], "upper windows": ["original", 1], "ground floor": ["original", 1], "additions": ["none", 1], "care": ["kept", 2]},
+  "2010": {"roof": ["unsure", 1], "upper windows": ["neglected", 3], "ground floor": ["neglected", 3], "additions": ["none", 1], "care": ["neglected", 3]},
+  "2020": {"roof": ["unsure", 1], "upper windows": ["neglected", 3], "ground floor": ["neglected", 3], "additions": ["none", 1], "care": ["neglected", 3]}
+ }
+},
+ "changes": {
+  "1989-2000": [
+   {"house": "B", "what": "The symmetrical house front (central door, a window each side, window boxes) was replaced by a shopfront: a fascia board, blank panels where the windows were, a pair of doors, a door canopy and a dark box (a sign or hatch) above.", "why": "Change of use from a dwelling to a shop or store; the blank panels read as a shuttered or solid shopfront.", "confidence": 3},
+   {"house": "C", "what": "The window in the gable end gained a casing with a projecting sill; the front windows stayed plain.", "why": "Piecemeal window renewal or repair by the owner.", "confidence": 2}
+  ],
+  "2000-2010": [
+   {"house": "B", "what": "A glazed veranda was built on the lane side of the ground floor, with a balustraded balcony on top of it. It covers the old side-wall windows.", "why": "An extension for more living or shop space, paid for by the owner; it is a clear later addition.", "confidence": 3},
+   {"house": "D", "what": "The boards came off all three gable windows (the loft window and the two lower ones), and they were reglazed.", "why": "The house was re-occupied or repaired after standing vacant.", "confidence": 3},
+   {"house": "E", "what": "Its windows (an upper and a lower one) went from glazed to boarded.", "why": "The house was vacated and left empty.", "confidence": 3}
+  ],
+  "2010-2020": [
+   {"house": "A", "what": "The plate-glass shopfront and its fascia on the ground floor were removed and replaced by two ordinary domestic windows next to the surviving window and door.", "why": "The shop closed and the building went back to residential use.", "confidence": 3},
+   {"house": "C", "what": "The front windows gained casings with sills and glazing bars; before, they were plain.", "why": "A second stage of window renewal, finishing what was begun at the gable window.", "confidence": 3}
+  ]
+ },
+ "stories": {
+  "A": [
+   {"claim": "Built as a three-bay dwelling on the quay road, with an upper-floor oriel bay on the left and a steep roof, with the middle window and the door on the ground floor.", "confidence": 2},
+   {"claim": "A plate-glass shopfront had already been cut into its ground floor before 1989 (a change of use to a shop) and was still there in 2010.", "confidence": 3},
+   {"claim": "The shopfront was removed between 2010 and 2020 and domestic windows were put back: the shop closed.", "confidence": 3},
+   {"claim": "The house has been kept in good repair all through; no boarding, damage or sagging is visible in any year.", "confidence": 2},
+   {"claim": "The oriel bay and the heavy banded roof look like earlier alterations from before the shop was added.", "confidence": 1}
+  ],
+  "B": [
+   {"claim": "Built as a symmetrical dwelling (central door, a window each side, window boxes), still that way in 1989.", "confidence": 2},
+   {"claim": "Between 1989 and 2000 its ground floor was converted to a shopfront or store front, with a fascia, blank panels and a pair of doors.", "confidence": 3},
+   {"claim": "Between 2000 and 2010 a glazed veranda with a balcony above was added on the lane side; this fits an owner who was investing.", "confidence": 3},
+   {"claim": "It stayed in good order throughout, with the same shop front and veranda in 2020.", "confidence": 2},
+   {"claim": "The metal-looking roof is probably a later re-roofing, from before 1989.", "confidence": 1}
+  ],
+  "C": [
+   {"claim": "A small old house with a large shingled roof, set on a high plinth beside the landing; the plain windows of 1989 look like the original ones.", "confidence": 2},
+   {"claim": "Its windows were renewed in two steps: the gable window got a casing by 2000 and the front windows got casings by 2020.", "confidence": 3},
+   {"claim": "It has been lived in and looked after across the whole period, with no sign of neglect.", "confidence": 2},
+   {"claim": "There is no change to its form: no extension, no new roof.", "confidence": 2}
+  ],
+  "D": [
+   {"claim": "A house on the rock outcrop with a shingle-edged roof and several chimneys. Its gable windows were boarded in 1989 and in 2000, so it had been empty or abandoned for at least 11 years and probably much longer.", "confidence": 3},
+   {"claim": "Between 2000 and 2010 the boards were taken down and the windows reglazed: it was repaired or re-occupied.", "confidence": 3},
+   {"claim": "It has been kept up since 2010; its windows are glazed in 2010 and 2020.", "confidence": 2},
+   {"claim": "The pent-roofed lean-to on its side is an older addition, from before 1989.", "confidence": 1}
+  ],
+  "E": [
+   {"claim": "The small house that closes the view up the lane was lived in and kept in 1989 and 2000, with glazed windows.", "confidence": 2},
+   {"claim": "Between 2000 and 2010 it was vacated: its windows were boarded.", "confidence": 3},
+   {"claim": "It was still boarded in 2020, so it has stood empty for at least ten years.", "confidence": 3},
+   {"claim": "The boarding moved from D to E between 2000 and 2010, so one household may have moved from E to D.", "confidence": 1}
+  ]
+ },
+ "direction": {
+  "1989-2000": {"activity": "busier", "care": "same"},
+  "2000-2010": {"activity": "same", "care": "same"},
+  "2010-2020": {"activity": "quieter", "care": "better kept"}
+ }
+}

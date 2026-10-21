@@ -25,11 +25,11 @@ VIEWS = ("eye", "street", "12m", "city")
 FALSE = ("texture", "contradiction")
 FRAMES = 16  # four views at four years
 
-# the direction between each pair, from the record: open businesses and neglected houses counted
-# (2010 to 2020 changes neither count; A's front and C's windows were renewed, so "better kept" is also accepted)
+# the direction between each pair, from the record. Activity is the number of businesses open (1989: the café; 2000:
+# the café and the bakery; 2010 and 2020: the bakery). Care is mixed in every pair (one house let go while another is
+# restored), so it is reported, not scored; the page readers' answers show what fully informed readers say.
 DIRECTION = {
-    "real": {"1989-2000": ({"busier"}, {"worse kept"}), "2000-2010": ({"quieter"}, {"better kept"}),
-             "2010-2020": ({"same"}, {"same", "better kept"})},
+    "real": {"1989-2000": ({"busier"}, None), "2000-2010": ({"quieter"}, None), "2010-2020": ({"same"}, None)},
 }
 
 
@@ -115,8 +115,9 @@ def direction_score(answer, arm):
     for pair in PAIRS:
         a = (answer.get("direction") or {}).get(pair) or {}
         acts, cares = truth[pair]
-        out[pair] = dict(activity=a.get("activity") in acts, care=a.get("care") in cares, given=a)
-    out["all_right"] = all(v["activity"] and v["care"] for k, v in out.items() if k in PAIRS)
+        out[pair] = dict(activity=a.get("activity") in acts, given=a)
+    out["all_right"] = all(v["activity"] for k, v in out.items() if k in PAIRS)
+    out["right"] = sum(v["activity"] for k, v in out.items() if k in PAIRS)
     return out
 
 
@@ -141,6 +142,14 @@ def main(argv):
             ans = load(os.path.join(base, "answers", f"{rid}-2.json"), {})
         else:
             ans = first
+        if arm.startswith("way"):
+            s["changes"] = changes_score(rid, keys["real"], coding["real"], recs["real"])
+            s["false"] = false_claims(rid, coding["real"])
+            s["direction"] = None
+            s["told_more"] = None
+            s["parts_record"] = s["parts_drawn"] = dict(precision=None, recall=None, by_part={})
+            scores[rid] = s
+            continue
         s["parts_record"] = parts_score(ans.get("parts") or {}, keys["real"], "state")
         s["parts_drawn"] = parts_score(ans.get("parts") or {}, keys["real"], "drawn")
         if arm == "shuffled":
@@ -157,7 +166,7 @@ def main(argv):
         json.dump(scores, f, indent=1)
         f.write("\n")
     lines = ["# Scores", "", "Written by `blender/tools/time_score.py` from the answers, the key and the blind coding.", "",
-             "| Reader | Arm | Role | Order right (views of 4) | Dated within 5 y | Parts right of marked (record / drawn) | Parts right of all (record) | Changes found (drawn) | False claims a frame (high) | Direction | Told more |",
+             "| Reader | Arm | Role | Order right (views of 4) | Dated within 5 y | Parts right of marked (record / drawn) | Parts right of all (record) | Changes found (drawn) | False claims a frame (high) | Activity direction right | Told more |",
              "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |"]
     pct = lambda v: "-" if v is None else f"{100 * v:.0f}%"
     for rid, s in scores.items():
@@ -166,8 +175,8 @@ def main(argv):
         dated = f"{sum(v['within5'] for v in o.values())}/{sum(v['dated'] for v in o.values())}" if o else "-"
         d = s["direction"]
         lines.append(f"| {rid} | {s['arm']} | {s['role']} | {order} | {dated} | {pct(s['parts_record']['precision'])} / {pct(s['parts_drawn']['precision'])} | "
-                     f"{pct(s['parts_record']['recall'])} | {pct(s['changes']['recall'])} | {s['false']['per_frame']:.2f} ({s['false']['high']}) | "
-                     f"{'right' if d and d['all_right'] else 'wrong somewhere'} | {s['told_more'] or '-'} |")
+                     f"{pct(s['parts_record'].get('recall'))} | {pct(s['changes']['recall'])} | {s['false']['per_frame']:.2f} ({s['false']['high']}) | "
+                     f"{d['right'] if d else '-'}/3 | {s['told_more'] or '-'} |")
     sh = [s for s in scores.values() if s["arm"] == "shuffled"]
     sc = [s for s in scores.values() if s["arm"] == "scene"]
     if sh and sc:

@@ -240,10 +240,10 @@ def _dilate(m, r):
     return out
 
 
-def strokes(scale=2, steps=10):
+def strokes(scale=4, steps=6, frames_dir=None, out=None):
     """From 1989 to 2020 in one view: each change the record draws, in date order, brushed in over its house."""
     key = json.load(open(os.path.join(TIME, "readers", "key.json")))["real"]
-    out = os.path.join(TIME, "ways", "strokes")
+    out = out or os.path.join(TIME, "ways", "strokes")
     for view in VIEWS:
         canvas = shrink(frame("real", view, YEARS[0]), scale)
         text(canvas, str(YEARS[0]), 16, 16, scale=5)
@@ -277,6 +277,8 @@ def strokes(scale=2, steps=10):
                     text(shown, str(year), 16, 16, scale=5)
                     seq.append(shown)
                     delays.append(70 if k < steps else 900)
+                    if k == steps // 2:
+                        keyframes.append(shown)  # the stroke half laid, for the sheet
                 done |= m
                 keyframes.append(seq[-1])
             # what the changes did beyond their houses (their shadows on the ground and on neighbours) settles last
@@ -288,8 +290,12 @@ def strokes(scale=2, steps=10):
                 seq.append(shown)
                 delays.append(120 if k < 3 else 1600)
             keyframes.append(seq[-1])
+        if frames_dir:  # each step on its own, for a reader
+            for i, k in enumerate(keyframes):
+                write_png(os.path.join(frames_dir, f"strokes-{view}-step{i + 1:02d}.png"), k)
+            continue
         apng(os.path.join(out, f"strokes-{view}.png"), seq, delays)
-        ks = [shrink(k, 2) for k in keyframes]
+        ks = [k for k in keyframes]
         cols = 4
         rows_ = []
         for r in range(0, len(ks), cols):
@@ -307,12 +313,17 @@ def window(view, now, then, letter, kind="pane", out_name=None):
     white border, a little turned) held over one house, aligned to the pixel."""
     a, b = frame("real", view, now).copy(), frame("real", view, then)
     m = mask("real", view, now, letter) | mask("real", view, then, letter)
-    ys, xs = np.nonzero(m)
-    cy, cx = int(ys.mean()), int(xs.mean())
+    # where on the house the two years differ: the record names the house; until each drawn pixel can name its part
+    # (the building blocks' ids), the pixels of that house that changed stand in for the changed part
+    region = _dilate(m, 4) & (np.abs(a - b).max(axis=2) > 3 / 255)
+    if region.sum() < 200:
+        region = m
+    ys, xs = np.nonzero(region)
+    cy, cx = int((ys.min() + ys.max()) / 2), int((xs.min() + xs.max()) / 2)
     H, W = a.shape[:2]
     yy, xx = np.mgrid[0:H, 0:W]
     if kind == "pane":
-        r = int(max(ys.max() - ys.min(), xs.max() - xs.min()) * 0.62) + 40
+        r = min(int(max(ys.max() - ys.min(), xs.max() - xs.min()) * 0.6) + 60, int(0.24 * W))
         d = np.sqrt((yy - cy) ** 2 + (xx - cx) ** 2)
         inside = d < r
         a[inside] = b[inside]
@@ -320,7 +331,8 @@ def window(view, now, then, letter, kind="pane", out_name=None):
         a[ring] = (0.95, 0.93, 0.88)
         text(a, str(then), cx - 60, cy - r - 70, scale=6)
     else:
-        hw, hh = int((xs.max() - xs.min()) * 0.75) + 60, int((ys.max() - ys.min()) * 0.75) + 50
+        hw = min(int((xs.max() - xs.min()) * 0.6) + 60, int(0.22 * W))
+        hh = min(int((ys.max() - ys.min()) * 0.6) + 50, int(0.3 * H))
         ang = np.radians(-4.0)
         u = (xx - cx) * np.cos(ang) + (yy - cy) * np.sin(ang)
         v = -(xx - cx) * np.sin(ang) + (yy - cy) * np.cos(ang)
@@ -360,6 +372,8 @@ def main(argv):
         toggle()
     elif cmd == "strokes":
         strokes()
+    elif cmd == "strokes-frames":
+        strokes(scale=2, steps=6, frames_dir=argv[1])
     elif cmd == "window":
         windows()
     else:

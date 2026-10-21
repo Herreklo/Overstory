@@ -173,7 +173,7 @@ ERA_WORDS = dict(classical="classical (empire)", chalet="Swiss chalet", jugend="
 SCOPE_WORDS = dict(all="all of them", street="those on the front", upper="those on the upper floor",
                    ground="those on the front of the ground floor", back="those at the back")
 STOREY_WORDS = {1000: "one-storey", 1500: "storey-and-a-half", 2000: "two-storey", 2500: "two-and-a-half-storey"}
-ADD_WORDS = dict(veranda="a balcony", lean_to="a lean-to", bislag="a porch", bay="a bay window", dormers="dormers", ark="a cross-gable")
+ADD_WORDS = dict(veranda="a glazed veranda with a balcony on it", lean_to="a lean-to", bislag="a porch", bay="a bay window", dormers="dormers", ark="a cross-gable")
 
 
 def event_words(e, diary=None):

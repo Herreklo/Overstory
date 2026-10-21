@@ -15,17 +15,32 @@ import random
 import sys
 
 ROOT = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".."))
+sys.path[:0] = [os.path.join(ROOT, "blender", "resolver"), os.path.join(ROOT, "blender", "generators")]
 YEARS = (1989, 2000, 2010, 2020)
 
 
 def record(diaries):
+    """Each house's events in words, as the page has them, and for a built event what the house was built with (its
+    additions, which the resolver chose from the era's habits and the owner's wealth), so the coder can tell a part
+    the house was built with from a false history."""
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    from time_key import event_words, ADD_WORDS
+    from resolve import resolve
     out = {}
     for letter, d in diaries.items():
         evs = sorted(d["events"], key=lambda e: (e["year"], e["id"]))
-        sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-        from time_key import event_words
+
+        def words(e):
+            w = event_words(e, d)
+            if e["kind"] == "built":
+                plan = resolve(d, e["year"], 1989)
+                adds = [ADD_WORDS.get(a["kind"], a["kind"]) for a in (plan or {}).get("additions", []) if a["event"] == e["id"]]
+                if adds:
+                    w += "; built with " + ", ".join(adds)
+            return w
+
         out[letter] = dict(
-            events=[dict(id=f"{letter}{e['id']}", year=e["year"], what=event_words(e, d), cause=e.get("cause", "")) for e in evs],
+            events=[dict(id=f"{letter}{e['id']}", year=e["year"], what=words(e), cause=e.get("cause", "")) for e in evs],
             pairs={f"{a}-{b}": [f"{letter}{e['id']}" for e in evs if a < e["year"] <= b] for a, b in zip(YEARS, YEARS[1:])})
     return out
 

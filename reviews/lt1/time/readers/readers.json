@@ -61,5 +61,19 @@
   "role": "player",
   "first": "1",
   "model": "sonnet"
+ },
+ {
+  "id": "W1",
+  "arm": "way-strokes",
+  "role": "resident",
+  "first": "1",
+  "model": "sonnet"
+ },
+ {
+  "id": "W2",
+  "arm": "way-window",
+  "role": "resident",
+  "first": "1",
+  "model": "sonnet"
  }
 ]

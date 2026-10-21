@@ -1,0 +1,22 @@
+{"told_more": ["record", "The views gave me the order of the four frames and the visible changes (B's shopfront and balcony, D reglazed, E boarded, A's shopfront removed, C's casings), but no dates before 1989, no causes and no eras, and they led me wrong on several points: I dated the frames about a century too early, read C's 1989 windows as original, E as lived in until 2008, and B's roof as a later re-roofing. The record gives the date, the cause and the owner behind every change, and it holds what clay views cannot show at all: A's 1912 mansard and 1931 shopfront, B's 1935 fire and 1936 rebuild, C's 1971 window replacement, D's roof leaking, E vacant since 1993, and every repaint. The views were still the better way to see that the changes were few and local, and how the houses stand to one another on the lane."],
+ "misled": [
+  {"claim": "C's plain windows in 1989 were the original ones, and the later casings were an alteration.", "confidence_then": 2},
+  {"claim": "C's front windows were given casings in 2010-2020 as the second stage of the same careful renewal that started with the gable window, finishing what the owner began.", "confidence_then": 2},
+  {"claim": "E was lived in and kept in 1989 and 2000, with only the windows to go on. The record says it was empty and neglected from 1993.", "confidence_then": 2},
+  {"claim": "E was vacated between 2000 and 2010, and its boarded windows show when that happened. The record says it was vacated in 1993; the boards went up in 2008 after a break-in.", "confidence_then": 3},
+  {"claim": "One household may have moved from E down to D, because the boarding moved from D to E. The record gives two unrelated causes: a young family bought D, and E's heirs left it empty.", "confidence_then": 1},
+  {"claim": "B's roof looked like a later metal re-roofing, from before 1989. The record has it built in 1936 with a flat roof.", "confidence_then": 1},
+  {"claim": "B was given a glazed ground-floor veranda with a balcony above it in 2000-2010. The record has only a balcony over the lane (2003); it does not hold a glazed veranda.", "confidence_then": 3},
+  {"claim": "A's oriel bay and its steep banded roof were later alterations (I rated additions as changed). The record has the house built in 1912 with a mansard roof.", "confidence_then": 1},
+  {"claim": "I dated the frames to roughly 1890, 1910, 1930 and 1960 from the style of the shopfront, the veranda and the casings. The real years are 1989 to 2020. The order was right, and the dates were wrong by about a century.", "confidence_then": 1},
+  {"claim": "D's glazed windows in 2010 and 2020 were original ones that had been uncovered. The record says they were copies made after a restoration, after the front windows had been replaced in 1965.", "confidence_then": 1},
+  {"claim": "E's glazed windows in 1989 and 2000 were original. The record says the front windows were replaced in 1965.", "confidence_then": 1},
+  {"claim": "D's lean-to was on its side. The record says it was built at the back in 1950.", "confidence_then": 1}
+ ],
+ "views_showed": [
+  "The record lists D (reopened 2007) and E (boarded 2008) as two separate events. In the views, the empty and boarded state clearly swaps from D to E between 2000 and 2010, so the lane's empty house changes from the one on the rock to the one at the head.",
+  "From the foot of the lane, a boarded E at the top is what closes the view up it, and the balcony is a solid mass over the lane at B. The record gives neither the sightline nor the size of B's addition.",
+  "C's 1998 copies and its 2011 factory windows both read as cased old-style windows, so the views show that a cheap fitting of 'old style' windows can pass for careful restoration, and that I could not tell the two apart.",
+  "A is a single mansard house with its original window pattern in 2020, and nothing on its face shows the 85 years in which it was a shop. A reader of the views alone would not see that history.",
+  "The corner changed only a little and in a few places between 1989 and 2020: the rest of the town was identical in the city view, so the changes were house by house."
+ ]}
