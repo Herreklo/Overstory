@@ -54,6 +54,14 @@ The channel must not eat either project's usage (Øystein: "then I will lose tok
 - reply only when there is something to act on;
 - nothing runs because a note arrived;
 - an idea from the other side waits for the step where it matters.
+
+What earns a note to Understory, gathered at a milestone:
+- requests backed by tests (the bundle);
+- a change in what we need from the engine, or when we need it;
+- findings that bear on its method;
+- our milestones that touch its plans, such as its human test.
+
+What we watch for from Understory: changes to the front door, the export or the schema; kept rounds that change the data (homes, the start year); its human test's dates and results; and lessons on method.
 - **Parts made with care, assembled by generators** (`blender-generators` skill). Each part is built and judged one at a time; the generator chooses, fits and places approved parts and does not invent their geometry.
 - **Seeded and deterministic** (`unity-conventions` skill): the same building looks the same until its history changes it.
 - **Visuals may elaborate world facts, but may not contradict them or falsely claim a causal history.** Five kinds of thing are on screen: canonical facts (from the engine), visual interpretations of facts (a shabby front from age and upkeep), non-semantic texture (stable, seeded, claims no history: woodgrain, a lean, minor clutter), perceived information (a person's account, or a record such as a poster or a newspaper report, which may be wrong), and local scene state (committed back to the engine only when it matters). Anything that reads as history must be a fact.
