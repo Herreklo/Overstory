@@ -653,6 +653,27 @@ def _nearest_on_ways(x, y):
     return best
 
 
+def _climbable_on_ways(x, y, z, slope, reach):
+    """The nearest point on the edge of any way, within reach, that a path from (x, y, z) can climb to at no more than
+    slope up for each metre along; None if there is none."""
+    best = None
+    for lane in LANES:
+        pts = [(p[0], p[1], p[2]) for p in lane["pts"]]
+        for (x1, y1, z1), (x2, y2, z2) in zip(pts, pts[1:]):
+            seg = math.hypot(x2 - x1, y2 - y1)
+            for t in np.linspace(0.0, 1.0, max(2, int(seg / 0.5))):
+                px, py, pz = x1 + (x2 - x1) * t, y1 + (y2 - y1) * t, z1 + (z2 - z1) * t
+                c = math.hypot(x - px, y - py)
+                if c < 1e-6:
+                    continue
+                k = (lane["width"] / 2) / c
+                ex, ey = px + (x - px) * k, py + (y - py) * k
+                dd = c - lane["width"] / 2
+                if 0.5 < dd <= reach and abs(z - pz) / dd <= slope and (best is None or dd < best[0]):
+                    best = (dd, (ex, ey, pz))
+    return best
+
+
 def door_paths():
     """Every door gets its way: a garden path or steps from the door to the nearest street, lane or stair."""
     added = []
@@ -663,6 +684,12 @@ def door_paths():
         d, p, lane = _nearest_on_ways(x, y)
         if d <= 2.5 or p is None or d > 25.0:
             continue
+        # (a builder joins a door to a point on a way its steps can climb to: the nearest one a stair can take, at most
+        # 0.6 up for each metre along; straight to the nearest point, the way to D rose 4.7 m in 3 m, a ladder)
+        if abs(b["base"] - p[2]) / max(d, 0.1) > 0.6:
+            q = _climbable_on_ways(x, y, b["base"], 0.6, 25.0)
+            if q is not None:
+                d, p = q
         rise = abs(b["base"] - p[2])
         added.append(dict(name=f"the way to {b['name']}", width=1.4, door=True, kind="steps" if rise / max(d, 0.1) > 0.12 else "path",
                           pts=[(p[0], p[1], p[2]), (x, y, b["base"])]))
