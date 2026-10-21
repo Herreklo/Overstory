@@ -66,6 +66,33 @@ Each with its own identity from facts (where it came from, how it was worked, ho
 | Interiors | rooms as space and stuff by era and household | planned (plan step 8) |
 | The region | other towns, farms, roads, the sea routes | planned (plan step 10) |
 
+## Research coverage
+
+Every system, material and kind is studied twice before it is built (`CLAUDE.md`: research the subject and the craft): its **subject** (what it is, its facts, history and look) and its **craft** (how the best studios and masters build it at quality and scale, for our stack). A gap here blocks building. "Running" means the study is being written.
+
+| Area | Subject | Craft |
+| --- | --- | --- |
+| Light and colour | `colour-and-shading.md`, `masters-of-colour.md` (thin) | `lighting-and-colour.md` (running) |
+| Water, wear, growth, repairs | `repairs.md`, `stone.md`, `nature.md` | `materials-at-scale.md`, `history-in-things.md` (running) |
+| History in things | `world-that-remembers.md`, `house-changes.md`, `repairs.md` | `history-in-things.md` (running) |
+| Tiers, instancing, quality control | `tools-and-performance.md` (thin) | `performance-at-scale.md` (running) |
+| Kits and generators | `generating-the-past.md` (thin) | `kits-and-generation.md` (running) |
+| Towns and cities | `urban-design.md`, `city-forces.md`, `city-types.md`, `town-change.md`, `stavanger-centre.md` | `kits-and-generation.md`, `urban-design.md` |
+| Stone, made | `stone.md`, `repairs.md` | `materials-at-scale.md`, `kits-and-generation.md`, `performance-at-scale.md` (running) |
+| Land, rock, water, coast | `nature.md`, `stone.md` | `land-rock-and-water.md` (running) |
+| Buildings and their parts | `house-changes.md`, `wooden-town-architecture.md` (running) | `kits-and-generation.md`, `materials-at-scale.md` (running) |
+| Trees and nature | `trees.md`, `vegetation.md`, `park-trees.md`, `nature.md` | `animation-and-motion.md` (wind), `performance-at-scale.md` (running); ground cover craft: **gap**, before plan step 3 |
+| People as models | `people.md`, `people-deep-dive.md` | `characters.md` (running) |
+| Behaviour on screen | `people.md` (thin) | `behaviour-on-screen.md` (running) |
+| Animation and motion | `what-moves.md` (thin) | `animation-and-motion.md` (running) |
+| Street things, vehicles, boats | `between-buildings.md`, `what-moves.md` (thin) | **gap**, before plan step 6 |
+| Signs, lettering, records | `interface.md` (thin) | **gap**, with the houses' shopfronts (partly in `wooden-town-architecture.md`) |
+| Interiors | `scenes-and-sound.md` (thin) | **gap**, before plan step 8 |
+| Weather and seasons | `trees.md` (seasons), `lighting-and-colour.md` (partly) | **gap**, before plan step 9 |
+| Camera and composition | `visual-direction.md` | **gap**, before the play camera |
+| Sound and music | `scenes-and-sound.md` (thin) | **gap**, before scenes |
+| Interface and reading the world | `interface.md` (thin) | **gap**, before play |
+
 ## How a new thing joins
 
-A kind joins by a checklist (`docs/living-fabric.md`, Making it nice to work with): its parts made once and shaped on a quick sheet; its material, or a new one with its identity; which shared systems act on it and how (water, wear, growth, repairs); its facts, by rule until the engine has them; its tiers and counts; one foreign-pack part; a variety sheet in the game's light; a strict review; Øystein's judgement. A material joins with its pigment, grain, working, water profile, wear and crack rates, and how it ages. A shared system is built once and every kind and material takes it.
+A kind joins by a checklist (`docs/living-fabric.md`, Making it nice to work with): its subject and craft researched (above); its parts made once and shaped on a quick sheet; its material, or a new one with its identity; which shared systems act on it and how (water, wear, growth, repairs); its facts, by rule until the engine has them; its tiers and counts; one foreign-pack part; a variety sheet in the game's light; a strict review; Øystein's judgement. A material joins with its pigment, grain, working, water profile, wear and crack rates, and how it ages. A shared system is built once and every kind and material takes it.
