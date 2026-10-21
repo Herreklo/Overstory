@@ -24,7 +24,9 @@ What is open and what is next. Every session reads this page first, so it stays 
 
 The week's plan starts from the architecture (`docs/plan.md`, Next week; steps in `docs/research/building-blocks-decisions.md` §13).
 1. **The gully port's first steps,** on Opus, a commit each: 0a a fresh export and baseline; 0b seeds on one hash spec; 1 the schema files; 2 the stage split (`kinds/stair.json`, geometry hash unchanged). Then 3, history as a function.
-2. **The scale test,** in its own session, with the pass budget and the measurements the architecture leaves provisional (`docs/building-blocks.md`, Open until measured). Results go to `docs/research/scale-test.md`.
+   - *Sequencing:* step 0a is the scale-test session's step 2 (the gully exported again, hashed, golden views accepted), so the port doesn't redo it.
+   - *Start:* the port starts in its own fresh Opus session when the scale test reports, not before. Heavy Blender or Unity runs beside the harness would skew its frame times, and Unity's batch mode locks the project.
+2. **The scale test,** in its own session (started 21 October, evening), with the pass budget and the measurements the architecture leaves provisional (`docs/building-blocks.md`, Open until measured). Results go to `docs/research/scale-test.md`.
 3. **The cut line:** the port is 13.5 to 17.5 Opus-days, 6.5 to 8 through step 3, against three days. Friday's milestone is steps 0 to 2 reviewed, step 3 as far as it got.
 
 ## Running now
@@ -43,6 +45,8 @@ When the playtest report lands:
 2. Publish it as a private Artifact page for Øystein, with charts of engagement over rounds, lives on against lives off, and the ranking (promised to him).
 3. One Fable review of what the playtests taught, from a lean packet. Opus agents digest the report first, then Fable judges the must-improve register and the first-game options' recommendation together.
 4. Post the register on #60, short, with links.
+
+**Housekeeping: the dates.** Many labels say "22 October" for work done on 20 or 21 October; they were first written in the early hours of 21 October. Fix them from `git blame`, setting each label to the date of the commit that wrote it. Check each change by eye, since a line like "21 and 22 October" needs more than a swap. Leave real dates alone: the Bergen photo, the 1998 records, `usage_scan.py`'s range, and the playtests' own files while they run.
 
 Then, on Opus:
 - a review of the playtest programme (`docs/research/playtesting.md`);
