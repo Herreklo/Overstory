@@ -72,6 +72,7 @@ namespace Overstory.Perf
             public PerfRunner.Stat readMs, uploadMs, chunkMs, coreChunkMs;
             public double mbPerSecond;
             public long rssBefore, rssAfter, monoBefore, monoAfter;
+            public long footprintBefore, footprintAfter, footprintEnd;   // the system's own count, GPU memory included
             public double[] msEach;
             public long[] bytesEach;
             public bool[] coreEach;
@@ -89,6 +90,7 @@ namespace Overstory.Perf
             var r = new Report { dir = dir, size = plan.size, core = plan.core, chunk = plan.chunk, plots = plan.plots, chunks = files.Length };
             System.GC.Collect();
             r.rssBefore = Rss();
+            r.footprintBefore = Footprint();
             r.monoBefore = System.GC.GetTotalMemory(true);
             var read = new List<double>();
             var upload = new List<double>();
@@ -125,11 +127,13 @@ namespace Overstory.Perf
             r.coreEach = cores.ToArray();
             System.GC.Collect();
             r.rssAfter = Rss();
+            r.footprintAfter = Footprint();
             r.monoAfter = System.GC.GetTotalMemory(true);
             report = r;
             Debug.Log($"[DistrictLoader] {r.chunks} chunks, {r.fileBytes / 1048576.0:F0} MB in {r.loadSeconds:F1} s; a chunk {r.chunkMs.median:F2} ms " +
                       $"(95th {r.chunkMs.p95:F2}), a core chunk {r.coreChunkMs.median:F2} ms; L0 {r.l0Triangles:N0}, shells {r.shellTriangles:N0}, " +
-                      $"ground {r.groundTriangles:N0} triangles; resident {r.rssBefore / 1048576} -> {r.rssAfter / 1048576} MB");
+                      $"ground {r.groundTriangles:N0} triangles; resident {r.rssBefore / 1048576} -> {r.rssAfter / 1048576} MB, " +
+                      $"footprint {r.footprintBefore / 1048576} -> {r.footprintAfter / 1048576} MB");
             return r;
         }
 
@@ -261,6 +265,31 @@ namespace Overstory.Perf
             catch (System.Exception e)
             {
                 Debug.LogWarning($"[DistrictLoader] no resident memory: {e.Message}");
+                return -1;
+            }
+        }
+
+        /// <summary>The process's physical footprint (bytes), from footprint(1): what macOS counts against the machine's
+        /// memory, the GPU's buffers and textures included, unlike the resident size.</summary>
+        internal static long Footprint()
+        {
+            try
+            {
+                var psi = new System.Diagnostics.ProcessStartInfo("/usr/bin/footprint", $"{System.Diagnostics.Process.GetCurrentProcess().Id}")
+                    { UseShellExecute = false, RedirectStandardOutput = true };
+                using (var p = System.Diagnostics.Process.Start(psi))
+                {
+                    string s = p.StandardOutput.ReadToEnd();
+                    p.WaitForExit();
+                    var m = System.Text.RegularExpressions.Regex.Match(s, @"Footprint: ([0-9.]+) (B|KB|MB|GB)");
+                    double v = double.Parse(m.Groups[1].Value, CultureInfo.InvariantCulture);
+                    string u = m.Groups[2].Value;
+                    return (long)(v * (u == "GB" ? 1 << 30 : u == "MB" ? 1 << 20 : u == "KB" ? 1 << 10 : 1));
+                }
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogWarning($"[DistrictLoader] no footprint: {e.Message}");
                 return -1;
             }
         }

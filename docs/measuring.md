@@ -105,7 +105,7 @@ Earlier runs, measuring each segment once and then in rounds without the offscre
 | Low sun | 97.8 to 113.4 | 84.0 to 96.3 | 10 to 12 | 13.8 to 15.9 million | 131 to 147 | 54 to 70 |
 | Blue hour | 27.2 to 40.1 | 25.3 to 34.8 | 29 to 40 | 5.5 million | 76 | 0 |
 
-Memory in use: 231 to 234 MB. The main thread takes about a millisecond: the corner is bound by the GPU.
+Memory in use: 231 to 234 MB by Unity's count, which leaves out the GPU's memory; the system counts 1.4 GB for the same player (The scale test, below). The main thread takes about a millisecond: the corner is bound by the GPU.
 
 The birch, in low sun (offscreen, with and without it):
 
@@ -195,6 +195,29 @@ Every measured pass but the sky is over twice its budget in at least one light, 
 
 The proposed numbers are provisional until each fix is A/B'd on the harness.
 
+## The scale test
+
+**What it measures.** What the town costs at city scale on the M4: a district 2 km across (8,519 test-quality houses on the clay ground, the 512 m core at L0, shells everywhere), loaded into the built player and drawn with the corner's shaders and passes. It gives build time, disk, memory, the frame at the judging views, a chunk's load and rebuild time, and the chunks a second the camera's movement asks for. What the numbers mean for the architecture is in `docs/research/scale-test.md`, with how to run it.
+
+**Baseline** (22 October; `reviews/perf/2026-10-22/district/`, `scale-report.md` and `run-1/summary.md`):
+
+| | |
+| --- | --- |
+| Generation (Blender's Python, 8 processes) | 222 s for 4.2 km²; a house built in 64 ms alone (95 ms with 8 at once), baked in 0.6 s (0.93 s) |
+| Disk | 708 MB of chunks: L0 708 KB a house (2.1 GB a km² of core), shells 1.6 MB a km², the 2 m ground 37 MB a km², records 315 bytes a house |
+| A house's envelope (from its shell) | 444 m² |
+| Frame, near (L0 to 200 m, shells beyond), beams off | street stop 20.8 / 26.5 / 28.8 ms (blue hour / drizzle / low sun), 12 m 23.0 / 28.8 / 30.4, city camera 25.0 / 30.5 / 29.9 |
+| Frame, L0 for the whole core | city camera 45.5 ms in the blue hour (15 million triangles) |
+| The beams in low sun | about 59 ms in every view |
+| Main thread | 0.4 to 0.7 ms; 1.1 to 1.4 ms at 2,900 draws |
+| Memory (footprint, GPU included) | the corner's player 1.4 GB; with the district loaded 2.3 GB; 2.6 GB after every view has drawn |
+| Loading a chunk (main thread) | 0.28 ms + 0.63 ms a MB; a core chunk (8.8 MB) 5.6 ms, 95th 9.1 |
+| Rebuilding a chunk (265,000 triangles in 1,384 parts) | placing 24.2 ms in C# (Mono), 1.8 ms in Burst; uploading 1.6 ms |
+| A 1024 by 512 history page | drawn 0.7 ms, read back 0.7 ms, compressed on the CPU to DXT5 8.7 ms (fast 5.3) |
+| The camera's demand, main thread a second | walk 1.7 ms, drive 17 ms, the city camera's 300 m/s pan 84 ms |
+
+**The harness's memory column undercounts.** It reads Unity's "total used" (231 to 248 MB), which leaves out the GPU's buffers and textures; the system's footprint for the same player is 1.4 GB before the district. `DistrictLoader.Footprint` reads it from `footprint(1)`; the harness should report it for every run.
+
 ## Motion sheets and the shimmer measure
 
 **What it measures.** How the gully looks moving, as the player sees it, and how much its fine detail shimmers. `LT1Motion.Sheets` stages the gully as the golden views do and renders it along four camera paths at 60 frames a second, every frame a `PlayerFrame` (2560 by 1440, one sample a pixel, the game's MSAA 4x), one render a frame as the game draws, written as a PNG sequence:
@@ -237,6 +260,7 @@ Nothing was installed for these tools. These would make them better, each with i
 
 - **The swim test** (`docs/research/painted-marks-in-motion.md`, Look tests, 2): each frame warped onto the next by its motion vectors and what is left measured, so a mark that slides on its surface is told from one that only aliases. It needs depth or motion vectors written beside each frame of a motion sheet.
 - **The harness's other switches** (`docs/research/performance-at-scale.md`, The performance harness, 5): the Resident Drawer and GPU occlusion, the shadows' reach and cascades, a forced level per kind, each shader drawn flat in turn (street, stone, tree), and each anti-aliasing candidate against MSAA 4×. Each is an A/B on the same segments, as the passes and the birch already are.
+- **The footprint in every run:** the system's count of the player's memory beside Unity's, for every segment, so memory budgets are judged on what the machine holds.
 - **Hashes from every generator.** `stone.py` and `wall.py` write them; the trees, the houses and the clay should too as they are ported onto the building blocks.
 - **Golden views of more than the gully**, as each kind joins: the birch, the corner's houses, the clay heart from its stops.
 

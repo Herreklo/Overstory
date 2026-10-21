@@ -442,6 +442,8 @@ namespace Overstory.Perf
                 if (drawn[i] != null)
                     drawn[i].enabled = drawnOn[i];
 
+            if (loaded != null)
+                loaded.footprintEnd = DistrictLoader.Footprint();     // after every segment has drawn it
             var run = new Run
             {
                 label = label,
@@ -502,7 +504,8 @@ namespace Overstory.Perf
                           $"{d.fileBytes / 1048576.0:F0} MB on disk, loaded in {d.loadSeconds:F1} s ({d.mbPerSecond:F0} MB/s); a chunk " +
                           $"{d.chunkMs.median:F2} ms (95th {d.chunkMs.p95:F2}, worst {d.chunkMs.max:F2}), a core chunk {d.coreChunkMs.median:F2} ms " +
                           $"(95th {d.coreChunkMs.p95:F2}); triangles: L0 {d.l0Triangles:N0}, shells {d.shellTriangles:N0}, ground {d.groundTriangles:N0}; " +
-                          $"resident memory {d.rssBefore / 1048576} MB before, {d.rssAfter / 1048576} MB after.\n\n");
+                          $"resident memory {d.rssBefore / 1048576} MB before, {d.rssAfter / 1048576} MB after; footprint (GPU memory included) " +
+                          $"{d.footprintBefore / 1048576} MB before, {d.footprintAfter / 1048576} MB after, {d.footprintEnd / 1048576} MB at the end.\n\n");
             var b = run.bench;
             if (b != null && b.vertices > 0)
                 sb.Append($"Rebuilding {b.chunk} ({b.triangles:N0} triangles, {b.vertices:N0} vertices, {b.parts} parts): placed in C# " +
