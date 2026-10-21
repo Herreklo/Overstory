@@ -37,24 +37,29 @@ half3 OS_LichenAt(float2 q, half years, half seed, float footprint)
     float2 w = float2(OS_Noise(q * k * 0.6 + seed * 5.1), OS_Noise(q * k * 0.6 + 9.7 + seed * 2.3)) - 0.5;
     float2 qq = q * k + w * 1.8;
     half field = (half)(OS_Noise(qq) * 0.55 + OS_Noise(qq * 2.3 + 4.4) * 0.3 + OS_Noise(qq * 5.1 + 1.3) * 0.15);
+    // the edge: lobed at a centimetre and crumbling at a millimetre or two (a smooth threshold read as spilt paint)
     half lobe = (half)(OS_Noise(q * 90.0 + seed * 3.0) - 0.5);
-    half share = saturate((years - 10.0h) / 110.0h) * 0.34h * (half)_OS_LichenRate.z / 0.85h;
+    half crumb = (half)(OS_Noise(q * 330.0 + seed * 7.0) - 0.5);
+    // how much each stone carries is its own (its skin, its tilt to the rain), about a third either way
+    half share = saturate((years - 10.0h) / 110.0h) * 0.34h * (half)_OS_LichenRate.z / 0.85h
+               * (0.65h + 0.7h * frac(seed * 7.31h));
     half pq = clamp(1.0h - share, 0.002h, 0.998h);
     half th = 0.5h + 0.138h * (half)(log(pq / (1.0h - pq)) / 1.702);
-    half f = field + lobe * 0.05h;
-    half cover = smoothstep(th - 0.006h, th + 0.006h, f);
-    // the rim: a thin band just inside the crust's edge
-    half rim = cover * (1.0h - smoothstep(th + 0.006h, th + 0.03h, f));
-    // a few young colonies between, a centimetre or less
+    half f = field + lobe * 0.06h + crumb * 0.035h;
+    half cover = smoothstep(th - 0.004h, th + 0.004h, f);
+    // the dark line only where colonies crowd and meet (map lichen's prothallus), never round every crust (a dark
+    // outline round each read as camouflage decals)
+    half crowd = smoothstep(0.55h, 0.72h, (half)OS_Noise(q * 6.0 + seed * 1.7));
+    half rim = cover * (1.0h - smoothstep(th + 0.004h, th + 0.018h, f)) * crowd * 0.6h;
+    // a few young colonies between, a centimetre or less, lobed
     const float cell = 0.03;
     float2 p2 = q / cell;
     float2 h2 = OS_GrowthHash2(floor(p2) + seed * 11.3);
     half r2 = saturate(years / 40.0h) * (0.12h + 0.18h * (half)h2.y);
-    if (h2.x < share * 0.35h)
+    if (h2.x < share * 0.18h)
     {
-        half d2 = (half)length(frac(p2) - 0.5) / max(r2, 1e-3h) + lobe * 0.6h;
-        half young = 1.0h - smoothstep(0.8h, 1.0h, d2);
-        rim = max(rim, young * smoothstep(0.6h, 0.85h, d2));
+        half d2 = (half)length(frac(p2) - 0.5) / max(r2, 1e-3h) + lobe * 1.2h + crumb * 0.8h;
+        half young = 1.0h - smoothstep(0.85h, 1.0h, d2);
         cover = max(cover, young);
     }
     half age = saturate((f - th) / 0.1h) * saturate(years / 100.0h);
@@ -82,19 +87,43 @@ OSGrowth OS_GrowthLayer(half3 albedo, half smoothness, float2 q, half lichenYear
     half3 li = OS_LichenAt(q, lichenYears, seed, footprint);
     // the crust: cracked into tiny plates (areoles) a millimetre or two across
     half areole = (half)OS_Noise(q * 700.0 + seed * 3.3);
-    half3 lich = lerp(_OS_Lichen.rgb, _OS_LichenOld.rgb, li.y) * (0.9h + 0.16h * areole);
+    // a crust's inside is never one flat pale: older and greyer in places, a few dark fruiting dots
+    half mottle = (half)OS_Noise(q * 28.0 + seed * 2.1);
+    half dots = smoothstep(0.87h, 0.9h, (half)OS_Noise(q * 140.0 + seed * 5.3));
+    half3 lich = lerp(_OS_Lichen.rgb, _OS_LichenOld.rgb, saturate(li.y + (mottle - 0.5h) * 0.8h)) * (0.9h + 0.16h * areole);
+    lich *= 1.0h - 0.3h * dots;
     lich = lerp(lich, _OS_LichenRim.rgb, li.z);
     albedo = lerp(albedo, lich, li.x);
     smoothness = lerp(smoothness, 0.08h, li.x);
     half h = li.x * 0.8h;
-    // moss: where the surface stays damp and is not trodden; more where the town hides the sky
+    // moss: where the surface stays damp and is not trodden, more where the town hides the sky; in cushions a few
+    // centimetres across that crowd into a line where it is dampest (a noise field read as a flat olive tint), each
+    // a low dome whose top the light finds (its relief, never a darker pigment), fresher on top, older and browner
+    // at its edges
     half m = moss * lerp(1.3h, 0.9h, sky);
-    half tuft = (half)(OS_Noise(q * 24.0 + 3.0) * 0.6 + OS_Noise(q * 70.0) * 0.4);
-    half cover = smoothstep(0.42h, 0.58h, m * (0.55h + 0.6h * tuft));
-    half3 mossc = lerp(_OS_MossOld.rgb, _OS_Moss.rgb, saturate(tuft * 1.4h - 0.1h));
+    float2 cq = q * 28.0 + seed * 3.7;
+    float2 ci = floor(cq);
+    half dome = 0.0h;
+    half fresh = 0.0h;
+    for (int j = -1; j <= 1; j++)
+    {
+        for (int i = -1; i <= 1; i++)
+        {
+            float2 cell = ci + float2(i, j);
+            float2 hh = OS_GrowthHash2(cell);
+            float2 pt = cell + 0.15 + 0.7 * hh;
+            // (cushions crowd and merge into a mat with an uneven edge: alone and round they read as polka dots)
+            half r = 0.75h + 0.5h * (half)OS_Hash(cell + 7.7);
+            half d = (half)length(cq - pt) / r + ((half)OS_Noise(q * 95.0 + cell * 0.37) - 0.5h) * 0.5h;
+            half dm = saturate(1.0h - d * d);
+            if (dm > dome) { dome = dm; fresh = (half)hh.y; }
+        }
+    }
+    half cover = smoothstep(0.3h, 0.5h, m * (0.5h + 0.8h * dome));
+    half3 mossc = lerp(_OS_MossOld.rgb, _OS_Moss.rgb, saturate(dome * 1.3h - 0.1h) * (0.6h + 0.4h * fresh));
     albedo = lerp(albedo, mossc, cover);
     smoothness = lerp(smoothness, 0.05h, cover);
-    h += cover * 0.8h;
+    h += cover * (0.6h + 1.8h * dome);
     g.albedo = albedo;
     g.smoothness = smoothness;
     g.height = h;

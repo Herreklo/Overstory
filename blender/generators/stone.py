@@ -210,9 +210,14 @@ def lay(spec, seed=1):
             lich_y = bare_y
             if lifted_y is not None and lifted_y < bare_y:
                 lich_y = np.where(((kind == 0) & (piece["edge"] < 0.06)) | (kind == 1) | (kind == 2), lifted_y, bare_y)
-            lichen = GR.lichen_years(lich_y, np.where(foot_on, traffic, traffic * 0.75))
-            if not foot_on:
-                lichen = lichen * 0.6     # (a riser's face less than a tread's quiet ends: rain and light reach it less)
+            # (lichen wants light and to dry out: it hugs a tread's front and nosing and the riser's face, and thins
+            # towards the damp back under the riser above, where moss takes over: a pale front and a dark back to
+            # every step, as at Dale, the board's 06)
+            if foot_on:
+                exposed = np.where(kind == 0, np.clip(1.0 - (along - 0.2) / 0.6, 0.25, 1.0), 1.0)
+            else:
+                exposed = np.full(len(P), 0.8)
+            lichen = GR.lichen_years(lich_y, np.where(foot_on, traffic, traffic * 0.75), exposed)
             back = (kind == 0) & foot_on & (along > 0.6)
             joint = (kind == 0) & (piece["edge"] < 0.05) & (P[:, 1] > 0.04)
             damp = np.where(back, np.clip((along - 0.6) / 0.3, 0.3, 1.0), 0.0) + np.where(joint & ~back, 1.0, 0.0) \
@@ -299,15 +304,18 @@ def lay(spec, seed=1):
             edges_r = widths(rng, W, below_r, lo=0.6, hi=2.2)
             below_r = edges_r[1:-1]
             hr = h - t_tr
+            # (the first step's riser is set into the ground, as a mason sets it, so the lane meets a block and not
+            # its bed)
+            sunk = 0.2 if i == 0 else 0.0
             for k in range(len(edges_r) - 1):
                 jl = rng.uniform(*JOINT) / 2 if k > 0 else 0.0
                 jr = rng.uniform(*JOINT) / 2 if k < len(edges_r) - 2 else 0.0
                 w = edges_r[k + 1] - edges_r[k] - jl - jr
                 dep = rng.uniform(*B["riser"])
-                piece = SL.slab(f"{spec['lane']}-{seed}-{fi}-{i}-r{k}", w, dep, hr, front_round=rng.uniform(0.002, 0.006),
+                piece = SL.slab(f"{spec['lane']}-{seed}-{fi}-{i}-r{k}", w, dep, hr + sunk, front_round=rng.uniform(0.002, 0.006),
                                 side_round=0.003, flake=0.1, chip=rng.uniform(0.006, 0.015), edge_jag=0.008, grid=0.16)
                 P = settler(rng, w, off * 0.5)(piece["V"])
-                put(P, piece, rng, -W / 2 + edges_r[k] + jl, i * g + ovh + rng.uniform(-0.004, 0.004), zfoot, False,
+                put(P, piece, rng, -W / 2 + edges_r[k] + jl, i * g + ovh + rng.uniform(-0.004, 0.004), zfoot - sunk, False,
                     YEAR - spec["built"], YEAR - spec["built"], bed_y)
             # a step reset in cement: its riser's bed pointed where it stands on the tread below
             if cemented and prev_tops:
@@ -409,7 +417,8 @@ def lay(spec, seed=1):
                        dict(V=np.concatenate(out["V"]), F=out["F"], COL=np.concatenate(out["COL"]),
                             UV0=np.concatenate(out["UV0"]), UV1=np.concatenate(out["UV1"]), UV2=np.concatenate(out["UV2"]),
                             UV3=np.concatenate(out["UV3"]),
-                            steps=n, rise=h, tread=g, life=record)))
+                            steps=n, rise=h, tread=g, life=record,
+                            a=[float(v) for v in a], b=[float(v) for v in b], width=float(W))))
     return meshes, origin
 
 
@@ -446,6 +455,7 @@ def build(which, unity=None, seed=1):
     obs = [make(name, m) for name, m in meshes]
     info = dict(name=f"stone_{which}", origin=[float(v) for v in origin],
                 flights=[dict(name=nm, steps=m["steps"], rise=round(m["rise"], 3), tread=round(m["tread"], 3),
+                              a=m["a"], b=m["b"], width=m["width"],
                               tris=sum(len(f) - 2 for f in m["F"]), life=m["life"]) for nm, m in meshes])
     print("STONE", {k: v for k, v in info.items() if k != "flights"},
           [(f["name"], f["steps"], f["tris"]) for f in info["flights"]])

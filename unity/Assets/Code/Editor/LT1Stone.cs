@@ -30,7 +30,10 @@ namespace Overstory.EditorTools
         const float Lens28 = 46.4f, Lens35 = 37.8f;
 
         [System.Serializable]
-        class Info { public string name; public float[] origin; }
+        class Flight { public string name; public float[] a; public float[] b; public float width; public int steps; public float rise; public float tread; }
+
+        [System.Serializable]
+        class Info { public string name; public float[] origin; public Flight[] flights; }
 
         static string Arg(string flag, string fallback)
         {
@@ -71,7 +74,8 @@ namespace Overstory.EditorTools
             m.SetColor("_Fresh", new Color(0.38f, 0.40f, 0.43f));
             m.SetColor("_Edge", new Color(0.58f, 0.565f, 0.55f));
             m.SetTexture("_GrainMap", AssetDatabase.LoadAssetAtPath<Texture2D>($"{Art}/slate_grain.png"));
-            m.SetVector("_Grain", new Vector4(1.0f, 1.0f, 0.14f, 0f));
+            // (the bedding plane's soft values at full strength read as cloud shadows across every tread)
+            m.SetVector("_Grain", new Vector4(0.4f, 0.35f, 0.14f, 0f));
             m.SetFloat("_Weather", 100f);
             m.SetVector("_Polish", new Vector4(0.06f, 0.42f, 0f, 0f));     // the worn line clean, scarcely darker
             m.SetVector("_Relief", new Vector4(0.0016f, 0.0012f, 0f, 0f));
@@ -113,7 +117,61 @@ namespace Overstory.EditorTools
             foreach (var r in Object.FindObjectsByType<MeshRenderer>(FindObjectsSortMode.None))
                 if (r.gameObject.name == "steps" && !Flag("-clay-steps"))
                     r.enabled = false;
+            if (!Flag("-clay-steps"))
+                SinkGround(info);
             return (go, origin);
+        }
+
+        /// <summary>
+        /// The clay ground carves a stepped lane as a ramp, and its coarse triangles lift the ramp over the
+        /// steps (a wedge over the first tread). Under each flight the ground is lowered to a line beneath
+        /// the foot of every riser (a line through points on a line stays under the steps), rising to the
+        /// treads' level a little beside the flight; in memory, for the frames, until the lane's own paving
+        /// meets the flight.
+        /// </summary>
+        static void SinkGround(Info info)
+        {
+            if (info.flights == null)
+                return;
+            foreach (var mf in Object.FindObjectsByType<MeshFilter>(FindObjectsSortMode.None))
+            {
+                if (!mf.gameObject.name.StartsWith("ground_heart"))
+                    continue;
+                var mesh = Object.Instantiate(mf.sharedMesh);
+                var v = mesh.vertices;
+                var l2w = mf.transform.localToWorldMatrix;
+                var w2l = mf.transform.worldToLocalMatrix;
+                foreach (var f in info.flights)
+                {
+                    var a = new Vector2(f.a[0], f.a[1]);
+                    var d = new Vector2(f.b[0] - f.a[0], f.b[1] - f.a[1]);
+                    float run = d.magnitude;
+                    var up = d / run;
+                    var right = new Vector2(up.y, -up.x);
+                    float slope = (f.b[2] - f.a[2]) / run;
+                    for (int i = 0; i < v.Length; i++)
+                    {
+                        var wp = l2w.MultiplyPoint3x4(v[i]);          // Unity (x, up, y)
+                        var p = new Vector2(wp.x, wp.z) - a;
+                        float s = Vector2.Dot(p, up), t = Mathf.Abs(Vector2.Dot(p, right));
+                        if (s < 0.05f || s > run + 0.3f || t > f.width / 2 + 1.6f)
+                            continue;
+                        // under the foot of every riser (3 cm in from the nosings, rises a centimetre off), and a
+                        // little beside the flight up to the treads' own level
+                        float inner = f.a[2] + (s - 0.03f) * slope - 0.12f;
+                        float beside = Mathf.Clamp01((t - f.width / 2) / 1.6f);
+                        float limit = inner + beside * (0.12f + f.rise);
+                        if (wp.y > limit)
+                        {
+                            wp.y = limit;
+                            v[i] = w2l.MultiplyPoint3x4(wp);
+                        }
+                    }
+                }
+                mesh.vertices = v;
+                mesh.RecalculateBounds();
+                mf.sharedMesh = mesh;
+            }
         }
 
         public static void Frames()
