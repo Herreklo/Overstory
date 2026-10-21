@@ -145,7 +145,7 @@ A unit with more than 65,536 takes a second slot. Swarms pick through tile and s
 **History maps store inputs:** rates (or the fields that make them) and age offsets per texel, reset years per piece and repair surface. Each layer is its material's curve at rate × (date − reset + offset). So a jump costs a uniform, and a watched town draws as a jumped one.
 - Maps serve every level, from the atlas UV. Per vertex sit only piece constants and what moves geometry (a hollow's rate), so no hand-over between carriers must match. *Provisional.*
 - The unit is the draw chunk. A part's texel comes from its material's target and its marks' smallest feature: 2 cm walked stone, 4 cm walls and trims, 8 cm roofs and ground. A chunk that mixes them packs each part's rectangle at its own texel into one set of pages, addressed by UV1; packing and mip gutters waste about 15 %. *Provisional.*
-- A rate change (a gutter, a fallen neighbour, falling care) rebakes the map region on the GPU, not the unchanged mesh. The chunk's invalidation table says per act which pages, instances and whether the mesh it dirties. Rebakes run behind the dated card, 2 ms GPU per 1024×512 page (*provisional*).
+- A rate change (a gutter, a fallen neighbour, falling care) rebakes the map region on the GPU, not the unchanged mesh. The chunk's invalidation table says per act which pages, instances and whether the mesh it dirties. Rebakes run behind the dated card, 2 ms GPU per 1024×512 page with its compression. Drawing a page takes 0.7 ms and reading it back 0.7 ms (a blit standing in for the bake's shader, so a floor). Compressing it on the CPU takes 5.3 to 8.7 ms (DXT5, since Unity's CPU path offers no BC7): three to six frames' streaming budget. So pages are compressed on the GPU, by an encoder the project does not have yet (*provisional:* the bake's own shader and that encoder, timed on the M4).
 - Intrinsic channels (face kind, edge distance, own occlusion) are in the mesh. Extrinsic ones are per instance, field tile or map, so a library sett carries its own lane's years: reset years in the chunk's piece table (by UV3's piece index) or the facts buffer, care in the facts buffer, feet and water held in P0. Damp is the shade's, from water held and the weather.
 - The light's inputs (sky seen, ground seen, openness, weather exposure) live in the place pages P0 and P1, with a two-channel bent normal at L0 to L2. Shells drop the bent normal; impostors have their own atlas.
 - Every shell carries its atlas (albedo and normal at the date, the light's inputs, the index), painted or plain. It is the one exception to inputs-only maps: the shell caches an output bake of pigment with slow history, invalidated per thing by the change query; drift stays live from the index's reset year. A cached evaluation is still the function. Format reserved at 3.1; the bake comes with the gully's shell.
@@ -193,9 +193,9 @@ The tiers in `docs/foundations.md` are judging bands, not switch distances. Tree
 
 **Units,** powers of two in metres, each with an id in the plan: 4 m draw-and-rebuild chunks at L0 and L1, cut at piece boundaries; 32 m cells at L2 and L3; 64 m land and streaming chunks (two cells); 128 m blocks (four cells). A change rebuilds the chunk, not the thing; at L2 it regenerates its run and re-merges the cell. GPU occlusion culls by bounding sphere, so a 33 m flight drawn whole is never culled. *Provisional:* the sizes.
 
-**Precision.** Records and plans hold positions as integers in mm. Meshes are Float32 relative to their own unit's corner, so a 128 m block holds 0.02 mm. Units are placed from the plan relative to a world origin, rebased to the camera's 64 m chunk when the camera passes 2 km from it; within 2 km a float holds 0.25 mm. Shaders that read absolute position (wind, fields) get the origin as a split global; marks read UV2 and ids, so a rebase moves none. *Provisional:* the rebase's hitch, measured in the scale test.
+**Precision.** Records and plans hold positions as integers in mm. Meshes are Float32 relative to their own unit's corner, so a 128 m block holds 0.02 mm. Units are placed from the plan relative to a world origin, rebased to the camera's 64 m chunk when the camera passes 2 km from it; within 2 km a float holds 0.25 mm. Shaders that read absolute position (wind, fields) get the origin as a split global; marks read UV2 and ids, so a rebase moves none. *Provisional:* the rebase's hitch. The scale test drew to 2 km in Unity's float coordinates (0.24 mm steps) without a rebase.
 
-**Repetition.** Only what really was mass-produced repeats. Bricks, roof tiles, factory windows and doors, catalogue houses, and setts (hand-split but to standard sizes) come from libraries, each instance varied by placement, wear and history. Everything made by hand for one place is its own: a unique fitted piece, made in the player per chunk from its record and seed, costing build time and memory, never disk. One stair with its walls is 816,000 triangles and 36 MB at full detail today; the levels and the 4 m chunk keep unique pieces at full detail only near the camera. A repeat-finding check on golden views proves no library piece is found. *Provisional:* only hand-split wall stones not made to standard sizes, which stay their own unless the scale test's memory for unique close chunks breaks the geometry pool; then Øystein decides whether they may come from a large library where no repeat can be found.
+**Repetition.** Only what really was mass-produced repeats. Bricks, roof tiles, factory windows and doors, catalogue houses, and setts (hand-split but to standard sizes) come from libraries, each instance varied by placement, wear and history. Everything made by hand for one place is its own: a unique fitted piece, made in the player per chunk from its record and seed, costing build time and memory, never disk. One stair with its walls is 816,000 triangles and 36 MB at full detail today; the levels and the 4 m chunk keep unique pieces at full detail only near the camera. A repeat-finding check on golden views proves no library piece is found. Hand-split wall stones not made to standard sizes stay their own too, since the geometry fits its pool with levels: at test quality, L0 for every house in the 300 m streaming radius would be 600 MB, and L0 reaches only 20 m (the scale test). Only if House A's final-quality chunks break the pool does Øystein decide whether those stones may come from a large library where no repeat can be found.
 
 **Hand-over.** A dithered cross-fade, never animated, since that breaks the Resident Drawer. Both sides share marks, seed and history address, and switch where values match. At L2 to L3 it fades per cell with hysteresis. *Provisional.*
 
@@ -211,7 +211,7 @@ Reasons: decisions §6.
 
 ## Budgets
 
-All provisional, replaced by the harness's run with passes toggled and by the scale test. The baseline: the blue hour 25 to 35 ms with 5.5 million triangles, 76 draws and no casters; drizzle 28 to 42; low sun 84 to 96; the birch 10 to 16; memory 231 MB; the main thread about 1 ms, so the frame is GPU-bound.
+All provisional until each fix is A/B'd on the harness. The measurements are the harness's pass run (`docs/measuring.md`, The pass budget) and the scale test (`docs/research/scale-test.md`). The baseline: the blue hour 25 to 35 ms with 5.5 million triangles, 76 draws and no casters; drizzle 28 to 42; low sun 84 to 96; the birch 10 to 16; memory 1.4 GB by the system's footprint; the main thread about 1 ms, so the frame is GPU-bound. Scale adds no new failure to the frame: a 2 km district, with L0 to 200 m and shells beyond and the beams off, draws the street stop, 12 m and city camera in 21 to 25 ms in the blue hour and 27 to 31 in drizzle and low sun, the same per-pixel floor as the corner.
 
 **Frame by pass** (GPU ms at 1440p; 14.0 used, 2.7 reserve). A pass over twice its budget at the harness's first run gets a fix before any triangle work.
 
@@ -245,7 +245,9 @@ All provisional, replaced by the harness's run with passes toggled and by the sc
 
 Each kind's export check: each level at most 60 % of the one before, and a median visible triangle of ten pixels or more.
 
-**Memory** (resident under 6 GB; the harness reports peak and the scale test fails above it).
+At city scale the ceilings hold with levels. With L0 to 200 m and shells beyond, the district draws 3.9 to 9.1 million triangles a frame with every pass; the blue hour's 3.9 million are about 2 million drawn twice by the depth prepass. L0 for the whole core takes the city camera to 45.5 ms with 15 million. Draws are not the limit: 2,900 cost 1.1 to 1.4 ms of main thread without the Resident Drawer.
+
+**Memory** (resident under 6 GB by the system's footprint, which counts the GPU's buffers in unified memory; Unity's own counter misses about nine tenths, so no budget is checked by it). The corner's player is 1.4 GB. With the scale test's district loaded (742 MB of meshes) it reached 2.6 GB, with no maps, people, library parts or textures for the district yet.
 
 | Pool | GB | Pool | GB |
 | --- | --- | --- | --- |
@@ -257,11 +259,19 @@ Each kind's export check: each level at most 60 % of the one before, and a media
 
 Place and history maps hold the four base pages on every resident chunk and the story pages within their cap.
 
+Geometry fits its pool with levels: at test quality, L0 for every house within the 300 m radius would be 600 MB, and L0 reaches only 20 m; a house is about 1 KB as a shell. Final-quality houses are heavier, so House A checks the pool again.
+
 **Disk per kilometre** (both sides, about 250 houses, about 14,000 m² of surface): place and history pages 13 to 51 MB at 8 to 4 cm (four base pages at a byte a texel, story pages on a fifth of chunks, mips included), plus about 4 MB a flight of walked stone at 2 cm; instance records about 30 MB; shell atlases 115 MB at 5 cm or 320 MB at 3 cm; chunks 20 to 40 MB. So 0.2 to 0.45 GB, painted or plain. The disk cache stores every page compressed, so a revisit skips the bake; the shipped heart cache carries them all, and elsewhere pages bake on the GPU at first build. The 1989 centre's shipped cache is about 1 GB.
 
 **Build time** (C# worker time): a 4 m chunk 10 to 50 ms; a house under 20 ms at test quality; a kilometre of street 1 to 5 s; a thirty-year jump across a district under 1 s, the first view's 20 to 50 things built behind the dated card. A house at final quality is unknown until House A.
+- Every loop over parts or vertices in play is a Burst job. Placing a chunk's parts costs 0.68 ms per 100,000 triangles in Burst, against 9.1 ms in plain C# under Mono, which the player runs (IL2CPP is not installed). So a final-quality stair's 4 m (100,000 triangles) is placed in about 0.7 ms, and uploading 265,000 triangles through `MeshData` takes 1.6 ms.
+- The bake is the dear stage: 0.6 to 0.9 s a house in Blender's Python, ten times the build. It is the first stage timed when it moves to the player.
+- Offline, Blender's Python on 8 processes builds 68 km² of test-quality town an hour.
 
-**Streaming a frame** (*provisional:* the scale test's walk and fast camera rise): at most 1.5 ms of main thread for swaps and renderer changes; at most 8 MB uploaded (meshes and pages); at most 64 renderers added or removed under the Resident Drawer, which holds one per 4 m chunk and level, about 10,000 resident; page compression on the GPU, at most one page a frame, from the reserve. Past a limit the coarser level stays a frame longer; nothing hitches.
+**Streaming a frame:** at most 1.5 ms of main thread for swaps and renderer changes (90 ms a second); at most 8 MB uploaded (meshes and pages), so a larger upload is split across frames; at most 64 renderers added or removed under the Resident Drawer, which holds one per 4 m chunk and level, about 10,000 resident (*provisional*); page compression on the GPU, at most one page a frame, from the reserve. Past a limit the coarser level stays a frame longer; nothing hitches.
+- Files are read on worker threads (`AsyncReadManager` into native arrays). The main thread keeps only `ApplyAndDisposeWritableMeshData` and renderer changes.
+- The reason: read and uploaded on the main thread, a file costs 0.28 ms plus 0.63 ms a MB. A core chunk of 64 m (8.8 MB) takes 5.6 ms, and the city camera's 300 m/s pan asks for 84 ms a second, 93 % of the line. Walking asks for 1.7 ms a second and driving 17.
+- A jump's first view (88 near chunks, 148 cells, 88 streaming chunks, 484 blocks) is about 0.4 s of main thread, behind the dated card.
 
 **The authoring loop.** A look change on one kind is seen in under 3 minutes (one chunk regenerated, imported, one golden view compared). The gully's full sheet takes under 10 minutes. A loop over budget is fixed before the port goes on.
 
@@ -298,7 +308,7 @@ Reasons: decisions §8.
 
 **Plants.** Opaque first: no cards or shells near, cards only where few overlap, cut to outline. One placer, one presence law: present when potential(fields, facts, date) > rank(seed). The gully exports joint lines, growth faces, traps, climbable regions and keep-clear zones. Plants are records with keepers' calendars. Wind-ready marks: bark from UV5's rest position, a motion-vector pass. Growth stays offline; a change beside a tree applies as events (*provisional*). A deposit field per chunk.
 
-**Land and water.** Natural ground is layers. Made ground is dated acts applied in date order, run in the player, since a game may build a road. Terrain is mesh in 64 m chunks with breaklines and rings. Foot lines are breaklines and footprints. Natural stone is its own kind. The ground shades through `OS_ShadeP` with few materials drawn from fields; slow edges are mesh, fast ones shader (*provisional*). Water is opaque meshes with baked depth and Gerstner waves from wind and fetch. It reflects through URP 17.6's own Screen Space Reflection renderer feature (on in `PC_Renderer`, behind the `URP_SCREEN_SPACE_REFLECTION` define), with temporal filtering off; planar reflection only if that fails (*provisional:* the harness and a motion sheet).
+**Land and water.** Natural ground is layers. Made ground is dated acts applied in date order, run in the player, since a game may build a road. Terrain is mesh in 64 m chunks with breaklines and rings that coarsen by distance, since a flat 2 m grid everywhere is 2.1 million triangles and 37 MB a km², the largest cache item after L0 (the scale test). Foot lines are breaklines and footprints. Natural stone is its own kind. The ground shades through `OS_ShadeP` with few materials drawn from fields; slow edges are mesh, fast ones shader (*provisional*). Water is opaque meshes with baked depth and Gerstner waves from wind and fetch. It reflects through URP 17.6's own Screen Space Reflection renderer feature (on in `PC_Renderer`, behind the `URP_SCREEN_SPACE_REFLECTION` define), with temporal filtering off; planar reflection only if that fails (*provisional:* the harness and a motion sheet).
 
 **Motion and affordances.**
 - One motion class per element: still, hinged, swinging, flexible, floating, emitting. The anchor class is derived; a flag says card or skinned.
@@ -357,7 +367,7 @@ A pack (`packs/<city-year>/`) brings: `metrics.json` (storeys, openings, rises, 
 
 Everything else carries over: schemas, kinds, stages, shaders, the shared systems, checks, the chunk format and the interface. A foreign-pack part is a data check only until step 10.
 
-**Scale.** The world on disk is the record plus the libraries. Chunks are binary, keyed by the hash chain, evicted least-recently-used by distance under the byte caps. People are generated at runtime from identity numbers, cached by a hash of record, age step and outfit. The heart's start-date cache ships and the rest builds on demand, with the same code for both (*provisional*).
+**Scale.** The world on disk is the record plus the libraries. Chunks are binary, keyed by the hash chain, evicted least-recently-used by distance under the byte caps. People are generated at runtime from identity numbers, cached by a hash of record, age step and outfit. The heart's start-date cache ships, and near levels elsewhere build on demand from the record, with the same code for both. Shipping near levels does not scale: at test quality L0 is 708 KB a house, 2.1 GB a km² of town like the core, 2,300 times the house's record of 315 bytes, so a metropolis would need hundreds of gigabytes. Building keeps up: walking asks for about 4 near chunks of 4 m a second and driving 40, and placing costs 0.68 ms of Burst per 100,000 triangles.
 
 Reasons: decisions §11.
 
@@ -409,31 +419,30 @@ Reasons: decisions §10.
 | Per-instance data; picking and readback | user value plus a facts buffer per cell; id render round the cursor | the picking spike, tested against raycasts on full meshes | during the port |
 | History carrier | maps at every level | the gully's A/B in grey light at eye level, FLIP within threshold | 3.2 |
 | Map density and unit | 2, 4, 8 cm; the draw chunk | the scale test with synthetic maps at both densities; BC7 in a smooth field | 3.2; unit 3.4 |
-| Map rebake cost | 2 ms GPU per 1024×512 page | one page baked and compressed in the scale test's player | the scale test |
-| Mixed texels in a chunk | each part's rectangle at its own texel | packing waste in the scale test | 3.2 |
+| Map rebake cost | 2 ms GPU a 1024×512 page with its compression, on the GPU | the bake's own shader and a GPU encoder (BC7, BC5, BC4), timed on the M4 | before pages bake in the player |
+| Mixed texels in a chunk | each part's rectangle at its own texel | packing waste measured on the gully's pages (the scale test assumed 15 %) | 3.2 |
 | Story pages | a fifth of resident chunks, 0.2 GB | the years sheet, cold readers | step 4 |
 | The brush | anchored to UV2 | a motion sheet | after the port |
 | Level boundaries, hand-over | error under a pixel; dithered cross-fade | motion sheets at one sample a pixel | 3.4 |
 | Levels for library parts | generator levels, meshoptimizer | the Mesh LOD test on the gully's FBX | 3.4 |
 | Unit sizes | 4, 32, 64, 128 m | the scale test: rebuild per chunk, demand rate, cache per km | 3.4 |
-| Repetition | libraries only for what was mass-produced; everything hand-made for one place its own | the scale test's memory for unique close chunks; Øystein only for hand-split wall stones, only if that breaks the pool | the scale test |
 | Resident Drawer | on | the harness A/B | 3.4 |
 | Painted far town | shells built, atlas plain | the look test | Øystein's call |
-| Frame, triangle, memory, disk, build budgets | the tables above | the harness run and the scale test | the measuring week |
+| Frame by pass, disk, build time in C# | the tables above | each pass's fix A/B'd on the harness; the C# core timed | the port |
 | Anti-aliasing | MSAA 4× native, FSR 1 fallback | the harness, motion sheets | 3.4 |
 | The shade's lookups | in `OS_ShadeP` | look test | 1c |
 | Light counts | 8 to 16 shadowed spots | the harness | steps 3 and 6 |
-| Memory for a second date or record | 0.5 GB | the scale test | step 4 |
+| Memory for a second date or record | 0.5 GB | a second date resident in the district player, by footprint | step 4 |
 | Water-borne carriers | in the water bake | the gully's handrail post | after the corner's wash |
 | Board atlas; hex-tiling | as stated | look tests | House A; step 3 |
 | Ground edges | slow as mesh, fast as shader | the corner's years sheet | 1d |
 | Birch cost; regrowth in play | opaque first; growth offline | the harness; a measurement | now; step 7 |
 | People's far mesh, archetypes | identity numbers in the contract | the recognition test, crowds of 500 and 2,000 | step 5 |
 | Collision and navigation | proxy per chunk, navmesh per 64 m cell | a short craft study | before the grey walker |
-| Streaming a frame | 1.5 ms main thread, 8 MB, 64 renderers | the scale test's walk and camera rise | the scale test |
-| Origin rebase | at 2 km, to the camera's 64 m chunk | the scale test | the scale test |
+| Streaming a frame | 1.5 ms main thread, 8 MB, 64 renderers; reads on workers | the renderer count under the Drawer; a cold read (the scale test's 960 MB/s was a warm cache) | 3.4 |
+| Origin rebase | at 2 km, to the camera's 64 m chunk | a camera driven past 2 km in the district player | before a town passes 2 km |
 | Flags and laundry | stepped on twos | a motion sheet | before the wind |
 | Water reflection | URP's SSR, no temporal filtering | the harness, a motion sheet | step 6 |
-| Shipped cache against on demand | ship the heart's start date | demand rate against build rate | the scale test |
-| A house at final quality | unknown | House A | House A |
+| A house at final quality; the geometry pool | unknown; the pool fits at test quality | House A | House A |
+| Scripting backend | Mono, every hot loop in Burst | IL2CPP against Mono on the C# core's main thread | the week after the port |
 | Pins across a rules change | on slot and fill ids | the first `rulesetVersion` bump | the first bump |
