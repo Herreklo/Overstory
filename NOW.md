@@ -30,16 +30,16 @@ What is open and what is next. Every session reads this page first, so it stays 
 
 ## After the usage reset (queued 21 October)
 
-Fable's limit returns with the reset. The judgement work done on Opus while it was out gets a Fable pass, in this order:
-1. **The architecture.** Scheduled for Thursday at 08:00 (`overstory-architecture`).
-2. **The paper playtests' report** (`docs/playtests/paper-1/README.md`): a strict review against the sessions, and the must-improve register checked.
-3. **The first-game options** (`docs/ideas/first-game-options.md`), and the recommendation within them.
-4. **The playtest programme** (`docs/research/playtesting.md`): review it, and extend "worth trying".
-5. **The gaps in the camera study:** Naughty Dog, Insomniac, Mario Odyssey, the alley cameras of Assassin's Creed, Hitman and Uncharted, and BG3's Lower City.
+Fable costs the most and has its own limit, so it gets only the judgement, from lean packets (`CLAUDE.md`, Using tokens well):
+1. **The architecture** (Fable for the decisions, the pre-mortem and the strict review, from the register and the digests). Scheduled for Thursday at 08:00 (`overstory-architecture`).
+2. **One Fable review of what the playtests taught.** Opus agents first check the playtest report against its sessions and digest it. Fable then judges, from that packet, the report's must-improve register and the first-game options' recommendation together.
 
-6. **Post on #60 after the Fable review:** the paper playtests' method and results, and their must-improve register as the bundle of engine requests.
+On Opus:
+- a review of the playtest programme (`docs/research/playtesting.md`);
+- the camera and play-craft studies' unread masters (Naughty Dog, Insomniac, Mario Odyssey, the alley cameras, BG3's Lower City, the GDC slides);
+- posting the playtests' results and register on #60, short, with links.
 
-The studies of fun, AI playtesting and play craft, the clay time test (1f) and the measuring tools are committed as they land.
+The studies of fun, the clay time test (1f) and the measuring tools are committed as they land.
 
 ## Waiting for Øystein
 
