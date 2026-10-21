@@ -52,6 +52,7 @@ Material:
     - _MarksOn: 0
     - _MassShadow: 8
     - _MassSplit: -0.05
+    - _Occlusion: 1
     - _Scatter: 0.12
     - _SkyThrough: 0.65
     - _SunPale: 0.45
@@ -63,7 +64,7 @@ Material:
     - _FootCrack: {r: 0.38, g: 0.36, b: 0.34, a: 1}
     - _FootPlate: {r: 0.66, g: 0.64, b: 0.61, a: 1}
     - _Green: {r: 0.4, g: 0.42, b: 0.2, a: 1}
-    - _Late: {r: 0.5, g: 0.36, b: 0.19, a: 1}
+    - _Late: {r: 0.68, g: 0.49, b: 0.28, a: 1}
     - _Lichen: {r: 0.62, g: 0.64, b: 0.56, a: 0.15}
     - _MarkDark: {r: 0.24, g: 0.22, b: 0.21, a: 1}
     - _MarkLight: {r: 0.42, g: 0.4, b: 0.38, a: 1}

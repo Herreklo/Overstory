@@ -57,11 +57,12 @@ import tree_growth as G  # noqa: E402
 # atlas cells its two crossed cards may carry. top_tilt: how far the cards inside a mass's top (deeper than top_tilt_depth) lean to the sky (degrees), for steep
 # views. hug_gap, hug_len: a branch within hug_gap (m) of a stem's bark for more than hug_len along it is not drawn.
 PARTS = {
-    "birch": dict(sag=0.08, taper=0.55, flare=0.3, flare_branch=0.22, flare_min_radius=0.008, occlusion=0.05, seam=0.5, atlas="clusters", lobe=0.8, lobe_gap=0.36,
+    "birch": dict(sag=0.08, fair=(0.002, 0.03), taper=0.55, flare=0.3, flare_branch=0.22, flare_min_radius=0.008, occlusion=0.05, seam=0.5, atlas="clusters", lobe=0.8, lobe_gap=0.36,
                   marks=True, mark_min_radius=0.02, mark_scale=2.0, lenticel_spacing=0.24, mark_min_height=0.6,
                   cluster_size=(1.3, 1.15, 1.05, 0.85), crossed=True, edge_gap=0.22, edge_depth=0.2,
                   masses="limbs", seam_cut=0.95, core_depth=0.45, core_keep=0.55, top_tilt=50.0,
-                  lobe_size=2.2, lobe_weight=0.7, lobe_seam=0.25, top_z=0.66, top_tilt_depth=0.15, hug_gap=0.12, hug_len=0.5, hug_stem=0.025, rod_len=3.0, rod_r=0.03, rod_bare=0.8, rod_order=2,
+                  lobe_size=2.2, lobe_weight=0.7, lobe_seam=0.25, lobe_flat=0.35, top_z=0.66, top_tilt_depth=0.15, hug_gap=0.12, hug_len=0.5, hug_stem=0.025, rod_len=3.0, rod_r=0.03, rod_bare=0.8, rod_order=2,
+                  spur_r=0.025, spur_keep=0.5,
                   places=dict(core=((0, 1), (1, 0)), top=((0, 1), (1, 0)), low=((2, 3),), high=((3, 2),)), lose_tips=40, hang=False, card=(0.50, 0.48), card_u=(0.03, 0.97), cells=4,
                   per_node=2, along=1, droop=0.7, leaf_years=999, leaf_tips=24, draw_tips=2.5, draw_tips_per_m=0.9, winter_tips=3.0, reach=99.0, hang_reach=0.3,
                   bark=(0.30, 0.60), max_cards=4200, grow_to=80),
@@ -109,6 +110,7 @@ def read(species, seed, age, quality, events=(), exposure=0.0, origin="planted")
     tl["start_grown"], tl["end_grown"] = t["start"].astype(np.float64), t["end"].astype(np.float64)
     tl["age"] = age
     sag(tl, pipe, parts, G.SPECIES[species]["tip_radius"])
+    fair(tl, parts)
     hugging(tl, parts)
     rods(tl, parts)
     kids = {}
@@ -117,6 +119,36 @@ def read(species, seed, age, quality, events=(), exposure=0.0, origin="planted")
             kids.setdefault(int(tl["parent"][i]), []).append(i)
     tl["children_of"] = kids
     return tl
+
+
+def fair(tl, parts, iters=6):
+    """Wood bends as wood does: the thicker, the wider its curves. Growth turns a shoot at a node (a bud's new heading,
+    a leader giving way), and drawn on a limb several centimetres thick such a turn is a kink, a bent wire. Along each
+    branch its points are drawn towards the line through their neighbours, the more the thicker the wood (fair: from
+    no pull at the first radius to the full at the second), so a turn spreads over a few internodes into a curve (a
+    birch twig's zigzag is bud to bud, a few centimetres; at an internode's length a kink in a thin limb read as a bent
+    wire too). A branch's base stays where it leaves its parent, its tip where it grew,
+    and what grows from a point moves with it."""
+    lo, hi = parts.get("fair", (0.0, 0.0))
+    if hi <= lo:
+        return
+    parent, alive, r = tl["parent"], tl["alive"], tl["r"]
+    start, end = tl["start"], tl["end"]
+    new_end = end.copy()
+    moved = np.zeros_like(end)                            # how far each node's end has moved
+    for c in sorted(chains(tl), key=lambda c: c[0]):
+        shift = moved[int(parent[c[0]])] if c[0] > 0 else np.zeros(3)
+        P = np.vstack([start[c[0]]] + [end[i] for i in c]) + shift
+        if len(c) >= 2:
+            w = 0.5 * np.clip((r[np.array(c[:-1])] - lo) / (hi - lo), 0.0, 1.0)[:, None]
+            for _ in range(iters):
+                P[1:-1] += w * (0.5 * (P[:-2] + P[2:]) - P[1:-1])
+        for k, i in enumerate(c):
+            new_end[i] = P[k + 1]
+            moved[i] = P[k + 1] - end[i]
+    new_start = start.copy()
+    new_start[1:] = new_end[parent[1:]]
+    tl["start"], tl["end"] = new_start, new_end
 
 
 def rods(tl, parts):
@@ -839,6 +871,13 @@ def leafy(tl, parts, age, seed, draw, cap=True):
             undrawn[i] = 0.0 if tips[i] >= draw else undrawn[parent[i]] + seglen[i]
     ok = alive & (age - tl["born"] < parts["leaf_years"]) & (tl["tips"] <= parts["leaf_tips"]) \
         & (undrawn <= parts.get("reach", 0.9))
+    if parts.get("spur_r"):
+        # a birch's short shoots: along its long shoots, year after year, two or three leaves at a node, so a thin
+        # limb is clothed along its length (spur_keep of its nodes), never bare to a tuft at its tip; deep in a mass
+        # they are thinned with its core
+        spur = alive & (tl["r"] < parts["spur_r"]) & (tl["order"] >= 2) & (undrawn <= parts.get("reach", 0.9)) & ~ok
+        spur &= np.array([h01(seed, i, 31) < parts.get("spur_keep", 0.5) for i in range(len(parent))])
+        ok = ok | spur
     ids = np.nonzero(ok)[0]
     if cap and len(ids) > parts["max_cards"]:
         keep = sorted(ids, key=lambda i: h01(seed, i, 7))[:parts["max_cards"]]
@@ -1006,8 +1045,10 @@ def fall_at(depth, zrel, seeded=0.5, gale=0.5):
     """The order (raw) in which foliage falls: inside and low first, the outer upper shoots last, broken mostly by
     the gale, which strips whole branch groups together (on this coast an October birch is patchy: green, gold and
     bare branches side by side, each lobe whole or gone, never every lobe evenly thinned), and a little by chance.
-    Cards and twigs share it, so a twig shows as its leaves go."""
-    return 0.3 * (1.0 - depth) + 0.15 * float(np.clip(zrel, 0.0, 1.0)) + 0.1 * seeded + 0.45 * gale
+    Cards and twigs share it, so a twig shows as its leaves go. The gale outweighs the depth: thinned from inside
+    first, a crown kept its full outline and read as July from the street; stripped by branch groups, bare branches
+    show at its edge."""
+    return 0.15 * (1.0 - depth) + 0.15 * float(np.clip(zrel, 0.0, 1.0)) + 0.1 * seeded + 0.6 * gale
 
 
 def branch_groups(tl, order=3):
@@ -1240,6 +1281,12 @@ def lobe_mesh(tl, parts, age, seed, H):
                     n = nl * parts["lobe_weight"] + n * (1.0 - parts["lobe_weight"])
                     n /= max(np.linalg.norm(n), 1e-9)
                 dep = volume_depth(vol, p) if vol is not None else 0.0
+                if lv is not None and vol is not None and parts.get("lobe_flat") is not None:
+                    # a lobe one tone: its cards share the depth of its centre in the mass, keeping only lobe_flat of
+                    # their own (a lobe's deeper cards seen dark through the gaps between its front ones read as
+                    # speckle from above; the dark belongs between lobes, where the seams open into the mass)
+                    d0 = volume_depth(vol, lv[0])
+                    dep = d0 + parts["lobe_flat"] * (dep - d0)
                 NR.append(n)
                 # what the corner sees of the sky: less deep in its mass, and less low in the crown (the whole crown
                 # shades from a sky-lit top to a dark underside, as a painter blocks a tree)

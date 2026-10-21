@@ -336,6 +336,12 @@ half3 OS_ShadeP(InputData id, StreetSurface s, OSBake b, float3 positionWS)
     half3 n = id.normalWS;
     half3 v = id.viewDirectionWS;
     AmbientOcclusionFactor ao = CreateAmbientOcclusionFactor(id.normalizedScreenSpaceUV, 1.0h);
+    #ifdef OS_OCCLUSION
+    // a surface far finer than the occlusion's reach (set for walls and eaves) takes only a share of it: round a branch
+    // a few centimetres thick it would lay a dark halo half a metre wide where the branch meets the trunk
+    ao.indirectAmbientOcclusion = lerp(1.0h, ao.indirectAmbientOcclusion, OS_OCCLUSION);
+    ao.directAmbientOcclusion = lerp(1.0h, ao.directAmbientOcclusion, OS_OCCLUSION);
+    #endif
     half4 shadowMask = half4(1, 1, 1, 1);
     half brush = OS_Brush(positionWS, n) * _OS_Paint.w;
 

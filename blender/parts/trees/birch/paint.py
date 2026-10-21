@@ -21,8 +21,8 @@ Its bare twigs (birch_twigs.png, the same cells): the spray's twigs and finer on
 crown's haze, shown as each card's leaves fall.
 
 Marks (birch_marks.png, 4 by 4 cells, MARK_KINDS): the bark's dark marks, sixteen shapes (slashes, broken slashes,
-rows of small dashes, hooks, old scars, chevrons), each a tear in the outer bark, some with the torn lip curled up
-above; placed by the assembler (large ones where the tree shed a branch, chevrons over living ones, the rest the
+rows of small dashes, hooks, old scars, chevrons), each a tear in the outer bark, flat dark, its edge ragged and
+toothed; placed by the assembler (large ones where the tree shed a branch, chevrons over living ones, the rest the
 bark's own lenticels, seeded); G lightness, B relief, A coverage.
 
 Bark (birch_bark.png, 512 by 1024, tiling; u round the stem, v along it, one tile 0.3 m round and 0.6 m along):
@@ -476,111 +476,132 @@ MARK_KINDS = ("slash", "slash", "slash", "slash", "broken", "broken", "dashes", 
               "scar", "scar", "chevron", "chevron", "tiny")      # the atlas's sixteen cells, 4 by 4, in order
 
 
-def _slash(xs, yu, cx, cy, length, thick, curve, tilt, edge, n):
-    """A pointed slash centred on (cx, cy), widest a third along, curving by curve, tilted: its signed distance (cell
-    units, negative inside) and how far up it each point lies within it (0 at its lower edge, 1 at its upper)."""
+def _ragged(t, rng, octaves=((2, 1.0), (5, 0.55), (11, 0.22))):
+    """A roughness along a mark's length (t 0 to 1), about -1 to 1: sines at rising frequencies, each its own phase,
+    so an edge wanders broadly and frays finely, as bark tears."""
+    out = np.zeros_like(t)
+    for f, a in octaves:
+        out += a * np.sin(2 * np.pi * (f * rng.uniform(0.8, 1.25) * t + rng.random()))
+    return out / sum(a for _, a in octaves)
+
+
+def _teeth(t, rng, k, height, width):
+    """k broad peaks along an edge (t 0 to 1), each its own height and width: where the outer bark tore up along a
+    crack running off the mark (Firewatch's marks rise to a peak or two along their upper edge, never a row of spikes)."""
+    out = np.zeros_like(t)
+    for _ in range(k):
+        c, w, h = rng.uniform(0.25, 0.75), width * rng.uniform(0.7, 1.3), height * rng.uniform(0.5, 1.0)
+        out = np.maximum(out, h * np.clip(1.0 - np.abs(t - c) / w, 0.0, 1.0) ** 1.2)
+    return out
+
+
+def _slash(xs, yu, cx, cy, length, thick, curve, tilt, rng, rough=1.0, teeth=0, fork=0.3):
+    """A tear centred on (cx, cy): widest off its middle, each end tapering its own way (one blunt, one drawn out), its
+    upper edge ragged and toothed where the bark tore, its lower edge steadier, sometimes one end split in two; curving
+    by curve, tilted. Its signed distance (cell units, negative inside), how far up it each point lies (0 at its lower
+    edge, 1 at its upper), its half width and centre line, and t along it."""
     x0 = xs - cx
     y0 = yu - cy - tilt * x0
     t = np.clip(x0 / length + 0.5, 0, 1)
     inside = (x0 / length > -0.5) & (x0 / length < 0.5)
-    half = thick * 0.5 * np.maximum(np.sin(np.pi * t ** 0.8), 0.0) ** 0.9
+    peak = rng.uniform(0.32, 0.62)
+    pa, pb = rng.uniform(0.45, 1.1), rng.uniform(0.45, 1.1)
+    shape = np.where(t < peak, (t / peak) ** pa, ((1.0 - t) / (1.0 - peak)) ** pb)
+    half = thick * 0.5 * shape
+    up_e = half * (1.0 + 0.3 * rough * _ragged(t, rng)) + thick * _teeth(t, rng, teeth, 0.4, 0.12)
+    lo_e = half * rng.uniform(0.7, 1.0) * (1.0 + 0.18 * rough * _ragged(t, rng))
     mid = curve * np.sin(np.pi * t)
     y = y0 - mid
-    d = np.abs(y) - half + 0.004 * edge
+    d = np.maximum(y - up_e, -lo_e - y)
+    if rng.random() < fork:
+        # one end split: a thin wedge of bark left standing in it, the tear running on in two prongs
+        end = rng.choice((0, 1))
+        s = (t - 0.78) / 0.22 if end else (0.22 - t) / 0.22
+        wedge = np.clip(s, 0.0, 1.0) * thick * 0.35 - np.abs(y)
+        d = np.where(s > 0, np.maximum(d, wedge), d)
     d = np.where(inside, d, 1.0)
-    up = np.clip(0.5 + y / np.maximum(2 * half, 1e-4), 0, 1)
+    up = np.clip((y + lo_e) / np.maximum(up_e + lo_e, 1e-4), 0, 1)
     return d, up, half, mid, t
 
 
 def _shape_cell(kind, rng):
     """One mark in one cell (u across the wood, up the image as up the wood): coverage, lightness (0 the mark's darkest,
     1 its lightest) and relief, supersampled. As a birch carries them and Firewatch draws them: a tear in the outer bark,
-    many small, a few large, some broken, some with the torn lip curled up above them; each its own shape. The assembler
-    places them (tree.py, mark_mesh): the large ones where the tree shed a branch, chevrons over living ones, the rest
-    the bark's own lenticels, seeded."""
+    flat dark, its edge ragged and toothed, never a clean lens; many small, a few large, some broken, some split at an
+    end; each its own shape. The assembler places them (tree.py, mark_mesh): the large ones where the tree shed a
+    branch, chevrons over living ones, the rest the bark's own lenticels, seeded."""
     n = CELL
     ys, xs = np.mgrid[0:n, 0:n].astype(np.float32) / n
     yu = 1.0 - ys
-    edge = value_noise((n, n), (12, 12), np.random.default_rng(rng.randrange(1 << 30))) - 0.5
+    mottle = value_noise((n, n), (10, 10), np.random.default_rng(rng.randrange(1 << 30))) - 0.5
     cover = np.zeros((n, n), np.float32)
     light = np.zeros((n, n), np.float32)
     height = np.full((n, n), 0.5, np.float32)
-    dark = rng.uniform(0.0, 0.18)                            # each mark its own depth of dark
+    dark = rng.uniform(0.0, 0.16)                            # each mark its own depth of dark
 
-    def paint_slash(cx, cy, length, thick, curve, tilt, lip):
+    def paint_slash(cx, cy, length, thick, curve, tilt, rough=1.0, teeth=0, fork=0.3):
         nonlocal cover, light, height
-        d, up, half, mid, t = _slash(xs, yu, cx, cy, length, thick, curve, tilt, edge, n)
+        d, up, half, mid, t = _slash(xs, yu, cx, cy, length, thick, curve, tilt, rng, rough, teeth, fork)
         tear = np.clip(0.5 - d * n / 2.0, 0, 1)
         cover = np.maximum(cover, tear)
-        # the dark under the torn skin: darkest just under the lip, where it shades the opening
-        light = np.where(tear > 0.5, dark + 0.2 * (1.0 - up), light)
+        # flat dark, a little darker under its upper edge where the torn bark shades it, faintly mottled
+        light = np.where(tear > 0.5, dark + 0.08 * (1.0 - up) + 0.1 * mottle, light)
         height = np.where(tear > 0.5, 0.12, height)
-        if lip:
-            # the outer bark torn and curled up along the upper edge: lighter, raised, catching the light
-            lip_w = thick * 0.5 * np.maximum(np.sin(np.pi * t), 0.0) ** 0.6 * (1.0 + 0.6 * edge)
-            y = yu - cy - tilt * (xs - cx) - mid
-            dl = np.abs(y - (half + lip_w * 0.6)) - lip_w * 0.6
-            lipm = np.clip(0.5 - dl * n / 2.0, 0, 1) * (np.abs((xs - cx) / length) < 0.5) * (1.0 - tear)
-            cover = np.maximum(cover, lipm)
-            light = np.where(lipm > 0.5, 1.0, light)
-            height = np.where(lipm > 0.5, 0.9, height)
 
     tilt = rng.uniform(-0.12, 0.12)
     if kind == "slash":
-        paint_slash(0.5, 0.5, rng.uniform(0.6, 0.94), rng.uniform(0.08, 0.17), rng.uniform(-0.04, 0.06), tilt,
-                    False)      # (a pale torn lip reads as an eye at a distance: flat dark tears, as Firewatch's)
+        paint_slash(0.5, 0.5, rng.uniform(0.55, 0.92), rng.uniform(0.1, 0.2), rng.uniform(-0.04, 0.06), tilt,
+                    1.0, rng.randint(0, 2))
     elif kind == "broken":
-        # a slash broken where the bark bridged it: two or three pieces along one line
+        # a tear broken where the bark bridged it: two or three pieces along one line, each its own
         k = rng.randint(2, 3)
         span = rng.uniform(0.7, 0.94)
         for j in range(k):
-            ln = span / k * rng.uniform(0.6, 0.9)
+            ln = span / k * rng.uniform(0.6, 0.95)
             cx = 0.5 - span / 2 + span * (j + 0.5) / k
-            paint_slash(cx, 0.5 + tilt * (cx - 0.5), ln, rng.uniform(0.06, 0.11), rng.uniform(-0.02, 0.03), tilt,
-                        False)
+            paint_slash(cx, 0.5 + tilt * (cx - 0.5), ln, rng.uniform(0.07, 0.13), rng.uniform(-0.02, 0.03), tilt,
+                        0.8, 0 * rng.randint(0, 1), 0.15)      # (a peak on a short piece read as a little mountain)
     elif kind == "dashes":
-        # a row of small lenticels close together
+        # the bark's lenticels: short thin dark lines, a few together, never a row of equal ovals
         k = rng.randint(2, 4)
         for j in range(k):
-            cx = rng.uniform(0.15, 0.85)
-            paint_slash(cx, 0.5 + rng.uniform(-0.1, 0.1), rng.uniform(0.12, 0.3), rng.uniform(0.03, 0.06),
-                        0.0, rng.uniform(-0.1, 0.1), False)
+            paint_slash(rng.uniform(0.15, 0.85), 0.5 + rng.uniform(-0.12, 0.12), rng.uniform(0.12, 0.34),
+                        rng.uniform(0.025, 0.05), 0.0, rng.uniform(-0.1, 0.1), 0.6, 0, 0.0)
     elif kind == "hook":
-        paint_slash(0.47, 0.5, rng.uniform(0.6, 0.82), rng.uniform(0.07, 0.12), 0.03, tilt, False)
+        paint_slash(0.47, 0.5, rng.uniform(0.6, 0.82), rng.uniform(0.08, 0.13), 0.03, tilt, 1.0, rng.randint(0, 2))
         sgn = rng.choice((-1, 1))
         hx = 0.47 + sgn * 0.33
-        paint_slash(hx + sgn * 0.04, 0.5 - 0.06, 0.16, 0.06, 0.0, sgn * 0.9, False)
+        paint_slash(hx + sgn * 0.04, 0.5 - 0.06, 0.16, 0.06, 0.0, sgn * 0.9, 0.6, 0, 0.0)
     elif kind == "scar":
-        # an old scar, wide, its lower edge ragged where the bark broke, a crack or two across it
-        d, up, half, mid, t = _slash(xs, yu, 0.5, 0.5, rng.uniform(0.75, 0.95), rng.uniform(0.16, 0.24), 0.02, tilt,
-                                     edge * 3.0, n)
+        # an old branch scar: wide, ragged all round where the bark broke, peaked above, flat dark
+        d, up, half, mid, t = _slash(xs, yu, 0.5, 0.5, rng.uniform(0.75, 0.95), rng.uniform(0.18, 0.27), 0.02, tilt,
+                                     rng, 1.3, rng.randint(1, 2), 0.4)
         tear = np.clip(0.5 - d * n / 3.0, 0, 1)
         cover = np.maximum(cover, tear)
-        cracks = (np.abs(np.sin((yu + 0.05 * edge) * 60.0)) < 0.16)
-        light = np.where(tear > 0.5, np.where(cracks, 0.3, dark), light)
+        light = np.where(tear > 0.5, dark + 0.1 * mottle, light)
         height = np.where(tear > 0.5, 0.15, height)
     elif kind == "chevron":
-        # a living branch's chevron: two arms from a point over the branch, sloping down and out, tapering to points
+        # a living branch's chevron: a wedge peaked over the branch, its arms sloping down and out to points (the
+        # bark wrinkled over the collar), its edges ragged as the rest
         x = xs - 0.5
         arm = np.abs(x)
         slope = rng.uniform(0.4, 0.7)
-        # a wedge: thick over the branch, its arms tapering to points down either side (the bark wrinkled over the
-        # collar), never a thin V
-        line = 0.66 - slope * arm + 0.02 * edge
-        width = rng.uniform(0.16, 0.22) * np.clip(1.0 - arm / 0.46, 0, 1) ** 1.3 + 0.006
+        t = np.clip(x / 0.92 + 0.5, 0, 1)
+        line = 0.66 - slope * arm + 0.025 * _ragged(t, rng)
+        width = rng.uniform(0.16, 0.22) * np.clip(1.0 - arm / 0.46, 0, 1) ** 1.3 * (1.0 + 0.35 * _ragged(t, rng)) + 0.006
         d = np.maximum(yu - line, line - width - yu)
         cv = np.clip(0.5 - d * n / 2.0, 0, 1) * (arm < 0.46 * rng.uniform(0.8, 1.0))
         cover = np.maximum(cover, cv)
-        light = np.where(cv > 0.5, dark + 0.08, light)
+        light = np.where(cv > 0.5, dark + 0.08 + 0.1 * mottle, light)
         height = np.where(cv > 0.5, 0.3, height)
     else:
-        paint_slash(0.5, 0.5, rng.uniform(0.25, 0.4), rng.uniform(0.04, 0.07), 0.0, tilt, False)
+        paint_slash(0.5, 0.5, rng.uniform(0.25, 0.4), rng.uniform(0.04, 0.07), 0.0, tilt, 0.7, 0, 0.0)
     return cover.astype(np.float32), light.astype(np.float32), height.astype(np.float32)
 
 
 def marks(path):
     """The bark marks atlas (birch_marks.png, 4 by 4 cells, MARK_KINDS): R one, G the mark's lightness (0 the dark
-    under the bark, 1 the torn lip), B its relief (the lip raised, the tear sunk), A coverage."""
+    under the bark, 1 its lightest), B its relief (the tear sunk), A coverage."""
     import random
     out = np.zeros((1024, 1024, 4), np.float32)
     for c, kind in enumerate(MARK_KINDS):

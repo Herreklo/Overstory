@@ -18,6 +18,7 @@ Shader "Overstory/Tree"
         _MarkLight ("Marks: their lightest (old wood)", Color) = (0.42, 0.40, 0.37, 1)
         _Relief ("Relief: x the bark's depth (m), y a mark's", Vector) = (0.006, 0.01, 0, 0)
         _Lichen ("Lichen on the bark (rgb its pigment, a how much)", Color) = (0.6, 0.63, 0.52, 0)
+        _Occlusion ("The share of the screen's ambient occlusion this surface takes", Range(0, 1)) = 1
         [Toggle] _AlphaToMask ("Leaves: alpha to coverage (smooth edges under MSAA)", Float) = 0
         _Bark ("Bark (r lightness, g lenticels, a relief)", 2D) = "white" {}
         _BarkLight ("Bark: the white of the limbs", Color) = (0.86, 0.85, 0.82, 1)
@@ -74,6 +75,7 @@ Shader "Overstory/Tree"
         half4 _MarkLight;
         float4 _Relief;
         half4 _Lichen;
+        half _Occlusion;
     CBUFFER_END
 
     TEXTURE2D(_Bark);  SAMPLER(sampler_Bark);
@@ -278,6 +280,7 @@ Shader "Overstory/Tree"
             #pragma multi_compile_instancing
 
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
+            #define OS_OCCLUSION _Occlusion
             #include "StreetLooks.hlsl"
 
             struct Attributes

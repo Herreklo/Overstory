@@ -51,9 +51,12 @@ def _drape(rng, spec, n):
     (points in pixels, part) with part "main", "hang" or "fine"."""
     A = np.array(spec["anchor"]) * n
     W, L = spec["width"] * n, spec["length"] * n
-    top = A[1] - rng.uniform(0.13, 0.17) * n                         # the arch's crown, above the anchor
+    # the twig leaves the branch level (or rising a touch) and droops, as a weeping branchlet does: a shoulder,
+    # never a hoop (four drapes repeated across a crown, an arch rising and falling read as a row of hoops once the
+    # leaves thinned)
+    rise = rng.uniform(0.07, 0.10)
     E = np.array([A[0] + W * rng.uniform(0.8, 0.95), A[1] + rng.uniform(0.15, 0.3) * L])
-    main = curve(A, np.array([A[0] + 0.35 * (E[0] - A[0]), 2 * top - (A[1] + E[1]) / 2]), E, 24)
+    main = curve(A, np.array([A[0] + 0.45 * (E[0] - A[0]), A[1] - 0.25 * rise * n]), E, 24)
     out = [(main, "main")]
     k = spec["twigs"]
     for j in range(k):
@@ -153,7 +156,8 @@ def paint_bare(rng, twigs):
             L = rng.uniform(0.03, 0.06) * KPX
             q = pts[i] + L * np.array([math.cos(a), math.sin(a) + 0.6])            # hanging twigs
             fine.append((np.array([pts[i], (pts[i] + q) / 2 + np.array([0, 0.15 * L]), q]), "fine"))
-    return twig_cover(xs, ys, twigs + fine, (0.0032, 0.0020, 0.0012), KPX)
+    # the arch no heavier than the strands it carries: bare, it is the strands that read
+    return twig_cover(xs, ys, twigs + fine, (0.0022, 0.0020, 0.0012), KPX)
 
 
 def clusters(path, twig_path):

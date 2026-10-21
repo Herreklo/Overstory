@@ -47,15 +47,16 @@ namespace Overstory.EditorTools
         {
             // downy birch on the coast on 20 October: most leaves turned an ochre gold (greyed, never cadmium), the
             // last still olive, the first a dull brown, never orange or red; nearly half fallen, from the inside and
-            // below, so the limbs show
+            // below, so the limbs show. The brown a rust about four fifths of the gold's value: within a mass the
+            // hue varies, not the value (a whole brown spray darker than the shade read as a hole at random)
             // the pigment a strong yellow-ochre: the light mutes it on a grey day to the coast's and Stålenhag's
             // birches (shade takes the light's colour, never a tint of the leaf's own), and the sun pales it, so it
             // never goes cadmium
-            ["birch"] = (new Color(0.40f, 0.42f, 0.20f), new Color(0.72f, 0.56f, 0.26f), new Color(0.50f, 0.34f, 0.18f),
+            ["birch"] = (new Color(0.40f, 0.42f, 0.20f), new Color(0.72f, 0.56f, 0.26f), new Color(0.66f, 0.47f, 0.27f),
                          new Vector4(0.70f, 0.50f, 0f, 0f)),     // two in five gone, set at half as cards overlap: a few still green
             // the silver birch turns a little clearer and brighter yellow than the downy (a second channel beside the
             // habit for telling them apart)
-            ["silver_birch"] = (new Color(0.40f, 0.42f, 0.20f), new Color(0.74f, 0.59f, 0.29f), new Color(0.50f, 0.36f, 0.19f),
+            ["silver_birch"] = (new Color(0.40f, 0.42f, 0.20f), new Color(0.74f, 0.59f, 0.29f), new Color(0.68f, 0.49f, 0.28f),
                                 new Vector4(0.70f, 0.50f, 0f, 0f)),
         };
 
@@ -127,6 +128,9 @@ namespace Overstory.EditorTools
                 m.SetColor("_FootCrack", silver ? new Color(0.38f, 0.36f, 0.34f) : new Color(0.34f, 0.32f, 0.30f));
                 m.SetColor("_FootPlate", silver ? new Color(0.66f, 0.64f, 0.61f) : new Color(0.52f, 0.51f, 0.49f));
                 m.SetVector("_Relief", new Vector4(0.006f, 0.01f, 0f, 0f));
+                // wood takes a third of the screen's occlusion (its reach is set for walls): a branch meets the trunk
+                // in a crease, never a dark socket
+                m.SetFloat("_Occlusion", leaves ? 1f : 0.3f);
                 // lichen: the downy birch on this damp coast carries it in grey-green patches; the silver little
                 m.SetColor("_Lichen", silver ? new Color(0.62f, 0.64f, 0.56f, 0.15f) : new Color(0.60f, 0.63f, 0.52f, 0.7f));
                 // the marks' pigment a dark grey-brown, never black: lit as the bark, they take the shade's colour
