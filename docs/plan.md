@@ -145,7 +145,7 @@ The steps keep their numbers, since other docs cite them. Step 1 is reopened on 
      - hover and inspect as placeholders;
      - the best ways of showing time from 1f.
 
-     It is judged by playing it. It feeds the choice of the first game, and it can start once 1f has its clay corner.
+     It is judged by playing it. It feeds the choice of the first game, and it can start once 1f has its clay corner. Before it starts, its play is researched at the same depth as the building blocks (Øystein: "we need to be extremely clever and do deep research how other games do things; master craftsmanship, finesse"). The studies are `camera-and-composition.md`, `collision-and-navigation.md`, `play-craft.md` (feel, focus, guidance, transitions, narrow streets) and `interface-and-inspection.md`, with the options in `docs/ideas/first-game-options.md`.
 
    Then the landing's setts, the kerb and the plinths.
 2. *Buildings, built right the first time:* House A by the generator, twelve more from the same parts, then the corner's five houses; coats, windows and signs; a first cold reader.
