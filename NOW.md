@@ -19,44 +19,40 @@ What is open and what is next. Every session reads this page first, so it stays 
 
 ## Next
 
-- **Next week (from Monday 26 October): the building blocks.**
-  - *Monday:* the architecture (Fable, fresh session) and the measuring tools (Opus) in parallel.
-  - *Tuesday:* the scale test, then the architecture's review.
-  - *Wednesday to Friday:* the gully ported onto the building blocks as the proof, ending in a strict review and a before-and-after sheet for Øystein.
+**The building blocks started early.** The weekly limits reset on the evening of 21 October (all models at 4%, Fable at 3%), so the plan meant for the week of 26 October started then, in the same order. The goal, the days, the architecture's scope, the baselines, the cut line and the budget are in `docs/plan.md`.
+1. **The architecture (1a):**
+   - *Where:* a session started from the scheduled task `overstory-architecture`, on Opus, with Fable for the pre-mortem and the decisions (`docs/building-blocks.md`).
+   - *Next:* the strict review, then Øystein's few questions in one message.
+   - *The duplicates:* the task fired three times. The two extra sessions were stopped and archived, and the task is disabled.
+2. **Done on 21 October:**
+   - the measuring tools, built and accepted (`docs/measuring.md`);
+   - the digests (`docs/research/inputs/`) and the decision register (`docs/research/building-blocks-inputs.md`);
+   - 1f, the clay time test (`docs/experiments.md`, `reviews/lt1/time/`).
+3. **Running in its own session:** the pass budget (what owns the 25 ms floor), the gully's new baseline, and the scale test. Results go to `docs/research/scale-test.md`, and the numbers settle where generation runs and how the town streams.
+4. **Then the gully on the building blocks,** ending in a strict review and the proof sheet for Øystein.
 
-  The goal, the days, the architecture's scope, the baselines, the cut line and the budget are in `docs/plan.md`.
-- **Started:** the architecture began on 21 October in the evening, in a fresh session started from the scheduled task `overstory-architecture`, now disabled so it doesn't run twice. It runs on Opus and calls Fable only for judgement.
-- **Before Monday (started 22 October, with the week's last budget):** Opus agents are digesting the fourteen studies into `docs/research/inputs/`: a bar check, the decisions each proposes, what every part must carry, the conflicts between studies and the unknowns. A consolidated decision register follows in `docs/research/building-blocks-inputs.md`, so Monday's Fable session starts straight on judgement. The measuring tools are being built (mesh hashes, golden views at the player's size, the frame-time harness, motion sheets; `docs/measuring.md`), so Monday's tools session may find them done. Each is committed as it lands; anything unfinished is picked up on Monday.
+## Running now
 
-## Handover from the main chat of 20 to 21 October (cleared after this)
-
-Still running when the chat was cleared. Each commits its own work. If one has stopped, resume it from its files.
-- **The paper playtests** (`docs/playtests/paper-1/`). Done: the method, the panel (all three rank the paper and the mystery on top), and calibration. Running: the sessions, analysis, redesign and the report (`README.md`), committed at the end. If they have stopped, a fresh Opus session resumes from `method.md` and the files on disk.
-  - The report must score each concept twice, ready today and potential.
-  - The AI-playtesting fixes apply: persona crossed with model, the game master audited with a fact ledger, a known-weak calibration game, predictions and needs as headline measures.
-  - The must-improve register is the main output.
-- **The clay time test, 1f** (`docs/experiments.md` top, `reviews/lt1/time/`), committed step by step.
+Each session commits its own work. If one stops, resume it from its files. Long work runs in its own session: the main chat's background agents seem to stop when the chat is cleared, as the playtests did on 21 October.
+- **The paper playtests** (`docs/playtests/paper-1/`), resumed in a fresh Opus session.
+  - *Done:* the method, the panel (all three rank the paper and the mystery on top), the world pack, calibration's openings, and the game masters' brief.
+  - *Running:* the cards, the pre-registration, calibration, the sessions, the analysis, the redesign and the report (`README.md`).
+  - *The report* scores each concept twice, ready today and potential.
+  - *The AI-playtesting fixes apply:* persona crossed with model, the game master audited with a fact ledger, a known-weak calibration game, and predictions and needs as headline measures.
+  - *Its main output* is the must-improve register.
+- **The architecture** and **the scale test**, above.
 
 When the playtest report lands:
 1. An Opus agent checks it against the sessions.
 2. Publish it as a private Artifact page for Øystein, with charts of engagement over rounds, lives on against lives off, and the ranking (promised to him).
-3. Fable's review (below, item 2).
+3. One Fable review of what the playtests taught, from a lean packet. Opus agents digest the report first, then Fable judges the must-improve register and the first-game options' recommendation together.
 4. Post the register on #60, short, with links.
 
-Øystein's answers still open are listed under "Waiting for Øystein" below.
-
-## After the usage reset (queued 21 October)
-
-Fable costs the most and has its own limit, so it gets only the judgement, from lean packets (`CLAUDE.md`, Using tokens well):
-1. **The architecture** (Fable for the decisions, the pre-mortem and the strict review, from the register and the digests). Started on the evening of 21 October.
-2. **One Fable review of what the playtests taught.** Opus agents first check the playtest report against its sessions and digest it. Fable then judges, from that packet, the report's must-improve register and the first-game options' recommendation together.
-
-On Opus:
+Then, on Opus:
 - a review of the playtest programme (`docs/research/playtesting.md`);
-- the camera and play-craft studies' unread masters (Naughty Dog, Insomniac, Mario Odyssey, the alley cameras, BG3's Lower City, the GDC slides);
-- posting the playtests' results and register on #60, short, with links.
+- the camera and play-craft studies' unread masters, before the greybox (1g): Naughty Dog, Insomniac, Mario Odyssey, the alley cameras, BG3's Lower City, the GDC slides.
 
-The studies of fun, the clay time test (1f) and the measuring tools are committed as they land.
+Øystein's answers still open are listed under "Waiting for Øystein" below.
 
 ## Waiting for Øystein
 
