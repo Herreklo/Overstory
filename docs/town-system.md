@@ -196,7 +196,7 @@ Exemplars are measured from OpenStreetMap with OSMnx, as `docs/research/stavange
 
 ## 7. Engine requests
 
-To add to `docs/engine-requests.md` after 21.
+These are now requests 22 to 27 in `docs/engine-requests.md` (gathered 22 October), which is the source; this list is kept for its context.
 
 22. **The town as founding acts** (extends 6). The fabric pass lays the town as plan units: each one area of one type from the pack's catalogue, with its year, founder (the town, a landowner, a company, a cooperative, a developer), cause and land. In play the council and developers found units as decisions with reasons, and Overstory's library lays out their streets and plots. The player would see a district's date and maker at a glance, and the seam where it meets the older town.
 23. **Plans and rules as documents** (extends 14). Plans are sentences today ("to widen the harbour road"). We need documents: a kind, claims on geometry, a mechanism (on rebuild, purchase within a window, at once, by one actor) and a state (adopted, lapsed, replaced), with each claim's fate decided where it meets a plot (an owner who will not sell, money run out, a protest that wins). Building rules and protected areas the same way. An adopted claim shortens the horizon of the owners under it. The player would see sea houses on the line of a road never built, worn as the plan wore them, and could find out who stopped it.
