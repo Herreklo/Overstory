@@ -139,6 +139,14 @@ The steps keep their numbers, since other docs cite them. Step 1 is reopened on 
 
    - 1f, the game's question tested early, in clay (`CLAUDE.md`, Working in the right order: biggest risk first). The corner's houses are built from their diaries at 1989, 2000, 2010 and 2020 by the test-quality generator. The diaries need events after 1988 first: none has any yet. Two or three of the most promising ways of showing time are prototyped, from a wide creative exploration. Cold readers read them (criteria 1 and 4) before any final house part is made. It needs none of the architecture, so it can start as soon as there is room, and its findings shape the houses and the history budget.
 
+   - 1g, a playable greybox of the corner (Øystein: "testing gameplay and ideas before everything looks finished"):
+     - the free camera;
+     - blockout people, driven by the real engine run when it arrives (`docs/engine-requests.md`, open item 10), else by authored fixtures;
+     - hover and inspect as placeholders;
+     - the best ways of showing time from 1f.
+
+     It is judged by playing it. It feeds the choice of the first game, and it can start once 1f has its clay corner.
+
    Then the landing's setts, the kerb and the plinths.
 2. *Buildings, built right the first time:* House A by the generator, twelve more from the same parts, then the corner's five houses; coats, windows and signs; a first cold reader.
 3. *The corner's ground and things:* heath, D's yard, moss and grass, the lamp, the handrail; the corner complete in four lights.

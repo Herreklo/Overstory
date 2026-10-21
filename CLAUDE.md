@@ -68,6 +68,7 @@ The rules:
 - **Hardest to change comes first.** Data formats, the architecture, the measuring tools and scale come before parts. Look polish comes last, in the ensemble.
 - **Biggest risk comes first.** Whatever could invalidate the most work (scale, cost on the reference machine, motion, whether history reads at all) is tested early, at the cheapest fidelity that can answer it.
 - **Climb a ladder of fidelity.** A number before a render, grey form before materials, a quick sheet before the town, clay before parts, a still before motion. Move up only when the rung below passes.
+- **Test play and ideas in greybox early,** as in normal game development (Øystein, 22 October): clay places, blockout people and placeholder interfaces, played before everything looks finished. The look is developed alongside, never as a gate before play.
 - **One thing end to end before many things.** A kind goes through every stage, distance level, view, light and motion before the next kind starts.
 - **Write "done" first:** the question, the views, the budget and what would change our minds. A self-check against the core rules and the numbers comes before a strict review, so reviews find what only eyes can.
 - **Research just in time,** except the craft that shapes the foundations. Each area is studied right before its step.
