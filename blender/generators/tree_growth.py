@@ -53,7 +53,9 @@ UP = np.array([0.0, 0.0, 1.0])
 # may get (m) before it stops (the finer twigs off it are the parts'); without it such shoots ran on for decades as
 # long bare whips. outward: how far a branch's heading round the trunk turns back to straight out each internode
 # (degrees), so limbs fan out of the crown and never wrap round it. base_keep: how far along a branch (m) its turn to
-# its set-point comes in fully, so it leaves its parent at its own angle and never lies along it. hand: the share of trees that lose their leader young (browsed,
+# its set-point comes in fully, so it leaves its parent at its own angle and never lies along it. prune_big: below the
+# rising crown base a limb is shed while it is thinner than so many tip widths times four (a 60-year birch has lost
+# the thin low limbs its youth carried; only the scaffold stays). hand: the share of trees that lose their leader young (browsed,
 # frost, a broken top) and grow on as a few stems spreading from low down like an open hand: (share, years, stems,
 # their spread from upright in degrees).
 # shed: a branch dies when its buds' mean light has been under this share of open sky for so many years running (the
@@ -97,7 +99,7 @@ SPECIES = {
         masses=dict(top=(0.86, 0.17, 0.13), sides=(3, 4), side_z=(0.36, 0.70), side_off=(0.20, 0.30),
                     side_r=(0.11, 0.15), outside=0.15, pull=0.6),
         shed=(0.40, 2), bud_life=10, tip_radius=0.0045, spurs=0.025, pipe=2.4, light=(0.15, 0.25, 2), ring=1.2e-6,
-        twig_len=1.2, outward=3.0, base_keep=0.6,
+        twig_len=1.2, outward=3.0, base_keep=0.6, prune_big=1.7,
         hand=(0.25, (4, 8), (3, 5), (16.0, 30.0)),
     ),
 }
@@ -541,7 +543,7 @@ def grow(species, seed, years=60, site=(), quality=1.0, wind=(0.0, 0.0, 0.0), ev
                 # over years in proportion to its size (all at once only in a storm, which is an event)
                 r_base = radius_at(nd, year - 1)
                 big = r_base / max(sp["tip_radius"] * 4.0, 1e-6)
-                if nd.start[2] < prune_below and year - nd.born > 2 and big < 1.0:
+                if nd.start[2] < prune_below and year - nd.born > 2 and big < sp.get("prune_big", 1.0):
                     kill(tl, nd.id, year)
                     shed_any = True
                     continue
@@ -917,7 +919,10 @@ def cached(species, seed, years, quality=1.0, events=(), exposure=0.0, origin="p
         # about south; y up the hill, about east)
         tl = grow(species, seed, years, quality=quality, events=events, wind=(-0.7, 0.7, exposure), origin=origin)
         check(tl)
-        tl.save(path)
+        # written whole, then renamed into place: two builds growing the same tree at once never read it half-written
+        tmp = path[:-4] + f".{os.getpid()}.tmp.npz"
+        tl.save(tmp)
+        os.replace(tmp, path)
     return dict(np.load(path))
 
 

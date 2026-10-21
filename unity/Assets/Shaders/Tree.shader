@@ -114,7 +114,7 @@ Shader "Overstory/Tree"
         half t = 0.95h - 0.5h * up - 0.3h * (reach - 0.5h);
         half dark = smoothstep(t - 0.02h, t + 0.02h, f) * smoothstep(0.02h, 0.12h, up);
         // broken across by bands of the white bark left (the reference's plates, never long spikes)
-        half breaks = smoothstep(0.62h, 0.66h, (half)OS_Noise(float2(u * 6.0 + 9.3, positionWS.y * 11.0)));
+        half breaks = smoothstep(0.7h, 0.74h, (half)OS_Noise(float2(u * 6.0 + 9.3, positionWS.y * 11.0))) * (1.0h - up);
         dark *= 1.0h - breaks;
         // the greying begins at its own height round the stem (never a horizontal seam, a sock)
         half grey = smoothstep(0.1h, 0.9h, saturate(up + 0.35h * (reach - 0.5h) + 0.15h * (f - 0.5h)));
@@ -213,8 +213,9 @@ Shader "Overstory/Tree"
         half3 foot = OS_TreeFoot(positionWS, r, z);
         // the bark greying towards the ground, and the fissured plates dark in it, rough within
         c = lerp(c, _FootPlate.rgb, foot.y);
-        half rough = (half)OS_Noise(float2((positionWS.x + positionWS.z) * 70.0, positionWS.y * 25.0));
-        c = lerp(c, _FootCrack.rgb * (0.8h + 0.45h * rough), foot.x);
+        // two values in the dark plates: rough, lighter where a plate's face catches the light
+        half rough = (half)OS_Noise(float2((positionWS.x + positionWS.z) * 30.0, positionWS.y * 12.0));
+        c = lerp(c, _FootCrack.rgb * (0.75h + 0.6h * smoothstep(0.45h, 0.6h, rough)), foot.x);
         // a cut face: pale fresh wood weathering to grey over the years, the rings faintly, the callus rolling in
         // from the bark round its edge
         if (uv.x < -0.5)
@@ -385,7 +386,7 @@ Shader "Overstory/Tree"
                     // herringbone), and at the outline a bump steps it
                     half wide = saturate((half)(input.extra.x / 0.25));
                     half face = smoothstep(0.15h, 0.45h, abs(dot(n, GetWorldSpaceNormalizeViewDir(input.positionWS))));
-                    half roughH = (half)OS_Noise(float2((input.positionWS.x + input.positionWS.z) * 70.0, input.positionWS.y * 25.0));
+                    half roughH = (half)OS_Noise(float2((input.positionWS.x + input.positionWS.z) * 30.0, input.positionWS.y * 12.0));
                     half h = bk.a * (1.0h + foot.y) - foot.x * (1.0h - 0.9h * roughH);
                     n = OS_Bump(input.positionWS, n, h * _Relief.x * wide * face);
                 }
@@ -394,7 +395,8 @@ Shader "Overstory/Tree"
                 StreetSurface s = OS_TreeSurface(input.uv, input.extra, n, input.positionWS);
             #if defined(_OS_MARKS)
                 // an old mark greys towards the bark as it weathers; a fresh one is dark
-                s.albedo = lerp(s.albedo, lerp(_BarkBand.rgb, _BarkLight.rgb, 0.5h), (half)input.uv2.x);
+                // an old mark weathers to a step below the bark (never paler: a pale lens reads as an eye)
+                s.albedo = lerp(s.albedo, _BarkBand.rgb * 0.8h, (half)input.uv2.x);
             #endif
 
                 InputData id = (InputData)0;

@@ -117,7 +117,7 @@ namespace Overstory.EditorTools
                 m.SetColor("_BarkBand", silver ? new Color(0.76f, 0.74f, 0.71f) : new Color(0.62f, 0.60f, 0.57f));
                 // an old trunk's foot: the silver's breaks black and fissured; the downy's only greys and roughens
                 // the foot: the silver's greys and splits in black fissures, higher; the downy's only greys
-                m.SetVector("_Foot", new Vector4(0.16f, silver ? 4.5f : 4.0f, silver ? 1.0f : 0.4f, silver ? 0.85f : 0.15f));
+                m.SetVector("_Foot", new Vector4(0.16f, silver ? 4.5f : 4.0f, silver ? 1.0f : 0.4f, silver ? 0.85f : 0.4f));
                 // the foot's dark: deep, never black, so its form still reads; its islands a grey the bark shows through
                 // (colours set here are sRGB, as the eye sees them: Unity takes them to linear)
                 // a dark grey-brown in its fissures, never black; its plates a mid grey that takes the light

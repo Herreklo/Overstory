@@ -69,7 +69,7 @@ PARTS = {
 }
 # the silver birch: the birch's fitting, carrying its own drapes (blender/parts/trees/silver_birch; Øystein preferred
 # them, full and arching, to open strands with a rising top), its branches giving more under their weight
-PARTS["silver_birch"] = dict(PARTS["birch"], sag=0.12, lenticel_spacing=0.36)
+PARTS["silver_birch"] = dict(PARTS["birch"], sag=0.12, lenticel_spacing=0.36, mark_scale=2.2)
 
 
 def h01(*k):
@@ -340,10 +340,13 @@ def junction_rings(pts, rad, appear, Rp, flare, sin_t):
     peak = min(flare, max(0.95 * Rp / max(rc, 1e-6) - 1.0, 0.0))
     x = np.maximum(al - exit_, 0.0) / max(rc, 1e-4)
     bump = (x / 1.0) * np.exp(1.0 - x / 1.0)                  # 0 at the bark, 1 a branch width out, easing off slowly
-    # inside the parent's wood the branch narrows towards the parent's axis, well within its faceted tube, so its
-    # start (an open ring, tilted) never pokes out of the bark as a blunt dark stub
+    # inside the parent's wood: the branch's outer side (its offset from the parent's axis plus its radius) rises
+    # smoothly from within the parent's bark to its full width where its axis leaves it, as a crotch widens; a thin
+    # branch stays hidden until it leaves, a thick one swells the crotch gently. Never a nub: its start (an open ring
+    # on the parent's axis) and its side never break through the bark before they should.
     f_in = np.clip(al / max(exit_, 1e-6), 0.0, 1.0)
-    inside = np.minimum(np.minimum(R, rc), Rp * (0.55 + 0.4 * f_in ** 2)) * (0.6 + 0.4 * f_in)
+    outer = 0.94 * Rp + f_in ** 2 * rc
+    inside = np.clip(outer - f_in * Rp, 0.2 * rc, np.minimum(R, rc))
     R = np.where(al < exit_, inside, R * (1.0 + peak * bump))
     return P, R, A
 
@@ -536,8 +539,8 @@ def branch_mesh(tl, parts, H, vols=None, needed=None):
             d0 /= max(np.linalg.norm(d0), 1e-9)
             sin_t = float(np.linalg.norm(np.cross(pa, d0)))
             pts, rad, appear = junction_rings(pts, rad, appear, Rp, parts["flare_branch"], sin_t)
-            # its first ring, on the parent's axis, deep inside the parent's wood
-            rad[0] = min(rad[0], 0.33 * Rp)
+            # its first ring, on the parent's axis, inside the parent's wood
+            rad[0] = min(rad[0], 0.9 * Rp)
         if c[0] == 0:
             # the trunk thickens towards its foot (the wind's lever on the crown is greatest there; the pipe model alone
             # gives a pole), then flares into the ground, the flare in rings near the ground so it curves
@@ -639,7 +642,7 @@ def mark_mesh(tl, parts, seed):
     def put(p, direction, w, cell, lift, key, weather=0.0):
         """A square strip w across centred on node p's wood, facing direction, lift along it from the node's end; cell
         of the atlas; tilted (a shear along the wood) and mirrored by the key. Never on wood buried in another."""
-        if int(p) in buried:
+        if int(p) in buried or end[p][2] + lift < parts.get("mark_min_height", 0.0):
             return
         a = axis_of(p)
         out = direction - a * np.dot(direction, a)
