@@ -60,7 +60,9 @@ What is open and what is next. Every session reads this page first, so it stays 
 - **Scenes are written, not voiced.** No motion-capture sessions: motion comes from free libraries, edited against video (`docs/living-world.md`).
 - **The town stands on Stavanger's phyllite** (`docs/stone.md`).
 - **Nothing repeats unless it was factory-made** (Øystein, on stairs). No Houdini: its free version forbids commercial use, and there is no money for Indie. No commissions; free and open bases only.
-- **Build for bigger cities:** every choice is costed per building and per kilometre of street.
+- **A dense town, not a metropolis, for now** (Øystein, 22 October). The first world is a rich harbour town of a few hundred buildings. The architecture stays open to bigger cities, with every choice still costed per building and per kilometre of street, but no metropolis work until a game needs one.
+- **The town's variety comes from its districts and eras** (Øystein: "if we think Stavanger, you have Gamle Stavanger, Eiganes, 1970s and 80s factory built, as well as more fancy brick and masonry houses; limiting it too much would take something away"). Each house type and era gets its own kit: the old town's small wooden houses; the villas, which were often bespoke; the catalogue houses of the 1970s and 80s; brick and masonry. A part comes from a library only where it truly was factory-made, and bespoke houses get bespoke parts.
+- **People are their own research project, with great care** (Øystein). How people are drawn and stylised is not settled by any shortcut; it is studied and tested in its own step.
 - **The rules in `CLAUDE.md`:** reuse systems, never looks; research the subject and the craft before building; stop and reflect when work reveals a gap.
 
 ## Engine and the shared goal

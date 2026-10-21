@@ -91,6 +91,18 @@ At today's rate a thousand stairs would take about 19 hours to generate and 16 G
 - *Where each stage runs* (raised by the generation digest): play changes the record, and the 3D world must show it. But a built game can't run Blender, import FBX at runtime or ship GPL code (`bpypolyskel`). So which stages run offline and which run inside the game is decided from `docs/research/where-generation-runs.md` and the scale test's numbers.
 - *What changes in existing work:* the stairs and walls, the birches, and how the houses start (House A built by the generator, then twelve more from the same parts).
 
+**Leaner without losing brilliance** (Øystein, 22 October: "we need to make the game leaner, I fear; is it possible without losing visual brilliance?"). The proposals and where each stands:
+1. *Paint the far town:* past about 50 m, a painted backdrop baked from the near models for each date, instead of distance versions for every kind. To confirm with Øystein.
+2. *Make the 1989 town once,* curated, with records by rule, instead of growing two centuries plot by plot. To confirm with Øystein. It also removes the pre-mortem's risk that Overstory becomes the engine.
+3. *Libraries only where things were factory-made:* each house type and era gets its own kit (decided; see `NOW.md`).
+4. *Concentrate the history:* rich where the budget points the eye, one shared weathering bake elsewhere. To confirm with Øystein.
+5. *A dense town, not a metropolis, for now:* decided.
+6. *Art-directed moods* that blend, instead of every hour in every weather. To confirm with Øystein.
+7. *People:* their own research project with great care (Øystein). No shortcut.
+8. *Eye level for every part:* open. The cost of eye level is measured per kind during the gully port and the first house, then decided with numbers.
+
+Also: build more, write less. Docs only where a decision needs recording; the building blocks proven in code and frames.
+
 **From the pre-mortem** (`docs/research/pre-mortem.md`, ranked failure stories; on Opus, to be checked by Fable):
 - a half-page contract saying which facts are Overstory's and which are the engine's, before the architecture builds on either;
 - one real engine run exported as a fixture, asked of the engine project in `docs/engine-requests.md`, so a frame is drawn from the engine at least once before step 2;
