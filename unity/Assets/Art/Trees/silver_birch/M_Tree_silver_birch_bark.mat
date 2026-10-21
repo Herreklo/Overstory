@@ -67,7 +67,7 @@ Material:
     - _MarkDark: {r: 0.24, g: 0.22, b: 0.21, a: 1}
     - _MarkLight: {r: 0.42, g: 0.4, b: 0.38, a: 1}
     - _Relief: {r: 0.006, g: 0.01, b: 0, a: 0}
-    - _Season: {r: 0.7, g: 0.4, b: 0, a: 0}
+    - _Season: {r: 0.7, g: 0.5, b: 0, a: 0}
     - _Through: {r: 1, g: 1, b: 1, a: 0.9}
     - _Turned: {r: 0.74, g: 0.59, b: 0.29, a: 1}
     - _Twig: {r: 0.42, g: 0.34, b: 0.34, a: 1}

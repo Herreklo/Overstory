@@ -52,11 +52,11 @@ namespace Overstory.EditorTools
             // birches (shade takes the light's colour, never a tint of the leaf's own), and the sun pales it, so it
             // never goes cadmium
             ["birch"] = (new Color(0.40f, 0.42f, 0.20f), new Color(0.72f, 0.56f, 0.26f), new Color(0.50f, 0.34f, 0.18f),
-                         new Vector4(0.70f, 0.40f, 0f, 0f)),     // two curtains in five gone, a few still green
+                         new Vector4(0.70f, 0.50f, 0f, 0f)),     // two in five gone, set at half as cards overlap: a few still green
             // the silver birch turns a little clearer and brighter yellow than the downy (a second channel beside the
             // habit for telling them apart)
             ["silver_birch"] = (new Color(0.40f, 0.42f, 0.20f), new Color(0.74f, 0.59f, 0.29f), new Color(0.50f, 0.36f, 0.19f),
-                                new Vector4(0.70f, 0.40f, 0f, 0f)),
+                                new Vector4(0.70f, 0.50f, 0f, 0f)),
         };
 
         /// <summary>Which painted leaves each species' cards carry: its sprays, or its clumps.</summary>
@@ -293,7 +293,7 @@ namespace Overstory.EditorTools
             {
                 ("05-may", new Color(0.50f, 0.58f, 0.20f), new Vector4(0f, 0.55f, 0f, 0f)),     // half out: a pale haze
                 ("07-july", new Color(0.41f, 0.49f, 0.23f), new Vector4(0f, 0f, 0f, 0f)),     // a birch's soft yellow-green
-                ("10-october-20", new Color(0.36f, 0.40f, 0.15f), new Vector4(0.70f, 0.40f, 0f, 0f)),
+                ("10-october-20", new Color(0.36f, 0.40f, 0.15f), new Vector4(0.70f, 0.50f, 0f, 0f)),
                 ("01-january", new Color(0.27f, 0.38f, 0.12f), new Vector4(1f, 1.3f, 0f, 0f)),
             };
             try

@@ -52,15 +52,16 @@ import tree_growth as G  # noqa: E402
 # core kept (under a mass's middle only). taper: how much wider the trunk is drawn towards its foot; flare: how far it
 # spreads into the ground; flare_branch: how much a branch swells where it leaves the wood it grows from (branches at
 # least flare_min_radius thick: a twig's flare is not seen). lobe_size, lobe_weight: each mass cut into lobes about so many metres
-# across (on a grown tree), whose own volumes shade the cards by so much of their normal. places: for each place in the crown (top: above top_z of its height; core; low; high skin), the pairs of
+# across (on a grown tree), whose own volumes shade the cards by so much of their normal; lobe_seam: how wide the seam of
+# sky between two lobes is (the share of their depth), its leaves thinned. places: for each place in the crown (top: above top_z of its height; core; low; high skin), the pairs of
 # atlas cells its two crossed cards may carry. top_tilt: how far the cards inside a mass's top (deeper than top_tilt_depth) lean to the sky (degrees), for steep
 # views. hug_gap, hug_len: a branch within hug_gap (m) of a stem's bark for more than hug_len along it is not drawn.
 PARTS = {
     "birch": dict(sag=0.08, taper=0.55, flare=0.3, flare_branch=0.22, flare_min_radius=0.008, occlusion=0.05, seam=0.5, atlas="clusters", lobe=0.8, lobe_gap=0.36,
-                  marks=True, mark_min_radius=0.02, mark_scale=1.6, lenticel_spacing=0.24, mark_min_height=0.6,
+                  marks=True, mark_min_radius=0.02, mark_scale=2.0, lenticel_spacing=0.24, mark_min_height=0.6,
                   cluster_size=(1.3, 1.15, 1.05, 0.85), crossed=True, edge_gap=0.22, edge_depth=0.2,
                   masses="limbs", seam_cut=0.95, core_depth=0.45, core_keep=0.55, top_tilt=50.0,
-                  lobe_size=2.2, lobe_weight=0.7, top_z=0.66, top_tilt_depth=0.15, hug_gap=0.12, hug_len=0.5, hug_stem=0.025,
+                  lobe_size=2.2, lobe_weight=0.7, lobe_seam=0.25, top_z=0.66, top_tilt_depth=0.15, hug_gap=0.12, hug_len=0.5, hug_stem=0.025, rod_len=3.0, rod_r=0.03, rod_bare=0.8, rod_order=2,
                   places=dict(core=((0, 1), (1, 0)), top=((0, 1), (1, 0)), low=((2, 3),), high=((3, 2),)), lose_tips=40, hang=False, card=(0.50, 0.48), card_u=(0.03, 0.97), cells=4,
                   per_node=2, along=1, droop=0.7, leaf_years=999, leaf_tips=24, draw_tips=2.5, draw_tips_per_m=0.9, winter_tips=3.0, reach=99.0, hang_reach=0.3,
                   bark=(0.30, 0.60), max_cards=4200, grow_to=80),
@@ -69,7 +70,7 @@ PARTS = {
 }
 # the silver birch: the birch's fitting, carrying its own drapes (blender/parts/trees/silver_birch; Øystein preferred
 # them, full and arching, to open strands with a rising top), its branches giving more under their weight
-PARTS["silver_birch"] = dict(PARTS["birch"], sag=0.12, lenticel_spacing=0.36, mark_scale=2.2)
+PARTS["silver_birch"] = dict(PARTS["birch"], sag=0.12, lenticel_spacing=0.36, mark_scale=2.6, lobe_seam=0.0)
 
 
 def h01(*k):
@@ -109,12 +110,51 @@ def read(species, seed, age, quality, events=(), exposure=0.0, origin="planted")
     tl["age"] = age
     sag(tl, pipe, parts, G.SPECIES[species]["tip_radius"])
     hugging(tl, parts)
+    rods(tl, parts)
     kids = {}
     for i in range(1, len(tl["parent"])):
         if tl["alive"][i]:
             kids.setdefault(int(tl["parent"][i]), []).append(i)
     tl["children_of"] = kids
     return tl
+
+
+def rods(tl, parts):
+    """A long thin limb bare along most of its length, its leaves only in a tuft at its tip (a rod with a tuft), is
+    left out with all it carries: in a crown it reads as a stick, and in life such a limb, shaded inside and carrying
+    little, is the next to be shed. A limb of order rod_order or lower, longer than rod_len, thinner than rod_r, with
+    nothing growing off its first rod_bare share."""
+    L0, r0, bare = parts.get("rod_len", 0.0), parts.get("rod_r", 0.0), parts.get("rod_bare", 0.7)
+    if L0 <= 0:
+        return
+    parent, order, alive, start, end, r = tl["parent"], tl["order"], tl["alive"], tl["start"], tl["end"], tl["r"]
+    kids = {}
+    for i in range(1, len(parent)):
+        if alive[i]:
+            kids.setdefault(int(parent[i]), []).append(i)
+    seg = np.linalg.norm(end - start, axis=1)
+    dropped = 0
+    for c in chains(tl):
+        if c[0] == 0 or order[c[0]] == 0 or order[c[0]] > parts.get("rod_order", 2) or r[c[0]] >= r0:
+            continue
+        L = float(seg[c].sum())
+        if L < L0:
+            continue
+        acc, first = 0.0, None
+        for i in c:
+            acc += seg[i]
+            if any(order[k] > order[i] for k in kids.get(i, ())):
+                first = acc
+                break
+        if first is None or first > bare * L:
+            stack = [c[0]]
+            while stack:
+                j = stack.pop()
+                if alive[j]:
+                    alive[j] = False
+                    stack.extend(kids.get(j, ()))
+            dropped += 1
+    tl["rods_dropped"] = dropped
 
 
 def hugging(tl, parts):
@@ -1068,7 +1108,8 @@ def lobe_mesh(tl, parts, age, seed, H):
                          or h01(seed, i, 23) < parts["core_keep"] for i, c, w in zip(ids, centres, which)])
         ids, centres, which, edge = ids[keep], centres[keep], which[keep], edge[keep]
     # lobes: each mass cut into lobes about lobe_size across, each a smooth volume of its own, so every lobe has its
-    # lit top and its shaded underside (Oga's shade follows each lobe's outline, never a band across the mass)
+    # lit top and its shaded underside (Oga's shade follows each lobe's outline, never a band across the mass); with
+    # lobe_seam, the leaves where two lobes meet thinned, so the lobes stand apart with sky and dark pockets between
     lobe_of = np.zeros(len(ids), dtype=int)
     lobe_vols = []
     if parts.get("lobe_size"):
@@ -1084,6 +1125,18 @@ def lobe_mesh(tl, parts, age, seed, H):
             base = len(lobe_vols)
             lobe_vols.extend(subv)
             lobe_of[idx] = base + sub
+        if parts.get("lobe_seam"):
+            keep = np.ones(len(ids), dtype=bool)
+            for j in range(len(ids)):
+                own = lobe_vols[lobe_of[j]]
+                if own is None:
+                    continue
+                e_own = np.linalg.norm((own[1].T @ (centres[j] - own[0])) / own[2])
+                es = [np.linalg.norm((v[1].T @ (centres[j] - v[0])) / v[2]) for m2, v in enumerate(lobe_vols)
+                      if v is not None and m2 != lobe_of[j]]
+                if es and min(es) / max(e_own, 1e-6) < 1.0 + parts["lobe_seam"] and h01(seed, int(ids[j]), 24) < 0.65:
+                    keep[j] = False
+            ids, centres, which, edge, lobe_of = ids[keep], centres[keep], which[keep], edge[keep], lobe_of[keep]
     V, F, UV0, UV1, NR, COL = [], [], [], [], [], []
     ATTACH = []                                         # per card: where it hangs from, how deep, when it falls
     EXTENT = []                                         # per card: its spray's middle and reach (what it hides)

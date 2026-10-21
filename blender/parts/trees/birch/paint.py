@@ -527,8 +527,8 @@ def _shape_cell(kind, rng):
 
     tilt = rng.uniform(-0.12, 0.12)
     if kind == "slash":
-        paint_slash(0.5, 0.5, rng.uniform(0.6, 0.94), rng.uniform(0.07, 0.15), rng.uniform(-0.04, 0.06), tilt,
-                    rng.random() < 0.9)
+        paint_slash(0.5, 0.5, rng.uniform(0.6, 0.94), rng.uniform(0.08, 0.17), rng.uniform(-0.04, 0.06), tilt,
+                    False)      # (a pale torn lip reads as an eye at a distance: flat dark tears, as Firewatch's)
     elif kind == "broken":
         # a slash broken where the bark bridged it: two or three pieces along one line
         k = rng.randint(2, 3)
@@ -536,8 +536,8 @@ def _shape_cell(kind, rng):
         for j in range(k):
             ln = span / k * rng.uniform(0.6, 0.9)
             cx = 0.5 - span / 2 + span * (j + 0.5) / k
-            paint_slash(cx, 0.5 + tilt * (cx - 0.5), ln, rng.uniform(0.05, 0.1), rng.uniform(-0.02, 0.03), tilt,
-                        rng.random() < 0.4)
+            paint_slash(cx, 0.5 + tilt * (cx - 0.5), ln, rng.uniform(0.06, 0.11), rng.uniform(-0.02, 0.03), tilt,
+                        False)
     elif kind == "dashes":
         # a row of small lenticels close together
         k = rng.randint(2, 4)
@@ -546,7 +546,7 @@ def _shape_cell(kind, rng):
             paint_slash(cx, 0.5 + rng.uniform(-0.1, 0.1), rng.uniform(0.12, 0.3), rng.uniform(0.03, 0.06),
                         0.0, rng.uniform(-0.1, 0.1), False)
     elif kind == "hook":
-        paint_slash(0.47, 0.5, rng.uniform(0.6, 0.82), rng.uniform(0.07, 0.12), 0.03, tilt, rng.random() < 0.6)
+        paint_slash(0.47, 0.5, rng.uniform(0.6, 0.82), rng.uniform(0.07, 0.12), 0.03, tilt, False)
         sgn = rng.choice((-1, 1))
         hx = 0.47 + sgn * 0.33
         paint_slash(hx + sgn * 0.04, 0.5 - 0.06, 0.16, 0.06, 0.0, sgn * 0.9, False)
