@@ -28,6 +28,17 @@ What is open and what is next. Every session reads this page first, so it stays 
 - **Who starts it:** a scheduled task (`overstory-architecture`, in the app's Scheduled section) starts the architecture in a fresh session on Thursday 22 October at 08:00. That's after Øystein's free usage reset on the evening of the 21st, so the week begins three days early. If usage hasn't been reset, the task stops without starting. Any new session that reads this page can also start the work.
 - **Before Monday (started 22 October, with the week's last budget):** Opus agents are digesting the fourteen studies into `docs/research/inputs/`: a bar check, the decisions each proposes, what every part must carry, the conflicts between studies and the unknowns. A consolidated decision register follows in `docs/research/building-blocks-inputs.md`, so Monday's Fable session starts straight on judgement. The measuring tools are being built (mesh hashes, golden views at the player's size, the frame-time harness, motion sheets; `docs/measuring.md`), so Monday's tools session may find them done. Each is committed as it lands; anything unfinished is picked up on Monday.
 
+## After the usage reset (queued 21 October)
+
+Fable's limit returns with the reset. The judgement work done on Opus while it was out gets a Fable pass, in this order:
+1. **The architecture.** Scheduled for Thursday at 08:00 (`overstory-architecture`).
+2. **The paper playtests' report** (`docs/playtests/paper-1/README.md`): a strict review against the sessions, and the must-improve register checked.
+3. **The first-game options** (`docs/ideas/first-game-options.md`), and the recommendation within them.
+4. **The playtest programme** (`docs/research/playtesting.md`): review it, and extend "worth trying".
+5. **The gaps in the camera study:** Naughty Dog, Insomniac, Mario Odyssey, the alley cameras of Assassin's Creed, Hitman and Uncharted, and BG3's Lower City.
+
+The studies of fun, AI playtesting and play craft, the clay time test (1f) and the measuring tools are committed as they land.
+
 ## Waiting for Øystein
 
 **What goes to Øystein** (scope, play and permissions only, each with a recommendation; everything else is decided, recorded with its reasons, and shown to him as finished work he can overturn):
