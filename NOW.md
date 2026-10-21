@@ -105,7 +105,8 @@ At today's rate a thousand stairs would take about 19 hours to generate and 16 G
 **What goes to Øystein** (taste, scope and play only, each with a recommendation; everything else is decided, recorded with its reasons, and shown to him as finished work he can overturn):
 - the town system's scope and the eras after 1989 (`docs/town-system.md`);
 - the night sky's colour, lamp glass and the tonemapper, judged on frames when the light is rebuilt;
-- his OK for reference downloads (Stavanger's rock, water, city-archive photos for houses and dress), each listed with its source and size first.
+- his OK for reference downloads (Stavanger's rock, water, city-archive photos for houses and dress), each listed with its source and size first;
+- whether signs and street text stay in Norwegian and are translated on inspection (recommended: yes; `docs/research/fronts-windows-and-signs.md`).
 
 **Budget:**
 - The weekly limit resets on Monday at about 13:00 Oslo time.
@@ -115,7 +116,7 @@ At today's rate a thousand stairs would take about 19 hours to generate and 16 G
 
 **Who starts it:** the chat that wrote this plan starts both Monday sessions when Øystein says go. Otherwise any new session that reads this page can start them.
 
-**Before Monday:** four craft studies are being written: `painted-marks-in-motion.md`, `time-on-screen.md`, `ground-cover-and-plants.md` and `fronts-windows-and-signs.md`. Each saves its draft as it goes and is committed as it lands; one cut short is committed as a partial draft and finished on Monday.
+**Before Monday:** a study of using fewer tokens without losing quality (`docs/research/working-with-claude.md`) is being written; it updates `CLAUDE.md`'s rules. Four craft studies were started on 22 October: `painted-marks-in-motion.md`, `time-on-screen.md`, `ground-cover-and-plants.md` and `fronts-windows-and-signs.md`. Each saves its draft as it goes and is committed as it lands; one cut short is committed as a partial draft and finished on Monday.
 
 ## Decided (22 October; don't reopen without Øystein)
 
