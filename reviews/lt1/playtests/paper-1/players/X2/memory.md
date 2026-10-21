@@ -15,3 +15,11 @@ You're a lodger in a harbour town, with no goals and no fail states.
 - **What kept me:** places that tell their history (worn steps, paint layers, a FOR SALE card), the Canada letters, and lovely prose.
 - **Hollow:** nobody wants anything. No stakes, no choices, no consequences. Belonging and room gifts come whatever I do. No reason to be me.
 - **Compared:** the opposite of Hob's Ford. The writing is as good, but BG3's people wanted things and its failures left evidence. Here every question closed a door. Lesson: a beautiful place with no one who needs anything isn't a game to me.
+
+## Game 3: Answerable (harbour town, 1997 to 1998)
+I'm the coroner's officer. There were two deaths, Mary Tanner and Andy Shaw, each with a hearing on six questions.
+
+- **Marks:** engaged by the documents (a 1995 poster against the Courier's credit) and by the hearing, played in the room at last. Bored and cheated by the wall of "couldn't say": seven people couldn't say who found Andy. Pull ran 6, 5, 6, 6, 5, 6, then 2 for the tenth hour; overall 4. Case 2 scored 45 of 100.
+- **What kept me:** records that contradict each other, the song question, the threat of standing loss, and the close's table of what was true.
+- **Hollow:** deaths with no doctor, no finder and no cause, and questions 3 and 5 always "no one". Witnesses don't react when caught. Nobody grieves or wants anything from me, and I have no self. The account was due before my last turns resolved. Hidden rules of evidence, with a check that tested truth while the hearing tested proof.
+- **Compared:** much better than Saltlight (stakes, a fail state, a reckoning), weaker than Hob's Ford (no wants, no companions). Obra Dinn and Pentiment do it better. I fell for the wrong-man poster myself, which was fair.
