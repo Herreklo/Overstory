@@ -29,6 +29,19 @@ The week's plan starts from the architecture (`docs/plan.md`, Next week; steps i
 2. **The scale test,** in its own session (started 21 October, evening), with the pass budget and the measurements the architecture leaves provisional (`docs/building-blocks.md`, Open until measured). Results go to `docs/research/scale-test.md`.
 3. **The cut line:** the port is 13.5 to 17.5 Opus-days, 6.5 to 8 through step 3, against three days. Friday's milestone is steps 0 to 2 reviewed, step 3 as far as it got.
 
+## Tonight (21 to 22 October), for the main session
+
+Øystein asked us to carry on without him tonight. The main chat was cleared at about 20:55 to keep it small. Its linked sessions report to it, and on each note it reads this page and acts:
+- **When the scale test reports:**
+  - read `docs/research/scale-test.md`;
+  - pass any number that settles an "Open until measured" item into `docs/building-blocks.md`, with its reason;
+  - start the gully port (step 1 above) in a fresh Opus session, briefed from `docs/research/building-blocks-decisions.md` §13 and `docs/building-blocks.md`, if the 5-hour window allows.
+- **When the playtests report:** the four steps under "When the playtest report lands", below.
+- **After the 5-hour window resets (00:30 Oslo):**
+  - start the camera and play-craft research for 1g in a fresh Opus session. It covers the talks and papers the studies could not open (GDC Vault was down): Designing Journey, Hitman's level design and crowds, Assassin's Creed Unity's crowds, Lemarchand, Smith's continuity paper, So's study of navigation speed and sickness, and the masters named under "Then, on Opus". The sources are listed in the Limits sections of `docs/research/play-craft.md`, `camera-and-composition.md` and `collision-and-navigation.md`. Read online only: a file download waits for Øystein's OK, listed with its source and size.
+  - the date housekeeping below.
+- **Pace by the 5-hour window:** at most three sessions working at once, and nothing new started above about 80%. Check with `get_usage`.
+
 ## Running now
 
 Each session commits its own work. If one stops, resume it from its files. Long work runs in its own session: the main chat's background agents seem to stop when the chat is cleared, as the playtests did on 21 October.
