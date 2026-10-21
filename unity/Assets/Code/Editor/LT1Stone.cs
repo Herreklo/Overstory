@@ -196,6 +196,9 @@ namespace Overstory.EditorTools
             bool grey = Flag("-grey");
             // the pack's growth (lichen, moss), set once for the whole town
             GrowthPack.Apply();
+            // -detail painted|real: one end of "true up close, painted from afar" everywhere, to compare
+            string detail = Arg("-detail", "");
+            Shader.SetGlobalFloat("_OS_NearForce", detail == "painted" ? 1f : detail == "real" ? 2f : 0f);
             var mat = Material(grey);
             AssetDatabase.SaveAssets();
             var (go, o) = Place("gully", mat);
@@ -250,7 +253,7 @@ namespace Overstory.EditorTools
                         // language is judged with the brush)
                         if (Flag("-paint"))
                             Shader.SetGlobalVector("_OS_Paint", new Vector4(stage.wrap, stage.muting, stage.grime, stage.brush));
-                        string file = Path.Combine(dir, $"gully-{view}{(grey ? "-greylight" : "")}{(Flag("-history") ? "-history" : "")}{(Flag("-albedo") ? "-albedo" : "")}{(Flag("-normals") ? "-normals" : "")}{(Flag("-paint") ? "-paint" : "")}{(Flag("-nostyle") ? "-nostyle" : "")}.png");
+                        string file = Path.Combine(dir, $"gully-{view}{(grey ? "-greylight" : "")}{(Flag("-history") ? "-history" : "")}{(Flag("-albedo") ? "-albedo" : "")}{(Flag("-normals") ? "-normals" : "")}{(Flag("-paint") ? "-paint" : "")}{(Arg("-detail", "") != "" ? "-" + Arg("-detail", "") : "")}{(Flag("-nostyle") ? "-nostyle" : "")}.png");
                         LT1Render.Still(stage.view, file, grey: true, eighth: true, msaa: 4);
                         Debug.Log($"[LT1Stone] {file}");
                     }

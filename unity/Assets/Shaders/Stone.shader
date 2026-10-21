@@ -116,14 +116,15 @@ Shader "Overstory/Stone"
         }
         else if (kind > 3.5h)
         {
-            // (painted: its value and its age; no sand or crazing to speckle it)
-            half sand = 0.5h;
+            // near, its sand and its fine crazing; further off its value and its age only (they speckle from afar)
+            half nearC = OS_Near(max(length(ddx(positionWS)), length(ddy(positionWS))));
+            half sand = lerp(0.5h, (half)OS_Noise(q * 260.0 + var * 17.0), nearC);
             // (on this coast grime and a film come in a few years: half grey by six, near its old grey by twenty)
             half grime = 1.0h - exp(-years / 9.0h);
-            half3 cem = lerp(_Cement.rgb, _CementOld.rgb, grime);
+            half3 cem = lerp(_Cement.rgb, _CementOld.rgb, grime) * (0.9h + 0.2h * sand);
             half film = saturate(hist.b * 1.6h) * grime * smoothstep(0.3h, 0.7h, (half)OS_Noise(q * 12.0 + var * 5.0));
             cem = lerp(cem, _CementFilm.rgb, film * 0.7h);
-            half craze = 0.0h;
+            half craze = smoothstep(0.03h, 0.0h, abs((half)OS_Noise(q * 38.0 + var * 9.0) - 0.5h)) * grime * nearC;
             cem *= 1.0h - 0.25h * craze;
             half lost = 0.0h;
             if (kind < 4.5h)

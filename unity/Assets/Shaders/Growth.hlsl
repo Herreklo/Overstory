@@ -18,6 +18,17 @@ float4 _OS_LichenRate;   // x growth (m a year), y the size of a patch (m), z ho
 half4 _OS_Moss;          // rgb fresh moss
 half4 _OS_MossOld;       // rgb moss grown old, browner
 
+float _OS_NearForce;     // debug: 0 by distance, 1 painted everywhere, 2 the near detail everywhere
+
+// How near a pixel is, for the detail it can carry: true up close, painted from afar (docs/visual-direction.md). 1
+// within a couple of metres at eye level (a pixel about a millimetre on the surface), 0 by about seven (four), so
+// by the street stop every mark is its painted shape.
+half OS_Near(float footprint)
+{
+    half n = 1.0h - saturate((half)((footprint - 0.0012) / 0.0028));
+    return _OS_NearForce > 1.5 ? 1.0h : (_OS_NearForce > 0.5 ? 0.0h : n);
+}
+
 float2 OS_GrowthHash2(float2 p)
 {
     return float2(OS_Hash(p), OS_Hash(p + 19.19));
@@ -45,12 +56,26 @@ half3 OS_LichenAt(float2 q, half years, half seed, float footprint)
                * (0.65h + 0.7h * frac(seed * 7.31h));
     half pq = clamp(1.0h - share, 0.002h, 0.998h);
     half th = 0.5h + 0.138h * (half)(log(pq / (1.0h - pq)) / 1.702);
-    // painted, not photographed (docs/visual-direction.md; the board, 26: Stålenhag's lichen as soft spots): a field
-    // with a lobed outline and a soft edge, one pale value; no crumbs, plates, dots, outlines or seedling flecks
-    // (each read as speckle from every view)
+    // true up close, painted from afar: near, the crust as it grows (a lobed edge crumbling at a millimetre or two, a
+    // dark line where colonies crowd and meet, a few young colonies between); further off, the same field painted as
+    // a soft spot with one pale value (crumbs, lines and flecks read as speckle from the street stop)
+    half near = OS_Near(footprint);
+    half fr = field + lobe * 0.06h + crumb * 0.035h;
+    half coverNear = smoothstep(th - 0.004h, th + 0.004h, fr);
+    half crowd = smoothstep(0.55h, 0.72h, (half)OS_Noise(q * 6.0 + seed * 1.7));
+    half rim = coverNear * (1.0h - smoothstep(th + 0.004h, th + 0.018h, fr)) * crowd * 0.6h;
+    const float cell = 0.03;
+    float2 p2 = q / cell;
+    float2 h2 = OS_GrowthHash2(floor(p2) + seed * 11.3);
+    half r2 = saturate(years / 40.0h) * (0.12h + 0.18h * (half)h2.y);
+    if (h2.x < share * 0.18h)
+    {
+        half d2 = (half)length(frac(p2) - 0.5) / max(r2, 1e-3h) + lobe * 1.2h + crumb * 0.8h;
+        coverNear = max(coverNear, 1.0h - smoothstep(0.85h, 1.0h, d2));
+    }
     half f = field + lobe * 0.04h;
-    half cover = smoothstep(th - 0.05h, th + 0.04h, f);
-    half rim = 0.0h;
+    half cover = lerp(smoothstep(th - 0.05h, th + 0.04h, f), coverNear, near);
+    rim *= near;
     half age = saturate((f - th) / 0.1h) * saturate(years / 100.0h);
     half far = saturate((half)((footprint - 0.002) / 0.008));
     cover = lerp(cover, share, far);
@@ -74,10 +99,20 @@ OSGrowth OS_GrowthLayer(half3 albedo, half smoothness, float2 q, half lichenYear
     OSGrowth g;
     float footprint = max(length(ddx(positionWS)), length(ddy(positionWS)));
     half3 li = OS_LichenAt(q, lichenYears, seed, footprint);
-    // the crust: cracked into tiny plates (areoles) a millimetre or two across
-    // one pale value, older and greyer towards a colony's middle, broadly
+    // near, the crust cracked into tiny plates (areoles) a millimetre or two across, greyer in places, a few dark
+    // fruiting dots; further off one pale value, older and greyer towards a colony's middle, broadly
+    half near = OS_Near(footprint);
     half mottle = (half)OS_Noise(q * 9.0 + seed * 2.1);
     half3 lich = lerp(_OS_Lichen.rgb, _OS_LichenOld.rgb, saturate(li.y * 0.8h + (mottle - 0.5h) * 0.4h));
+    if (near > 0.01h)
+    {
+        half areole = (half)OS_Noise(q * 700.0 + seed * 3.3);
+        half mot = (half)OS_Noise(q * 28.0 + seed * 2.1);
+        half dots = smoothstep(0.87h, 0.9h, (half)OS_Noise(q * 140.0 + seed * 5.3));
+        half3 crust = lerp(_OS_Lichen.rgb, _OS_LichenOld.rgb, saturate(li.y + (mot - 0.5h) * 0.8h)) * (0.9h + 0.16h * areole);
+        crust *= 1.0h - 0.3h * dots;
+        lich = lerp(lich, crust, near);
+    }
     lich = lerp(lich, _OS_LichenRim.rgb, li.z);
     albedo = lerp(albedo, lich, li.x);
     smoothness = lerp(smoothness, 0.08h, li.x);
@@ -109,7 +144,7 @@ OSGrowth OS_GrowthLayer(half3 albedo, half smoothness, float2 q, half lichenYear
     half3 mossc = lerp(_OS_MossOld.rgb, _OS_Moss.rgb, saturate(dome * 1.3h - 0.1h) * (0.6h + 0.4h * fresh));
     albedo = lerp(albedo, mossc, cover);
     smoothness = lerp(smoothness, 0.05h, cover);
-    h += cover * (0.3h + 0.8h * dome);
+    h += cover * lerp(0.3h + 0.8h * dome, 0.6h + 1.8h * dome, near);
     g.albedo = albedo;
     g.smoothness = smoothness;
     g.height = h;
