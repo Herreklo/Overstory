@@ -30,7 +30,7 @@ namespace Overstory.EditorTools
         const float Lens28 = 46.4f, Lens35 = 37.8f;
 
         [System.Serializable]
-        class Flight { public string name; public float[] a; public float[] b; public float width; public int steps; public float rise; public float tread; }
+        class Flight { public string name; public float[] a; public float[] b; public float width; public int steps; public float rise; public float tread; public float[] S; }
 
         [System.Serializable]
         class Info { public string name; public float[] origin; public Flight[] flights; }
@@ -165,7 +165,8 @@ namespace Overstory.EditorTools
             go.transform.SetPositionAndRotation(StreetSpace.ToUnity(origin), Quaternion.identity);
             foreach (var r in go.GetComponentsInChildren<MeshRenderer>())
             {
-                r.sharedMaterial = mat;
+                // (a step-ramp's setts are their own granite whatever its kerbs are)
+                r.sharedMaterial = r.name.Contains("_setts") ? GraniteMaterial(mat.GetFloat("_Grey") > 0.5f) : mat;
                 r.shadowCastingMode = ShadowCastingMode.On;
             }
             // the importer turns each child half round (its axis conversion); the mesh itself is already in street
@@ -286,9 +287,20 @@ namespace Overstory.EditorTools
                         float s = Vector2.Dot(p, up), t = Mathf.Abs(Vector2.Dot(p, right));
                         if (s < 0.05f || s > run + 0.3f || t > f.width / 2 + 1.6f)
                             continue;
-                        // under the foot of every riser (3 cm in from the nosings, rises a centimetre off), and a
-                        // little beside the flight up to the treads' own level
+                        // under the foot of every riser, following the flight's own set-out (its landings run flat
+                        // where a straight line would rise through them), and a little beside the flight up to the
+                        // treads' own level
                         float inner = f.a[2] + (s - 0.03f) * slope - 0.12f;
+                        if (f.S != null && f.S.Length > 0)
+                        {
+                            // (the ground is a 1.5 m grid: a triangle spans several steps, so each vertex goes under
+                            // the lowest stair surface its triangles reach, the stair 1.6 m back, or the straight
+                            // triangle between two vertices crossed above the steps between them)
+                            int k = 0;
+                            while (k < f.S.Length && f.S[k] <= s - 1.6f)
+                                k++;
+                            inner = f.a[2] + k * f.rise - 0.12f;
+                        }
                         if (s < f.tread + 0.1f)
                             inner = Mathf.Max(inner, f.a[2] - 0.02f);     // (under the first step the lane meets its foot)
                         float beside = Mathf.Clamp01((t - f.width / 2) / 1.6f);

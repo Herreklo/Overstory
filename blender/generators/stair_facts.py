@@ -54,14 +54,14 @@ def facts_for(lane, seed=1):
     if name == "Tanner's Steps":
         # the old town's other public stair: local slate blocks, laid by the town in the 1860s, busy
         built = rng.randint(1858, 1872)
-        up = _town(rng, built, 0.45, [(1930, 0.65), (1946, 0.9), (1965, 0.5)])
+        up = _town(rng, built, 0.45, [(1930, 0.65), (1946, 1.35), (1965, 0.5)])
         return dict(base, built=built, built_as="block", finish="split", footfall=rng.randint(30000, 55000),
                     upkeep=up, works=_campaigns(rng, built, windows, up))
     if name == "Bishop's Steps":
         # the better-off district's stair, built by the town with money: dressed granite blocks brought in, kept
         # better, its walking line keeping to the rail side
         built = rng.randint(1888, 1896)
-        up = _town(rng, built, 0.65, [(1930, 0.85), (1965, 0.8)])
+        up = _town(rng, built, 0.65, [(1930, 0.85), (1946, 1.2), (1965, 0.8)])
         return dict(base, stone="granite", built=built, built_as="block", finish="dressed",
                     footfall=rng.randint(20000, 35000), upkeep=up, works=_campaigns(rng, built, windows[:2], up))
     if name == "the Hundred Steps":
@@ -76,7 +76,7 @@ def facts_for(lane, seed=1):
         # a stepped path down a cleft in the rock: rough slabs, little used, seldom kept
         built = rng.randint(1895, 1910)
         return dict(base, built=built, built_as="block", finish="rough", footfall=rng.randint(4000, 9000),
-                    upkeep=_town(rng, built, 0.25, [(1946, 0.8), (1965, 0.5)]), works=[])
+                    upkeep=_town(rng, built, 0.25, [(1946, 1.2), (1965, 0.5)]), works=[])
     if name.startswith("the path to Lookout Park"):
         # the park's path (laid with the park in the 1920s): thin treads on cheap risers, the park's men
         built = rng.randint(1922, 1928)
@@ -93,9 +93,10 @@ def facts_for(lane, seed=1):
         return dict(base, built=built, built_as="tread_on_riser", finish="split", footfall=rng.randint(2000, 9000),
                     upkeep=care, works=[])
     if name.startswith("stair-lane"):
-        # the newer town's stair-lanes, laid with its grid (1905 to 1925) by the town: dressed granite
-        built = rng.randint(1905, 1925)
-        up = _town(rng, built, 0.55, [(1946, 0.9), (1965, 0.6)])
+        # the Holm's stair-lanes, laid by the town when the Holm was rebuilt after the 1860s (docs/town-system.md):
+        # dressed granite as it came in from about 1870
+        built = rng.randint(1868, 1880)
+        up = _town(rng, built, 0.55, [(1930, 0.8), (1946, 1.25), (1965, 0.6)])
         return dict(base, stone="granite", built=built, built_as="block", finish="dressed",
                     footfall=rng.randint(12000, 30000), upkeep=up, works=_campaigns(rng, built, windows[1:], up))
     if name.startswith("the way to"):

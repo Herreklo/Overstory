@@ -44,39 +44,50 @@ half3 OS_LichenAt(float2 q, half years, half seed, float footprint)
     half near = OS_Near(footprint);
     half lobe = (half)(OS_Noise(q * 90.0 + seed * 3.0) - 0.5);
     half crumb = (half)(OS_Noise(q * 330.0 + seed * 7.0) - 0.5) * near;
-    // two generations of colonies: a few old ones, begun soon after the stone was laid, grown large and merging into
-    // fields, and many young ones between, small (one size of disc everywhere read as a stamp); each spreads about
-    // half a millimetre a year from its own year
+    // the old colonies, begun in the stone's first decades, have grown into one another: fields a hand to a forearm
+    // across with ragged lobed edges (the board, 06), from a warped field whose covered share follows the years; round
+    // rosettes everywhere read as polka dots
     half cover = 0.0h, rim = 0.0h, age = 0.0h;
-    half soft = lerp(0.18h, 0.05h, near);       // (near the edge is crisp; at the street stop it is painted soft)
-    [unroll]
-    for (int gen = 0; gen < 2; gen++)
+    half soft = lerp(0.06h, 0.012h, near);      // (crisp near; at the street stop painted soft)
     {
-        float cell = gen == 0 ? 0.11 : 0.035;
-        float2 pc = q / cell + seed * (13.7 + gen * 5.1);
+        float k = 1.0 / 0.09;
+        float2 w = float2(OS_Noise(q * k * 0.5 + seed * 5.1), OS_Noise(q * k * 0.5 + 9.7 + seed * 2.3)) - 0.5;
+        float2 qq = q * k + w * 2.2;
+        half field = (half)(OS_Noise(qq) * 0.55 + OS_Noise(qq * 2.3 + 4.4) * 0.3 + OS_Noise(qq * 5.1 + 1.3) * 0.15);
+        half shareOld = share * 0.85h;
+        half pq = clamp(1.0h - shareOld, 0.002h, 0.998h);
+        half th = 0.5h + 0.138h * (half)(log(pq / (1.0h - pq)) / 1.702);
+        half f = field + lobe * 0.05h + crumb * 0.03h;
+        cover = smoothstep(th - soft, th + soft, f);
+        age = saturate((f - th) / 0.1h) * saturate(years / 100.0h);
+        // (a faint darker line just inside the edge, stronger where fields meet: the board, 06)
+        rim = cover * (1.0h - smoothstep(th + soft, th + 0.025h, f)) * 0.4h * near;
+    }
+    // the young colonies between, few and small, each a rosette from its own year
+    {
+        float cell = 0.04;
+        float2 pc = q / cell + seed * 18.8;
         float2 ci = floor(pc);
-        half density = saturate(share * (gen == 0 ? 1.5h : 2.0h));
+        half density = saturate(share * 0.6h);
         for (int j = -1; j <= 1; j++)
         {
             for (int i = -1; i <= 1; i++)
             {
                 float2 c = ci + float2(i, j);
-                float2 h = OS_GrowthHash2(c + gen * 31.7);
+                float2 h = OS_GrowthHash2(c + 31.7);
                 if (h.x > density)
                     continue;
-                half born = (half)OS_Hash(c + 4.2 + gen * 7.1);
-                // (the old generation began in the first decades, the young one any time since)
-                half ageC = gen == 0 ? years * (1.0h - born * 0.3h) : years * born * 0.6h;
-                half r = clamp(ageC * 0.0005h, 0.002h, 0.07h) / (half)cell;
-                float2 ctr = c + 0.15 + 0.7 * float2(h.y, OS_Hash(c + 9.1 + gen));
-                half d = (half)length(pc - ctr) / max(r, 1e-3h) + lobe * (gen == 0 ? 0.9h : 0.4h) + crumb * 0.25h;
-                half cv = 1.0h - smoothstep(1.0h - soft, 1.0h, d);
+                half ageC = years * (half)OS_Hash(c + 11.3) * 0.5h;
+                half r = clamp(ageC * 0.0005h, 0.002h, 0.02h) / (half)cell;
+                float2 ctr = c + 0.15 + 0.7 * float2(h.y, OS_Hash(c + 10.1));
+                half lobeC = (half)(OS_Noise(pc * 3.1 + h * 17.0) - 0.5) * 0.3h;
+                half d = (half)length(pc - ctr) / max(r, 1e-3h) + lobeC + crumb * 0.25h;
+                half cv = (1.0h - smoothstep(1.0h - soft * 3.0h, 1.0h, d)) * 0.7h;
                 if (cv > cover)
                 {
                     cover = cv;
                     age = saturate(ageC / 100.0h);
-                    // (a faint darker rim just inside each colony's edge: the board, 06)
-                    rim = cv * smoothstep(0.8h, 0.97h, d) * 0.45h * near;
+                    rim = 0.0h;
                 }
             }
         }

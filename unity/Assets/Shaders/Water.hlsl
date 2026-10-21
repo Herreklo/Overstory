@@ -43,7 +43,9 @@ void OS_Wet(inout half3 albedo, inout half smoothness, inout half3 normal, half 
             half held, half up)
 {
     albedo *= 1.0h - 0.5h * profile.x * wet;
-    half film = lerp(0.3h, 0.85h, polish) * profile.y;
+    // (a wet film on stone glosses but never mirrors: at 0.85 a trodden landing read as ice; the board, 02: wet slabs
+    // dark with a sheen; standing water alone is a mirror)
+    half film = lerp(0.3h, 0.62h, polish) * profile.y;
     smoothness = lerp(smoothness, max(smoothness, film), wet);
     half pool = smoothstep(0.5h, 0.85h, held) * saturate((half)_OS_Wetness * 1.5h - 0.4h) * step(0.8h, up);
     albedo = lerp(albedo, albedo * 0.7h, pool);

@@ -4,7 +4,7 @@
  "built": 1871,
  "built_as": "block",
  "finish": "split",
- "footfall": 51004,
+ "footfall": 36441,
  "keepers": [
   [
    "town",
@@ -19,22 +19,22 @@
   [
    "town",
    1946,
-   0.29
+   0.41
   ],
   [
    "town",
    1965,
-   0.13
+   0.22
   ]
  ],
  "works": [
   [
    "campaign",
-   1908
+   1949
   ],
   [
    "campaign",
-   1956
+   1985
   ]
  ]
 }

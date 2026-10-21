@@ -844,7 +844,7 @@ def details(rng):
             lx, ly = x - math.sin(math.radians(a)) * off * side, y + math.cos(math.radians(a)) * off * side
             fp_l = [(lx - 0.2, ly - 0.2), (lx + 0.2, ly - 0.2), (lx + 0.2, ly + 0.2), (lx - 0.2, ly + 0.2)]
             # (never on another way: a lantern of Low Terrace stood on Bishop's Steps)
-            on_way = any(intrusion(fp_l, l, 0.1) > 0.0 for l in LANES if l is not lane)
+            on_way = any(intrusion(fp_l, l, 0.1) > 0.0 for l in LANES)
             if not on_way and not any(_sat_overlap(fp_l, footprint(b)) for b in BUILDINGS):
                 detail("pole" if pole else "lantern", lx, ly, z, 0.25, 0.25, 7.0 if pole else 3.6, a)
                 DETAILS[-1]["light"] = light

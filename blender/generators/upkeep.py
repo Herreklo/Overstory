@@ -53,7 +53,7 @@ def _poisson(rng, lam):
         k += 1
 
 
-def flight(steps, built, now, upkeep, works, seed, wet=None, busy=None):
+def flight(steps, built, now, upkeep, works, seed, wet=None, busy=None, cracks=1.0):
     """The life of a flight of steps, decade by decade. steps: for each step its tread slabs as (from, to) across the
     flight (m); wet: for each step how much water its bed takes (0 to 1; the lane's drainage, the bottom of a flight);
     busy(x): how much of the traffic passes at x across (0 to 1: loads are dropped and corners knocked where people
@@ -88,7 +88,7 @@ def flight(steps, built, now, upkeep, works, seed, wet=None, busy=None):
                 # damage: a long slab on a moving bed cracks across; a nosing loses a corner where loads are dropped
                 # and people go (a frost, a barrow, an iron-shod wheel)
                 if sl["cracked"] is None and sl["width"] > 0.8:
-                    if rng.random() < span * 0.025 * (1.0 + st["settled"] / 0.01):
+                    if rng.random() < span * 0.025 * cracks * (1.0 + st["settled"] / 0.01):
                         sl["cracked"] = dict(year=rng.randint(y0, y1 - 1), at=rng.uniform(0.35, 0.65), filled=None)
                 bl, br = busy(sl["at"][0]), busy(sl["at"][1])
                 if sl["corner"] is None and rng.random() < span * 0.03 * max(bl, br):

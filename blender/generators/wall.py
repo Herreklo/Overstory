@@ -84,8 +84,6 @@ def lay(spec, seed=1):
         up = d2 / run
         right = np.array([up[1], -up[0]])
         rise = float(b[2] - a[2])
-        n = max(1, int(round(rise / ST.RISE)))
-        h, g = rise / n, run / n
         slope = rise / run
         ground = ground_near(f)
         out = dict(V=[], F=[], COL=[], UV0=[], UV1=[], UV2=[], UV3=[])
@@ -121,8 +119,13 @@ def lay(spec, seed=1):
             # the bank beside the flight: retained where it rises, a parapet where it falls away
             ss = np.linspace(-0.3, run + 0.3, max(8, int(run / 0.5)))
 
+            sp = ST.step_plan(f, ST.FLIGHTS["gully"] if spec["lane"] == "Gully Steps" else spec, fi)
+            S_arr = np.array(sp["S"])
+
             def step_top(s):
-                return a[2] + np.clip(np.floor(np.asarray(s) / g) + 1, 0, n) * h
+                """The top of the step whose tread is at s along the flight (the same set-out as the stair)."""
+                k = np.searchsorted(S_arr, np.asarray(s), side="right")
+                return a[2] + np.clip(k, 0, sp["n"]) * sp["r"]
 
             # (the ground just behind the wall, where it stands: a retaining wall holds what is there; until the
             # corner's own ground is built the clay is that ground)
