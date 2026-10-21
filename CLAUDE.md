@@ -102,6 +102,7 @@ A task notification's token count is the agent's final context, not its cost. De
 | File | What it holds |
 | --- | --- |
 | `docs/systems.md` | The map of the world: shared systems, materials and kinds of things, with the state of each |
+| `docs/facts-contract.md` | Whose each fact is (the engine's, ours, the player's), and what happens when the engine's disagrees (a draft) |
 | `docs/plan.md` | The order of the work and the current week's plan in detail (`NOW.md` holds the state) |
 | `docs/usage-log.md` | One line per job: what it was, its model and what it used |
 | `docs/visual-direction.md` | The current visual direction |

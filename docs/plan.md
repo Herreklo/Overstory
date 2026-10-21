@@ -141,7 +141,7 @@ The steps keep their numbers, since other docs cite them. Step 1 is reopened on 
 
    - 1g, a playable greybox of the corner (Øystein: "testing gameplay and ideas before everything looks finished"):
      - the free camera;
-     - blockout people, driven by the real engine run when it arrives (`docs/engine-requests.md`, open item 10), else by authored fixtures;
+     - blockout people, driven by the real engine run when it arrives (`docs/engine-requests.md`, request 36), else by authored fixtures;
      - hover and inspect as placeholders;
      - the best ways of showing time from 1f.
 
