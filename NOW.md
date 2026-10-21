@@ -68,17 +68,12 @@ Then, on Opus:
 
 ## Waiting for Øystein
 
+**Decided by Øystein, 21 October, as recommended:** the town system's scope and the eras after 1989 (`docs/town-system.md` §9), and how people take part in the playtests: a neutral friend moderates strangers, recruits are friends of friends, voices are recorded only with consent (`docs/research/playtesting.md`). Method choices are ours: no reloading in tests, and the record shown only after scoring.
+
 **What goes to Øystein** (scope, play and permissions only, each with a recommendation; everything else is decided, recorded with its reasons, and shown to him as finished work he can overturn):
-- the town system's scope and the eras after 1989 (`docs/town-system.md`);
-- his OK for reference downloads (Stavanger's rock, water, city-archive photos for houses and dress, and the large GDC decks the studies could not open), each listed with its source and size first;
 - the walk mode at eye level, and whether people react to the camera, are tested in the greybox too (`docs/plan.md`, 1g).
 - the camera's play is settled by testing in the greybox, not by opinion (Øystein: "we have to test this"). See `docs/plan.md`, 1g.
-- the people in the playtests (`docs/research/playtesting.md`). Recommended:
-  - a neutral friend moderates sessions with strangers;
-  - strangers are recruited without a budget, as the study suggests;
-  - voice recordings only with consent.
-
-  Method choices are ours: no reloading in tests, and the record shown only after scoring.
+- the reference downloads: approved (21 October). Each file is listed for him with its source and size before it is downloaded: Stavanger's rock, water, city-archive photos for houses and dress, and the large GDC decks.
 - which game comes first. Nothing is decided. The interface study designed for an observer (one of the three examples in `docs/living-world.md`, the three dials) as a test case; its play choices are defaults kept for when a game is designed (`docs/research/interface-and-inspection.md`, For Øystein).
 
 **Look and craft questions are ours** (Øystein, 22 October: "You have to figure these things out. As long as we are critical and only aim for high quality, this should answer itself."). They are decided on frames and motion sheets, with strict reviews, and Øystein judges the milestones. This covers the night sky's colour, lamp glass and the tonemapper; the brush's size by octaves and any boil; and near ground cover as strokes or blades.

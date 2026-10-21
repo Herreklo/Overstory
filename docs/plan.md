@@ -241,7 +241,7 @@ A world for many games has no end: new towns, eras and packs are open-ended cont
   - from the Roads in sea fog the town is lost.
 
   Clay is structure only. The sketches of the night of 20 October (`blender/tools/grow_town.py`, `fixtures/lt1-town.json`, the terrain module, the light-ray pass, the dramatic rigs) are sketches to learn from, not a base. The last look Øystein judged a step forward is commit `4c7215a` (look P on Harbour Row).
-- **Asset gate:** reached on 20 October and told to Øystein. Parts are made one at a time against their reference boards, with Øystein's OK before references are downloaded.
+- **Asset gate:** reached on 20 October and told to Øystein. Parts are made one at a time against their reference boards, with Øystein's OK before references are downloaded (given 21 October; each file is still listed with its source and size for his yes before it is downloaded).
 - **Later experiments:** LT2, a small venue at night with two people talking; LT3, the street through the years with seasons and weather (`docs/experiments.md`).
 - **After 1989** (needed before step 4, since the world on screen starts in 1989 and moves forward): the content after 1989 is missing. It needs research and the pack's catalogue (`docs/research/town-change.md`: the oil-money years, restored stairs, universal design's ramps and rails, cafés, graffiti), so the world has something to change into.
 - **Waiting for Øystein:** in `NOW.md`.

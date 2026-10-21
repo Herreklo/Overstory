@@ -1,6 +1,6 @@
 # The town system
 
-How every town and city in the game is laid out, how it changes, and how it plugs into what exists: the town-scale part of the living fabric (`docs/living-fabric.md`, Big change). It merges `docs/research/urban-design.md`, `city-forces.md`, `city-types.md` and `town-change.md`. Drafted by the design lead on Opus (Fable was out); Øystein's three decisions in section 9 are open. Research marks carry over; numbers are starting values.
+How every town and city in the game is laid out, how it changes, and how it plugs into what exists: the town-scale part of the living fabric (`docs/living-fabric.md`, Big change). It merges `docs/research/urban-design.md`, `city-forces.md`, `city-types.md` and `town-change.md`. Drafted by the design lead on Opus (Fable was out); Øystein's three decisions in section 9 are made. Research marks carry over; numbers are starting values.
 
 ## The idea in one paragraph
 
@@ -225,7 +225,7 @@ Each step ends in something judged in Unity, then a strict review. The corner's 
 
 ## 9. Decisions
 
-Merged across the four pages, these are fifteen decisions for the design lead, recorded as decided, and three for Øystein (the second decided by him).
+Merged across the four pages, these are fifteen decisions for the design lead, recorded as decided, and three for Øystein, all now decided by him.
 
 ### Decided
 
@@ -247,7 +247,7 @@ Merged across the four pages, these are fifteen decisions for the design lead, r
 
 ### For Øystein
 
-1. **Where the town system enters the plan, and what he sees (scope).** Recommended: data and measures now beside the corner (T0, T1, no visuals); the clay tests beside the corner's buildings (T2, T3); the heart's geometry at step 6. It would run as the trees did, strict reviews as the gate, with Øystein seeing three milestones: the three types, the regrow, the plan stopped part way. It fixes facts the corner leans on without slowing it.
+1. **Where the town system enters the plan, and what he sees (scope).** Recommended: data and measures now beside the corner (T0, T1, no visuals); the clay tests beside the corner's buildings (T2, T3); the heart's geometry at step 6. It would run as the trees did, strict reviews as the gate, with Øystein seeing three milestones: the three types, the regrow, the plan stopped part way. It fixes facts the corner leans on without slowing it. **Decided (Øystein, 21 October), as recommended.**
 2. **How years pass in play: decided (Øystein, 22 October), per game.** It depends on the game: one game spans a week, another a year, another generations. Overstory is a world for many games, so the town system and the building blocks support every span. That sets these requirements:
    - The screen follows the record. With the same record and the same date, the town is drawn the same whether it was watched day by day or reached by a jump. Wear, growth and repairs are worked out from the record, never piled up frame by frame in the renderer, so a jump is cheap and a saved game reloads exactly.
    - Play changes the record. The player's acts and the outcomes of scenes are events like any other, so two playthroughs reach different towns, and the 3D world shows what the player did as it shows anyone's acts (Øystein: "they should definitely be reflected in the 3d environment").
@@ -255,4 +255,4 @@ Merged across the four pages, these are fifteen decisions for the design lead, r
    - Every system answers at every resolution. Hours and days come from weather, light, scene state and a poster put up. Months and seasons come from growth, leaves, upkeep and a shop opening. Decades and generations come from plans, works, demolition and rebuilding.
    - What a span cannot show is still true. A week-long game shows wear it will never see grow, and a generations game passes over the week's posters.
    - How a jump is shown on screen is chosen by the game from what `docs/research/time-on-screen.md` finds.
-3. **The eras after 1989 (scope).** Recommended: research only what the first scenario's years need (the corner's 2020 frame needs a handful of items), and let the library run to any year with the eras it has. That content is large and has no player yet.
+3. **The eras after 1989 (scope).** Recommended: research only what the first scenario's years need (the corner's 2020 frame needs a handful of items), and let the library run to any year with the eras it has. That content is large and has no player yet. **Decided (Øystein, 21 October), as recommended.**

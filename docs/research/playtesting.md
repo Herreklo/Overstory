@@ -312,11 +312,11 @@ Ranked by what each buys for its cost, in our working days.
 
 ## For Øystein to decide
 
-1. *Who moderates.* Recommended: Øystein for his own sessions and the confidants; a neutral friend, reading Claude's script, for strangers.
+1. *Who moderates.* Recommended: Øystein for his own sessions and the confidants; a neutral friend, reading Claude's script, for strangers. **Decided (Øystein, 21 October), as recommended.**
 2. *Reloading in tests.* Recommended: none. Sessions play forward from their seed, since a reload in a deterministic town teaches the future.
 3. *The record after a case.* Recommended: shown after scoring, marked as the record, never during play.
-4. *Recruiting without a budget.* Recommended: friends of friends, thanked with credit in the game.
-5. *Recording voices.* Recommended: with consent only, transcribed on the machine, deleted after coding.
+4. *Recruiting without a budget.* Recommended: friends of friends, thanked with credit in the game. **Decided (Øystein, 21 October), as recommended.**
+5. *Recording voices.* Recommended: with consent only, transcribed on the machine, deleted after coding. **Decided (Øystein, 21 October), as recommended.**
 6. *The first prototypes.* Recommended: the inquest, with the missed evening as its control.
 
 ## Gaps
