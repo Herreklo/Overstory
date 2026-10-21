@@ -1,0 +1,22 @@
+# Log: weak-Y4, Saltlight (plan: calibration/weak/gm.md)
+
+- R0 (21 Oct): new game message sent to a fresh player (sonnet). r1-act.md written. Pull 6. Prediction: Teddy rubbed the chandler's window, and it shows something tied to the boat or ferry.
+- R1 t1 (talk Wilf, line 1, plus an own-words plank question): CARD menu line 1 → "She is that" → converging line → beat 1. Own-words follow-up beyond one menu choice: one interface line; later menu shown. First conversation +3, beat +1, turn +2.
+- R1 t2 (inspect Tolley's rubbed corner): CARD empty shelves, rope, calendar March 1988, locked. +2. Prediction's window half wrong (nothing behind it); who rubbed it not asked yet.
+- R1 t3 (inspect bench plaque): CARD FOR MAY, 1921–1990. +2.
+- R1 t4 (sketch; Marigold not inspected, so the chandler's window): CARD sketch "Tolley & Son's window". +2, +1.
+- R1: Belonging 0 → 13 (+13); 10% ornament, the geranium. Midday, cloud thickening. r1-screen written.
+- R1 marks (from r2-act): 1.1 curious/delight, 1.2 engaged/delight, 1.3 curious/none, 1.4 bored/cheat (mild). R2-act pull 7. Prediction: June plainly dates Tolley's closing (spring 1988) but dodges on May, who is tied to the Garrows and the shop.
+- R2 (afternoon): CARD soft rain from one, clearing by five; everyone put (Teddy in oilskin, Wilf under tarpaulin).
+- R2 t1 (talk Teddy, own words about the rubbed corner): CARD thread answer "I rubbed it. There's nothing in there. Just rope." + menu line 3's crab pull, converging line, beat 1. First conversation +3, beat +1, turn +2. r1 prediction's Teddy part right.
+- R2 t2 (inspect Marigold): CARD honey larch, green rivets, third plank glossy, rest dull; same wood (no repair). Wilf's idle line. +2.
+- R2 t3 (talk June, own words: Tolley's closing; May): CARD room key (no turn); both thread answers (Arthur Tolley to his daughter's, '88; May Ord, every afternoon); converging line; beat 1. +3, +1, +2. Prediction: shop part right (no season given), the dodge on May wrong.
+- R2 t4 (sit on the bench, conditional: skip if turns 1 to 3 give a name or date worth chasing): skipped as the act said; June gave names and a date. No turn, no meter.
+- R2: Belonging 13 → 27 (+14); 25% ornament, the marmalade cat on the windowsill. 5 pm, the west opening, jam jars on the chapel wall, the evening line. r2-screen written.
+- R2 marks (from r3-act): 2.1 engaged/delight, 2.2 engaged/delight, 2.3 curious/none. R3-act pull 7. Prediction: the cardigan has hung for weeks, June knows whose it is, and it is a Hale sister's.
+- R3 t1 (inspect cardigan): CARD grey, hand-knitted, darned at both elbows in a lighter grey; no name tape, pockets empty (texture). +2.
+- R3 t2 (inspect photograph): CARD June's mother outside the café, 1962, beside the same window table; ink date on the border. Not sketchable (not in the 17). +2.
+- R3 t3 (talk June, own words: cardigan, photo, carry it): CARD "Been there since August. Must be a visitor's."; "That's Mum, the summer she opened" (from the plan's photograph); taking it: "You can't take that with you."; converging line; beat 2. +1, +2. Prediction: weeks right; June knowing and the Hale owner wrong.
+- R3 t4 (talk Dot and Ivy, own words: what they see): CARD nearest line 1 "Good morning yourself!", converging pair lines, beat 1. First conversation +3, beat +1, turn +2. 40% ornament, the pressed fern.
+- R3 lantern walk: CARD in full; spare jar pressed into the player's hands (no jar, June's beat 3 not heard). +10. Chapter card: sketchbook 1, keepsakes 0, people met 5 (Wilf, Teddy, June, Dot, Ivy), Belonging 50% (+23). Exit questions per plan plus marks; the plan's exit line.
+- R3 marks (exit): 3.1 engaged/none, 3.2 curious/delight (small), 3.3 bored/cheat, 3.4 curious/none; the walk "happened to me". Exit pull 5. Chapter Two: yes, one chapter, with a tripwire; buy at $14.99: no. Named: the meter measures nothing done, the journal decides for the player, repeated lines, "no wrong answers" removes the chance to be wrong. Exit and memory section written by the player.
