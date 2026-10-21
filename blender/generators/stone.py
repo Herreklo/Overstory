@@ -29,8 +29,11 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 sys.path.insert(0, os.path.join(HERE, "..", "parts", "stone", "slate"))
 sys.path.insert(0, os.path.join(HERE, "..", "blockouts"))
+sys.path.insert(0, os.path.join(HERE, "..", "parts", "repair"))
 import slab as SL  # noqa: E402
+import cement as CE  # noqa: E402
 import growth as GR  # noqa: E402
+import upkeep as UP  # noqa: E402
 
 YEAR = 1989
 
@@ -42,10 +45,14 @@ STONES = {
 }
 
 # The flights authored for the beauty corner until the engine's fabric pass has them (docs/engine-requests.md, 6):
-# the plan's path, the stone, the year laid, the footfall a year, and dated events.
+# the plan's path, the stone, the year laid, the footfall a year, who kept it and how well, decade by decade, and the
+# works its records hold (upkeep.py; docs/upkeep.md).
 FLIGHTS = {
     "gully": dict(lane="Gully Steps", stone="slate", built=1874, built_as="tread_on_riser", footfall=50000,
-                  events=[dict(kind="relaid", flight=0, step=9, year=1952)]),
+                  upkeep=[dict(by="town", since=1874, care=0.5), dict(by="town", since=1930, care=0.3),
+                          dict(by="town", since=1946, care=0.45), dict(by="town", since=1965, care=0.25)],
+                  works=[dict(kind="campaign", year=1911, share=0.25),
+                         dict(kind="campaign", year=1952, share=0.4, mortar="cement", stock="reclaimed")]),
 }
 
 RISE = 0.17          # the steps' rise, about (outdoor steps 12 to 16 cm, steeper in a gully)
@@ -101,24 +108,49 @@ def walking(a):
     return np.clip(p / 0.71, 0.0, 1.0)
 
 
-def settle(rng, P, w):
-    """A piece settled a little since it was laid: turned, tilted, sunk, each its own way."""
-    P = P.copy()
-    yaw = math.radians(rng.uniform(-1.0, 1.0))
+def settler(rng, w, off):
+    """How a piece has settled since its bed was laid: turned, tilted, sunk, each its own way, by as much as its bed
+    has gone off true (upkeep.py) and a mason's own few millimetres. Returns the transform for the piece's vertices
+    (dx: where they sit in the frame of the slab they belong to, for the halves of one that cracked)."""
+    k = min(off / 0.012, 1.6)
+    yaw = math.radians(rng.uniform(-1.0, 1.0) * 0.8 * k)
+    tilt = math.radians(rng.uniform(-1.0, 1.0) * 0.9 * k)
+    sink = rng.uniform(0.3, 1.0) * off
     cy, sy = math.cos(yaw), math.sin(yaw)
-    px, py = P[:, 0] - w / 2, P[:, 1].copy()
-    P[:, 0] = px * cy - py * sy + w / 2
-    P[:, 1] = px * sy + py * cy
-    P[:, 2] += (P[:, 0] - w / 2) * math.radians(rng.uniform(-1.0, 1.0)) - rng.uniform(0.0, 0.01)
-    return P
+
+    def tf(V, dx=0.0):
+        P = np.array(V, dtype=np.float64, copy=True)
+        px, py = P[:, 0] + dx - w / 2, P[:, 1].copy()
+        P[:, 0] = px * cy - py * sy + w / 2 - dx
+        P[:, 1] = px * sy + py * cy
+        P[:, 2] += px * tilt - sink
+        return P
+    return tf
+
+
+def top_line(placed, x, s_vals, reach=0.04):
+    """The height of the stone's top along a joint at x across, at each s along the flight: the highest of the placed
+    tops within reach of it (pointing is struck to the stone either side)."""
+    z = np.full(len(s_vals), -1e9)
+    for P in placed:
+        near = np.abs(P[:, 0] - x) < reach
+        if not near.any():
+            continue
+        Q = P[near]
+        for j, s in enumerate(s_vals):
+            m = np.abs(Q[:, 1] - s) < 0.05
+            if m.any():
+                z[j] = max(z[j], float(Q[m, 2].max()))
+    return z
 
 
 def lay(spec, seed=1):
-    """The flights of one stair, laid and aged. Returns a list of (name, mesh dict), and the street origin."""
+    """The flights of one stair, laid and aged: each step from its life (upkeep.py), so its bed, its joints and its
+    slabs carry their own years, and its repairs are spread over the flight as the years left them. Returns a list of
+    (name, mesh dict), and the street origin."""
     import heart_layout as H
     lane = next(l for l in H.LANES if l["name"] == spec["lane"])
     stone = STONES[spec["stone"]]
-    how = spec.get("built_as", "tread_on_riser")
     fl = flights_of(lane)
     origin = fl[0]["a"].copy()
     meshes = []
@@ -132,41 +164,64 @@ def lay(spec, seed=1):
         n = max(1, int(round(rise / RISE)))
         h, g = rise / n, run / n
         out = dict(V=[], F=[], COL=[], UV0=[], UV1=[], UV2=[], UV3=[])
-        below_t, below_r = [], []
+        below_r = []
 
-        def put(P, piece, rng, x0, s0, z0, laid, foot_on, years):
+        # the treads' slabs as the mason laid them (every joint bridged), then the flight's life over them: the
+        # bottom steps take the most water into their beds, and loads are dropped where people go
+        plan, below = [], []
+        for i in range(n):
+            edges = widths(random.Random(f"{spec['lane']}-{seed}-{fi}-{i}-plan"), W, below)
+            below = edges[1:-1]
+            plan.append(edges)
+        wrng = random.Random(f"{spec['lane']}-{seed}-{fi}-wet")
+        wet = [0.3 + 0.6 * (1.0 - i / max(n - 1, 1)) ** 3 + wrng.uniform(0.0, 0.3) for i in range(n)]
+        life = UP.flight([list(zip(e[:-1], e[1:])) for e in plan], spec["built"], YEAR, spec["upkeep"],
+                         spec["works"], f"{spec['lane']}-{seed}-{fi}", wet,
+                         busy=lambda x: float(walking(np.array([x / W]))[0]))
+
+        def put(P, piece, rng, x0, s0, z0, foot_on, worn_y, bare_y, bed_y, polish0=0.0, lifted_y=None):
             """A piece's vertices P (slab space, already turned to the flight: x across, y up the flight, z up),
-            set at x0 across, s0 along, z0 up; its history from its facts."""
+            set at x0 across, s0 along, z0 up; its history from its facts: worn_y the years feet have worn it here,
+            bare_y the years since its top was bare (lichen, weathering), bed_y the years since its bed and joints
+            were last disturbed (moss in them), lifted_y the years since hands last lifted it (its lichen torn where
+            they gripped: its edges and faces). Returns it placed in the flight's frame (x, s, z)."""
             kind = piece["kind"]
+            cement = kind >= 4
             across = np.clip((x0 + P[:, 0] + W / 2) / W, 0.0, 1.0)
             along = np.clip((s0 + P[:, 1]) / g - np.floor((s0 + 0.02) / g), 0.0, 1.5)
             top = (kind == 0) & foot_on
             # wear: footfall times years over the stone's hardness, where feet go: across the walking line, on the
             # front half of a tread where the foot lands, and over the nosing, which rounds
             foot = walking(across) * (0.45 + 0.55 * np.exp(-((along - 0.3) / 0.35) ** 2))
-            depth_mm = stone["wear"] * (spec["footfall"] / 1e5) * (years / 100.0)
+            depth_mm = stone["wear"] * (spec["footfall"] / 1e5) * (worn_y / 100.0)
             worn = depth_mm / 1000.0 * foot
             nose = foot_on & ((kind == 1) | ((kind == 0) & (piece["edge"] < 0.03) & (P[:, 1] < 0.05)))
             P = P.copy()
             # (the dish subtracts; the nosing's arris rounds a little more, never bowing the front out)
             P[:, 2] -= np.where(top, worn, 0.0) + np.where(nose, worn * 0.8 * walking(across), 0.0)
-            polish = np.where(foot_on & (kind <= 1), np.clip(1.0 - np.exp(-spec["footfall"] * min(years, 40) / 4e5), 0.0, 1.0) * foot, 0.0)
+            polish = np.where(foot_on & ((kind <= 1) | (kind == 5)),
+                              np.clip(1.0 - np.exp(-spec["footfall"] * min(worn_y, 40) / 4e5), 0.0, 1.0) * foot, 0.0)
+            polish = np.maximum(polish, np.where(foot_on & (kind <= 1), polish0, 0.0))
             # growth (nature's, docs/nature.md, Growth on surfaces): lichen where it is quiet for its years; on a
             # riser's face too, above where boots scuff its foot; moss where it stays damp: the strip in front of the
-            # riser above (from four fifths of the tread to where the riser stands), the joints between slabs, a
-            # riser's foot
+            # riser above (from four fifths of the tread to where the riser stands), the joints between slabs and
+            # their pointing, a riser's foot, for the years since the bed was last disturbed
             traffic = walking(across) if foot_on else walking(across) * (1.0 - np.clip((z0 + P[:, 2] - zfoot) / 0.05, 0.0, 0.8))
-            lichen = GR.lichen_years(years, np.where(foot_on, traffic, traffic * 0.75))
+            lich_y = bare_y
+            if lifted_y is not None and lifted_y < bare_y:
+                lich_y = np.where(((kind == 0) & (piece["edge"] < 0.06)) | (kind == 1) | (kind == 2), lifted_y, bare_y)
+            lichen = GR.lichen_years(lich_y, np.where(foot_on, traffic, traffic * 0.75))
             if not foot_on:
                 lichen = lichen * 0.6     # (a riser's face less than a tread's quiet ends: rain and light reach it less)
-            # the back strip: solid in the last few centimetres before the riser above, fading forward
             back = (kind == 0) & foot_on & (along > 0.6)
             joint = (kind == 0) & (piece["edge"] < 0.05) & (P[:, 1] > 0.04)
-            damp = np.where(back, np.clip((along - 0.6) / 0.3, 0.3, 1.0), 0.0) + np.where(joint & ~back, 1.0, 0.0)
+            damp = np.where(back, np.clip((along - 0.6) / 0.3, 0.3, 1.0), 0.0) + np.where(joint & ~back, 1.0, 0.0) \
+                + np.where(kind == 4, 1.0, 0.0) + np.where(kind == 5, 0.3, 0.0)
             if not foot_on:
                 damp = damp + 0.7 * np.clip(1.0 - (z0 + P[:, 2] - zfoot) / 0.04, 0.0, 1.0)
+            moss_y = np.where(back | joint | (kind == 4) | (not foot_on), min(bare_y, bed_y), bare_y)
             # (feet land on a tread's front half: its back corner is untrodden even in the middle of a busy flight)
-            moss = GR.moss(damp, walking(across) * np.where(foot_on, np.exp(-((np.clip(along, 0, 1) - 0.3) / 0.35) ** 2), 1.0), years)
+            moss = GR.moss(damp, walking(across) * np.where(foot_on, np.exp(-((np.clip(along, 0, 1) - 0.3) / 0.35) ** 2), 1.0), moss_y)
             # water stands only where the dish is deepest (on slate a few millimetres; half the walking line under water
             # read as white paint from every view)
             held = np.clip((worn - 0.003) / 0.003, 0.0, 1.0) * top
@@ -182,114 +237,179 @@ def lay(spec, seed=1):
             uv = np.asarray(piece["UV"], dtype=np.float64)
             c_, s_ = math.cos(ang), math.sin(ang)
             ur = np.stack([uv[:, 0] * c_ - uv[:, 1] * s_, uv[:, 0] * s_ + uv[:, 1] * c_], -1)
-            uv = np.where((kind == 0)[:, None], ur + off, uv + off)
+            uv = np.where(((kind == 0) | cement)[:, None], ur + off, uv + off)
             out["UV0"].append(uv)
             var = rng.random()
-            out["UV1"].append(np.stack([np.full(len(P), (YEAR - laid) / 200.0), np.full(len(P), var)], -1))
+            out["UV1"].append(np.stack([np.full(len(P), bare_y / 200.0), np.full(len(P), var)], -1))
             out["UV2"].append(np.stack([kind.astype(float), np.full(len(P), var)], -1))
             # what each point sees of the sky within the flight (the town's own shade comes from its sky map): a
             # tread open but for its back corner under the riser above; a riser in the shadow of the nosing over it,
             # less towards its top; a bed none
             if foot_on:
-                sky = np.where(kind == 0, 0.95 - 0.4 * np.clip((along - 0.75) / 0.25, 0.0, 1.0),
+                sky = np.where((kind == 0) | cement, 0.95 - 0.4 * np.clip((along - 0.75) / 0.25, 0.0, 1.0),
                                np.where(kind == 1, 0.85, np.where(kind == 2, 0.7, 0.35)))
             else:
                 hh = np.clip((z0 + P[:, 2] - zfoot) / max(h, 1e-3), 0.0, 1.0)
                 sky = np.where(kind == 3, 0.35, 0.8 - 0.2 * hh)
             ground = np.where(kind == 0, 0.12, np.where(kind == 3, 0.6, 0.3))
             out["UV3"].append(np.stack([sky, ground], -1))
+            return np.stack([x0 + P[:, 0], s0 + P[:, 1], z0 + P[:, 2]], -1)
 
-        def fill(xc, half, s_a, s_b, z, years, laid):
+        def fill(xc, half, s_a, s_b, z, bed_y):
             """The soil and moss a joint between two slabs fills with: a strip a little below their tops, a little
             wider than the joint, so the joint reads as a damp green-dark line (open, it showed the void under the
             treads as a black slot)."""
             Vq = np.array([[-half, 0.0, 0.0], [half, 0.0, 0.0], [half, s_b - s_a, 0.0], [-half, s_b - s_a, 0.0]])
             piece = dict(V=Vq, F=[(0, 1, 2, 3)], kind=np.zeros(4, dtype=np.int8), edge=np.zeros(4),
                          UV=Vq[:, :2] + xc)
-            put(Vq, piece, random.Random(f"fill-{xc:.3f}-{s_a:.3f}"), xc, s_a, z, laid, True, years)
+            put(Vq, piece, random.Random(f"fill-{xc:.3f}-{s_a:.3f}"), xc, s_a, z, True, 0, YEAR - spec["built"], bed_y)
+
+        def point(key, x_a, s_a, length, width, along_s, zl, cast_y):
+            """Cement pointing struck along a joint, to the stone's top either side (zl, along it): along_s, a joint
+            running up the flight at x_a; else one running across it at s_a."""
+            pc = CE.pointing(key, length, width)
+            V = pc["V"].copy()
+            t = np.clip(V[:, 0] / max(length, 1e-6), 0.0, 1.0)
+            zz = np.interp(t, np.linspace(0, 1, len(zl)), zl) + 0.0012
+            if along_s:
+                V = np.stack([V[:, 1], V[:, 0], zz], -1)
+                pc["F"] = [tuple(reversed(q)) for q in pc["F"]]
+                put(V, pc, random.Random(key), x_a, s_a, 0.0, True, cast_y, cast_y, cast_y)
+            else:
+                V = np.stack([V[:, 0], V[:, 1], zz], -1)
+                put(V, pc, random.Random(key), x_a, s_a, 0.0, True, cast_y, cast_y, cast_y)
 
         # each step's top a little off the flight's even line (an old flight's rises are never all alike); its ends on it
         erng = random.Random(f"{spec['lane']}-{seed}-{fi}-rises")
         err = [0.0] + [erng.uniform(-0.012, 0.012) for _ in range(n - 1)] + [0.0]
+        prev_tops = []
         for i in range(n):
             rng = random.Random(f"{spec['lane']}-{seed}-{fi}-{i}")
-            relaid = next((e for e in spec["events"] if e["kind"] == "relaid" and e["flight"] == fi and e["step"] == i), None)
-            laid = relaid["year"] if relaid else spec["built"]
-            years = YEAR - laid
+            st = life[i]
+            bed_y = YEAR - st["reset"]
+            cemented = bool(st["mortar"]) and st["mortar"][0] == "cement"
+            off = st["settled"] + 0.003
             z_top = a[2] + (i + 1) * h + err[i + 1]
             zfoot = a[2] + i * h + err[i]
-            if how == "tread_on_riser":
-                B = BUILT[how]
-                t_tr = rng.uniform(*B["tread"])
-                ovh = rng.uniform(*B["overhang"])
-                # the riser: a block of the rock laid on its bed on the tread below (or the ground), its rough split
-                # face to the lane, nearly flush under the nosing
-                edges = widths(rng, W, below_r, lo=0.6, hi=2.2)
-                below_r = edges[1:-1]
-                hr = h - t_tr
-                for k in range(len(edges) - 1):
-                    jl = rng.uniform(*JOINT) / 2 if k > 0 else 0.0
-                    jr = rng.uniform(*JOINT) / 2 if k < len(edges) - 2 else 0.0
-                    w = edges[k + 1] - edges[k] - jl - jr
-                    dep = rng.uniform(*B["riser"])
-                    piece = SL.slab(f"{spec['lane']}-{seed}-{fi}-{i}-r{k}", w, dep, hr, front_round=rng.uniform(0.002, 0.006),
-                                    side_round=0.003, flake=0.1, chip=rng.uniform(0.006, 0.015), edge_jag=0.008, grid=0.16)
-                    P = settle(rng, piece["V"], w)
-                    put(P, piece, rng, -W / 2 + edges[k] + jl, i * g + ovh + rng.uniform(-0.004, 0.004), zfoot, laid, False, years)
-                # the tread: a slab laid on it, its nosing over the riser
-                edges = widths(rng, W, below_t)
-                if relaid and len(edges) < 3:
-                    # (relaid in two slabs like the rest: in one long one it read as different, not newer)
-                    c = W * rng.uniform(0.4, 0.6)
-                    edges = [0.0, c, W]
-                below_t = edges[1:-1]
-                # an old tread cracked across in places: a fine joint where it broke, its two halves settling apart
-                gaps = [rng.uniform(*JOINT) / 2 for _ in edges]
-                if not relaid and years > 40:
-                    for k in range(len(edges) - 1):
-                        if edges[k + 1] - edges[k] > 0.85 and rng.random() < 0.3:
-                            c = edges[k] + (edges[k + 1] - edges[k]) * rng.uniform(0.35, 0.65)
-                            edges = sorted(edges + [c])
-                            gaps = gaps[:k + 1] + [rng.uniform(0.002, 0.004)] + gaps[k + 1:]
-                            break
-                for k in range(len(edges) - 1):
-                    jl = gaps[k] if k > 0 else 0.0
-                    jr = gaps[k + 1] if k < len(edges) - 2 else 0.0
-                    w = edges[k + 1] - edges[k] - jl - jr
-                    depth = g + LAP + rng.uniform(-0.02, 0.03)
+            B = BUILT["tread_on_riser"]
+            t_tr = rng.uniform(*B["tread"])
+            ovh = rng.uniform(*B["overhang"])
+            # the riser: a block of the rock laid on its bed on the tread below (or the ground), its rough split face
+            # to the lane, nearly flush under the nosing
+            edges_r = widths(rng, W, below_r, lo=0.6, hi=2.2)
+            below_r = edges_r[1:-1]
+            hr = h - t_tr
+            for k in range(len(edges_r) - 1):
+                jl = rng.uniform(*JOINT) / 2 if k > 0 else 0.0
+                jr = rng.uniform(*JOINT) / 2 if k < len(edges_r) - 2 else 0.0
+                w = edges_r[k + 1] - edges_r[k] - jl - jr
+                dep = rng.uniform(*B["riser"])
+                piece = SL.slab(f"{spec['lane']}-{seed}-{fi}-{i}-r{k}", w, dep, hr, front_round=rng.uniform(0.002, 0.006),
+                                side_round=0.003, flake=0.1, chip=rng.uniform(0.006, 0.015), edge_jag=0.008, grid=0.16)
+                P = settler(rng, w, off * 0.5)(piece["V"])
+                put(P, piece, rng, -W / 2 + edges_r[k] + jl, i * g + ovh + rng.uniform(-0.004, 0.004), zfoot, False,
+                    YEAR - spec["built"], YEAR - spec["built"], bed_y)
+            # a step reset in cement: its riser's bed pointed where it stands on the tread below
+            if cemented and prev_tops:
+                s_f = i * g + ovh - 0.006
+                xs = np.linspace(-W / 2, W / 2, 24)
+                zl = np.array([top_line(prev_tops, x, [s_f - 0.01])[0] for x in xs])
+                zl = np.where(zl < -1e8, zfoot, zl)
+                point(f"{spec['lane']}-{fi}-{i}-bed", -W / 2, s_f, W, 0.026, False, zl, YEAR - st["mortar"][1])
+            # the tread: its slabs as the years left them, each laid on the riser, its nosing over it
+            edges = plan[i]
+            tops = []
+            joints = []      # (x, half the gap, its filling: None (soil and moss) or (material, year))
+            jr = 0.0
+            for k, sl in enumerate(st["slabs"]):
+                x_a, x_b = edges[k], edges[k + 1]
+                jr_left = jr
+                jl = rng.uniform(*JOINT) / 2 if k > 0 else 0.0
+                jr = rng.uniform(*JOINT) / 2 if k < len(edges) - 2 else 0.0
+                worn_y = YEAR - sl["placed"]
+                bare_y = YEAR - sl["bare"]
+                reclaimed = sl["origin"] == "reclaimed"
+                key = f"{spec['lane']}-{seed}-{fi}-{i}-{k}" + ("-rc" if reclaimed else "")
+                c, corner = sl["cracked"], sl["corner"]
+                parts = [(x_a + jl, x_b - jr, None)]
+                if c:
+                    xc = x_a + (x_b - x_a) * c["at"]
+                    gap = rng.uniform(0.0015, 0.0035)
+                    parts = [(x_a + jl, xc - gap, "a"), (xc + gap, x_b - jr, "b")]
+                    joints.append((xc, gap, c["filled"]))
+                if k > 0:
+                    joints.append((x_a, (jl + jr_left) / 2, ("cement", st["mortar"][1]) if cemented else None))
+                depth = g + LAP + rng.uniform(-0.02, 0.03)
+                tf = settler(rng, x_b - x_a, off)
+                s0 = i * g + rng.uniform(-0.01, 0.01)
+                fr, sr = rng.uniform(0.004, 0.008), rng.uniform(0.003, 0.006)
+                fk, ch, jg = rng.uniform(0.3, 0.5), rng.uniform(0.008, 0.02), rng.uniform(0.008, 0.014)
+                for pa, pb, half in parts:
+                    w = pb - pa
+                    broken = None
+                    if corner and ((corner["side"] == "l" and half in (None, "a")) or (corner["side"] == "r" and half in (None, "b"))):
+                        broken = (corner["side"], corner["size"])
                     # split slate: crisp edges, its corners knocked, a layer flaked off here and there (rounded, every
                     # tread read as a bar of soap); its wear rounds the walking line's nosing on its own
-                    piece = SL.slab(f"{spec['lane']}-{seed}-{fi}-{i}-{k}", w, depth, t_tr,
-                                    front_round=0.002 if relaid else rng.uniform(0.004, 0.008),
-                                    side_round=0.002 if relaid else rng.uniform(0.003, 0.006),
-                                    flake=0.05 if relaid else rng.uniform(0.3, 0.5),
-                                    chip=0.004 if relaid else rng.uniform(0.008, 0.02),
-                                    edge_jag=0.004 if relaid else rng.uniform(0.008, 0.014))
-                    P = settle(rng, piece["V"], w)
-                    put(P, piece, rng, -W / 2 + edges[k] + jl, i * g + rng.uniform(-0.01, 0.01), z_top - t_tr, laid, True, years)
-                # the joints between the tread's slabs, filled
-                for k in range(1, len(edges) - 1):
-                    fill(-W / 2 + edges[k], gaps[k] + 0.008, i * g + 0.005, (i + 1) * g + ovh, z_top - 0.016, years, laid)
-            else:
-                edges = widths(rng, W, below_t)
-                below_t = edges[1:-1]
-                for k in range(len(edges) - 1):
-                    jl = rng.uniform(*JOINT) / 2 if k > 0 else 0.0
-                    jr = rng.uniform(*JOINT) / 2 if k < len(edges) - 2 else 0.0
-                    w = edges[k + 1] - edges[k] - jl - jr
-                    thick = h + BUILT["block"]["bed"] + rng.uniform(-0.01, 0.02)
-                    depth = g + LAP + rng.uniform(-0.02, 0.03)
-                    piece = SL.slab(f"{spec['lane']}-{seed}-{fi}-{i}-{k}", w, depth, thick,
-                                    front_round=0.004 if relaid else rng.uniform(0.008, 0.02),
-                                    side_round=0.003 if relaid else rng.uniform(0.004, 0.01),
-                                    flake=0.15 if relaid else rng.uniform(0.25, 0.45))
-                    P = settle(rng, piece["V"], w)
-                    put(P, piece, rng, -W / 2 + edges[k] + jl, i * g + rng.uniform(-0.012, 0.012), z_top - thick, laid, True, years)
+                    piece = SL.slab(key + (f"-{half}" if half else ""), w, depth, t_tr, front_round=fr, side_round=sr,
+                                    flake=fk, chip=ch, edge_jag=jg, broken=broken)
+                    dx = pa - x_a
+                    P = tf(piece["V"], dx)
+                    if half == "b":
+                        P[:, 2] -= rng.uniform(0.0, 0.003)      # (the halves of a crack settled a little apart)
+                    x0 = -W / 2 + pa
+                    tops.append(put(P, piece, rng, x0, s0, z_top - t_tr, True, worn_y, bare_y, bed_y,
+                                    polish0=0.3 if reclaimed else 0.0, lifted_y=YEAR - sl["lifted"]))
+                    # a corner broken off and dabbed with cement, struck to the stone's top
+                    if broken and corner["filled"]:
+                        ol, size = piece["outline"], corner["size"]
+                        if corner["side"] == "l":
+                            fr_ = lambda x: np.interp(x, ol["x"], ol["front"])
+                            sd_ = lambda y: np.interp(y, ol["y"], ol["left"])
+                        else:
+                            fr_ = lambda x: np.interp(w - x, ol["x"], ol["front"])
+                            sd_ = lambda y: np.interp(y, ol["y"], ol["right"])
+                        dab = CE.dab(f"{key}-dab", fr_, sd_, (size * 1.3, size * 1.1), t_tr - 0.002)
+                        Vd = dab["V"].copy()
+                        if corner["side"] == "r":
+                            Vd[:, 0] = w - Vd[:, 0]
+                            dab["F"] = [tuple(reversed(q)) for q in dab["F"]]
+                        Pd = tf(Vd, dx)
+                        cast_y = YEAR - corner["filled"][1]
+                        put(Pd, dab, random.Random(f"{key}-dab"), x0, s0, z_top - t_tr, True, cast_y, cast_y, cast_y)
+            # the joints between the tread's slabs and its cracks: pointed in cement where a crew or a quick fix
+            # struck it, else soil and moss
+            s_a, s_b = i * g + 0.005, (i + 1) * g + ovh
+            for x, gap, filled in joints:
+                xj = -W / 2 + x
+                if filled and filled[0] == "cement":
+                    ss = np.linspace(s_a, s_b, 10)
+                    zl = top_line(tops, xj, ss)
+                    zl = np.where(zl < -1e8, z_top - 0.004, zl)
+                    point(f"{spec['lane']}-{fi}-{i}-{x:.3f}", xj, s_a, s_b - s_a, 2 * gap + 0.02, True, zl,
+                          YEAR - filled[1])
+                else:
+                    fill(xj, gap + 0.008, s_a, s_b, z_top - 0.016, bed_y)
+            prev_tops = tops
+        # the life as the flight's record: each step's last bed and joints, and its slabs' repairs
+        record = []
+        for i, st in enumerate(life):
+            r = dict(step=i, reset=st["reset"], off_mm=round(st["settled"] * 1000, 1),
+                     mortar=list(st["mortar"]) if st["mortar"] else None, slabs=[])
+            for sl in st["slabs"]:
+                d = dict(origin=sl["origin"], placed=sl["placed"], bare=sl["bare"], lifted=sl["lifted"])
+                for key in ("cracked", "corner"):
+                    if sl[key]:
+                        d[key] = dict(year=sl[key]["year"], filled=list(sl[key]["filled"]) if sl[key]["filled"] else None)
+                if sl["shim"]:
+                    d["shim"] = sl["shim"]
+                r["slabs"].append(d)
+            record.append(r)
         meshes.append((f"stone_{spec['lane'].lower().replace(' ', '_')}_{fi}",
                        dict(V=np.concatenate(out["V"]), F=out["F"], COL=np.concatenate(out["COL"]),
                             UV0=np.concatenate(out["UV0"]), UV1=np.concatenate(out["UV1"]), UV2=np.concatenate(out["UV2"]),
                             UV3=np.concatenate(out["UV3"]),
-                            steps=n, rise=h, tread=g)))
+                            steps=n, rise=h, tread=g, life=record)))
     return meshes, origin
 
 
@@ -326,8 +446,9 @@ def build(which, unity=None, seed=1):
     obs = [make(name, m) for name, m in meshes]
     info = dict(name=f"stone_{which}", origin=[float(v) for v in origin],
                 flights=[dict(name=nm, steps=m["steps"], rise=round(m["rise"], 3), tread=round(m["tread"], 3),
-                              tris=sum(len(f) - 2 for f in m["F"])) for nm, m in meshes])
-    print("STONE", info)
+                              tris=sum(len(f) - 2 for f in m["F"]), life=m["life"]) for nm, m in meshes])
+    print("STONE", {k: v for k, v in info.items() if k != "flights"},
+          [(f["name"], f["steps"], f["tris"]) for f in info["flights"]])
     if unity:
         path = os.path.join(unity, "Assets", "Art", "Stone", f"stone_{which}.fbx")
         os.makedirs(os.path.dirname(path), exist_ok=True)

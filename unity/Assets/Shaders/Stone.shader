@@ -6,8 +6,9 @@
 // and glossy, water standing where it is hollow).
 //
 // Vertex data (stone.py): UV4 x polish, y lichen years / 200; UV5 x moss, y water held; UV0 the grain (the top in
-// metres, the split faces round and up); UV1 x years since laid / 200, y a seed for the piece; UV2 x the face (0 top,
-// 1 rounded edge, 2 split face, 3 bed), y the slab's variation; UV3 the bake (x sky, y ground).
+// metres, the split faces round and up); UV1 x years since its surface was bare (laid, cast) / 200, y a seed for the
+// piece; UV2 x the face (0 top, 1 rounded edge, 2 split face, 3 bed; 4 cement pointing, 5 a cement dab), y the
+// slab's variation; UV3 the bake (x sky, y ground).
 Shader "Overstory/Stone"
 {
     Properties
@@ -21,6 +22,10 @@ Shader "Overstory/Stone"
         _Polish ("Polish: x how much darker the worn skin, y its smoothness", Vector) = (0.18, 0.42, 0, 0)
         _Relief ("Relief: x the grain's depth (m), y lichen's crust (m)", Vector) = (0.0015, 0.0012, 0, 0)
         _Porosity ("How much the rock darkens wet (0 to 1)", Range(0, 1)) = 0.55
+        _Cement ("Cement the day it was struck", Color) = (0.70, 0.69, 0.66, 1)
+        _CementOld ("Cement after forty years of weather and grime", Color) = (0.50, 0.50, 0.48, 1)
+        _CementFilm ("The algae film on damp cement", Color) = (0.24, 0.27, 0.21, 1)
+        _Soil ("The soil a joint holds where its pointing has gone", Color) = (0.17, 0.15, 0.12, 1)
         [Toggle] _Grey ("Grey light: every layer's pigment one grey (to judge form)", Float) = 0
         _History ("Debug: show the history as colour (r polish, g lichen years, b moss)", Float) = 0
     }
@@ -37,6 +42,10 @@ Shader "Overstory/Stone"
         float4 _Polish;
         float4 _Relief;
         half _Porosity;
+        half4 _Cement;
+        half4 _CementOld;
+        half4 _CementFilm;
+        half4 _Soil;
         half _Grey;
         half _History;
     CBUFFER_END
@@ -89,8 +98,36 @@ Shader "Overstory/Stone"
         // relief: the painted grain's, smoothed where feet have polished it
         half h = relief * (1.0h - hist.r * 0.7h);
 
+        // cement, a repair's own material and date (kind 4 pointing, 5 a dab; upkeep.py, docs/upkeep.md): pale and
+        // warm the day it was struck, its sand showing; greyer with grime over the years, a film of algae where it
+        // stays damp, fine crazing; pointing crumbling out of its joint with the years, the soil behind showing (and
+        // the moss taking it) where it has gone
+        half moss = hist.b;
+        if (kind > 3.5h)
+        {
+            half sand = (half)OS_Noise(q * 260.0 + var * 17.0);
+            // (on this coast grime and a film come in a few years: half grey by six, near its old grey by twenty)
+            half grime = 1.0h - exp(-years / 9.0h);
+            half3 cem = lerp(_Cement.rgb, _CementOld.rgb, grime) * (0.9h + 0.2h * sand);
+            half film = saturate(hist.b * 1.6h) * grime * smoothstep(0.3h, 0.7h, (half)OS_Noise(q * 12.0 + var * 5.0));
+            cem = lerp(cem, _CementFilm.rgb, film * 0.7h);
+            half craze = smoothstep(0.03h, 0.0h, abs((half)OS_Noise(q * 38.0 + var * 9.0) - 0.5h)) * grime;
+            cem *= 1.0h - 0.25h * craze;
+            half lost = 0.0h;
+            if (kind < 4.5h)
+            {
+                half share = saturate((years - 6.0h) / 60.0h) * 0.6h;
+                half nz = (half)(OS_Noise(q * 11.0 + var * 3.0) * 0.65 + OS_Noise(q * 37.0 + var) * 0.35);
+                lost = 1.0h - smoothstep(share - 0.03h, share + 0.03h, nz);
+            }
+            rock = lerp(cem, _Soil.rgb, lost);
+            smooth = 0.1h;
+            h = (sand - 0.5h) * 0.3h - craze * 0.4h - lost * 0.8h;
+            moss = saturate(hist.b * (0.5h + 1.2h * lost));
+        }
+
         // growth: nature's thin layer (Growth.hlsl), from where and how long the stone's facts give
-        OSGrowth gr = OS_GrowthLayer(rock, smooth, q, hist.g * 200.0h, hist.b, sky, var, positionWS);
+        OSGrowth gr = OS_GrowthLayer(rock, smooth, q, hist.g * 200.0h, moss, sky, var, positionWS);
         rock = gr.albedo;
         smooth = gr.smoothness;
         h += gr.height * (half)(_Relief.y / max(_Relief.x, 1e-5));
@@ -238,7 +275,8 @@ Shader "Overstory/Stone"
                 if (_History > 1.5)
                     colour = so.albedo * 0.6h;
                 else if (_History > 0.5)
-                    colour = half3(input.history.r, input.history.g * 2.0h, input.history.b) * 0.5h;
+                    colour = input.piece.z > 3.5 ? half3(0.9h, 0.45h, 0.0h)
+                                                 : half3(input.history.r, input.history.g * 2.0h, input.history.b) * 0.5h;
                 outColor = half4(colour, 1);
             #ifdef _WRITE_RENDERING_LAYERS
                 outRenderingLayers = EncodeMeshRenderingLayer();

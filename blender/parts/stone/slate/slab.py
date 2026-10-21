@@ -47,8 +47,18 @@ def _noise2(rng, x, y, scale, octaves=3, along=None):
     return out / tot
 
 
+def bite_front(x, size):
+    """How far a broken corner's bite reaches back from the nosing, at x from the broken end (m)."""
+    return size * 0.75 * np.clip(1.0 - np.abs(x) / (size * 1.3), 0.0, 1.0) ** 0.6
+
+
+def bite_side(y, size):
+    """How far a broken corner's bite reaches in from the slab's end, at y back from the nosing (m)."""
+    return size * 0.8 * np.clip(1.0 - np.asarray(y) / (size * 1.1), 0.0, 1.0) ** 0.6
+
+
 def slab(seed, width, depth, thick, front_round=0.012, side_round=0.006, layers=None, warp=0.003, flake=0.35,
-         chip=0.03, edge_jag=0.012, grid=GRID):
+         chip=0.03, edge_jag=0.012, grid=GRID, broken=None):
     """One slab. front_round, side_round: the radius its edges are rounded to (m); layers: how many split layers
     show in its edges (2 to 4 from its thickness if None); warp: how far its top departs from a plane (m); flake:
     the share of its top a layer lower where one flaked off; chip: how deep its corners are knocked (m); edge_jag:
@@ -83,6 +93,16 @@ def slab(seed, width, depth, thick, front_round=0.012, side_round=0.006, layers=
     o_back = edge_offsets(nu, width) * 0.5   # the back lies under the next step: plainer
     o_left = edge_offsets(nv, depth)
     o_right = edge_offsets(nv, depth)
+    # a corner broken off its nosing (upkeep.py: a dropped load, a frost): an angular bite out of the front and the
+    # side at one end, its faces fresh split
+    if broken:
+        side, size = broken
+        tx = np.linspace(0.0, width, nu)
+        o_front = o_front + bite_front(tx - (0.0 if side == "l" else width), size)
+        if side == "l":
+            o_left = o_left + bite_side(ys, size)
+        else:
+            o_right = o_right + bite_side(ys, size)
     r_front = front_round * rng.uniform(0.7, 1.3)
     r_side = side_round * rng.uniform(0.6, 1.4)
 
@@ -196,5 +216,8 @@ def slab(seed, width, depth, thick, front_round=0.012, side_round=0.006, layers=
     for r_ in rings[1:]:
         s_all[r_] = per
     UV = np.where((kind == 0)[:, None], V[:, :2], np.stack([s_all, V[:, 2]], -1))
+    # its outline as cut, for what is fitted to it (a dab in a broken corner): how far each edge lies inward
+    outline = dict(x=np.linspace(0.0, width, nu), front=o_front + r_front, y=np.array(ys, float),
+                   left=o_left + r_side, right=o_right + r_side)
     return dict(V=V, F=F, kind=kind, edge=edge, s=s_all, UV=UV, width=width, depth=depth, thick=thick,
-                front_round=r_front)
+                front_round=r_front, outline=outline)

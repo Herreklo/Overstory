@@ -76,6 +76,11 @@ namespace Overstory.EditorTools
             m.SetVector("_Polish", new Vector4(0.06f, 0.42f, 0f, 0f));     // the worn line clean, scarcely darker
             m.SetVector("_Relief", new Vector4(0.0016f, 0.0012f, 0f, 0f));
             m.SetFloat("_Porosity", 0.85f);     // wet, the slate goes near black (the board, 02)
+            // the repairs' cement (upkeep.py): a little paler and warmer than the slate even when old, greying with grime
+            m.SetColor("_Cement", new Color(0.72f, 0.71f, 0.67f));
+            m.SetColor("_CementOld", new Color(0.54f, 0.53f, 0.50f));
+            m.SetColor("_CementFilm", new Color(0.25f, 0.28f, 0.22f));
+            m.SetColor("_Soil", new Color(0.16f, 0.14f, 0.11f));
             m.SetFloat("_Grey", grey ? 1f : 0f);
             m.SetFloat("_History", Flag("-history") ? 1f : Flag("-albedo") ? 2f : 0f);
             m.enableInstancing = true;

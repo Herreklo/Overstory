@@ -35,7 +35,7 @@ Every hard surface (stone, timber, brick, render, concrete, asphalt, roofs) is d
 3. wear and polish (from footfall and use, and years);
 4. stains (run-off, algae film, rust, soot, salt);
 5. growth: nature's (`docs/nature.md`, Growth on surfaces; `growth.py`, `Growth.hlsl`, the pack's `GrowthPack`);
-6. damage and repair (each its own material and date);
+6. damage and repair: the thing's upkeep (`docs/upkeep.md`: left alone, patched, worked in a campaign, renewed; each repair its own material and date, spread as its causes spread; `upkeep.py`, the parts in `blender/parts/repair/`);
 7. weather (wet, frost, snow and ice, fallen leaves, litter).
 
 Shade is the light's, never the object's (SEASON's lesson, `docs/research/colour-and-shading.md`, rule 1): every surface is lit by the town's one shade function (`OS_ShadeP`, `StreetLooks.hlsl`), and no layer carries a shadow tint. A layer's dark (a joint, a nosing's underside) is its occlusion, baked or the light's.
