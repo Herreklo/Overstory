@@ -58,19 +58,22 @@ Choose the model by the kind of work, and say in one line when a step calls for 
 
 ## Using tokens well
 
-Usage is a bottleneck (Øystein, 22 October), but quality is never traded for it. Strict reviews at milestones, research before building and judging in the engine all stay; only waste goes. Measured in October:
-- fourteen research agents used about 450,000 tokens each;
-- a long session re-reads its whole context (270,000 tokens) on every turn;
-- every session and many agents read `NOW.md`, which had grown to 7,000 tokens.
+Usage is a bottleneck, but quality is never traded for it; only waste goes. Measured on 20 and 21 October:
+- re-reading the main session's context was a third of all usage (mean context 562k);
+- subagents were nearly half;
+- Fable's reviews were a sixth.
 
-The rules:
-- One job per session, in a fresh context, handed over through a short `NOW.md`. Always-read files stay short; history goes to `docs/experiments.md`.
-- Start from the synthesis (`docs/building-blocks.md`, a study's "In short"), then open only the section a decision needs. Read files in ranges and logs by their tail.
-- Briefs name the sections and facts an agent needs. Run at most three or four large agents at once, and aim research at a gap before its step.
-- The model fits the job (above); Fable has its own weekly limit.
-- Numbers first, eyes second. The harness, golden views, hashes and value spreads do the first pass; reviewers look at chosen sheets and crops.
-- Rework costs most: research the craft, try a quick sheet, measure before judging, decide before building.
-- Check usage at the start of each day. When it runs low, stop at a milestone boundary with everything pushed.
+A task notification's token count is the agent's final context, not its cost. Details are in `docs/research/working-with-claude.md`.
+
+- **One job per session.** Start fresh at a job boundary or near 200k of context, from a short handover in `NOW.md`. `/clear` is free; `/compact` is a large request. Set the model and effort at the start and never switch models mid-session: delegate instead.
+- **Keep the main context small.** Images, logs, research and reviews run in fresh agents; the main session gets verdicts, numbers and paths. Batch independent calls.
+- **Read the least that decides.** Read the synthesis or a study's "In short" first, then only the section a decision needs. Read files in ranges and logs by their tail.
+- **Fresh agents, not forks.** A brief names the decision, the files and sections, and the output and its length; a report over 500 words goes to a file. The brief says whether the agent may start others.
+- **The cheapest model that passes the check:** Haiku for search, Sonnet for mechanical work, Opus for building, Fable for judgement. Fable shares the weekly pool and may use half of it.
+- **Numbers first, eyes second.** The harness, golden views, hashes and value spreads do the first pass. Reviewers get one sheet at 1568 px or less, and native crops where a judgement is made.
+- **Research aims at a gap before its step.** Scout first, keep a shared source list, read each source once, take notes as you go, and hand to a fresh writer once context passes 200k.
+- **Rework costs most.** Research the craft, try a quick sheet, measure before judging, decide before building.
+- **Check usage at the start of each day,** and log a line per job in `docs/usage-log.md` (`tools/usage_scan.py` reads the transcripts). When usage runs low, stop at a milestone boundary with everything pushed.
 
 ## Docs
 
@@ -79,6 +82,8 @@ The rules:
 | File | What it holds |
 | --- | --- |
 | `docs/systems.md` | The map of the world: shared systems, materials and kinds of things, with the state of each |
+| `docs/plan.md` | The order of the work and the current week's plan in detail (`NOW.md` holds the state) |
+| `docs/usage-log.md` | One line per job: what it was, its model and what it used |
 | `docs/visual-direction.md` | The current visual direction |
 | `docs/foundations.md` | What every system shares: the judging views, detail tiers and budgets, the shared surface layers, packs and facts |
 | `docs/living-world.md` | How places, people and history are shown |
