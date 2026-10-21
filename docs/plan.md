@@ -116,6 +116,8 @@ The steps keep their numbers, since other docs cite them. Step 1 is reopened on 
    - 1d, the corner's land (natural ground plus dated acts, breaklines, the rock knuckle);
    - 1e, the gully and walls re-fitted, then the birches. This is mostly porting, keeping their facts, rules, style and review findings.
 
+   - 1f, the game's question tested early, in clay (`CLAUDE.md`, Working in the right order: biggest risk first). The corner's houses are built from their diaries at 1935, 1960, 1989 and 2020 by the test-quality generator. Two or three of the most promising ways of showing time are prototyped, from a wide creative exploration. Cold readers read them (criteria 1 and 4) before any final house part is made. It needs none of the architecture, so it can start as soon as there is room, and its findings shape the houses and the history budget.
+
    Then the landing's setts, the kerb and the plinths.
 2. *Buildings, built right the first time:* House A by the generator, twelve more from the same parts, then the corner's five houses; coats, windows and signs; a first cold reader.
 3. *The corner's ground and things:* heath, D's yard, moss and grass, the lamp, the handrail; the corner complete in four lights.

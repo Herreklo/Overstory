@@ -56,9 +56,27 @@ Choose the model by the kind of work, and say in one line when a step calls for 
 - **Opus 5.5:** building once designed: generators, the Unity side, debugging, docs.
 - **Sonnet 5.5:** mechanical work with a check behind it: batch renders, moves, exports and status that the stress test or a hash proves unchanged.
 
+## Working in the right order
+
+Quality is fixed. Time and tokens are saved by doing the right thing at the right time (Øystein, 22 October: "think about ways to build more efficiently, so we don't waste time and effort on the wrong things at the wrong time"). What has cost most so far:
+- polish on foundations that later changed: the stairs took eight rounds, then had to be rebuilt for distance levels and history maps;
+- work made before its craft was known: the light's four debts were fixed by guesses, and the trees were built from cut-out cards, which the reference machine draws dearly;
+- judging that flattered: stills rendered at twice the size hid shimmer;
+- sketches made too fast to keep (20 October).
+
+The rules:
+- **Hardest to change comes first.** Data formats, the architecture, the measuring tools and scale come before parts. Look polish comes last, in the ensemble.
+- **Biggest risk comes first.** Whatever could invalidate the most work (scale, cost on the reference machine, motion, whether history reads at all) is tested early, at the cheapest fidelity that can answer it.
+- **Climb a ladder of fidelity.** A number before a render, grey form before materials, a quick sheet before the town, clay before parts, a still before motion. Move up only when the rung below passes.
+- **One thing end to end before many things.** A kind goes through every stage, distance level, view, light and motion before the next kind starts.
+- **Write "done" first:** the question, the views, the budget and what would change our minds. A self-check against the core rules and the numbers comes before a strict review, so reviews find what only eyes can.
+- **Research just in time,** except the craft that shapes the foundations. Each area is studied right before its step.
+- **Write decisions once,** in the design docs, and don't reopen them without new evidence.
+- **Stop when a loop won't converge.** Judge the form in grey light and change one thing at a time.
+
 ## Using tokens well
 
-Usage is a bottleneck, but quality is never traded for it; only waste goes. Measured on 20 and 21 October:
+Quality comes first. Øystein, 22 October: "My main thing is that I want work of highest quality. If that cost a lot of tokens, I would still prefer that than using a poorer model, or give less information." So never use a weaker model or give a job less information to save tokens. Only waste goes: re-reading, rework, duplicated work and bloated sessions. Measured on 20 and 21 October:
 - re-reading the main session's context was a third of all usage (mean context 562k);
 - subagents were nearly half;
 - Fable's reviews were a sixth.
@@ -67,10 +85,10 @@ A task notification's token count is the agent's final context, not its cost. De
 
 - **One job per session.** Start fresh at a job boundary or near 200k of context, from a short handover in `NOW.md`. `/clear` is free; `/compact` is a large request. Set the model and effort at the start and never switch models mid-session: delegate instead.
 - **Keep the main context small.** Images, logs, research and reviews run in fresh agents; the main session gets verdicts, numbers and paths. Batch independent calls.
-- **Read the least that decides.** Read the synthesis or a study's "In short" first, then only the section a decision needs. Read files in ranges and logs by their tail.
+- **Give each job what it needs, once.** Start from the synthesis or a study's "In short", then read in full every section the decision rests on, and don't re-read what is already known. Read files in ranges and logs by their tail.
 - **Fresh agents, not forks.** A brief names the decision, the files and sections, and the output and its length; a report over 500 words goes to a file. The brief says whether the agent may start others.
-- **The cheapest model that passes the check:** Haiku for search, Sonnet for mechanical work, Opus for building, Fable for judgement. Fable shares the weekly pool and may use half of it.
-- **Numbers first, eyes second.** The harness, golden views, hashes and value spreads do the first pass. Reviewers get one sheet at 1568 px or less, and native crops where a judgement is made.
+- **The model the work needs:** Fable for judgement, Opus for building and research, Sonnet only for mechanical work that a check proves unchanged (renders, exports, hashes). Fable shares the weekly pool and may use half of it.
+- **Numbers first, eyes second.** The harness, golden views, hashes and value spreads do the first pass, so reviewers spend their eyes on what only eyes can judge. They see frames at the size they will be judged, with native crops where a judgement is made. A leaner review packet replaces the full set only after a blind test shows it finds the same faults.
 - **Research aims at a gap before its step.** Scout first, keep a shared source list, read each source once, take notes as you go, and hand to a fresh writer once context passes 200k.
 - **Rework costs most.** Research the craft, try a quick sheet, measure before judging, decide before building.
 - **Check usage at the start of each day,** and log a line per job in `docs/usage-log.md` (`tools/usage_scan.py` reads the transcripts). When usage runs low, stop at a milestone boundary with everything pushed.
