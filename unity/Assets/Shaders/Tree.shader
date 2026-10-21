@@ -47,6 +47,9 @@ Shader "Overstory/Tree"
         _MassSplit ("Leaves: where a mass turns from its lit top to its shaded underside (its normal's height)", Range(-1, 1)) = -0.05
         _CapSplit ("Leaves: where a lobe's lit top turns from its cap (facing the sky) to its sides (the lobe's own facing, baked in the colour's alpha)", Range(-1, 1)) = 0.4
         _SideValue ("Leaves: the sky's light on a mass's sides, as a share of its cap's", Range(0, 1)) = 0.62
+        _LeafSheen ("Leaves: the sky seen in their gloss (a share of the sky's light, its colour)", Range(0, 0.3)) = 0.0
+        _LobeUnderSplit ("Leaves: where a lobe's front turns to its underside (its own facing)", Range(-1, 1)) = -0.25
+        _LobeUnderValue ("Leaves: the sky's light on a lobe's underside, as a share of its cap's", Range(0, 1)) = 0.42
         _SprayLight ("Leaves: how much of a spray's own painted light shows (the lobe's carries the value)", Range(0, 1)) = 0.5
         _SplitJitter ("Leaves: how far each card's own turn to shade strays from the mass's (its normal's height)", Range(0, 1)) = 0.3
     }
@@ -79,6 +82,9 @@ Shader "Overstory/Tree"
         half _MassSplit;
         half _SplitJitter;
         half _SprayLight;
+        half _LeafSheen;
+        half _LobeUnderSplit;
+        half _LobeUnderValue;
         half _CapSplit;
         half _SideValue;
         half4 _MarkDark;
@@ -287,7 +293,8 @@ Shader "Overstory/Tree"
         // bark it lies on
         half4 mk = SAMPLE_TEXTURE2D(_Marks, sampler_Marks, uv);
         // the dark under the torn bark, and the torn lip, the bark's own white
-        s.albedo = lerp(_MarkDark.rgb, _BarkLight.rgb * 1.04h, mk.g);
+        // (its painted lightness a little only: lifted toward the bark's white its middle read as a pale lens in sun)
+        s.albedo = lerp(_MarkDark.rgb, _MarkLight.rgb, mk.g * 0.5h);
     #endif
         s.smoothness = 0.12h;
     #endif
@@ -331,6 +338,11 @@ Shader "Overstory/Tree"
             #pragma shader_feature_local _OS_FACING
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
             #define OS_OCCLUSION _Occlusion
+            #if defined(_OS_MARKS)
+            // a mark is a fissure, sunk below the bark's skin: the sun reaches into it a little (lit as the bark, it
+            // went tan in low sun beside the white); the sky's light it takes as the bark does
+            #define OS_DIRECT 0.35h
+            #endif
             #include "StreetLooks.hlsl"
 
             struct Attributes
@@ -457,7 +469,7 @@ Shader "Overstory/Tree"
             #if defined(_OS_MARKS)
                 // an old mark greys towards the bark as it weathers; a fresh one is dark
                 // an old mark weathers to a step below the bark (never paler: a pale lens reads as an eye)
-                s.albedo = lerp(s.albedo, _BarkBand.rgb * 0.8h, (half)input.uv2.x);
+                s.albedo = lerp(s.albedo, _MarkLight.rgb, (half)input.uv2.x);
             #endif
 
                 InputData id = (InputData)0;
@@ -502,6 +514,9 @@ Shader "Overstory/Tree"
                 // a mass's own top is always cap: lobes interpenetrate, and a card on the crown's top could sit on a
                 // neighbouring lobe's side (a dark patch where the crown is lightest)
                 cap = max(cap, smoothstep(0.74h, 0.84h, n.y));
+                // and below its sides, its underside: a lobe lit on top, a mid value across its front, dark beneath
+                // (one value for front and underside, a lobe seen from the street was dark in its middle)
+                half lobeFront = smoothstep(_LobeUnderSplit - 0.06h, _LobeUnderSplit + 0.06h, (half)input.bake.a * 2.0h - 1.0h + jit);
                 {
                     Light sun = GetMainLight(id.shadowCoord, id.positionWS, half4(1, 1, 1, 1));
                     half ndl = dot(n, sun.direction);
@@ -518,10 +533,11 @@ Shader "Overstory/Tree"
                     half3 sky = OS_SkyTerm(b, n);
                     half skyLum = dot(sky, half3(0.2126h, 0.7152h, 0.0722h));
                     sky = max(skyLum + (sky - skyLum) * _OS_ShadowChroma, 0.0h);
+                    half3 skyOpen = sky;
                     // a mass's top takes the sky, its underside is in its own shade: two flat values with a narrow soft
                     // edge between (Firewatch's two values a form), decided by where the card sits on its mass, never
                     // leaf by leaf
-                    sky *= lerp(_UnderFloor, 1.1h * lerp(_SideValue, 1.0h, cap), top);
+                    sky *= lerp(_UnderFloor, 1.1h * lerp(lerp(_LobeUnderValue, _SideValue, lobeFront), 1.0h, cap), top);
                     // the sky's light by what the card sees of the sky through the crown (baked); the sun's by its own
                     // shadow, a little dimmed deep inside
                     half seen = saturate(b.sky);
@@ -532,6 +548,9 @@ Shader "Overstory/Tree"
                     // glows with the leaves' own colour times the sun's (only while the crown has sun)
                     half3 scatter = s.albedo * s.albedo * sun.color * _Scatter * shadow * (1.0h - saturate(lit));
                     colour = s.albedo * sky + scatter + litAlbedo * sun.color * lit * lerp(0.75h, 1.0h, seen);
+                    // and the sky seen in the leaves' gloss: its own colour, not the leaf's, so the shaded planes
+                    // cool toward the sky instead of browning (a birch leaf is glossy; light, never a tint)
+                    colour += skyOpen * _LeafSheen * saturate(b.sky);
                     // the inside of a sunlit crown glows: light bounced leaf to leaf and through the leaves, warm with
                     // their colour, so its shade sits near half the lit side, not a hole (only while the crown has sun)
                     half3 glowc = lerp(s.albedo, dot(s.albedo, half3(0.2126h, 0.7152h, 0.0722h)).xxx, 0.45h);
@@ -582,7 +601,7 @@ Shader "Overstory/Tree"
                 half3 beyond = -id.viewDirectionWS;
                 half3 behind = lerp(_OS_GroundAmb.rgb, OS_SkyFor(beyond), smoothstep(-0.25h, 0.15h, beyond.y));
                 // strongest through a mass's lit skin, weaker under it, so the glow never flattens the mass's two values
-                colour += glass * behind * b.sky * b.town * m.b * _SkyThrough * lerp(0.4h, lerp(_SideValue, 1.0h, cap), top) * isLeaf;
+                colour += glass * behind * b.sky * b.town * m.b * _SkyThrough * lerp(0.4h, lerp(lerp(_LobeUnderValue, _SideValue, lobeFront), 1.0h, cap), top) * isLeaf;
             #endif
                 colour = OS_Atmosphere(colour, input.positionWS);
             #if defined(_OS_LEAVES)

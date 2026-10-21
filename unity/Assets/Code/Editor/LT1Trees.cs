@@ -104,9 +104,17 @@ namespace Overstory.EditorTools
                     // lower; each card turns at its own seeded height (set here: a material keeps the values it was
                     // saved with, never the shader's later defaults)
                     m.SetFloat("_CapSplit", 0.4f);
-                    m.SetFloat("_SideValue", 0.45f);
+                    // three bands a lobe: its cap, its front a mid value, its underside dark
+                    m.SetFloat("_SideValue", 0.68f);
+                    m.SetFloat("_LobeUnderSplit", -0.25f);
+                    m.SetFloat("_LobeUnderValue", 0.4f);
                     m.SetFloat("_SplitJitter", 0.3f);
-                    m.SetFloat("_SprayLight", 0.5f);
+                    // a spray's own painted light: the downy's at half (it speckled the lobes), the silver's drapes
+                    // nearly whole (at half each drape was one flat fill, a paper cut-out from the city camera)
+                    m.SetFloat("_SprayLight", species == "silver_birch" ? 0.85f : 0.5f);
+                    // the sky in the leaves' gloss (cools the shaded planes toward the sky): off, as at 0.02 it greyed the
+                    // shade but lifted it as much, and the crown's form spread fell from 50 to 44
+                    m.SetFloat("_LeafSheen", 0f);
                     m.SetFloat("_SunPale", 0.45f);
                     m.SetFloat("_Scatter", 0.12f);     // a little: the shade side stays the sky's, cool
                     m.SetFloat("_Cutoff", 0.5f);

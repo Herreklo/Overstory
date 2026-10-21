@@ -49,14 +49,17 @@ Material:
     - _Facing: 1
     - _Hold: 0.15
     - _InnerGlow: 0
+    - _LeafSheen: 0
     - _LeafSkyTint: 0.15
     - _Leaves: 0
+    - _LobeUnderSplit: -0.25
+    - _LobeUnderValue: 0.4
     - _MarksOn: 0
     - _MassShadow: 8
     - _MassSplit: -0.05
     - _Occlusion: 0.3
     - _Scatter: 0.12
-    - _SideValue: 0.45
+    - _SideValue: 0.68
     - _SkyThrough: 0.65
     - _SplitJitter: 0.3
     - _SprayLight: 0.5
