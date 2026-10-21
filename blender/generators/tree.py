@@ -59,7 +59,7 @@ import tree_growth as G  # noqa: E402
 PARTS = {
     "birch": dict(sag=0.08, fair=(0.002, 0.03), taper=0.55, flare=0.3, flare_branch=0.22, flare_min_radius=0.008, occlusion=0.05, seam=0.3, atlas="clusters", lobe=0.8, lobe_gap=0.36,
                   marks=True, mark_min_radius=0.02, mark_scale=2.0, lenticel_spacing=0.24, mark_min_height=0.6,
-                  cluster_size=(1.3, 1.15, 1.05, 0.85), crossed=True, edge_gap=0.22, edge_depth=0.2,
+                  cluster_size=(1.3, 1.15, 1.05, 0.85), crossed=True, billboard=True, edge_gap=0.22, edge_depth=0.2,
                   masses="limbs", seam_cut=0.7, core_depth=0.45, core_keep=0.55, top_tilt=50.0,
                   lobe_size=2.2, lobe_weight=0.7, lobe_seam=0.4, lobe_seam_cut=0.8, lobe_shrink=0.4, lobe_flat=0.35, top_z=0.66, top_tilt_depth=0.15, hug_gap=0.12, hug_len=0.5, hug_stem=0.025, rod_len=3.0, rod_r=0.03, rod_bare=0.8, rod_order=2,
                   spur_r=0.025, spur_keep=0.5,
@@ -1181,6 +1181,7 @@ def lobe_mesh(tl, parts, age, seed, H):
                     keep[j] = False
             ids, centres, which, edge, lobe_of = ids[keep], centres[keep], which[keep], edge[keep], lobe_of[keep]
     V, F, UV0, UV1, NR, COL = [], [], [], [], [], []
+    PIV, OFF = [], []                                   # turned to the eye: per corner, its card's pivot and offset
     ATTACH = []                                         # per card: where it hangs from, how deep, when it falls
     EXTENT = []                                         # per card: its spray's middle and reach (what it hides)
     up_w = np.array([0.0, 0.0, 1.0])
@@ -1199,6 +1200,7 @@ def lobe_mesh(tl, parts, age, seed, H):
         face /= max(np.linalg.norm(face), 1e-9)
         # a drape is two cards crossed a right angle apart about the vertical, so from the street it is never seen
         # edge-on (a card turned edge-on fades: a spray at the crown's sides would vanish and leave its branch bare)
+        # (turned to the eye, billboard, the pair stays: two cells hung from the same twig's end, both facing the eye)
         twins = (-45.0, 45.0) if parts.get("crossed") else (0.0,)
         face_mass = face
         depth_top = volume_depth(vol, centres[j]) if vol is not None else 0.0
@@ -1262,6 +1264,8 @@ def lobe_mesh(tl, parts, age, seed, H):
                 if hangs[cell]:
                     # the cluster grows out of the crown: the painting's right is the way out
                     mirror = float(np.dot(side, out)) < 0.0
+                if parts.get("billboard"):
+                    mirror = False                              # (the shader mirrors it, by the view)
                 ax, ay = anchor[cell]
                 lx, ly = (0.5 - ax if mirror else ax - 0.5), 0.5 - ay
                 centre = end[i] - side * lx * s_ - upc * ly * s_
@@ -1272,6 +1276,12 @@ def lobe_mesh(tl, parts, age, seed, H):
             b = len(V)
             V.extend(corners)
             F.append((b, b + 1, b + 2, b + 3))
+            if parts.get("billboard"):
+                # the card's pivot (its twig's end, where it hangs) and each corner's offset in its plane
+                piv = end[i] if anchor is not None else centre
+                for q in corners:
+                    PIV.append(np.array(piv, dtype=float))
+                    OFF.append((float(np.dot(q - piv, side)), float(np.dot(q - piv, upc))))
             cx, cy = (cell % 2) * 0.5, 1.0 - (cell // 2) * 0.5 - 0.5
             u0, u1 = (cx + 0.5, cx) if mirror else (cx, cx + 0.5)
             UV0.extend([(u0, cy), (u1, cy), (u1, cy + 0.5), (u0, cy + 0.5)])
@@ -1326,6 +1336,8 @@ def lobe_mesh(tl, parts, age, seed, H):
         ATTACH = [(a[0], a[1], float(r_), a[3]) for a, r_ in zip(ATTACH, ranked)]
     tl["attach"] = ATTACH
     tl["extent"] = EXTENT
+    if parts.get("billboard"):
+        tl["card_pivot"], tl["card_offset"] = PIV, OFF
     return np.array(V), F, UV0, UV1, NR, COL, trees, which, vols
 
 
@@ -1619,6 +1631,9 @@ def build(species, seed, age, quality=1.0, unity=None, events=(), exposure=0.0, 
             LUV1 = [x for x, k_ in zip(LUV1, sel) if k_]
             LN = [x for x, k_ in zip(LN, sel) if k_]
             LC = [x for x, k_ in zip(LC, sel) if k_]
+            if "card_pivot" in tl:
+                tl["card_pivot"] = [x for x, k_ in zip(tl["card_pivot"], sel) if k_]
+                tl["card_offset"] = [x for x, k_ in zip(tl["card_offset"], sel) if k_]
             removed += int((~keep).sum())
             tl["attach"] = [a for a, k_ in zip(tl["attach"], keep) if k_]
             if tl.get("extent"):
@@ -1661,7 +1676,13 @@ def build(species, seed, age, quality=1.0, unity=None, events=(), exposure=0.0, 
     me.color_attributes.active_color = attr
     obs = [ob_b]
     if len(LV):
-        obs.append(make(name + "_leaves", LV, LF, LUV0, LUV1, LC, LN))
+        if parts.get("billboard") and "card_pivot" in tl:
+            # turned to the eye in the shader: every corner at its card's pivot, its offset in uv2 (a fiftieth of the way
+            # out to where it would hang, or Unity drops the card as a triangle of no area)
+            piv = np.array(tl["card_pivot"])
+            obs.append(make(name + "_leaves", piv + 0.02 * (np.asarray(LV) - piv), LF, LUV0, LUV1, LC, LN, UV2=tl["card_offset"]))
+        else:
+            obs.append(make(name + "_leaves", LV, LF, LUV0, LUV1, LC, LN))
     marks = 0
     if parts.get("marks"):
         MV, MF, MUV0, MUV1, MAPP, MUV2 = mark_mesh(tl, parts, seed)

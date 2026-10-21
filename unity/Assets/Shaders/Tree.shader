@@ -13,11 +13,13 @@ Shader "Overstory/Tree"
     {
         [Toggle(_OS_LEAVES)] _Leaves ("Leaf cards", Float) = 0
         [Toggle(_OS_MARKS)] _MarksOn ("Bark marks", Float) = 0
+        [Toggle(_OS_FACING)] _Facing ("Leaves: cards turned to the eye (the mesh holds pivots, uv2 the corners)", Float) = 0
         _Marks ("Bark marks (g lightness, a coverage)", 2D) = "white" {}
         _MarkDark ("Marks: their darkest", Color) = (0.07, 0.065, 0.06, 1)
         _MarkLight ("Marks: their lightest (old wood)", Color) = (0.42, 0.40, 0.37, 1)
         _Relief ("Relief: x the bark's depth (m), y a mark's", Vector) = (0.006, 0.01, 0, 0)
         _Lichen ("Lichen on the bark (rgb its pigment, a how much)", Color) = (0.6, 0.63, 0.52, 0)
+        _Mottle ("Bark: its broad mottle (rgb a weathered grey-brown, a how much; the downy's grey patches)", Color) = (0.5, 0.47, 0.43, 0)
         _Occlusion ("The share of the screen's ambient occlusion this surface takes", Range(0, 1)) = 1
         [Toggle] _AlphaToMask ("Leaves: alpha to coverage (smooth edges under MSAA)", Float) = 0
         _Bark ("Bark (r lightness, g lenticels, a relief)", 2D) = "white" {}
@@ -84,6 +86,7 @@ Shader "Overstory/Tree"
         float4 _Relief;
         half4 _Lichen;
         half _Occlusion;
+        half4 _Mottle;
     CBUFFER_END
 
     TEXTURE2D(_Bark);  SAMPLER(sampler_Bark);
@@ -131,6 +134,26 @@ Shader "Overstory/Tree"
         half grey = smoothstep(0.1h, 0.9h, saturate(up + 0.35h * (reach - 0.5h) + 0.15h * (f - 0.5h)));
         half k = age * age * (half)_Foot.z;
         return half3(dark * k * (half)_Foot.w, grey * k, 0.0h);
+    }
+
+    // A leaf card turned to the eye (to the light, in the shadow pass): its vertex is its pivot, the end of the twig it
+    // hangs from, and uv2 its corner's offset in the card's plane (metres), laid along the view's right and up; mirrored
+    // as a whole card so the painting's right (the way out of its mass) points out from the trunk on screen. A card
+    // seen from above shows its whole painted face, never two upright cards edge-on (fronds, from the city camera).
+    float3 OS_CardWS(float3 positionOS, float2 offset, float3 right, float3 up, float2 card)
+    {
+        float3 pivot = TransformObjectToWorld(positionOS);
+    #if defined(_OS_FACING)
+        // (where the way out barely shows on screen, at the crown's front and back, the card's own seeded choice: by
+        // the sign alone the cards either side of the trunk's line turned apart and split the crown down its middle)
+        float3 out_ = pivot - TransformObjectToWorld(float3(0.0, positionOS.y, 0.0));
+        float side_ = dot(normalize(out_ + 1e-4), right) + 1.2 * (frac(card.x * 53.17 + card.y * 11.31) - 0.5);
+        float flip = side_ < 0.0 ? -1.0 : 1.0;
+        float s = length(float3(UNITY_MATRIX_M._m00, UNITY_MATRIX_M._m10, UNITY_MATRIX_M._m20));
+        return pivot + (right * offset.x * flip + up * offset.y) * s;
+    #else
+        return pivot;
+    #endif
     }
 
     // A leaf's place in the season's colour: mostly its clump's rank, so a clump turns as one (as a painter sees it),
@@ -219,6 +242,15 @@ Shader "Overstory/Tree"
             half ln = (half)(OS_Noise(float2(lu * 4.0, positionWS.y * 2.6)) * 0.55 + OS_Noise(float2(lu * 11.0 + 1.7, positionWS.y * 7.0)) * 0.3
                           + OS_Noise(float2(lu * 29.0 + 4.1, positionWS.y * 19.0)) * 0.15);
             half lichen = smoothstep(0.53h, 0.6h, ln) * saturate((half)((r - 0.02) / 0.05));
+            // under it, the downy's broad mottle: the outer bark weathered grey-brown in patches half a metre across,
+            // white left between them (reference 04), so its trunk reads as its own at the street stop, never the
+            // silver's white gone dull
+            // (broader round the stem than along it; its edge frayed by the outer bark's horizontal grain, never a
+            // smooth stain)
+            half mn = (half)(OS_Noise(float2(lu * 3.4 + 7.3, positionWS.y * 4.5)) * 0.6 + OS_Noise(float2(lu * 8.0 + 2.9, positionWS.y * 11.0)) * 0.25
+                          + OS_Noise(float2(lu * 9.0 + 5.1, positionWS.y * 40.0)) * 0.15);
+            half mottle = smoothstep(0.52h, 0.58h, mn) * saturate((half)((r - 0.03) / 0.06));
+            bark = lerp(bark, _Mottle.rgb, mottle * _Mottle.a);
             bark = lerp(bark, _Lichen.rgb, lichen * _Lichen.a);
         }
         bark = lerp(bark, _BarkBand.rgb * 0.2h, b.g * 0.9h);
@@ -289,6 +321,7 @@ Shader "Overstory/Tree"
             #include_with_pragmas "Packages/com.unity.render-pipelines.universal/ShaderLibrary/RenderingLayers.hlsl"
             #pragma multi_compile_instancing
 
+            #pragma shader_feature_local _OS_FACING
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
             #define OS_OCCLUSION _Occlusion
             #include "StreetLooks.hlsl"
@@ -337,6 +370,10 @@ Shader "Overstory/Tree"
                 o.cover = saturate(r / drawnR);
             #endif
                 VertexPositionInputs p = GetVertexPositionInputs(posOS);
+            #if defined(_OS_LEAVES) && defined(_OS_FACING)
+                p.positionWS = OS_CardWS(posOS, input.uv2, UNITY_MATRIX_V[0].xyz, UNITY_MATRIX_V[1].xyz, input.extra);
+                p.positionCS = TransformWorldToHClip(p.positionWS);
+            #endif
                 o.positionCS = p.positionCS;
                 o.positionWS = p.positionWS;
                 o.normalWS = TransformObjectToWorldNormal(input.normalOS);
@@ -570,6 +607,7 @@ Shader "Overstory/Tree"
             #pragma multi_compile_instancing
             #pragma multi_compile_vertex _ _CASTING_PUNCTUAL_LIGHT_SHADOW
 
+            #pragma shader_feature_local _OS_FACING
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Shadows.hlsl"
 
             float3 _LightDirection;
@@ -581,6 +619,7 @@ Shader "Overstory/Tree"
                 float3 normalOS : NORMAL;
                 float2 uv : TEXCOORD0;
                 float2 extra : TEXCOORD1;
+                float2 uv2 : TEXCOORD2;
                 UNITY_VERTEX_INPUT_INSTANCE_ID
             };
 
@@ -600,6 +639,13 @@ Shader "Overstory/Tree"
                 float3 lightDirectionWS = normalize(_LightPosition - positionWS);
             #else
                 float3 lightDirectionWS = _LightDirection;
+            #endif
+            #if defined(_OS_LEAVES) && defined(_OS_FACING)
+                {
+                    // the card turned to the light, so its shadow is its whole painted face
+                    float3 rightL = normalize(cross(float3(0.0, 1.0, 0.0), lightDirectionWS));
+                    positionWS = OS_CardWS(input.positionOS.xyz, input.uv2, rightL, cross(lightDirectionWS, rightL), input.extra);
+                }
             #endif
                 float4 positionCS = TransformWorldToHClip(ApplyShadowBias(positionWS, normalWS, lightDirectionWS));
             #if UNITY_REVERSED_Z
@@ -638,6 +684,7 @@ Shader "Overstory/Tree"
             #pragma fragment Frag
             #pragma shader_feature_local _OS_LEAVES
             #pragma shader_feature_local _OS_MARKS
+            #pragma shader_feature_local _OS_FACING
             #pragma multi_compile_instancing
 
             struct Attributes
@@ -645,6 +692,7 @@ Shader "Overstory/Tree"
                 float4 positionOS : POSITION;
                 float2 uv : TEXCOORD0;
                 float2 extra : TEXCOORD1;
+                float2 uv2 : TEXCOORD2;
                 UNITY_VERTEX_INPUT_INSTANCE_ID
             };
 
@@ -662,6 +710,9 @@ Shader "Overstory/Tree"
                 UNITY_SETUP_INSTANCE_ID(input);
                 UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(o);
                 o.positionCS = TransformObjectToHClip(input.positionOS.xyz);
+            #if defined(_OS_LEAVES) && defined(_OS_FACING)
+                o.positionCS = TransformWorldToHClip(OS_CardWS(input.positionOS.xyz, input.uv2, UNITY_MATRIX_V[0].xyz, UNITY_MATRIX_V[1].xyz, input.extra));
+            #endif
                 o.uv = input.uv;
                 o.extra = input.extra;
                 return o;
@@ -694,6 +745,7 @@ Shader "Overstory/Tree"
             #pragma fragment Frag
             #pragma shader_feature_local _OS_LEAVES
             #pragma shader_feature_local _OS_MARKS
+            #pragma shader_feature_local _OS_FACING
             #pragma multi_compile _ _WRITE_SMOOTHNESS
             #pragma multi_compile_fragment _ _GBUFFER_NORMALS_OCT
             #include_with_pragmas "Packages/com.unity.render-pipelines.universal/ShaderLibrary/RenderingLayers.hlsl"
@@ -709,6 +761,7 @@ Shader "Overstory/Tree"
                 float3 normalOS : NORMAL;
                 float2 uv : TEXCOORD0;
                 float2 extra : TEXCOORD1;
+                float2 uv2 : TEXCOORD2;
                 UNITY_VERTEX_INPUT_INSTANCE_ID
             };
 
@@ -727,6 +780,9 @@ Shader "Overstory/Tree"
                 UNITY_SETUP_INSTANCE_ID(input);
                 UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(o);
                 o.positionCS = TransformObjectToHClip(input.positionOS.xyz);
+            #if defined(_OS_LEAVES) && defined(_OS_FACING)
+                o.positionCS = TransformWorldToHClip(OS_CardWS(input.positionOS.xyz, input.uv2, UNITY_MATRIX_V[0].xyz, UNITY_MATRIX_V[1].xyz, input.extra));
+            #endif
                 o.normalWS = TransformObjectToWorldNormal(input.normalOS);
                 o.uv = input.uv;
                 o.extra = input.extra;

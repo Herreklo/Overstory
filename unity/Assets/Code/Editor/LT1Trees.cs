@@ -104,6 +104,9 @@ namespace Overstory.EditorTools
                     m.SetFloat("_Scatter", 0.12f);     // a little: the shade side stays the sky's, cool
                     m.SetFloat("_Cutoff", 0.5f);
                     m.SetColor("_Through", new Color(1f, 1f, 1f, 0.9f));     // the light's own colour
+                    // the cards turned to the eye (tree.py, billboard): from the city camera a spray shows its face
+                    m.SetFloat("_Facing", 1f);
+                    m.EnableKeyword("_OS_FACING");
                 }
                 // a birch's twigs and young branches are dark purple-brown up to two or three centimetres; the white
                 // bark comes with age on the limbs and the trunk
@@ -133,6 +136,8 @@ namespace Overstory.EditorTools
                 m.SetFloat("_Occlusion", leaves ? 1f : 0.3f);
                 // lichen: the downy birch on this damp coast carries it in grey-green patches; the silver little
                 m.SetColor("_Lichen", silver ? new Color(0.62f, 0.64f, 0.56f, 0.15f) : new Color(0.60f, 0.63f, 0.52f, 0.7f));
+                // the downy's broad grey-brown mottle (reference 04); the silver's white is clean
+                m.SetColor("_Mottle", new Color(0.52f, 0.49f, 0.45f, silver ? 0f : 0.85f));
                 // the marks' pigment a dark grey-brown, never black: lit as the bark, they take the shade's colour
                 m.SetColor("_MarkDark", new Color(0.24f, 0.22f, 0.21f));
                 m.SetColor("_MarkLight", new Color(0.42f, 0.40f, 0.38f));
@@ -179,6 +184,13 @@ namespace Overstory.EditorTools
                 r.sharedMaterials = mats;
                 // the marks lie a hair off the bark: they cast nothing
                 r.shadowCastingMode = marked ? ShadowCastingMode.Off : ShadowCastingMode.On;
+                // the leaf cards are drawn out from their pivots in the shader: the bounds grow by a card's reach
+                if (leafy)
+                {
+                    var bnd = r.localBounds;
+                    bnd.Expand(2.5f);
+                    r.localBounds = bnd;
+                }
             }
             return go;
         }
