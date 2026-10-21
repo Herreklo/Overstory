@@ -8,7 +8,7 @@ The order of the work and the current week's plan in detail. `NOW.md` holds the 
 - the architecture decided and reviewed;
 - the tools that measure everything built;
 - the scale test run;
-- the gully ported onto the new foundations end to end as the proof: the same up close, a fraction of the cost at distance.
+- the gully's port begun on the new foundations, toward the proof (the same up close, a fraction of the cost at distance): steps 0 to 2 reviewed, step 3 as far as it gets (the cut line below).
 
 Øystein sees two things: the architecture's few questions (Monday or Tuesday) and the proof sheet with its numbers (Friday).
 
@@ -34,7 +34,7 @@ The order of the work and the current week's plan in detail. `NOW.md` holds the 
 At today's rate a thousand stairs would take about 19 hours to generate and 16 GB of FBX. The architecture must change how they are made, not tune them.
 
 **The days.** These are rough, in order of dependency. Each step ends in a commit and a pushed state, never mid-change.
-1. *Monday: the architecture, and the measuring tools in parallel.* Two sessions in the same checkout, on different files; each pulls with rebase before every push.
+1. *Monday: the architecture, and the measuring tools in parallel.* Both done on 21 October: the architecture is `docs/building-blocks.md` (reasons in `docs/research/building-blocks-decisions.md`), the tools are `docs/measuring.md`. Two sessions in the same checkout, on different files; each pulls with rebase before every push.
    - *The architecture* runs on Fable in a fresh session. Opus agents first check the fourteen studies against the bar, one study each. The bar: primary sources read where they open, claims marked (secondary) or (unverified), concrete for our stack, no thin sections. Each agent returns a compact digest: the study's decisions and costs, its dependencies, its conflicts with other studies, its weak spots, and pointers to its sections. A study goes back for another pass only where a gap would change a decision. The known weak spots:
      - behaviour-on-screen and kits-and-generation ran short of web searches;
      - land-rock-and-water had talks that would not open;
@@ -42,61 +42,43 @@ At today's rate a thousand stairs would take about 19 hours to generate and 16 G
      - performance's game figures are secondary;
      - any of the four newest studies may have been cut short by the budget.
 
-     Fable then reads the digests, opens the original sections where a decision hinges on them, and writes `docs/building-blocks.md` (scope below).
+     Fable then reads the digests, opens the original sections where a decision hinges on them, and writes `docs/building-blocks.md`.
    - *The tools* run on Opus in its own session:
      - the frame-time harness on the corner (`Overstory.Perf.PerfRunner`, a macOS player build at 1440p, the judging views in three lights; performance study, steps 1 and 8);
      - mesh hashes for every export;
      - the golden views of today's gully, the baseline every change is compared against with FLIP;
      - a motion-sheet renderer: 60 fps video at 1440p with one sample per pixel, plus stills scaled to the player's footprint. Every judged frame so far was rendered at twice the size and averaged down. That hid shimmer and crawling marks and set distance fades 1.5 times too far, and no mark has ever been judged moving (`docs/research/painted-marks-in-motion.md`). The golden views use it too.
 2. *Tuesday: the scale test, then the architecture's review.*
-   - *The scale test* generates a district several square kilometres across, drawn with the corner's real shaders rather than clay alone, so the look's cost at city scale is known before step 6 (`docs/research/pre-mortem.md`), from the test-quality house generator and the clay ground. The harness measures it for build time, memory, disk and frame time at the street stop, 12 m and the city camera. Its numbers settle where generation runs and how the town streams; the architecture leaves those provisional until then. It also measures three things for where generation runs (`docs/research/where-generation-runs.md`): the time to load and rebuild a chunk in a built player, the chunks a second the camera's movement demands, and the cache size per kilometre. The harness also measures the birches in the corner, which the ground cover study estimates are the dearest pixels in the frame (their eye-facing cards are alpha-tested, which Apple's GPUs shade before they can be hidden; `docs/research/ground-cover-and-plants.md`).
-   - *The review* opens with a pre-mortem (`CLAUDE.md`, Working in the right order): a fresh reviewer imagines the architecture failed six months on, says why, and names what a studio's lead technical artist would say is missing. A strict review (Fable) follows, then Øystein's questions in one message, each with a recommendation.
-   - *The skills follow the architecture:* `blender-generators` still says hand-modelled `.blend` files and a 1 m grid; `unity-conventions`; the docs table in `CLAUDE.md`.
-3. *Wednesday to Friday: the gully on the building blocks (Opus).* Each step is checked against the golden views and the harness before the next:
-   0. Move every seed off Python's `random.Random`, some of which are keyed by float positions, to SplitMix64 on part ids. Python does not keep those sequences across versions, and the C# port must match them. This is its own commit, with a new baseline.
-   1. Split the stone generator into the shared stages, as a kind defined as data, with one channel spec. The spec includes the motion contract (treads, sit points), and the plan hasher comes with it. The gully's geometry hash must not change.
-   2. Make history a function of the record and the date, written into history maps instead of per-vertex channels. The gully must look the same up close (FLIP within threshold).
-   3. Move stone into the pack as material records.
-   4. Add distance levels by measured error, cut the flight into chunks of a few metres, and cast shadows from proxies.
-   5. Measure triangles and frame time at every judging view, before and after.
-   6. *Friday:* a strict review (Fable), and the proof sheet for Øystein: the gully before and after at eye level, the street stop, 12 m and the city camera, with the numbers. This is the new foundations' first milestone.
-4. *If the week runs short,* the cut comes from the end: the levels and proxies move to the next week. The architecture, the tools and the scale test do not move. The studies' own estimates put the full port of the gully at 16 to 22 Opus-days (`docs/research/inputs/2-generation-performance.md`), so the week should expect to reach the first stages (the stages split, the hashes unchanged, history as a function) rather than the whole port. Friday's milestone is whatever is honestly complete, reviewed.
+   - *The scale test* generates a district several square kilometres across, drawn with the corner's real shaders rather than clay alone, so the look's cost at city scale is known before step 6 (`docs/research/pre-mortem.md`), from the test-quality house generator and the clay ground. The harness measures it for build time, memory, disk and frame time at the street stop, 12 m and the city camera. Its numbers settle where generation runs and how the town streams; the architecture leaves those provisional until then. It also measures three things for where generation runs (`docs/research/where-generation-runs.md`): the time to load and rebuild a chunk in a built player, the chunks a second the camera's movement demands, and the cache size per kilometre. It settles what the architecture leaves provisional (`docs/building-blocks.md`, Open until measured):
+     - the per-pass frame budget, with the low-sun pass A/B'd first (its extra 55 to 65 ms is a bug, found before any triangle work);
+     - chunk and unit sizes (4, 32, 64 and 128 m by default);
+     - a shipped cache against building on demand;
+     - map density (2, 4 and 8 cm against coarser, with synthetic maps) and the bake time of one page;
+     - memory against the 6 GB pools, including a second date or record;
+     - disk per kilometre;
+     - the streaming budget: main-thread ms a frame for swaps, chunks and MB uploaded a frame, renderers resident. The harness also measures the birches in the corner, which the ground cover study estimates are the dearest pixels in the frame (their eye-facing cards are alpha-tested, which Apple's GPUs shade before they can be hidden; `docs/research/ground-cover-and-plants.md`).
+   - *The review* (done 21 October: `docs/research/pre-mortem-architecture.md`, `docs/research/building-blocks-review.md`, ready after fixes, fixes applied) opens with a pre-mortem (`CLAUDE.md`, Working in the right order): a fresh reviewer imagines the architecture failed six months on, says why, and names what a studio's lead technical artist would say is missing. A strict review (Fable) follows, then Øystein's questions in one message, each with a recommendation.
+   - *The skills follow the architecture:* `blender-generators`, `unity-conventions` and `CLAUDE.md`'s docs table and Practical line, updated 21 October.
+3. *Wednesday to Friday: the gully on the building blocks (Opus).* Each step is checked against the golden views and the harness before the next, and ends in a commit and a pushed state. Re-estimated against the architecture (`docs/research/building-blocks-decisions.md` §13):
 
-**What the architecture decides** (`docs/building-blocks.md`; decided with reasons, nothing built in it):
-- *The generator framework:*
-  - every kind defined as data in `blender/kinds/`, with one runner through the same stages: facts, plan, life, geometry, bake, export, checks;
-  - standards per setting pack first: grid, door sizes, slopes, a metrics table;
-  - a definition per part: fixed or fitted, sizes, sockets, what removing it leaves;
-  - cells and sockets as dated records, so nothing is ever deleted;
-  - locks, so hand improvements survive regeneration;
-  - one tool for everything laid along a line;
-  - the plan hasher.
-- *Materials as data:* one shared library with masks from facts. Each material keeps its identity from its source, its working and its exposure. The paint-coat stack; the board-and-trim atlas.
-- *History:*
-  - history maps instead of per-vertex channels;
-  - history as a function of the record and the date;
-  - the layers still missing: airborne deposits with washing, carried stains, the splash band, contact wear on every material;
-  - newer marks over older ones as a check.
-- *Distance levels and repetition:*
-  - levels by measured error, chunks, and shadows from proxies;
-  - libraries of judged pieces placed as instances with per-place facts;
-  - budgets set on the reference machine;
-  - repetition only where reality repeats: factory-made pieces from small libraries, hand-made ones from large libraries, unique only what wear has shaped.
-- *What every part carries for the systems to come:* the light (the three lookups), motion (pivots, motion class, sockets), the painted look in motion, windows and what is behind them, signs, time, and the interface. For the interface, every drawn piece must be pickable back to its record, even when merged or instanced, for hovering, inspecting and asking why.
-- *The land:* natural ground plus dated acts, mesh terrain with breaklines, natural stone as a kind.
-- *Quality:*
-  - the frame-time harness;
-  - golden views compared automatically;
-  - mesh hashes;
-  - generated meshes rebuilt from their generators rather than kept in git;
-  - the cold readers.
-- *Scale, with numbers* (Øystein: "are we being clever for the future when we start building other, bigger cities?"):
-  - where generation runs and how fast, per building and per kilometre of street: cached, deterministic, on demand near the camera;
-  - what a new city's pack must bring, and what carries over;
-  - memory, disk and streaming by chunk.
-- *Open to every game:* Overstory is a world for many games (`docs/living-world.md`, the three dials). The architecture checks itself against three example games and must lock none of them out: a manager (a football club or a band, with a world around it), an exploration game, and a family across generations. These are examples, not a choice of game.
-- *Where each stage runs* (raised by the generation digest): play changes the record, and the 3D world must show it. But a built game can't run Blender, import FBX at runtime or ship GPL code (`bpypolyskel`). So which stages run offline and which run inside the game is decided from `docs/research/where-generation-runs.md` and the scale test's numbers.
-- *What changes in existing work:* the stairs and walls, the birches, and how the houses start (House A built by the generator, then twelve more from the same parts).
+   | Step | What | Estimate | By Friday |
+   | --- | --- | --- | --- |
+   | 0a | A fresh export of today's gully and walls; golden views re-accepted by a strict review; the baseline | half a day | done |
+   | 0b | Seeds: one hash spec, `Hash.cs` matched to `hashing.py`, the vector file; `stone.py`, `wall.py`, `upkeep.py` on SplitMix64 over part ids; a new baseline | 1 day | done |
+   | 1 | The schema files, the naming grammar, the layer and map registries, the change query, the world state; the house kind and one window's slot record written and validated, not built; `validate_record.py`; `migrate.py` with migration 001 | 1 to 1.5 days | done |
+   | 2 | Stone split into the seven stages as `kinds/stair.json` with one runner; facts from a fixture; the plan hasher and the hash chain; golden fixtures per stage; `diff_stage.py`; the geometry hash unchanged; the export carrying breaklines, joints, affordances and the motion class | 2 days | done or nearly |
+   | 3 | History as a function: rates, reset years and age offsets into the place and history pages, the date a global, `OS_History` in the shaders; the A/B in grey light at eye level, FLIP within threshold; the years sheet shows jumps only at works | 2 to 3 days | **the cut line**: started, perhaps not accepted |
+   | 4 | Materials as pack records; the editor step that writes the Unity assets | 1 day | next week |
+   | 5 | Levels from the generator, 4 m chunks, the shell ribbon, caster proxies, the Drawer's pragmas and the highlight compare; the id test | 3 to 4 days | next week |
+   | 6 | The picking spike (1 to 1.5 days) and the grey walker (1 to 2 days) | 2 to 3.5 days | next week |
+   | 7 | Measure before and after at every judging view; the strict review; the proof sheet | 1 day | Friday, on whatever is honestly complete |
+
+   The steps add to 13.5 to 17.5 Opus-days for the whole port, and 6.5 to 8 through step 3. The week has three. No stage is ported to C# this week; the only C# change is matching `Hash.cs` to the hash spec (0b).
+4. *The cut line.* Friday's milestone is steps 0 to 2 reviewed, with step 3 as far as it has got and its A/B shown as it is. The architecture, the tools and the scale test do not move. Øystein sees the proof sheet with its numbers on whatever is honestly complete.
+
+**What the architecture decides** is written once, in `docs/building-blocks.md`: the stages, the contracts, ids, what every part carries, levels, budgets and what changes in existing work.
+Its reasons are in `docs/research/building-blocks-decisions.md`, and its open numbers in its table "Open until measured".
+The questions left for Øystein are in `NOW.md`.
 
 **Leaner without losing brilliance** (Øystein, 22 October: "we need to make the game leaner, I fear; is it possible without losing visual brilliance?"). The proposals and where each stands:
 1. *Paint the far town:* past about 50 m, a painted backdrop baked from the near models for each date, instead of distance versions for every kind. Øystein: "I would have to see this, but sounds promising." It becomes a look test in the foundations, designed in `docs/research/painted-far-town.md`. A single painted picture can't survive a free camera, so the design is painted shells: each thing a coarse mesh from its plan, in 32 m cells, carrying painted albedo, normals, history channels and ids, lit live by the town's one shade function. Four versions are compared (a reference, conventional distance levels, unpainted shells and painted shells) in the corner's views and three lights, with motion sheets, M4 timing and cold readers. Six named results would make us drop it.
@@ -110,7 +92,7 @@ At today's rate a thousand stairs would take about 19 hours to generate and 16 G
 
 Also: build more, write less. Docs only where a decision needs recording; the building blocks proven in code and frames.
 
-**From the pre-mortem** (`docs/research/pre-mortem.md`, ranked failure stories; on Opus, to be checked by Fable):
+**From the pre-mortem** (`docs/research/pre-mortem.md`, ranked failure stories; on Opus, to be checked by Fable; the architecture's own pre-mortem is `docs/research/pre-mortem-architecture.md`):
 - a half-page contract saying which facts are Overstory's and which are the engine's, before the architecture builds on either;
 - one real engine run exported as a fixture, asked of the engine project in `docs/engine-requests.md`, so a frame is drawn from the engine at least once before step 2;
 - the usage log by kind of work (build, measure, review, research, docs) and what each produced, with the plan re-sized by 13 November in per cent of the weekly limit per finished kind;
@@ -193,14 +175,14 @@ Each area is researched, subject and craft, before its step starts (`docs/system
 - step 4: the history budget, measured;
 - step 6: the cannery street.
 
-## Rough sizes (22 October, before the architecture; to be measured)
+## Rough sizes (22 October; step 1 re-estimated on 21 October from the architecture)
 
 These are weeks of the weekly usage limit, which sets our pace more than the hours do. The studies' own day counts read like a human team's and overestimate our pace. In the week to 22 October, the stairs went from nothing to "close", with their upkeep, wear, water and growth systems, in about a day and a half of work. So these sizes come from the kinds left to make, the foundations, and what the stairs and birches took. They are re-estimated after next week from the usage log (`docs/usage-log.md`).
 
 | Steps | What | Weeks |
 | --- | --- | --- |
 | 1f | **The core idea tested in clay:** the corner's houses at four years, ways of showing time, cold readers | 1 to 2, early |
-| 1 (1a to 1e) | Architecture, foundations, light, land, stone and birches re-fitted | 4 to 6 |
+| 1 (1a to 1e) | Architecture (done), foundations, light, land, stone and birches re-fitted. The gully's port alone is 13.5 to 17.5 Opus-days (`docs/research/building-blocks-decisions.md` §13); at the observed pace that is perhaps 2 to 3 weeks of the limit. Re-sized after next week from the usage log | 5 to 7 |
 | 2 | Buildings: the house kit and the corner's five houses | 3 to 5 |
 | 3 and 4 | The corner's ground and things; the corner through the years | 3 to 4 |
 | | **The corner, complete** | **about 3 to 4 months** |

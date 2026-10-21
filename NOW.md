@@ -12,24 +12,20 @@ What is open and what is next. Every session reads this page first, so it stays 
   - the birches, closed as a look test (Øystein judged them good);
   - the gully steps ("close" after the sixth strict review) and stairs as a kind ("close" after the third);
   - the cheek walls (first pass, not reviewed);
-  - the shared systems: water, wear, growth, upkeep and repairs, detail by distance.
+  - the shared systems: water, wear, growth, upkeep and repairs, detail by distance;
+  - the measuring tools, built and accepted (`docs/measuring.md`);
+  - 1f, the clay time test (`docs/experiments.md`, `reviews/lt1/time/`).
+- **The architecture is written and reviewed:** `docs/building-blocks.md`, decided on Fable on 21 October; the strict review found it ready after fixes, and they are applied. Reasons: `docs/research/building-blocks-decisions.md`.
 - **Designed:** the living fabric, the town system, upkeep and the foundations (`docs/`).
 - **Researched:** the subject of most areas, and the craft of fourteen (`docs/research/`). Coverage and the remaining gaps are in `docs/systems.md`.
-- **Why building stopped (22 October):** the craft research came after the stone was built, and the stone shows it. One stair with its walls is about 816,000 triangles, with no distance levels and its history stored per vertex. New heavy geometry is held until the building blocks are designed (Øystein: "these need extreme care... our building blocks; we need to do them perfect, so the rest becomes much easier").
+- **Why building stopped (22 October):** the craft research came after the stone was built. One stair with its walls is about 816,000 triangles, with no distance levels and its history per vertex (Øystein: "these need extreme care... our building blocks; we need to do them perfect, so the rest becomes much easier"). The gully is the first thing rebuilt on the building blocks.
 
 ## Next
 
-**The building blocks started early.** The weekly limits reset on the evening of 21 October (all models at 4%, Fable at 3%), so the plan meant for the week of 26 October started then, in the same order. The goal, the days, the architecture's scope, the baselines, the cut line and the budget are in `docs/plan.md`.
-1. **The architecture (1a):**
-   - *Where:* a session started from the scheduled task `overstory-architecture`, on Opus, with Fable for the pre-mortem and the decisions (`docs/building-blocks.md`).
-   - *Next:* the strict review, then Øystein's few questions in one message.
-   - *The duplicates:* the task fired three times. The two extra sessions were stopped and archived, and the task is disabled.
-2. **Done on 21 October:**
-   - the measuring tools, built and accepted (`docs/measuring.md`);
-   - the digests (`docs/research/inputs/`) and the decision register (`docs/research/building-blocks-inputs.md`);
-   - 1f, the clay time test (`docs/experiments.md`, `reviews/lt1/time/`).
-3. **Running in its own session:** the pass budget (what owns the 25 ms floor), the gully's new baseline, and the scale test. Results go to `docs/research/scale-test.md`, and the numbers settle where generation runs and how the town streams.
-4. **Then the gully on the building blocks,** ending in a strict review and the proof sheet for Øystein.
+The week's plan starts from the architecture (`docs/plan.md`, Next week; steps in `docs/research/building-blocks-decisions.md` §13).
+1. **The gully port's first steps,** on Opus, a commit each: 0a a fresh export and baseline; 0b seeds on one hash spec; 1 the schema files; 2 the stage split (`kinds/stair.json`, geometry hash unchanged). Then 3, history as a function.
+2. **The scale test,** in its own session, with the pass budget and the measurements the architecture leaves provisional (`docs/building-blocks.md`, Open until measured). Results go to `docs/research/scale-test.md`.
+3. **The cut line:** the port is 13.5 to 17.5 Opus-days, 6.5 to 8 through step 3, against three days. Friday's milestone is steps 0 to 2 reviewed, step 3 as far as it got.
 
 ## Running now
 
@@ -40,7 +36,7 @@ Each session commits its own work. If one stops, resume it from its files. Long 
   - *The report* scores each concept twice, ready today and potential.
   - *The AI-playtesting fixes apply:* persona crossed with model, the game master audited with a fact ledger, a known-weak calibration game, and predictions and needs as headline measures.
   - *Its main output* is the must-improve register.
-- **The architecture** and **the scale test**, above.
+- **The scale test,** above.
 
 When the playtest report lands:
 1. An Opus agent checks it against the sessions.
@@ -52,11 +48,14 @@ Then, on Opus:
 - a review of the playtest programme (`docs/research/playtesting.md`);
 - the camera and play-craft studies' unread masters, before the greybox (1g): Naughty Dog, Insomniac, Mario Odyssey, the alley cameras, BG3's Lower City, the GDC slides.
 
-Øystein's answers still open are listed under "Waiting for Øystein" below.
-
 ## Waiting for Øystein
 
 **What goes to Øystein** (scope, play and permissions only, each with a recommendation; everything else is decided, recorded with its reasons, and shown to him as finished work he can overturn):
+- **the architecture's questions** (`docs/research/building-blocks-decisions.md` §14). Every other architecture decision is made and recorded with its reasons, and he can overturn any:
+  - *"English" over proper names:* recommended English placeholders for every name, in one `names.json`, lettering ready for æ, ø and å;
+  - *wall stones hand-split but not to standard sizes,* only if the scale test's memory for unique close chunks needs it: from a large library where no repeat can be found? Recommended only if the number forces it;
+  - *when the painted far town's look test runs:* recommended after the gully port, before House A's far level;
+  - *rewriting git history* after generated FBX leave the tree: recommended not now; revisit at LT1's merge;
 - the town system's scope and the eras after 1989 (`docs/town-system.md`);
 - his OK for reference downloads (Stavanger's rock, water, city-archive photos for houses and dress, and the large GDC decks the studies could not open), each listed with its source and size first;
 - the walk mode at eye level, and whether people react to the camera, are tested in the greybox too (`docs/plan.md`, 1g).

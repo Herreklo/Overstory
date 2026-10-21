@@ -62,7 +62,7 @@ What earns a note to Understory, gathered at a milestone:
 - our milestones that touch its plans, such as its human test.
 
 What we watch for from Understory: changes to the front door, the export or the schema; kept rounds that change the data (homes, the start year); its human test's dates and results; and lessons on method.
-- **Parts made with care, assembled by generators** (`blender-generators` skill). Each part is built and judged one at a time; the generator chooses, fits and places approved parts and does not invent their geometry.
+- **Parts made with care, assembled by generators** (`blender-generators` skill). Each part is built and judged one at a time: a fixed part is a judged mesh; a fitted part is a judged function whose inputs are facts. The generator chooses, fits and places them, and invents no geometry outside a judged part or function.
 - **Seeded and deterministic** (`unity-conventions` skill): the same building looks the same until its history changes it.
 - **Visuals may elaborate world facts, but may not contradict them or falsely claim a causal history.** Five kinds of thing are on screen: canonical facts (from the engine), visual interpretations of facts (a shabby front from age and upkeep), non-semantic texture (stable, seeded, claims no history: woodgrain, a lean, minor clutter), perceived information (a person's account, or a record such as a poster or a newspaper report, which may be wrong), and local scene state (committed back to the engine only when it matters). Anything that reads as history must be a fact.
 - **Reuse systems, never looks; quality first, at pace** (Øystein, 22 October). Elements share the town's systems (growth, upkeep and repairs, the light, the near and far fade, the history budget) wherever the same cause acts on them, and reuse a part only where the facts say it is the same kind of thing: every reuse is logical. Each element keeps its own material identity from its facts (where its stone or timber came from, how it was worked, how it is exposed), so things never look made of the same stuff unless they are. Not a day per element: fast loops (a quick sheet before the town), strict reviews at milestones, polish in the ensemble; but never lower the bar to go faster. Aim for the highest version of what each thing could be.
@@ -130,6 +130,8 @@ A task notification's token count is the agent's final context, not its cost. De
 | `docs/usage-log.md` | One line per job: what it was, its model and what it used |
 | `docs/visual-direction.md` | The current visual direction |
 | `docs/foundations.md` | What every system shares: the judging views, detail tiers and budgets, the shared surface layers, packs and facts |
+| `docs/building-blocks.md` | How every material, kind of thing and system is built: the stages, the contracts, ids, what every part carries, levels, budgets |
+| `docs/measuring.md` | The tools every change is judged with: mesh hashes, golden views, the frame-time harness, motion sheets, and today's baseline |
 | `docs/living-world.md` | How places, people and history are shown |
 | `docs/town-plan.md` | The first town: its land, areas, paths, nodes and landmarks, and the order they are laid out in clay |
 | `docs/town-system.md` | How every town is laid out and changes: dated plan units, plots with cycles, plans and building rules, the past grown to the start year |
@@ -147,5 +149,5 @@ Skills for this repo live in `.claude/skills/` and change with the design: `game
 ## Practical
 
 - Unity project in `unity/`, Blender generators in `blender/generators/`, fixtures in `fixtures/`, contact sheets in `reviews/`.
-- Large binary files (renders, FBX) go through Git LFS.
+- Generated binaries (FBX, chunks, library meshes, tree timelines) are rebuilt from their generators, not tracked: a hash manifest stays in git. Part sources, small renders and golden baselines are in plain git until LFS is reachable.
 - Commit messages: `<experiment>: <what changed>`, e.g. `LT1: shopfront generator, 1930s set`.
