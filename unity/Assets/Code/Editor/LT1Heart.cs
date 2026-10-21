@@ -255,7 +255,9 @@ namespace Overstory.EditorTools
                 Clock(r, 13f);
                 Sun(r, C(0.92f, 0.94f, 0.97f), 0.45f, 0.35f);
                 Sky(r, C(0.60f, 0.63f, 0.67f), C(0.75f, 0.77f, 0.79f), C(0.30f, 0.31f, 0.32f), 0.7f, C(0.12f, 0.12f, 0.11f), 3f, Color.black);
-                Shade(r, C(0.72f, 0.75f, 0.80f), C(0.62f, 0.65f, 0.68f), C(0.66f, 0.68f, 0.70f), C(0.32f, 0.33f, 0.33f), C(0.30f, 0.31f, 0.32f), 1.0f);
+                // the sky's bright side, where the pale sun hides behind thin cloud, a third brighter than the side away
+                // from it (research rule 2: the sky term stylised in drizzle; evenly lit, an upright form had no lit side)
+                Shade(r, C(0.72f, 0.75f, 0.80f), C(0.56f, 0.59f, 0.64f), C(0.76f, 0.775f, 0.79f), C(0.32f, 0.33f, 0.33f), C(0.30f, 0.31f, 0.32f), 1.0f);
                 Air(r, C(0.62f, 0.66f, 0.70f), C(0.70f, 0.73f, 0.76f), C(0.76f, 0.78f, 0.80f), 0.0014f, C(0.05f, 0.05f, 0.05f), 3f);
                 r.fogMidDistance = 220f;
                 r.fogFarDistance = 1500f;
