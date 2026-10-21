@@ -14,11 +14,11 @@ Then answer Tasks 2 to 5 below from the record, as if you were looking at the ho
 
 **Task 5.** Between each pair of years, did the corner grow `busier`, `quieter` or stay the `same`; and was it `better kept`, `worse kept` or the `same`?
 
-Answer with one JSON block, and nothing after it, in this form:
+Answer with one JSON block, and nothing after it, in this form (the angle brackets stand for your answers; confidences as plain numbers):
 
 ```json
-{"parts": {"A": {"1989": {"roof": ["original", 2], "upper windows": ["original", 2], "ground floor": ["changed", 3], "additions": ["none", 1], "care": ["kept", 2]}, "2000": {...}, "2010": {...}, "2020": {...}}, "B": {...}, "C": {...}, "D": {...}, "E": {...}},
- "changes": {"1989-2000": [{"house": "A", "what": "...", "why": "...", "confidence": 2}], "2000-2010": [...], "2010-2020": [...]},
- "stories": {"A": [{"claim": "...", "confidence": 2}], "B": [...], "C": [...], "D": [...], "E": [...]},
- "direction": {"1989-2000": {"activity": "busier", "care": "worse kept"}, "2000-2010": {...}, "2010-2020": {...}}}
+{"parts": {"A": {"1989": {"roof": ["<state>", <confidence>], "upper windows": ["<state>", <confidence>], "ground floor": ["<state>", <confidence>], "additions": ["<state>", <confidence>], "care": ["<kept, neglected or unsure>", <confidence>]}, "2000": {...}, "2010": {...}, "2020": {...}}, "B": {...}, "C": {...}, "D": {...}, "E": {...}},
+ "changes": {"1989-2000": [{"house": "<letter>", "what": "...", "why": "...", "confidence": <1 to 3>}], "2000-2010": [...], "2010-2020": [...]},
+ "stories": {"A": [{"claim": "...", "confidence": <1 to 3>}], "B": [...], "C": [...], "D": [...], "E": [...]},
+ "direction": {"1989-2000": {"activity": "<busier, quieter or same>", "care": "<better kept, worse kept or same>"}, "2000-2010": {...}, "2010-2020": {...}}}
 ```
