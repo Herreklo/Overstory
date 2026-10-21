@@ -61,6 +61,7 @@ Choose the model by the kind of work, and say in one line when a step calls for 
 
 | File | What it holds |
 | --- | --- |
+| `docs/systems.md` | The map of the world: shared systems, materials and kinds of things, with the state of each |
 | `docs/visual-direction.md` | The current visual direction |
 | `docs/foundations.md` | What every system shares: the judging views, detail tiers and budgets, the shared surface layers, packs and facts |
 | `docs/living-world.md` | How places, people and history are shown |
