@@ -1,5 +1,6 @@
 {
  "name": "Gully Steps",
+ "stone": "slate",
  "built": 1874,
  "built_as": "block",
  "finish": "split",

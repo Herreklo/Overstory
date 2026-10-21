@@ -342,7 +342,9 @@ half3 OS_GroundLight(half3 n, half shadow, half3 sunColour)
     half3 shadeGround = _OS_SkyAmb.rgb / max(dot(_OS_SkyAmb.rgb, lum), 1e-3h) * dot(_OS_GroundAmb.rgb, lum);
     float2 nh = n.xz, sh = _OS_SunDir.xz;
     half facing = (half)(dot(nh, sh) / max(length(nh) * length(sh), 1e-3) * 0.5 + 0.5);
-    half seesSun = facing * facing * lerp(0.3h, 1.0h, shadow);
+    // (a face in a cast shadow looks onto ground in the same shadow: none of the sunlit ground's warm bounce, or a
+    // shaded riser read warm brown beside its blue tread; rule 1)
+    half seesSun = facing * facing * shadow;
     half dominance = saturate(dot(sunColour, lum) / max(dot(_OS_SkyAmb.rgb, lum) * 3.0h, 1e-3h));
     return lerp(litGround, shadeGround, (1.0h - seesSun) * dominance);
 }

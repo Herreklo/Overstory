@@ -1,9 +1,10 @@
 {
  "name": "Tanner's Steps",
+ "stone": "slate",
  "built": 1871,
  "built_as": "block",
  "finish": "split",
- "footfall": 36673,
+ "footfall": 51004,
  "keepers": [
   [
    "town",
@@ -13,20 +14,24 @@
   [
    "town",
    1930,
-   0.35
+   0.3
   ],
   [
    "town",
    1946,
-   0.36
+   0.29
   ],
   [
    "town",
    1965,
-   0.24
+   0.13
   ]
  ],
  "works": [
+  [
+   "campaign",
+   1908
+  ],
   [
    "campaign",
    1956

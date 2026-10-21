@@ -1,5 +1,6 @@
 {
  "name": "the Crack",
+ "stone": "slate",
  "built": 1900,
  "built_as": "block",
  "finish": "rough",
@@ -18,7 +19,7 @@
   [
    "town",
    1965,
-   0.15
+   0.1
   ]
  ],
  "works": []

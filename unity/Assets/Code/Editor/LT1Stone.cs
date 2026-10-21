@@ -122,6 +122,36 @@ namespace Overstory.EditorTools
             return m;
         }
 
+        /// <summary>
+        /// Dressed granite, brought in for money (a stair's facts choose it: stair_facts.py): a mid grey speckled
+        /// rock, paler than the slate, weathering slowly, worn smooth and glossy where feet go, darkening little when
+        /// wet and glazing over (its own water profile), its own painted grain (granite_grain.png).
+        /// </summary>
+        public static Material GraniteMaterial(bool grey)
+        {
+            string path = $"{Art}/M_Stone_granite.mat";
+            var m = AssetDatabase.LoadAssetAtPath<Material>(path);
+            if (m == null)
+            {
+                m = new Material(Material(grey));
+                AssetDatabase.CreateAsset(m, path);
+            }
+            m.CopyPropertiesFromMaterial(Material(grey));
+            m.SetColor("_Stone", new Color(0.62f, 0.61f, 0.60f));
+            m.SetColor("_Fresh", new Color(0.58f, 0.58f, 0.58f));
+            m.SetColor("_Edge", new Color(0.60f, 0.59f, 0.58f));
+            m.SetTexture("_GrainMap", AssetDatabase.LoadAssetAtPath<Texture2D>($"{Art}/granite_grain.png"));
+            m.SetVector("_Grain", new Vector4(1.0f, 1.0f, 0.10f, 0.15f));
+            m.SetFloat("_Weather", 140f);
+            m.SetVector("_Polish", new Vector4(0.05f, 0.55f, 0f, 0f));
+            m.SetVector("_Water", new Vector4(0.45f, 0.9f, 0.1f, 0.3f));
+            EditorUtility.SetDirty(m);
+            return m;
+        }
+
+        [System.Serializable]
+        class Facts { public string name; public string stone; }
+
         /// <summary>The stair stood where its mesh was laid from (its street origin), the clay steps hidden.</summary>
         static (GameObject go, Vector3 origin) Place(string which, Material mat, string folder = "")
         {
@@ -405,7 +435,8 @@ namespace Overstory.EditorTools
                     string which = Path.GetFileNameWithoutExtension(json).Substring("stone_".Length);
                     if (Arg("-only", "") != "" && !which.Contains(Arg("-only", "")))
                         continue;
-                    var (go, _) = Place(which, mat, "Variety/");
+                    var facts = JsonUtility.FromJson<Facts>(File.ReadAllText(json.Replace(".json", ".facts.json")));
+                    var (go, _) = Place(which, facts.stone == "granite" ? GraniteMaterial(false) : mat, "Variety/");
                     var info = JsonUtility.FromJson<Info>(File.ReadAllText(json));
                     var f = info.flights[0];
                     var a = new Vector3(f.a[0], f.a[1], f.a[2]);
@@ -416,13 +447,23 @@ namespace Overstory.EditorTools
                     float slope = (f.b[2] - f.a[2]) / run;
                     try
                     {
-                        foreach (var moment in new[] { "1300-drizzle", "1600-low-sun" })
+                        var mid = (new Vector3(f.a[0], f.a[1], f.a[2]) + new Vector3(f.b[0], f.b[1], f.b[2])) * 0.5f;
+                        var views = new (string name, Vector3 pos, Vector3 target)[]
                         {
-                            if (!Wanted("-moments", moment))
+                            // a person at its foot, a little to one side, looking up its first metres
+                            ("foot", a - d * 3.2f + right * 0.9f + new Vector3(0f, 0f, 1.65f),
+                             a + d * 3.0f + new Vector3(0f, 0f, slope * 3.0f * 0.75f + 0.2f)),
+                            // 12 m up beside its first flight, looking down along it (its runs and repairs)
+                            ("into12", mid - d * 9f + right * 1.5f + new Vector3(0f, 0f, 12f), mid),
+                        };
+                        foreach (var moment in new[] { "1300-drizzle", "1600-low-sun" })
+                        foreach (var (vname, vpos, vtarget) in views)
+                        {
+                            if (!Wanted("-moments", moment) || !Wanted("-views", vname))
                                 continue;
                             stage.rig = AssetDatabase.LoadAssetAtPath<LightRig>($"{Lights}/Heart_{moment}.asset");
-                            shot.position = a - d * 3.2f + right * 0.9f + new Vector3(0f, 0f, 1.65f);
-                            shot.target = a + d * 3.0f + new Vector3(0f, 0f, slope * 3.0f * 0.75f + 0.2f);
+                            shot.position = vpos;
+                            shot.target = vtarget;
                             shot.verticalFov = Lens28;
                             shot.near = 0.1f;
                             shot.far = 9000f;
@@ -432,7 +473,7 @@ namespace Overstory.EditorTools
                             Shader.SetGlobalVector("_OS_Paint", new Vector4(stage.wrap, stage.muting, stage.grime, stage.brush));
                             string dir = Path.Combine(outDir, moment);
                             Directory.CreateDirectory(dir);
-                            string file = Path.Combine(dir, $"{which}.png");
+                            string file = Path.Combine(dir, vname == "foot" ? $"{which}.png" : $"{which}-{vname}.png");
                             LT1Render.Still(stage.view, file, grey: false, eighth: false, msaa: 4);
                             Debug.Log($"[LT1Stone.Variety] {file}");
                         }

@@ -45,6 +45,8 @@ YEAR = 1989
 # grows on it is nature's (growth.py; the pack's species, GrowthPack).
 STONES = {
     "slate": dict(wear=8.0),
+    # dressed granite, brought in for money from about 1870 (docs/research/stone.md): hard, it scarcely hollows
+    "granite": dict(wear=2.0),
 }
 
 # The flights authored for the beauty corner until the engine's fabric pass has them (docs/engine-requests.md, 6):
@@ -76,14 +78,43 @@ def h01(*k):
     return random.Random("-".join(str(x) for x in k)).random()
 
 
+STRIDE = 0.63        # two rises and a going: a person's stride on a stair (Blondel's rule)
+GOING_MIN = 0.26     # a going a foot fits on
+RISE_MAX = 0.20      # the most a person climbs in one step
+RAMP_MIN = 0.10      # below this slope a way is paved, not stepped
+STEP_RAMP = 0.18     # below this slope a stair is a step-ramp (a trappegate): a going of one or two strides, low risers
+
+
 def flights_of(lane):
-    """The plan's path as flights: each segment steep enough for steps (a rise over its run of 6% or more)."""
+    """The plan's path as flights: each segment steep enough for steps, always laid uphill (a segment the plan draws
+    downhill is reversed: built as it was drawn, one went down as a single long slab), with its rise and going chosen
+    together by the stride; a gentle segment a step-ramp; one steeper than a person can climb flagged as the plan's
+    fault, never built as a ladder."""
     out = []
     for (ax, ay, az), (bx, by, bz) in zip(lane["pts"], lane["pts"][1:]):
         run = math.hypot(bx - ax, by - ay)
-        if run < 0.1 or abs(bz - az) / run < 0.06:
+        if run < 0.1:
             continue
-        out.append(dict(a=np.array([ax, ay, az], float), b=np.array([bx, by, bz], float), width=lane["width"]))
+        if bz < az:
+            (ax, ay, az), (bx, by, bz) = (bx, by, bz), (ax, ay, az)
+        slope = (bz - az) / run
+        if slope < RAMP_MIN:
+            continue
+        f = dict(a=np.array([ax, ay, az], float), b=np.array([bx, by, bz], float), width=lane["width"])
+        if slope < STEP_RAMP:
+            # a step-ramp: a going of one stride or two (so no one breaks step), its riser what the slope gives
+            k = 1 if slope * 0.65 >= 0.09 else 2
+            n = max(1, int(round(run / (0.65 * k))))
+            f["form"] = "step_ramp"
+        else:
+            going = STRIDE / (1.0 + 2.0 * slope)
+            if going < GOING_MIN or slope * GOING_MIN > RISE_MAX:
+                f["flag"] = f"too steep for steps: {slope:.2f} over {run:.1f} m (the plan's fault)"
+                going = GOING_MIN
+            n = max(1, int(round(run / going)))
+            f["form"] = "stair"
+        f["n"] = n
+        out.append(f)
     return out
 
 
@@ -155,6 +186,17 @@ def lay(spec, seed=1):
     fl = flights_of(lane)
     origin = fl[0]["a"].copy()
     meshes = []
+    flags = []
+    # the stair's facts the whole of it shares: the side its walking line keeps to, how well it is kept now, and on
+    # which flight each campaign fell (one campaign a stair, on the flight its cause chose: the wettest and longest)
+    lean = spec.get("lean", random.Random(f"{spec['lane']}-lean").uniform(-0.8, 0.8))
+    care_now = UP.keeper_in(spec["upkeep"], YEAR - 1)["care"]
+    crng = random.Random(f"{spec['lane']}-{seed}-campaigns")
+    built_fl = [k for k, f in enumerate(fl) if not f.get("flag")]
+    campaign_flight = {}
+    for w in spec["works"]:
+        if w["kind"] == "campaign" and built_fl:
+            campaign_flight[id(w)] = crng.choices(built_fl, weights=[fl[k]["n"] for k in built_fl])[0]
     for fi, f in enumerate(fl):
         a, b, W = f["a"], f["b"], f["width"]
         d2 = (b - a)[:2]
@@ -162,8 +204,13 @@ def lay(spec, seed=1):
         up = d2 / run                                    # uphill, in plan
         right = np.array([up[1], -up[0]])                # so right, up, z is right-handed
         rise = float(b[2] - a[2])
-        n = max(1, int(round(rise / RISE)))
+        n = f["n"]
         h, g = rise / n, run / n
+        if f.get("flag"):
+            # (not built: a ladder of stone tells a false story; the plan is fixed instead)
+            print("PLAN FLAG", spec["lane"], fi, f["flag"])
+            flags.append(dict(flight=fi, flag=f["flag"]))
+            continue
         out = dict(V=[], F=[], COL=[], UV0=[], UV1=[], UV2=[], UV3=[])
         below_r = []
         trod = WR.busy(spec["footfall"], W)
@@ -172,17 +219,24 @@ def lay(spec, seed=1):
         # bottom steps take the most water into their beds, and loads are dropped where people go
         plan, below, below2 = [], [], []
         dressed = spec.get("finish") == "dressed"
+        rough = spec.get("finish") == "rough"
         for i in range(n):
             prng = random.Random(f"{spec['lane']}-{seed}-{fi}-{i}-plan")
             edges = widths(prng, W, below, below2=below2, hi=3.4, ks=(1, 1, 2)) if dressed else \
-                widths(prng, W, below, below2=below2)
+                (widths(prng, W, below, below2=below2, lo=0.35, hi=1.1, ks=(2, 3, 3, 4)) if rough else
+                 widths(prng, W, below, below2=below2))
             below2, below = below, edges[1:-1]
             plan.append(edges)
+        # how much water each step's bed takes: more towards a flight's foot, and most where the lane's water is
+        # led onto it (one or two places along it, the stair's own: always the foot, every campaign's run sat there)
         wrng = random.Random(f"{spec['lane']}-{seed}-{fi}-wet")
-        wet = [0.3 + 0.6 * (1.0 - i / max(n - 1, 1)) ** 3 + wrng.uniform(0.0, 0.3) for i in range(n)]
+        sinks = [wrng.uniform(0.0, 1.0) for _ in range(wrng.randint(1, 2))]
+        wet = [0.25 + 0.3 * (1.0 - i / max(n - 1, 1)) + max(0.55 * math.exp(-((i / max(n - 1, 1) - c) / 0.15) ** 2)
+               for c in sinks) + wrng.uniform(0.0, 0.2) for i in range(n)]
+        works_here = [w for w in spec["works"] if w["kind"] != "campaign" or campaign_flight.get(id(w), 0) == fi]
         life = UP.flight([list(zip(e[:-1], e[1:])) for e in plan], spec["built"], YEAR, spec["upkeep"],
-                         spec["works"], f"{spec['lane']}-{seed}-{fi}", wet,
-                         busy=lambda x: float(walking(np.array([x / W]))[0]))
+                         works_here, f"{spec['lane']}-{seed}-{fi}", wet,
+                         busy=lambda x: float(walking(np.array([x / W]), W, lean)[0]))
 
         def put(P, piece, rng, x0, s0, z0, foot_on, worn_y, bare_y, bed_y, polish0=0.0, lifted_y=None):
             """A piece's vertices P (slab space, already turned to the flight: x across, y up the flight, z up),
@@ -197,19 +251,19 @@ def lay(spec, seed=1):
             top = (kind == 0) & foot_on
             # wear (wear.py): footfall times years over the stone's hardness, where feet go: across the walking line,
             # on the front half of a tread where the foot lands, and over the nosing, which rounds
-            foot = walking(across) * (0.45 + 0.55 * np.exp(-((along - 0.3) / 0.35) ** 2))
-            worn = WR.depth(stone["wear"], spec["footfall"], worn_y, foot)
+            foot = walking(across, W, lean) * ((0.45 + 0.55 * np.exp(-((along - 0.3) / 0.35) ** 2)) if g < 0.5 else 1.0)
+            worn = WR.depth(stone["wear"], spec["footfall"], worn_y, foot, W)
             nose = foot_on & ((kind == 1) | ((kind == 0) & (piece["edge"] < 0.03) & (P[:, 1] < 0.05)))
             P = P.copy()
             # (the dish subtracts; the nosing's arris rounds faster than the tread hollows, never bowing the front out)
-            P[:, 2] -= np.where(top, worn, 0.0) + np.where(nose, WR.nosing(worn, walking(across)), 0.0)
+            P[:, 2] -= np.where(top, worn, 0.0) + np.where(nose, WR.nosing(worn, walking(across, W, lean)), 0.0)
             polish = np.where(foot_on & ((kind <= 1) | (kind == 5)), WR.polish(spec["footfall"], worn_y, foot), 0.0)
             polish = np.maximum(polish, np.where(foot_on & (kind <= 1), polish0, 0.0))
             # growth (nature's, docs/nature.md, Growth on surfaces): lichen where it is quiet for its years; on a
             # riser's face too, above where boots scuff its foot; moss where it stays damp: the strip in front of the
             # riser above (from four fifths of the tread to where the riser stands), the joints between slabs and
             # their pointing, a riser's foot, for the years since the bed was last disturbed
-            traffic = (walking(across) if foot_on else walking(across) * (1.0 - np.clip((z0 + P[:, 2] - zfoot) / 0.05, 0.0, 0.8))) * trod
+            traffic = (walking(across, W, lean) if foot_on else walking(across, W, lean) * (1.0 - np.clip((z0 + P[:, 2] - zfoot) / 0.05, 0.0, 0.8))) * trod
             lich_y = bare_y
             if lifted_y is not None and lifted_y < bare_y:
                 lich_y = np.where(((kind == 0) & (piece["edge"] < 0.06)) | (kind == 1) | (kind == 2), lifted_y, bare_y)
@@ -236,7 +290,9 @@ def lay(spec, seed=1):
             # (feet land on a tread's front half: its back corner is untrodden even in the middle of a busy flight)
             # (moss thins where people walk even at a tread's back and a step's foot: brooms, boots and grit; the green
             # bands at the quiet ends, not a rung across every step)
-            moss = GR.moss(damp, trod * walking(across) * np.where(foot_on & (kind != 6), np.maximum(np.exp(-((np.clip(along, 0, 1) - 0.3) / 0.35) ** 2), 0.7), 1.0), moss_y)
+            # (a tended stair is swept and its joints weeded: its keeper's care now thins the moss; neglect lets it in)
+            damp = damp * (1.15 - 0.75 * care_now)
+            moss = GR.moss(damp, trod * walking(across, W, lean) * np.where(foot_on & (kind != 6), np.maximum(np.exp(-((np.clip(along, 0, 1) - 0.3) / 0.35) ** 2), 0.7), 1.0), moss_y)
             # water stands only where the dish is deepest (on slate a few millimetres; half the walking line under water
             # read as white paint from every view)
             held = np.clip((worn - 0.003) / 0.003, 0.0, 1.0) * top
@@ -262,7 +318,7 @@ def lay(spec, seed=1):
             zz = z0 + P[:, 2]
             water_top = WT.on_top(back=np.where(back, (along - 0.8) / 0.2, 0.0), joint=np.where(joint, 0.8, 0.0),
                                   hollow=worn / 0.004)
-            run_over = WT.over_edge(walking(across) * 0.9, z_top - zz)
+            run_over = WT.over_edge(walking(across, W, lean) * 0.9, z_top - zz)
             water = np.where(kind == 0, water_top, np.where(kind == 1, 0.3, np.where(kind == 2, run_over,
                              np.where(kind >= 4, WT.HOLDS, 0.2))))
             if not foot_on:
@@ -502,7 +558,7 @@ def lay(spec, seed=1):
                             UV3=np.concatenate(out["UV3"]),
                             steps=n, rise=h, tread=g, life=record,
                             a=[float(v) for v in a], b=[float(v) for v in b], width=float(W))))
-    return meshes, origin
+    return meshes, origin, flags
 
 
 def make(name, m):
@@ -540,9 +596,12 @@ def build(which, unity=None, seed=1, spec=None, folder=""):
     for ob in list(bpy.data.objects):
         bpy.data.objects.remove(ob, do_unlink=True)
     spec = spec or FLIGHTS[which]
-    meshes, origin = lay(spec, seed)
+    meshes, origin, flags = lay(spec, seed)
+    if not meshes:
+        print("STONE", which, "nothing built:", flags)
+        return dict(name=f"stone_{which}", flags=flags)
     obs = [make(name, m) for name, m in meshes]
-    info = dict(name=f"stone_{which}", origin=[float(v) for v in origin],
+    info = dict(name=f"stone_{which}", origin=[float(v) for v in origin], flags=flags,
                 flights=[dict(name=nm, steps=m["steps"], rise=round(m["rise"], 3), tread=round(m["tread"], 3),
                               a=m["a"], b=m["b"], width=m["width"],
                               tris=sum(len(f) - 2 for f in m["F"]), life=m["life"]) for nm, m in meshes])
@@ -584,7 +643,10 @@ if __name__ == "__main__":
             if sp is None:
                 continue
             info = build(slug(nm), unity, spec=dict(sp), folder="Variety")
-            facts = dict(name=nm, built=sp["built"], built_as=sp.get("built_as"), finish=sp.get("finish", "split"),
+            if not info.get("flights"):
+                continue
+            facts = dict(name=nm, stone=sp.get("stone", "slate"), built=sp["built"], built_as=sp.get("built_as"),
+                         finish=sp.get("finish", "split"),
                          footfall=sp["footfall"], keepers=[[u["by"], u["since"], u["care"]] for u in sp["upkeep"]],
                          works=[[w["kind"], w["year"]] for w in sp["works"]])
             with open(os.path.join(unity, "Assets", "Art", "Stone", "Variety", f"stone_{slug(nm)}.facts.json"), "w") as fh:

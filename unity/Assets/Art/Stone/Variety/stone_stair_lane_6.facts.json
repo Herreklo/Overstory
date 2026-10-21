@@ -1,9 +1,10 @@
 {
  "name": "stair-lane 6",
+ "stone": "granite",
  "built": 1912,
  "built_as": "block",
  "finish": "dressed",
- "footfall": 18812,
+ "footfall": 15940,
  "keepers": [
   [
    "town",
@@ -13,7 +14,7 @@
   [
    "town",
    1946,
-   0.42
+   0.51
   ],
   [
    "town",
@@ -24,7 +25,7 @@
  "works": [
   [
    "campaign",
-   1956
+   1949
   ]
  ]
 }

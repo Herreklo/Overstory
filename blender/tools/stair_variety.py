@@ -81,7 +81,7 @@ def preview_material():
 def render_flight(lane, spec, out, mat):
     for ob in list(bpy.data.objects):
         bpy.data.objects.remove(ob, do_unlink=True)
-    meshes, origin = ST.lay(spec)
+    meshes, origin, _ = ST.lay(spec)
     obs = [ST.make(name, m) for name, m in meshes]
     for ob in obs:
         ob.data.materials.append(mat)

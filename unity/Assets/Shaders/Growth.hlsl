@@ -44,32 +44,40 @@ half3 OS_LichenAt(float2 q, half years, half seed, float footprint)
     half near = OS_Near(footprint);
     half lobe = (half)(OS_Noise(q * 90.0 + seed * 3.0) - 0.5);
     half crumb = (half)(OS_Noise(q * 330.0 + seed * 7.0) - 0.5) * near;
-    const float cell = 0.05;
-    float2 pc = q / cell + seed * 13.7;
-    float2 ci = floor(pc);
-    half density = saturate(share * 2.4h);
+    // two generations of colonies: a few old ones, begun soon after the stone was laid, grown large and merging into
+    // fields, and many young ones between, small (one size of disc everywhere read as a stamp); each spreads about
+    // half a millimetre a year from its own year
     half cover = 0.0h, rim = 0.0h, age = 0.0h;
     half soft = lerp(0.18h, 0.05h, near);       // (near the edge is crisp; at the street stop it is painted soft)
-    for (int j = -1; j <= 1; j++)
+    [unroll]
+    for (int gen = 0; gen < 2; gen++)
     {
-        for (int i = -1; i <= 1; i++)
+        float cell = gen == 0 ? 0.11 : 0.035;
+        float2 pc = q / cell + seed * (13.7 + gen * 5.1);
+        float2 ci = floor(pc);
+        half density = saturate(share * (gen == 0 ? 1.5h : 2.0h));
+        for (int j = -1; j <= 1; j++)
         {
-            float2 c = ci + float2(i, j);
-            float2 h = OS_GrowthHash2(c);
-            if (h.x > density)
-                continue;
-            half born = (half)OS_Hash(c + 4.2);                    // how early in the stone's quiet years it began
-            half ageC = years * (1.0h - born * 0.85h);
-            half r = clamp(ageC * 0.00042h, 0.003h, 0.055h) / (half)cell;
-            float2 ctr = c + 0.2 + 0.6 * float2(h.y, OS_Hash(c + 9.1));
-            half d = (half)length(pc - ctr) / max(r, 1e-3h) + lobe * 0.6h + crumb * 0.25h;
-            half cv = 1.0h - smoothstep(1.0h - soft, 1.0h, d);
-            if (cv > cover)
+            for (int i = -1; i <= 1; i++)
             {
-                cover = cv;
-                age = saturate(ageC / 100.0h);
-                // (a faint darker rim just inside each rosette's edge: the board, 06)
-                rim = cv * smoothstep(0.8h, 0.97h, d) * 0.45h * near;
+                float2 c = ci + float2(i, j);
+                float2 h = OS_GrowthHash2(c + gen * 31.7);
+                if (h.x > density)
+                    continue;
+                half born = (half)OS_Hash(c + 4.2 + gen * 7.1);
+                // (the old generation began in the first decades, the young one any time since)
+                half ageC = gen == 0 ? years * (1.0h - born * 0.3h) : years * born * 0.6h;
+                half r = clamp(ageC * 0.0005h, 0.002h, 0.07h) / (half)cell;
+                float2 ctr = c + 0.15 + 0.7 * float2(h.y, OS_Hash(c + 9.1 + gen));
+                half d = (half)length(pc - ctr) / max(r, 1e-3h) + lobe * (gen == 0 ? 0.9h : 0.4h) + crumb * 0.25h;
+                half cv = 1.0h - smoothstep(1.0h - soft, 1.0h, d);
+                if (cv > cover)
+                {
+                    cover = cv;
+                    age = saturate(ageC / 100.0h);
+                    // (a faint darker rim just inside each colony's edge: the board, 06)
+                    rim = cv * smoothstep(0.8h, 0.97h, d) * 0.45h * near;
+                }
             }
         }
     }

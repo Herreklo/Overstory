@@ -5,12 +5,13 @@
   17.6546875,
   3.0
  ],
+ "flags": [],
  "flights": [
   {
    "name": "stone_passage_at_-172_0",
-   "steps": 29,
-   "rise": 0.172,
-   "tread": 0.471,
+   "steps": 38,
+   "rise": 0.132,
+   "tread": 0.359,
    "a": [
     -172.0,
     17.6546875,
@@ -22,12 +23,12 @@
     8.0
    ],
    "width": 1.6,
-   "tris": 50188,
+   "tris": 56845,
    "life": [
     {
      "step": 0,
      "reset": 1873,
-     "off_mm": 30.7,
+     "off_mm": 23.7,
      "mortar": null,
      "slabs": [
       {
@@ -41,58 +42,49 @@
     {
      "step": 1,
      "reset": 1873,
-     "off_mm": 10.6,
+     "off_mm": 9.2,
      "mortar": null,
      "slabs": [
       {
        "origin": "laid",
        "placed": 1873,
        "bare": 1873,
-       "lifted": 1873,
-       "cracked": {
-        "year": 1904,
-        "filled": null
-       }
+       "lifted": 1873
       }
      ]
     },
     {
      "step": 2,
      "reset": 1873,
-     "off_mm": 31.8,
+     "off_mm": 24.2,
      "mortar": null,
      "slabs": [
       {
        "origin": "laid",
        "placed": 1873,
        "bare": 1873,
-       "lifted": 1873,
-       "shim": 1926
+       "lifted": 1873
       }
      ]
     },
     {
      "step": 3,
      "reset": 1873,
-     "off_mm": 14.8,
+     "off_mm": 12.3,
      "mortar": null,
      "slabs": [
       {
        "origin": "laid",
        "placed": 1873,
        "bare": 1873,
-       "lifted": 1873,
-       "cracked": {
-        "year": 1920,
-        "filled": null
-       }
+       "lifted": 1873
       }
      ]
     },
     {
      "step": 4,
      "reset": 1873,
-     "off_mm": 16.4,
+     "off_mm": 16.7,
      "mortar": null,
      "slabs": [
       {
@@ -106,7 +98,79 @@
     {
      "step": 5,
      "reset": 1873,
-     "off_mm": 17.4,
+     "off_mm": 13.5,
+     "mortar": null,
+     "slabs": [
+      {
+       "origin": "laid",
+       "placed": 1873,
+       "bare": 1873,
+       "lifted": 1873,
+       "cracked": {
+        "year": 1933,
+        "filled": null
+       }
+      }
+     ]
+    },
+    {
+     "step": 6,
+     "reset": 1873,
+     "off_mm": 15.1,
+     "mortar": null,
+     "slabs": [
+      {
+       "origin": "laid",
+       "placed": 1873,
+       "bare": 1873,
+       "lifted": 1873,
+       "cracked": {
+        "year": 1897,
+        "filled": null
+       }
+      }
+     ]
+    },
+    {
+     "step": 7,
+     "reset": 1873,
+     "off_mm": 33.6,
+     "mortar": null,
+     "slabs": [
+      {
+       "origin": "laid",
+       "placed": 1873,
+       "bare": 1873,
+       "lifted": 1873,
+       "cracked": {
+        "year": 1970,
+        "filled": null
+       }
+      }
+     ]
+    },
+    {
+     "step": 8,
+     "reset": 1873,
+     "off_mm": 16.5,
+     "mortar": null,
+     "slabs": [
+      {
+       "origin": "laid",
+       "placed": 1873,
+       "bare": 1873,
+       "lifted": 1873,
+       "cracked": {
+        "year": 1898,
+        "filled": null
+       }
+      }
+     ]
+    },
+    {
+     "step": 9,
+     "reset": 1873,
+     "off_mm": 15.7,
      "mortar": null,
      "slabs": [
       {
@@ -118,81 +182,115 @@
      ]
     },
     {
-     "step": 6,
-     "reset": 1873,
-     "off_mm": 15.6,
-     "mortar": null,
-     "slabs": [
-      {
-       "origin": "laid",
-       "placed": 1873,
-       "bare": 1873,
-       "lifted": 1873,
-       "cracked": {
-        "year": 1907,
-        "filled": null
-       }
-      }
-     ]
-    },
-    {
-     "step": 7,
-     "reset": 1873,
-     "off_mm": 37.6,
-     "mortar": null,
-     "slabs": [
-      {
-       "origin": "laid",
-       "placed": 1873,
-       "bare": 1873,
-       "lifted": 1873,
-       "cracked": {
-        "year": 1949,
-        "filled": null
-       }
-      }
-     ]
-    },
-    {
-     "step": 8,
-     "reset": 1873,
-     "off_mm": 16.2,
-     "mortar": null,
-     "slabs": [
-      {
-       "origin": "laid",
-       "placed": 1873,
-       "bare": 1873,
-       "lifted": 1873,
-       "cracked": {
-        "year": 1908,
-        "filled": null
-       }
-      }
-     ]
-    },
-    {
-     "step": 9,
-     "reset": 1873,
-     "off_mm": 14.1,
-     "mortar": null,
-     "slabs": [
-      {
-       "origin": "laid",
-       "placed": 1873,
-       "bare": 1873,
-       "lifted": 1873,
-       "cracked": {
-        "year": 1929,
-        "filled": null
-       }
-      }
-     ]
-    },
-    {
      "step": 10,
      "reset": 1873,
-     "off_mm": 13.2,
+     "off_mm": 13.0,
+     "mortar": null,
+     "slabs": [
+      {
+       "origin": "laid",
+       "placed": 1873,
+       "bare": 1873,
+       "lifted": 1873,
+       "cracked": {
+        "year": 1950,
+        "filled": null
+       }
+      }
+     ]
+    },
+    {
+     "step": 11,
+     "reset": 1873,
+     "off_mm": 13.8,
+     "mortar": null,
+     "slabs": [
+      {
+       "origin": "laid",
+       "placed": 1873,
+       "bare": 1873,
+       "lifted": 1873
+      }
+     ]
+    },
+    {
+     "step": 12,
+     "reset": 1873,
+     "off_mm": 10.5,
+     "mortar": null,
+     "slabs": [
+      {
+       "origin": "laid",
+       "placed": 1873,
+       "bare": 1873,
+       "lifted": 1873,
+       "cracked": {
+        "year": 1926,
+        "filled": null
+       }
+      }
+     ]
+    },
+    {
+     "step": 13,
+     "reset": 1873,
+     "off_mm": 18.0,
+     "mortar": null,
+     "slabs": [
+      {
+       "origin": "laid",
+       "placed": 1873,
+       "bare": 1873,
+       "lifted": 1873,
+       "cracked": {
+        "year": 1985,
+        "filled": null
+       }
+      }
+     ]
+    },
+    {
+     "step": 14,
+     "reset": 1873,
+     "off_mm": 15.9,
+     "mortar": null,
+     "slabs": [
+      {
+       "origin": "laid",
+       "placed": 1873,
+       "bare": 1873,
+       "lifted": 1873
+      }
+     ]
+    },
+    {
+     "step": 15,
+     "reset": 1873,
+     "off_mm": 13.9,
+     "mortar": null,
+     "slabs": [
+      {
+       "origin": "laid",
+       "placed": 1873,
+       "bare": 1873,
+       "lifted": 1873
+      },
+      {
+       "origin": "laid",
+       "placed": 1873,
+       "bare": 1873,
+       "lifted": 1873,
+       "cracked": {
+        "year": 1954,
+        "filled": null
+       }
+      }
+     ]
+    },
+    {
+     "step": 16,
+     "reset": 1873,
+     "off_mm": 18.9,
      "mortar": null,
      "slabs": [
       {
@@ -208,114 +306,9 @@
      ]
     },
     {
-     "step": 11,
-     "reset": 1873,
-     "off_mm": 13.5,
-     "mortar": null,
-     "slabs": [
-      {
-       "origin": "laid",
-       "placed": 1873,
-       "bare": 1873,
-       "lifted": 1873
-      }
-     ]
-    },
-    {
-     "step": 12,
-     "reset": 1873,
-     "off_mm": 9.0,
-     "mortar": null,
-     "slabs": [
-      {
-       "origin": "laid",
-       "placed": 1873,
-       "bare": 1873,
-       "lifted": 1873,
-       "cracked": {
-        "year": 1960,
-        "filled": null
-       }
-      }
-     ]
-    },
-    {
-     "step": 13,
-     "reset": 1873,
-     "off_mm": 14.2,
-     "mortar": null,
-     "slabs": [
-      {
-       "origin": "laid",
-       "placed": 1873,
-       "bare": 1873,
-       "lifted": 1873
-      }
-     ]
-    },
-    {
-     "step": 14,
-     "reset": 1873,
-     "off_mm": 9.8,
-     "mortar": null,
-     "slabs": [
-      {
-       "origin": "laid",
-       "placed": 1873,
-       "bare": 1873,
-       "lifted": 1873,
-       "cracked": {
-        "year": 1983,
-        "filled": null
-       }
-      }
-     ]
-    },
-    {
-     "step": 15,
-     "reset": 1873,
-     "off_mm": 9.6,
-     "mortar": null,
-     "slabs": [
-      {
-       "origin": "laid",
-       "placed": 1873,
-       "bare": 1873,
-       "lifted": 1873,
-       "corner": {
-        "year": 1934,
-        "filled": [
-         "cement",
-         1964
-        ]
-       }
-      },
-      {
-       "origin": "laid",
-       "placed": 1873,
-       "bare": 1873,
-       "lifted": 1873
-      }
-     ]
-    },
-    {
-     "step": 16,
-     "reset": 1873,
-     "off_mm": 11.9,
-     "mortar": null,
-     "slabs": [
-      {
-       "origin": "laid",
-       "placed": 1873,
-       "bare": 1873,
-       "lifted": 1873
-      }
-     ]
-    },
-    {
      "step": 17,
      "reset": 1873,
-     "off_mm": 4.9,
+     "off_mm": 9.2,
      "mortar": null,
      "slabs": [
       {
@@ -324,7 +317,7 @@
        "bare": 1873,
        "lifted": 1873,
        "cracked": {
-        "year": 1903,
+        "year": 1893,
         "filled": null
        }
       }
@@ -333,25 +326,7 @@
     {
      "step": 18,
      "reset": 1873,
-     "off_mm": 16.6,
-     "mortar": null,
-     "slabs": [
-      {
-       "origin": "laid",
-       "placed": 1873,
-       "bare": 1873,
-       "lifted": 1873,
-       "cracked": {
-        "year": 1934,
-        "filled": null
-       }
-      }
-     ]
-    },
-    {
-     "step": 19,
-     "reset": 1873,
-     "off_mm": 9.5,
+     "off_mm": 23.3,
      "mortar": null,
      "slabs": [
       {
@@ -363,9 +338,27 @@
      ]
     },
     {
+     "step": 19,
+     "reset": 1873,
+     "off_mm": 16.3,
+     "mortar": null,
+     "slabs": [
+      {
+       "origin": "laid",
+       "placed": 1873,
+       "bare": 1873,
+       "lifted": 1873,
+       "cracked": {
+        "year": 1948,
+        "filled": null
+       }
+      }
+     ]
+    },
+    {
      "step": 20,
      "reset": 1873,
-     "off_mm": 5.3,
+     "off_mm": 8.8,
      "mortar": null,
      "slabs": [
       {
@@ -379,56 +372,21 @@
     {
      "step": 21,
      "reset": 1873,
-     "off_mm": 5.3,
+     "off_mm": 6.6,
      "mortar": null,
      "slabs": [
       {
        "origin": "laid",
        "placed": 1873,
        "bare": 1873,
-       "lifted": 1873,
-       "cracked": {
-        "year": 1932,
-        "filled": [
-         "cement",
-         1933
-        ]
-       }
+       "lifted": 1873
       }
      ]
     },
     {
      "step": 22,
      "reset": 1873,
-     "off_mm": 20.3,
-     "mortar": null,
-     "slabs": [
-      {
-       "origin": "laid",
-       "placed": 1873,
-       "bare": 1873,
-       "lifted": 1873
-      }
-     ]
-    },
-    {
-     "step": 23,
-     "reset": 1873,
-     "off_mm": 16.2,
-     "mortar": null,
-     "slabs": [
-      {
-       "origin": "laid",
-       "placed": 1873,
-       "bare": 1873,
-       "lifted": 1873
-      }
-     ]
-    },
-    {
-     "step": 24,
-     "reset": 1873,
-     "off_mm": 10.0,
+     "off_mm": 27.0,
      "mortar": null,
      "slabs": [
       {
@@ -437,37 +395,16 @@
        "bare": 1873,
        "lifted": 1873,
        "cracked": {
-        "year": 1897,
-        "filled": [
-         "cement",
-         1925
-        ]
-       }
-      }
-     ]
-    },
-    {
-     "step": 25,
-     "reset": 1873,
-     "off_mm": 11.2,
-     "mortar": null,
-     "slabs": [
-      {
-       "origin": "laid",
-       "placed": 1873,
-       "bare": 1873,
-       "lifted": 1873,
-       "cracked": {
-        "year": 1971,
+        "year": 1939,
         "filled": null
        }
       }
      ]
     },
     {
-     "step": 26,
+     "step": 23,
      "reset": 1873,
-     "off_mm": 4.9,
+     "off_mm": 20.0,
      "mortar": null,
      "slabs": [
       {
@@ -476,7 +413,53 @@
        "bare": 1873,
        "lifted": 1873,
        "cracked": {
-        "year": 1952,
+        "year": 1958,
+        "filled": null
+       }
+      }
+     ]
+    },
+    {
+     "step": 24,
+     "reset": 1873,
+     "off_mm": 8.7,
+     "mortar": null,
+     "slabs": [
+      {
+       "origin": "laid",
+       "placed": 1873,
+       "bare": 1873,
+       "lifted": 1873
+      }
+     ]
+    },
+    {
+     "step": 25,
+     "reset": 1873,
+     "off_mm": 13.3,
+     "mortar": null,
+     "slabs": [
+      {
+       "origin": "laid",
+       "placed": 1873,
+       "bare": 1873,
+       "lifted": 1873
+      }
+     ]
+    },
+    {
+     "step": 26,
+     "reset": 1873,
+     "off_mm": 5.8,
+     "mortar": null,
+     "slabs": [
+      {
+       "origin": "laid",
+       "placed": 1873,
+       "bare": 1873,
+       "lifted": 1873,
+       "cracked": {
+        "year": 1977,
         "filled": null
        }
       }
@@ -484,6 +467,126 @@
     },
     {
      "step": 27,
+     "reset": 1873,
+     "off_mm": 12.0,
+     "mortar": null,
+     "slabs": [
+      {
+       "origin": "laid",
+       "placed": 1873,
+       "bare": 1873,
+       "lifted": 1873,
+       "cracked": {
+        "year": 1969,
+        "filled": null
+       },
+       "corner": {
+        "year": 1911,
+        "filled": [
+         "cement",
+         1927
+        ]
+       }
+      },
+      {
+       "origin": "laid",
+       "placed": 1873,
+       "bare": 1873,
+       "lifted": 1873
+      }
+     ]
+    },
+    {
+     "step": 28,
+     "reset": 1873,
+     "off_mm": 16.4,
+     "mortar": null,
+     "slabs": [
+      {
+       "origin": "laid",
+       "placed": 1873,
+       "bare": 1873,
+       "lifted": 1873,
+       "cracked": {
+        "year": 1917,
+        "filled": [
+         "cement",
+         1934
+        ]
+       }
+      }
+     ]
+    },
+    {
+     "step": 29,
+     "reset": 1873,
+     "off_mm": 21.0,
+     "mortar": null,
+     "slabs": [
+      {
+       "origin": "laid",
+       "placed": 1873,
+       "bare": 1873,
+       "lifted": 1873,
+       "cracked": {
+        "year": 1901,
+        "filled": null
+       }
+      }
+     ]
+    },
+    {
+     "step": 30,
+     "reset": 1873,
+     "off_mm": 5.2,
+     "mortar": null,
+     "slabs": [
+      {
+       "origin": "laid",
+       "placed": 1873,
+       "bare": 1873,
+       "lifted": 1873
+      }
+     ]
+    },
+    {
+     "step": 31,
+     "reset": 1873,
+     "off_mm": 11.6,
+     "mortar": null,
+     "slabs": [
+      {
+       "origin": "laid",
+       "placed": 1873,
+       "bare": 1873,
+       "lifted": 1873,
+       "cracked": {
+        "year": 1887,
+        "filled": null
+       }
+      }
+     ]
+    },
+    {
+     "step": 32,
+     "reset": 1873,
+     "off_mm": 10.4,
+     "mortar": null,
+     "slabs": [
+      {
+       "origin": "laid",
+       "placed": 1873,
+       "bare": 1873,
+       "lifted": 1873,
+       "cracked": {
+        "year": 1945,
+        "filled": null
+       }
+      }
+     ]
+    },
+    {
+     "step": 33,
      "reset": 1873,
      "off_mm": 10.2,
      "mortar": null,
@@ -493,26 +596,59 @@
        "placed": 1873,
        "bare": 1873,
        "lifted": 1873
-      },
+      }
+     ]
+    },
+    {
+     "step": 34,
+     "reset": 1873,
+     "off_mm": 9.9,
+     "mortar": null,
+     "slabs": [
       {
        "origin": "laid",
        "placed": 1873,
        "bare": 1873,
        "lifted": 1873,
-       "corner": {
-        "year": 1974,
-        "filled": [
-         "cement",
-         1988
-        ]
+       "cracked": {
+        "year": 1914,
+        "filled": null
        }
       }
      ]
     },
     {
-     "step": 28,
+     "step": 35,
      "reset": 1873,
-     "off_mm": 14.8,
+     "off_mm": 8.3,
+     "mortar": null,
+     "slabs": [
+      {
+       "origin": "laid",
+       "placed": 1873,
+       "bare": 1873,
+       "lifted": 1873
+      }
+     ]
+    },
+    {
+     "step": 36,
+     "reset": 1873,
+     "off_mm": 13.4,
+     "mortar": null,
+     "slabs": [
+      {
+       "origin": "laid",
+       "placed": 1873,
+       "bare": 1873,
+       "lifted": 1873
+      }
+     ]
+    },
+    {
+     "step": 37,
+     "reset": 1873,
+     "off_mm": 8.7,
      "mortar": null,
      "slabs": [
       {
