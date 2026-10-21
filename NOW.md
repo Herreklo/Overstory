@@ -2,6 +2,18 @@
 
 What is open and what is next. Update this block when an experiment starts or ends.
 
+- **The plan (agreed with Øystein, 22 October; reviewed by Fable):** every system treated the same way (research of games, painters and facts; a reference board; a design doc; a target agreed with Øystein; parts one at a time, judged in grey light from eye level to the raised views, from several headings and in three lights; rules and generators, never hand placement; the shared layers for wear, stains, growth, damage and weather; frames measured and checked against the core rules, SEASON's lesson always among them; strict reviews on Fable, or Opus when Fable is out; Øystein's judgement), and built round the beauty corner: each system's first slice is the corner's own, its world-scale design written once as a page and proved by that slice. It is a world, not a town: the same systems serve a fishing village, the countryside and a metropolis through setting packs, data and rules, detail generated near the camera. Every part looks good from every angle; the camera's behaviour is a later play decision. The order:
+  0. *Foundations, a page and two light fixes:* the judging views, detail tiers with triangle and texture budgets, the shared layer stack, a foreign-pack check in every system's done-list; the shared light's two debts (an upright cylinder with no lit side under overcast; warm ground bounce on shade sides beside blue ground shadow), and the drizzle and morning retune.
+  1. *The gully steps finished; then the corner's dry-stone wall, plinths, lane paving and kerb.* Alongside: the buildings' era research (what owners did to houses 1900 to 1989, decade by decade: the diary's event vocabulary and era shelves), and the people research with the brief for commissioning a stylised base.
+  2. *Buildings,* one part at a time, for the corner's five houses; the coats and wear as the layers' second user; targets remade from approved parts; a first cold reader (criterion 1).
+  3. *The corner's ground and things:* the rock knuckle, the heath, D's yard, moss and grass, the lamp, the handrail; the corner complete beside its targets in four lights.
+  4. *The corner through the years,* rebuilt live from facts (1935, 1960, 1989, 2020); cold readers date it; checked against the engine's front door (`rH28`).
+  5. *People:* one person, three stylisations; then the first scene outdoors, on the gully steps at night with a figure (criterion 3); a playable camera test.
+  6. *The heart at the city view:* its land and water (Watch Knoll's ledges, the hillsides, quay edges as geometry, the Basin), laid stone and paving, the town's things by era, generator-filled streets; frame time measured each time a part joins (criterion 5); streaming when the measure asks for it.
+  7. *Nature's living parts* on the land cover, and the trees' open list (near tier, fallen leaves, more species, wind).
+  8. *Interiors and LT2 indoors;* the two clocks settled with the engine.
+  9. *Weather and seasons finished;* moods judged blind.
+  10. *Districts, the region, other towns;* one foreign setting pack as the proof.
 - **Open:** LT1, the harbour street in 1989 (`docs/experiments.md`), on branch `lt/1-harbour-street`.
   - *Done:* the building system's Python prototype (`blender/resolver`, `blender/generators`): diaries resolve to plans and plans to meshes, at strengths gentle, strong and stronger. Every building is checked (`validate.py`), and the stress test (`blender/tools/stress.py`) passes on 1,564 random buildings at strong and stronger.
   - *Shape step done:* Øystein picked stronger. It is `DEFAULT_STYLE` in `blender/resolver/eras.py`.
