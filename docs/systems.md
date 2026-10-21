@@ -93,7 +93,7 @@ Every system, material and kind is studied twice before it is built (`CLAUDE.md`
 | Time on screen: one place across years | `history-in-things.md`, `town-change.md`, `living-fabric.md` | `time-on-screen.md` |
 | Camera and composition | `visual-direction.md` | **gap**, before the play camera |
 | Sound and music | `scenes-and-sound.md` (thin) | **gap**, before scenes |
-| Interface and reading the world | `interface.md` (thin) | `interface-and-inspection.md` (running; hover, inspect, the why-probe, the journal; what every part carries for picking) |
+| Interface and reading the world | `interface.md` (thin) | `interface-and-inspection.md` (hover, inspect, the why-probe, the journal; what every part carries for picking) |
 
 ## How a new thing joins
 

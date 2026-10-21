@@ -26,7 +26,7 @@ What is open and what is next. Every session reads this page first, so it stays 
 
   The goal, the days, the architecture's scope, the baselines, the cut line and the budget are in `docs/plan.md`.
 - **Who starts it:** the chat that wrote this plan starts both Monday sessions when Øystein says go. Otherwise any new session that reads this page can start them.
-- **Before Monday (started 22 October, with the week's last budget):** Opus agents are digesting the fourteen studies into `docs/research/inputs/`: a bar check, the decisions each proposes, what every part must carry, the conflicts between studies and the unknowns. A consolidated decision register follows in `docs/research/building-blocks-inputs.md`, so Monday's Fable session starts straight on judgement. The measuring tools are being built (mesh hashes, golden views at the player's size, the frame-time harness, motion sheets; `docs/measuring.md`), so Monday's tools session may find them done. The interface study is being written (`docs/research/interface-and-inspection.md`; Øystein: "we have not talked about ui etc yet"). Each is committed as it lands; anything unfinished is picked up on Monday.
+- **Before Monday (started 22 October, with the week's last budget):** Opus agents are digesting the fourteen studies into `docs/research/inputs/`: a bar check, the decisions each proposes, what every part must carry, the conflicts between studies and the unknowns. A consolidated decision register follows in `docs/research/building-blocks-inputs.md`, so Monday's Fable session starts straight on judgement. The measuring tools are being built (mesh hashes, golden views at the player's size, the frame-time harness, motion sheets; `docs/measuring.md`), so Monday's tools session may find them done. Each is committed as it lands; anything unfinished is picked up on Monday.
 
 ## Waiting for Øystein
 
@@ -39,7 +39,11 @@ What is open and what is next. Every session reads this page first, so it stays 
   - judge them for beauty by strict review and for readability by the cold readers.
 
   The perception findings in `docs/research/time-on-screen.md` are constraints, not the answer: change is found where something visibly jumps; hold everything but the year; a cut invites a cause.
-- the interface's play choices, once `docs/research/interface-and-inspection.md` is in.
+- the interface's play choices for the observer game (`docs/research/interface-and-inspection.md`), each recommended:
+  - the observer carries a 1989 camera, and its photographs compare years in place (one idea among the creative exploration of time);
+  - the observer never sees the engine's truth during play, at most after a chapter and clearly marked;
+  - a reading of a person is never confirmed, and a fact counts as confirmed only when two independent sources agree;
+  - players may name strangers.
 
 **Look and craft questions are ours** (Øystein, 22 October: "You have to figure these things out. As long as we are critical and only aim for high quality, this should answer itself."). They are decided on frames and motion sheets, with strict reviews, and Øystein judges the milestones. This covers the night sky's colour, lamp glass and the tonemapper; the brush's size by octaves and any boil; and near ground cover as strokes or blades.
 
