@@ -138,6 +138,34 @@ Each area is researched, subject and craft, before its step starts (`docs/system
 - step 4: the history budget, measured;
 - step 6: the cannery street.
 
+## Rough sizes (22 October, before the architecture; ±50%)
+
+These are weeks of focused work at this week's pace and usage limits. They are re-estimated after the architecture, and again after the first kinds are rebuilt on the foundations, from the usage log (`docs/usage-log.md`).
+
+| Steps | What | Weeks |
+| --- | --- | --- |
+| 1 (1a to 1f) | Architecture, foundations, light, land, stone and birches re-fitted, the clay time test | 6 to 10 |
+| 2 | Buildings: the house kit and the corner's five houses | 8 to 12 |
+| 3 and 4 | The corner's ground and things; the corner through the years | 5 to 9 |
+| 5 | People and the first scene | 10 to 16 |
+| | **A first slice a game could stand on** (criteria 1 to 4 tested) | **about 7 to 11 months** |
+| 6 and 7 | The heart at the city view; nature's living parts | 16 to 26 |
+| 8 and 9 | Interiors; weather and seasons | 12 to 20 |
+| 10 | Districts, the region, other towns, a foreign pack | 12 to 24 |
+| | **The whole plan** | **about 1.5 to 2.5 years** |
+
+What shortens it:
+- the foundations, since later kinds reuse systems, parts and tools;
+- independent work run in parallel within the usage limits;
+- more usage.
+
+What lengthens it:
+- areas found unstudied;
+- quality loops;
+- the engine's pace, since buildings and homes are not modelled yet and run on fixtures until they are.
+
+A world for many games has no end: new towns, eras and packs are open-ended content on the same systems.
+
 ## Open, by area (taken up in the order above)
 
 - **Stone:**
