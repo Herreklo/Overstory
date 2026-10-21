@@ -154,7 +154,7 @@ These are weeks of the weekly usage limit, which sets our pace more than the hou
 | 6 to 10 | The heart at the city view, nature, interiors, weather and seasons, other towns, a foreign pack | 25 to 45 |
 | | **The whole plan** | **about 1 to 1.5 years** |
 
-The first of each kind costs most. The corner is where every system and kind is made for the first time, so the rest of the town goes faster on the same foundations.
+Show from 1989 (22 October) saves an estimated one to two months over the whole plan, mostly in people and street things before 1989; the corner is unchanged. The first of each kind costs most. The corner is where every system and kind is made for the first time, so the rest of the town goes faster on the same foundations.
 
 What shortens it: parallel sessions on independent work, and more usage.
 
