@@ -28,6 +28,23 @@ What is open and what is next. Every session reads this page first, so it stays 
 - **Who starts it:** a scheduled task (`overstory-architecture`, in the app's Scheduled section) starts the architecture in a fresh session on Thursday 22 October at 08:00. That's after Øystein's free usage reset on the evening of the 21st, so the week begins three days early. If usage hasn't been reset, the task stops without starting. Any new session that reads this page can also start the work.
 - **Before Monday (started 22 October, with the week's last budget):** Opus agents are digesting the fourteen studies into `docs/research/inputs/`: a bar check, the decisions each proposes, what every part must carry, the conflicts between studies and the unknowns. A consolidated decision register follows in `docs/research/building-blocks-inputs.md`, so Monday's Fable session starts straight on judgement. The measuring tools are being built (mesh hashes, golden views at the player's size, the frame-time harness, motion sheets; `docs/measuring.md`), so Monday's tools session may find them done. Each is committed as it lands; anything unfinished is picked up on Monday.
 
+## Handover from the main chat of 20 to 21 October (cleared after this)
+
+Still running when the chat was cleared. Each commits its own work. If one has stopped, resume it from its files.
+- **The paper playtests** (`docs/playtests/paper-1/`). Done: the method, the panel (all three rank the paper and the mystery on top), and calibration. Running: the sessions, analysis, redesign and the report (`README.md`), committed at the end. If they have stopped, a fresh Opus session resumes from `method.md` and the files on disk.
+  - The report must score each concept twice, ready today and potential.
+  - The AI-playtesting fixes apply: persona crossed with model, the game master audited with a fact ledger, a known-weak calibration game, predictions and needs as headline measures.
+  - The must-improve register is the main output.
+- **The clay time test, 1f** (`docs/experiments.md` top, `reviews/lt1/time/`), committed step by step.
+
+When the playtest report lands:
+1. An Opus agent checks it against the sessions.
+2. Publish it as a private Artifact page for Øystein, with charts of engagement over rounds, lives on against lives off, and the ranking (promised to him).
+3. Fable's review (below, item 2).
+4. Post the register on #60, short, with links.
+
+Øystein's answers still open are listed under "Waiting for Øystein" below.
+
 ## After the usage reset (queued 21 October)
 
 Fable costs the most and has its own limit, so it gets only the judgement, from lean packets (`CLAUDE.md`, Using tokens well):
