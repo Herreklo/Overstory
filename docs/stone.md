@@ -7,14 +7,14 @@ How the town's stone is made, laid, aged and drawn: steps, walls, quays, kerbs, 
 - **Each piece reads its stone, its age and its use**, at the street stop and from the city camera: a viewer can say which steps are busy and which quiet, which flight is old and which run of it was reset, which corners were patched and when, which wall was rebuilt, and is right.
 - **Our style, not the generic one.** Big shapes first and few values (two or three a stone); detail only where the story is (the lit edge, the worn middle, the damp foot); joints as broken accents, never a grid; grey stone as a coloured grey that takes the light's colour.
 - **Time is real.** A flight is built in its year and wears with the feet that climb it; lichen grows from the year the stone was bare and is cleaned away when someone cleans it; a repair is a dated event. The flight in 1989 contains the flight it was in 1988.
-- **Every city brings its stone.** The system knows nothing about Norway: a setting pack brings its stones, how they are dressed and laid, its eras of paving, and its parts (granite and gneiss here; York stone flags and Portland stone in London; brownstone and bluestone in New York).
+- **Every city brings its stone.** The system knows nothing about Norway: a setting pack brings its stones, how they are dressed and laid, its eras of paving, and its parts (phyllite, slate and granite here; York stone flags and Portland stone in London; brownstone and bluestone in New York). The harbour town stands on Stavanger's own phyllite (Øystein, 22 October; `docs/research/land-rock-and-water.md`). The knolls, the Bluff and the bare rock in the lanes are phyllite: laminated, banded grey-green to graphite-black, rusty in places, plucked into thin stepped ledges along its foliation. The slaty local stone of the old town's steps and walls is the same rock, quarried. Pale gneiss and granite appear only as erratic boulders the ice carried in, and as granite brought in as dressed stone from about 1870.
 - **It grows as a system.** One flight in the beauty corner first; then every hard surface in the town by the same pieces, rules and history layers, from a lane's steps to a city's quays; and brick, render, concrete and asphalt join through the same layers with their own pigments and rules.
 
 ## The facts a piece carries
 
 From the engine, or authored in a fixture until the engine has them (`docs/engine-requests.md`):
 
-- *Kind and finish*: the stone, from the pack's list (Iddefjord granite, the local gneiss, larvikite, concrete) and how it was dressed (split, hewn, sawn).
+- *Kind and finish*: the stone, from the pack's list (the local phyllite and its slate, Iddefjord granite, larvikite, concrete) and how it was dressed (split, hewn, sawn).
 - *Built*: the year, and how, by the era's practice: block steps each resting on the one below, or slabs set into the terrain; dry-stone or mortared; setts in arcs or rows.
 - *Place*, computed rather than authored: shade (the town's sky map), wet (slope, run-off from what stands above, the tide band on a quay), exposure to the sea wind, which way it faces.
 - *Use*: footfall a year (the engine's trips), and how it is used: which line people take, up or down, in pairs or single file.
