@@ -333,6 +333,8 @@ def build(plan, style=DEFAULT_STYLE, name=None, material=None, lit=()):
     for c in plan["cells"]:
         if c["facade"] not in openings:
             continue
+        if "covered" in c or "removed" in c:
+            continue  # kept in the plan (a shop's covered windows can return), not built
         if c.get("col") == 98 and not ark_roof:
             continue
         local = orient_map[c["facade"]]

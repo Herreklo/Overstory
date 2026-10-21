@@ -1,8 +1,18 @@
 {
  "schemaVersion": 1,
- "note": "The beauty corner (docs/experiments.md, LT1, the reset), written by blender/tools/corner_fixture.py. Authored by hand: the lane, the five houses, the wall, the lantern, the trees and the ground's history. Context houses are placeholders round it. Lengths in millimetres.",
+ "note": "The beauty corner (docs/experiments.md, LT1, the reset), written by blender/tools/corner_fixture.py. Authored by hand: the lane, the five houses and their histories to 2020 (events after 1989 by named rules, `rules`), the wall, the lantern, the trees and the ground's history. Context houses are placeholders round it. Lengths in millimetres.",
  "worldSeed": 1989,
  "provenance": "authored",
+ "rules": {
+  "upkeep": "a kept house is repainted every ten to twenty years, and when it changes hands or is restored (docs/research/house-changes.md, Repainted; the cycle is a working guess, unverified)",
+  "trade": "shops in old ground floors open and close with the town's trade: the slump after 1986, the recovery of the 1990s, the boom to 2014 and the fall after it (docs/research/town-change.md, The story in short)",
+  "restoration": "after the turn of the 1980s, owners put back openings at their first size and copies of the old windows, with the city's help and under its rules (docs/research/house-changes.md, How restoration reverses it)",
+  "two_owners": "in a two-family house each floor's owner restores on their own, so a house shows two kinds of window for years (docs/research/house-changes.md, How restoration reverses it)",
+  "old_style": "owners buy factory 'old style' windows, often wrong for the house (docs/research/house-changes.md, How restoration reverses it)",
+  "let_go": "an empty house whose heirs live away is let go until it is sold; it is boarded when it is broken into (docs/research/house-changes.md, Neglected; our reading after 1989)",
+  "extension": "a balcony added over a lane to a 1930s house (our reading: no source covers extensions after 1989, docs/research/house-changes.md, Gaps)",
+  "fire": "a wooden house lost to fire is rebuilt on its plot in the style of the day (the masonry rule applied to new building in the brick zone only; our reading)"
+ },
  "fine": [
   -40000,
   -16000,
@@ -272,10 +282,156 @@
       "name": "Kaffebrenneriet"
      },
      "cause": "a young couple open a café in the empty shop; the rent is low after the crash"
+    },
+    {
+     "id": 7,
+     "year": 1996,
+     "kind": "repainted",
+     "params": {},
+     "cause": "the café's owners buy the house and paint it, the first coat since 1949",
+     "rule": "upkeep",
+     "provenance": "authored"
+    },
+    {
+     "id": 8,
+     "year": 2009,
+     "kind": "business_closed",
+     "params": {},
+     "cause": "the café moves to a bigger room on the square; the quay road's trade has gone up the hill",
+     "rule": "trade",
+     "provenance": "authored"
+    },
+    {
+     "id": 9,
+     "year": 2016,
+     "kind": "shop_removed",
+     "params": {
+      "windows": "original"
+     },
+     "cause": "after the oil-price fall no one rents the shop; the owners make the ground floor a flat, and the city's rules for the wooden town ask for copies of the 1912 windows",
+     "rule": "restoration",
+     "provenance": "authored"
+    },
+    {
+     "id": 10,
+     "year": 2016,
+     "kind": "repainted",
+     "params": {},
+     "cause": "painted when the ground floor is made a flat",
+     "rule": "upkeep",
+     "provenance": "authored"
     }
    ],
    "provenance": "authored",
-   "note": "The corner's A: kept, but faded; a new café in its old shop."
+   "note": "The corner's A: a faded jugend house over a café in its 1931 shop (1989); repainted; the café gone (2009); the shop taken out and its windows put back (2016)."
+  },
+  {
+   "id": 105,
+   "type": "house",
+   "character": "high_road",
+   "plot": {
+    "x": 52500,
+    "w": 9000,
+    "d": 8000
+   },
+   "events": [
+    {
+     "id": 1,
+     "year": 1884,
+     "kind": "built",
+     "params": {
+      "era": "chalet",
+      "storeys": 1500,
+      "wealth": 400
+     },
+     "cause": "a boat-builder builds on the quay road"
+    },
+    {
+     "id": 2,
+     "year": 1935,
+     "kind": "demolished",
+     "params": {
+      "by": "fire"
+     },
+     "cause": "burned down in a chimney fire",
+     "rule": "fire"
+    },
+    {
+     "id": 3,
+     "year": 1936,
+     "kind": "built",
+     "params": {
+      "era": "functionalist",
+      "storeys": 2000,
+      "wealth": 500,
+      "roof": "flat"
+     },
+     "cause": "rebuilt after the fire, in the new style",
+     "rule": "fire"
+    },
+    {
+     "id": 4,
+     "year": 1987,
+     "kind": "repainted",
+     "params": {},
+     "cause": "new owners paint it"
+    },
+    {
+     "id": 5,
+     "year": 1997,
+     "kind": "shop_fitted",
+     "params": {
+      "cols": 2
+     },
+     "cause": "the owners let the ground floor as a bakery as trade comes back to the quay road",
+     "rule": "trade",
+     "provenance": "authored"
+    },
+    {
+     "id": 6,
+     "year": 1997,
+     "kind": "business_opened",
+     "params": {
+      "kind": "bakery",
+      "name": "Quay Bakery"
+     },
+     "cause": "a bakery opens",
+     "rule": "trade",
+     "provenance": "authored"
+    },
+    {
+     "id": 7,
+     "year": 2003,
+     "kind": "extended",
+     "params": {
+      "kind": "veranda",
+      "side": -1
+     },
+     "cause": "the owners add a balcony over the lane",
+     "rule": "extension",
+     "provenance": "authored"
+    },
+    {
+     "id": 8,
+     "year": 2003,
+     "kind": "repainted",
+     "params": {},
+     "cause": "painted with the balcony",
+     "rule": "upkeep",
+     "provenance": "authored"
+    },
+    {
+     "id": 9,
+     "year": 2017,
+     "kind": "repainted",
+     "params": {},
+     "cause": "upkeep",
+     "rule": "upkeep",
+     "provenance": "authored"
+    }
+   ],
+   "provenance": "authored",
+   "note": "The corner's B: functionalist, rebuilt in 1936 after the 1884 house burned; crisp (1987); a bakery in its ground floor (1997); a balcony over the lane (2003)."
   },
   {
    "id": 1203,
@@ -304,6 +460,48 @@
       "scope": "all"
      },
      "cause": "new windows, cheaply"
+    },
+    {
+     "id": 3,
+     "year": 1998,
+     "kind": "restored",
+     "params": {
+      "windows": "original",
+      "scope": "upper",
+      "amount": 0
+     },
+     "cause": "the upper flat's new owners put back copies of the 1879 windows",
+     "rule": "two_owners",
+     "provenance": "authored"
+    },
+    {
+     "id": 4,
+     "year": 1998,
+     "kind": "repainted",
+     "params": {},
+     "cause": "painted with the upper flat's windows",
+     "rule": "upkeep",
+     "provenance": "authored"
+    },
+    {
+     "id": 5,
+     "year": 2011,
+     "kind": "windows_replaced",
+     "params": {
+      "scope": "ground"
+     },
+     "cause": "the ground-floor flat's owner fits factory 'old style' windows in the front",
+     "rule": "old_style",
+     "provenance": "authored"
+    },
+    {
+     "id": 6,
+     "year": 2013,
+     "kind": "repainted",
+     "params": {},
+     "cause": "upkeep",
+     "rule": "upkeep",
+     "provenance": "authored"
     }
    ],
    "provenance": "authored",
@@ -312,7 +510,7 @@
     "w": 8000,
     "d": 7000
    },
-   "note": "The corner's C: 203's diary (a cooper's house of 1879, cheap new windows in 1971), on the landing."
+   "note": "The corner's C: a cooper's chalet house of 1879 with cheap new windows (1971); the upper flat puts back copies (1998), the ground floor factory 'old style' windows (2011)."
   },
   {
    "id": 1107,
@@ -366,6 +564,49 @@
       "amount": 600
      },
      "cause": "empty"
+    },
+    {
+     "id": 6,
+     "year": 1995,
+     "kind": "neglected",
+     "params": {
+      "amount": 200
+     },
+     "cause": "still empty; the heirs cannot agree to sell, and the roof lets in water",
+     "rule": "let_go",
+     "provenance": "authored"
+    },
+    {
+     "id": 7,
+     "year": 2007,
+     "kind": "unboarded",
+     "params": {
+      "scope": "all"
+     },
+     "cause": "a young family buys the empty house",
+     "rule": "restoration",
+     "provenance": "authored"
+    },
+    {
+     "id": 8,
+     "year": 2007,
+     "kind": "restored",
+     "params": {
+      "windows": "original",
+      "amount": 800
+     },
+     "cause": "they restore it with the city's help: windows copied from the old ones left in the gables",
+     "rule": "restoration",
+     "provenance": "authored"
+    },
+    {
+     "id": 9,
+     "year": 2007,
+     "kind": "repainted",
+     "params": {},
+     "cause": "painted when it is restored",
+     "rule": "upkeep",
+     "provenance": "authored"
     }
    ],
    "provenance": "authored",
@@ -374,7 +615,7 @@
     "w": 7000,
     "d": 7000
    },
-   "note": "The corner's D: 107's diary (a fisherman's house of 1828, empty since 1986), on the rock."
+   "note": "The corner's D: a fisherman's house of 1828, empty and boarded since 1986; let go further (1995); bought and restored (2007)."
   },
   {
    "id": 304,
@@ -400,6 +641,39 @@
       "scope": "street"
      },
      "cause": "new windows to the street"
+    },
+    {
+     "id": 3,
+     "year": 1993,
+     "kind": "neglected",
+     "params": {
+      "amount": 600
+     },
+     "cause": "the last owner dies; the heirs live away and leave the house empty",
+     "rule": "let_go",
+     "provenance": "authored"
+    },
+    {
+     "id": 4,
+     "year": 2008,
+     "kind": "boarded",
+     "params": {
+      "scope": "all"
+     },
+     "cause": "boarded after a break-in",
+     "rule": "let_go",
+     "provenance": "authored"
+    },
+    {
+     "id": 5,
+     "year": 2015,
+     "kind": "neglected",
+     "params": {
+      "amount": 200
+     },
+     "cause": "still empty",
+     "rule": "let_go",
+     "provenance": "authored"
     }
    ],
    "provenance": "authored",
@@ -408,7 +682,7 @@
     "w": 7000,
     "d": 7000
    },
-   "note": "The corner's E: the oldest and smallest, closing the view up the lane."
+   "note": "The corner's E: the oldest and smallest (1826), kept in 1989; empty when its last owner dies (1993), boarded after a break-in (2008)."
   },
   {
    "id": 2201,

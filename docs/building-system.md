@@ -11,12 +11,16 @@ A building is a diary of dated events. The engine writes the diary. A resolver t
 Each building has an id, a plot and a list of events. An event has:
 
 - `year` (and month when it matters);
-- `kind`: built, extended, repainted, reclad, windows replaced, converted, business opened, business closed, boarded up, neglected, restored, demolished;
+- `kind`: built, extended, repainted, reclad, windows replaced, shop fitted, shop removed, business opened, business closed, boarded up, unboarded, neglected, restored, demolished;
 - `layer`: the part of the building it changes (structure, skin, services, use, stuff);
 - `params`: what the event did (an extension's side and size, a paint colour, a business's kind and name);
 - `cause`: who decided it and why, as the engine logged it.
 
 Layers follow Stewart Brand: structure changes rarely, skin every few decades, use every few years, stuff often. Showing year Y means reading every event up to Y.
+
+A demolished house (a fire is a demolition with its cause) leaves its plot empty; a later `built` event starts a new house there, with its own seeds, and the earlier one stays in the diary. A restoration may name a scope (the upper floor, the ground floor), since in a two-family house each owner restores on their own.
+
+Until the engine models buildings, fixtures carry the diaries. Events the engine has not written are labelled `authored`, and those after 1989 also name the rule of real practice they follow (`rules` in `fixtures/lt1-corner.json`).
 
 The building also carries a character: **low road** (warehouses, sheds, factories: changed often and cheaply, uses come and go) or **high road** (villas, churches, banks: mostly repainted and repaired). It sets which events its diary may hold.
 
@@ -26,7 +30,7 @@ The resolver runs five passes, in this order.
 
 1. Massing. Volumes from the diary: the main body and every extension, porch, veranda, bay window, dormer and lean-to, each with its own era, material and storey height.
 2. Facade grid. Each facade is split into columns and storeys. Floor lines snap across volumes of the same era; a volume from another era keeps its own lines, so the seam shows its date. Every cell is tested against the building's own volumes and its neighbours: a window never sits where a wing or a neighbour meets the wall, and a window blocked by a later neighbour becomes a boarded cell dated to that neighbour.
-3. Parts. Each cell gets a part: a window, door, shopfront section, plain wall or boarding. The part comes from the shelf of the era it was installed (see below).
+3. Parts. Each cell gets a part: a window, door, shopfront section, plain wall or boarding. The part comes from the shelf of the era it was installed (see below). A later part never deletes what it covers: a shopfront marks the window cells behind it as covered, and they stay in the plan unbuilt. When the shop is taken out (`shop removed`) they come back, as copies of the old windows when the record says so, otherwise as windows of that year's shelf. This is the smallest form of the rule (LT1f). A cell still holds one part at a time, so a window replaced twice keeps only its first; dated cells, where each opening keeps its whole life as dated intervals, are for the building blocks' architecture (`docs/research/inputs/5-buildings-fronts-time.md`, §5).
 4. Decoration and sockets. After the structure, a separate pass fills sockets: sign bands take signs, eaves take gutters, corners take downpipes, sills take flower boxes, shopfronts take awnings. A socket names the part types it accepts and sits relative to a facade edge, so it survives later changes.
 5. Surfaces. Every surface is a stack of coats. A repaint adds a coat, neglect wears the top coat, a restoration strips back. Where wear goes through, the coat below shows: an older colour, an earlier shop's lettering, the line of a removed shopfront. Wear masks follow exposure, drips below sills and cornices, and the ground line. The shader reads one number per coat: years since it was applied.
 

@@ -92,6 +92,34 @@ def borrowed(src, new_id, note):
     return b
 
 
+# The corner's five histories run on to 2020 (docs/experiments.md, LT1f). The engine does not model buildings yet, so
+# the events after 1989 are authored here, each by a named rule of real practice, and labelled `authored`. Each rule
+# says where it comes from; a rule with no source is marked as our reading.
+RULES = dict(
+    upkeep="a kept house is repainted every ten to twenty years, and when it changes hands or is restored "
+           "(docs/research/house-changes.md, Repainted; the cycle is a working guess, unverified)",
+    trade="shops in old ground floors open and close with the town's trade: the slump after 1986, the recovery of "
+          "the 1990s, the boom to 2014 and the fall after it (docs/research/town-change.md, The story in short)",
+    restoration="after the turn of the 1980s, owners put back openings at their first size and copies of the old "
+                "windows, with the city's help and under its rules (docs/research/house-changes.md, How restoration reverses it)",
+    two_owners="in a two-family house each floor's owner restores on their own, so a house shows two kinds of window "
+               "for years (docs/research/house-changes.md, How restoration reverses it)",
+    old_style="owners buy factory 'old style' windows, often wrong for the house (docs/research/house-changes.md, "
+              "How restoration reverses it)",
+    let_go="an empty house whose heirs live away is let go until it is sold; it is boarded when it is broken into "
+           "(docs/research/house-changes.md, Neglected; our reading after 1989)",
+    extension="a balcony added over a lane to a 1930s house (our reading: no source covers extensions after 1989, "
+              "docs/research/house-changes.md, Gaps)",
+    fire="a wooden house lost to fire is rebuilt on its plot in the style of the day (the masonry rule applied to "
+         "new building in the brick zone only; our reading)",
+)
+
+
+def later(eid, year, what, rule, cause, **params):
+    """An authored event after 1989, by a named rule of real practice. Its params are the keyword arguments."""
+    return dict(id=eid, year=year, kind=what, params=params, cause=cause, rule=rule, provenance="authored")
+
+
 A = json.loads(json.dumps(DIARY[104]))
 A["events"] = [
     A["events"][0],
@@ -100,14 +128,50 @@ A["events"] = [
     dict(id=4, year=1949, kind="repainted", params={}, cause="upkeep"),
     dict(id=5, year=1974, kind="business_closed", params={}, cause="the ironmonger retires"),
     dict(id=6, year=1988, kind="business_opened", params=dict(kind="cafe", name="Kaffebrenneriet"), cause="a young couple open a café in the empty shop; the rent is low after the crash"),
+    later(7, 1996, "repainted", "upkeep", "the café's owners buy the house and paint it, the first coat since 1949"),
+    later(8, 2009, "business_closed", "trade", "the café moves to a bigger room on the square; the quay road's trade has gone up the hill"),
+    later(9, 2016, "shop_removed", "restoration", "after the oil-price fall no one rents the shop; the owners make the ground floor a flat, "
+          "and the city's rules for the wooden town ask for copies of the 1912 windows", windows="original"),
+    later(10, 2016, "repainted", "upkeep", "painted when the ground floor is made a flat"),
 ]
-A["note"] = "The corner's A: kept, but faded; a new café in its old shop."
+A["note"] = "The corner's A: a faded jugend house over a café in its 1931 shop (1989); repainted; the café gone (2009); the shop taken out and its windows put back (2016)."
 
-C = borrowed(203, 1203, "The corner's C: 203's diary (a cooper's house of 1879, cheap new windows in 1971), on the landing.")
-D = borrowed(107, 1107, "The corner's D: 107's diary (a fisherman's house of 1828, empty since 1986), on the rock.")
-E = borrowed(304, 304, "The corner's E: the oldest and smallest, closing the view up the lane.")
+B = json.loads(json.dumps(DIARY[105]))
+B["events"] = [
+    dict(id=1, year=1884, kind="built", params=dict(era="chalet", storeys=1500, wealth=400), cause="a boat-builder builds on the quay road"),
+    dict(id=2, year=1935, kind="demolished", params=dict(by="fire"), cause="burned down in a chimney fire", rule="fire"),
+    dict(id=3, year=1936, kind="built", params=dict(era="functionalist", storeys=2000, wealth=500, roof="flat"), cause="rebuilt after the fire, in the new style", rule="fire"),
+    dict(id=4, year=1987, kind="repainted", params={}, cause="new owners paint it"),
+    later(5, 1997, "shop_fitted", "trade", "the owners let the ground floor as a bakery as trade comes back to the quay road", cols=2),
+    later(6, 1997, "business_opened", "trade", "a bakery opens", kind="bakery", name="Quay Bakery"),
+    later(7, 2003, "extended", "extension", "the owners add a balcony over the lane", kind="veranda", side=-1),
+    later(8, 2003, "repainted", "upkeep", "painted with the balcony"),
+    later(9, 2017, "repainted", "upkeep", "upkeep"),
+]
+B["note"] = "The corner's B: functionalist, rebuilt in 1936 after the 1884 house burned; crisp (1987); a bakery in its ground floor (1997); a balcony over the lane (2003)."
 
-buildings = [A, C, D, E]
+C = borrowed(203, 1203, "The corner's C: a cooper's chalet house of 1879 with cheap new windows (1971); the upper flat puts back copies (1998), the ground floor factory 'old style' windows (2011).")
+C["events"] += [
+    later(3, 1998, "restored", "two_owners", "the upper flat's new owners put back copies of the 1879 windows", windows="original", scope="upper", amount=0),
+    later(4, 1998, "repainted", "upkeep", "painted with the upper flat's windows"),
+    later(5, 2011, "windows_replaced", "old_style", "the ground-floor flat's owner fits factory 'old style' windows in the front", scope="ground"),
+    later(6, 2013, "repainted", "upkeep", "upkeep"),
+]
+D = borrowed(107, 1107, "The corner's D: a fisherman's house of 1828, empty and boarded since 1986; let go further (1995); bought and restored (2007).")
+D["events"] += [
+    later(6, 1995, "neglected", "let_go", "still empty; the heirs cannot agree to sell, and the roof lets in water", amount=200),
+    later(7, 2007, "unboarded", "restoration", "a young family buys the empty house", scope="all"),
+    later(8, 2007, "restored", "restoration", "they restore it with the city's help: windows copied from the old ones left in the gables", windows="original", amount=800),
+    later(9, 2007, "repainted", "upkeep", "painted when it is restored"),
+]
+E = borrowed(304, 304, "The corner's E: the oldest and smallest (1826), kept in 1989; empty when its last owner dies (1993), boarded after a break-in (2008).")
+E["events"] += [
+    later(3, 1993, "neglected", "let_go", "the last owner dies; the heirs live away and leave the house empty", amount=600),
+    later(4, 2008, "boarded", "let_go", "boarded after a break-in", scope="all"),
+    later(5, 2015, "neglected", "let_go", "still empty", amount=200),
+]
+
+buildings = [A, B, C, D, E]
 placements = []
 
 
@@ -194,10 +258,12 @@ lamps = [dict(id="lamp-landing", x=mm(44.2), y=mm(33.0), z=mm(8.0), variant="pos
 fixture = dict(
     schemaVersion=1,
     note="The beauty corner (docs/experiments.md, LT1, the reset), written by blender/tools/corner_fixture.py. "
-         "Authored by hand: the lane, the five houses, the wall, the lantern, the trees and the ground's history. "
+         "Authored by hand: the lane, the five houses and their histories to 2020 (events after 1989 by named rules, "
+         "`rules`), the wall, the lantern, the trees and the ground's history. "
          "Context houses are placeholders round it. Lengths in millimetres.",
     worldSeed=1989,
     provenance="authored",
+    rules=RULES,
     fine=[mm(-40.0), mm(-16.0), mm(130.0), mm(120.0), mm(1.0)],
     coarse=[mm(-1100.0), mm(-1300.0), mm(1300.0), mm(1000.0), mm(10.0)],
     heath_above=mm(21.0),

@@ -13,7 +13,9 @@ ERAS = {
     "classical": dict(
         years=(1790, 1869),
         storey=2850, pitch=(380, 420), eave=300, gable=200, kick=0,
-        roof=[("gable", 70), ("mansard", 30)],
+        # no mansard by seed: none is known on Stavanger's classical houses, and on one it would claim a roof
+        # raised later that the record does not hold (docs/research/inputs/5-buildings-fronts-time.md, §5, 10)
+        roof=[("gable", 100)],
         storeys=[(1500, 50), (2000, 50)],
         plinth=(400, 700),
         window="small_panes", door="panel_fanlight", shopfront="shop_1900",
@@ -122,9 +124,32 @@ ERAS = {
         doors=[("door_blue", 40), ("door_green", 30), ("trim_white", 30)],
         care=350,
     ),
+    # Parts installed from the mid-1990s on. In the wooden towns the turn of the 1980s spread: owners put back
+    # "old style" parts, often wrong (factory Swiss-style windows on every kind of house, mass-produced brackets),
+    # and the city's rules asked for copies of the originals (docs/research/house-changes.md, How restoration
+    # reverses it). So a window replaced in these years is a factory two-light window with a transom and no carved
+    # surround; a restoration with copies is its own event (restored, windows="original"). Colours lean to the
+    # old town's whites, greys and earth colours again. Our reading for now: nothing after 1989 has been
+    # researched decade by decade yet (docs/research/house-changes.md, Gaps).
+    "recent": dict(
+        years=(1995, 2030),
+        storey=2500, pitch=(300, 400), eave=450, gable=350, kick=0,
+        roof=[("gable", 100)],
+        storeys=[(1500, 50), (2000, 50)],
+        plinth=(200, 400),
+        window="cross_t", door="eighties", shopfront="shop_1980",
+        ornament=dict(fret=0, brackets=0, finial=0, pediment=0, cornice=0, belt=0, pilasters=0, crossing=0),
+        additions=dict(ark=100, bislag=50, veranda=300, bay=0, dormer=300),
+        symmetric=300,
+        walls=[("wall_white", 40), ("wall_cream", 20), ("wall_grey", 20), ("wall_ochre", 10), ("wall_oxred", 10)],
+        trims=[("trim_white", 100)],
+        roofs=[("roof_red", 60), ("roof_black", 40)],
+        doors=[("door_green", 35), ("door_blue", 35), ("door_brown", 30)],
+        care=650,
+    ),
 }
 
-ORDER = ["classical", "chalet", "jugend", "functionalist", "postwar", "seventies", "eighties"]
+ORDER = ["classical", "chalet", "jugend", "functionalist", "postwar", "seventies", "eighties", "recent"]
 
 
 def era_for(year, key=0):

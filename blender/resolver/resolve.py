@@ -45,7 +45,7 @@ def door_colour(key, choices, wall, trim):
         return trim
     return max((d for d, _ in choices), key=lambda d: abs(lightness(d) - lightness(wall)))
 
-BAY = {"classical": 2000, "chalet": 2300, "jugend": 2300, "functionalist": 2600, "postwar": 2600, "seventies": 2600, "eighties": 2400}
+BAY = {"classical": 2000, "chalet": 2300, "jugend": 2300, "functionalist": 2600, "postwar": 2600, "seventies": 2600, "eighties": 2400, "recent": 2400}
 
 
 def resolve(building, year, world_seed):
@@ -60,7 +60,7 @@ def resolve(building, year, world_seed):
         if k == "built":
             plan = _built(building, ev, world_seed)
         elif k == "demolished":
-            return None
+            plan = None  # the plot stands empty (a fire is a demolition with its cause); a later "built" starts again
         elif plan is None:
             continue
         elif k == "extended":
@@ -91,6 +91,10 @@ def resolve(building, year, world_seed):
             plan["condition"] = min(1000, plan["condition"] + ev["params"].get("amount", 400))
             if ev["params"].get("windows") == "original":
                 _windows_restored(plan, ev)
+        elif k == "shop_removed":
+            _shop_removed(plan, ev, world_seed, bid)
+    if plan is None:
+        return None
     plan["year"] = year
     plan["paint_age"] = year - plan["coats"][-1]["year"]
     return plan
@@ -367,7 +371,15 @@ def _extended(plan, ev, ws, bid):
         _layout_addition(plan, add, key, win, ww, wh, sill)
 
 
+def standing(cell):
+    """A cell that is there to be seen: not covered by a later part (a shopfront over windows) nor removed.
+    Covered and removed cells stay in the plan, so what was there can come back (a closed shop's windows)."""
+    return "covered" not in cell and "removed" not in cell
+
+
 def _in_scope(cell, scope):
+    if not standing(cell):
+        return False
     if scope == "all":
         return True
     if scope == "upper":
@@ -393,8 +405,11 @@ def _windows_replaced(plan, ev, ws, bid):
 
 
 def _windows_restored(plan, ev):
+    """Windows put back as copies of the originals. A scope restores one part of the house: in a two-family
+    house each floor's owner may restore on their own (docs/research/house-changes.md, How restoration reverses it)."""
+    scope = ev["params"].get("scope", "all")
     for c in plan["cells"]:
-        if "original" in c:
+        if "original" in c and _in_scope(c, scope):
             c["part"] = dict(c["original"], event=ev["id"], restored=True)
             c.pop("reduced", None)
 
@@ -424,10 +439,37 @@ def _shop_fitted(plan, ev, ws, bid):
         candidates = [0]
     start = candidates[h(ws, bid, ev["id"], "shop") % len(candidates)]
     span = list(range(start, start + want))
-    plan["cells"] = [c for c in plan["cells"] if not (c["facade"] == "front" and c.get("row", 0) == 0 and c.get("col") in span and c["part"]["type"] == "window")]
+    # the windows the shop covers are kept, covered, so they can come back when the shop goes (never deleted)
+    for c in plan["cells"]:
+        if c["facade"] == "front" and c.get("row", 0) == 0 and c.get("col") in span and c["part"]["type"] == "window" and standing(c):
+            c["covered"] = ev["id"]
     a0 = cols[span[0]] - m["W"] // (2 * len(cols)) + 300
     a1 = cols[span[-1]] + m["W"] // (2 * len(cols)) - 300
     plan["cells"].append(_cell("front", (a0 + a1) // 2, a1 - a0, 600, 2400, "shopfront", ERAS[era]["shopfront"], era, ev["id"], row=0, col=span[0], span=span))
+
+
+def _shop_removed(plan, ev, ws, bid):
+    """The shopfront taken out and the ground floor made a home again: the windows it covered come back, as copies
+    of the old ones (params windows="original", as the wooden town's rules ask) or as windows of the event's era.
+    A business still open there closes."""
+    shops = [c for c in plan["cells"] if c["part"]["type"] == "shopfront" and standing(c)]
+    if not shops:
+        return
+    if plan["business"]:
+        plan["ghosts"].append(dict(plan["business"], closed=ev["year"]))
+        plan["business"] = None
+    era = era_for(ev["year"], h(ws, bid, ev["id"], "era"))
+    for shop in shops:
+        shop["removed"] = ev["id"]
+        for c in plan["cells"]:
+            if c.get("covered") != shop["part"]["event"]:
+                continue
+            c.pop("covered")
+            if ev["params"].get("windows") == "original":
+                c["part"] = dict(c["part"], event=ev["id"], restored=True)
+            else:
+                c["original"] = copy.deepcopy(c["part"])
+                c["part"] = dict(type="window", style=ERAS[era]["window"], era=era, event=ev["id"])
 
 
 def _set_boarded(plan, ev, value):
