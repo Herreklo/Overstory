@@ -17,7 +17,9 @@ When Overstory is good enough to build a game on (draft, to agree with Øystein)
 4. In a blind test, viewers prefer the scene to the page for understanding what happened, and are not misled by it.
 5. A street at city scale holds its look and its frame rate.
 
-Each experiment moves one of these, or it does not run. Its question, how it is judged and what would change our minds are written before it is built.
+Each experiment moves one of these, or it does not run.
+
+**We are making a game, not a walking simulator** (Øystein, 21 October). Every game built on Overstory has goals, challenge, stakes, mastery, failure, and decisions that cost something. Reading the world (people, traces, history) is a skill that pays off in play, as deduction does in Return of the Obra Dinn or scouting in Football Manager. It is never the whole of the play. A concept that would only be looked at, however beautiful, is not a game. Its question, how it is judged and what would change our minds are written before it is built.
 
 ## Start of every session
 
