@@ -19,3 +19,13 @@ What kept me: dated, physical leftovers (the rope still on its hook, pale tin ed
 What was hollow: Belonging paid +13, +14 and +23 for visiting, not for working anything out. The journal writes my opinions for me. Two characters repeated lines word for word. "No wrong answers" gave my deductions nothing to be right against, and the chapter ended on a lantern-walk cutscene I only watched.
 
 Compared with Obra Dinn: that game asked a question every turn and let me be wrong. This one never asked. It has a better-made town than the Hesper had, and less for an explorer to do in it. I would try one more chapter, not buy it yet.
+
+## Answerable, a harbour town, 1997 to 1998 (Mary Tanner, then Andy Shaw)
+
+Marks: engaged on the Courier archive, the Anchor watches and overheard lines (delight); bored or confused at the walls and hearings. Pull 7, 8, 8, 7, 7, sinking in the last case. Surprises: cheats were all walls ("I couldn't say" nine times) and a hearing that accepted five "not established" and raised my standing, then a close scoring me 25 of 100.
+
+What kept me: walking down the steps with Andy, then finding him dead nineteen months on with the quay empty; dated empty chairs; finding a song dispute by reading the paper; the hat with the smallest coin.
+
+What was hollow: standing detached from truth; the Check strips two true claims for one false; no doctor or finder to ask the first questions; the close is an answer key. I also missed Oliver's one plain line ("It was the cancer"). Read every "couldn't say" turn for the line inside it.
+
+Compared: better than Saltlight, because I could be wrong against something. Worse than Obra Dinn, where writing a fate is free and confirming in threes costs nothing. I would play one more case, not buy it yet.
