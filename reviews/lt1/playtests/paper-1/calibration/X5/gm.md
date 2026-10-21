@@ -32,3 +32,27 @@ Calibration run. Player kind: sceptic. Twin run: Y5 (same opening, same queue). 
 
 ## Log
 - R0: opening sent (r0-screen.md). Waiting for r1-act.md. Credits 14. Citations 0. Clock 06:00.
+- R1 act read (3 turns, all in shape; no marks due in round 1).
+- R1 t1 Korsak: approved. CARD (queue 1, all valid). Correct, +5. Clock 06:00 -> 07:15.
+- R1 t2 Ostrova: one question (+15), CARD line "Nobody told me. The works said the permit was enough." Denied. Correct, +5. Clock -> 08:45.
+- R1 t3 Halbert: one question (+15), CARD first answer "A clerk's slip, surely." (no second question, so no sweat line). Detained (+10). Forger detained: correct, +5 pay, +5 guards. No bribe (CARD has none). Clock -> 10:25.
+- R1 state: wages 15, guards 5 (paid with the day's pay), citations 0, savings 14. Extra minutes used 40 of 45 before entrant 9 is lost (rule read as: booth closes 18:00 per the opening, so entrant 9 must reach the window by 16:45; reconciles the plan's "before 17:00" with its 45-minute threshold).
+- R1 GM-SIMULATED texture only (no rolls): queue and heater at 10:25; entrant 4 to 6 appearances; Liskov's opening line "Construction. They said bring every paper you have." (the plan gives him none).
+- R1 screen sent: entrants 4 to 6. Danik's offer comes in the r2 screen, during entrant 6. Plan wording "Next but one" said during entrant 6 would point at entrant 8; rendered as "the one after this" so it points at entrant 7 as the plan means (identified anyway by "a woman with a press card").
+- R2 act read (3 turns, marks for r1, all in shape).
+- R2 t1 Brasko: detained without a question (+10). CARD (forged passport, Lesrenadi is Republian). Correct: +5 pay, +5 guards. Clock 10:25 -> 11:50. Extra minutes now 50 > 45: entrant 9 lost (both readings agree after t3).
+- R2 t2 Dubova: one question (+15), CARD line "A clerk wrote it wrong in 1961. I have lived in Grestin forty years. My flat is two streets from here." Denied, not detained. Correct by the rules: +5. Clock -> 13:20.
+- R2 t3 Liskov: approved, correct, +5. Danik's offer during his inspection (CARD), rendered "The next one" (see R1 note). Clock -> 14:35.
+- R2 state: wages 30, guards 10, citations 0, savings 14. Entrant 7 at 14:35, entrant 8 at 15:50 (+ any questions), entrant 9 would reach the window at 17:05 at the earliest: not called.
+- R2 GM-SIMULATED texture only (no rolls): Brasko watching the side door; Danik's coat tab; the queue at 14:35; Volkov's passport number V6Y2R-48LN3 and ID district Burnton, 178 cm, 84 kg (plan says only "valid and matching"); Soler's hospital letter in hand, not handed over. Interface line added: nobody is called who can't be finished by 18:00 (answers the player's need; follows the plan's clock rule).
+- R2 screen sent: entrants 7 to 9, the bills line requested.
+- R3 act read (3 turns, marks for r2, bills line, all in shape).
+- R3 t1 Moravec: approved, correct, +5. Danik's offer refused by silence. The tap on the bulletin: GM ruling, the bulletin hangs inside the booth facing the inspector, so she sees only its back; the game has no verb for answering an entrant (one interface line). No change to her article (CARD: article on the wall, naming no one). Clock -> 15:50.
+- R3 t2 Soler: 15 taken, approved. CARD: approving him is a citation; first of the day, a warning, no penalty; no wage for him. +15 from the counter. Clock -> 17:05.
+- R3 t3 Volkov: not called (17:05 + 75 > 18:00). CARD.
+- Shift end: Danik walks past without a word (CARD). Day: wages 35 (7 correct of 8 seen), guards 10, counter 15, citations 1 (warning). Danik's 10: not earned.
+- Evening, bills line "rent, medicine, heat, food; pay all four": 14 + 60 - 55 = 19 left. Family: son well (CARD, medicine). Mother-in-law cold -> well with heat paid, uncle hungry -> well with food paid: GM-SIMULATED (the plan gives only the unpaid effects; paid bills clear the matching state, as in the real game).
+- Newspaper: The Truth of Arstotzka, 30 November: Moravec's column on the wall, naming no one (CARD). Nothing about Dubova (the plan has nothing).
+- GM-SIMULATED texture: "class 8 housing"; Volkov's raised voice behind the shutter; Soler through the gate with the letter.
+- R3 screen sent with the plan's exit questions, marks for round 3, and the exit line.
+- Exit written (pull 6). Exit message sent; player reports memory section written. Game 1 closed.

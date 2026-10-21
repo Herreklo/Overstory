@@ -1,0 +1,29 @@
+# Log: weak-X3 (Saltlight), player X3 (cozy, sonnet)
+
+- R0: opening (r0-screen.md) checked; new game message sent to the same player agent.
+- R1 received r1-act.md (4 turns; pull 7; prediction: Wilf declines the help warmly, tells of his father's boat, asks about the lantern walk).
+- R1 T1 Wilf, line 2: PLAN (rag; converging line; beat 1, the Puffin, 41 years). Belonging +2 turn, +3 first talk, +1 beat = +6. Later menu shown.
+- R1 T2 June, own words (room, cardigan, jar): PLAN nearest line 1 "Is my room ready?"; converging line; beat 1 (Mum's cafe, 31 years); key given (no turn). Cardigan asked: PLAN's one answer ("Been there since August. Must be a visitor's."). Jar: not on the menu; nothing given (beat 3 not reached). +6.
+- R1 T3 inspect Tolley & Son's corner: PLAN (empty shelves, rope on its hook, calendar on March 1988, door locked). +2. Sketchable.
+- R1 T4 sit on the bench: PLAN (plaque; vignette). +2.
+- R1 Belonging 0 to 16% (+16); 10% ornament: the geranium. Prediction: wrong (he accepted the help, told the Puffin beat, didn't ask about the walk).
+- R1 screen ends about noon, cloud thickening (PLAN).
+- R2 received r2-act.md (4 turns; pull 7; R1 marks engaged, engaged, curious, curious drifting to bored; prediction: Sal doesn't know or is coy and points to the Hales; the Hales don't know it and tell a story about the steps).
+- R2 weather: PLAN soft rain from about one, clearing by five; everyone stays put (Sal under the cafe's awning, Wilf under a tarpaulin, Teddy in a yellow oilskin).
+- R2 T1 sketch Tolley & Son's window: PLAN (+2, +1 sketch). Sketchbook 1 of 48.
+- R2 T2 June, own words: PLAN nearest line 3 "What a lovely place." (none fits); converging; beat 2 (the walk). Cardigan: PLAN "You can't take that with you." May: PLAN "May Ord. She sat there every afternoon. Lovely woman." +2, +1 beat = +3.
+- R2 T3 Sal, own words (the cardigan, not carried): PLAN nearest line 1 "Anything for me?"; converging; beat 1. Cardigan in substance: a visitor's, since August. +2, +3 first talk, +1 = +6.
+- R2 T4 climb to step 40, Dot and Ivy: PLAN nearest line 1 "Good morning, ladies."; converging pair; beat 1 (born in the back bedroom). Cardigan in substance: a visitor's. +6.
+- R2 Belonging 16 to 34% (+18); 25% ornament: the cat (not shown on step 50 this screen). Prediction: partly (Sal didn't know but didn't point to the Hales; the Hales gave a story, of the house not the steps, and "everyone who goes up").
+- R2 screen ends about 5 pm, the sky opening in the west, the jars on the chapel wall, the evening line (PLAN).
+- R3 received r3-act.md (4 turns; pull 5; R2 marks engaged, bored (cheat), bored (cheat, small), curious; prediction: the Hales say the Pennocks moved away, a sweet gap where the reason should be).
+- R3 T1 Dot and Ivy, own words: PLAN nearest line 3 "Anything in the paper?" (news); Gazette item 1 (railings); converging pair; beat 2 (Montevideo, Valparaiso). Pennock: PLAN "Mrs Pennock went to her son's in the spring. Pretty, isn't it...". Red roof: PLAN "The Carrs did theirs in the summer. Smart, isn't it?" +3.
+- R3 T2 step 60, inspect the roof: PLAN. +2.
+- R3 T3 chapel jars: inspect; take: PLAN "You can't take that with you." +2.
+- R3 T4 sit by the chapel wall: PLAN vignette. +2. Lantern walk: PLAN (everyone; a spare jar pressed into the player's hands, by June, wordless; nobody spoken to, so no beats). +10.
+- R3 Belonging 34 to 53% (+19); 40% ornament: the pressed fern. Chapter card: sketchbook 1, keepsakes 0, people met 5 (Wilf, June, Sal, Dot, Ivy), Belonging 53%.
+- R3 prediction: right (moved away, to her son's; no reason; "Pretty, isn't it").
+- R3 exit questions (PLAN 1 to 4, plus marks for round 3's turns) on r3-screen.
+- R3 exit received: overall pull 5; Chapter Two "maybe, one more session"; buy at $14.99 "not on this evidence, I'd wishlist it". Named: own words replaced by menu lines, canned loops (four "a visitor's"), "You can't take that with you", Belonging rises whatever is done, empty counters, nothing risked.
+- Exit message sent.
+- Exit and memory done (player replied done). Game 2 complete.

@@ -1,0 +1,15 @@
+# Turns: X1, Football Manager (calibration anchor)
+
+| round | turn | verb | target | expected | outcome | consequence | mark | surprise |
+|---|---|---|---|---|---|---|---|---|
+| 1 | 1 | ask the scout for more | Halsey (Voss, Platt) | knowledge up, ranges narrow, maybe a stamina flag | knowledge 45→70%; Voss heading 15–17; Platt pace 8–10, knock confirmed; "keeper flaps at crosses"; "they played Tuesday" | opposition plan better informed (keeper, fatigue) | engaged | delight: the keeper-flaps note and the fixture-congestion line |
+| 1 | 2 | Reid: physio test, rest till Friday | Marcus Reid | a Friday verdict with a stated risk | Fitness 86%, risk High; fine next Saturday if rested | the start/bench/rest call falls on matchday | confused ("High" is a word, not a number) | none |
+| 1 | 3 | private talk: apologise, promise talks after Saturday | Joe Ainsley | morale up from Poor; worse if slow again | morale Poor→Okay; promise logged; wage room £300/wk | Ainsley S_w modifier 0 (Okay); promise due after the match | engaged | none |
+| 2 | 1 | line-up | Fenwick up front, Reid left out, Lowe on the bench | a solid, rested side with a target man | as picked; bench six (three places empty: senior squad of 18) | Fenwick: Q_w +3, S_w −3; Reid rolls not drawn | engaged | none |
+| 2 | 2 | tactics | 4-2-3-1 Balanced; down the right, more crosses, line slightly deeper; Fenwick target man | Brandt isolated on Platt, balls into a flappy keeper | Brandt past Platt at 19', cross, Fenwick header over | crossing focus with Fenwick: Q_w +3 more; right focus and deeper line no modifier in the plan | engaged | none |
+| 2 | 3 | opposition instructions | Adeyemi tight-marks Voss; Kerr closes down Garvey | Voss quiet, press less sharp | Voss quiet (6.4), Garvey forced back | Q_h −5, S_h −3 | engaged | delight: the first cause traced to an effect on the page |
+| 2 | 4 | team talk | calm "No pressure today"; Brandt "I have faith in you" | Brandt settles, no nerves | players relaxed; Brandt motivated | fitting talk: S_w +3, blocks 1–3 | curious | none |
+| 3 | 1 | half-time team talk | assertive "Go out and win it"; Adeyemi and Kerr "I'm pleased with you" | sharper start; defenders keep their edge | most motivated (Doyle, Gallagher no reaction); Adeyemi motivated, Kerr focused | judged fitting: S_w +3, blocks 4–6 | curious | none |
+| 3 | 2 | player instruction | Mensah: dribble more, shoot less | more runs at tired legs, fewer long shots | Mensah dribbles 5/7, no more long shots | no modifier in the plan | engaged | delight: "a switch I turned, and the match changed" (the effect was narrative only; no modifier) |
+| 3 | 3 | planned sub + tempo | Lowe for Fenwick at 58', tempo up | stretched back line, real chances | 72' Lowe nearly in; 79' Lowe scores (Ainsley assist) | blocks 5–6: Lowe S_w +5, Q_w −2 (Fenwick's off); fatigue S_h −5, S_w +5 | engaged (marked "delight") | delight |
+| 3 | 4 | planned sub + standing order | Moran for Kerr at 65', closes Garvey; Positive if behind | Garvey quiet, fresh legs for Linton | Garvey 6.8, kept quiet late; never behind | close-down kept (S_h −3); Kerr 74% for Linton | engaged | none |

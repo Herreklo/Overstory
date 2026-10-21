@@ -60,3 +60,20 @@ Frozen: a dark, low space, the anchor cable coiled like a sleeping animal. The m
 
 ## Log
 - R0: opening sent (r0-screen.md). Waiting for r1-act.md. Fates written: none.
+- R0: player spawned (agent a7dce3c70a6d7af7a, general-purpose, opus, persona 4 explorer); spawn message as gm-brief, nothing added. r1-act.md received.
+- R1 t1 (walk, The Bread Room): CARD (r0 frozen moment) + GM-SIMULATED texture, no new fact: the hatch hasp wrenched out, padlock still shut on it (fits the ship-now "new lock, heavier than the door", here the hatch); lockers bare, a hand's depth of biscuit in the cask; the cook's five keys on a cord to his belt (fits "the key ring is gone" now); clerk with pencil stub and notebook corner (fits sketch 14 and The Stove); Carr's coat plain horn buttons, no brass. Interface line added: walking a frozen scene is one turn (answers the player's need; the plan's "each turn is a look").
+- R1 t2 (search, cable tier): CARD (Thomas Pell's body as in "The man in irons"): red cap, split lip, blanket, shackle locked to ringbolt, key on nail out of reach, dry water cask, bread in knotted cloth, nine scratches. Prediction (man in irons is Carr) falsified by what is visible.
+- R1 t3 (watch, man in irons): CARD memory "The Cable Tier", dated 23 April 1812 (the plan's "about 23 April"; the watch shows a date).
+- R1: fates written none (player held 8 = George Pell, clubbed by Carr in its head). No confirmation. Wrong guesses: none to comment on. r1-screen.md written.
+- R2: r2-act.md received (marks r1: engaged, curious, curious; pull 8). Fates written none (pencilled 8 George Pell clubbed by Carr; 9 Thomas Pell froze).
+- R2 t1 (open clumsy shroud C + watch): CARD body and memory "The Watch", 1 March 1812, night. Sound line "A body falls against the rail" rendered "A body falls" (the frozen moment has him at the binnacle; harmonised). GM-SIMULATED texture: puckered clumsy stitches, coat cut below the ribs.
+- R2 t2 (open a neat shroud + watch): GM-SIMULATED choice; seed calibration-X4-r2-t2-neat-shroud; d2 = 1 (A, Dunning). CARD memory "The Pressure", 3 December 1811, afternoon. Texture: sawdust in the knuckles.
+- R2 t3 (search forecastle): CARD (ship now: nine hammocks, seven stripped; chests G.P., T.P., H.R., M.Q. empty, J.H. full and untouched). GM-SIMULATED texture, no new fact: pegs bare; G.P. and T.P. half full; no names cut. Removed before sending an invented "pipe stem" (would point falsely at sketch 3).
+- R2: no confirmation (no fates written). r2-screen.md written.
+- R3: r3-act.md received (marks r2: engaged, engaged, curious; pull 8).
+- R3 t1 (write fates 8, 2, 4): CARD confirmation rule: all three correct; count crosses 3: "Three fates are confirmed." Confirmed 3 of 14.
+- R3 t2 (open neat shroud B + watch): CARD memory "The Stove", 15 January 1812, night. Texture: clothes dried stiff on him.
+- R3 t3 (search captain's cabin): CARD (chart with the pencil line to Hailuoto; empty log shelf; Ned's cat drawing). GM-SIMULATED texture, consistent with the truth: line runs from a pencil cross, unsigned; stove cold with ash; bunk bare of blankets; hooks empty (coat gone with the captain); speaking trumpet left in its bracket.
+- R3: r3-screen.md written with the count and the exit questions (pull, comparison with the real game, best and worst, marks for round 3) and the exit line.
+- R3: round message sent; exit.md written by the player (pull 8; marks r3 engaged, engaged, curious). Exit message sent (as gm-brief); player replied done (memory file is the player's; not read).
+- End: fates confirmed 3 of 14. turns.md, needs.md, scores.md, condensed.md written.

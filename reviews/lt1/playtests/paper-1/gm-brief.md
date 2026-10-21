@@ -12,21 +12,22 @@ Look facts up with the tools rather than from memory: `python3 -I world/tools/w9
 
 ## The player
 
-Players are separate agents. You start yours and talk to it only through the two messages below, filled in exactly; you add nothing (no hint, no truth, no arm, no encouragement). Spawn it with the Agent tool, `subagent_type: general-purpose`, the model the roster gives its id (`sonnet` or `opus`), in the background, and wait for its reply. Each later round, continue the same agent with SendMessage to its agent id. If a player agent fails, start a fresh one with the spawn message, adding only: "You are resuming a game in progress: first read your earlier act files and screens in your run folder, in order."
+Players are separate agents. You talk to yours only through the messages below, filled in exactly; you add nothing (no hint, no truth, no arm, no encouragement). **Start a fresh player agent for every round**, each with the Agent tool, `subagent_type: general-purpose`, the model the roster gives its id (`sonnet` or `opus`), and wait for its reply before you go on. Never continue a player with SendMessage: a game master whose player is resumed by message is handed back by the harness mid-game. The player loses nothing, since each fresh agent first reads its own memory and the whole game so far, its own acts included. If a player fails, start another with the same message. If the Agent tool refuses because too many agents are running, stop and report to the lead; don't retry.
 
 **Spawn message** (fill `{persona}`, `{id}`, `{run}` with the full run folder path):
 > You are a playtester in a paper playtest. You are {persona}. Play as that player and be honest: your boredom, confusion and wish to quit are as useful as your delight, and kindness makes you useless as a tester.
 > First read `/Users/oystein/code/Overstory/reviews/lt1/playtests/paper-1/players/brief.md`, which says how a paper playtest works. Then read your own memory file `/Users/oystein/code/Overstory/reviews/lt1/playtests/paper-1/players/{id}/memory.md` if it exists (your notes from games you played before; if it doesn't exist, this is your first game). Then read your opening screen `{run}/r0-screen.md` and write your act file where it says.
 > Read and write nothing else: never list, open or search any other file or folder. When the file is written, reply with the single word: done.
 
-**Round message:**
-> Your next screen is at `{run}/r{N}-screen.md`. Read it and write your act file where it says. Reply with the single word: done.
+**Every later round, a fresh player** gets the spawn message with one sentence added after the memory sentence:
+> You are in the middle of a game: read, in order, its screens and your own act files so far: {the files in order, full paths, from r0-screen.md to the newest screen}.
 
-**Exit message** (after the last screen, which ends with the exit questions):
-> Write your exit interview to `{run}/exit.md`, answering every exit question on your last screen. Then add a section for this game to your memory file `/Users/oystein/code/Overstory/reviews/lt1/playtests/paper-1/players/{id}/memory.md` (create it if it doesn't exist): the game's name as its screens gave it, in under 200 words, your marks and pull in brief, what kept you, what was hollow, and how it compares with the other games you've played. Keep earlier sections as they are. Reply with the single word: done.
+and with "Then read your opening screen ... where it says" replaced by "Then write your next act file where the newest screen says."
 
-**New game message** (calibration and replay only, when the same player goes on to a second game):
-> A new game begins. Its opening screen is at `{run}/r0-screen.md`. Read it and write your act file where it says. Reply with the single word: done.
+**The exit:** after the last screen, which ends with the exit questions, a fresh player gets the round's message with "Then write your next act file where the newest screen says." replaced by:
+> Write your exit interview to `{run}/exit.md`, answering every exit question on the newest screen. Then add a section for this game to your memory file `/Users/oystein/code/Overstory/reviews/lt1/playtests/paper-1/players/{id}/memory.md` (create it if it doesn't exist): the game's name as its screens gave it and, in under 200 words, your marks and pull in brief, what kept you, what was hollow, and how it compares with the other games you've played. Keep earlier sections as they are.
+
+**A new game** (calibration's second game; replay): the spawn message as for round 0, with the new game's run folder. The memory file now holds the game before.
 
 **Personas** (`{persona}`):
 1. a Football Manager devotee: you love spreadsheets and long saves, and you want systems to master and a club to own

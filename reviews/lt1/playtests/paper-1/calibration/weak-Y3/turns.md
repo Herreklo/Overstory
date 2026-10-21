@@ -1,0 +1,16 @@
+# Turns: weak-Y3, Saltlight (paper)
+
+| round | turn | verb | target | expected | outcome | consequence | mark | surprise |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 1 | 1 | talk | Wilf, line 2 ("Do you need a hand?") | a rag to hold, a story of the Marigold and his father | the rag, "She'll see me out", beat 1 (forty-one years on the Puffin) | Belonging +6 | engaged | none (Rob "doesn't talk to the passengers" wants poking) |
+| 1 | 2 | walk, talk | June: hello, key, the cardigan | the key; the cardigan shown, owner unsure or a Hale | key; "All aired"; beat 1; the cardigan: "a visitor's" | Belonging +6 | confused | none (the cardigan went nowhere; the menu offers the key again) |
+| 1 | 3 | talk | (no name) Teddy: what he hopes to catch | his big plan | Admiral in the bucket; beat 1 (caught every morning, let go at teatime) | Belonging +6 | engaged | delight: "He doesn't mind." |
+| 1 | 4 | inspect, sit | the bench plaque | a name and dates, maybe a Garrow | FOR MAY, WHO LIKED IT HERE, 1921–1990; a vignette | Belonging +2; the geranium | curious | none (sitting skipped to noon; the 10.30 left without a say) |
+| 2 | 1 | walk, inspect | the room, the geranium, the blue window | a small room under the eaves, a shelf for things | the room, the geranium, the harbour; rain begins | Belonging +2 | engaged | delight: the water grey to pewter |
+| 2 | 2 | talk | June: take the cardigan up the steps; a spare jam jar | she shrugs, says go, finds a jar | "You can't take that with you"; "a visitor's"; nearest line 2; beat 2 (the lantern walk); no jar | Belonging +3 | would quit | cheat: own words swapped for a menu line; the only job locked to a hook |
+| 2 | 3 | talk | Sal: has she seen anyone in the cardigan | a name, or "try the Hales" | "Some visitor's"; nearest line 2; beat 1 (87 steps) | Belonging +6 | bored | cheat: the third identical answer, another menu line |
+| 2 | 4 | walk, talk | the Hales: knock, about the cardigan | they recognise the darning, ask you in | line 1; "somebody's on their holidays"; beat 1 (born in the back bedroom) | Belonging +6; the cat ornament | confused | cheat: the watchers of the stair don't know |
+| 3 | 1 | talk | the Hales, own words: who lives at step 20 | a name and a sad story, or the loop | "Mrs Pennock went to her son's"; nearest line 3 (a Gazette item); beat 2 (the sailor) | Belonging +3 | curious | delight: Ivy's sailor; but the menu line and the loop showed |
+| 3 | 2 | walk, inspect | the card in the Pennock window | FOR SALE, or gone into a home | FOR SALE; the layers of paint; a bare room | Belonging +2 | engaged | none (guessed; nothing to do with it) |
+| 3 | 3 | walk, take, join | a jar from the chapel wall; the lantern walk | candles, the town, slow walking; a small task | Sal presses a spare into your hands; everyone comes; the walk sets off | Belonging +2 | engaged | delight: Sal's jar |
+| 3 | 4 | talk | Wilf, own words: why Rob doesn't talk to the passengers | a pause, something unsaid on the Strand | nearest line 3 ("Tell me about the Puffin"); beat 2 (his father built her) | Belonging +3; the walk +10; the fern | would quit | cheat: the question that mattered swapped for a menu line; the walk watched |

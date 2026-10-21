@@ -49,3 +49,38 @@ If the list runs out, continue with Python: `random.Random('fm-calib-1-more')`, 
 
 ## Log
 - R0: opening sent (r0-screen.md). Waiting for r1-act.md.
+- R0: player spawned (agent ae4f3a78b40cd4b10, opus, persona 1). r1-act.md received: pull 7; three turns (rest Reid; Opposition LB, Medium; Ainsley promise talks); press skipped.
+- R1 t1: CARD Reid rested: not in squad, back next Saturday. Rolls 1 (25) and 2 (58) not used (he doesn't play). Interface note: undecided, he'd have stayed selectable (GM-SIMULATED, interface default).
+- R1 t2: CARD Training Opposition LB: S_w +5. Medium: no knock roll; roll 4 (70) not used.
+- R1 t3: CARD Ainsley promise talks: morale Poor → Okay (modifier 0). Roll 3 (15) not used (no offer made). Contract £950 and wage room £300 shown as FM's contract/finance panels would; his ask (£1,400) not shown.
+- R1 press: CARD not taken; assistant deflects = no effect.
+- R1 texture GM-SIMULATED: assistant name Steve Rudd; Halsey's other seven names (Fairley, Ridley, Baptiste, Danby, Tierney, Whitlock, Pell); form letters (Wex L D W L D; Halsey WWWWW from 'five straight wins'); weather; conditions back to 97-100%; Echo headline. None touches the match model.
+- R1 GM decision: line-up named freely (not a turn), up to three turns for talk/tactics/OIs, keeping r0's cap of three. Bench is six (17 fit).
+- State after R1: S_w 50 (45 +5 training), S_h 50, Q_w 30, Q_h 33, before line-up, mentality, OIs and talk. Ainsley Okay. Reid out. Promise due 30 Nov. Next roll in list: roll 5 (82).
+- Prediction logged (due FT): Voss scores/assists from a cross or set piece, beating Shaw; Halsey fade after ~60; our late chances down the right via Brandt and fresh Lowe.
+- R1: r1-screen.md written; round message sent.
+- R2 act received: pull 8. XI with Lowe up front, Fenwick on bench; Mensah starts (no letter); Ainsley starts.
+- R2 line-up: CARD Lowe starts: S_w +5, Q_w −2. Fenwick not starting: no modifier.
+- R2 t1: CARD tight-mark Voss with Adeyemi: Q_h −5.
+- R2 t2: CARD focus down the right + Lowe Advanced Forward (run in behind): no modifier in the plan; allowed as one tactical turn (one visit to the tactics screen). Shapes commentary only.
+- R2 t3: CARD + GM judgement: calm "I have faith in you" to a 19-year-old on his first start, morale Good = a fitting talk; S_w +3 for blocks 1-3. Reaction "Looks focused". Rest of squad no talk (neutral).
+- R2 blocks 1-3 values: S_w 58 (45 +5 LB training +5 Lowe +3 talk), S_h 50, Q_w 28, Q_h 28.
+- R2 b1: roll 5 (82) Wex no chance; roll 6 (53) Halsey no chance, near (≤65) → near thing; type GM-SIMULATED seed 'calib-Y1-r2-b1-halsey-near' d3=2 (save): Garvey long shot held by Pryce.
+- R2 b2: roll 7 (15) Wex chance; roll 8 (82) vs Q_w 28 no goal, not near (wide). Source GM-SIMULATED seed 'calib-Y1-r2-b2-wex-source' d6=1 (Lowe in behind): Lowe drags it wide, 22'. Roll 9 (2) Halsey chance; roll 10 (83) vs Q_h 28 no goal, not near (over). Source seed 'calib-Y1-r2-b2-halsey-source' d4=3 (turnover in the press): Garvey wins it off Kerr, Pell over, 26'.
+- R2 b3: roll 11 (94) Wex no chance, not near; roll 12 (51) Halsey no chance, near → near thing; type seed 'calib-Y1-r2-b3-halsey-near' d3=2 (save): Whitlock cross, Pryce punches clear of Voss and Adeyemi, 41'.
+- R2 HT 0-0. Next roll: roll 13 (66). No roll was 1 or 100: no cards or injuries.
+- R2 texture GM-SIMULATED: crowd 3,912; 4' Lowe run and 33' Brandt cross (non-chances; Platt's weakness is true); stats, xG, ratings; Rudd's HT note; interface answers (preparation scale of five, set-piece takers, zonal marking); Pell/Ridley/Baptiste unscouted.
+- R2: r2-screen.md written; round message sent.
+- R3 act received: pull 8. No half-time talk (neutral; pre-match +3 lapsed after block 3).
+- R3 t1: CARD close down Garvey: S_h −3 from block 4.
+- R3 t2: CARD Brandt low crosses/cut-backs: no modifier in the plan; commentary only (54' cut-back). Replaced at 60' by the planned change.
+- R3 t3: CARD planned change triggered at 60' (level): Fenwick on for Gallagher (Fenwick's modifiers applied while on the pitch: Q_w +3, S_w −3, crossing focus Q_w +3; GM reading of "starts" as "plays", as for Reid); Lowe stays on (S_w +5, Q_w −2 kept); Positive S_w +5, S_h +3; fresh legs with Halsey fatigue in blocks 5-6: S_w +5, S_h −5.
+- R3 b4 values: S_w 55, S_h 47, Q_w 28, Q_h 28. Roll 13 (66) Wex no chance, near (≤70): seed 'calib-Y1-r3-b4-wex-near' d3=1 woodwork, source d6=3 Brandt right: cut-back, Mensah off the post 54'. Roll 14 (79) Halsey no chance, not near. 0-0 at 60'.
+- R3 b5 values: S_w 62, S_h 45, Q_w 34, Q_h 28. Roll 15 (70) Wex no chance, near (≤77): seed b5-wex-near d3=1 woodwork, source d6=2 Fenwick cross: header off the bar 66' (Ince comes and misses: his true weakness). Roll 16 (47) Halsey no chance, near (≤60): seed b5-halsey-near d3=3 block, source d4=2 Pell second ball: blocked by Shaw 72'.
+- R3 b6 values as b5. Roll 17 (25) Wex chance; roll 18 (24) ≤34 GOAL. Scorer by position and attributes, no tie: crosses aimed at the Heading 15 target man, so Fenwick; assist Brandt (the crossing instruction). No tie roll used. Roll 19 (71) Halsey no chance, not near. Minute seed 'calib-Y1-r3-b6-goal-minute' 76-90 = 90'. FT 1-0. No roll was 1 or 100. Next unused roll: roll 20 (13).
+- R3 GM-SIMULATED: Halsey subs seeded ('calib-Y1-r3-halsey-subs-count' d3=2; who sample: Tierney, Danby; minutes 68', 80'); sub names Kyle Mabbott, Dean Ashworth; conditions (Halsey lowest: Tuesday cup tie is true; Platt's knock shown as moving stiffly and 61%); stats, xG, ratings, POTM Brandt (highest rating); board/supporters reaction kept modest (no confidence change: plan gives none); Echo headline.
+- R3 CARD other results and table: as fixed. PROBLEM noted: the fixed list is not internally consistent (10 wins, 7 losses, 7 draws including ours); shown per club without pairings, as given.
+- R3: r3-screen.md written with exit questions; round and exit messages sent together.
+- Exit received (exit.md): overall pull 7. Would play next week, not a whole season at this pace. Best: scouting ranges, the Ainsley promise as a dated object, the conditional change at 60', the default stated. Worst: team talks a black box; "too obliging", every instruction got its confirming highlight; thin depth (attributes, results without scores). R3 marks: engaged, engaged (delight), engaged (cheat, in his favour: the 90' winner after two woodwork hits read as scripted).
+- GM note on the "cheat" mark: the goal and both woodwork hits came from the list rolls in strict order (rolls 15, 17, 18; near things by rule), the minute from seed 'calib-Y1-r3-b6-goal-minute' (90). Each confirming highlight was chosen by GM-seeded source rolls or by the player's own instruction for that block; the flattery the player names is partly real: the paper model gives no instruction without its matching commentary. Logged for the analysts.
+- Exit and memory message sent with the r3 round message. Game 1 done.
