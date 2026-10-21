@@ -24,3 +24,9 @@ blender/cache/
 # The measuring tools: renders and comparisons are rebuilt, only the accepted baseline is kept (docs/measuring.md)
 reviews/golden/current/
 reviews/golden/compare/
+unity/Assets/Experiments/LT1/Perf/
+unity/Assets/Experiments/LT1/Perf.meta
+reviews/perf/**/frames.csv
+reviews/perf/**/*.png
+reviews/perf/**/player.log
+reviews/motion/current/
