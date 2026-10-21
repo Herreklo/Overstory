@@ -139,6 +139,13 @@ The steps keep their numbers, since other docs cite them. Step 1 is reopened on 
 
    - 1f, the game's question tested early, in clay (`CLAUDE.md`, Working in the right order: biggest risk first). The corner's houses are built from their diaries at 1989, 2000, 2010 and 2020 by the test-quality generator. The diaries need events after 1988 first: none has any yet. Two or three of the most promising ways of showing time are prototyped, from a wide creative exploration. Cold readers read them (criteria 1 and 4) before any final house part is made. It needs none of the architecture, so it can start as soon as there is room, and its findings shape the houses and the history budget.
 
+   - 1f+, paper playtests with agent players (Øystein: "can you playtest as well... really analyse the concepts, what feels fun, what feels engaging"):
+     - a game-master agent runs each first-game concept in text, from real simulated lives where possible (Understory's published records, read-only);
+     - five player agents of different kinds, on two models, play 20 to 30 turns each and think aloud, marking curiosity, engagement, boredom, confusion and the wish to quit;
+     - an analyst compares the concepts by engagement over time, the loops that held, and how much reading people and history mattered;
+     - Fable reviews it after the reset.
+
+     Agent players find confusion, dead stretches and broken loops; they can't feel fun, so Øystein and his testers have the final word. Later, agent players play the greybox first.
    - 1g, a playable greybox of the corner (Øystein: "testing gameplay and ideas before everything looks finished"):
      - the free camera;
      - blockout people, driven by the real engine run when it arrives (`docs/engine-requests.md`, request 36), else by authored fixtures;
