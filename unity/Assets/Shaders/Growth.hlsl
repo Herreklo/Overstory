@@ -35,7 +35,10 @@ half2 OS_LichenAt(float2 q, half years, half seed, float footprint)
     half field = (half)(OS_Noise(qq) * 0.55 + OS_Noise(qq * 2.1 + 4.4) * 0.3 + OS_Noise(qq * 4.7 + 1.3) * 0.15);
     half fine = (half)(OS_Noise(q * 70.0 + seed * 3.0) * 0.6 + OS_Noise(q * 160.0) * 0.4) - 0.5h;
     half share = saturate((years - 8.0h) / 140.0h) * (half)_OS_LichenRate.z;
-    half th = 1.0h - share;
+    // the field's own quantile for that share (it bunches about its middle, mean 0.5, spread 0.14: a plain threshold
+    // gave sixty quiet years a tenth of their crust); the probit by its logistic approximation
+    half pq = clamp(1.0h - share, 0.002h, 0.998h);
+    half th = 0.5h + 0.138h * (half)(log(pq / (1.0h - pq)) / 1.702);
     half f = field + fine * 0.08h;
     half cover = smoothstep(th - 0.02h, th + 0.02h, f);
     // young colonies: a few small spots ahead of the patches

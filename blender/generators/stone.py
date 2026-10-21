@@ -93,8 +93,9 @@ def widths(rng, total, below, lo=0.5, hi=1.9):
 def walking(a):
     """Where people walk across a flight (0 one side, 1 the other): mostly the middle, in two lanes, up and down,
     never the very edges; 1 at the busiest."""
-    p = 0.55 * np.exp(-((a - 0.4) / 0.14) ** 2) + 0.55 * np.exp(-((a - 0.6) / 0.14) ** 2) + 0.25 * np.exp(-((a - 0.5) / 0.3) ** 2)
-    return np.clip(p / 0.95, 0.0, 1.0)
+    # (on a flight 3.2 m wide people keep to the middle metre and a half to two; its edges stay quiet)
+    p = 0.55 * np.exp(-((a - 0.4) / 0.12) ** 2) + 0.55 * np.exp(-((a - 0.6) / 0.12) ** 2) + 0.15 * np.exp(-((a - 0.5) / 0.22) ** 2)
+    return np.clip(p / 0.71, 0.0, 1.0)
 
 
 def settle(rng, P, w):

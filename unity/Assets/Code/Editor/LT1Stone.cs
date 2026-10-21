@@ -76,6 +76,7 @@ namespace Overstory.EditorTools
             m.SetVector("_Relief", new Vector4(0.0025f, 0.0012f, 0f, 0f));
             m.SetFloat("_Porosity", 0.5f);
             m.SetFloat("_Grey", grey ? 1f : 0f);
+            m.SetFloat("_History", Flag("-history") ? 1f : 0f);
             m.enableInstancing = true;
             EditorUtility.SetDirty(m);
             return m;
@@ -179,7 +180,7 @@ namespace Overstory.EditorTools
                         urp.shadowDistance = 120f;
                         stage.shot = shot;
                         stage.Apply();
-                        string file = Path.Combine(dir, $"gully-{view}{(grey ? "-greylight" : "")}.png");
+                        string file = Path.Combine(dir, $"gully-{view}{(grey ? "-greylight" : "")}{(Flag("-history") ? "-history" : "")}.png");
                         LT1Render.Still(stage.view, file, grey: true, eighth: true, msaa: 4);
                         Debug.Log($"[LT1Stone] {file}");
                     }

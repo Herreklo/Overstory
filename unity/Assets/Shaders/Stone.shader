@@ -21,6 +21,7 @@ Shader "Overstory/Stone"
         _Relief ("Relief: x the grain's depth (m), y lichen's crust (m)", Vector) = (0.0015, 0.0012, 0, 0)
         _Porosity ("How much the rock darkens wet (0 to 1)", Range(0, 1)) = 0.55
         [Toggle] _Grey ("Grey light: every layer's pigment one grey (to judge form)", Float) = 0
+        _History ("Debug: show the history as colour (r polish, g lichen years, b moss)", Float) = 0
     }
 
     HLSLINCLUDE
@@ -36,6 +37,7 @@ Shader "Overstory/Stone"
         float4 _Relief;
         half _Porosity;
         half _Grey;
+        half _History;
     CBUFFER_END
 
     #include "StreetSurface.hlsl"
@@ -218,6 +220,8 @@ Shader "Overstory/Stone"
                 half3 colour = OS_ShadeA(id, s, b);
             #endif
                 colour = OS_Atmosphere(colour, input.positionWS);
+                if (_History > 0.5)
+                    colour = half3(input.history.r, input.history.g * 2.0h, input.history.b) * 0.5h;
                 outColor = half4(colour, 1);
             #ifdef _WRITE_RENDERING_LAYERS
                 outRenderingLayers = EncodeMeshRenderingLayer();
