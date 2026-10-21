@@ -13,6 +13,7 @@ Kinds: build (code and assets), measure (renders, harness, stress tests), review
 | 21 Oct 16:47 | Weekly limit 82%, Fable's 100%, 5-hour window 50% (the app, read in the main session) |
 | 21 Oct 18:17 | Weekly limit 87%, Fable's 100%. From 16:47, with Fable spent and only Opus running, 5 points matched $87 of weight: $17 a point. Over the week since Monday 14:00, 87 points matched $1,003: $11.5 a point |
 | 21 Oct 20:50 | Weekly limit 8%, Fable's 4%, 5-hour window 28%, after the reset. Review: the building-blocks architecture (Opus main session; Fable for the pre-mortem, the decisions and the strict review; five Opus agents read, drafted, fixed and updated). Fable went from 0% to 4% for three jobs. The weekly figure includes other sessions running in parallel |
+| 21 Oct 20:58 | Weekly limit 11%, Fable's 8%, 5-hour window 40%, with the scale test and the playtests running. Orchestration (main session, Opus): the architecture task's two duplicate runs stopped and archived; the playtests resumed and the scale test started, each in its own session; Øystein's answers on 1f and the architecture's four questions recorded. New sessions wait for the 5-hour reset at 00:30. |
 
 ## Jobs, 20 Oct 08:29 to 21 Oct 18:32
 
