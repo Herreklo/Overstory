@@ -51,6 +51,7 @@ Each session commits its own work. If one stops, resume it from its files. Long 
   - *The report* scores each concept twice, ready today and potential.
   - *The AI-playtesting fixes apply:* persona crossed with model, the game master audited with a fact ledger, a known-weak calibration game, and predictions and needs as headline measures.
   - *Its main output* is the must-improve register.
+  - *Usage (21 October, 21:15):* the lean design was chosen: 24 runs (the paper, the mystery and the club; lives on and off; four kinds of player), about 30% of the week, from 00:30. The full 72 runs would take about 90%, and the port needs the rest. The most decisive runs go first. The playtests stop at a run boundary if the weekly passes 55%. The other 48 runs wait until after Monday's reset, and run only if the lean results leave the ranking open.
 - **The scale test,** above.
 
 When the playtest report lands:
