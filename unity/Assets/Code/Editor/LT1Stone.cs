@@ -318,7 +318,37 @@ namespace Overstory.EditorTools
             }
         }
 
-        public static void Frames()
+        /// <summary>
+        /// The gully's judging views, in street metres (also the measuring tools': LT1Golden, LT1Perf, LT1Motion). The
+        /// flight's path (heart_layout: Gully Steps): the lower flight from Low Terrace to the Landing, the upper from
+        /// the Landing to Top Terrace.
+        /// </summary>
+        internal static readonly Vector3 Foot = new Vector3(49.2f, 24.6f, 3.0f), LowerMid = new Vector3(48.6f, 30.7f, 5.5f);
+        internal static readonly (string name, Vector3 pos, Vector3 target, float fov)[] Views =
+        {
+            // eye level: a person at the foot of the steps, looking up them
+            ("eye-foot", Foot + new Vector3(0.6f, -3.2f, 1.7f), LowerMid + new Vector3(0f, 0f, 0.4f), Lens35),
+            // eye level on the steps, halfway up, looking at the treads ahead
+            ("eye-on", new Vector3(49.6f, 28.4f, 4.3f + 1.65f), new Vector3(48.7f, 33.5f, 6.4f), Lens35),
+            // close: the treads underfoot, a person looking down at them
+            ("eye-down", new Vector3(50.2f, 27.0f, 3.9f + 1.6f), new Vector3(49.1f, 29.2f, 4.4f), Lens35),
+            // the target frame's street stop (LT1Heart.Shots, 3)
+            ("street", new Vector3(49.3f, 12f, 5.6f), new Vector3(47.5f, 44f, 10.5f), Lens28),
+            // 12 m up beside the flight, looking down along it
+            ("into12", new Vector3(56f, 18f, 3f + 12f), LowerMid, Lens28),
+            // the city camera, pulled out and steep (near-isometric)
+            ("high", new Vector3(80f, 2f, 60f), new Vector3(48.5f, 36f, 7f), 15f),
+        };
+
+        /// <summary>The gully's three judging lights (docs/foundations.md, The judging views).</summary>
+        internal static readonly string[] Moments = { "1300-drizzle", "1600-low-sun", "1750-blue-hour" };
+
+        /// <summary>
+        /// The heart opened and staged as the gully's frames see it: the rigs and styles written, the clay town in look P
+        /// and the game's style (none with -nostyle), the sky map and lamps built, the pack's growth and water set, the
+        /// stone's material written, and the stair placed (the clay steps hidden, the ground sunk, the cheek walls in).
+        /// </summary>
+        internal static (StreetStage stage, GameObject go) Stage(bool grey)
         {
             LT1Heart.Rigs();
             LT1Heart.NightRig();
@@ -333,9 +363,6 @@ namespace Overstory.EditorTools
                 stage.skyMap.Build();
             if (stage.townLights != null)
                 stage.townLights.Build();
-            var urp = (UniversalRenderPipelineAsset)GraphicsSettings.currentRenderPipeline;
-            float reach = urp.shadowDistance;
-            bool grey = Flag("-grey");
             // the pack's growth (lichen, moss), set once for the whole town
             GrowthPack.Apply();
             WaterPack.Apply();
@@ -344,33 +371,35 @@ namespace Overstory.EditorTools
             Shader.SetGlobalFloat("_OS_NearForce", detail == "painted" ? 1f : detail == "real" ? 2f : 0f);
             var mat = Material(grey);
             AssetDatabase.SaveAssets();
-            var (go, o) = Place("gully", mat);
+            var (go, _) = Place("gully", mat);
+            return (stage, go);
+        }
+
+        /// <summary>The camera put on one of the gully's views, with the frames' near and far planes and shadow reach.</summary>
+        internal static void Aim(StreetStage stage, CameraShot shot, (string name, Vector3 pos, Vector3 target, float fov) view)
+        {
+            var urp = (UniversalRenderPipelineAsset)GraphicsSettings.currentRenderPipeline;
+            shot.position = view.pos;
+            shot.target = view.target;
+            shot.verticalFov = view.fov;
+            shot.near = 0.1f;
+            shot.far = 9000f;
+            urp.shadowDistance = 120f;
+            stage.shot = shot;
+            stage.Apply();
+        }
+
+        public static void Frames()
+        {
+            var urp = (UniversalRenderPipelineAsset)GraphicsSettings.currentRenderPipeline;
+            float reach = urp.shadowDistance;
+            bool grey = Flag("-grey");
+            var (stage, go) = Stage(grey);
             var shot = ScriptableObject.CreateInstance<CameraShot>();
             string outDir = Path.GetFullPath(Path.Combine(Application.dataPath, "..", "..", "reviews", "lt1", "stone", "gully"));
-            // the flight's path in street metres (heart_layout: Gully Steps): the lower flight from Low Terrace to the
-            // Landing, the upper from the Landing to Top Terrace
-            var foot = new Vector3(49.2f, 24.6f, 3.0f);
-            var lowerMid = new Vector3(48.6f, 30.7f, 5.5f);
-            var landing = new Vector3(47.3f, 40.0f, 8.0f);
-            var upperMid = new Vector3(46.5f, 62.0f, 12.2f);
-            var views = new (string name, Vector3 pos, Vector3 target, float fov)[]
-            {
-                // eye level: a person at the foot of the steps, looking up them
-                ("eye-foot", foot + new Vector3(0.6f, -3.2f, 1.7f), lowerMid + new Vector3(0f, 0f, 0.4f), Lens35),
-                // eye level on the steps, halfway up, looking at the treads ahead
-                ("eye-on", new Vector3(49.6f, 28.4f, 4.3f + 1.65f), new Vector3(48.7f, 33.5f, 6.4f), Lens35),
-                // close: the treads underfoot, a person looking down at them
-                ("eye-down", new Vector3(50.2f, 27.0f, 3.9f + 1.6f), new Vector3(49.1f, 29.2f, 4.4f), Lens35),
-                // the target frame's street stop (LT1Heart.Shots, 3)
-                ("street", new Vector3(49.3f, 12f, 5.6f), new Vector3(47.5f, 44f, 10.5f), Lens28),
-                // 12 m up beside the flight, looking down along it
-                ("into12", new Vector3(56f, 18f, 3f + 12f), lowerMid, Lens28),
-                // the city camera, pulled out and steep (near-isometric)
-                ("high", new Vector3(80f, 2f, 60f), new Vector3(48.5f, 36f, 7f), 15f),
-            };
             try
             {
-                foreach (var moment in new[] { "1300-drizzle", "1600-low-sun", "1750-blue-hour" })
+                foreach (var moment in Moments)
                 {
                     if (!Wanted("-moments", moment))
                         continue;
@@ -380,18 +409,12 @@ namespace Overstory.EditorTools
                     stage.rig = rig;
                     string dir = Path.Combine(outDir, moment);
                     Directory.CreateDirectory(dir);
-                    foreach (var (view, pos, target, fov) in views)
+                    foreach (var v in Views)
                     {
+                        string view = v.name;
                         if (!Wanted("-views", view))
                             continue;
-                        shot.position = pos;
-                        shot.target = target;
-                        shot.verticalFov = fov;
-                        shot.near = 0.1f;
-                        shot.far = 9000f;
-                        urp.shadowDistance = 120f;
-                        stage.shot = shot;
-                        stage.Apply();
+                        Aim(stage, shot, v);
                         // -paint: the clay kept, the style's brushwork on (clay alone judges the light; the painted
                         // language is judged with the brush)
                         if (Flag("-paint"))

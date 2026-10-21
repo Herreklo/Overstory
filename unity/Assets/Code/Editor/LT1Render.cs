@@ -196,7 +196,7 @@ namespace Overstory.EditorTools
             return t;
         }
 
-        static void Render(Camera cam, RenderTexture rt)
+        internal static void Render(Camera cam, RenderTexture rt)
         {
             var request = new RenderPipeline.StandardRequest { destination = rt };
             if (RenderPipeline.SupportsRenderRequest(cam, request))

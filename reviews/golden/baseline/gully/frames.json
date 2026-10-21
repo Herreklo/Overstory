@@ -1,0 +1,28 @@
+{
+    "what": "the gully's golden views (LT1Golden.Views)",
+    "width": 2560,
+    "height": 1440,
+    "msaa": 4,
+    "warmUp": 8,
+    "tweak": false,
+    "unity": "6000.6.6f1",
+    "gpu": "Apple M4",
+    "api": "Metal",
+    "frames": [
+        "gully/1300-drizzle/eye-foot.png",
+        "gully/1300-drizzle/eye-on.png",
+        "gully/1300-drizzle/street.png",
+        "gully/1300-drizzle/into12.png",
+        "gully/1300-drizzle/high.png",
+        "gully/1600-low-sun/eye-foot.png",
+        "gully/1600-low-sun/eye-on.png",
+        "gully/1600-low-sun/street.png",
+        "gully/1600-low-sun/into12.png",
+        "gully/1600-low-sun/high.png",
+        "gully/1750-blue-hour/eye-foot.png",
+        "gully/1750-blue-hour/eye-on.png",
+        "gully/1750-blue-hour/street.png",
+        "gully/1750-blue-hour/into12.png",
+        "gully/1750-blue-hour/high.png"
+    ]
+}
