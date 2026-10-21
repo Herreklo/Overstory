@@ -37,6 +37,8 @@ Fable's limit returns with the reset. The judgement work done on Opus while it w
 4. **The playtest programme** (`docs/research/playtesting.md`): review it, and extend "worth trying".
 5. **The gaps in the camera study:** Naughty Dog, Insomniac, Mario Odyssey, the alley cameras of Assassin's Creed, Hitman and Uncharted, and BG3's Lower City.
 
+6. **Post on #60 after the Fable review:** the paper playtests' method and results, and their must-improve register as the bundle of engine requests.
+
 The studies of fun, AI playtesting and play craft, the clay time test (1f) and the measuring tools are committed as they land.
 
 ## Waiting for Øystein
