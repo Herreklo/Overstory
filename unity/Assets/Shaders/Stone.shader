@@ -207,7 +207,7 @@ Shader "Overstory/Stone"
                 // moss and lichen soak it up: darker a little, never glossy
                 s.albedo *= lerp(1.0h, 1.0h - 0.5h * lerp(_Porosity, 0.3h, so.growth), wet);
                 // wet slate glosses where feet polished it; its rough skin elsewhere only a little
-                s.smoothness = lerp(s.smoothness, max(s.smoothness, lerp(0.3h, 0.72h, input.history.r)), wet * (1.0h - so.growth));
+                s.smoothness = lerp(s.smoothness, max(s.smoothness, lerp(0.3h, 0.85h, input.history.r)), wet * (1.0h - so.growth));
                 half pool = smoothstep(0.5h, 0.85h, input.history.a) * saturate((half)_OS_Wetness * 1.5h - 0.4h) * step(0.8h, up);
                 s.albedo = lerp(s.albedo, s.albedo * 0.7h, pool);
                 s.smoothness = lerp(s.smoothness, 0.96h, pool);

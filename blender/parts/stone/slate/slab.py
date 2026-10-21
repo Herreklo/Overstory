@@ -127,6 +127,14 @@ def slab(seed, width, depth, thick, front_round=0.012, side_round=0.006, layers=
     # which edge each border point is on: the front rounds most, the back least
     side_of = np.array([0] * nu + [1] * (nv - 1) + [2] * (nu - 1) + [3] * (nv - 2))
     rad = np.where(side_of == 0, r_front, np.where(side_of == 2, 0.003, r_side))
+    # the arris rounded unevenly, crisp in places and knocked in others (an even round caught the light as one line
+    # along every nosing)
+    def steps_along(n, k, lo, hi):
+        bt = np.sort(np.concatenate([[0.0, 1.0], [rng.random() for _ in range(k)]]))
+        bv = np.array([rng.uniform(lo, hi) for _ in bt])
+        idx = np.clip(np.searchsorted(bt, np.linspace(0, 1, n), side="right") - 1, 0, len(bv) - 1)
+        return bv[idx]
+    rad = rad * steps_along(nring, max(3, nring // 6), 0.25, 1.7)
     per = np.concatenate([[0.0], np.cumsum(np.linalg.norm(np.diff(P, axis=0), axis=1))])
 
     rings = [np.array(ring)]
@@ -151,8 +159,10 @@ def slab(seed, width, depth, thick, front_round=0.012, side_round=0.006, layers=
     for k, hk in enumerate(list(heights) + [0.0]):
         # each layer's standing in or out wanders along the edge; at the front more (it was split, then dressed only
         # on top), at the back least
-        lay = _noise1(rng, nring, [(rng.uniform(1.5, 3.0), 1.0), (rng.uniform(6, 10), 0.35)])
-        amp = np.where(side_of == 0, 0.010, np.where(side_of == 2, 0.002, 0.006))
+        # each plate stands in or out by its own amount and breaks off abruptly along the edge (a smooth offset
+        # along the whole edge read as planed striations)
+        lay = steps_along(nring, max(2, nring // 10), -1.0, 1.0) + 0.2 * _noise1(rng, nring, [(rng.uniform(6, 10), 1.0)])
+        amp = np.where(side_of == 0, 0.012, np.where(side_of == 2, 0.002, 0.008))
         outk = rad + amp * lay - 0.002 * k
         zk = z_edge * hk if hk > 0 else np.zeros(nring)
         # a ledge: the layer's top edge at the old setback, then its own face below it

@@ -23,51 +23,43 @@ float2 OS_GrowthHash2(float2 p)
     return float2(OS_Hash(p), OS_Hash(p + 19.19));
 }
 
-// Lichen in a surface's own plane (metres), as crustose lichen colonises a quiet stone (the board, 06; map lichen):
-// colonies seeded across the surface, each a disc whose diameter is its growth rate times its own years (a colony
-// starts a few years after the next), its edge a little ragged; a thin dark rim where a colony meets bare stone or
-// a neighbour (map lichen's black prothallus, a pigment of the lichen, not a shade); young colonies a few millimetres,
-// old ones merging into patches. How many colonies settle grows with the quiet years and the pack's share; none
-// where it is trodden or cleaned. Once a pixel covers more than a colony it is seen as its mean cover, as a lens would
-// average it. x coverage, y how old (0 young to 1), z the rim (0 to 1).
+// Lichen in a surface's own plane (metres), as crustose lichen covers a quiet stone over a century (the board, 06, 05;
+// map lichen): crusts a few centimetres to a hand across, lobed, most of them old colonies grown into one another,
+// with a few small young ones between; a thin dark rim where a crust meets bare stone (map lichen's prothallus, a
+// pigment of the lichen, never a shade). How much is covered grows with the quiet years to about a third of a quiet
+// place after a century; none where it is trodden or cleaned, fading with the quiet. Once a pixel covers more than a
+// crust it is seen as its mean, as a lens would average it. x coverage, y how old (0 young to 1), z the rim.
 half3 OS_LichenAt(float2 q, half years, half seed, float footprint)
 {
+    // the crusts: a warped field over the plane, its quantile set so the covered share follows the years (its spread
+    // as measured: mean 0.5, deviation about 0.14)
+    float k = 1.0 / 0.07;
+    float2 w = float2(OS_Noise(q * k * 0.6 + seed * 5.1), OS_Noise(q * k * 0.6 + 9.7 + seed * 2.3)) - 0.5;
+    float2 qq = q * k + w * 1.8;
+    half field = (half)(OS_Noise(qq) * 0.55 + OS_Noise(qq * 2.3 + 4.4) * 0.3 + OS_Noise(qq * 5.1 + 1.3) * 0.15);
+    half lobe = (half)(OS_Noise(q * 90.0 + seed * 3.0) - 0.5);
+    half share = saturate((years - 10.0h) / 110.0h) * 0.34h * (half)_OS_LichenRate.z / 0.85h;
+    half pq = clamp(1.0h - share, 0.002h, 0.998h);
+    half th = 0.5h + 0.138h * (half)(log(pq / (1.0h - pq)) / 1.702);
+    half f = field + lobe * 0.05h;
+    half cover = smoothstep(th - 0.006h, th + 0.006h, f);
+    // the rim: a thin band just inside the crust's edge
+    half rim = cover * (1.0h - smoothstep(th + 0.006h, th + 0.03h, f));
+    // a few young colonies between, a centimetre or less
     const float cell = 0.03;
-    float2 p = q / cell;
-    float2 i = floor(p);
-    // (at most a third of a quiet place covered after a century: denser, it read as terrazzo)
-    half presence = saturate(years / 90.0h) * 0.28h * (half)_OS_LichenRate.z;
-    half rag = (half)(OS_Noise(q * 160.0 + seed * 7.0) - 0.5);
-    half cover = 0.0h, age = 0.0h, rim = 0.0h, inside = 0.0h;
-    half meanc = 0.0h;
-    [unroll] for (int y = -1; y <= 1; y++)
-    [unroll] for (int x = -1; x <= 1; x++)
+    float2 p2 = q / cell;
+    float2 h2 = OS_GrowthHash2(floor(p2) + seed * 11.3);
+    half r2 = saturate(years / 40.0h) * (0.12h + 0.18h * (half)h2.y);
+    if (h2.x < share * 0.35h)
     {
-        float2 c = i + float2(x, y);
-        float2 h = OS_GrowthHash2(c + seed * 31.7);
-        half own = max(years - 6.0h - 30.0h * (half)h.y, 0.0h);
-        // radius in cells: half the diameter its years grew, a colony at most a hand across before it merges
-        half r = (half)min(_OS_LichenRate.x * own * 0.5 / cell, 2.2);
-        if (x == 0 && y == 0)
-            meanc = presence * saturate(3.14h * r * r);
-        if (h.x > presence || r < 0.04h)
-            continue;
-        float2 centre = c + OS_GrowthHash2(c + 7.3);
-        half d = (half)length(p - centre) / r + rag * 0.35h;
-        half inC = 1.0h - smoothstep(0.94h, 1.0h, d);
-        // the rim: the last few hundredths of the radius, and where this colony's crust meets one already laid
-        // (thin, and only on an old colony or where two meet: on every disc it read as a leopard's spots)
-        half edge = smoothstep(0.88h, 0.94h, d) * inC * saturate(r - 0.6h) + inside * inC * 0.6h;
-        rim = max(rim, saturate(edge));
-        inside = max(inside, inC);
-        if (inC > cover)
-        {
-            cover = inC;
-            age = saturate(r * cell / 0.03h) * (1.0h - smoothstep(0.0h, 0.8h, d));
-        }
+        half d2 = (half)length(frac(p2) - 0.5) / max(r2, 1e-3h) + lobe * 0.6h;
+        half young = 1.0h - smoothstep(0.8h, 1.0h, d2);
+        rim = max(rim, young * smoothstep(0.6h, 0.85h, d2));
+        cover = max(cover, young);
     }
+    half age = saturate((f - th) / 0.1h) * saturate(years / 100.0h);
     half far = saturate((half)((footprint - 0.002) / 0.008));
-    cover = lerp(cover, saturate(meanc * 1.6h), far);
+    cover = lerp(cover, share, far);
     return half3(cover, age * (1.0h - far), rim * (1.0h - far));
 }
 
@@ -96,7 +88,7 @@ OSGrowth OS_GrowthLayer(half3 albedo, half smoothness, float2 q, half lichenYear
     smoothness = lerp(smoothness, 0.08h, li.x);
     half h = li.x * 0.8h;
     // moss: where the surface stays damp and is not trodden; more where the town hides the sky
-    half m = moss * lerp(1.15h, 0.7h, sky);
+    half m = moss * lerp(1.3h, 0.9h, sky);
     half tuft = (half)(OS_Noise(q * 24.0 + 3.0) * 0.6 + OS_Noise(q * 70.0) * 0.4);
     half cover = smoothstep(0.42h, 0.58h, m * (0.55h + 0.6h * tuft));
     half3 mossc = lerp(_OS_MossOld.rgb, _OS_Moss.rgb, saturate(tuft * 1.4h - 0.1h));

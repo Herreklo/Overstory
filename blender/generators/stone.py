@@ -55,7 +55,9 @@ JOINT = (0.004, 0.012)    # (wide joints showed the void under the treads as bla
 # the tread's nosing standing out over the riser (a dark line under every step, from close by and from the city
 # camera alike); or one thick block a step, its front the riser
 BUILT = {
-    "tread_on_riser": dict(tread=(0.10, 0.14), overhang=(0.02, 0.04), riser=(0.07, 0.09)),
+    # (a slab-on-riser step is mostly riser: its rough split face 10 to 12 cm tall under a tread 6 to 8 cm thick, the
+    # nosing 2 to 3 cm proud; thick treads over recessed risers read as shelves over black slots)
+    "tread_on_riser": dict(tread=(0.06, 0.08), overhang=(0.02, 0.03), riser=(0.16, 0.24)),
     "block": dict(bed=0.06),
 }
 
@@ -155,10 +157,12 @@ def lay(spec, seed=1):
             # riser's foot
             traffic = walking(across) if foot_on else walking(across) * (1.0 - np.clip((z0 + P[:, 2] - zfoot) / 0.05, 0.0, 0.8))
             lichen = GR.lichen_years(years, np.where(foot_on, traffic, traffic * 0.75))
+            if not foot_on:
+                lichen = lichen * 0.6     # (a riser's face less than a tread's quiet ends: rain and light reach it less)
             # the back strip: solid in the last few centimetres before the riser above, fading forward
-            back = (kind == 0) & foot_on & (along > 0.72)
+            back = (kind == 0) & foot_on & (along > 0.6)
             joint = (kind == 0) & (piece["edge"] < 0.05) & (P[:, 1] > 0.04)
-            damp = np.where(back, np.clip((along - 0.72) / 0.18, 0.35, 1.0), 0.0) + np.where(joint & ~back, 0.8, 0.0)
+            damp = np.where(back, np.clip((along - 0.6) / 0.3, 0.3, 1.0), 0.0) + np.where(joint & ~back, 1.0, 0.0)
             if not foot_on:
                 damp = damp + 0.7 * np.clip(1.0 - (z0 + P[:, 2] - zfoot) / 0.04, 0.0, 1.0)
             # (feet land on a tread's front half: its back corner is untrodden even in the middle of a busy flight)
@@ -188,10 +192,10 @@ def lay(spec, seed=1):
             # less towards its top; a bed none
             if foot_on:
                 sky = np.where(kind == 0, 0.95 - 0.4 * np.clip((along - 0.75) / 0.25, 0.0, 1.0),
-                               np.where(kind == 1, 0.85, np.where(kind == 2, 0.6, 0.1)))
+                               np.where(kind == 1, 0.85, np.where(kind == 2, 0.7, 0.35)))
             else:
                 hh = np.clip((z0 + P[:, 2] - zfoot) / max(h, 1e-3), 0.0, 1.0)
-                sky = np.where(kind == 3, 0.1, 0.78 - 0.25 * hh)
+                sky = np.where(kind == 3, 0.35, 0.8 - 0.2 * hh)
             ground = np.where(kind == 0, 0.12, np.where(kind == 3, 0.6, 0.3))
             out["UV3"].append(np.stack([sky, ground], -1))
 
@@ -218,28 +222,26 @@ def lay(spec, seed=1):
                 B = BUILT[how]
                 t_tr = rng.uniform(*B["tread"])
                 ovh = rng.uniform(*B["overhang"])
-                # the riser: a slab on edge, its face the bedding plane, standing on the tread below (or the ground),
-                # set back under the nosing
+                # the riser: a block of the rock laid on its bed on the tread below (or the ground), its rough split
+                # face to the lane, nearly flush under the nosing
                 edges = widths(rng, W, below_r, lo=0.6, hi=2.2)
                 below_r = edges[1:-1]
-                hr = h - t_tr + 0.03
+                hr = h - t_tr
                 for k in range(len(edges) - 1):
                     jl = rng.uniform(*JOINT) / 2 if k > 0 else 0.0
                     jr = rng.uniform(*JOINT) / 2 if k < len(edges) - 2 else 0.0
                     w = edges[k + 1] - edges[k] - jl - jr
-                    th = rng.uniform(*B["riser"])
-                    piece = SL.slab(f"{spec['lane']}-{seed}-{fi}-{i}-r{k}", w, hr, th, front_round=0.004, side_round=0.004,
-                                    flake=0.2, grid=0.16)
-                    Q = piece["V"]
-                    # slab space (x across, y its height, z its thickness) to the flight: y up, z towards the foot
-                    P = np.stack([Q[:, 0], -Q[:, 2] + th, Q[:, 1]], -1)
-                    P = np.stack([P[:, 0], P[:, 1], P[:, 2]], -1)
-                    P = settle(rng, P, w)
-                    s0 = i * g + ovh + rng.uniform(-0.005, 0.005) - th
-                    put(P, piece, rng, -W / 2 + edges[k] + jl, s0 + th, zfoot - 0.03 + (t_tr * 0 if i == 0 else 0.0),
-                        laid, False, years)
+                    dep = rng.uniform(*B["riser"])
+                    piece = SL.slab(f"{spec['lane']}-{seed}-{fi}-{i}-r{k}", w, dep, hr, front_round=rng.uniform(0.002, 0.006),
+                                    side_round=0.003, flake=0.1, chip=rng.uniform(0.006, 0.015), edge_jag=0.008, grid=0.16)
+                    P = settle(rng, piece["V"], w)
+                    put(P, piece, rng, -W / 2 + edges[k] + jl, i * g + ovh + rng.uniform(-0.004, 0.004), zfoot, laid, False, years)
                 # the tread: a slab laid on it, its nosing over the riser
                 edges = widths(rng, W, below_t)
+                if relaid and len(edges) < 3:
+                    # (relaid in two slabs like the rest: in one long one it read as different, not newer)
+                    c = W * rng.uniform(0.4, 0.6)
+                    edges = [0.0, c, W]
                 below_t = edges[1:-1]
                 # an old tread cracked across in places: a fine joint where it broke, its two halves settling apart
                 gaps = [rng.uniform(*JOINT) / 2 for _ in edges]

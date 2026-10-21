@@ -73,7 +73,7 @@ namespace Overstory.EditorTools
             m.SetTexture("_GrainMap", AssetDatabase.LoadAssetAtPath<Texture2D>($"{Art}/slate_grain.png"));
             m.SetVector("_Grain", new Vector4(1.0f, 1.0f, 0.14f, 0f));
             m.SetFloat("_Weather", 100f);
-            m.SetVector("_Polish", new Vector4(0.18f, 0.42f, 0f, 0f));
+            m.SetVector("_Polish", new Vector4(0.06f, 0.42f, 0f, 0f));     // the worn line clean, scarcely darker
             m.SetVector("_Relief", new Vector4(0.0016f, 0.0012f, 0f, 0f));
             m.SetFloat("_Porosity", 0.85f);     // wet, the slate goes near black (the board, 02)
             m.SetFloat("_Grey", grey ? 1f : 0f);
