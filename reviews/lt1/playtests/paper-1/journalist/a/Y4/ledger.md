@@ -1,0 +1,73 @@
+# Fact ledger
+
+Run Y4 (journalist, arm a, lives off). One row per claim on each screen (`gm-brief.md`).
+
+| screen | claim | kind | source | how the player could know it |
+| --- | --- | --- | --- | --- |
+| r0 | A harbour town, 1990 | canonical fact | world 9989 (town year = engine year − 37); atlas; card, pitch | the store page |
+| r0 | You are the new reporter on the Courier, the town's weekly | GM-simulated | card, Role (the player has no engine life); the Courier is a workplace in the atlas | the store page |
+| r0 | It goes to press on Wednesday night, ready or not | GM-simulated | card, the clock; setup-off §1 | the store page; Ken says so |
+| r0 | Each week you choose what to chase, whom to ask, and what to print or leave out | GM-simulated | card, verbs; setup-off §4 | the store page |
+| r0 | Everyone you ask has a reason to tell it their way | GM-simulated | card, pitch (word for word, amendment 1); setup-off §4 rule 3 (bends by dice: this world gives no reasons) | the store page; bends show in play |
+| r0 | The editor's own family is in the news | canonical fact | Ken's kin in the record's news: e-10335 (Audrey Scott), e-10501 (Thea Waller and Colin Berry married), e-10593 (Jonah Scott), e-10621 (Colin Berry) | the store page; Ken's rule in the newsroom |
+| r0 | Print first and you sell | GM-simulated | setup-off §4 rules 6 and 7 | the store page |
+| r0 | Print wrong and the correction stays in the bound volume | GM-simulated | setup-off §4 rule 8, §13 | the store page |
+| r0 | A year on, you'll open last June's volume and see what the town made of your pages | GM-simulated | setup-off §1 (the jump), §13 | the store page |
+| r0 | A round is a week: three chase turns, then the edition | GM-simulated | card, tutorial; setup-off §1 | the tutorial |
+| r0 | A chase turn is one act: visit someone and ask up to three questions, watch a place, read the back numbers, or wait | GM-simulated | card, verbs; setup-off §4 rule 2, Watching, Reading | the tutorial |
+| r0 | Answers are for print or not; the notebook keeps who said what, where and when | GM-simulated | setup-off §4 (for print); card, interface | the tutorial |
+| r0 | In the edition, pick a front page and two inside stories, and mark how you know each claim | GM-simulated | card, resources and interface (source marks) | the tutorial |
+| r0 | Sales, readers' trust and the editor's patience move every week | GM-simulated | setup-off §4 rules 5 to 9, the ledger of the dials | the tutorial |
+| r0 | Thursday 7 June 1990, nine in the morning | scene state | setup-off §1 (the opening) | the heading |
+| r0 | The Courier is a front office and a back room on Market Square | texture | authored, as in the mystery (setup-off §3); the Courier is a workplace in the atlas | the scene |
+| r0 | The front office has a counter and three desks; the back room has the make-up table, the files and a shelf of bound volumes | texture | authored; claims no history | the scene |
+| r0 | This morning's edition is stacked in bundles by the door | scene state | setup-off §3 (the edition of 7 June, out at the opening) | the scene |
+| r0 | Its front page is Ian Myers leaving for university in the city | canonical fact | e-10306 (public, May 1990); setup-off §3 | the edition by the door |
+| r0 | Ken Scott, 32, is the editor | canonical fact | p-12; atlas, the Courier (editor) | hover; the scene |
+| r0 | Ken is at the big desk with the planner open | scene state | setup-off §10 | the scene |
+| r0 | Toby Tanner, 32, is the other reporter | canonical fact | p-91; atlas, the Courier | hover; Ken says so |
+| r0 | Toby is on the telephone, writing as he listens | scene state | GM; says nothing of the call | the scene |
+| r0 | Susie Lyons, 66, works at the Courier, at the desk by the window with the notices | canonical fact | p-62; atlas, the Courier (to January 1991); the desk is texture (setup-off §3) | hover; the scene |
+| r0 | The player is the second reporter, with three goes a week out in the town | GM-simulated | card, role and resources; setup-off §3 | Ken says so |
+| r0 | The paper goes on Wednesday night, ready or not | GM-simulated | setup-off §1 | Ken says so |
+| r0 | The front page and two inside stories are the player's; notices are free and Susie writes them; Toby takes whatever breaks | GM-simulated | card, resources; setup-off §3 | Ken says so; the planner |
+| r0 | Sylvia Waller is Ken's partner and works at the council office | canonical fact | p-70; atlas, couples and the council office | Ken says so; hover |
+| r0 | Grace and Toby Waller are Sylvia's mother and father; Toby works at the clinic | canonical fact | p-68, p-67; atlas, people and the clinic | Ken says so; hover |
+| r0 | Thea Waller is Sylvia's sister and runs the clinic | canonical fact | p-69; atlas, the clinic (lead) | Ken says so; hover |
+| r0 | Thea's Colin works at the clinic, and they have a boy, Andy | canonical fact | p-82, p-100; e-10193 (public, November 1989) | Ken says so; the 1989 volume's notices |
+| r0 | Jonah Scott is Ken's brother and works at the council office | canonical fact | p-11; atlas (Tom Vaughan and Audrey Scott, parents of Jonah and Ken; the council office) | Ken says so; hover |
+| r0 | Ken's mother is Audrey Scott | canonical fact | p-10; atlas, parents with no partner record | Ken says so |
+| r0 | Anything naming Ken's kin comes past him before it goes in | GM-simulated | card, decision 4; setup-off §4 decision 4 | Ken says so |
+| r0 | Ken is not a source ("get it from someone who was there") | GM-simulated | setup-off §3 | Ken says so |
+| r0 | 850 a week keeps the job; readers' trust at 7 by the end of the month makes it permanent; patience or trust run out and the player is gone | GM-simulated | card, goals and failure; setup-off §3 (the goals as read); the dials run 0 to 10 | Ken says so |
+| r0 | The planner for 14 June: front and two inside the player's; notices Susie; Toby whatever breaks | GM-simulated | setup-off §1, §3 | the planner |
+| r0 | The harbour day is on Saturday 9 June, on the quay | canonical fact | e-10329 (public, June 1990, week 2; a Saturday, authored) | the planner |
+| r0 | Harry Myers of the school is running the harbour day | canonical fact | e-10304 (local 800, May 1990: he is organising it); atlas, the school | the planner (the organiser told the paper: GM-simulated) |
+| r0 | Susie writes up the harbour day | GM-simulated | setup-off §9 (C-06's twin runs on 14 June) | the planner |
+| r0 | The spike is empty | scene state | GM | the desk |
+| r0 | The tip book is open at today's page | scene state | setup-off §10 | the desk |
+| r0 | The tip is in Ken's hand | GM-simulated | setup-off §10 (flat: no bend or slip rolled) | the tip book |
+| r0 | Two new faces at the garage this year | canonical fact | e-10236, e-10281 (both public, 1990) | the tip; this year's issues |
+| r0 | Gary Hughes came in February | canonical fact | e-10236 (public 1,500, February 1990); p-101 | the tip; this year's issues (a notice) |
+| r0 | Sally Baker came in April | canonical fact | e-10281 (public 1,500, April 1990); p-102 | the tip; this year's issues (a notice) |
+| r0 | "Worth a look." | GM-simulated | Ken's prompt; asserts nothing | the tip |
+| r0 | On the shelf: the bound volume for 1989, and this year's issues to date | scene state | records: setup-off §9 (the twins of C-01 to C-04, the notices) | the shelf; reading costs a turn |
+| r0 | Sales 850 a week; readers' trust 6 of 10; the editor's patience 5 of 10; a source's trust 2 of 3 when first met | GM-simulated | card, resources; setup-off §3 | the standing table |
+| r0 | Round 1 runs to Wednesday 13 June, press night; the edition is out on Thursday 14 June | GM-simulated | setup-off §1 | the screen |
+| r0 | Three chase turns, each with its day and part of the day; the edition is the fourth turn | GM-simulated | setup-off §1 | the screen |
+| r0 | At eleven Ken sends the player out ("Start where the tip is"); getting there costs no turn | GM-simulated | setup-off §10 | the screen |
+| r0 | The garage forecourt, Thursday 7 June 1990, eleven in the morning | scene state | setup-off §10 | the heading |
+| r0 | Two pumps on the forecourt; the workshop doors open; a van inside with its bonnet up; a radio playing on the shelf | texture | authored; claims no history | the scene |
+| r0 | Trevor Lane, 63, is the head mechanic | canonical fact | p-38; atlas, the garage (head mechanic until June 1990; he retires that afternoon, e-10326) | hover; the scene |
+| r0 | Trevor has his head under the van's bonnet, then straightens and wipes his hands | scene state | GM | the scene |
+| r0 | Sally Baker, 39, works at the garage | canonical fact | p-102; e-10281 | hover; the scene |
+| r0 | She is at the bench at the back, with a part in the vice | scene state | GM | the scene |
+| r0 | Gary Hughes, 38, works at the garage | canonical fact | p-101; e-10236 | hover; the scene |
+| r0 | He is at the pumps, filling a car | scene state | GM | the scene |
+| r0 | Talk: one person, up to three questions; each answer is for print or not | GM-simulated | card, verbs; setup-off §4 rule 2 and the for-print rule | the verbs strip |
+| r0 | Watch: one place for a part of the day, seeing who comes and goes and what happens | GM-simulated | setup-off §4, Watching | the verbs strip |
+| r0 | Read: the bound volumes (1989, and this year) at the office; the county paper at the co-op, out on Saturdays; any notice board | GM-simulated | card, screens; setup-off §4, Reading; §9; the co-op is a place in the record's texts (atlas, note 8) | the verbs strip |
+| r0 | Wait: let a day go by | GM-simulated | card, verbs | the verbs strip |
+| r0 | The edition: a 500-word front page and two 250-word inside stories; source marks saw it, a witness saw it, heard from someone named, record; soften, hold or spike; a plan with "if" allowed | GM-simulated | card, resources, interface and decisions; gm-brief (acts may be conditional) | the verbs strip |
+| r0 | Free acts: walking within a turn; inspecting (hover: name, age, work); noting a tip; asking why of a public event found, answered only from the record | GM-simulated | card, verbs and interface; setup-off §4 (the why-probe: "Nothing on record says why") | the verbs strip |
+| r0 | The notebook keeps every answer word for word, with who, where, when and whether for print | GM-simulated | card, interface | the verbs strip |
