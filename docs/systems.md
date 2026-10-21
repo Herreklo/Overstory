@@ -72,7 +72,7 @@ Every system, material and kind is studied twice before it is built (`CLAUDE.md`
 
 | Area | Subject | Craft |
 | --- | --- | --- |
-| Light and colour | `colour-and-shading.md`, `masters-of-colour.md` (thin) | `lighting-and-colour.md` (running) |
+| Light and colour | `colour-and-shading.md`, `masters-of-colour.md` (thin) | `lighting-and-colour.md` |
 | Water, wear, growth, repairs | `repairs.md`, `stone.md`, `nature.md` | `materials-at-scale.md`, `history-in-things.md` |
 | History in things | `world-that-remembers.md`, `house-changes.md`, `repairs.md` | `history-in-things.md` |
 | Tiers, instancing, quality control | `tools-and-performance.md` (thin) | `performance-at-scale.md` |
