@@ -40,6 +40,10 @@ Every hard surface (stone, timber, brick, render, concrete, asphalt, roofs) is d
 
 Shade is the light's, never the object's (SEASON's lesson, `docs/research/colour-and-shading.md`, rule 1): every surface is lit by the town's one shade function (`OS_ShadeP`, `StreetLooks.hlsl`), and no layer carries a shadow tint. A layer's dark (a joint, a nosing's underside) is its occlusion, baked or the light's.
 
+## The living fabric
+
+Every made or planted thing carries one record (made, keepers and their care, uses, works, events) and runs through one runner to its life as it is now; changes flow between things through shared fields over the town (feet, water, sky, wind and salt, care, vacancy); and each view tells a measured number of histories, marks from one cause drawn as one shape (`docs/living-fabric.md`; repairs: `docs/upkeep.md`).
+
 ## Packs and facts
 
 - What a thing is and when it changed are facts: from the engine, or authored in a fixture until the engine has them (`docs/engine-requests.md`). What claims nothing is seeded texture.

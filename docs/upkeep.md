@@ -1,6 +1,6 @@
 # Upkeep
 
-How a built or planted thing changes after it is made: who keeps it, how well, and what is done to it when it wears, settles, breaks or dies. Every system shares it: stone, walls, paving, quays, houses, roofs, timber and trees (`docs/foundations.md`, The shared surface layers, 6). Its research is `docs/research/repairs.md` (who repaired what, how, with what, and how it looks), with `docs/research/house-changes.md` for houses. Its code is `blender/generators/upkeep.py`, its parts are `blender/parts/repair/`, and its materials are the shaders' own (cement in `Stone.shader`).
+The repair strand of the living fabric (`docs/living-fabric.md`: one record and one runner for every made or planted thing, flow through shared fields, a history budget per view). How a built or planted thing changes after it is made: who keeps it, how well, and what is done to it when it wears, settles, breaks or dies. Every system shares it: stone, walls, paving, quays, houses, roofs, timber and trees (`docs/foundations.md`, The shared surface layers, 6). Its research is `docs/research/repairs.md` (who repaired what, how, with what, and how it looks), with `docs/research/house-changes.md` for houses. Its code is `blender/generators/upkeep.py`, its parts are `blender/parts/repair/`, and its materials are the shaders' own (cement in `Stone.shader`).
 
 ## What we want
 

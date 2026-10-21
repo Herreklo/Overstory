@@ -35,6 +35,20 @@ Each request: what is needed, why the game needs it, and what the player would s
 11. **Vehicles and boats with owners.** Who owns which car or boat, when they bought it, new or used. The player would read wealth, age and routine from the cars on a street.
 12. **Several places in one world** (`docs/ideas/world-map.md`): towns and cities as setting packs side by side, routes between them with travel time, and people who move between them. An idea for after the starter town, not a request yet.
 
+## For the living fabric (`docs/living-fabric.md`, agreed 22 October)
+
+How the lives the engine runs reach the town's physical fabric: keepers and their care, works as decisions, homes, feet, goods, the weather that matters, the fabric's rules adopted, small acts on things, and the building a venture takes.
+
+13. **Keepers and care.** Every home, workplace and public thing has a keeper (an owner, a tenant, the council's road department, the harbour), and the keeper's care by decade, read from the engine's own quantities: money, whether they live there or let it, age, and the kind of person they are. The fabric's repairs, repaints and gardens follow it. The player would read from a street which households are flush, absent or failing, and be right.
+14. **Works as decisions.** A repair or alteration above patchwork is a keeper's decision with reasons: the owner reclads, the council widens the road (its own plans already say so), the harbour rebuilds a quay. Plans carried out in part leave the scar. The player would see the road widened at one end and could ask why it stopped.
+15. **Homes.** A household lives at an address: moved in when, own or rent, who else lives there. Today people have jobs and habits with a place but no home. The player would see who lives behind which door, and moving in and out.
+16. **Feet.** From habits, work, school, the shop and the venue: how many trips a month over each path segment. The player would see the worn line on the steps, the path across the lawn, the shop whose step is polished, and the one whose step is not.
+17. **Goods as things.** The house, boat and car people save for become things with an owner, a year, new or used, and a place (a mooring, a drive). Item 11 already asks it for vehicles.
+18. **Weather that matters.** Monthly weather and the storms, floods and hard winters that count, as dated events the hourly weather fits inside. The player would see the limb the January gale took, and the quay's flood line.
+19. **Derived works adopted.** Overstory's life rules written as a portable library the fabric pass can run, so patchwork becomes record; provenance `derived` until then. The engine's own weakness, that events lead nowhere, meets this: the fabric is where consequences land and stay visible.
+20. **Small acts on things.** Some of the engine's small acts (a grudge carried, care shown, a favour) may be acts on a thing: a hedge planted, a fence raised, a sign torn down, a step swept for a neighbour, a widow's wall mended by the street's hands. Each a fact with its reason, so a feeling leaves a trace by an act and never by a verdict. The player would see the fence and could ask who built it and why.
+21. **Ventures take a building.** A venture that opens names its space, chosen by the engine from the fabric pass's vacancy (cheap, fitting, near the founder) with its reason, so the shop stands where the engine put it. The player would see the café open in the empty ironmonger's and learn it was cheap after the crash.
+
 ## Overstory's own
 
 These are presentation, built here from the engine's facts: how a building diary looks, trips and footfall at street level (worn steps, parked cars outside homes where people are in), and hourly weather, heating and lit rooms inside a scene. What they need from the engine is in the front door's habits (#22). Until then the LT1 fixture's `lit` block says which floors are lit at blue hour, and why.
