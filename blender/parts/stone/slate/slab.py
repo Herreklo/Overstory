@@ -60,12 +60,13 @@ def bite_side(y, size):
 
 
 def slab(seed, width, depth, thick, front_round=0.012, side_round=0.006, layers=None, warp=0.003, flake=0.35,
-         chip=0.03, edge_jag=0.012, grid=GRID, broken=None):
+         chip=0.03, edge_jag=0.012, grid=GRID, broken=None, dome=0.0):
     """One slab. front_round, side_round: the radius its edges are rounded to (m); layers: how many split layers
     show in its edges (2 to 4 from its thickness if None); warp: how far its top departs from a plane (m); flake:
     the share of its top a layer lower where one flaked off; chip: how deep its corners are knocked (m); edge_jag:
     how far its split outline wanders (m); broken: (side "l" or "r", size, depth or None): a corner broken off its
-    nosing, down to the bedding plane nearest depth (through the whole slab if None).
+    nosing, down to the bedding plane nearest depth (through the whole slab if None); dome: how far its top is crowned
+    above its edges (m: a sett worn round by wheels and feet).
 
     Returns V (n, 3), F (list of index tuples), and per vertex: kind (0 top, 1 rounded edge, 2 split face, 3 bed),
     edge (on the top: distance to its outline, m; elsewhere 0), s (on the faces: distance round the outline from the
@@ -121,6 +122,9 @@ def slab(seed, width, depth, thick, front_round=0.012, side_round=0.006, layers=
     Y0 = (o_whole[0][None, :] + r_front) + (back - (o_whole[0][None, :] + r_front)) * T
     # the top: a bedding plane, warped, falling a little to the front to shed water, a layer lower where it flaked
     Z = thick + warp * _noise2(rng, X, Y, 0.9) - 0.004 * (1.0 - T)
+    if dome > 0:
+        # (crowned: highest in the middle, falling to every edge)
+        Z += dome * (1.0 - (2.0 * S - 1.0) ** 2) * (1.0 - (2.0 * T - 1.0) ** 2)
     fl = _noise2(rng, X, Y, 0.35, octaves=4, along=0.0)
     step_ = rng.uniform(0.004, 0.009)
     if flake > 0:
