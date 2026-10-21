@@ -32,13 +32,10 @@ The week's plan starts from the architecture (`docs/plan.md`, Next week; steps i
 ## Tonight (21 to 22 October), for the main session
 
 Øystein asked us to carry on without him tonight. The main chat was cleared at about 20:55 to keep it small. Its linked sessions report to it, and on each note it reads this page and acts:
-- **When the scale test reports:**
-  - read `docs/research/scale-test.md`;
-  - pass any number that settles an "Open until measured" item into `docs/building-blocks.md`, with its reason;
-  - start the gully port (step 1 above) in a fresh Opus session, briefed from `docs/research/building-blocks-decisions.md` §13 and `docs/building-blocks.md`, if the 5-hour window allows.
+- **The scale test reported** (22 October, about 01:30; `docs/research/scale-test.md`). It changes nine of the architecture's choices. The gully port started in a fresh Opus session at about 01:45: it folds the results into `docs/building-blocks.md` first (Fable decides any change to a decided rule), then does steps 0b to 2. Øystein accepted the gully's new baseline (`bb13eaa`).
 - **When the playtests report:** the four steps under "When the playtest report lands", below.
 - **After the 5-hour window resets (00:30 Oslo):**
-  - start the camera and play-craft research for 1g in a fresh Opus session. It covers the talks and papers the studies could not open (GDC Vault was down): Designing Journey, Hitman's level design and crowds, Assassin's Creed Unity's crowds, Lemarchand, Smith's continuity paper, So's study of navigation speed and sickness, and the masters named under "Then, on Opus". The sources are listed in the Limits sections of `docs/research/play-craft.md`, `camera-and-composition.md` and `collision-and-navigation.md`. Read online only: a file download waits for Øystein's OK, listed with its source and size.
+  - *Held (22 October): the week's budget goes to the port first; it starts once the port runs and the weekly allows.* The camera and play-craft research for 1g, in a fresh Opus session. It covers the talks and papers the studies could not open (GDC Vault was down): Designing Journey, Hitman's level design and crowds, Assassin's Creed Unity's crowds, Lemarchand, Smith's continuity paper, So's study of navigation speed and sickness, and the masters named under "Then, on Opus". The sources are listed in the Limits sections of `docs/research/play-craft.md`, `camera-and-composition.md` and `collision-and-navigation.md`. Read online only: a file download waits for Øystein's OK, listed with its source and size.
   - the date housekeeping below.
 - **Pace by the 5-hour window:** at most three sessions working at once, and nothing new started above about 80%. Check with `get_usage`.
 
@@ -51,10 +48,11 @@ Each session commits its own work. If one stops, resume it from its files. Long 
   - *The report* scores each concept twice, ready today and potential.
   - *The AI-playtesting fixes apply:* persona crossed with model, the game master audited with a fact ledger, a known-weak calibration game, and predictions and needs as headline measures.
   - *Its main output* is the must-improve register.
+  - *Paused (22 October, about 01:45, Øystein agreed):* the eight runs in flight (one mystery, seven paper) finish and are scored, then a short interim note says what they show and what the other 16 runs would add. Nothing more runs until Øystein and the main session decide on that note. Why: nothing this week depends on the answer; half the AI players praised the known-weak game, so their taste answers are weak (predictions, understanding and needs still hold); and the weekly went from 27% to 34% in an hour. Real people playing the greybox (1g) should tell us more than more AI runs.
   - *Usage (21 October, 21:15):* the lean design was chosen: 24 runs (the paper, the mystery and the club; lives on and off; four kinds of player), about 30% of the week, from 00:30. The full 72 runs would take about 90%, and the port needs the rest. The most decisive runs go first. The playtests stop at a run boundary if the weekly passes 55%. The other 48 runs wait until after Monday's reset, and run only if the lean results leave the ranking open.
-- **The scale test,** above.
+- **The gully port,** above (Tonight).
 
-When the playtest report lands:
+When the interim note lands, the main session reads it and puts the choice (resume, or wait for people in the greybox) to Øystein. When a full playtest report lands:
 1. An Opus agent checks it against the sessions.
 2. Publish it as a private Artifact page for Øystein, with charts of engagement over rounds, lives on against lives off, and the ranking (promised to him).
 3. One Fable review of what the playtests taught, from a lean packet. Opus agents digest the report first, then Fable judges the must-improve register and the first-game options' recommendation together.

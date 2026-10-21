@@ -65,7 +65,7 @@ Why it changed: the gully is now the one today's generators build (Mesh hashes, 
 - The old FBX put back renders the first baseline bit for bit, so the geometry is the whole difference.
 - The new frames render bit-identically twice.
 - A fresh Fable agent judged seven blind pairs of native-size crops where the frames differ most (`reviews/golden/rebaseline-2026-10-22.md`). It found every pair equal: the differences are the generator's own noise (stone positions, which face kind lands where, where moss falls), each as plausible as the other, so both builds are fit to be the reference.
-- It accepted the new one on the main session's brief.
+- It proposed the new one on the main session's brief, and Øystein accepted it (22 October).
 
 **Known defects, frozen into the baseline** (shared by both builds; fixing one is a deliberate change to the reference, not a regression):
 - the left cheek wall's low end reads as see-through thin slabs at the street stop, and as a black band between the wall and the tread ends from 12 m (the wall's skins seem to have no end cap);
