@@ -148,6 +148,9 @@ Rule 8 and "Evidence, not verdicts" give these rules:
 
 ## What we recommend
 
+*Decided since (Øystein, 22 October): there is no money for a commission. Everything below that assumes one is set aside: people are built in-house on the free bases in section C, and the stylisation is chosen so that it does not hinge on detailed faces, the one thing a commission would have bought.*
+
+
 **Test option 1 first, with the push dial:** painterly realism at true proportions on the MPFB/Anny base we already have, painted by our own module. Our people are seen mostly at 15 to 60 m, where silhouette, hair, colour and gait carry identity and the face does not. It fits the world and costs nothing to try. Its weakness, the close scene, has a known answer in a near tier for the face. Run it beside the other two, as planned. Option 2 is the same person pushed (head, hands, planes), started from the Blender Studio stylised meshes; option 3 is MPFB's realistic default under our light. All three are built in-house, so nothing is spent before Øystein has judged them.
 
 The decision for Øystein is whether to commission the base system in the winning style once the test is judged. Our estimate: a paid trial with two or three artists at about $2,000 to $4,000 each, then the system at $16,000 to $60,000 over two to four months. Clothing shelves follow, partly in-house. Without a commission, faces and hands stay the weakest part of the world, as the reality check rates them.
