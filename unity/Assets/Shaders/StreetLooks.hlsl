@@ -330,6 +330,23 @@ half OS_Brush(float3 p, half3 n)
     return (half)(s * 0.65 + t * 0.35) - 0.5h;
 }
 
+// The ground's light as it reaches a face: lit ground gives the rig's warm ground light and the sun's bounce; ground
+// in shade is lit by the sky and gives the same value in the sky's colour. Which a face sees: the ground in front of it
+// is in sun if the face looks towards the sun (the ground behind a face turned away lies in its own shadow) and the
+// face itself is not in a cast shadow. How much it matters: how strong the sun is beside the sky (under overcast both
+// grounds are one). (Fixed for every face, the shade side of a sunlit wall took warm bounce beside blue ground shadow.)
+half3 OS_GroundLight(half3 n, half shadow, half3 sunColour)
+{
+    const half3 lum = half3(0.2126h, 0.7152h, 0.0722h);
+    half3 litGround = _OS_GroundAmb.rgb + _OS_SunBounce.rgb;
+    half3 shadeGround = _OS_SkyAmb.rgb / max(dot(_OS_SkyAmb.rgb, lum), 1e-3h) * dot(_OS_GroundAmb.rgb, lum);
+    float2 nh = n.xz, sh = _OS_SunDir.xz;
+    half facing = (half)(dot(nh, sh) / max(length(nh) * length(sh), 1e-3) * 0.5 + 0.5);
+    half seesSun = facing * facing * lerp(0.3h, 1.0h, shadow);
+    half dominance = saturate(dot(sunColour, lum) / max(dot(_OS_SkyAmb.rgb, lum) * 3.0h, 1e-3h));
+    return lerp(litGround, shadeGround, (1.0h - seesSun) * dominance);
+}
+
 half3 OS_ShadeP(InputData id, StreetSurface s, OSBake b, float3 positionWS)
 {
     InputData inputData = id; // URP's Forward+ light loop looks lights up through a variable of this name
@@ -354,14 +371,19 @@ half3 OS_ShadeP(InputData id, StreetSurface s, OSBake b, float3 positionWS)
     half grime = saturate((b.ground - 0.25h) * 2.2h) * _OS_Paint.z;
     albedo = lerp(albedo, albedo * _OS_Grime.rgb * 2.0h, grime);
 
-    // the sky term, shade in the sky's colour
-    half3 sky = OS_SkyTerm(b, n) * ao.indirectAmbientOcclusion;
+    // the sun first (its shadow says which ground a face looks onto)
+    Light main = GetMainLight(id.shadowCoord, id.positionWS, shadowMask);
+    half sunShadow = main.shadowAttenuation * OS_CloudLight(positionWS, main.direction);
+
+    // the sky term, shade in the sky's colour; the ground's light as the face sees it
+    half3 skyPart = b.sky * (b.town * OS_SkyFor(n) + (1.0h - b.town) * _OS_TownBounce.rgb);
+    half3 sky = (skyPart + b.ground * OS_GroundLight(n, sunShadow, main.color)) * lerp(0.55h, 1.0h, b.open);
+    sky *= ao.indirectAmbientOcclusion;
     half skyLum = dot(sky, half3(0.2126h, 0.7152h, 0.0722h));
     sky = max(skyLum + (sky - skyLum) * _OS_ShadowChroma, 0.0h);
     half3 colour = albedo * sky;
 
     // the sun: wrapped softly, through the clouds; a warm band where it turns to shade
-    Light main = GetMainLight(id.shadowCoord, id.positionWS, shadowMask);
     half w = _OS_Paint.x;
     half ndl = dot(n, main.direction);
     half wrapped = saturate((ndl + w) / (1.0h + w) + brush * 0.12h);
