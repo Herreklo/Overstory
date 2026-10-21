@@ -23,3 +23,15 @@
 **What was hollow:** every clue ended in a kindly full stop (retired, moved to a son's, "a visitor's, we expect"). No one disagreed, lied or misremembered. The journal wrote my feelings and explained my clues away. Belonging rose for attendance, not attention. With no wrong answers and nothing to miss, I risked nothing.
 
 **Compared with the Hesper:** it used the same kind of material, worn surfaces and dated objects, but there each was evidence with a fate on it and here each is a vignette. A surface that can be read needs a question to be read against.
+
+## Game 3: "Answerable" (the coroner's officer, a harbour town, 1997 to 1999)
+
+**Pull:** 7, 6, 6, 7, 6, 7, then 3 for the empty tenth hour; about 5 overall. Both accounts were accepted. Case 2 had nothing struck and raised my standing to 4, but scored only 55 of 100.
+
+**Marks:** mostly engaged or curious, a few bored (watches that were roll calls, a list that confirmed a line). Delight four times: Toby inside Driftwood, Karen's "He never stopped", the Driftwood poster on the loft door, and the first quarrel, on my last turn. Three cheats: a Tanner and a Holmes in the first scene who were only the name pool, Sean's "couldn't say" about his own song, and a close naming facts I had no path to.
+
+**What kept me:** a question to read against, records that can be wrong, and the man I watched walk past me in case 1 becoming case 2.
+
+**What was hollow:** no cause of death ever on record; no way to tell a blank from a lie; random slips in the records that I was scored against; accounts written before my last turns came back; threats that never bit.
+
+**Compared:** far better than Saltlight, because it has stakes and wrong answers. Below the Hesper, whose clues were all placed on purpose.

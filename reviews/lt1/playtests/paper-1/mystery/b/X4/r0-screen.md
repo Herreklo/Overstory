@@ -56,4 +56,4 @@ Free at any time, and not a turn: walking between places within an act; inspecti
 
 Your journal keeps every statement word for word: who said it, where and when.
 
-Write your act file to mystery/b/X4/r1-act.md, up to four turns.
+Write your act file to /Users/oystein/code/Overstory/reviews/lt1/playtests/paper-1/mystery/b/X4/r1-act.md, up to four turns.
