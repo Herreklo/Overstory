@@ -61,6 +61,7 @@ Choose the model by the kind of work, and say in one line when a step calls for 
 | File | What it holds |
 | --- | --- |
 | `docs/visual-direction.md` | The current visual direction |
+| `docs/foundations.md` | What every system shares: the judging views, detail tiers and budgets, the shared surface layers, packs and facts |
 | `docs/living-world.md` | How places, people and history are shown |
 | `docs/town-plan.md` | The first town: its land, areas, paths, nodes and landmarks, and the order they are laid out in clay |
 | `docs/building-system.md` | How buildings are generated from dated diaries |
