@@ -138,33 +138,32 @@ Each area is researched, subject and craft, before its step starts (`docs/system
 - step 4: the history budget, measured;
 - step 6: the cannery street.
 
-## Rough sizes (22 October, before the architecture; ±50%)
+## Rough sizes (22 October, before the architecture; to be measured)
 
-These are weeks of focused work at this week's pace and usage limits. They are re-estimated after the architecture, and again after the first kinds are rebuilt on the foundations, from the usage log (`docs/usage-log.md`).
+These are weeks of the weekly usage limit, which sets our pace more than the hours do. The studies' own day counts read like a human team's and overestimate our pace. In the week to 22 October, the stairs went from nothing to "close", with their upkeep, wear, water and growth systems, in about a day and a half of work. So these sizes come from the kinds left to make, the foundations, and what the stairs and birches took. They are re-estimated after next week from the usage log (`docs/usage-log.md`).
 
 | Steps | What | Weeks |
 | --- | --- | --- |
-| 1 (1a to 1f) | Architecture, foundations, light, land, stone and birches re-fitted, the clay time test | 6 to 10 |
-| 2 | Buildings: the house kit and the corner's five houses | 8 to 12 |
-| 3 and 4 | The corner's ground and things; the corner through the years | 5 to 9 |
-| 5 | People and the first scene | 10 to 16 |
-| | **A first slice a game could stand on** (criteria 1 to 4 tested) | **about 7 to 11 months** |
-| 6 and 7 | The heart at the city view; nature's living parts | 16 to 26 |
-| 8 and 9 | Interiors; weather and seasons | 12 to 20 |
-| 10 | Districts, the region, other towns, a foreign pack | 12 to 24 |
-| | **The whole plan** | **about 1.5 to 2.5 years** |
+| 1f | **The core idea tested in clay:** the corner's houses at four years, ways of showing time, cold readers | 1 to 2, early |
+| 1 (1a to 1e) | Architecture, foundations, light, land, stone and birches re-fitted | 4 to 6 |
+| 2 | Buildings: the house kit and the corner's five houses | 3 to 5 |
+| 3 and 4 | The corner's ground and things; the corner through the years | 3 to 4 |
+| | **The corner, complete** | **about 3 to 4 months** |
+| 5 | People and the first scene | 6 to 10 |
+| | **A first slice a game could stand on** (criteria 1 to 4 tested) | **about 5 to 7 months** |
+| 6 to 10 | The heart at the city view, nature, interiors, weather and seasons, other towns, a foreign pack | 25 to 45 |
+| | **The whole plan** | **about 1 to 1.5 years** |
 
-What shortens it:
-- the foundations, since later kinds reuse systems, parts and tools;
-- independent work run in parallel within the usage limits;
-- more usage.
+The first of each kind costs most. The corner is where every system and kind is made for the first time, so the rest of the town goes faster on the same foundations.
+
+What shortens it: parallel sessions on independent work, and more usage.
 
 What lengthens it:
 - areas found unstudied;
 - quality loops;
-- the engine's pace, since buildings and homes are not modelled yet and run on fixtures until they are.
+- the engine's pace, since buildings and homes are not modelled yet.
 
-A world for many games has no end: new towns, eras and packs are open-ended content on the same systems.
+A world for many games has no end: new towns, eras and packs are open-ended content.
 
 ## Open, by area (taken up in the order above)
 
