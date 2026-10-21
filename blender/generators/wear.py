@@ -44,3 +44,12 @@ def hands(height, use, reach=0.95, band=0.35):
 def boots(above, use):
     """Boots, bags and barrows at a wall's foot beside a flight: above (m over the step beside it)."""
     return np.clip(1.0 - np.abs(above - 0.06) / 0.14, 0.0, 1.0) * 0.5 * use
+
+
+def busy(footfall, width):
+    """How hard the walking line is trodden (0 to 1), from the footfall and the width it spreads over: growth dies
+    fast under feet (no plot kept half its cover after 200 passes; docs/research/stone.md), so a busy flight's line
+    is bare and a doorstep used a few times a day keeps lichen and moss almost everywhere (the walking line's shape
+    alone made every flight grow alike)."""
+    passes = footfall / max(width / 0.4, 1.0)      # a year, on one foot-width of the line
+    return float(1.0 - np.exp(-passes / 1500.0))

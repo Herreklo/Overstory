@@ -22,7 +22,8 @@ CEMENT_FROM = 1910
 # values, unverified): the town's lone workman between campaigns, more of them once the skilled crews went (after
 # about 1960); an owner's own cement.
 QUICK = {"town": lambda y: 0.6 if y < 1960 else 1.5,
-         "owner": lambda y: 0.8}
+         "owner": lambda y: 0.8,
+         "society": lambda y: 0.9}
 
 
 def mortar_of(year):

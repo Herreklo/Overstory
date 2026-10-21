@@ -87,12 +87,12 @@ def flights_of(lane):
     return out
 
 
-def widths(rng, total, below, lo=0.7, hi=2.3, below2=()):
+def widths(rng, total, below, lo=0.7, hi=2.3, below2=(), ks=None):
     """A course of slabs across the flight: one or two, now and then three, each its own width and its joint wherever
     the slab broke, kept away from the joints below (a joint is bridged, as a mason lays them; three or four to a
     tread in a regular bond read as brickwork)."""
     for _ in range(40):
-        k = rng.choice((1, 2, 2, 2, 3)) if total > 2.2 else rng.choice((1, 1, 2))
+        k = rng.choice(ks) if ks else (rng.choice((1, 2, 2, 2, 3)) if total > 2.2 else rng.choice((1, 1, 2)))
         cuts = sorted(rng.uniform(0.18, 0.82) * total for _ in range(k - 1))
         edges = [0.0] + cuts + [total]
         ws = np.diff(edges)
@@ -166,12 +166,16 @@ def lay(spec, seed=1):
         h, g = rise / n, run / n
         out = dict(V=[], F=[], COL=[], UV0=[], UV1=[], UV2=[], UV3=[])
         below_r = []
+        trod = WR.busy(spec["footfall"], W)
 
         # the treads' slabs as the mason laid them (every joint bridged), then the flight's life over them: the
         # bottom steps take the most water into their beds, and loads are dropped where people go
         plan, below, below2 = [], [], []
+        dressed = spec.get("finish") == "dressed"
         for i in range(n):
-            edges = widths(random.Random(f"{spec['lane']}-{seed}-{fi}-{i}-plan"), W, below, below2=below2)
+            prng = random.Random(f"{spec['lane']}-{seed}-{fi}-{i}-plan")
+            edges = widths(prng, W, below, below2=below2, hi=3.4, ks=(1, 1, 2)) if dressed else \
+                widths(prng, W, below, below2=below2)
             below2, below = below, edges[1:-1]
             plan.append(edges)
         wrng = random.Random(f"{spec['lane']}-{seed}-{fi}-wet")
@@ -205,7 +209,7 @@ def lay(spec, seed=1):
             # riser's face too, above where boots scuff its foot; moss where it stays damp: the strip in front of the
             # riser above (from four fifths of the tread to where the riser stands), the joints between slabs and
             # their pointing, a riser's foot, for the years since the bed was last disturbed
-            traffic = walking(across) if foot_on else walking(across) * (1.0 - np.clip((z0 + P[:, 2] - zfoot) / 0.05, 0.0, 0.8))
+            traffic = (walking(across) if foot_on else walking(across) * (1.0 - np.clip((z0 + P[:, 2] - zfoot) / 0.05, 0.0, 0.8))) * trod
             lich_y = bare_y
             if lifted_y is not None and lifted_y < bare_y:
                 lich_y = np.where(((kind == 0) & (piece["edge"] < 0.06)) | (kind == 1) | (kind == 2), lifted_y, bare_y)
@@ -232,7 +236,7 @@ def lay(spec, seed=1):
             # (feet land on a tread's front half: its back corner is untrodden even in the middle of a busy flight)
             # (moss thins where people walk even at a tread's back and a step's foot: brooms, boots and grit; the green
             # bands at the quiet ends, not a rung across every step)
-            moss = GR.moss(damp, walking(across) * np.where(foot_on & (kind != 6), np.maximum(np.exp(-((np.clip(along, 0, 1) - 0.3) / 0.35) ** 2), 0.7), 1.0), moss_y)
+            moss = GR.moss(damp, trod * walking(across) * np.where(foot_on & (kind != 6), np.maximum(np.exp(-((np.clip(along, 0, 1) - 0.3) / 0.35) ** 2), 0.7), 1.0), moss_y)
             # water stands only where the dish is deepest (on slate a few millimetres; half the walking line under water
             # read as white paint from every view)
             held = np.clip((worn - 0.003) / 0.003, 0.0, 1.0) * top
@@ -323,7 +327,8 @@ def lay(spec, seed=1):
 
         # each step's top a little off the flight's even line (an old flight's rises are never all alike); its ends on it
         erng = random.Random(f"{spec['lane']}-{seed}-{fi}-rises")
-        err = [0.0] + [erng.uniform(-0.012, 0.012) for _ in range(n - 1)] + [0.0]
+        e_ = {"dressed": 0.004, "rough": 0.02}.get(spec.get("finish", "split"), 0.012)
+        err = [0.0] + [erng.uniform(-e_, e_) for _ in range(n - 1)] + [0.0]
         prev_tops = []
         for i in range(n):
             rng = random.Random(f"{spec['lane']}-{seed}-{fi}-{i}")
@@ -347,7 +352,7 @@ def lay(spec, seed=1):
                 # face to the lane, nearly flush under the nosing
                 edges_r = widths(rng, W, below_r, lo=0.6, hi=2.2)
                 below_r = edges_r[1:-1]
-                hr = h - t_tr
+                hr = (z_top - t_tr) - zfoot + 0.004     # (cut to meet its tread: set to a standard height, sky showed between)
                 # (the first step's riser is set into the ground, as a mason sets it, so the lane meets a block and
                 # not its bed)
                 sunk = 0.2 if i == 0 else 0.0
@@ -356,10 +361,12 @@ def lay(spec, seed=1):
                     jr = rng.uniform(*JOINT) / 2 if k < len(edges_r) - 2 else 0.0
                     w = edges_r[k + 1] - edges_r[k] - jl - jr
                     dep = rng.uniform(*B["riser"])
-                    piece = SL.slab(f"{spec['lane']}-{seed}-{fi}-{i}-r{k}", w, dep, hr + sunk, front_round=rng.uniform(0.002, 0.006),
+                    # (bedded a little into the step below: the slab below settles further than the riser on it, and
+                    # sky showed under the riser's foot)
+                    piece = SL.slab(f"{spec['lane']}-{seed}-{fi}-{i}-r{k}", w, dep, hr + sunk + 0.03, front_round=rng.uniform(0.002, 0.006),
                                     side_round=0.003, flake=0.1, chip=rng.uniform(0.006, 0.015), edge_jag=0.008, grid=0.16)
                     P = settler(rng, w, off * 0.5)(piece["V"])
-                    put(P, piece, rng, -W / 2 + edges_r[k] + jl, i * g + ovh + rng.uniform(-0.004, 0.004), zfoot - sunk, False,
+                    put(P, piece, rng, -W / 2 + edges_r[k] + jl, i * g + ovh + rng.uniform(-0.004, 0.004), zfoot - sunk - 0.03, False,
                         YEAR - spec["built"], YEAR - spec["built"], bed_y)
             # the bed line at a block's foot, where it stands on the step below: soil and moss where no crew pointed
             # it (lime pointing washes out in a few decades; the board, 06)
@@ -408,9 +415,19 @@ def lay(spec, seed=1):
                 if how == "block":
                     # a thick block: its front one rough lumpy plate or two (the board, 06: no stacked laminae on a
                     # step's front), its arris crisp and knocked (rounded all along, every block read as dough); the
-                    # walking line's wear rounds its own nosings
-                    fr, sr, jg, nl_ = rng.uniform(0.006, 0.01), rng.uniform(0.004, 0.007), rng.uniform(0.008, 0.012), 2
-                    ch = rng.uniform(0.012, 0.025)
+                    # walking line's wear rounds its own nosings. How it was finished is a fact of the flight: a
+                    # mason's dressed block square, flat-faced and true; a split block as it came; rough slabs from
+                    # the site's own rock knocked about
+                    finish = spec.get("finish", "split")
+                    if finish == "dressed":
+                        fr, sr, jg, nl_ = rng.uniform(0.003, 0.005), rng.uniform(0.002, 0.004), rng.uniform(0.002, 0.004), 1
+                        ch, fk = rng.uniform(0.004, 0.008), 0.05
+                    elif finish == "rough":
+                        fr, sr, jg, nl_ = rng.uniform(0.008, 0.015), rng.uniform(0.006, 0.012), rng.uniform(0.016, 0.026), 2
+                        ch = rng.uniform(0.02, 0.035)
+                    else:
+                        fr, sr, jg, nl_ = rng.uniform(0.006, 0.01), rng.uniform(0.004, 0.007), rng.uniform(0.008, 0.012), 2
+                        ch = rng.uniform(0.012, 0.025)
                 for pa, pb, half in parts:
                     w = pb - pa
                     broken = None
