@@ -223,7 +223,7 @@ Each step ends in something judged in Unity, then a strict review. The corner's 
 
 ## 9. Decisions
 
-Merged across the four pages, these are fifteen decisions for the design lead, recorded as decided, and three for Øystein.
+Merged across the four pages, these are fifteen decisions for the design lead, recorded as decided, and three for Øystein (the second decided by him).
 
 ### Decided
 
@@ -246,5 +246,9 @@ Merged across the four pages, these are fifteen decisions for the design lead, r
 ### For Øystein
 
 1. **Where the town system enters the plan, and what he sees (scope).** Recommended: data and measures now beside the corner (T0, T1, no visuals); the clay tests beside the corner's buildings (T2, T3); the heart's geometry at step 6. It would run as the trees did, strict reviews as the gate, with Øystein seeing three milestones: the three types, the regrow, the plan stopped part way. It fixes facts the corner leans on without slowing it.
-2. **How years pass in play (game design).** Recommended: scenarios in chosen years on one persistent world, years skipped between chapters, never fast-forwarded as play. The forces run over decades while play spans months, so history is read by returning, not by waiting.
+2. **How years pass in play: decided (Øystein, 22 October), per game.** It depends on the game: one game spans a week, another a year, another generations. Overstory is a world for many games, so the town system and the building blocks support every span. That sets four requirements:
+   - The state at any date is the same however it was reached: by a jump of decades, by years skipped between chapters, or day by day. History is a function of the record and the date, never of the frames played.
+   - Every system answers at every resolution. Hours and days come from weather, light, scene state and a poster put up. Months and seasons come from growth, leaves, upkeep and a shop opening. Decades and generations come from plans, works, demolition and rebuilding.
+   - What a span cannot show is still true. A week-long game shows wear it will never see grow, and a generations game passes over the week's posters.
+   - How a jump is shown on screen is chosen by the game from what `docs/research/time-on-screen.md` finds.
 3. **The eras after 1989 (scope).** Recommended: research only what the first scenario's years need (the corner's 2020 frame needs a handful of items), and let the library run to any year with the eras it has. That content is large and has no player yet.
