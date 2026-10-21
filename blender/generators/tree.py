@@ -601,8 +601,9 @@ def branch_mesh(tl, parts, H, vols=None, needed=None):
 
 # -- the bark's marks ------------------------------------------------------------------------------------------------
 
-MARK_CELLS = dict(slash=(0, 1, 2, 3), broken=(4, 5), dashes=(6, 7, 8), hook=(0, 2), scar=(11, 12), chevron=(13, 14),
-                  tiny=(15,))      # (hooks read as an eye with a lash: drawn as slashes)      # the marks atlas's cells (4 by 4) by kind (blender/parts/trees/birch/paint.py)
+MARK_CELLS = dict(slash=(0, 1, 2, 3), broken=(4, 5), dashes=(15, 0), hook=(0, 2), scar=(0, 1), chevron=(13, 14),
+                  tiny=(15,))      # (hooks read as an eye with a lash, rows of dashes as a row of equal ovals: drawn as
+                                   # slashes; a scar has no torn lip, its pale centre read as an eye)      # the marks atlas's cells (4 by 4) by kind (blender/parts/trees/birch/paint.py)
 
 
 def mark_mesh(tl, parts, seed):
@@ -724,7 +725,7 @@ def mark_mesh(tl, parts, seed):
         years = age - int(died[d])
         grown = min(years / 25.0, 1.5)
         w = min(6.0 * r_then * (1.0 + 0.7 * grown) * k_, 1.3 * nr[p])
-        kind = "broken" if h01(int(d), 55) < 0.35 else "slash"
+        kind = "scar"
         # a fresh scar is dark; an old one fades towards the bark as it weathers, low in contrast
         put(p, tl["end_grown"][d] - tl["start_grown"][d], w, pick(kind, int(d)), 0.0, int(d),
             weather=min(years / 50.0, 0.5))

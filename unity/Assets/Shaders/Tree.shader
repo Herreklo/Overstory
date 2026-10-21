@@ -106,12 +106,13 @@ Shader "Overstory/Tree"
         half up = saturate(1.0h - (half)(z / max(_Foot.y * r, 0.05)));          // 1 at the ground, 0 at its top
         half age = saturate((half)(r / _Foot.x));
         half reach = (half)OS_Noise(float2(u * 2.3, 0.0)) * 0.6h + (half)OS_Noise(float2(u * 9.0 + 2.7, 0.0)) * 0.4h;
-        half f = (half)(OS_Noise(float2(u * 16.0, positionWS.y * 2.4)) * 0.6 + OS_Noise(float2(u * 34.0 + 3.1, positionWS.y * 6.0)) * 0.4);
+        // many small plates (the reference's crust), white between them down to the ground: none closes into one
+        half f = (half)(OS_Noise(float2(u * 28.0, positionWS.y * 4.5)) * 0.6 + OS_Noise(float2(u * 52.0 + 3.1, positionWS.y * 9.0)) * 0.4);
         // torn edges: a fine jag where the white bark ends
         f += 0.07h * ((half)OS_Noise(float2(u * 120.0, positionWS.y * 60.0)) - 0.5h);
         // the threshold falls towards the ground and with each fissure's own reach: more of the bark dark lower down,
         // never all of it
-        half t = 0.95h - 0.5h * up - 0.3h * (reach - 0.5h);
+        half t = 0.95h - 0.38h * up - 0.25h * (reach - 0.5h);
         half dark = smoothstep(t - 0.02h, t + 0.02h, f) * smoothstep(0.02h, 0.12h, up);
         // broken across by bands of the white bark left (the reference's plates, never long spikes)
         half breaks = smoothstep(0.7h, 0.74h, (half)OS_Noise(float2(u * 6.0 + 9.3, positionWS.y * 11.0))) * (1.0h - up);
@@ -181,7 +182,9 @@ Shader "Overstory/Tree"
         // turning: each leaf from green to the species' autumn colour as the season passes its order, the first to
         // turn going on to brown; a seeded touch of hue per card
         half t = smoothstep(order - 0.2h, order + 0.2h, (half)_Season.x);
-        half late = smoothstep(order + 0.6h, order + 0.75h, (half)_Season.x);
+        // the first to turn going on to brown: on this coast an October birch is a mix of green-yellow, yellow and
+        // brown, never one hue
+        half late = smoothstep(order + 0.42h, order + 0.58h, (half)_Season.x) * 0.85h;
         half3 c = lerp(lerp(_Green.rgb, _Turned.rgb, t), _Late.rgb, late);
         half k = frac((half)extra.x * 13.7h) - 0.5h;
         c *= 1.0h + half3(0.05h, 0.02h, -0.04h) * k;

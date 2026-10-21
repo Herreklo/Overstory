@@ -110,6 +110,7 @@ SPECIES = {
 # tests.
 SPECIES["silver_birch"] = dict(SPECIES["birch"],
                                setpoint=((90, 90), (66, 38), (30, 0), (0, -20), (-15, -30), (-20, -35)),
+                               prune_big=1.5,    # its low arching limbs carry its weeping skirt: fewer shed
                                leader_until=999, apical=(0.64, 0.58, 40), width=(0.19, 0.32), self_prune=(0.05, 0.25))
 
 
