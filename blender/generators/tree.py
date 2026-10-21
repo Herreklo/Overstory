@@ -57,7 +57,7 @@ import tree_growth as G  # noqa: E402
 # views. hug_gap, hug_len: a branch within hug_gap (m) of a stem's bark for more than hug_len along it is not drawn.
 PARTS = {
     "birch": dict(sag=0.08, taper=0.55, flare=0.3, flare_branch=0.22, flare_min_radius=0.008, occlusion=0.05, seam=0.5, atlas="clusters", lobe=0.8, lobe_gap=0.36,
-                  marks=True, mark_min_radius=0.02, mark_scale=1.6, lenticel_spacing=0.6,
+                  marks=True, mark_min_radius=0.02, mark_scale=1.6, lenticel_spacing=0.24, mark_min_height=0.6,
                   cluster_size=(1.3, 1.15, 1.05, 0.85), crossed=True, edge_gap=0.22, edge_depth=0.2,
                   masses="limbs", seam_cut=0.95, core_depth=0.45, core_keep=0.55, top_tilt=50.0,
                   lobe_size=2.2, lobe_weight=0.7, top_z=0.66, top_tilt_depth=0.15, hug_gap=0.12, hug_len=0.5, hug_stem=0.025,
@@ -69,7 +69,7 @@ PARTS = {
 }
 # the silver birch: the birch's fitting, carrying its own drapes (blender/parts/trees/silver_birch; Øystein preferred
 # them, full and arching, to open strands with a rising top), its branches giving more under their weight
-PARTS["silver_birch"] = dict(PARTS["birch"], sag=0.12, lenticel_spacing=1.0)
+PARTS["silver_birch"] = dict(PARTS["birch"], sag=0.12, lenticel_spacing=0.36)
 
 
 def h01(*k):
@@ -375,7 +375,8 @@ def foot_rings(pts, rad, appear, heights=(0.12, 0.3, 0.6, 1.0)):
 
 
 def sides_for(r):
-    return 10 if r >= 0.12 else 8 if r >= 0.06 else 6 if r >= 0.03 else 4 if r >= 0.015 else 3
+    """Sides round a tube of radius r: enough on thick wood that where limbs join no facet or notch shows."""
+    return 16 if r >= 0.1 else 12 if r >= 0.05 else 8 if r >= 0.025 else 6 if r >= 0.012 else 4 if r >= 0.006 else 3
 
 
 def frames(pts):
@@ -542,8 +543,8 @@ def branch_mesh(tl, parts, H, vols=None, needed=None):
             # gives a pole), then flares into the ground, the flare in rings near the ground so it curves
             pts, rad, appear = foot_rings(pts, rad, appear)
             rad = rad * trunk_scale(pts[:, 2], H, parts)
-            pts = np.vstack([pts[0] - np.array([0.0, 0.0, 0.25]), pts])
-            rad = np.concatenate([[rad[0] * 1.08], rad])
+            pts = np.vstack([pts[0] - np.array([0.0, 0.0, 0.6]), pts])
+            rad = np.concatenate([[rad[0] * 0.85], rad])
             appear = np.concatenate([[0.0], appear])
         s = sides_for(rad[0])
         wraps = max(1, int(round(2 * math.pi * rad[0] / tile_round)))
@@ -597,8 +598,8 @@ def branch_mesh(tl, parts, H, vols=None, needed=None):
 
 # -- the bark's marks ------------------------------------------------------------------------------------------------
 
-MARK_CELLS = dict(slash=(0, 1, 2, 3), broken=(4, 5), dashes=(6, 7, 8), hook=(9, 10), scar=(11, 12), chevron=(13, 14),
-                  tiny=(15,))      # the marks atlas's cells (4 by 4) by kind (blender/parts/trees/birch/paint.py)
+MARK_CELLS = dict(slash=(0, 1, 2, 3), broken=(4, 5), dashes=(6, 7, 8), hook=(0, 2), scar=(11, 12), chevron=(13, 14),
+                  tiny=(15,))      # (hooks read as an eye with a lash: drawn as slashes)      # the marks atlas's cells (4 by 4) by kind (blender/parts/trees/birch/paint.py)
 
 
 def mark_mesh(tl, parts, seed):
@@ -622,9 +623,24 @@ def mark_mesh(tl, parts, seed):
         d = end[p] - start[p]
         return d / max(np.linalg.norm(d), 1e-9)
 
+    # the nodes of each branch's first stretch, inside the wood it leaves: a mark there would be buried
+    buried = set()
+    for c in tl.get("drawn_chains", []):
+        if c[0] == 0:
+            continue
+        pp = int(parent[c[0]])
+        hidden, acc = 1.6 * nr.get(pp, float(tl["r"][pp])) + 0.05, 0.0
+        for i in c:
+            acc += float(np.linalg.norm(end[i] - start[i]))
+            if acc > hidden:
+                break
+            buried.add(int(i))
+
     def put(p, direction, w, cell, lift, key, weather=0.0):
         """A square strip w across centred on node p's wood, facing direction, lift along it from the node's end; cell
-        of the atlas; tilted (a shear along the wood) and mirrored by the key."""
+        of the atlas; tilted (a shear along the wood) and mirrored by the key. Never on wood buried in another."""
+        if int(p) in buried:
+            return
         a = axis_of(p)
         out = direction - a * np.dot(direction, a)
         if np.linalg.norm(out) < 1e-6:
@@ -662,7 +678,8 @@ def mark_mesh(tl, parts, seed):
         ang = 2 * math.pi * h01(key, 42)
         return ref * math.cos(ang) + np.cross(a, ref) * math.sin(ang)
 
-    # the chevrons over the larger living branches
+    # the chevrons over the larger living branches, at most two to a stem, each its own size
+    per_stem = {}
     for c in tl.get("drawn_chains", []):
         if c[0] == 0:
             continue
@@ -673,6 +690,12 @@ def mark_mesh(tl, parts, seed):
         # only over a branch large for the wood it leaves (on a slim stem a row of small ones reads as a zipper)
         if rc < 1.75 * min_r or rc < 0.4 * nr[p] or h01(seed, int(c[0]), 54) < 0.25:
             continue
+        stem = int(p)
+        while stem > 0 and order[int(parent[stem])] == order[stem]:
+            stem = int(parent[stem])
+        if per_stem.get(stem, 0) >= 2:
+            continue
+        per_stem[stem] = per_stem.get(stem, 0) + 1
         # over the branch where it leaves the bark: the parent's bark wrinkled over the collar's upper side
         dirc = end[c[0]] - start[c[0]]
         if c[0] in tl["children_of"]:
@@ -684,7 +707,7 @@ def mark_mesh(tl, parts, seed):
         sin_t = float(np.linalg.norm(np.cross(a_p, dirc)))
         cos_t = float(np.dot(a_p, dirc))
         ex = branch_exit(nr[p], sin_t, 99.0)
-        w = min(3.4 * rc * k_, 1.4 * nr[p])
+        w = min(3.4 * rc * k_ * (0.75 + 0.5 * h01(int(c[0]), 63)), 1.4 * nr[p])
         put(p, dirc, w, pick("chevron", int(c[0])), ex * cos_t + 0.9 * rc + 0.15 * w, int(c[0]))
     # the scars of shed branches: large, stretched sideways as the wood grew round them
     died, hist = tl["died"], tl["radius_hist"]
@@ -701,7 +724,7 @@ def mark_mesh(tl, parts, seed):
         kind = "broken" if h01(int(d), 55) < 0.35 else "slash"
         # a fresh scar is dark; an old one fades towards the bark as it weathers, low in contrast
         put(p, tl["end_grown"][d] - tl["start_grown"][d], w, pick(kind, int(d)), 0.0, int(d),
-            weather=min(years / 35.0, 0.85))
+            weather=min(years / 50.0, 0.5))
     # the lenticels: rows up the trunk and the limbs at irregular gaps, a few marks to a row round the wood, their
     # sizes drawn mostly small (log-normal), seeded
     spacing = parts.get("lenticel_spacing", 0.0)
@@ -709,6 +732,11 @@ def mark_mesh(tl, parts, seed):
         for c in tl.get("drawn_chains", []):
             acc = 0.0
             key0 = int(seed) * 100003 + int(c[0])
+            # a branch's first stretch runs inside the wood it leaves: no marks there (they would be buried)
+            hidden = 0.0
+            if c[0] > 0:
+                pp = int(parent[c[0]])
+                hidden = 1.6 * nr.get(pp, float(tl["r"][pp])) + 0.05
             nxt = spacing * (0.3 + 1.2 * h01(key0, 41))
             row = 0
             for i in c:
@@ -719,17 +747,21 @@ def mark_mesh(tl, parts, seed):
                 while acc + seg >= nxt:
                     back = acc + seg - nxt
                     a = axis_of(i)
+                    if end[i][2] - back < parts.get("mark_min_height", 0.0) or acc + seg - back < hidden:
+                        nxt += spacing
+                        continue
                     count = 1 + int(h01(key0, row, 56) * 3.2)
                     for m in range(count):
                         key = key0 * 31 + row * 7 + m
-                        z = math.exp(-1.15 + 0.75 * math.sqrt(-2.0 * math.log(max(h01(key, 57), 1e-6)))
+                        # few and bold, as Firewatch draws an aspen's (fine noise reads as texture, not marks)
+                        z = math.exp(-0.75 + 0.6 * math.sqrt(-2.0 * math.log(max(h01(key, 57), 1e-6)))
                                      * math.cos(2 * math.pi * h01(key, 58)))
                         w = float(np.clip(z, 0.08, 1.2)) * nr[i] * k_
                         rel = w / max(nr[i] * k_, 1e-6)
                         kind = ("tiny" if rel < 0.22 else "dashes" if rel < 0.4
                                 else ("hook" if h01(key, 59) < 0.15 else "broken" if h01(key, 59) < 0.4 else "slash"))
                         put(i, around(a, key), w, pick(kind, key), -back + (h01(key, 60) - 0.5) * 0.06, key,
-                            weather=0.45 * h01(key, 62))
+                            weather=0.3 * h01(key, 62))
                     row += 1
                     gap = -math.log(max(h01(key0, row, 61), 1e-6)) * spacing      # exponential: rows clump and part
                     nxt += max(gap, 0.06)

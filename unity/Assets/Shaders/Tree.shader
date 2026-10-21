@@ -106,7 +106,9 @@ Shader "Overstory/Tree"
         half up = saturate(1.0h - (half)(z / max(_Foot.y * r, 0.05)));          // 1 at the ground, 0 at its top
         half age = saturate((half)(r / _Foot.x));
         half reach = (half)OS_Noise(float2(u * 2.3, 0.0)) * 0.6h + (half)OS_Noise(float2(u * 9.0 + 2.7, 0.0)) * 0.4h;
-        half f = (half)(OS_Noise(float2(u * 24.0, positionWS.y * 3.0)) * 0.6 + OS_Noise(float2(u * 45.0 + 3.1, positionWS.y * 7.0)) * 0.4);
+        half f = (half)(OS_Noise(float2(u * 16.0, positionWS.y * 2.4)) * 0.6 + OS_Noise(float2(u * 34.0 + 3.1, positionWS.y * 6.0)) * 0.4);
+        // torn edges: a fine jag where the white bark ends
+        f += 0.07h * ((half)OS_Noise(float2(u * 120.0, positionWS.y * 60.0)) - 0.5h);
         // the threshold falls towards the ground and with each fissure's own reach: more of the bark dark lower down,
         // never all of it
         half t = 0.95h - 0.5h * up - 0.3h * (reach - 0.5h);
@@ -114,7 +116,8 @@ Shader "Overstory/Tree"
         // broken across by bands of the white bark left (the reference's plates, never long spikes)
         half breaks = smoothstep(0.62h, 0.66h, (half)OS_Noise(float2(u * 6.0 + 9.3, positionWS.y * 11.0)));
         dark *= 1.0h - breaks;
-        half grey = smoothstep(0.1h, 0.9h, up);
+        // the greying begins at its own height round the stem (never a horizontal seam, a sock)
+        half grey = smoothstep(0.1h, 0.9h, saturate(up + 0.35h * (reach - 0.5h) + 0.15h * (f - 0.5h)));
         half k = age * age * (half)_Foot.z;
         return half3(dark * k * (half)_Foot.w, grey * k, 0.0h);
     }
@@ -208,9 +211,10 @@ Shader "Overstory/Tree"
         half3 c = lerp(bark, _Twig.rgb, twig);
         // an old trunk's foot: dark, higher on a thicker trunk, its top edge ragged, a few lighter islands in it
         half3 foot = OS_TreeFoot(positionWS, r, z);
-        // the bark greying towards the ground, and the fissures dark in it
+        // the bark greying towards the ground, and the fissured plates dark in it, rough within
         c = lerp(c, _FootPlate.rgb, foot.y);
-        c = lerp(c, _FootCrack.rgb, foot.x);
+        half rough = (half)OS_Noise(float2((positionWS.x + positionWS.z) * 70.0, positionWS.y * 25.0));
+        c = lerp(c, _FootCrack.rgb * (0.8h + 0.45h * rough), foot.x);
         // a cut face: pale fresh wood weathering to grey over the years, the rings faintly, the callus rolling in
         // from the bark round its edge
         if (uv.x < -0.5)
@@ -381,7 +385,8 @@ Shader "Overstory/Tree"
                     // herringbone), and at the outline a bump steps it
                     half wide = saturate((half)(input.extra.x / 0.25));
                     half face = smoothstep(0.15h, 0.45h, abs(dot(n, GetWorldSpaceNormalizeViewDir(input.positionWS))));
-                    half h = bk.a * (1.0h + foot.y) - foot.x * 0.8h;
+                    half roughH = (half)OS_Noise(float2((input.positionWS.x + input.positionWS.z) * 70.0, input.positionWS.y * 25.0));
+                    half h = bk.a * (1.0h + foot.y) - foot.x * (1.0h - 0.9h * roughH);
                     n = OS_Bump(input.positionWS, n, h * _Relief.x * wide * face);
                 }
             #endif

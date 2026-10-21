@@ -627,9 +627,9 @@ def bark(path, kind="downy"):
     # lenticels: short dark dashes across the stem, a few hundred per tile
     lent = np.zeros((H, W), np.float32)
     ys, xs = np.mgrid[0:H, 0:W].astype(np.float32)
-    for _ in range(38):
+    for _ in range(30):
         cy, cx = rng.uniform(0, H), rng.uniform(0, W)
-        L, T = rng.uniform(26, 80), rng.uniform(1.6, 3.2)
+        L, T = rng.uniform(22, 70), rng.uniform(1.4, 2.8)
         dy = (ys - cy + H / 2) % H - H / 2
         dx = (xs - cx + W / 2) % W - W / 2
         lent = np.maximum(lent, np.clip(1.0 - (np.abs(dx) / L) ** 2 - (dy / T) ** 2, 0, 1) ** 0.6)
