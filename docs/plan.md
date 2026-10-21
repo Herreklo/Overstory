@@ -24,6 +24,13 @@ The order of the work and the current week's plan in detail. `NOW.md` holds the 
 - One stair with its walls is about 816,000 triangles.
 - The repository is 2.2 GB of git history. Unity holds 407 MB of art, 373 MB of it in 222 FBX files, 272 MB of that stone.
 
+**Frame time today** (the harness, 21 October; `docs/measuring.md`): the corner runs at 28 to 42 ms in drizzle, 84 to 96 ms in low sun, and 25 to 35 ms at the blue hour. That's 10 to 40 fps against the 60 fps target.
+- About 15 million triangles a frame with sun shadows, and 5.5 million without.
+- Something drawn only in low sun costs about 55 to 65 ms; the sun beams are the suspect.
+- The birch costs 10 to 16 ms in view, and 25 ms when it fills the frame.
+- The committed gully FBX is not what its generators build, even at its own commit, and the walls have drifted since. The gully is exported again and its golden views re-accepted before the port.
+- URP's dither is redrawn every frame, so a still camera shimmers by about half a level. That is decided with the light (1c).
+
 At today's rate a thousand stairs would take about 19 hours to generate and 16 GB of FBX. The architecture must change how they are made, not tune them.
 
 **The days.** These are rough, in order of dependency. Each step ends in a commit and a pushed state, never mid-change.
