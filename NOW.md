@@ -89,7 +89,7 @@ At today's rate a thousand stairs would take about 19 hours to generate and 16 G
   - libraries of judged pieces placed as instances with per-place facts;
   - budgets set on the reference machine;
   - repetition only where reality repeats: factory-made pieces from small libraries, hand-made ones from large libraries, unique only what wear has shaped.
-- *What every part carries for the systems to come:* the light (the three lookups), motion (pivots, motion class, sockets), the painted look in motion, windows and what is behind them, signs, and time.
+- *What every part carries for the systems to come:* the light (the three lookups), motion (pivots, motion class, sockets), the painted look in motion, windows and what is behind them, signs, time, and the interface. For the interface, every drawn piece must be pickable back to its record, even when merged or instanced, for hovering, inspecting and asking why.
 - *The land:* natural ground plus dated acts, mesh terrain with breaklines, natural stone as a kind.
 - *Quality:*
   - the frame-time harness;
@@ -103,17 +103,16 @@ At today's rate a thousand stairs would take about 19 hours to generate and 16 G
   - memory, disk and streaming by chunk.
 - *What changes in existing work:* the stairs and walls, the birches, and how the houses start (House A built by the generator, then twelve more from the same parts).
 
-**What goes to Øystein** (taste, scope and play only, each with a recommendation; everything else is decided, recorded with its reasons, and shown to him as finished work he can overturn):
+**What goes to Øystein** (scope, play and permissions only, each with a recommendation; everything else is decided, recorded with its reasons, and shown to him as finished work he can overturn):
 - the town system's scope and the eras after 1989 (`docs/town-system.md`);
-- the night sky's colour, lamp glass and the tonemapper, judged on frames when the light is rebuilt;
-- the brush's size stepped by octaves, so strokes stay within a factor of two on screen (recommended; one line of `docs/visual-direction.md`), and no boil on anything that stands still. Both are judged on motion sheets;
 - his OK for reference downloads (Stavanger's rock, water, city-archive photos for houses and dress, and the large GDC decks the studies could not open), each listed with its source and size first;
 - how players compare years (play, defaults per game; `docs/research/time-on-screen.md`). Recommended:
   - an archive photograph, or the player's own, held up at its spot and toggled in place;
   - a time-lapse allowed as spectacle, but bracketed by dated stills and never the only passage;
   - the player's own acts never marked in the world, shown in the journal and the why-probe instead;
-- near ground cover as painted strokes or fine blades (recommended: strokes, confirmed by the first look test);
-- whether signs and street text stay in Norwegian and are translated on inspection (recommended: yes; `docs/research/fronts-windows-and-signs.md`).
+- the interface's play choices, once `docs/research/interface-and-inspection.md` is in.
+
+**Look and craft questions are ours** (Øystein, 22 October: "You have to figure these things out. As long as we are critical and only aim for high quality, this should answer itself."). They are decided on frames and motion sheets, with strict reviews, and Øystein judges the milestones. This covers the night sky's colour, lamp glass and the tonemapper; the brush's size by octaves and any boil; and near ground cover as strokes or blades.
 
 **Budget:**
 - The weekly limit resets on Monday at about 13:00 Oslo time.
@@ -123,7 +122,7 @@ At today's rate a thousand stairs would take about 19 hours to generate and 16 G
 
 **Who starts it:** the chat that wrote this plan starts both Monday sessions when Øystein says go. Otherwise any new session that reads this page can start them.
 
-**Before Monday:** a study of using fewer tokens without losing quality (`docs/research/working-with-claude.md`) is being written; it updates `CLAUDE.md`'s rules. Four craft studies were started on 22 October: `painted-marks-in-motion.md`, `time-on-screen.md`, `ground-cover-and-plants.md` and `fronts-windows-and-signs.md`. Each saves its draft as it goes and is committed as it lands; one cut short is committed as a partial draft and finished on Monday.
+**Before Monday:** two studies are being written. One is on using fewer tokens without losing quality (`docs/research/working-with-claude.md`), which updates `CLAUDE.md`'s rules. The other is on the interface: hovering, inspecting and asking why (`docs/research/interface-and-inspection.md`; Øystein: "we have not talked about ui etc yet"). Four craft studies were started on 22 October: `painted-marks-in-motion.md`, `time-on-screen.md`, `ground-cover-and-plants.md` and `fronts-windows-and-signs.md`. Each saves its draft as it goes and is committed as it lands; one cut short is committed as a partial draft and finished on Monday.
 
 ## Decided (22 October; don't reopen without Øystein)
 
@@ -131,6 +130,7 @@ At today's rate a thousand stairs would take about 19 hours to generate and 16 G
 - **The reference machine** is an ordinary computer, the M4 Mac mini: 60 fps at 1440p at default settings, with no gaming PC needed (`docs/foundations.md`).
 - **Cold readers are model readers,** in the engine's blind method (`docs/foundations.md`).
 - **How years pass in play** depends on the game, from a week to generations. The screen follows the record, and play changes the record (`docs/town-system.md`).
+- **Signs and street text are in English** (Øystein, 22 October), lettered in each era's styles.
 - **Scenes are written, not voiced.** No motion-capture sessions: motion comes from free libraries, edited against video (`docs/living-world.md`).
 - **The town stands on Stavanger's phyllite** (`docs/stone.md`).
 - **Nothing repeats unless it was factory-made** (Øystein, on stairs). No Houdini: its free version forbids commercial use, and there is no money for Indie. No commissions; free and open bases only.
