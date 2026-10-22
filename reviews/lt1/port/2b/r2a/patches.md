@@ -147,5 +147,3 @@ Not passed; paused here for the week's usage. On the tiling sheet the split face
 - the spacing differs between patches.
 
 It also breaks the crescent rows (faults 2 and 4), and gives bed-1 its scarp or retires it. The per-patch sheets (`patch-*.png`, 2 MB each) are rebuilt by `blender/tools/patch_sheet.py` and kept out of git.
-
-**Later, 22 October, 23:10.** The 2 L* limit is withdrawn (SN7). Øystein judged today's stones closer to what he wants than the street target. The next round may carry more value where it is relief lit by the light (lamina steps, worn hollows), never small-scale noise, and is judged beside today's stones at the same distance.
