@@ -56,6 +56,13 @@ namespace Overstory.Perf
     /// times it and the rebuild benchmarks (DistrictBench) into the summary, and -perf-scenes district-near,district-l0,
     /// district-shells measures it from its own views (district.json; -perf-district-views keeps some) in each arm, with
     /// the corner hidden and the district in its real colours.
+    ///
+    /// The walk's whole scene (LT1g, W3; reviews/lt1/playable/walk/w3-report.md): a build holds one composed scene, named
+    /// by 'composed': 'corner' (LT1Perf.Build: the gully's frames' staging) or 'playable' (LT1Perf.BuildPlayable: the
+    /// walk's corner inside the clay town, LT1Play.ComposeOpen, with the runner placed in it). -perf-scenes names it to
+    /// draw it whole ('corner' or 'playable', the default being the build's own; its segments keep their plain names);
+    /// asking for the other one is an error and measures nothing. A configuration may turn several passes off together:
+    /// '-beams+shadows' is every pass on but those two (W3's split of low sun's cost).
     /// </summary>
     public class PerfRunner : MonoBehaviour
     {
@@ -76,6 +83,8 @@ namespace Overstory.Perf
         }
 
         public StreetStage stage;
+        [Tooltip("The scene this build holds, drawn whole: 'corner' (LT1Perf.Build) or 'playable' (LT1Perf.BuildPlayable).")]
+        public string composed = "corner";
         public View[] views;
         public Moment[] moments;
         [Tooltip("The birches in the corner: drawn in every segment but the A/B ones, where they are hidden.")]
@@ -156,9 +165,11 @@ namespace Overstory.Perf
             return 1;
         }
 
-        /// <summary>Whether a configuration turns a pass off.</summary>
+        /// <summary>Whether a configuration turns a pass off ('-a+b' turns off each it names; 'fullscreen' names the four).</summary>
         static bool Off(string config, string pass) =>
-            config == "bare" || config == "flat" || config == "-" + pass || (config == "-fullscreen" && System.Array.IndexOf(FullScreen, pass) >= 0);
+            config == "bare" || config == "flat"
+            || (config.StartsWith("-") && config.Substring(1).Split('+')
+                .Any(p => p == pass || (p == "fullscreen" && System.Array.IndexOf(FullScreen, pass) >= 0)));
 
         struct Seg
         {
@@ -235,7 +246,12 @@ namespace Overstory.Perf
             // the segments: each view in each light, per scene and configuration of the passes (the corner with every
             // pass on alone unless asked), and the corner again without its birches in the A/B lights
             string[] configs = Arg("-perf-passes", "all").Split(',');
-            string[] sceneNames = Arg("-perf-scenes", "corner").Split(',');
+            string[] sceneNames = Arg("-perf-scenes", composed).Split(',');
+            // (the composed scenes: a build holds one, and the other is never measured in its place)
+            foreach (var other in sceneNames.Where(n => (n == "corner" || n == "playable") && n != composed))
+                Debug.LogError($"[PerfRunner] this build holds the {composed} scene, not '{other}': its segments are left out " +
+                               $"(tools/perf.sh{(other == "playable" ? " playable" : "")} builds it)");
+            sceneNames = sceneNames.Where(n => !((n == "corner" || n == "playable") && n != composed)).ToArray();
             string[] keepViews = Arg("-perf-views", null)?.Split(',');
             string[] emptyAt = Arg("-perf-empty-views", string.Join(",", emptyViews)).Split(',');
             string[] districtAt = Arg("-perf-district-views", null)?.Split(',');
@@ -247,7 +263,7 @@ namespace Overstory.Perf
                         // (the motes are drawn only where the light has them)
                         if (config == "-motes" && (l.rig == null || l.rig.motes <= 0f))
                             continue;
-                        string prefix = scene == "corner" ? "" : scene + "-";
+                        string prefix = scene == composed ? "" : scene + "-";
                         string suffix = config == "all" ? "" : "/" + config;
                         bool inDistrict = scene.StartsWith("district");
                         bool quad = scene.StartsWith("quad-");
@@ -261,7 +277,7 @@ namespace Overstory.Perf
                                 continue;
                             segments.Add(new Seg { name = $"{prefix}{v.name}@{l.name}{suffix}", scene = scene, passes = config, view = v, light = l, birchesOn = true });
                         }
-                        if (scene == "corner" && config == "all" && withoutBirchesIn != null && System.Array.IndexOf(withoutBirchesIn, l.name) >= 0 && birches != null && birches.Length > 0)
+                        if (scene == composed && config == "all" && withoutBirchesIn != null && System.Array.IndexOf(withoutBirchesIn, l.name) >= 0 && birches != null && birches.Length > 0)
                             foreach (var v in views)
                                 if (keepViews == null || System.Array.IndexOf(keepViews, v.name) >= 0)
                                     segments.Add(new Seg { name = $"{v.name}@{l.name}-nobirch", scene = scene, passes = config, view = v, light = l, birchesOn = false });
@@ -367,7 +383,7 @@ namespace Overstory.Perf
                 for (int i = 0; i < drawn.Length; i++)
                     if (drawn[i] != null)
                     {
-                        drawn[i].enabled = drawnOn[i] && seg.scene == "corner";
+                        drawn[i].enabled = drawnOn[i] && seg.scene == composed;
                         drawn[i].sharedMaterials = seg.passes == "flat" && flat != null
                             ? drawnWith[i].Select(_ => flat).ToArray() : drawnWith[i];
                     }
@@ -554,7 +570,7 @@ namespace Overstory.Perf
                 loaded.footprintEnd = DistrictLoader.Footprint();     // after every segment has drawn it
             var run = new Run
             {
-                label = label,
+                label = label, scene = composed,
                 started = System.DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture),
                 seconds = measured,
                 unity = Application.unityVersion,
@@ -595,7 +611,7 @@ namespace Overstory.Perf
         static string Table(Run run)
         {
             var sb = new StringBuilder();
-            sb.Append($"# Frame time: the corner{(run.label != "" ? ", " + run.label : "")}\n\n");
+            sb.Append($"# Frame time: {(run.scene == "playable" ? "the walk's corner in the town" : "the corner")}{(run.label != "" ? ", " + run.label : "")}\n\n");
             sb.Append($"{run.started}, {run.gpu} ({run.api}), {run.screen} {run.fullscreen}, MSAA {run.msaa}x, render scale {run.renderScale}, ");
             sb.Append($"quality {run.quality}, vsync {run.vsync}; {run.rounds} rounds of {run.framesPerSegment} frames a segment, each after ");
             sb.Append($"{run.warmUp} warm-up, after {run.settle} frames to settle; {run.seconds:F0} s measuring.\n\n");
@@ -671,6 +687,8 @@ namespace Overstory.Perf
         public class Run
         {
             public string label, started, unity, device, gpu, api, screen, fullscreen, quality;
+            [Tooltip("The composed scene the build holds: corner or playable.")]
+            public string scene;
             public double seconds;
             public int msaa, vsync, warmUp, framesPerSegment, rounds, settle;
             public float renderScale, offscreenScale;

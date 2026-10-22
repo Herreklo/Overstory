@@ -36,12 +36,25 @@ namespace Overstory.EditorTools
     /// The player is run from the logged-in session (rendering needs the GPU and the screen); the Unity editor must not be
     /// open on unity/. Player settings changed for the build (frame timing stats, full screen at 2560 by 1440, running in
     /// the background) are put back afterwards. The generated scene and the player are not kept in git.
+    ///
+    /// The walk's whole scene (LT1g, W3; reviews/lt1/playable/walk/w3-report.md): BuildPlayable composes the corner as the
+    /// walk's player shows it (LT1Play.ComposeOpen: the clay town, the five houses at 1989, the birch, the lamps as the
+    /// facts have them), places the runner in it with the walk's nine views (the five judging views and LT1g's four),
+    /// leaves out the play's own behaviours but PlayCorner (the frame-time overlay's label and its own frame-timing capture
+    /// would be in the numbers), and builds and runs it as Build does, into reviews/perf/&lt;date&gt;/playable/ by default.
+    /// Every option above applies; its scene is 'playable' (-perf-scenes empty,playable).
+    ///
+    ///     tools/perf.sh playable [-runs 2] [-perf-passes all,-beams,-shadows,-beams+shadows,bare,flat] ...
     /// </summary>
     public static class LT1Perf
     {
         const string Generated = "Assets/Experiments/LT1/Perf/Generated";
         const string ScenePath = Generated + "/LT1_PerfCorner.unity";
         const string App = "Builds/Perf/OverstoryPerf.app";     // in unity/, not kept in git
+        const string PlayableScenePath = Generated + "/LT1_PerfPlayable.unity";
+        const string PlayableApp = "Builds/Perf/OverstoryPerfPlayable.app";
+        /// <summary>The root PlantBirch plants the corner's birch under.</summary>
+        public const string BirchRoot = "Trees (the corner's birch)";
 
         /// <summary>
         /// The corner's birch (docs/experiments.md, LT1, the reset: self-seeded in C's yard around 1950, about 14 m,
@@ -53,18 +66,25 @@ namespace Overstory.EditorTools
         /// <summary>The judging views measured (LT1Stone.Views by name), and the birch's own: its crown filling the frame.</summary>
         static readonly string[] ViewNames = { "eye-foot", "eye-on", "street", "into12", "high" };
 
-        public static void Build()
+        public static void Build() =>
+            BuildAndRun(() => Compose(), ScenePath, App, $"reviews/perf/{System.DateTime.Now:yyyy-MM-dd}");
+
+        /// <summary>The walk's whole scene measured (W3): ComposePlayable, then built and run as Build's corner.</summary>
+        public static void BuildPlayable() =>
+            BuildAndRun(() => ComposePlayable(), PlayableScenePath, PlayableApp, $"reviews/perf/{System.DateTime.Now:yyyy-MM-dd}/playable");
+
+        static void BuildAndRun(System.Action compose, string scenePath, string appPath, string defaultOut)
         {
             var urp = (UniversalRenderPipelineAsset)GraphicsSettings.currentRenderPipeline;
             float reach = urp.shadowDistance;
-            Compose();
+            compose();
             urp.shadowDistance = reach;
-            string app = Path.GetFullPath(Path.Combine(Application.dataPath, "..", App));
-            if (!BuildPlayer(app))
+            string app = Path.GetFullPath(Path.Combine(Application.dataPath, "..", appPath));
+            if (!BuildPlayer(app, scenePath))
                 throw new System.Exception("[LT1Perf] the player did not build");
             if (Cli.Flag("-norun"))
                 return;
-            string outDir = Cli.RepoPath("-out", $"reviews/perf/{System.DateTime.Now:yyyy-MM-dd}");
+            string outDir = Cli.RepoPath("-out", defaultOut);
             int runs = int.Parse(Cli.Arg("-runs", "2"), CultureInfo.InvariantCulture);
             // (numbered on from any runs already in the folder, so a run can be added to a day's set)
             int first = 1;
@@ -87,8 +107,6 @@ namespace Overstory.EditorTools
             var (stage, go) = LT1Stone.Stage(false);
             var (_, birch, ground, h) = PlantBirch();
 
-            var runner = new GameObject("Perf runner").AddComponent<PerfRunner>();
-            runner.stage = stage;
             var views = LT1Stone.Views.Where(v => System.Array.IndexOf(ViewNames, v.name) >= 0)
                 .Select(v => new PerfRunner.View { name = v.name, position = v.pos, target = v.target, fov = v.fov }).ToList();
             // the birch's crown filling the frame, from 12 m up beside the lane (as the trees' into12 sheet)
@@ -97,7 +115,31 @@ namespace Overstory.EditorTools
                 name = "birch12", position = new Vector3(BirchAt.x + 13f, BirchAt.y - 9f, ground + 12f),
                 target = new Vector3(BirchAt.x, BirchAt.y, ground + h * 0.62f), fov = 46.4f,
             });
-            runner.views = views.ToArray();
+            var runner = AddRunner(stage, birch, views.ToArray(), "corner");
+            // the scale test's district (loaded only when the player is given -district <dir>), drawn with the street's material
+            runner.district = new GameObject("District (the scale test)").AddComponent<DistrictLoader>();
+            runner.district.material = AssetDatabase.LoadAssetAtPath<Material>("Assets/Art/Materials/M_Street.mat");
+            // the history quad (step 3: LT1History), drawn only in the quad scenes, each binding its own pages
+            (runner.historyQuad, runner.pagesRGBA8, runner.pagesBC7) = LT1History.AddQuad(stage.view);
+            runner.historyQuad.enabled = false;
+            // and its minified meshes (R2b: the scenes quad-<format>-tile4 and -tile8)
+            runner.historyQuadTiles = new[] { 4, 8 };
+            runner.historyQuadTiled = runner.historyQuadTiles.Select(k => LT1History.QuadMesh(k)).ToArray();
+
+            Save(scenePath);
+            Debug.Log($"[LT1Perf] composed {scenePath}: {runner.views.Length} views, {runner.moments.Length} lights");
+        }
+
+        /// <summary>
+        /// The runner placed in the open scene: the stage, its views, the three judging lights, the birch with its leaf
+        /// bounds and its A/B in low sun, the shaders found by name, the pass study's renderer and flat material.
+        /// </summary>
+        static PerfRunner AddRunner(StreetStage stage, GameObject birch, PerfRunner.View[] views, string composed)
+        {
+            var runner = new GameObject("Perf runner").AddComponent<PerfRunner>();
+            runner.stage = stage;
+            runner.composed = composed;
+            runner.views = views;
             runner.moments = LT1Stone.Moments.Select(m => new PerfRunner.Moment
             {
                 name = m, rig = AssetDatabase.LoadAssetAtPath<LightRig>($"Assets/Experiments/LT1/Heart/Light/Heart_{m}.asset"),
@@ -111,28 +153,50 @@ namespace Overstory.EditorTools
                 .Where(s => s != null).ToArray();
             runner.rendererData = AssetDatabase.LoadAssetAtPath<UniversalRendererData>("Assets/Settings/PC_Renderer.asset");
             runner.flat = new Material(Shader.Find("Universal Render Pipeline/Unlit")) { name = "Flat (the pass study)" };
-            // the scale test's district (loaded only when the player is given -district <dir>), drawn with the street's material
-            runner.district = new GameObject("District (the scale test)").AddComponent<DistrictLoader>();
-            runner.district.material = AssetDatabase.LoadAssetAtPath<Material>("Assets/Art/Materials/M_Street.mat");
-            // the history quad (step 3: LT1History), drawn only in the quad scenes, each binding its own pages
-            (runner.historyQuad, runner.pagesRGBA8, runner.pagesBC7) = LT1History.AddQuad(stage.view);
-            runner.historyQuad.enabled = false;
-            // and its minified meshes (R2b: the scenes quad-<format>-tile4 and -tile8)
-            runner.historyQuadTiles = new[] { 4, 8 };
-            runner.historyQuadTiled = runner.historyQuadTiles.Select(k => LT1History.QuadMesh(k)).ToArray();
+            return runner;
+        }
 
+        /// <summary>The open scene saved as a generated scene (a copy: the scene it was opened from stays as it is on disk).</summary>
+        static void Save(string scenePath)
+        {
             Directory.CreateDirectory(Path.Combine(Application.dataPath, "..", Path.GetDirectoryName(scenePath)));
             AssetDatabase.Refresh();
             var scene = EditorSceneManager.GetActiveScene();
             if (!EditorSceneManager.SaveScene(scene, scenePath, true))
                 throw new System.Exception($"[LT1Perf] could not save {scenePath}");
-            Debug.Log($"[LT1Perf] composed {scenePath}: {runner.views.Length} views, {runner.moments.Length} lights");
+        }
+
+        /// <summary>
+        /// The walk's corner as its player shows it (LT1Play.ComposeOpen), with the runner placed in it (W3; the
+        /// pre-mortem's "W3 places the runner": the harness's scenes are setups inside one build, so the walk's scene is
+        /// a build of its own). The play's own behaviours are left out but PlayCorner, which sets the town's globals at the
+        /// start as the player does: the frame-time overlay (its label's draw and its own FrameTimingManager capture would
+        /// be in the numbers) and whatever later stages add to steer the camera, which the runner holds instead. The views
+        /// are the player's own, in its order: the five judging views, then LT1g's four (LT1Play.CaseViews).
+        /// </summary>
+        internal static void ComposePlayable(string scenePath = PlayableScenePath)
+        {
+            var (stage, corner) = LT1Play.ComposeOpen();
+            var left = new List<string>();
+            foreach (var mb in Object.FindObjectsByType<MonoBehaviour>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+                if (mb != null && mb.GetType().Namespace == typeof(Overstory.Play.PlayCorner).Namespace && !(mb is Overstory.Play.PlayCorner))
+                {
+                    left.Add(mb.GetType().Name);
+                    Object.DestroyImmediate(mb);
+                }
+            var trees = GameObject.Find(BirchRoot) ?? throw new MissingReferenceException("[LT1Perf] no birch in the walk's corner");
+            var birch = trees.transform.GetChild(0).gameObject;
+            var views = corner.views.Select(v => new PerfRunner.View { name = v.name, position = v.position, target = v.target, fov = v.fov }).ToArray();
+            var runner = AddRunner(stage, birch, views, "playable");
+            Save(scenePath);
+            Debug.Log($"[LT1Perf] composed {scenePath}: the walk's corner, {runner.views.Length} views ({string.Join(", ", views.Select(v => v.name))}), " +
+                      $"{runner.moments.Length} lights; left out: {(left.Count == 0 ? "nothing" : string.Join(", ", left))}");
         }
 
         /// <summary>The corner's birch planted in the open scene (in memory): its root, the tree, its ground and height.</summary>
         internal static (GameObject root, GameObject birch, float ground, float height) PlantBirch()
         {
-            var root = new GameObject("Trees (the corner's birch)");
+            var root = new GameObject(BirchRoot);
             float ground = GroundAt(BirchAt);
             var birch = LT1Trees.Place(root.transform, "birch", 1, 60, new Vector3(BirchAt.x, BirchAt.y, ground), 0f);
             float top = birch.GetComponentsInChildren<MeshRenderer>().Max(r => r.bounds.max.y);

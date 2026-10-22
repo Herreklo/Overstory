@@ -34,7 +34,16 @@ namespace Overstory.EditorTools
     ///     Unity ... -executeMethod Overstory.EditorTools.LT1Play.Build      (Compose, then the player at App)
     ///     Unity ... -executeMethod Overstory.EditorTools.LT1Play.Check      (the saved scene checked again)
     ///
-    /// -stills renders each judging view (in drizzle unless -moments says otherwise) from the saved scene at the
+    /// The lamps as the facts have them in 1989 (W3): the heart's lights.json lights a shopfront wherever heart_layout
+    /// draws one, but a house's shop lights burn only if its diary (reviews/lt1/time/readers/diaries.json, the real
+    /// arm) gives it a business in the composed year. ShopLights drops the others' and writes the rest to Generated/
+    /// (LampsAt), which the scene's TownLights reads; the heart's own lights.json and scene are left as they are.
+    ///
+    /// The views: the five judging views (keys 1 to 5), then LT1g's four (keys 6 to 9; CaseViews): eye level at A's
+    /// window, on the steps, on the Row, and at the Anchor's door. Those four are authored vantages, placed from the
+    /// footprints in the diaries and from the places record (PlacesRecord: the Anchor cast onto Harbour Row 24, authored).
+    ///
+    /// -stills renders each view (in drizzle unless -moments says otherwise) from the saved scene at the
     /// player's size (PlayerFrame), as PlayCorner shows it. tools/playable.sh runs Build under the Unity lock and puts
     /// back the settings a build rewrites.
     ///
@@ -48,6 +57,15 @@ namespace Overstory.EditorTools
         /// <summary>The corner's houses at 1989, stronger (export_time.py --out Assets/Art/Buildings/playable).</summary>
         public const string HousesRecord = "Assets/Art/Buildings/playable/manifest.json";
         public const string App = "Builds/Playable/OverstoryPlayable.app";     // in unity/, not kept in git
+        /// <summary>The corner's diaries (the real arm's events) and the houses' footprints on the heart's layout.</summary>
+        public const string Diaries = "reviews/lt1/time/readers/diaries.json";
+        /// <summary>Where the engine's places stand on the heart's layout in 1989: authored (the Anchor, pl-bar).</summary>
+        public const string PlacesRecord = "fixtures/lt1-places-1989.json";
+        /// <summary>The lamps as the facts have them in the composed year, written by ShopLights (never kept in git).</summary>
+        public const string LampsAt = Generated + "/lights-1989.json";
+        /// <summary>How far round a house's footprint its own shop lights may stand (they hang 0.4 m out of its front).</summary>
+        const float ShopReach = 1.0f;
+        const float Lens28 = 46.4f, Lens35 = 37.8f;     // (as LT1Stone's)
         /// <summary>The gully's accepted mesh hashes (docs/measuring.md, Mesh hashes; accepted by Øystein, 22 October).</summary>
         public const string Stairs = "bff7858b698f3efd", Walls = "0a3d7db3100df20b";
         const string StoneArt = "Assets/Art/Stone";
@@ -59,6 +77,8 @@ namespace Overstory.EditorTools
         const string Blender = "/Applications/Blender.app/Contents/MacOS/Blender";
         /// <summary>The five judging views (docs/foundations.md), in LT1Stone.Views' order: keys 1 to 5.</summary>
         static readonly string[] ViewNames = { "eye-foot", "eye-on", "street", "into12", "high" };
+        /// <summary>LT1g's four views (docs/experiments.md, LT1g), after the judging views: keys 6 to 9.</summary>
+        public static readonly string[] CaseViewNames = { "a-window", "steps", "row", "anchor-door" };
 
         // -- the gully unchanged ---------------------------------------------------------------------------------------
 
@@ -186,7 +206,11 @@ namespace Overstory.EditorTools
             play.AddComponent<FrameTimeOverlay>();
             corner.stage = stage;
             corner.views = ViewNames.Select(n => LT1Stone.Views.First(v => v.name == n))
-                .Select(v => new PlayCorner.View { name = v.name, position = v.pos, target = v.target, fov = v.fov }).ToArray();
+                .Select(v => new PlayCorner.View { name = v.name, position = v.pos, target = v.target, fov = v.fov })
+                .Concat(CaseViews()).ToArray();
+
+            // the lamps as the facts have them in 1989: a shop's light only where a business is
+            var dark = ShopLights(stage);
             corner.moments = LT1Stone.Moments.Select(m => new PlayCorner.Moment
             {
                 name = m,
@@ -216,8 +240,209 @@ namespace Overstory.EditorTools
                 stage.skyMap.Build();     // the town's sky map over the houses, the stone and the birch
 
             Debug.Log($"[LT1Play] the corner: stone {stone.name}; {placed.Count} houses ({string.Join(", ", placed.Select(h => h.name))}); " +
-                      $"the birch {height:F1} m; {corner.views.Length} views, {corner.moments.Length} lights, {corner.moods.Length} moods");
+                      $"the birch {height:F1} m; {corner.views.Length} views, {corner.moments.Length} lights, {corner.moods.Length} moods; " +
+                      $"no business in {Year}: {(dark.Count == 0 ? "none" : string.Join(", ", dark))}");
             return (stage, corner);
+        }
+
+        // -- the facts: businesses, shop lights, places ------------------------------------------------------------------
+
+        [System.Serializable] public class Footprint { public float ox, oy, angle, w, d, @base; }
+        [System.Serializable] public class HouseAt { public string letter; public int id; public Footprint heart; }
+        [System.Serializable] class HousesHolder { public HouseAt[] houses; }
+        [System.Serializable] class DiaryEvent { public int id, year; public string kind, cause; }
+        [System.Serializable] class Diary { public int id; public DiaryEvent[] events; }
+        [System.Serializable] public class Lamp { public float x, y, z, dx, dy; public string kind; }
+        [System.Serializable] class Lamps { public Lamp[] lamps; }
+
+        [System.Serializable] public class PlaceFacing { public float x, y; }
+        [System.Serializable] public class PlaceDoor { public float x, y, z; public PlaceFacing facing; }
+        [System.Serializable] public class PlaceBuilding { public string layout, key; public float ox, oy, angle, w, d, @base, eave; }
+        [System.Serializable] public class Place { public string id, name, provenance, cause; public PlaceBuilding building; public PlaceDoor door; }
+        [System.Serializable] class Places { public int schemaVersion, year; public Place[] places; }
+
+        static string RepoFile(string path) => Path.GetFullPath(Path.Combine(Application.dataPath, "..", "..", path));
+
+        /// <summary>The corner's houses with their footprints on the heart's layout (the diaries' houses).</summary>
+        public static HouseAt[] Houses() =>
+            JsonUtility.FromJson<HousesHolder>(File.ReadAllText(RepoFile(Diaries))).houses;
+
+        /// <summary>
+        /// Each house's business in a year from its diary (the real arm): open if the last of its business_opened,
+        /// business_closed and shop_removed events up to that year (by year, then the diary's order) opened one.
+        /// </summary>
+        public static Dictionary<string, bool> Businesses(int year)
+        {
+            string text = File.ReadAllText(RepoFile(Diaries));
+            var real = Json.Members(text).FirstOrDefault(m => m.name == "real").value
+                       ?? throw new System.Exception($"[LT1Play] {Diaries} has no real arm");
+            var open = new Dictionary<string, bool>();
+            foreach (var (letter, value) in Json.Members(real))
+            {
+                var events = JsonUtility.FromJson<Diary>(value).events ?? new DiaryEvent[0];
+                var last = events.Select((e, i) => (e, i))
+                    .Where(t => t.e.year <= year && (t.e.kind == "business_opened" || t.e.kind == "business_closed" || t.e.kind == "shop_removed"))
+                    .OrderBy(t => t.e.year).ThenBy(t => t.i).Select(t => t.e).LastOrDefault();
+                open[letter] = last != null && last.kind == "business_opened";
+            }
+            return open;
+        }
+
+        /// <summary>A point in a footprint's own frame: u along its front, v back from it (heart_layout's _local, inverted).</summary>
+        static Vector2 Local(Footprint f, float x, float y)
+        {
+            float a = f.angle * Mathf.Deg2Rad, c = Mathf.Cos(a), s = Mathf.Sin(a);
+            return new Vector2((x - f.ox) * c + (y - f.oy) * s, -(x - f.ox) * s + (y - f.oy) * c);
+        }
+
+        /// <summary>A point given in a footprint's own frame, in street metres (heart_layout's _local).</summary>
+        static Vector2 World(Footprint f, float u, float v)
+        {
+            float a = f.angle * Mathf.Deg2Rad, c = Mathf.Cos(a), s = Mathf.Sin(a);
+            return new Vector2(f.ox + u * c - v * s, f.oy + u * s + v * c);
+        }
+
+        static bool Near(Footprint f, float x, float y, float reach)
+        {
+            var p = Local(f, x, y);
+            return p.x >= -reach && p.x <= f.w + reach && p.y >= -reach && p.y <= f.d + reach;
+        }
+
+        /// <summary>
+        /// The heart's lamps with every shop light dropped that stands at a house with no business in the composed year
+        /// (within ShopReach of its footprint), written to LampsAt and given to the stage's TownLights. Returns the dark
+        /// houses' letters; logs each lamp dropped and why.
+        /// </summary>
+        static List<string> ShopLights(StreetStage stage)
+        {
+            var lights = stage.townLights ?? throw new MissingReferenceException("[LT1Play] the stage has no town lights");
+            if (lights.source == null)
+                throw new MissingReferenceException("[LT1Play] the town lights have no lights.json");
+            var all = JsonUtility.FromJson<Lamps>(lights.source.text).lamps;
+            var open = Businesses(Year);
+            var dark = Houses().Where(h => open.TryGetValue(h.letter, out bool o) && !o).ToList();
+            var dropped = new List<string>();
+            var kept = all.Where(l =>
+            {
+                if (l.kind != "shop")
+                    return true;
+                var at = dark.FirstOrDefault(h => Near(h.heart, l.x, l.y, ShopReach));
+                if (at == null)
+                    return true;
+                dropped.Add($"({l.x:F2}, {l.y:F2}) at {at.letter}");
+                return false;
+            }).ToArray();
+            Directory.CreateDirectory(RepoFile("unity/" + Generated));
+            File.WriteAllText(RepoFile("unity/" + LampsAt), JsonUtility.ToJson(new Lamps { lamps = kept }, true));
+            AssetDatabase.ImportAsset(LampsAt, ImportAssetOptions.ForceSynchronousImport);
+            lights.source = AssetDatabase.LoadAssetAtPath<TextAsset>(LampsAt)
+                            ?? throw new FileNotFoundException($"[LT1Play] {LampsAt} did not import");
+            lights.Build();
+            Debug.Log($"[LT1Play] the lamps in {Year}: {kept.Length} of {all.Length} ({all.Count(l => l.kind == "shop")} shop lights in the heart's); " +
+                      $"dropped {dropped.Count}, a shop's light where its diary has no business in {Year}: " +
+                      $"{(dropped.Count == 0 ? "none" : string.Join(", ", dropped))}");
+            return dark.Select(h => h.letter).ToList();
+        }
+
+        /// <summary>
+        /// The members of a JSON object as raw text (JsonUtility reads no dictionaries, and the diaries key their arm by
+        /// letter): each member's name and its value's text, in order, without parsing the values.
+        /// </summary>
+        static class Json
+        {
+            public static List<(string name, string value)> Members(string obj)
+            {
+                var members = new List<(string, string)>();
+                int i = Space(obj, 0);
+                if (i >= obj.Length || obj[i] != '{')
+                    throw new System.FormatException("[LT1Play] not a JSON object");
+                i = Space(obj, i + 1);
+                while (i < obj.Length && obj[i] != '}')
+                {
+                    int nameEnd = Skip(obj, i);
+                    string name = obj.Substring(i + 1, nameEnd - i - 2);
+                    i = Space(obj, nameEnd);
+                    if (obj[i] != ':')
+                        throw new System.FormatException($"[LT1Play] no ':' after \"{name}\"");
+                    int start = Space(obj, i + 1), end = Skip(obj, start);
+                    members.Add((name, obj.Substring(start, end - start)));
+                    i = Space(obj, end);
+                    if (i < obj.Length && obj[i] == ',')
+                        i = Space(obj, i + 1);
+                }
+                return members;
+            }
+
+            static int Space(string s, int i)
+            {
+                while (i < s.Length && char.IsWhiteSpace(s[i]))
+                    i++;
+                return i;
+            }
+
+            /// <summary>The index just past the value starting at i (a string, an object or array, or a bare word).</summary>
+            static int Skip(string s, int i)
+            {
+                if (s[i] == '"')
+                {
+                    for (int k = i + 1; k < s.Length; k++)
+                        if (s[k] == '\\') k++;
+                        else if (s[k] == '"') return k + 1;
+                    throw new System.FormatException("[LT1Play] an unclosed string");
+                }
+                if (s[i] == '{' || s[i] == '[')
+                {
+                    int depth = 0;
+                    for (int k = i; k < s.Length; k++)
+                    {
+                        char c = s[k];
+                        if (c == '"') { k = Skip(s, k) - 1; continue; }
+                        if (c == '{' || c == '[') depth++;
+                        else if ((c == '}' || c == ']') && --depth == 0) return k + 1;
+                    }
+                    throw new System.FormatException("[LT1Play] an unclosed object or array");
+                }
+                int e = i;
+                while (e < s.Length && s[e] != ',' && s[e] != '}' && s[e] != ']' && !char.IsWhiteSpace(s[e]))
+                    e++;
+                return e;
+            }
+        }
+
+        /// <summary>The places record (PlacesRecord): where the engine's places stand on the heart's layout, authored.</summary>
+        public static Place PlaceOf(string id)
+        {
+            var places = JsonUtility.FromJson<Places>(File.ReadAllText(RepoFile(PlacesRecord)));
+            if (places.year != Year)
+                throw new System.Exception($"[LT1Play] {PlacesRecord} is for {places.year}, not {Year}");
+            return places.places.FirstOrDefault(p => p.id == id)
+                   ?? throw new System.Exception($"[LT1Play] {PlacesRecord} has no {id}");
+        }
+
+        /// <summary>
+        /// LT1g's four views, authored vantages at eye level (1.6 to 1.65 m) placed from the facts' footprints, in street
+        /// metres: at A's window (on the pavement at A's corner, beside its end window, looking up the lane and the steps), on the steps (on the Landing,
+        /// looking up the upper flight to E), on the Row (across the quay road from the lane's mouth, looking up the
+        /// lane), and at the Anchor's door (two metres out from it, looking along the Row to the corner).
+        /// </summary>
+        public static PlayCorner.View[] CaseViews()
+        {
+            var a = Houses().First(h => h.letter == "A").heart;
+            var window = World(a, a.w + 0.3f, -1.2f);     // (on the pavement at A's corner, its end window at the left edge)
+            var anchor = PlaceOf("pl-bar");
+            var door = anchor.door;
+            var facing = new Vector2(door.facing.x, door.facing.y).normalized;
+            return new[]
+            {
+                new PlayCorner.View { name = "a-window", position = new Vector3(window.x, window.y, a.@base + 1.6f),
+                                      target = new Vector3(48.6f, 33.0f, 6.8f), fov = Lens35 },
+                new PlayCorner.View { name = "steps", position = new Vector3(47.6f, 45.0f, 8.0f + 1.65f),
+                                      target = new Vector3(46.6f, 84.0f, 17.6f), fov = Lens35 },
+                new PlayCorner.View { name = "row", position = new Vector3(52.4f, -10.0f, 1.9f + 1.65f),
+                                      target = new Vector3(48.6f, 30.7f, 6.0f), fov = Lens28 },
+                new PlayCorner.View { name = "anchor-door", position = new Vector3(door.x + 2f * facing.x, door.y + 2f * facing.y, door.z + 1.65f),
+                                      target = new Vector3(49.3f, 1.0f, 3.8f), fov = Lens35 },
+            };
         }
 
         /// <summary>The houses' record: the walk's own, or another set of export_time.py's with -houses (to compare).</summary>
@@ -279,7 +504,7 @@ namespace Overstory.EditorTools
             if (masses == null || masses.gameObject.activeSelf)
                 problems.Add("the heart's grey masses for the houses are still shown");
 
-            var trees = GameObject.Find("Trees (the corner's birch)");
+            var trees = GameObject.Find(LT1Perf.BirchRoot);
             int birches = trees == null ? 0 : trees.transform.Cast<Transform>().Count(t => Source(t.gameObject).StartsWith("Assets/Art/Trees/birch/"));
             if (birches != 1)
                 problems.Add($"{birches} birches, not 1");
@@ -289,8 +514,22 @@ namespace Overstory.EditorTools
             if (rigs != LT1Stone.Moments.Length)
                 problems.Add($"{rigs} light rigs, not {LT1Stone.Moments.Length}");
             int views = corner == null || corner.views == null ? 0 : corner.views.Length;
-            if (views != ViewNames.Length)
-                problems.Add($"{views} views, not {ViewNames.Length}");
+            var viewNames = ViewNames.Concat(CaseViewNames).ToArray();
+            if (corner != null && corner.views != null && !corner.views.Select(v => v.name).SequenceEqual(viewNames))
+                problems.Add($"the views {string.Join(", ", corner.views.Select(v => v.name))}, not {string.Join(", ", viewNames)}");
+
+            // the lamps: the scene's are the composed year's, and no shop light stands at a house with no business
+            var town = corner?.stage?.townLights;
+            string lampsAt = town == null || town.source == null ? "none" : AssetDatabase.GetAssetPath(town.source);
+            if (lampsAt != LampsAt)
+                problems.Add($"the town's lamps from {lampsAt}, not {LampsAt}");
+            var open = Businesses(Year);
+            var lamps = town?.source == null ? new Lamp[0] : JsonUtility.FromJson<Lamps>(town.source.text).lamps;
+            var wrong = lamps.Where(l => l.kind == "shop")
+                .SelectMany(l => Houses().Where(h => open.TryGetValue(h.letter, out bool o) && !o && Near(h.heart, l.x, l.y, ShopReach))
+                    .Select(h => $"({l.x:F2}, {l.y:F2}) at {h.letter}")).ToList();
+            if (wrong.Count > 0)
+                problems.Add($"shop lights at a house with no business in {Year}: {string.Join(", ", wrong)}");
             if (corner != null && corner.stage == null)
                 problems.Add("the play object has no stage");
             if (Object.FindAnyObjectByType<FrameTimeOverlay>() == null)
@@ -300,6 +539,8 @@ namespace Overstory.EditorTools
                       $"  the gully: stairs {stairs}, walls {walls} (accepted {Stairs}, {Walls}); in the scene {stoneStairs} stairs, {stoneWalls} cheek walls\n" +
                       $"  {houses.Count} houses at {Year} ({export.style}): {string.Join("; ", houseLines)}\n" +
                       $"  {birches} birch\n" +
+                      $"  lamps from {lampsAt}: {lamps.Length}, {lamps.Count(l => l.kind == "shop")} shop lights; a business in {Year}: " +
+                      $"{string.Join(", ", open.Select(o => $"{o.Key} {(o.Value ? "yes" : "no")}"))}\n" +
                       $"  {rigs} rigs: {(corner == null ? "" : string.Join(", ", corner.moments.Select(m => m.name)))}\n" +
                       $"  {views} views: {(corner == null ? "" : string.Join(", ", corner.views.Select(v => v.name)))}; " +
                       $"{(corner?.moods?.Length ?? 0)} moods: {(corner == null ? "" : string.Join(", ", corner.moods.Select(m => m.name)))}\n" +
@@ -310,7 +551,7 @@ namespace Overstory.EditorTools
 
         // -- stills ------------------------------------------------------------------------------------------------------
 
-        /// <summary>Each judging view of the saved scene at the player's size, as PlayCorner shows it, in the lights asked.</summary>
+        /// <summary>Each view of the saved scene at the player's size, as PlayCorner shows it, in the lights asked.</summary>
         static void Stills(string outDir)
         {
             if (EditorSceneManager.GetActiveScene().path != ScenePath)

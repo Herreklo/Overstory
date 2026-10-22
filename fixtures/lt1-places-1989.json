@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "year": 1989,
+  "note": "Where the engine's places stand on the heart's layout, for the walk (LT1g). The engine has the place (fixtures/engine/understory-world-9989.json, places: pl-bar, 'the Anchor', simulated) but no building for it; the heart's layout has the building but no name. This file casts the one onto the other. Every entry is authored, not simulated: it claims nothing the engine says, and changes no light, mass or door on screen. A later heart rebuild takes the name from here (blender/blockouts/heart_layout.py names Harbour Row 24 only by its number). Read by Overstory.EditorTools.LT1Play (the walk's views) and free for the ladder's Unity-free tests.",
+  "places": [
+    {
+      "id": "pl-bar",
+      "name": "the Anchor",
+      "provenance": "authored",
+      "cause": "docs/town-plan.md puts the Anchor on Harbour Row, the merchants' quay road below the old town. Harbour Row 24 is the merchant house on the Row nearest the corner (its east end 5 m short of A) whose ground floor heart_layout already lights at 17:50 on a Friday (evening shop 'open') with its upper floors dark (upper 0.0): a bar's look on a Friday evening, so the casting changes nothing on screen. Its door faces the lane's mouth across 21 m of the Row.",
+      "building": {
+        "layout": "Harbour Row 24",
+        "key": "Harbour Row 24@17.2,2.04",
+        "ox": 17.2,
+        "oy": 2.04,
+        "angle": -0.709,
+        "w": 12.2,
+        "d": 9.0,
+        "base": 1.9,
+        "eave": 7.6,
+        "checked": "against heart_layout.lay_out() on 22 October 2026 (Blender's Python): the footprint, the door and the evening light as above"
+      },
+      "door": {
+        "x": 23.29,
+        "y": 1.57,
+        "z": 1.9,
+        "facing": { "x": -0.012, "y": -1.0 }
+      }
+    }
+  ]
+}
