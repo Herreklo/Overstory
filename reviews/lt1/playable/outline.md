@@ -83,6 +83,14 @@ Each light stage ends in the rebuilt walk, so Øystein's walk is where it is jud
 3. **Three lights at least:** drizzle, low sun and blue hour at the five views, clay and stone in the same frames, colour and light-only beside the target frames, at judged size.
 4. **Value first, white stays white:** the value view's five bands, and a white chip in every sheet.
 
+**L0. The light's range, on paper** (Øystein, 22 October: "we need to build for the future. do one thing right one time, instead of medium many many times"). 0.5 to 1 d, before L1 fixes the light record.
+- **The craft of two regimes the corner doesn't show,** studied only far enough to shape the format and the shade's terms, and not built here:
+  - light under a canopy: sun flecks, sky seen through leaves, light coming through them (the Firewatch reference);
+  - many lamps at city scale on the reference machine.
+- **Five written cases:** the Row at blue hour; a birch wood at a summer noon; open heath in drizzle; a dense street at night with many lamps in view; snow at low sun.
+- **The check:** L1's light record and the shade's terms give each case a place, line by line, so later regimes add terms and keys instead of a rebuild.
+- **Where findings go:** `docs/research/lighting-and-colour.md` and the coverage row in `docs/systems.md`.
+
 **L1. Measuring the light.** 1.5 to 2 d. Debug views of the shade's terms (albedo, light alone, sky, ground and town bounce, sun, lamps, reflections) and a false-colour value view, keyed in the build. The light record (`schemas/light-record.schema.json`, `Code/Scenes/LightRecord.cs`, both new), saved and hashed with every sheet: the format first, since it is hardest to change. *Ends in* the four debts re-measured as numbers. *Risk:* shader variants multiply, so the debug keywords are stripped from the player.
 
 **L2. Target frames.** 1 d. Drizzle and blue hour at eye-on and street, painted with `blender/tools/paintover.py` over L1's renders at judged size, beside `reviews/lt1/heart/target/3-street-gully-steps-target.png`. Fable judges them before Øystein sees them.
@@ -103,7 +111,7 @@ Each light stage ends in the rebuilt walk, so Øystein's walk is where it is jud
 
 **LR. Self-check, strict review, Øystein's second walk.** 0.5 d.
 
-**Total for 1b:** 13.25 to 19.25 d, 106 to 154%. Cut first: the seen-town half of L8; specular occlusion; the hue-preserving comparison; last, L6's clear sky (low sun keeps today's typed sky).
+**Total for 1b:** 13.75 to 20.25 d, 110 to 162%, with L0. Cut first: the seen-town half of L8; specular occlusion; the hue-preserving comparison; last, L6's clear sky (low sun keeps today's typed sky).
 
 **Night is not in 1c.** Night in tiers (item 8, 5 to 8 d) stays with plan steps 3 and 6. Night after the blue hour is unmeasured; in Stavanger in December the sun sets about 15:35, so most of a winter day's play would fall in dusk or dark. Until night lands, it is the blue-hour rig carried on with the 1989 lamps from `TownLights`, labelled a stand-in. The case's November evenings and its Friday after 16:00 fall in the dark, so test 2 (section 3) checks this first, on stills. If it fails, the visits move into daylight (labelled), which costs nothing; night moves into 1c only if a case still needs it, with that failure as the evidence.
 
@@ -290,7 +298,7 @@ The box is the plan's figure, else my low end; the cut line is 1.5 times it.
 | Phase | Box | Honest estimate | Cut line (1.5× box) | Cut first, in order |
 | --- | --- | --- | --- | --- |
 | 1a, the walk | 19% (2.4 d) | 3.15 to 4.7 d, 25 to 38% | 28.5% | W6; the capture as a film; W5's motion sheet down to one view |
-| 1b, the light | 13.25 d, 106% | 13.25 to 19.25 d, 106 to 154% | 19.9 d, 159% | the seen-town bounce; specular occlusion; the hue-preserving test; L6's clear sky |
+| 1b, the light | 13.75 d, 110% | 13.75 to 20.25 d, 110 to 162% | 20.6 d, 165% | the seen-town bounce; specular occlusion; the hue-preserving test; L6's clear sky |
 | 2, the ladder | 8% (1 d) | 1 d, 8%, plus Øystein's hour | 12% | test 3's second pair; seed B in test 1 last |
 
 1a's estimate is above its box by itself, so its cut line falls inside the estimate: W6 goes as soon as the running total passes 19%, and at 28.5% the walk stops for a re-plan in `NOW.md`. The same holds for 1b at 159%, and for the ladder at 12%.
