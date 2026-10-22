@@ -34,6 +34,17 @@ The situations are what Versu called social practices: a dinner, a greeting, a r
 - Coincidence needs it. At monthly resolution, two people cannot be in the same place at the same time, and most stories start there.
 - It keeps the cost bounded: only the moments at risk run at fine resolution, never the whole town every hour. Simulate the few, show the many, applied to time.
 
+## For the engine
+
+Two findings in Understory's `SUMMARY.md`, that events rarely lead anywhere and that living barely changes people, may share a cause in how time is resolved. At monthly resolution a rupture can only be recorded as an outcome ("they fell out in March"): it has no place, no witnesses and no one who nearly stopped it, so it has little to lead to. A moment resolved in hours has all three.
+
+What could be measured, against the current baseline:
+- the share of weighty events with a weighty consequence;
+- how far events reach beyond the people involved;
+- whether readers judge ruptures as earned.
+
+It pairs with the accounts arc (#20): the moment is where accounts are made. It is a proposal for the engine to weigh against its own order.
+
 ## Open questions
 
 - How many moments per month can a neighbourhood afford, and a city?
