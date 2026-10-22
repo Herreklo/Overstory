@@ -28,7 +28,7 @@ namespace Overstory.EditorTools
     ///     Unity -batchmode -quit -projectPath unity -executeMethod Overstory.EditorTools.LT1Perf.Build
     ///         [-runs 2] [-norun] [-out reviews/perf/2026-10-26] [-perf-frames 150] [-perf-warmup 30] [-perf-rounds 2]
     ///         [-perf-settle 600] [-perf-only street,high] [-perf-passes all,-sky,...,bare,history-off,haze-off]
-    ///         [-perf-scenes empty,corner,quad-rgba8,quad-bc7]
+    ///         [-perf-scenes empty,corner,quad-rgba8,quad-bc7,quad-bc7-half,quad-bc7-two,quad-bc7-tile4,quad-bc7-tile8]
     ///         [-perf-views street,high] [-perf-empty-views street] [-perf-shots all|some]
     ///         [-district /abs/path/to/district] [-perf-district-views street,city]
     ///
@@ -115,6 +115,9 @@ namespace Overstory.EditorTools
             // the history quad (step 3: LT1History), drawn only in the quad scenes, each binding its own pages
             (runner.historyQuad, runner.pagesRGBA8, runner.pagesBC7) = LT1History.AddQuad(stage.view);
             runner.historyQuad.enabled = false;
+            // and its minified meshes (R2b: the scenes quad-<format>-tile4 and -tile8)
+            runner.historyQuadTiles = new[] { 4, 8 };
+            runner.historyQuadTiled = runner.historyQuadTiles.Select(k => LT1History.QuadMesh(k)).ToArray();
 
             Directory.CreateDirectory(Path.Combine(Application.dataPath, "..", Generated));
             AssetDatabase.Refresh();

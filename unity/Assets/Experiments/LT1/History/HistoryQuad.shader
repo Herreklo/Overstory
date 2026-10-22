@@ -4,6 +4,10 @@
 // piece: UV3.x its index into the piece table, read in the vertex stage and passed flat; UV1 its chart in the pages.
 // Positions are clip space, so the grid covers the frame whatever the camera. "On" reads every layer of the three
 // pages and the piece's clocks; "off" is OS_HISTORY_OFF, every layer its quiet mean.
+//
+// R2b (the step-3 verdict's decision 7): OS_QUAD_TWO_PAGES, a local keyword the harness sets on the quad's material,
+// reads P0 and H1 only, as the stone will (P1's two layers are then not sampled). The minified arms change the mesh,
+// not this shader (LT1History.QuadMesh(tile)).
 Shader "Hidden/Overstory/HistoryQuad"
 {
     Properties
@@ -45,6 +49,7 @@ Shader "Hidden/Overstory/HistoryQuad"
             #pragma vertex Vert
             #pragma fragment Frag
             #pragma multi_compile _ OS_HISTORY_OFF
+            #pragma multi_compile_local_fragment _ OS_QUAD_TWO_PAGES
             #include "Assets/Shaders/History.hlsl"
 
             struct Attributes
@@ -77,8 +82,14 @@ Shader "Hidden/Overstory/HistoryQuad"
                 half held = OS_HistoryAt(a, OS_LAYER_WATER_HELD);
                 half sky = OS_HistoryAt(a, OS_LAYER_SKY_SEEN);
                 half ground = OS_HistoryAt(a, OS_LAYER_GROUND_SEEN);
+            #if defined(OS_QUAD_TWO_PAGES)
+                // (P0 and H1 only: P1 is not sampled)
+                half open = 0.0h;
+                half exposure = 0.0h;
+            #else
                 half open = OS_HistoryAt(a, OS_LAYER_OPENNESS);
                 half exposure = OS_HistoryAt(a, OS_LAYER_EXPOSURE);
+            #endif
                 OSLayer pl = OS_History(a, OS_LAYER_POLISH);
                 half polish = OS_HistoryLaw(pl, OS_LAYER_POLISH, _OS_Date);
                 half lichen = OS_HistoryAt(a, OS_LAYER_LICHEN);

@@ -44,6 +44,10 @@ namespace Overstory.Perf
     /// air's OS_Atmosphere skipped). -perf-scenes quad-rgba8,quad-bc7 adds the history quad (LT1History): every renderer
     /// hidden but the motes and a full-screen grid of 4,096 pieces reading three synthetic pages through
     /// Shaders/History.hlsl, RGBA8 or BC7, measured from the empty scene's views in 'all' and 'history-off' only.
+    /// Options may follow the format (R2b, the page sample's cost: quad-bc7-half, quad-rgba8-two, quad-bc7-tile4): 'half'
+    /// draws that scene's offscreen frames at half the width and height (a quarter of the pixels, every vertex), 'two'
+    /// reads P0 and H1 only (the quad's OS_QUAD_TWO_PAGES), 'tile&lt;k&gt;' draws the quad whose charts' UVs span k times
+    /// their texels (historyQuadTiled), so the pages are sampled minified, trilinear, with their mips.
     ///
     /// The scale test (docs/research/scale-test.md): -district &lt;dir&gt; loads the district's chunk cache (DistrictLoader),
     /// times it and the rebuild benchmarks (DistrictBench) into the summary, and -perf-scenes district-near,district-l0,
@@ -106,6 +110,9 @@ namespace Overstory.Perf
         public MeshRenderer historyQuad;
         [Tooltip("The quad's pages, RGBA8 and BC7: the quad scene binds its own.")]
         public HistoryPages pagesRGBA8, pagesBC7;
+        [Tooltip("The quad's minified meshes (LT1History.QuadMesh(k)), each chart's UVs spanning k times its texels, k in historyQuadTiles: a scene quad-<format>-tile<k> draws its own.")]
+        public Mesh[] historyQuadTiled;
+        public int[] historyQuadTiles;
 
         [Header("The scale test")]
         [Tooltip("The district's loader: given -district <dir>, it loads the chunk cache there before anything is measured.")]
@@ -123,6 +130,20 @@ namespace Overstory.Perf
             ["foglights"] = "FogLights", ["keyblock"] = "KeyBlock", ["palette"] = "Palette",
         };
         static readonly string[] FullScreen = { "beams", "foglights", "keyblock", "palette" };
+
+        /// <summary>Whether a quad scene (quad-&lt;format&gt;[-option...]) has the option.</summary>
+        static bool QuadOption(string scene, string option) =>
+            scene.StartsWith("quad-") && scene.Split('-').Skip(2).Contains(option);
+
+        /// <summary>A quad scene's tiling (its 'tile&lt;k&gt;' option), 1 without one.</summary>
+        static int QuadTile(string scene)
+        {
+            if (scene.StartsWith("quad-"))
+                foreach (var o in scene.Split('-').Skip(2))
+                    if (o.StartsWith("tile") && int.TryParse(o.Substring(4), NumberStyles.Integer, CultureInfo.InvariantCulture, out int k))
+                        return k;
+            return 1;
+        }
 
         /// <summary>Whether a configuration turns a pass off.</summary>
         static bool Off(string config, string pass) =>
@@ -259,20 +280,32 @@ namespace Overstory.Perf
                 .Where(r => r != motes && r != historyQuad && !districts.Contains(r)).ToArray();
             var drawnOn = drawn.Select(r => r.enabled).ToArray();
             var drawnWith = drawn.Select(r => r.sharedMaterials).ToArray();
-            var targets = new Dictionary<int, RenderTexture>();
+            var targets = new Dictionary<(int, float), RenderTexture>();
             // (-perf-offscreen-scale 0.5 draws the offscreen frames at half the width and height: a quarter of the
-            // pixels and every vertex, so what scales with it is the pixels' cost)
+            // pixels and every vertex, so what scales with it is the pixels' cost; a quad scene's 'half' option does
+            // the same for that scene alone)
             float offScale = float.Parse(Arg("-perf-offscreen-scale", "1"), CultureInfo.InvariantCulture);
-            RenderTexture Target(int samples)
+            float ScaleOf(Seg s) => offScale * (QuadOption(s.scene, "half") ? 0.5f : 1f);
+            RenderTexture Target(int samples, float scale)
             {
-                if (!targets.TryGetValue(samples, out var t))
+                if (!targets.TryGetValue((samples, scale), out var t))
                 {
-                    t = new RenderTexture(Mathf.RoundToInt(Screen.width * offScale), Mathf.RoundToInt(Screen.height * offScale), 24,
+                    t = new RenderTexture(Mathf.RoundToInt(Screen.width * scale), Mathf.RoundToInt(Screen.height * scale), 24,
                                           RenderTextureFormat.ARGB32, RenderTextureReadWrite.sRGB) { antiAliasing = samples };
                     t.Create();
-                    targets[samples] = t;
+                    targets[(samples, scale)] = t;
                 }
                 return t;
+            }
+            // the quad's own mesh and its two-page keyword (R2b: a scene's 'tile<k>' and 'two' options)
+            var quadFilter = historyQuad != null ? historyQuad.GetComponent<MeshFilter>() : null;
+            var quadMesh = quadFilter != null ? quadFilter.sharedMesh : null;
+            var twoPages = historyQuad != null ? new LocalKeyword(historyQuad.sharedMaterial.shader, "OS_QUAD_TWO_PAGES") : default;
+            foreach (var scene in sceneNames.Where(s => s.StartsWith("quad-")))
+            {
+                int k = QuadTile(scene);
+                if (k != 1 && (historyQuadTiles == null || System.Array.IndexOf(historyQuadTiles, k) < 0))
+                    Debug.LogError($"[PerfRunner] no quad tiled x{k} for '{scene}': it draws the untiled quad");
             }
 
             // the arms that set a keyword for every shader (Shaders/History.hlsl; StreetSurface.hlsl's OS_Atmosphere;
@@ -333,9 +366,16 @@ namespace Overstory.Perf
                 if (historyQuad != null)
                 {
                     historyQuad.enabled = seg.scene.StartsWith("quad-");
-                    var pages = seg.scene == "quad-bc7" ? pagesBC7 : pagesRGBA8;
+                    var pages = seg.scene.StartsWith("quad-bc7") ? pagesBC7 : pagesRGBA8;
                     if (historyQuad.enabled && pages != null)
                         pages.Bind();
+                    if (historyQuad.enabled)
+                    {
+                        int at = historyQuadTiles != null ? System.Array.IndexOf(historyQuadTiles, QuadTile(seg.scene)) : -1;
+                        if (quadFilter != null)
+                            quadFilter.sharedMesh = at >= 0 && historyQuadTiled[at] != null ? historyQuadTiled[at] : quadMesh;
+                        historyQuad.sharedMaterial.SetKeyword(twoPages, QuadOption(seg.scene, "two"));
+                    }
                 }
                 SetPasses(seg.passes);
             }
@@ -399,7 +439,7 @@ namespace Overstory.Perf
                     // free of the display's cadence (macOS presents on the screen's refresh even with vsync off, so a
                     // presented frame's period comes in whole refresh ticks, 6.9 ms at 144 Hz); the target has the
                     // samples the pipeline draws with
-                    var target = Target(stage.view.allowMSAA ? Mathf.Max(1, urp.msaaSampleCount) : 1);
+                    var target = Target(stage.view.allowMSAA ? Mathf.Max(1, urp.msaaSampleCount) : 1, ScaleOf(seg));
                     var thisRound = new List<double>(offscreenBatches);
                     for (int b = 0; b <= offscreenBatches; b++)
                     {
@@ -439,6 +479,7 @@ namespace Overstory.Perf
                     cpu_ms = Stats(cpu[seg.name]), cpu_main_ms = Stats(main[seg.name]), cpu_render_ms = Stats(render[seg.name]),
                     gpu_ms = Stats(gpu[seg.name]), round_medians_ms = roundMedians[seg.name].ToArray(),
                     offscreen_ms = Stats(offscreen[seg.name]), round_offscreen_ms = roundOffscreen[seg.name].ToArray(),
+                    offscreen_scale = ScaleOf(seg),
                 };
                 s.counters = Counters.Select((c, i) => new Counter
                 {
@@ -475,7 +516,12 @@ namespace Overstory.Perf
             // the pipeline as it was (the renderer's features are an asset, shared with any later run in this process)
             SetPasses("all");
             if (historyQuad != null)
+            {
                 historyQuad.enabled = false;
+                if (quadFilter != null)
+                    quadFilter.sharedMesh = quadMesh;
+                historyQuad.sharedMaterial.SetKeyword(twoPages, false);
+            }
             for (int i = 0; i < drawn.Length; i++)
                 if (drawn[i] != null)
                     drawn[i].enabled = drawnOn[i];
@@ -584,6 +630,8 @@ namespace Overstory.Perf
             public Stat offscreen_ms;
             [Tooltip("Each round's median offscreen time (its batches'), for the spread between rounds.")]
             public double[] round_offscreen_ms;
+            [Tooltip("The offscreen frames' size against the screen's (the run's -perf-offscreen-scale, halved by a quad scene's 'half').")]
+            public float offscreen_scale;
             public Counter[] counters;
 
             public long Count(string counter)

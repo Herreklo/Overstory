@@ -247,9 +247,16 @@ namespace Overstory.EditorTools
         // ------------------------------------------------------------------------------------------------ the quad
 
         /// <summary>The grid: 4,096 cells covering clip space, each its own four vertices (its piece is flat), UV1 its
-        /// chart's inside in the pages, UV3.x its piece index.</summary>
-        static Mesh QuadMesh()
+        /// chart's inside in the pages, UV3.x its piece index.
+        ///
+        /// Tiled (R2b, the step-3 verdict's decision 7): each cell's UVs span <paramref name="tile"/> times its chart's
+        /// texels from the chart's corner (kept inside the page, so they run on into the charts beside it), so the pages
+        /// are sampled minified, trilinear, with their mips, as the street stop will. At 1440p a cell is 40 by 22.5
+        /// pixels over 12 by 4 texels: 0.3 texels a pixel across at 1 (magnified, mip 0), 1.2 at 4 (LOD 0.26, mips 0
+        /// and 1), 2.4 at 8 (LOD 1.26, mips 1 and 2). At 1 the UVs are R2's to the bit.</summary>
+        internal static Mesh QuadMesh(int tile = 1)
         {
+            int spanW = (CellW - 2 * Pad) * tile, spanH = (CellH - 2 * Pad) * tile;
             var pos = new List<Vector3>(Pieces * 4);
             var uv1 = new List<Vector2>(Pieces * 4);
             var uv3 = new List<Vector2>(Pieces * 4);
@@ -260,15 +267,16 @@ namespace Overstory.EditorTools
                     int p = cy * Grid + cx, v = pos.Count;
                     float x0 = -1f + 2f * cx / Grid, x1 = -1f + 2f * (cx + 1) / Grid;
                     float y0 = -1f + 2f * cy / Grid, y1 = -1f + 2f * (cy + 1) / Grid;
-                    float u0 = (cx * CellW + Pad) / (float)W, u1 = ((cx + 1) * CellW - Pad) / (float)W;
-                    float v0 = (cy * CellH + Pad) / (float)H, v1 = ((cy + 1) * CellH - Pad) / (float)H;
+                    int tx = Mathf.Min(cx * CellW + Pad, W - spanW), ty = Mathf.Min(cy * CellH + Pad, H - spanH);
+                    float u0 = tx / (float)W, u1 = (tx + spanW) / (float)W;
+                    float v0 = ty / (float)H, v1 = (ty + spanH) / (float)H;
                     pos.AddRange(new[] { new Vector3(x0, y0, 0), new Vector3(x1, y0, 0), new Vector3(x1, y1, 0), new Vector3(x0, y1, 0) });
                     uv1.AddRange(new[] { new Vector2(u0, v0), new Vector2(u1, v0), new Vector2(u1, v1), new Vector2(u0, v1) });
                     for (int k = 0; k < 4; k++)
                         uv3.Add(new Vector2(p, 0));
                     tri.AddRange(new[] { v, v + 2, v + 1, v, v + 3, v + 2 });
                 }
-            var mesh = new Mesh { name = "History quad (4,096 pieces)" };
+            var mesh = new Mesh { name = tile == 1 ? "History quad (4,096 pieces)" : $"History quad (4,096 pieces, tiled x{tile})" };
             mesh.SetVertices(pos);
             mesh.SetUVs(1, uv1);
             mesh.SetUVs(3, uv3);
