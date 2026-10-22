@@ -17,3 +17,13 @@
 **What was hollow.** There is no lever. Belonging rose 16, 13, 23 whatever I did, with rewards arriving only in round reports. The collections (48 sketches, 20 keepsakes) don't feed it, nothing can be missed, so risk is zero and the game is solved on screen one. The town is frozen: no schedules, canned lines repeated, the Puffin never sails.
 
 **Compared.** Spire gave exact numbers and a dominant line to find, so I could solve it and was hollow after. Saltlight gives no numbers I can attack and nothing to solve, so there is nothing to be hollow about but the lack. I'd pick the Spire for play; I would stay with Saltlight only if a thread paid off. Next time: ask for the per-turn number, then test whether anything is scarce.
+
+## Thursday's Paper (a harbour-town newspaper game, 1990 to 1991)
+
+**Marks and pull.** Pull ran 5, 6, 6, 7, 6, 6, ending at 5. Engaged on first-hand finds (wet hair at the clinic, Sutton's confession, Lily's grievance paying off eight months later); bored on Watches and the empty county paper; confused on a lopsided front that still raised trust. Delights outnumbered cheats (the screen rewrote my prediction once; the "two colleagues" loophole).
+
+**What kept me.** Modelling the hidden machine and finding the trust lever (a front with something at stake that stands a week). A town that remembers.
+
+**What was hollow.** I crossed the win line in week four and trust is permanent, so nothing was at stake. Printing only people's words about themselves, on the record, plus notices, cannot be wrong. Everything good was not for print and held, with no way to corroborate it. Ken's rule was a spelling test. The last five weeks played themselves.
+
+**Compared.** Same story as the Spire: I found the dominant line fast and was then hollow. Better than Saltlight, which had no lever or lose condition. Papers, Please does the rule-against-the-human squeeze with real cost. Next time: find what costs something before I settle into a safe rule.
