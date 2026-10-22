@@ -178,6 +178,6 @@ Proposals wait here for the next milestone's fresh reviewer, who sees the plan a
   - (a) `tools/check.py` gains one rule: no fact or history baked into a colour, and no shader deciding where something is, grows or wears; it only draws what the maps say.
   - (b) a paper check by a fresh Opus agent. For each built kind (stone, the house generator, trees, the street, the light) it lists what two contrasting styles would have to change, layer by layer. Anything that would have to change outside the drawing layer is a fault, fixed while it is cheap.
 
-  No rendered test in a second style is proposed (Øystein: "yes not the test").
+  No rendered test in a second style is proposed (Øystein: "yes not the test"). Øystein, on the proposal: "Yeah not sure about this, but we'll se on Monday".
 - **Standing cost:** one rule in the check command. The paper check is about 1 to 2% of a week on Opus, once.
 - **What would change our minds:** the paper check finding the layers already apart, so (a) alone is enough; or keeping them apart costing more than the parts it protects. A chosen game committing to this one style for good would not, since the town must make many games (`docs/town-plan.md`).
