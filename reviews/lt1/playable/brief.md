@@ -31,7 +31,7 @@ Build a Mac build Øystein can open and play. It is LT1's harbour town in 1989, 
   - the gully steps and cheek walls at the accepted baseline (stairs `bff7858b698f3efd`, walls `0a3d7db3100df20b`; change neither);
   - the birches, and the light and two or three moods.
 - A walker at eye height with collision, and keys for the judging views in `docs/foundations.md`.
-- An on-screen frame time, and the harness's whole-scene run at the judging views (`docs/measuring.md`). Name its three biggest costs: the port's next steps are chosen from them.
+- An on-screen frame time, and the harness's whole-scene run at the judging views (`docs/measuring.md`). Name its three biggest costs: they go to the frame-rate gate (`docs/plan.md`), and the port keeps its own order.
 
 ## Phase 2, the play
 
