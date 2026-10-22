@@ -26,7 +26,8 @@ namespace Overstory.EditorTools
     /// FrameTimeOverlay. Nothing in it is invented: every place, rig and mood comes from the records and tools named.
     /// It refuses to run unless the gully's stair and walls hash as accepted (Stairs, Walls: blender/tools/mesh_hash.py
     /// recomputes them from the FBX), and it never saves the heart's scene: Stage opens it, and the composed scene is
-    /// saved as a copy by its own path. Then it opens what it saved and checks it (Check).
+    /// saved as a copy by its own path. Then it opens what it saved and checks it (Check), and checks what the walker
+    /// collides with (CheckProxies). The walker, its keys and its proxies are W4's (LT1PlayWalk.cs: AddWalk).
     ///
     ///     Unity -batchmode -quit -projectPath unity -executeMethod Overstory.EditorTools.LT1Play.Compose
     ///         [-stills reviews/lt1/playable/walk/w1] [-moments 1300-drizzle] [-views eye-foot,...]
@@ -50,7 +51,7 @@ namespace Overstory.EditorTools
     /// For the stages after W2: W3's harness arm can call ComposeOpen() and add its runner before saving elsewhere;
     /// LT1Perf.BuildPlayer(app, scenePath) builds any scene with the harness's player settings.
     /// </summary>
-    public static class LT1Play
+    public static partial class LT1Play
     {
         public const string Generated = "Assets/Experiments/LT1/Playable/Generated";
         public const string ScenePath = Generated + "/LT1_Playable.unity";
@@ -158,7 +159,8 @@ namespace Overstory.EditorTools
             float reach = urp.shadowDistance;
             try
             {
-                ComposeOpen();
+                var (stage, corner) = ComposeOpen();
+                AddWalk(stage, corner);     // (the walk's own scene only: the harness arm composes without it)
                 Save();
             }
             finally
@@ -167,6 +169,7 @@ namespace Overstory.EditorTools
             }
             Debug.Log($"[LT1Play] composed in {clock.Elapsed.TotalSeconds:F0} s");
             Check();
+            CheckProxies();
             string stills = Cli.Arg("-stills", null);
             if (stills != null)
                 Stills(Cli.RepoPath("-stills", stills));

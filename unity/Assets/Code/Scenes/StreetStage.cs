@@ -169,7 +169,7 @@ namespace Overstory.Scenes
         }
 
         /// <summary>Where the sun stands on screen, for the light rays; they are off when it is behind the camera.</summary>
-        void SetShafts()
+        public void SetShafts()
         {
             if (rig == null || view == null)
                 return;

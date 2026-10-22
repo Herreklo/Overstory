@@ -46,7 +46,5 @@ reviews/motion/current/
 # FBX at 1989 (export_time.py --out Assets/Art/Buildings/playable: rebuilt; their record and mesh hashes are kept)
 unity/Assets/Experiments/LT1/Playable/Generated/
 unity/Assets/Experiments/LT1/Playable/Generated.meta
-# (the folder holds nothing else yet: the first tracked file in Playable/ takes this line out)
-unity/Assets/Experiments/LT1/Playable.meta
 unity/Assets/Art/Buildings/playable/**/*.fbx
 unity/Assets/Art/Buildings/playable/**/*.fbx.meta

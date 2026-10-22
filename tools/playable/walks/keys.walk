@@ -1,0 +1,61 @@
+# the keys as a script: views 1 to 9 held, taken over (walking at eye height, else flying), V both ways
+pace walk
+start 42.095 1.336 42.033 -3.664
+expect walk
+view 1
+expect held
+takeover
+expect walk
+shot keys-1-walk
+view 5
+expect held
+takeover
+expect free
+shot keys-5-free
+free
+expect walk
+wait 1
+shot keys-5-landed
+free
+expect free
+fly 2 -20
+fly 2 10
+shot keys-flown
+mark flown
+view 2
+expect held
+takeover
+expect walk
+wait 0.5
+shot keys-2-walk
+view 6
+expect held
+takeover
+expect walk
+wait 0.5
+shot keys-6-walk
+view 7
+expect held
+takeover
+expect walk
+wait 0.5
+shot keys-7-walk
+view 8
+expect held
+takeover
+expect walk
+wait 0.5
+shot keys-8-walk
+view 9
+expect held
+takeover
+expect walk
+wait 0.5
+shot keys-9-walk
+view 3
+takeover
+mark the street view (3)
+view 4
+takeover
+mark into12 (4)
+end
