@@ -91,7 +91,7 @@ Every system, material and kind is studied twice before it is built (SY4; `CLAUD
 
 | Area | Subject | Craft |
 | --- | --- | --- |
-| Light and colour | `colour-and-shading.md`, `masters-of-colour.md` (thin) | `lighting-and-colour.md`; light under a canopy and many lamps at city scale: **gap**, studied in LA before L1 (`reviews/lt1/playable/outline.md`, 1b) |
+| Light and colour | `colour-and-shading.md`, `masters-of-colour.md` (thin) | `lighting-and-colour.md`; light under a canopy and many lamps at city scale studied in LA as far as the light record and the shade's terms need (§10 to §12; `reviews/lt1/light/la-report.md`); their builds' craft (the canopy map, the night tiers) is finished at 1e and the night step, with the unknowns listed in the report |
 | Water, wear, growth, repairs | `repairs.md`, `stone.md`, `nature.md` | `materials-at-scale.md`, `history-in-things.md` |
 | History in things | `world-that-remembers.md`, `house-changes.md`, `repairs.md` | `history-in-things.md` |
 | History pages: binding, block compression, time inputs per texel, charts | `history-in-things.md` (Gu's factorisation), `wear.py` and `growth.py` (the laws) | `history-pages.md` (step 3's R0; the binding and its cost measured at R2 to R2c: a sample is cheap, a busy output is not; a real page's BC7 error and the chart waste at R3, border shimmer at R6, the binding under the Resident Drawer at 3.4) |

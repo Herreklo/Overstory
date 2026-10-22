@@ -11,6 +11,7 @@ Claims read in a summary rather than the source are marked (secondary); claims n
 3. Our sky map is our own version of what Unity calls sky occlusion and what Sucker Punch bakes as sky visibility, with one advantage neither has: it is redrawn when the town changes. Unity's probe volumes cannot do that; they bake in the editor.
 4. The rig is almost all hand-typed colour: only the sun's position comes from physics. The masters derive the sun's colour, the sky and the ambient from a model and art-direct a few pushes on top. That is what makes any date, hour and weather possible, and what would end the drizzle and morning retunes.
 5. The night is where our pipeline is thinnest. The heart has 403 lights against Forward+'s 256, and no lamp casts a shadow. A lamp's reflection in a puddle is an order of magnitude too dim. The style pass runs after URP's dithering, which invites banding in the fog gradients a nocturne lives on.
+6. Two regimes the corner does not show fit the planned record and shade, studied in LA (§10 to §12). Under a canopy, flecks are soft pictures of the sun and the leaves are a second, greener sky; leaf-sharp shadows belong only near. Many lamps need one list in the facts, a tier chosen per frame and our own binned buffer instead of URP's Forward+; low-CRI lamps drain colour by a 3 × 3 matrix per kind. The format must key art by the sun's elevation, derive the ambient, dome and reflections from one sky model, hold lamps by reference, keep whatever varies by place in maps, and step its caches by absolute time.
 
 ## 1. How painterly and stylised-realist games light their worlds
 
@@ -193,18 +194,81 @@ Every part, material and kind joins the light through data, never through its ow
 
 | Data | Carried by | Why |
 | --- | --- | --- |
-| Sky, ground, openness per face (the bake: r, g, b) | Every part, every tier: merged city-tier meshes and impostors keep it | The sky term and contact. An impostor baked with lit colour would freeze one hour (Disco Elysium's first attempt). |
+| Sky, ground, openness per face (the bake: r, g, b) | Every part, every tier: merged city-tier meshes and impostors keep it | The sky term and contact. An impostor baked with lit colour would freeze one hour (Disco Elysium's first attempt). Tree crowns stay out of other parts' sky seen, with the canopy's optical depth in its own channel, or the bake freezes the season (§10). |
 | The direction of open sky (a bent normal, two channels) | Every part, from the same ray fan in `bake.py` | Directional ambient without guessing (debt 1); the overcast top-light on a cornice. |
 | Weather exposure (the bake's a, reserved) | Every part | How wet, how snowed on, how stained: the water and weather layers. |
 | Albedo within a validated range | Every material, checked against the chart | Stops the exposure-albedo loop; keeps white white. |
 | Porosity, smoothness, water profile | Every material (`WaterPack`) | Lagarde's wet model: what darkens, what shines, how long. |
 | Translucency | Leaves, curtains, paper, sailcloth, glass | Backlight through things, at dusk and from lit rooms. |
 | Emission group and kind | Windows, lamp glass, signs, shopfronts | Which fact turns it on (a room, a lamp's schedule, a shop's hours). |
-| Light sockets | Lamps (position, cone, kind, era, shadow flag); windows (spill position, direction, cookie); shopfronts | The tiers place real lights from the sockets near the camera and fall back to emission and the glow map far off. |
+| Light sockets | Lamps (position, cone, kind, era, shadow flag, an emitter radius, a distribution profile, an upward light ratio, static or moving, a stable lamp id: §11); windows (spill position, direction, cookie); shopfronts | The tiers place real lights from the sockets near the camera and fall back to emission and the glow map far off. |
 | Room data behind a window | Windows: a room index, its lit state, curtain, interior-map variant | Interior mapping; lit rooms as facts. |
 | A record for every light | Lamps and rooms, from the engine or the fixture | "Every light in the town is a fact" (`visual-direction.md`). |
 
 **Probes.** No baked probes for generated places. Town-scale sky visibility is a runtime volume or horizon map rebuilt with the sky map; reflection probes are placed by the town generator at nodes (squares, lane mouths, the quay) and relit when the light record changes, a few per frame, as Ghost does.
+
+## 10. Light under a canopy
+
+Studied in LA (22 October) only as far as the light record and the shade's terms need, for a birch wood at a summer noon; the tree's build is 1e's. "(ours)" marks our own arithmetic from sourced numbers.
+
+**Flecks are pictures of the sun.** The sun spans 0.53°, about a 108th of a radian, so every gap in a canopy is a pinhole that throws an image of the sun a 108th of its path length across, stretched on flat ground by one over the sine of the elevation (LibreTexts, the tree projector; Wikipedia, sunfleck). At a June noon at 59° N the sun is 54° high, and a gap 12 m up throws a fleck about 14 by 17 cm; at a 10° sun the same gap throws a streak 0.6 m wide and 3.7 m long (ours). A 5 cm birch leaf loses its sharp shadow about 5 m below it (ours). So the floor of a wood shows soft round flecks over an even shade, never leaf shapes, and a shadow's softness grows with the height of what casts it.
+
+**How much reaches the floor.** By Beer–Lambert the share of the floor in direct sun is exp(−G·Le / sin h), with G about 0.5 for random leaf angles and Le the effective, clumped leaf area index (METER application note, secondary); broadleaves lie flatter than random, so G varies by species (Pisek and others 2013, abstract). A mature silver birch stand in Estonia measured an effective plant area of 3.6 to 5.8 (secondary). For the measured 3.6 to 5.8, 3 to 11% of the floor is in fleck at a June noon and its openness to a uniform sky is 2 to 8%; a thinner stand, at an assumed 2, gives up to 29% and 22% (ours). At a 10° sun almost none reaches the floor. Under closed canopies flecks bring 37 to 68% of the understorey's light, each lasting minutes as the sun moves (Canham and others 1990, secondary); wind adds flecks that last under a second (Pearcy 1988, secondary).
+
+**The colour.** A green leaf reflects about 15% at 550 nm and 5% in the red, and across visible light reflects about 9% and transmits about 6% (secondary). Light through leaves is yellow-green, with blue cut most. Endler names four light habitats in a wood: forest shade, yellow-green, lit through leaves; woodland shade, blue-grey, lit by sky through gaps; small gaps, reddish, the sun's own light; large gaps, white. Under cloud all four become one open light (Endler 1993, abstract).
+
+**The canopy is a second sky.** Shade under a clear sky is about 20 klux and direct sun about 110 klux (Wikipedia, orders of magnitude), so the mean blue sky is about 6.4 kcd/m². A leaf lit from behind, at an assumed 10% transmittance, glows at about 3.5 kcd/m², half the sky; leaves in shade are about ten times darker (ours). At 10% openness the leaves' light in the shade matches or beats the sky's, and is far greener (ours, rough). The sky term under trees is two skies: the sky through the gaps and the canopy's own radiance in the rest of the upper hemisphere.
+
+**The season.** A dense deciduous canopy in full leaf passes under 2% of the light; a bare wood blocks up to two thirds, and an oak–hickory canopy passed 47% before leaf-out (secondary). Bare birch is probably brighter (unverified). NIBIO's phenological garden at Fana, Bergen, has logged leaf-out, colouring and leaf fall since 1964 (read): the pack's phenology table can come from it. A birch leaf yellows within about a week and then falls, and trees turn unevenly (secondary).
+
+**How studios build it.**
+- *Firewatch* placed 23 hand-made tree models about 4,600 times as meshes, not terrain trees, for control over their shading, with a simplified foliage shader (80.lv, read; secondary on the shader). Banded fog makes the depth layers between trunks. Its god rays come from the visible sun disc, moved by one manager with the sun, the fog and the grade (secondary): a screen-space effect. The aspen grove Øystein singled out is golden hour.
+- *Ghost of Tsushima* keeps sky visibility in mono SH2 probes about 12.5 m apart, multiplied by a sky projected each frame in 60 µs (Patry 2021, read): too coarse for one tree's shade. Translucency was raised as an art lever. *Ghost of Yōtei* drives its god rays from a light-space cloud shadow map (PlayStation Blog, read).
+- *Horizon* casts vegetation into the normal shadow maps in the near cascades and a height field further out (secondary); *Forbidden West* added a visibility buffer to speed up its alpha-tested foliage (Guerrilla, read).
+- *Crysis* shades translucency as a painted map times a wrapped backlight and shades grass per vertex for fill rate; *SpeedTree* shifts backlight toward yellow and bakes ambient occlusion per vertex (GPU Gems 3, chapters 16 and 4, read). *Frostbite's* cheap translucency is a power lobe with a thickness map (secondary); *Unreal's* two-sided foliage passes a leaf's front light to its back through a subsurface colour (secondary).
+- What they share: leaf-detail shadows only near, something coarse and cached far off; translucency as cheap arithmetic; the tree's occlusion per vertex; shafts from a light-space map.
+
+**On our machine.** Alpha-tested fragments defeat the M4's hidden-surface removal (Apple, WWDC 2020 session 10632; Imagination, read), and they do so in every shadow cascade they are drawn into. Leaf detail therefore belongs in cascade 0 only. Beyond it, a small light-space canopy map (a one-layer deep opacity map: where the sun's ray enters the canopy, where it leaves, the optical depth between) gives flecks, the canopy's mean transmittance and, through its mips, a penumbra that grows with height; the beams and the air read the same map. Noon shafts under trees are 15 to 20 times weaker than at golden hour for a phase g of 0.7 (ours), so they show only with haze, a low sun or an upward look.
+
+**What it asks of the light.**
+- *Facts:* the trees' crowns (lobes, height, leaf area, clumping, leaf angle) and their leaf state and dieback, from the tree records; a thinned crown is history.
+- *Derived:* the leaf stage from the date and the pack's phenology; the canopy map, rebuilt when the sun moves about half a degree or a tree changes; the canopy's openness kept as optical depth, so the season scales it by one multiply; the canopy's radiance, one colour a frame; the ground bounce through the floor's mean transmittance.
+- *Material data:* leaf reflectance and transmittance by stage; translucency with a thickness.
+- *Art keys:* how green the shade may go, fleck softness, leaf glow, beam strength, the air's layers between rows of trunks.
+- *Honest flecks.* A projected fleck pattern does not lie if it follows the sun, takes its size from height over 108, keeps the canopy's mean transmittance and stays inside the crowns as projected along the sun. A big gap (a dead limb, a felled neighbour) carries history and must come from a fact; the seed makes only small gaps.
+
+## 11. Many lamps at city scale
+
+Studied in LA (22 October) for a dense street at night with many lamps in view, and later a metropolis, only as far as the record and the shade need; it goes beyond §3.
+
+**One lamp list, the tier chosen per frame.** GTA V, a deferred renderer, draws near lights as volumes that pay only for the pixels they cover, which gives its wet-road highlights; far lights are instanced 32 × 32 sprites (Courrèges 2015). Modding documentation shows that real lights live in each model's asset and that a bake derives two far tiers per district: "LOD lights" keep direction, falloff, cone and corona, "distant LOD lights" only position and colour, and streetlights are sorted first so they switch together (secondary). Cyberpunk 2077 renders a fixed number of local shadow maps a frame, chosen by visibility and distance, each split into a cached static slice and a dynamic one, since most city lights never move (Dybisz and Witanowski, SIGGRAPH 2021). Unreal's MegaLights samples a few lights per pixel by importance and barely grows with the count, but needs hardware ray tracing (Arm). The pattern: one list of lamps, and per frame each takes a tier: lit and shadowed; lit; a corona and a pool; emission; the town's glow on fog and cloud.
+
+**URP on the M4.** From URP 17.6's own source in our package cache: Forward+ ANDs a 2D tile bitmask with a depth bin (Drobot's z-binning, 2017), both rebuilt each frame by CPU jobs. The tile grows with the number of lights and probes: at 2560 × 1440, 16 px up to 32 items, 32 px up to 128, 64 px beyond, so the heart, capped at 256 of its 403, runs on 64 px tiles. Past the cap URP keeps the first 256 in the engine's order. URP has no cached shadows, so lamp shadows are redrawn every frame; HDRP has them. URP's deferred paths could keep the G-buffer on tile, but any pass that samples depth or normals as a texture forces a store (Unity, on-tile rendering), and our SSR, SSAO and `FogLights` do; deferred lighting would also bypass `OS_ShadeP`. No measured costs on Apple GPUs were found; on a Quest, 30 lights cost 12 ms forward and 8.5 ms Forward+, against 7.5 ms at 5 (Meta). So `OS_ShadeP` should read our own lamp buffer, binned by our pass as `FogLights`' already is, with URP lights kept for the shadowed few; the cap, the tile size and the per-lamp data become ours, and a later deferred or stochastic path reads the same buffer.
+
+**Wet streets.** A normalised GGX highlight reaches a puddle whatever the screen shows, which screen-space reflections do not: near lamp heads are usually above the frame. A crisp lamp image needs Karis's widening for a sphere light (Karis 2013, Real Shading in UE4), so each lamp needs an emitter radius; GGX makes the streak towards the viewer. Far lamps are not lights, so their images in puddles must be drawn: a mirrored sprite on wet ground, stretched by roughness and the view (our proposal, unsourced). A lamp's halo lies within the rays that pass inside its reach, so lamps bin to screen tiles by a circle and a depth test; Sun and others (2005) put a point light's airlight in even fog into small tables, which our forward-scattering phase would need fitted (unverified).
+
+**Colour rendition.** Spectral renders show sodium light overriding surface colour almost completely, and one grade per scene fails once lamps mix (Peters, read). Ward and Eydelberg-Vileshin (2002) make RGB exact for direct light under one illuminant by prefiltering, and Mallett and Yuksel (2019) write any sRGB reflectance as a weighted sum of three fixed spectra (abstracts). So, by our derivation, a surface's colour under lamp kind k is a 3 × 3 matrix times its albedo, computed offline from the kind's spectrum; mixed lamps each apply their own; low-pressure sodium's matrix has rank one, so every colour becomes one yellow. The data is a kind index per lamp and 36 bytes per kind; the cost nine multiply-adds per pixel per lamp. Spectra: CIE 015:2018's lamp tables (in colour-science); low-pressure sodium is the 589 nm line. How far colour drains and the eye's adaptation stay art keys.
+
+**A lamp is not a switch.** Low-pressure sodium strikes red-pink and yellows over minutes; an ageing high-pressure lamp cycles off and on (secondary). Output and colour follow time since switch-on, age and upkeep: history a viewer can read, so it comes from the lamp's facts.
+
+**The town's glow.** Cloud made Berlin's night sky 10.1 times brighter in the city and 2.8 times at 32 km (Kyba and others 2011, secondary). The light sent up is the luminaire's upward ratio (0% for full cut-off, 2 to 5% for drop lenses, about 10% for acorn tops; US DOE, secondary) plus what the ground reflects, less when wet. A cached town light map (ground pools, upward flux, the mix's rendition), rebuilt when a circuit switches, feeds the far tier and a cloud-base glow that becomes the night's sky term.
+
+**What it asks of the light.**
+- *Facts:* each lamp's kind, circuit, watts, era and upkeep; times per circuit, with sparse overrides; static or moving.
+- *Part data:* the socket's position, aim and height, an emitter radius, a distribution profile, an upward ratio, a stable lamp id.
+- *Derived:* output now (warm-up, age, cycling, per frame on the CPU); the tier per lamp by importance (per frame, never stored); our tile list; the static shadow slice per town cell (cached until the cell changes); the town light map; the cloud-base glow; the rendition matrix per kind (offline).
+- *Art keys:* halo strength, how far colour drains, the eye's adaptation.
+
+## 12. The light's range: what it asks of the record
+
+LA tested five regimes on paper against the planned record and the shade's terms: the Row at blue hour, a birch wood at a summer noon, open heath in drizzle, a dense street at night and snow at low sun (`reviews/lt1/light/la-report.md`, with the line-by-line check and a drafted record). All five fit if L1 fixes thirteen things in the format. Five of them would otherwise force a rebuild:
+- **Art keys keyed by the sun's signed elevation,** a continuous morning-to-evening weight and the weather, never the clock hour. At 59° N the same hour is noon in one season and dusk in another; keyed by elevation, June's light nights take the blue-hour key, which is true.
+- **One sky:** a model's parameters, from which the ambient's L2 spherical harmonics, the dome and the reflection probes all derive. Overcast directionality, twilight, the night's cloud glow and the canopy's second sky are then content in one slot, and reflections never show a second sky.
+- **Lamps by reference and by circuit.** The record holds the sources' hashes and the street circuits on; the lamp list lives in the facts, shop and room light in the people's habits, and the tier in the renderer per frame.
+- **Nothing that depends on place or camera.** Ground cover, the cloud glow, the canopy and the town's light vary across one frame, so they live in maps, never in the record's scalars.
+- **Caches stepped by absolute time.** Maps tied to the sun are built at a step index from absolute time and cross-faded between neighbours, never rebuilt "when the sun has moved", which would make a frame depend on the path taken to it; far shadows compare the sun with the horizon angles, continuously.
+
+The record's identity is its inputs (the world state, the sources' hashes, the key set, the derivation's version); derived values are stored and checked within a tolerance, never hashed, since two languages may differ in a float's last bits. And every term has a clock, after `performance-craft.md` §2: per pixel; per vertex; per frame; per sun step; per fact (cached until the town, a tree, the season or a switch changes); offline. The regimes the corner does not show add mostly cached maps and per-frame colours, and few per-pixel taps.
 
 ## What we should do
 
@@ -219,7 +283,7 @@ Ranked by what each buys for the corner and the town. Costs are working days for
 | 5 | **The colour pipeline in order:** the style pass baked into Color Lookup; dither at the last write; a judged tone-mapping test (Neutral against a hue-preserving table) on the night frames | 1 to 2 | No banding in fog nocturnes; lamp hues that hold; the painted-target LUT and the style in one table. |
 | 6 | **Exposure from illuminance and a chart in every sheet** | 1 | Albedo kept honest (Ghost's loop avoided); white staying white is measured. |
 | 7 | **Debug views of the shade's terms** and a false-colour value view | 1 | Faults found by term; reviews argue less. |
-| 8 | **Night in tiers:** shadowed spot lamps near the camera, unshadowed street tier, glow map and ground pools beyond; `FogLights` binned by tile; normalised lamp specular; colour rendition per lamp kind | 5 to 8, spread over plan steps 3 and 6 | The town at night at frame rate; lamps that throw shadows of railings and people; puddles that double the lights; eras that read in what they light. |
+| 8 | **Night in tiers:** shadowed spot lamps near the camera, unshadowed street tier, glow map and ground pools beyond; `FogLights` and `OS_ShadeP` reading our own lamp buffer, binned by tile (§11); normalised lamp specular with an emitter radius; colour rendition as a 3 × 3 matrix per lamp kind | 5 to 8, spread over plan steps 3 and 6 | The town at night at frame rate; lamps that throw shadows of railings and people; puddles that double the lights; eras that read in what they light. |
 | 9 | **Far shadows and the sky-map cost:** a sun-visibility map from the height map; shadow distance by camera stop; horizon or visibility volume precomputed when the town changes | 3 to 4 | Low-sun shadows across the whole town from the far stop; most of 64 reads a pixel saved; a bent normal at town scale. |
 | 10 | **Lit windows with interior mapping**, each room's state from facts | 3, with the window part (plan step 2) | Depth behind every window; the town's life shown truthfully at night. |
 | 11 | **Weather's light** to Lagarde's numbers through the water profiles: drying curve, ripples only in light, rain fog desaturation, snow albedo into the bounce, the seasons' ground | Inside plan step 9 | Weather that changes the light, not only the surfaces. |
@@ -230,7 +294,9 @@ Ranked by what each buys for the corner and the town. Costs are working days for
 - Talks not read in full: Jane Ng's Firewatch talk (video only; its fog read through write-ups); Bauer's RDR2 slides (232 MB); the INSIDE rendering slides (over 10 MB); Siim Raidma's Disco Elysium GDC 2020 talk; Vivian Ding's Last of Us lighting talk (abstract only); Kemenczy's Kentucky Route Zero talk. Nothing published on Breath of the Wild's or Tears of the Kingdom's lighting was found. The Assassin's Creed Shadows numbers came through a summary of its slides.
 - Not tested in our project: GTAO with our custom shaders (whether it feeds the same occlusion texture `OS_ShadeP` reads); Surface Cache GI on Metal; the froxel package on Metal; whether APV can be baked at runtime.
 - Not yet measured: the cost of `OS_TownSky` and `FogLights` at 1440p with the heart's 403 lights; how many lights Forward+ actually sees from each camera stop; banding in the fog nocturne at full size.
-- Not researched here: the moon's light and phases as facts; light through glass from inside rooms (the interiors step); lightning; the town's light at the scale of a metropolis.
+- Not researched here: the moon's light and phases as facts (the record keeps a slot, §12); light through glass from inside rooms (the interiors step); lightning. The town's light at city scale is studied only as far as the format needs (§11).
+- Not read for §10 and §11: Jane Ng's Firewatch talk, still; Horizon Zero Dawn's vegetation talk in full; the MegaLights slides; Insomniac's procedural lighting talk for Spider-Man (abstract only); Cyberpunk's "Bringing Light to Night City" (abstract only); the leaf spectra datasets of Hovi and others (a download, waiting for Øystein's OK). No primary source on forest light was found for Alan Wake 2, Red Dead Redemption 2, The Witcher 3 or Far Cry, nor on night lighting for Spider-Man, Watch Dogs, Assassin's Creed Unity, Arkham Knight, Mafia, Sleeping Dogs or Ghost of Tsushima.
+- Not measured, for §10 and §11: milliseconds per lamp in `OS_ShadeP` on the M4 at 32, 128 and 256 lamps; a shadow slot's cost; the canopy map's cost; west-coast birch leaf area and openness. Where each is learned: `reviews/lt1/light/la-report.md`, Open unknowns.
 - `docs/foundations.md` still lists two light debts; the third and fourth are recorded in `docs/experiments.md` and in commits only.
 
 ## Decisions for Øystein
@@ -314,3 +380,50 @@ Ranked by what each buys for the corner and the town. Costs are working days for
 - Wet-downs in night cinematography (secondary): https://nofilmschool.com/dp-secret-weapon-water
 - False colour exposure zones (secondary): https://www.newsshooter.com/2025/02/04/arri-logc-false-color-exposure-zones-key-white-paper/
 - Halation (secondary): https://blog.dehancer.com/articles/halation/
+
+**Light under a canopy (§10)**
+- The tree projector: https://phys.libretexts.org/Bookshelves/Astronomy__Cosmology/Astronomy_for_Educators_(Barth)/12%3A_Safely_Observing_the_Sun/12.3%3A_The_Tree_Projector
+- Sunfleck: https://en.wikipedia.org/wiki/Sunfleck
+- Canham and others 1990, light beneath closed canopies (secondary): https://andrewsforest.oregonstate.edu/node/13447
+- Pearcy 1988, lightflecks (secondary): https://publish.csiro.au/FP/PP9880223
+- METER, leaf area and interception (secondary): https://library.metergroup.com/Application%20Notes/13427_Calculation%20of%20LAI%20INterception%20of%20Short%20Canopies_Print.pdf
+- Pisek and others 2013, leaf inclination (abstract): https://cris.vtt.fi/en/publications/is-the-spherical-leaf-inclination-angle-distribution-a-valid-assu/
+- Silver birch plant area at Järvselja (secondary): https://reference-global.com/article/10.2478/fsmu-2019-0007
+- Seasonal transmittance of a deciduous forest (secondary): https://ams.confex.com/ams/pdfpapers/79972.pdf
+- Baldocchi, radiation through vegetation (secondary): https://biometlab.cnr.berkeley.edu/biometlab/espm129/notes/Lecture_9_Solar_Radiation_Transfer_Through_Vegetation_part_2_Notes_2014.pdf
+- Endler 1993, the colour of light in forests (abstract): https://deakin.figshare.com/articles/journal_contribution/The_color_of_light_in_forests_and_its_implications/20874970
+- Orders of magnitude, illuminance: https://en.wikipedia.org/wiki/Orders_of_magnitude_(illuminance)
+- NIBIO, phenological time series: https://nibio.no/tema/landskap/tidsseriar-for-fenologiske-observasjonar
+- Hovi and Rautiainen 2020, spectra under canopies (not read): https://research.fi/en/results/publication/0368831920
+- Patry 2021, Ghost of Tsushima: https://www.advances.realtimerendering.com/s2021/jpatry_advances2021/index.html
+- Ghost of Yōtei's technology: https://blog.playstation.com/?p=411201
+- Guerrilla, deferred texturing in Horizon Forbidden West: https://www.guerrilla-games.com/read/adventures-with-deferred-texturing-in-horizon-forbidden-west
+- Horizon Zero Dawn vegetation (abstract): https://gdcvault.com/play/1025066/Between-Tech-and-Art-The
+- GPU Gems 3, chapter 16 (Crysis vegetation): https://developer.nvidia.com/gpugems/gpugems3/part-iii-rendering/chapter-16-vegetation-procedural-animation-and-shading-crysis
+- GPU Gems 3, chapter 4 (SpeedTree): https://developer.nvidia.com/gpugems/gpugems3/part-i-geometry/chapter-4-next-generation-speedtree-rendering
+- Barré-Brisebois, cheap translucency (secondary): https://frostbite.com/frostbite/news/approximating-translucency-for-a-fast-cheap-and-convincing-subsurface-scattering-look
+- Unreal, shading models (secondary): https://docs.unrealengine.com/4.27/RenderingAndGraphics/Materials/MaterialProperties/LightingModels
+- Apple, WWDC 2020 session 10632: https://developer.apple.com/videos/play/wwdc2020/10632
+- Imagination, do not use discard: https://docs.imgtec.com/starter-guides/powervr-architecture/html/topics/rules/do-not-use-discard.html
+- Deep opacity maps (secondary): https://diglib.eg.org/handle/10.2312/CGF.v27i2pp675-680
+
+**Many lamps at city scale (§11)**
+- Courrèges, GTA V graphics study, part 2: https://www.adriancourreges.com/blog/2015/11/02/gta-v-graphics-study-part-2/
+- Sollumz, LOD lights (secondary): https://docs.sollumz.org/documentation/maps/lod-lights
+- Dybisz and Witanowski, shadows in Cyberpunk 2077 (SIGGRAPH 2021): https://history.siggraph.org/wp-content/uploads/2022/06/2021-Talks-Dybisz_Shadows-Optimizations-in-Cyberpunk-2077.pdf
+- Arm, MegaLights on mobile: https://developer.arm.com/community/arm-community-blogs/b/mobile-graphics-and-gaming-blog/posts/lighting-at-scale-bringing-hundreds-of-dynamic-lights-to-mobile-with-unreal-megalights
+- Drobot 2017, improved culling (secondary): https://www.advances.realtimerendering.com/s2017/2017_Sig_Improved_Culling_final.pdf
+- URP 17.6 source, local: `ForwardLights.cs`, `UniversalRenderPipeline.cs`, `Clustering.hlsl`, `DeferredPass.cs`, `universal-config/ShaderConfig.cs`
+- Unity, on-tile rendering (secondary): https://docs.unity3d.com/6000.6/Documentation/Manual/on-tile-rendering.html
+- HDRP mixed cached shadows (secondary): https://github.com/Unity-Technologies/Graphics/pull/1559
+- Apple, deferred lighting sample: https://developer.apple.com/documentation/metal/rendering-a-scene-with-deferred-lighting-in-objective-c
+- Meta, Forward+ in Unity: https://developers.meta.com/horizon/documentation/unity/unity-forward-plus-rendering/
+- Karis 2013, Real Shading in UE4: https://cdn2.unrealengine.com/Resources/files/2013SiggraphPresentationsNotes-26915738.pdf
+- Sun and others 2005, airlight (abstract): https://www.cs.columbia.edu/~bosun/sig05.htm
+- Peters, spectral rendering results: https://momentsingraphics.de/SpectralRendering3Results.html
+- Ward and Eydelberg-Vileshin 2002 (abstract): https://diglib.eg.org/items/c0b94b25-e457-4ce8-91ca-9a7eab4a36e8/full
+- Mallett and Yuksel 2019 (abstract): https://diglib.eg.org/items/bbffa865-e99c-4c1f-bd33-70102dc8af78/full
+- colour-science, Mallett 2019: https://colour.readthedocs.io/en/latest/_modules/colour/recovery/mallett2019.html
+- CIE, high-pressure discharge lamp spectra (secondary): https://cie.co.at/datatable/relative-spectral-power-distributions-high-pressure-discharge-lamp-illuminants
+- Kyba and others 2011 (secondary): https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3047560/
+- US DOE, sky glow (secondary): https://www.energy.gov/sites/prod/files/2017/08/f35/Sky-Glow-Technical-Webinar_8-03-17_1.pdf
