@@ -83,7 +83,7 @@ Each light stage ends in the rebuilt walk, so Øystein's walk is where it is jud
 3. **Three lights at least:** drizzle, low sun and blue hour at the five views, clay and stone in the same frames, colour and light-only beside the target frames, at judged size.
 4. **Value first, white stays white:** the value view's five bands, and a white chip in every sheet.
 
-**L0. The light's range, on paper** (Øystein, 22 October: "we need to build for the future. do one thing right one time, instead of medium many many times"). 0.5 to 1 d, before L1 fixes the light record.
+**LA. The light's range, on paper** (Øystein, 22 October: "we need to build for the future. do one thing right one time, instead of medium many many times"). 0.5 to 1 d, before L1 fixes the light record.
 - **The craft of two regimes the corner doesn't show,** studied only far enough to shape the format and the shade's terms, and not built here:
   - light under a canopy: sun flecks, sky seen through leaves, light coming through them (the Firewatch reference);
   - many lamps at city scale on the reference machine.
@@ -111,7 +111,7 @@ Each light stage ends in the rebuilt walk, so Øystein's walk is where it is jud
 
 **LR. Self-check, strict review, Øystein's second walk.** 0.5 d.
 
-**Total for 1b:** 13.75 to 20.25 d, 110 to 162%, with L0. Cut first: the seen-town half of L8; specular occlusion; the hue-preserving comparison; last, L6's clear sky (low sun keeps today's typed sky).
+**Total for 1b:** 13.75 to 20.25 d, 110 to 162%, with LA. Cut first: the seen-town half of L8; specular occlusion; the hue-preserving comparison; last, L6's clear sky (low sun keeps today's typed sky).
 
 **Night is not in 1c.** Night in tiers (item 8, 5 to 8 d) stays with plan steps 3 and 6. Night after the blue hour is unmeasured; in Stavanger in December the sun sets about 15:35, so most of a winter day's play would fall in dusk or dark. Until night lands, it is the blue-hour rig carried on with the 1989 lamps from `TownLights`, labelled a stand-in. The case's November evenings and its Friday after 16:00 fall in the dark, so test 2 (section 3) checks this first, on stills. If it fails, the visits move into daylight (labelled), which costs nothing; night moves into 1c only if a case still needs it, with that failure as the evidence.
 
