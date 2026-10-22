@@ -12,6 +12,7 @@ A summary of `docs/building-blocks.md`, which holds the detail and wins where th
 Parts are Python generators, not hand-modelled `.blend` files: a part is its code in `blender/parts/<family>/`. Each is built a step at a time, looked at from the judging camera against its reference board, and corrected.
 - **A fixed part** is a judged mesh, made in Blender (a sett, a slab, a lamp).
 - **A fitted part** is a judged function whose inputs are facts (a tread fitted to its flight, a course to its ground). It is judged on a sheet across its inputs.
+- **A stone is rigid** (BB3 in `docs/building-blocks.md`). A fitted course chooses and cuts its stones, then places each by moving and turning it. Never bend, shear or stretch a rigid piece's mesh to make it fit: no per-vertex height from a curve, no `z += x * k`. Only parts that really flex deform, from their rest position.
 - The generator chooses, fits and places them, and invents no geometry outside a judged part or function.
 - Each family has a definition (`schemas/part.schema.json`): `made_as`, era, sizes, fits, pivot, sockets, removal mark, levels, roles, lifecycle.
 - A part joins the corner only after its sheet, checks, a fresh reviewer and Øystein's judgement.

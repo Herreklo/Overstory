@@ -15,6 +15,7 @@ The stack: Blender 4.x Python offline; Unity 6000.6, URP 17.6, C# with Burst. Th
 - **S1** (disputed) No temporal accumulation or alpha-to-coverage; SMAA at native with depth priming; STP once every mover writes motion vectors. MSAA 4× until port step 5 (3.4) keeps step 3's A/B clean; then shimmer and golden views choose, on levelled geometry. Evidence: Light. Reopens: step 5.
 - **D6.4** (disputed) Only the mass-produced repeats; hand-split wall stones stay unique. Evidence: `research/scale-test.md`. Reopens: House A's final chunks breaking the pool (Øystein decides).
 - **BB2** Painted far town test: after the gully port, before House A's far level. Evidence: decisions §14. Reopens: Øystein.
+- **BB3** A stone is rigid. A rigid piece (stone, slab, brick, a timber that does not flex) is placed only by moving and turning it, never bent, sheared or stretched. It fits by choosing the piece or by a judged cut. A course through a change of pitch steps or tapers as a mason lays it. Only parts that really flex (plants, cloth, people) deform, from their rest position (UV5). The export's rigidity check enforces it. Evidence: Øystein, 22 October ("you can not bend rocks"). The gully's cheek walls shear their face stones and copings along the rake, and bend the hearting stones through each change of pitch. Reopens: none.
 
 ## The stage map
 
@@ -378,7 +379,7 @@ Reasons: decisions §9.
 | Baselines | a strict review accepts one while building; Øystein accepts milestone sheets |
 | The harness | A/B switches (Resident Drawer, GPU occlusion, MSAA, history path, forced levels, sun beams, shadow reach); peak memory |
 | Golden views, motion sheets | one sample a pixel; the swim test and shimmer index |
-| Export checks | budget per level, the 60 % rule, median triangle, fits never silent, the kit validator, plan validity, licences, the id test |
+| Export checks | budget per level, the 60 % rule, median triangle, fits never silent, the kit validator, plan validity, licences, the id test, the rigidity check (each rigid piece against its part mesh by its best rigid fit; over 0.1 mm fails, BB3) |
 | Fact checks | one framework: `trace_check`, act, cut and label checks, superposition, diff across dates, watched-or-jumped, time-jump |
 | Expressive range | counts per level, the repeat-finding check |
 | Test matrix | kinds × levels × lights × views × dates × machines in `tools/matrix.json`; a subset on the daily build |

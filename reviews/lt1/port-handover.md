@@ -21,6 +21,14 @@ The port is paused at a clean point, with everything pushed to `lt/1-harbour-str
 ## Left, in order
 
 1. **2b, the deliberate changes, ending in one new baseline.** The baseline is proposed for the strict review and accepted by Øystein against the target frame.
+   - **Rocks are rigid (BB3; Øystein, 22 October: "you can not bend rocks").** This comes first. In `wall.py`:
+     - each face stone and coping is sheared along its course's rake (`zv = bm + hrel + (sv - sm) * kb`), with its ends kept plumb;
+     - each hearting stone follows the eased curve vertex by vertex (`base(sv) + hrel`), so it bends near a change of pitch, and leans back by a shear;
+     - in `stone.py`, the slabs' settling tilt is a small-angle shear (`z += px * tilt`), under 0.2 mm off a true rotation.
+     - Every stone is to be placed by moving and turning it.
+     - The courses through a change of pitch step or taper as a mason lays them (open fault 1 in `measuring.md`). Study the craft first: how masons course a wall beside steps, raked or level and stepped, and how they meet at a change of pitch.
+     - Add the export's rigidity check: each rigid piece against its part mesh, by its best rigid fit, failing over 0.1 mm.
+     - Soil and moss in the joints may follow the curve.
    - Planning:
      - the lane and the plan in integer mm;
      - the world seed 1989, retiring `legacySeed`;
