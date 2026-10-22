@@ -96,6 +96,7 @@ Every system, material and kind is studied twice before it is built (SY4; `CLAUD
 | History in things | `world-that-remembers.md`, `house-changes.md`, `repairs.md` | `history-in-things.md` |
 | History pages: binding, block compression, time inputs per texel, charts | `history-in-things.md` (Gu's factorisation), `wear.py` and `growth.py` (the laws) | `history-pages.md` (step 3's R0; the binding and its cost measured at R2 to R2c: a sample is cheap, a busy output is not; a real page's BC7 error and the chart waste at R3, border shimmer at R6, the binding under the Resident Drawer at 3.4) |
 | Tiers, instancing, quality control | `tools-and-performance.md` (thin) | `performance-at-scale.md` |
+| Per-pixel cost on the M4: passes, tile memory, shading rates | `docs/measuring.md` (the pass budget), `reviews/lt1/playable/walk/w3-report.md` | `performance-craft.md` (beams at a quarter of the pixels with one hard tap; each term shaded at its rate; trees depth first; the frame kept on tile; per-line profiling in Xcode; resolution as the reserve dial; each to be A/B'd on the harness in the frame-rate gate) |
 | Kits and generators | `generating-the-past.md` (thin) | `kits-and-generation.md`, `where-generation-runs.md` |
 | Towns and cities | `urban-design.md`, `city-forces.md`, `city-types.md`, `town-change.md`, `stavanger-centre.md` | `kits-and-generation.md`, `urban-design.md` |
 | Stone, made | `stone.md`, `repairs.md` | `materials-at-scale.md`, `performance-at-scale.md`, `kits-and-generation.md` |
