@@ -2,6 +2,18 @@
 
 Every change to the files in `schemas/` with its migration. The contracts' version is `schemaVersion`, carried by every record, kind, pack file and fixture. `tools/migrate.py` runs `migrations/NNN_<name>.py` in order on every file behind; `tools/migrate.py --check` fails while any is behind. `tools/validate_record.py` checks records, kinds, parts and the registries against the current version.
 
+## 2, unchanged: the hash chain and the stage contract (22 October, the gully port's step 2 groundwork)
+
+No migration: no field changed, and no record, kind or part needs rewriting.
+
+New:
+- `hashing.md`: the canonical encoding a C# twin reproduces (sorted keys, integers as decimal text, floats by their binary64 bits, strings as UTF-8), the blob hash for bulk numbers and the chain's links and cache keys. `tools/hashes.py` implements it; its vectors are `fixtures/golden/canon-vectors.json`.
+- `stages.md`: the stage contract, run by `tools/run_kind.py`. It covers the entry and its context, outputs, the cache, stage files, the golden fixtures in `fixtures/golden/<kind>/<stage>.json` and `tools/diff_stage.py`.
+
+Changed:
+- `kind.schema.json`: a stage's `reads` also admits the run's input `date`, besides the pack's tables. Only the description changed.
+- `kinds/house.json`: facts is live through the shared `tools/stages/record.py:facts`. Checks moves from `tools/validate_record.py:validate`, whose signature never fit a stage, to `tools/stages/record.py:checks`.
+
 ## 2: the contracts as files (22 October, the gully port's step 1)
 
 Migration: `migrations/001_schema_2.py`. The provenance word `engine` is retired for `simulated`; every file's `schemaVersion` goes from 1 to 2. Today's bundles (`fixtures/lt1-corner.json`, `lt1-street.json`, `lt1-town.json`) held no `engine`, so only their version changed. They stay bundles; each kind's port turns its part of them into records, with that port's migration.

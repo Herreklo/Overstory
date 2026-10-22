@@ -1,0 +1,130 @@
+{
+ "chain": {
+  "after": "fc197b46504c23eb",
+  "inputs": {},
+  "link": "f76e7a55756e240a",
+  "output": "0c7675c7c149f51b"
+ },
+ "kind": "probe",
+ "output": {
+  "chunks": {
+   "ch-0-0": {
+    "hash": "ff91a84751ef5249",
+    "pieces": 3,
+    "triangles": 36,
+    "vertices": 24
+   },
+   "ch-m1-0": {
+    "hash": "11b3ee3d5b18c787",
+    "pieces": 3,
+    "triangles": 36,
+    "vertices": 24
+   }
+  },
+  "fills": {
+   "st-probe/fl-0/tr-0/sl-0/1": {
+    "hash": "5d64439b5e9e80b6",
+    "pieces": 1,
+    "triangles": 12,
+    "vertices": 8
+   },
+   "st-probe/fl-0/tr-0/sl-1/0": {
+    "hash": "ebfba46527857bad",
+    "pieces": 2,
+    "triangles": 24,
+    "vertices": 16
+   },
+   "st-probe/fl-0/tr-1/sl-0/0": {
+    "hash": "7cf886fce2521f89",
+    "pieces": 2,
+    "triangles": 24,
+    "vertices": 16
+   },
+   "st-probe/fl-0/tr-1/sl-0/0/dab/0": {
+    "hash": "b5b26a151c472b67",
+    "pieces": 1,
+    "triangles": 12,
+    "vertices": 8
+   }
+  },
+  "mesh": {
+   "piece": {
+    "$blob": {
+     "dtype": "int32",
+     "hash": "84f0b1c677963b2d",
+     "shape": [
+      48
+     ]
+    }
+   },
+   "positions": {
+    "$blob": {
+     "dtype": "float64",
+     "hash": "a9c568d6f9d91e0b",
+     "shape": [
+      48,
+      3
+     ]
+    }
+   },
+   "triangles": {
+    "$blob": {
+     "dtype": "int32",
+     "hash": "dffefc5103646d3f",
+     "shape": [
+      72,
+      3
+     ]
+    }
+   }
+  },
+  "pieces": {
+   "st-probe/fl-0/tr-0/sl-0/1#0": {
+    "chunk": "ch-m1-0",
+    "fill": "st-probe/fl-0/tr-0/sl-0/1",
+    "hash": "10d00b506dad47c2",
+    "triangles": 12,
+    "vertices": 8
+   },
+   "st-probe/fl-0/tr-0/sl-1/0#0": {
+    "chunk": "ch-0-0",
+    "fill": "st-probe/fl-0/tr-0/sl-1/0",
+    "hash": "70944078afbb9b27",
+    "triangles": 12,
+    "vertices": 8
+   },
+   "st-probe/fl-0/tr-0/sl-1/0#1": {
+    "chunk": "ch-0-0",
+    "fill": "st-probe/fl-0/tr-0/sl-1/0",
+    "hash": "8b2476a2f4a552b9",
+    "triangles": 12,
+    "vertices": 8
+   },
+   "st-probe/fl-0/tr-1/sl-0/0#0": {
+    "chunk": "ch-m1-0",
+    "fill": "st-probe/fl-0/tr-1/sl-0/0",
+    "hash": "e17fd7217e00589b",
+    "triangles": 12,
+    "vertices": 8
+   },
+   "st-probe/fl-0/tr-1/sl-0/0#1": {
+    "chunk": "ch-0-0",
+    "fill": "st-probe/fl-0/tr-1/sl-0/0",
+    "hash": "cd198687e0365b94",
+    "triangles": 12,
+    "vertices": 8
+   },
+   "st-probe/fl-0/tr-1/sl-0/0/dab/0#0": {
+    "chunk": "ch-m1-0",
+    "fill": "st-probe/fl-0/tr-1/sl-0/0/dab/0",
+    "hash": "8066bb9b426e92e6",
+    "triangles": 12,
+    "vertices": 8
+   }
+  }
+ },
+ "record": "st-probe",
+ "schemaVersion": 2,
+ "stage": "geometry",
+ "what": "the geometry stage's output for st-probe, kind probe (tools/run_kind.py; schemas/stages.md)"
+}

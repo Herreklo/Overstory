@@ -1,0 +1,46 @@
+{
+ "schemaVersion": 2,
+ "part": "stone/slate/slab",
+ "version": 1,
+ "describes": "The probe's slab: a box. It leaves a bed scar when lifted, so its removal mark is admitted with it.",
+ "madeAs": "fixed",
+ "era": {
+  "first": 1800,
+  "last": null
+ },
+ "sizes": {
+  "w": [
+   300,
+   1200
+  ],
+  "h": [
+   200,
+   600
+  ],
+  "d": [
+   20,
+   120
+  ]
+ },
+ "fits": [
+  "exact"
+ ],
+ "pivot": "socket-centre",
+ "sockets": [],
+ "removalMark": "mark/bed-scar",
+ "motion": [
+  {
+   "element": "body",
+   "class": "still",
+   "deform": "none"
+  }
+ ],
+ "intrinsicChannels": [
+  "face-kind"
+ ],
+ "marks": [],
+ "shaderFamily": "stone",
+ "lifecycle": {
+  "state": "draft"
+ }
+}

@@ -1,0 +1,344 @@
+{
+ "schemaVersion": 2,
+ "id": "st-probe",
+ "kind": "probe",
+ "pack": "probe",
+ "note": "The probe's record (tools/tests): one flight of two steps and three slabs. The first slab was lifted and relaid with a reclaimed stone in 1952; the upper one was mended with a dab of cement in 1958. Schema-valid; not a place in the town.",
+ "screen": "fact",
+ "provenance": "authored",
+ "precision": "year",
+ "actor": {
+  "role": "the town's road department"
+ },
+ "weight": 300,
+ "where": {
+  "at": [
+   0,
+   0,
+   0
+  ],
+  "heading": 0
+ },
+ "keepers": [
+  {
+   "from": {
+    "year": 1874
+   },
+   "keeper": {
+    "role": "the town's road department"
+   },
+   "provenance": "authored",
+   "event": "st-probe/1"
+  }
+ ],
+ "care": [
+  {
+   "from": {
+    "year": 1874
+   },
+   "care": 500,
+   "basis": [
+    "money"
+   ],
+   "provenance": "authored",
+   "event": "st-probe/1",
+   "cause": "a public stair"
+  }
+ ],
+ "lifespan": {
+  "from": {
+   "year": 1874
+  },
+  "madeBy": "st-probe/1",
+  "to": null,
+  "removedBy": null
+ },
+ "events": [
+  {
+   "id": "st-probe/1",
+   "at": {
+    "year": 1874
+   },
+   "precision": "year",
+   "kind": "built",
+   "params": {},
+   "cause": "the stair is laid",
+   "actor": {
+    "role": "the town's road department"
+   },
+   "weight": 300,
+   "where": {
+    "slots": [
+     "st-probe/fl-0",
+     "st-probe/fl-0/tr-0",
+     "st-probe/fl-0/tr-0/sl-0",
+     "st-probe/fl-0/tr-0/sl-1",
+     "st-probe/fl-0/tr-1",
+     "st-probe/fl-0/tr-1/sl-0"
+    ]
+   },
+   "screen": "fact",
+   "provenance": "authored"
+  },
+  {
+   "id": "st-probe/2",
+   "at": {
+    "year": 1952
+   },
+   "precision": "year",
+   "kind": "relaid",
+   "params": {},
+   "cause": "a rocking slab is lifted and a reclaimed one laid",
+   "actor": {
+    "role": "the town's road department"
+   },
+   "weight": 300,
+   "where": {
+    "slots": [
+     "st-probe/fl-0/tr-0/sl-0"
+    ]
+   },
+   "screen": "fact",
+   "provenance": "authored"
+  },
+  {
+   "id": "st-probe/3",
+   "at": {
+    "year": 1958
+   },
+   "precision": "year",
+   "kind": "mended",
+   "params": {},
+   "cause": "a chipped corner is dabbed with cement",
+   "actor": {
+    "role": "the town's road department"
+   },
+   "weight": 300,
+   "where": {
+    "slots": [
+     "st-probe/fl-0/tr-1/sl-0/0/dab"
+    ]
+   },
+   "screen": "fact",
+   "provenance": "authored"
+  }
+ ],
+ "links": [],
+ "pins": [],
+ "slots": [
+  {
+   "id": "st-probe/fl-0",
+   "type": "group",
+   "from": {
+    "year": 1874
+   },
+   "madeBy": "st-probe/1",
+   "to": null,
+   "fills": []
+  },
+  {
+   "id": "st-probe/fl-0/tr-0",
+   "type": "group",
+   "from": {
+    "year": 1874
+   },
+   "madeBy": "st-probe/1",
+   "to": null,
+   "fills": []
+  },
+  {
+   "id": "st-probe/fl-0/tr-0/sl-0",
+   "type": "socket",
+   "from": {
+    "year": 1874
+   },
+   "madeBy": "st-probe/1",
+   "to": null,
+   "at": [
+    -900,
+    0,
+    0
+   ],
+   "size": [
+    900,
+    400,
+    70
+   ],
+   "fills": [
+    {
+     "id": "st-probe/fl-0/tr-0/sl-0/0",
+     "role": "body",
+     "part": "stone/slate/slab",
+     "placedBy": "st-probe/1",
+     "from": {
+      "year": 1874
+     },
+     "to": {
+      "year": 1952
+     },
+     "fit": {
+      "mode": "exact",
+      "size": [
+       900,
+       400,
+       70
+      ]
+     },
+     "origin": "new",
+     "end": "removed",
+     "endedBy": "st-probe/2",
+     "removalMark": null
+    },
+    {
+     "id": "st-probe/fl-0/tr-0/sl-0/1",
+     "role": "body",
+     "part": "stone/slate/slab",
+     "placedBy": "st-probe/2",
+     "from": {
+      "year": 1952
+     },
+     "to": null,
+     "fit": {
+      "mode": "exact",
+      "size": [
+       900,
+       400,
+       70
+      ]
+     },
+     "origin": "reclaimed"
+    }
+   ]
+  },
+  {
+   "id": "st-probe/fl-0/tr-0/sl-1",
+   "type": "socket",
+   "from": {
+    "year": 1874
+   },
+   "madeBy": "st-probe/1",
+   "to": null,
+   "at": [
+    0,
+    0,
+    0
+   ],
+   "size": [
+    900,
+    400,
+    70
+   ],
+   "fills": [
+    {
+     "id": "st-probe/fl-0/tr-0/sl-1/0",
+     "role": "body",
+     "part": "stone/slate/slab",
+     "placedBy": "st-probe/1",
+     "from": {
+      "year": 1874
+     },
+     "to": null,
+     "fit": {
+      "mode": "exact",
+      "size": [
+       900,
+       400,
+       70
+      ]
+     },
+     "origin": "new"
+    }
+   ]
+  },
+  {
+   "id": "st-probe/fl-0/tr-1",
+   "type": "group",
+   "from": {
+    "year": 1874
+   },
+   "madeBy": "st-probe/1",
+   "to": null,
+   "fills": []
+  },
+  {
+   "id": "st-probe/fl-0/tr-1/sl-0",
+   "type": "socket",
+   "from": {
+    "year": 1874
+   },
+   "madeBy": "st-probe/1",
+   "to": null,
+   "at": [
+    -450,
+    400,
+    160
+   ],
+   "size": [
+    900,
+    400,
+    70
+   ],
+   "fills": [
+    {
+     "id": "st-probe/fl-0/tr-1/sl-0/0",
+     "role": "body",
+     "part": "stone/slate/slab",
+     "placedBy": "st-probe/1",
+     "from": {
+      "year": 1874
+     },
+     "to": null,
+     "fit": {
+      "mode": "exact",
+      "size": [
+       900,
+       400,
+       70
+      ]
+     },
+     "origin": "new"
+    }
+   ]
+  },
+  {
+   "id": "st-probe/fl-0/tr-1/sl-0/0/dab",
+   "type": "socket",
+   "from": {
+    "year": 1958
+   },
+   "madeBy": "st-probe/3",
+   "to": null,
+   "at": [
+    200,
+    100,
+    70
+   ],
+   "size": [
+    120,
+    80,
+    5
+   ],
+   "fills": [
+    {
+     "id": "st-probe/fl-0/tr-1/sl-0/0/dab/0",
+     "role": "repair",
+     "part": "repair/cement",
+     "placedBy": "st-probe/3",
+     "from": {
+      "year": 1958
+     },
+     "to": null,
+     "fit": {
+      "mode": "exact",
+      "size": [
+       120,
+       80,
+       5
+      ]
+     },
+     "origin": "new"
+    }
+   ]
+  }
+ ]
+}

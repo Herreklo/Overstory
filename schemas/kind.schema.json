@@ -134,7 +134,7 @@
         "status": { "description": "live: runs from this source now. planned: not built yet. frozen: the Python is kept as the parity reference while the C# is proved. ported: the C# is the source.", "enum": ["live", "planned", "frozen", "ported"] },
         "python": { "anyOf": [{ "type": "null" }, { "type": "string", "pattern": "^[a-z0-9_/.-]+\\.py:[A-Za-z_][A-Za-z0-9_]*$" }], "description": "Its entry point: file:function." },
         "csharp": { "anyOf": [{ "type": "null" }, { "type": "string", "pattern": "^[A-Za-z_][A-Za-z0-9_.]*$" }], "description": "Its C# entry point: Type.Method." },
-        "reads": { "description": "The pack's tables it reads (eras, metrics, materials, parts).", "type": "array", "uniqueItems": true, "items": { "$ref": "record.schema.json#/$defs/word" } }
+        "reads": { "description": "What it reads beyond the stages before it, each hashed into its cache key (hashing.md): the pack's tables (eras, metrics, materials, parts: packs/<pack>/<word>.json or the folder packs/<pack>/<word>/) and the run's one input, date (the fabric's year).", "type": "array", "uniqueItems": true, "items": { "$ref": "record.schema.json#/$defs/word" } }
       }
     },
     "stage": {

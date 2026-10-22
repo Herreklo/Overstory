@@ -1,0 +1,5 @@
+{
+ "schemaVersion": 2,
+ "describes": "The probe's one table: the joint left between slabs.",
+ "jointMm": 8
+}

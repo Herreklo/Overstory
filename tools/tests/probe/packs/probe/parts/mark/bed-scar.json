@@ -1,0 +1,50 @@
+{
+ "schemaVersion": 2,
+ "part": "mark/bed-scar",
+ "version": 1,
+ "describes": "What a lifted probe slab leaves: admitted through the slab's removal mark, not through a family.",
+ "madeAs": "fitted",
+ "era": {
+  "first": 1800,
+  "last": null
+ },
+ "sizes": {
+  "w": [
+   300,
+   1200
+  ],
+  "h": [
+   200,
+   600
+  ],
+  "d": [
+   0,
+   10
+  ]
+ },
+ "fits": [
+  "exact"
+ ],
+ "pivot": "socket-centre",
+ "sockets": [],
+ "removalMark": null,
+ "motion": [
+  {
+   "element": "body",
+   "class": "still",
+   "deform": "none"
+  }
+ ],
+ "intrinsicChannels": [
+  "face-kind"
+ ],
+ "marks": [],
+ "shaderFamily": "stone",
+ "lifecycle": {
+  "state": "draft"
+ },
+ "function": {
+  "python": null,
+  "csharp": null
+ }
+}

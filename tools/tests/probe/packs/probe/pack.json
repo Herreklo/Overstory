@@ -1,0 +1,10 @@
+{
+ "schemaVersion": 2,
+ "pack": "probe",
+ "describes": "The probe's pack, for tools/tests only: its years, a world seed and one table, so the runner's tests never move when the town's pack does.",
+ "peopleStart": 1959,
+ "showYear": 1989,
+ "firstYear": 1800,
+ "worldSeed": 1989,
+ "frame": "x east, y north, z up, in millimetres from the pack's origin"
+}

@@ -1,0 +1,364 @@
+{
+ "chain": {
+  "after": "b1fcfab3c178f78d",
+  "head": {
+   "rulesetVersion": "57ec2ef5e7a0859f",
+   "schemaVersion": 2,
+   "worldSeed": "00000000000007c5"
+  },
+  "inputs": {
+   "record": "86c8c2433e4ab7fd"
+  },
+  "link": "54c6e5398644e111",
+  "output": "86c8c2433e4ab7fd"
+ },
+ "kind": "probe",
+ "output": {
+  "actor": {
+   "role": "the town's road department"
+  },
+  "care": [
+   {
+    "basis": [
+     "money"
+    ],
+    "care": 500,
+    "cause": "a public stair",
+    "event": "st-probe/1",
+    "from": {
+     "year": 1874
+    },
+    "provenance": "authored"
+   }
+  ],
+  "events": [
+   {
+    "actor": {
+     "role": "the town's road department"
+    },
+    "at": {
+     "year": 1874
+    },
+    "cause": "the stair is laid",
+    "id": "st-probe/1",
+    "kind": "built",
+    "params": {},
+    "precision": "year",
+    "provenance": "authored",
+    "screen": "fact",
+    "weight": 300,
+    "where": {
+     "slots": [
+      "st-probe/fl-0",
+      "st-probe/fl-0/tr-0",
+      "st-probe/fl-0/tr-0/sl-0",
+      "st-probe/fl-0/tr-0/sl-1",
+      "st-probe/fl-0/tr-1",
+      "st-probe/fl-0/tr-1/sl-0"
+     ]
+    }
+   },
+   {
+    "actor": {
+     "role": "the town's road department"
+    },
+    "at": {
+     "year": 1952
+    },
+    "cause": "a rocking slab is lifted and a reclaimed one laid",
+    "id": "st-probe/2",
+    "kind": "relaid",
+    "params": {},
+    "precision": "year",
+    "provenance": "authored",
+    "screen": "fact",
+    "weight": 300,
+    "where": {
+     "slots": [
+      "st-probe/fl-0/tr-0/sl-0"
+     ]
+    }
+   },
+   {
+    "actor": {
+     "role": "the town's road department"
+    },
+    "at": {
+     "year": 1958
+    },
+    "cause": "a chipped corner is dabbed with cement",
+    "id": "st-probe/3",
+    "kind": "mended",
+    "params": {},
+    "precision": "year",
+    "provenance": "authored",
+    "screen": "fact",
+    "weight": 300,
+    "where": {
+     "slots": [
+      "st-probe/fl-0/tr-1/sl-0/0/dab"
+     ]
+    }
+   }
+  ],
+  "id": "st-probe",
+  "keepers": [
+   {
+    "event": "st-probe/1",
+    "from": {
+     "year": 1874
+    },
+    "keeper": {
+     "role": "the town's road department"
+    },
+    "provenance": "authored"
+   }
+  ],
+  "kind": "probe",
+  "lifespan": {
+   "from": {
+    "year": 1874
+   },
+   "madeBy": "st-probe/1",
+   "removedBy": null,
+   "to": null
+  },
+  "links": [],
+  "note": "The probe's record (tools/tests): one flight of two steps and three slabs. The first slab was lifted and relaid with a reclaimed stone in 1952; the upper one was mended with a dab of cement in 1958. Schema-valid; not a place in the town.",
+  "pack": "probe",
+  "pins": [],
+  "precision": "year",
+  "provenance": "authored",
+  "schemaVersion": 2,
+  "screen": "fact",
+  "slots": [
+   {
+    "fills": [],
+    "from": {
+     "year": 1874
+    },
+    "id": "st-probe/fl-0",
+    "madeBy": "st-probe/1",
+    "to": null,
+    "type": "group"
+   },
+   {
+    "fills": [],
+    "from": {
+     "year": 1874
+    },
+    "id": "st-probe/fl-0/tr-0",
+    "madeBy": "st-probe/1",
+    "to": null,
+    "type": "group"
+   },
+   {
+    "at": [
+     -900,
+     0,
+     0
+    ],
+    "fills": [
+     {
+      "end": "removed",
+      "endedBy": "st-probe/2",
+      "fit": {
+       "mode": "exact",
+       "size": [
+        900,
+        400,
+        70
+       ]
+      },
+      "from": {
+       "year": 1874
+      },
+      "id": "st-probe/fl-0/tr-0/sl-0/0",
+      "origin": "new",
+      "part": "stone/slate/slab",
+      "placedBy": "st-probe/1",
+      "removalMark": null,
+      "role": "body",
+      "to": {
+       "year": 1952
+      }
+     },
+     {
+      "fit": {
+       "mode": "exact",
+       "size": [
+        900,
+        400,
+        70
+       ]
+      },
+      "from": {
+       "year": 1952
+      },
+      "id": "st-probe/fl-0/tr-0/sl-0/1",
+      "origin": "reclaimed",
+      "part": "stone/slate/slab",
+      "placedBy": "st-probe/2",
+      "role": "body",
+      "to": null
+     }
+    ],
+    "from": {
+     "year": 1874
+    },
+    "id": "st-probe/fl-0/tr-0/sl-0",
+    "madeBy": "st-probe/1",
+    "size": [
+     900,
+     400,
+     70
+    ],
+    "to": null,
+    "type": "socket"
+   },
+   {
+    "at": [
+     0,
+     0,
+     0
+    ],
+    "fills": [
+     {
+      "fit": {
+       "mode": "exact",
+       "size": [
+        900,
+        400,
+        70
+       ]
+      },
+      "from": {
+       "year": 1874
+      },
+      "id": "st-probe/fl-0/tr-0/sl-1/0",
+      "origin": "new",
+      "part": "stone/slate/slab",
+      "placedBy": "st-probe/1",
+      "role": "body",
+      "to": null
+     }
+    ],
+    "from": {
+     "year": 1874
+    },
+    "id": "st-probe/fl-0/tr-0/sl-1",
+    "madeBy": "st-probe/1",
+    "size": [
+     900,
+     400,
+     70
+    ],
+    "to": null,
+    "type": "socket"
+   },
+   {
+    "fills": [],
+    "from": {
+     "year": 1874
+    },
+    "id": "st-probe/fl-0/tr-1",
+    "madeBy": "st-probe/1",
+    "to": null,
+    "type": "group"
+   },
+   {
+    "at": [
+     -450,
+     400,
+     160
+    ],
+    "fills": [
+     {
+      "fit": {
+       "mode": "exact",
+       "size": [
+        900,
+        400,
+        70
+       ]
+      },
+      "from": {
+       "year": 1874
+      },
+      "id": "st-probe/fl-0/tr-1/sl-0/0",
+      "origin": "new",
+      "part": "stone/slate/slab",
+      "placedBy": "st-probe/1",
+      "role": "body",
+      "to": null
+     }
+    ],
+    "from": {
+     "year": 1874
+    },
+    "id": "st-probe/fl-0/tr-1/sl-0",
+    "madeBy": "st-probe/1",
+    "size": [
+     900,
+     400,
+     70
+    ],
+    "to": null,
+    "type": "socket"
+   },
+   {
+    "at": [
+     200,
+     100,
+     70
+    ],
+    "fills": [
+     {
+      "fit": {
+       "mode": "exact",
+       "size": [
+        120,
+        80,
+        5
+       ]
+      },
+      "from": {
+       "year": 1958
+      },
+      "id": "st-probe/fl-0/tr-1/sl-0/0/dab/0",
+      "origin": "new",
+      "part": "repair/cement",
+      "placedBy": "st-probe/3",
+      "role": "repair",
+      "to": null
+     }
+    ],
+    "from": {
+     "year": 1958
+    },
+    "id": "st-probe/fl-0/tr-1/sl-0/0/dab",
+    "madeBy": "st-probe/3",
+    "size": [
+     120,
+     80,
+     5
+    ],
+    "to": null,
+    "type": "socket"
+   }
+  ],
+  "weight": 300,
+  "where": {
+   "at": [
+    0,
+    0,
+    0
+   ],
+   "heading": 0
+  }
+ },
+ "record": "st-probe",
+ "schemaVersion": 2,
+ "stage": "facts",
+ "what": "the facts stage's output for st-probe, kind probe (tools/run_kind.py; schemas/stages.md)"
+}

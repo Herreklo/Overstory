@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 2,
+  "kind": "probe",
+  "version": 1,
+  "describes": "A tiny synthetic kind for the runner's tests (tools/tests/test_stages.py): one flight of two steps, three slabs, one relaid and one mended, drawn as boxes. Every stage is live and none needs Blender, so the runner, the chain, the cache and diff_stage are proved without the stair. Its stages are in tools/tests/probe/probe_stages.py, its checks the generic ones.",
+  "recordPrefixes": ["st"],
+  "frame": "Origin at the foot of the flight, on its centre line. x across the flight to the right looking up it, y up the flight, z up.",
+  "eventKinds": ["built", "relaid", "mended"],
+  "roles": ["body", "repair"],
+  "stages": {
+    "facts": { "status": "live", "python": "tools/tests/probe/probe_stages.py:facts", "csharp": null, "reads": [], "params": {} },
+    "plan": { "status": "live", "python": "tools/tests/probe/probe_stages.py:plan", "csharp": null, "reads": ["metrics"], "params": { "jitterMm": 6 } },
+    "life": { "status": "live", "python": "tools/tests/probe/probe_stages.py:life", "csharp": null, "reads": ["date"], "params": { "wearPerMillePerYear": 7 } },
+    "geometry": { "status": "live", "python": "tools/tests/probe/probe_stages.py:geometry", "csharp": null, "reads": [], "params": { "hollowM": 0.012, "splitAtWear": 500 } },
+    "bake": { "status": "live", "python": "tools/tests/probe/probe_stages.py:bake", "csharp": null, "reads": [], "params": {} },
+    "export": { "status": "live", "python": "tools/tests/probe/probe_stages.py:export", "csharp": null, "reads": [], "params": {} },
+    "checks": { "status": "live", "python": "tools/stages/record.py:checks", "csharp": null, "reads": [], "params": {} }
+  },
+  "slots": [
+    { "rule": "stair-flight", "type": "group", "roles": {} },
+    { "rule": "stair-step", "type": "group", "roles": {} },
+    { "rule": "stair-slab", "type": "socket", "roles": { "body": ["stone/slate"] } },
+    { "rule": "stair-flaw", "type": "socket", "roles": { "repair": ["repair"] } }
+  ],
+  "levels": {
+    "l0": { "errorMm": 2, "triangles": 200, "mergeUnit": "ch" },
+    "l1": { "errorMm": 4, "triangles": 120, "mergeUnit": "ch" },
+    "l2": { "errorMm": 10, "triangles": 72, "mergeUnit": "ce" },
+    "l3": { "errorMm": 25, "triangles": 40, "mergeUnit": "ce" },
+    "l4": { "errorMm": 100, "triangles": 12, "mergeUnit": "bk" }
+  },
+  "budgets": { "view": "street-stop", "shadingOverFlatUs": { "stone": 0 }, "provisional": true },
+  "motion": [{ "element": "body", "class": "still", "deform": "none" }],
+  "affordances": [],
+  "collision": { "roles": ["full"], "proxyLevel": "l1" },
+  "fields": { "reads": [], "writes": [] },
+  "layers": []
+}

@@ -1,0 +1,743 @@
+{
+ "chain": {
+  "after": "cc8ae161685b8efb",
+  "head": {
+   "rulesetVersion": "61568f757cc99222",
+   "schemaVersion": 2,
+   "worldSeed": "0000000000000001"
+  },
+  "inputs": {
+   "record": "78b074538f6ad8e1"
+  },
+  "link": "9169454f58b224da",
+  "output": "78b074538f6ad8e1"
+ },
+ "kind": "house",
+ "output": {
+  "actor": {
+   "role": "a cannery owner"
+  },
+  "care": [
+   {
+    "basis": [
+     "money"
+    ],
+    "care": 750,
+    "cause": "a cannery owner's new house",
+    "event": "bld-104/1",
+    "from": {
+     "year": 1912
+    },
+    "provenance": "authored"
+   },
+   {
+    "basis": [
+     "money",
+     "presence"
+    ],
+    "care": 450,
+    "cause": "a widow living on the shop's rent",
+    "event": "bld-104/2",
+    "from": {
+     "year": 1931
+    },
+    "provenance": "authored"
+   },
+   {
+    "basis": [
+     "money",
+     "presence"
+    ],
+    "care": 700,
+    "cause": "owners who live in it and keep it",
+    "event": "bld-104/7",
+    "from": {
+     "year": 1996
+    },
+    "provenance": "authored"
+   }
+  ],
+  "events": [
+   {
+    "actor": {
+     "role": "a cannery owner"
+    },
+    "at": {
+     "year": 1912
+    },
+    "cause": "a cannery owner builds",
+    "id": "bld-104/1",
+    "kind": "built",
+    "params": {
+     "era": "jugend",
+     "roof": "mansard",
+     "storeys": 2000,
+     "wealth": 750
+    },
+    "precision": "year",
+    "provenance": "authored",
+    "screen": "fact",
+    "weight": 800,
+    "where": {
+     "slots": [
+      "bld-104/sf-f",
+      "bld-104/op-f0-0",
+      "bld-104/op-f0-1"
+     ]
+    }
+   },
+   {
+    "actor": {
+     "role": "the cannery owner's widow"
+    },
+    "at": {
+     "year": 1931
+    },
+    "cause": "the cannery owner's widow lets the ground floor to the quay road as a shop",
+    "id": "bld-104/2",
+    "kind": "shop-fitted",
+    "params": {
+     "bays": 2
+    },
+    "precision": "year",
+    "provenance": "authored",
+    "screen": "fact",
+    "weight": 600,
+    "where": {
+     "slots": [
+      "bld-104/op-f0-0-1",
+      "bld-104/op-f0-0",
+      "bld-104/op-f0-1"
+     ]
+    }
+   },
+   {
+    "actor": {
+     "role": "an ironmonger"
+    },
+    "at": {
+     "year": 1931
+    },
+    "cause": "an ironmonger opens",
+    "id": "bld-104/3",
+    "kind": "business-opened",
+    "params": {
+     "trade": "ironmonger"
+    },
+    "precision": "year",
+    "provenance": "authored",
+    "screen": "fact",
+    "weight": 400
+   },
+   {
+    "actor": {
+     "role": "the cannery owner's widow"
+    },
+    "at": {
+     "year": 1949
+    },
+    "cause": "upkeep",
+    "id": "bld-104/4",
+    "kind": "repainted",
+    "params": {},
+    "precision": "year",
+    "provenance": "authored",
+    "screen": "fact",
+    "weight": 200,
+    "where": {
+     "slots": [
+      "bld-104/sf-f"
+     ]
+    }
+   },
+   {
+    "actor": {
+     "role": "the ironmonger"
+    },
+    "at": {
+     "year": 1974
+    },
+    "cause": "the ironmonger retires",
+    "id": "bld-104/5",
+    "kind": "business-closed",
+    "params": {},
+    "precision": "year",
+    "provenance": "authored",
+    "screen": "fact",
+    "weight": 400
+   },
+   {
+    "actor": {
+     "role": "a young couple"
+    },
+    "at": {
+     "year": 1988
+    },
+    "cause": "a young couple open a café in the empty shop; the rent is low after the crash",
+    "id": "bld-104/6",
+    "kind": "business-opened",
+    "params": {
+     "trade": "cafe"
+    },
+    "precision": "year",
+    "provenance": "authored",
+    "screen": "fact",
+    "weight": 400
+   },
+   {
+    "actor": {
+     "role": "the café's owners"
+    },
+    "at": {
+     "year": 1996
+    },
+    "cause": "the café's owners buy the house and paint it, the first coat since 1949",
+    "id": "bld-104/7",
+    "kind": "repainted",
+    "params": {},
+    "precision": "year",
+    "provenance": "authored",
+    "rule": "upkeep",
+    "screen": "fact",
+    "standIn": true,
+    "weight": 300,
+    "where": {
+     "slots": [
+      "bld-104/sf-f"
+     ]
+    }
+   },
+   {
+    "actor": {
+     "role": "the café's owners"
+    },
+    "at": {
+     "year": 2009
+    },
+    "cause": "the café moves to a bigger room on the square; the quay road's trade has gone up the hill",
+    "id": "bld-104/8",
+    "kind": "business-closed",
+    "params": {},
+    "precision": "year",
+    "provenance": "authored",
+    "rule": "trade",
+    "screen": "fact",
+    "standIn": true,
+    "weight": 400
+   },
+   {
+    "actor": {
+     "role": "the house's owners"
+    },
+    "at": {
+     "year": 2016
+    },
+    "cause": "after the oil-price fall no one rents the shop; the owners make the ground floor a flat, and the city's rules for the wooden town ask for copies of the 1912 windows",
+    "id": "bld-104/9",
+    "kind": "shop-removed",
+    "params": {
+     "windows": "copies"
+    },
+    "precision": "year",
+    "provenance": "authored",
+    "rule": "restoration",
+    "screen": "fact",
+    "standIn": true,
+    "weight": 600,
+    "where": {
+     "slots": [
+      "bld-104/op-f0-0-1",
+      "bld-104/op-f0-0",
+      "bld-104/op-f0-1"
+     ]
+    }
+   },
+   {
+    "actor": {
+     "role": "the house's owners"
+    },
+    "at": {
+     "year": 2016
+    },
+    "cause": "painted when the ground floor is made a flat",
+    "id": "bld-104/10",
+    "kind": "repainted",
+    "params": {},
+    "precision": "year",
+    "provenance": "authored",
+    "rule": "upkeep",
+    "screen": "fact",
+    "standIn": true,
+    "weight": 300,
+    "where": {
+     "slots": [
+      "bld-104/sf-f"
+     ]
+    }
+   }
+  ],
+  "id": "bld-104",
+  "keepers": [
+   {
+    "event": "bld-104/1",
+    "from": {
+     "year": 1912
+    },
+    "keeper": {
+     "role": "a cannery owner"
+    },
+    "provenance": "authored"
+   },
+   {
+    "event": "bld-104/2",
+    "from": {
+     "year": 1931
+    },
+    "keeper": {
+     "role": "the cannery owner's widow"
+    },
+    "provenance": "authored"
+   },
+   {
+    "cause": "they buy the house",
+    "event": "bld-104/7",
+    "from": {
+     "year": 1996
+    },
+    "keeper": {
+     "role": "the café's owners"
+    },
+    "provenance": "authored"
+   }
+  ],
+  "kind": "house",
+  "lifespan": {
+   "from": {
+    "year": 1912
+   },
+   "madeBy": "bld-104/1",
+   "removedBy": null,
+   "to": null
+  },
+  "links": [],
+  "note": "The corner's house A (fixtures/lt1-corner.json, building 104) as a record, on paper: its front's coats and the two ground-floor bays the 1931 shop took, laid as the resolver lays a four-bay jugend front. Written against the same schemas as the stair, validated and not built. The rest of the house waits for House A.",
+  "pack": "stavanger-1989",
+  "pins": [],
+  "precision": "year",
+  "provenance": "authored",
+  "schemaVersion": 2,
+  "screen": "fact",
+  "slots": [
+   {
+    "at": [
+     0,
+     0,
+     0
+    ],
+    "fills": [
+     {
+      "end": "covered",
+      "endedBy": "bld-104/4",
+      "fit": {
+       "mode": "exact",
+       "size": [
+        9000,
+        6400,
+        0
+       ]
+      },
+      "from": {
+       "year": 1912
+      },
+      "id": "bld-104/sf-f/0",
+      "origin": "new",
+      "part": "coat/paint",
+      "placedBy": "bld-104/1",
+      "role": "coat",
+      "to": {
+       "year": 1949
+      }
+     },
+     {
+      "end": "covered",
+      "endedBy": "bld-104/7",
+      "fit": {
+       "mode": "exact",
+       "size": [
+        9000,
+        6400,
+        0
+       ]
+      },
+      "from": {
+       "year": 1949
+      },
+      "id": "bld-104/sf-f/1",
+      "origin": "new",
+      "part": "coat/paint",
+      "placedBy": "bld-104/4",
+      "role": "coat",
+      "to": {
+       "year": 1996
+      }
+     },
+     {
+      "end": "covered",
+      "endedBy": "bld-104/10",
+      "fit": {
+       "mode": "exact",
+       "size": [
+        9000,
+        6400,
+        0
+       ]
+      },
+      "from": {
+       "year": 1996
+      },
+      "id": "bld-104/sf-f/2",
+      "origin": "new",
+      "part": "coat/paint",
+      "placedBy": "bld-104/7",
+      "role": "coat",
+      "to": {
+       "year": 2016
+      }
+     },
+     {
+      "fit": {
+       "mode": "exact",
+       "size": [
+        9000,
+        6400,
+        0
+       ]
+      },
+      "from": {
+       "year": 2016
+      },
+      "id": "bld-104/sf-f/3",
+      "origin": "new",
+      "part": "coat/paint",
+      "placedBy": "bld-104/10",
+      "role": "coat",
+      "to": null
+     }
+    ],
+    "from": {
+     "year": 1912
+    },
+    "id": "bld-104/sf-f",
+    "madeBy": "bld-104/1",
+    "size": [
+     9000,
+     6400,
+     150
+    ],
+    "surface": {
+     "faceClass": "street",
+     "facing": "wall",
+     "looksOnto": "street"
+    },
+    "to": null,
+    "type": "surface"
+   },
+   {
+    "at": [
+     675,
+     850,
+     0
+    ],
+    "fills": [
+     {
+      "end": "removed",
+      "endedBy": "bld-104/2",
+      "fit": {
+       "mode": "fitted",
+       "size": [
+        900,
+        1500,
+        150
+       ]
+      },
+      "from": {
+       "year": 1912
+      },
+      "id": "bld-104/op-f0-0/0",
+      "origin": "new",
+      "part": "window/cross-arch",
+      "placedBy": "bld-104/1",
+      "removalMark": null,
+      "role": "body",
+      "to": {
+       "year": 1931
+      }
+     },
+     {
+      "end": "removed",
+      "endedBy": "bld-104/2",
+      "fit": {
+       "mode": "fitted",
+       "size": [
+        900,
+        1500,
+        150
+       ]
+      },
+      "from": {
+       "year": 1912
+      },
+      "id": "bld-104/op-f0-0/1",
+      "origin": "new",
+      "part": "trim/casing",
+      "placedBy": "bld-104/1",
+      "removalMark": null,
+      "role": "surround",
+      "to": {
+       "year": 1931
+      },
+      "variant": "arch"
+     },
+     {
+      "copyOf": "bld-104/op-f0-0/0",
+      "fit": {
+       "mode": "fitted",
+       "size": [
+        900,
+        1500,
+        150
+       ]
+      },
+      "from": {
+       "year": 2016
+      },
+      "id": "bld-104/op-f0-0/2",
+      "origin": "new",
+      "part": "window/cross-arch",
+      "placedBy": "bld-104/9",
+      "role": "body",
+      "to": null
+     },
+     {
+      "copyOf": "bld-104/op-f0-0/1",
+      "fit": {
+       "mode": "fitted",
+       "size": [
+        900,
+        1500,
+        150
+       ]
+      },
+      "from": {
+       "year": 2016
+      },
+      "id": "bld-104/op-f0-0/3",
+      "origin": "new",
+      "part": "trim/casing",
+      "placedBy": "bld-104/9",
+      "role": "surround",
+      "to": null,
+      "variant": "arch"
+     }
+    ],
+    "from": {
+     "year": 1912
+    },
+    "host": "bld-104/sf-f",
+    "id": "bld-104/op-f0-0",
+    "madeBy": "bld-104/1",
+    "size": [
+     900,
+     1500,
+     150
+    ],
+    "to": null,
+    "type": "opening"
+   },
+   {
+    "at": [
+     2925,
+     850,
+     0
+    ],
+    "fills": [
+     {
+      "end": "removed",
+      "endedBy": "bld-104/2",
+      "fit": {
+       "mode": "fitted",
+       "size": [
+        900,
+        1500,
+        150
+       ]
+      },
+      "from": {
+       "year": 1912
+      },
+      "id": "bld-104/op-f0-1/0",
+      "origin": "new",
+      "part": "window/cross-arch",
+      "placedBy": "bld-104/1",
+      "removalMark": null,
+      "role": "body",
+      "to": {
+       "year": 1931
+      }
+     },
+     {
+      "end": "removed",
+      "endedBy": "bld-104/2",
+      "fit": {
+       "mode": "fitted",
+       "size": [
+        900,
+        1500,
+        150
+       ]
+      },
+      "from": {
+       "year": 1912
+      },
+      "id": "bld-104/op-f0-1/1",
+      "origin": "new",
+      "part": "trim/casing",
+      "placedBy": "bld-104/1",
+      "removalMark": null,
+      "role": "surround",
+      "to": {
+       "year": 1931
+      },
+      "variant": "arch"
+     },
+     {
+      "copyOf": "bld-104/op-f0-1/0",
+      "fit": {
+       "mode": "fitted",
+       "size": [
+        900,
+        1500,
+        150
+       ]
+      },
+      "from": {
+       "year": 2016
+      },
+      "id": "bld-104/op-f0-1/2",
+      "origin": "new",
+      "part": "window/cross-arch",
+      "placedBy": "bld-104/9",
+      "role": "body",
+      "to": null
+     },
+     {
+      "copyOf": "bld-104/op-f0-1/1",
+      "fit": {
+       "mode": "fitted",
+       "size": [
+        900,
+        1500,
+        150
+       ]
+      },
+      "from": {
+       "year": 2016
+      },
+      "id": "bld-104/op-f0-1/3",
+      "origin": "new",
+      "part": "trim/casing",
+      "placedBy": "bld-104/9",
+      "role": "surround",
+      "to": null,
+      "variant": "arch"
+     }
+    ],
+    "from": {
+     "year": 1912
+    },
+    "host": "bld-104/sf-f",
+    "id": "bld-104/op-f0-1",
+    "madeBy": "bld-104/1",
+    "size": [
+     900,
+     1500,
+     150
+    ],
+    "to": null,
+    "type": "opening"
+   },
+   {
+    "at": [
+     300,
+     600,
+     0
+    ],
+    "closedBy": "bld-104/9",
+    "fills": [
+     {
+      "end": "removed",
+      "endedBy": "bld-104/9",
+      "fit": {
+       "mode": "fitted",
+       "size": [
+        3900,
+        1800,
+        150
+       ]
+      },
+      "from": {
+       "year": 1931
+      },
+      "id": "bld-104/op-f0-0-1/0",
+      "origin": "new",
+      "part": "shopfront/shop-1930",
+      "placedBy": "bld-104/2",
+      "removalMark": {
+       "part": "mark/shopfront-line"
+      },
+      "role": "body",
+      "to": {
+       "year": 2016
+      }
+     }
+    ],
+    "from": {
+     "year": 1931
+    },
+    "host": "bld-104/sf-f",
+    "id": "bld-104/op-f0-0-1",
+    "madeBy": "bld-104/2",
+    "size": [
+     3900,
+     1800,
+     150
+    ],
+    "spans": [
+     "bld-104/op-f0-0",
+     "bld-104/op-f0-1"
+    ],
+    "to": {
+     "year": 2016
+    },
+    "type": "opening"
+   }
+  ],
+  "weight": 800,
+  "where": {
+   "at": [
+    38000,
+    0,
+    0
+   ],
+   "heading": 0,
+   "size": [
+    9000,
+    9000
+   ]
+  }
+ },
+ "record": "bld-104",
+ "schemaVersion": 2,
+ "stage": "facts",
+ "what": "the facts stage's output for bld-104, kind house (tools/run_kind.py; schemas/stages.md)"
+}

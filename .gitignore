@@ -21,6 +21,9 @@ __pycache__/
 # Grown tree timelines: regrown the same from their seed
 blender/cache/
 
+# The stage runner's cache and runs (tools/run_kind.py): rebuilt from the records, keyed by the hash chain
+/cache/
+
 # The measuring tools: renders and comparisons are rebuilt, only the accepted baseline is kept (docs/measuring.md)
 reviews/golden/current/
 reviews/golden/compare/

@@ -1,0 +1,22 @@
+{
+ "chain": {
+  "after": "97453718eb88b736",
+  "inputs": {},
+  "link": "ca9b166a1029470d",
+  "output": "c2f81c777f100d53"
+ },
+ "kind": "probe",
+ "output": {
+  "files": {
+   "st-probe.obj": {
+    "text": "d69162d601ba14fd",
+    "triangles": 72,
+    "vertices": 48
+   }
+  }
+ },
+ "record": "st-probe",
+ "schemaVersion": 2,
+ "stage": "export",
+ "what": "the export stage's output for st-probe, kind probe (tools/run_kind.py; schemas/stages.md)"
+}

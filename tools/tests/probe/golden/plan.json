@@ -1,0 +1,104 @@
+{
+ "chain": {
+  "after": "54c6e5398644e111",
+  "inputs": {
+   "table:metrics": "49061f54c3796619"
+  },
+  "link": "f418667a64b4f5e9",
+  "output": "be30492871d37b57"
+ },
+ "kind": "probe",
+ "output": {
+  "fills": [
+   {
+    "at": [
+     -898,
+     0,
+     0
+    ],
+    "fill": "st-probe/fl-0/tr-0/sl-0/0",
+    "from": 1874,
+    "part": "stone/slate/slab",
+    "size": [
+     892,
+     392,
+     70
+    ],
+    "slot": "st-probe/fl-0/tr-0/sl-0",
+    "to": 1952
+   },
+   {
+    "at": [
+     -896,
+     10,
+     0
+    ],
+    "fill": "st-probe/fl-0/tr-0/sl-0/1",
+    "from": 1952,
+    "part": "stone/slate/slab",
+    "size": [
+     892,
+     392,
+     70
+    ],
+    "slot": "st-probe/fl-0/tr-0/sl-0",
+    "to": null
+   },
+   {
+    "at": [
+     4,
+     7,
+     0
+    ],
+    "fill": "st-probe/fl-0/tr-0/sl-1/0",
+    "from": 1874,
+    "part": "stone/slate/slab",
+    "size": [
+     892,
+     392,
+     70
+    ],
+    "slot": "st-probe/fl-0/tr-0/sl-1",
+    "to": null
+   },
+   {
+    "at": [
+     -446,
+     408,
+     160
+    ],
+    "fill": "st-probe/fl-0/tr-1/sl-0/0",
+    "from": 1874,
+    "part": "stone/slate/slab",
+    "size": [
+     892,
+     392,
+     70
+    ],
+    "slot": "st-probe/fl-0/tr-1/sl-0",
+    "to": null
+   },
+   {
+    "at": [
+     -246,
+     505,
+     230
+    ],
+    "fill": "st-probe/fl-0/tr-1/sl-0/0/dab/0",
+    "from": 1958,
+    "part": "repair/cement",
+    "size": [
+     120,
+     80,
+     5
+    ],
+    "slot": "st-probe/fl-0/tr-1/sl-0/0/dab",
+    "to": null
+   }
+  ]
+ },
+ "record": "st-probe",
+ "schemaVersion": 2,
+ "stage": "plan",
+ "what": "the plan stage's output for st-probe, kind probe (tools/run_kind.py; schemas/stages.md)"
+}

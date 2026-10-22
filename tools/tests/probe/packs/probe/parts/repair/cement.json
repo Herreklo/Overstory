@@ -1,0 +1,46 @@
+{
+ "schemaVersion": 2,
+ "part": "repair/cement",
+ "version": 1,
+ "describes": "The probe's dab of cement.",
+ "madeAs": "fixed",
+ "era": {
+  "first": 1800,
+  "last": null
+ },
+ "sizes": {
+  "w": [
+   10,
+   300
+  ],
+  "h": [
+   10,
+   300
+  ],
+  "d": [
+   0,
+   30
+  ]
+ },
+ "fits": [
+  "exact"
+ ],
+ "pivot": "socket-centre",
+ "sockets": [],
+ "removalMark": null,
+ "motion": [
+  {
+   "element": "body",
+   "class": "still",
+   "deform": "none"
+  }
+ ],
+ "intrinsicChannels": [
+  "face-kind"
+ ],
+ "marks": [],
+ "shaderFamily": "stone",
+ "lifecycle": {
+  "state": "draft"
+ }
+}

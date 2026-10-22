@@ -1,0 +1,131 @@
+{
+ "what": "the canonical encoding's test vectors (schemas/hashing.md): each JSON text's tokens and hash; bulk numbers' words and array hash; a chain written out link by link (tools/hashes.py)",
+ "spec": "tokens folded by hashing.h(): null n; true t; false f; int i + decimal text; float d + binary64 bits (minus zero is zero); string s + text; array a + length + items; object o + count + (key, value) by code point",
+ "values": [
+  {"json": "null", "tokens": [{"t": "str", "v": "n"}], "hash": "cd3a8264940bad3c"},
+  {"json": "true", "tokens": [{"t": "str", "v": "t"}], "hash": "b0e8cbed2d1c0876"},
+  {"json": "false", "tokens": [{"t": "str", "v": "f"}], "hash": "5b461c72747477a4"},
+  {"json": "0", "tokens": [{"t": "str", "v": "i"}, {"t": "str", "v": "0"}], "hash": "d111b84a211e6f1a"},
+  {"json": "1", "tokens": [{"t": "str", "v": "i"}, {"t": "str", "v": "1"}], "hash": "0f1fe0a117f34108"},
+  {"json": "-1", "tokens": [{"t": "str", "v": "i"}, {"t": "str", "v": "-1"}], "hash": "714186110ba72b5d"},
+  {"json": "42", "tokens": [{"t": "str", "v": "i"}, {"t": "str", "v": "42"}], "hash": "5fcc0c142d452dc0"},
+  {"json": "9223372036854775807", "tokens": [{"t": "str", "v": "i"}, {"t": "str", "v": "9223372036854775807"}], "hash": "be5e4624c44369ba"},
+  {"json": "-9223372036854775808", "tokens": [{"t": "str", "v": "i"}, {"t": "str", "v": "-9223372036854775808"}], "hash": "14ba0b7e3bdbcc51"},
+  {"json": "18446744073709551615", "tokens": [{"t": "str", "v": "i"}, {"t": "str", "v": "18446744073709551615"}], "hash": "758b238d04632e66"},
+  {"json": "18446744073709551616", "tokens": [{"t": "str", "v": "i"}, {"t": "str", "v": "18446744073709551616"}], "hash": "1980d5aef4729c76"},
+  {"json": "-100000000000000000000000000000", "tokens": [{"t": "str", "v": "i"}, {"t": "str", "v": "-100000000000000000000000000000"}], "hash": "15759a1bdc693b7d"},
+  {"json": "0.0", "tokens": [{"t": "str", "v": "d"}, {"t": "int", "v": "0"}], "hash": "b2a5c61a9ad58b80"},
+  {"json": "-0.0", "tokens": [{"t": "str", "v": "d"}, {"t": "int", "v": "0"}], "hash": "b2a5c61a9ad58b80"},
+  {"json": "1.0", "tokens": [{"t": "str", "v": "d"}, {"t": "int", "v": "4607182418800017408"}], "hash": "9526ac3578b195b0"},
+  {"json": "0.1", "tokens": [{"t": "str", "v": "d"}, {"t": "int", "v": "4591870180066957722"}], "hash": "c186078e6fed2702"},
+  {"json": "-2.5", "tokens": [{"t": "str", "v": "d"}, {"t": "int", "v": "13836183955189006336"}], "hash": "320fbc4104ddf920"},
+  {"json": "1e+300", "tokens": [{"t": "str", "v": "d"}, {"t": "int", "v": "9094988921128908188"}], "hash": "e9254a8464b164c0"},
+  {"json": "5e-324", "tokens": [{"t": "str", "v": "d"}, {"t": "int", "v": "1"}], "hash": "6d071894d5702386"},
+  {"json": "9007199254740993.0", "tokens": [{"t": "str", "v": "d"}, {"t": "int", "v": "4845873199050653696"}], "hash": "d1286374f31a0de4"},
+  {"json": "0.10000000149011612", "tokens": [{"t": "str", "v": "d"}, {"t": "int", "v": "4591870180174331904"}], "hash": "7dc784cd65329541"},
+  {"json": "1E3", "tokens": [{"t": "str", "v": "d"}, {"t": "int", "v": "4652007308841189376"}], "hash": "f2ffb5e47c6f3ea3"},
+  {"json": "\"\"", "tokens": [{"t": "str", "v": "s"}, {"t": "str", "v": ""}], "hash": "6831a6d0c9bbac66"},
+  {"json": "\"a\"", "tokens": [{"t": "str", "v": "s"}, {"t": "str", "v": "a"}], "hash": "e5ab6ccb58635424"},
+  {"json": "\"0\"", "tokens": [{"t": "str", "v": "s"}, {"t": "str", "v": "0"}], "hash": "31d2a540217fddff"},
+  {"json": "\"\\u00e6\\u00f8\\u00e5\"", "tokens": [{"t": "str", "v": "s"}, {"t": "str", "v": "æøå"}], "hash": "fc8a29cd9587a269"},
+  {"json": "\"\\ud83d\\ude00\"", "tokens": [{"t": "str", "v": "s"}, {"t": "str", "v": "😀"}], "hash": "308802d6093ce7de"},
+  {"json": "\"a\\u0000b\"", "tokens": [{"t": "str", "v": "s"}, {"t": "str", "v": "a\u0000b"}], "hash": "c770bddc974a57b1"},
+  {"json": "\"st-gully/fl-0/tr-3/sl-1/0#1\"", "tokens": [{"t": "str", "v": "s"}, {"t": "str", "v": "st-gully/fl-0/tr-3/sl-1/0#1"}], "hash": "3d4652642ef60c09"},
+  {"json": "[]", "tokens": [{"t": "str", "v": "a"}, {"t": "int", "v": "0"}], "hash": "2a601a992fc4d69d"},
+  {"json": "{}", "tokens": [{"t": "str", "v": "o"}, {"t": "int", "v": "0"}], "hash": "c079650601c03de6"},
+  {"json": "[[]]", "tokens": [{"t": "str", "v": "a"}, {"t": "int", "v": "1"}, {"t": "str", "v": "a"}, {"t": "int", "v": "0"}], "hash": "8534b02f61052ff9"},
+  {"json": "[{}]", "tokens": [{"t": "str", "v": "a"}, {"t": "int", "v": "1"}, {"t": "str", "v": "o"}, {"t": "int", "v": "0"}], "hash": "db35b1cb10c9b614"},
+  {"json": "[1, 1.0, \"1\", true, null]", "tokens": [{"t": "str", "v": "a"}, {"t": "int", "v": "5"}, {"t": "str", "v": "i"}, {"t": "str", "v": "1"}, {"t": "str", "v": "d"}, {"t": "int", "v": "4607182418800017408"}, {"t": "str", "v": "s"}, {"t": "str", "v": "1"}, {"t": "str", "v": "t"}, {"t": "str", "v": "n"}], "hash": "3f9bcd45b87e45f3"},
+  {"json": "[0, 0.0, -0.0, false]", "tokens": [{"t": "str", "v": "a"}, {"t": "int", "v": "4"}, {"t": "str", "v": "i"}, {"t": "str", "v": "0"}, {"t": "str", "v": "d"}, {"t": "int", "v": "0"}, {"t": "str", "v": "d"}, {"t": "int", "v": "0"}, {"t": "str", "v": "f"}], "hash": "c63d2b4ebf5b5952"},
+  {"json": "{\"b\": 1, \"a\": 2}", "tokens": [{"t": "str", "v": "o"}, {"t": "int", "v": "2"}, {"t": "str", "v": "a"}, {"t": "str", "v": "i"}, {"t": "str", "v": "2"}, {"t": "str", "v": "b"}, {"t": "str", "v": "i"}, {"t": "str", "v": "1"}], "hash": "d3c0de5bd664a5dc"},
+  {"json": "{\"a\": 2, \"b\": 1}", "tokens": [{"t": "str", "v": "o"}, {"t": "int", "v": "2"}, {"t": "str", "v": "a"}, {"t": "str", "v": "i"}, {"t": "str", "v": "2"}, {"t": "str", "v": "b"}, {"t": "str", "v": "i"}, {"t": "str", "v": "1"}], "hash": "d3c0de5bd664a5dc"},
+  {"json": "{\"a\": 1, \"B\": 2, \"\\u00e9\": 3, \"z\": 4, \"\\uff61\": 5, \"\\ud83d\\ude00\": 6, \"ab\": 7, \"\": 8}", "tokens": [{"t": "str", "v": "o"}, {"t": "int", "v": "8"}, {"t": "str", "v": ""}, {"t": "str", "v": "i"}, {"t": "str", "v": "8"}, {"t": "str", "v": "B"}, {"t": "str", "v": "i"}, {"t": "str", "v": "2"}, {"t": "str", "v": "a"}, {"t": "str", "v": "i"}, {"t": "str", "v": "1"}, {"t": "str", "v": "ab"}, {"t": "str", "v": "i"}, {"t": "str", "v": "7"}, {"t": "str", "v": "z"}, {"t": "str", "v": "i"}, {"t": "str", "v": "4"}, {"t": "str", "v": "é"}, {"t": "str", "v": "i"}, {"t": "str", "v": "3"}, {"t": "str", "v": "｡"}, {"t": "str", "v": "i"}, {"t": "str", "v": "5"}, {"t": "str", "v": "😀"}, {"t": "str", "v": "i"}, {"t": "str", "v": "6"}], "hash": "c77f145e5de7d4c9"},
+  {"json": "{\"id\": \"st-gully/fl-0/tr-3/sl-1/0\", \"at\": [-1200, 350, 2100], \"heading\": 90000, \"fit\": {\"mode\": \"exact\", \"size\": [900, 400, 70]}, \"to\": null, \"origin\": \"new\"}", "tokens": [{"t": "str", "v": "o"}, {"t": "int", "v": "6"}, {"t": "str", "v": "at"}, {"t": "str", "v": "a"}, {"t": "int", "v": "3"}, {"t": "str", "v": "i"}, {"t": "str", "v": "-1200"}, {"t": "str", "v": "i"}, {"t": "str", "v": "350"}, {"t": "str", "v": "i"}, {"t": "str", "v": "2100"}, {"t": "str", "v": "fit"}, {"t": "str", "v": "o"}, {"t": "int", "v": "2"}, {"t": "str", "v": "mode"}, {"t": "str", "v": "s"}, {"t": "str", "v": "exact"}, {"t": "str", "v": "size"}, {"t": "str", "v": "a"}, {"t": "int", "v": "3"}, {"t": "str", "v": "i"}, {"t": "str", "v": "900"}, {"t": "str", "v": "i"}, {"t": "str", "v": "400"}, {"t": "str", "v": "i"}, {"t": "str", "v": "70"}, {"t": "str", "v": "heading"}, {"t": "str", "v": "i"}, {"t": "str", "v": "90000"}, {"t": "str", "v": "id"}, {"t": "str", "v": "s"}, {"t": "str", "v": "st-gully/fl-0/tr-3/sl-1/0"}, {"t": "str", "v": "origin"}, {"t": "str", "v": "s"}, {"t": "str", "v": "new"}, {"t": "str", "v": "to"}, {"t": "str", "v": "n"}], "hash": "2022612adf314fcd"},
+  {"json": "{\"$blob\": {\"dtype\": \"float64\", \"shape\": [2, 3], \"hash\": \"0123456789abcdef\"}}", "tokens": [{"t": "str", "v": "o"}, {"t": "int", "v": "1"}, {"t": "str", "v": "$blob"}, {"t": "str", "v": "o"}, {"t": "int", "v": "3"}, {"t": "str", "v": "dtype"}, {"t": "str", "v": "s"}, {"t": "str", "v": "float64"}, {"t": "str", "v": "hash"}, {"t": "str", "v": "s"}, {"t": "str", "v": "0123456789abcdef"}, {"t": "str", "v": "shape"}, {"t": "str", "v": "a"}, {"t": "int", "v": "2"}, {"t": "str", "v": "i"}, {"t": "str", "v": "2"}, {"t": "str", "v": "i"}, {"t": "str", "v": "3"}], "hash": "efbb8ac7a92952a7"}
+ ],
+ "arrays": [
+  {"dtype": "float64", "json": "[0.0, -0.0, 0.1, -2.5]", "shape": [4], "words": ["0000000000000000", "0000000000000000", "3fb999999999999a", "c004000000000000"], "hash": "160d2df6539190d9"},
+  {"dtype": "float32", "json": "[0.10000000149011612, 1.0, -0.0]", "shape": [3], "words": ["3fb99999a0000000", "3ff0000000000000", "0000000000000000"], "hash": "5f07362b04a8d01e"},
+  {"dtype": "float64", "json": "[[1.5, 2.5, 3.5], [4.0, 5.0, 6.0]]", "shape": [2, 3], "words": ["3ff8000000000000", "4004000000000000", "400c000000000000", "4010000000000000", "4014000000000000", "4018000000000000"], "hash": "774b54432a5d5686"},
+  {"dtype": "int64", "json": "[[0, 1, 2, 3], [-1, -2, 9223372036854775807, -9223372036854775808]]", "shape": [2, 4], "words": ["0000000000000000", "0000000000000001", "0000000000000002", "0000000000000003", "ffffffffffffffff", "fffffffffffffffe", "7fffffffffffffff", "8000000000000000"], "hash": "ddd71861c5925c86"},
+  {"dtype": "uint64", "json": "[18446744073709551615, 0]", "shape": [2], "words": ["ffffffffffffffff", "0000000000000000"], "hash": "fc856572999ca1ad"},
+  {"dtype": "int32", "json": "[7, -7]", "shape": [2], "words": ["0000000000000007", "fffffffffffffff9"], "hash": "ee8cfa7c77620daf"},
+  {"dtype": "uint8", "json": "[0, 255]", "shape": [2], "words": ["0000000000000000", "00000000000000ff"], "hash": "95d480f2c75b2c9e"},
+  {"dtype": "bool", "json": "[true, false, true]", "shape": [3], "words": ["0000000000000001", "0000000000000000", "0000000000000001"], "hash": "bfe48ce599d761f1"},
+  {"dtype": "float64", "json": "[]", "shape": [0], "words": [], "hash": "d982fc973b95fc3f"}
+ ],
+ "chain": {
+  "head": {
+   "schemaVersion": 2,
+   "rulesetVersion": "00000000000000aa",
+   "worldSeed": "0000000000000001"
+  },
+  "headHash": "f60af5722682844f",
+  "stages": [
+   {
+    "stage": "facts",
+    "after": "f60af5722682844f",
+    "inputs": {
+     "record": "1111111111111111"
+    },
+    "output": "1d3d42356f8b3260",
+    "key": "e536912726455ed6",
+    "link": "5ef414a678131162"
+   },
+   {
+    "stage": "plan",
+    "after": "5ef414a678131162",
+    "inputs": {},
+    "output": "568f6903735e9eef",
+    "key": "c0d28d9df19fb5f3",
+    "link": "340a929c0f2cff7a"
+   },
+   {
+    "stage": "life",
+    "after": "340a929c0f2cff7a",
+    "inputs": {
+     "date": 1989
+    },
+    "output": "f7b5cdcea0ebe28f",
+    "key": "c4f2f216cba6c03b",
+    "link": "b013fade252782ba"
+   },
+   {
+    "stage": "geometry",
+    "after": "b013fade252782ba",
+    "inputs": {
+     "date": 1989
+    },
+    "output": "df9c1a76c014d50f",
+    "key": "746e4accd2075773",
+    "link": "f73571feb6199ecb"
+   },
+   {
+    "stage": "bake",
+    "after": "f73571feb6199ecb",
+    "inputs": {
+     "bakeVersion": "2222222222222222"
+    },
+    "output": "2c5f634f54b33b91",
+    "key": "5b46e9f1f4f8aac1",
+    "link": "08f8b3299a220622"
+   },
+   {
+    "stage": "export",
+    "after": "08f8b3299a220622",
+    "inputs": {},
+    "output": "9062f7ff01a6641a",
+    "key": "3ac87a9fb0e6b03c",
+    "link": "9f015d45613c5906"
+   },
+   {
+    "stage": "checks",
+    "after": "9f015d45613c5906",
+    "inputs": {},
+    "output": "fa8c6499c2df5b87",
+    "key": "df6927e5fabd9fe9",
+    "link": "ebc9793a4e1c77a3"
+   }
+  ]
+ }
+}

@@ -1,0 +1,88 @@
+{
+ "chain": {
+  "after": "f76e7a55756e240a",
+  "inputs": {
+   "bakeVersion": "16a409150912c514"
+  },
+  "link": "97453718eb88b736",
+  "output": "6c148e06ccfd2f28"
+ },
+ "kind": "probe",
+ "output": {
+  "channels": {
+   "wear": {
+    "$blob": {
+     "dtype": "float32",
+     "hash": "dfc8f35ab6321495",
+     "shape": [
+      48
+     ]
+    }
+   }
+  },
+  "chunks": {
+   "ch-0-0": {
+    "hash": "74ca0aa2b7e66b3f",
+    "pieces": 3
+   },
+   "ch-m1-0": {
+    "hash": "f2ba292443239d32",
+    "pieces": 3
+   }
+  },
+  "fills": {
+   "st-probe/fl-0/tr-0/sl-0/1": {
+    "hash": "5bcf60d249853b19",
+    "pieces": 1
+   },
+   "st-probe/fl-0/tr-0/sl-1/0": {
+    "hash": "8229e1be6a723046",
+    "pieces": 2
+   },
+   "st-probe/fl-0/tr-1/sl-0/0": {
+    "hash": "179439749c90c9ad",
+    "pieces": 2
+   },
+   "st-probe/fl-0/tr-1/sl-0/0/dab/0": {
+    "hash": "cac6874bf9c0c186",
+    "pieces": 1
+   }
+  },
+  "pieces": {
+   "st-probe/fl-0/tr-0/sl-0/1#0": {
+    "chunk": "ch-m1-0",
+    "fill": "st-probe/fl-0/tr-0/sl-0/1",
+    "hash": "170599127c15accb"
+   },
+   "st-probe/fl-0/tr-0/sl-1/0#0": {
+    "chunk": "ch-0-0",
+    "fill": "st-probe/fl-0/tr-0/sl-1/0",
+    "hash": "29d7cd52c167ceac"
+   },
+   "st-probe/fl-0/tr-0/sl-1/0#1": {
+    "chunk": "ch-0-0",
+    "fill": "st-probe/fl-0/tr-0/sl-1/0",
+    "hash": "29d7cd52c167ceac"
+   },
+   "st-probe/fl-0/tr-1/sl-0/0#0": {
+    "chunk": "ch-m1-0",
+    "fill": "st-probe/fl-0/tr-1/sl-0/0",
+    "hash": "b46cc3e3a5c06063"
+   },
+   "st-probe/fl-0/tr-1/sl-0/0#1": {
+    "chunk": "ch-0-0",
+    "fill": "st-probe/fl-0/tr-1/sl-0/0",
+    "hash": "b46cc3e3a5c06063"
+   },
+   "st-probe/fl-0/tr-1/sl-0/0/dab/0#0": {
+    "chunk": "ch-m1-0",
+    "fill": "st-probe/fl-0/tr-1/sl-0/0/dab/0",
+    "hash": "244dc33de5b908fc"
+   }
+  }
+ },
+ "record": "st-probe",
+ "schemaVersion": 2,
+ "stage": "bake",
+ "what": "the bake stage's output for st-probe, kind probe (tools/run_kind.py; schemas/stages.md)"
+}

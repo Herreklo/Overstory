@@ -1,0 +1,24 @@
+{
+ "chain": {
+  "after": "ca9b166a1029470d",
+  "inputs": {},
+  "link": "82e556cd0bf3606e",
+  "output": "b55d7584ae6b75b0"
+ },
+ "kind": "probe",
+ "output": {
+  "floats": {
+   "facts": 0,
+   "life": 0,
+   "plan": 0
+  },
+  "ids": 78,
+  "pass": true,
+  "problemCount": 0,
+  "problems": []
+ },
+ "record": "st-probe",
+ "schemaVersion": 2,
+ "stage": "checks",
+ "what": "the checks stage's output for st-probe, kind probe (tools/run_kind.py; schemas/stages.md)"
+}

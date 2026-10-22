@@ -1,0 +1,46 @@
+{
+ "schemaVersion": 2,
+ "part": "window/probe",
+ "version": 1,
+ "describes": "A part no slot of the probe admits: it must stay out of the probe's rulesetVersion.",
+ "madeAs": "fixed",
+ "era": {
+  "first": 1800,
+  "last": null
+ },
+ "sizes": {
+  "w": [
+   500,
+   1500
+  ],
+  "h": [
+   800,
+   2000
+  ],
+  "d": [
+   50,
+   200
+  ]
+ },
+ "fits": [
+  "exact"
+ ],
+ "pivot": "socket-centre",
+ "sockets": [],
+ "removalMark": null,
+ "motion": [
+  {
+   "element": "body",
+   "class": "still",
+   "deform": "none"
+  }
+ ],
+ "intrinsicChannels": [
+  "face-kind"
+ ],
+ "marks": [],
+ "shaderFamily": "street",
+ "lifecycle": {
+  "state": "draft"
+ }
+}

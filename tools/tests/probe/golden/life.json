@@ -1,0 +1,36 @@
+{
+ "chain": {
+  "after": "f418667a64b4f5e9",
+  "inputs": {
+   "date": 1989
+  },
+  "link": "fc197b46504c23eb",
+  "output": "45ed03a5960f372a"
+ },
+ "kind": "probe",
+ "output": {
+  "date": 1989,
+  "fills": {
+   "st-probe/fl-0/tr-0/sl-0/1": {
+    "wear": 278,
+    "years": 37
+   },
+   "st-probe/fl-0/tr-0/sl-1/0": {
+    "wear": 827,
+    "years": 115
+   },
+   "st-probe/fl-0/tr-1/sl-0/0": {
+    "wear": 829,
+    "years": 115
+   },
+   "st-probe/fl-0/tr-1/sl-0/0/dab/0": {
+    "wear": 217,
+    "years": 31
+   }
+  }
+ },
+ "record": "st-probe",
+ "schemaVersion": 2,
+ "stage": "life",
+ "what": "the life stage's output for st-probe, kind probe (tools/run_kind.py; schemas/stages.md)"
+}
