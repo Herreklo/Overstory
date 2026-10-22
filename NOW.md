@@ -32,7 +32,7 @@ Each session commits its own work; a stopped one resumes from its files. Long wo
 - **The paper playtests, stopped** (Øystein, 22 October: "Maybe stop playtest, and focus on building?") at 11 of 24 runs. Their outcome is the interim note (`docs/playtests/paper-1/analysis/interim.md`); its two engine requests are filed, and nothing more runs from them.
   - *Next:* the concepts are redesigned from the needs it found (kin, what moves the paper's meters, who found and certified the dead) when people play the greybox; any later AI round starts with the note's four method fixes. Its state at the pause: `docs/playtests/paper-1/usage.md` (its session archived on 22 October).
 - **Held, on Opus:**
-  - the camera and play-craft studies' unread talks and masters, listed in the Limits sections of `docs/research/play-craft.md`, `camera-and-composition.md` and `collision-and-navigation.md`, once the port runs and the weekly allows; read online only, since a download waits for Øystein's OK;
+  - the camera and play-craft studies' unread talks and masters, listed in the Limits sections of `docs/research/play-craft.md`, `camera-and-composition.md` and `collision-and-navigation.md`, each read before the step that rests on it, never "later"; public slides and papers are downloaded under the standing OK (below);
   - a review of the playtest programme (`docs/research/playtesting.md`), when the greybox is close.
 - **Housekeeping, the dates:** a "22 October" label on work of 20 or 21 October takes its commit's date (`git blame`), checked by eye; real dates (photos, records, the playtests' files) stay.
 - **Inquest,** a stored game idea on the unmerged branch `ideas/inquest`. Its engine requests are numbered 11 to 17, which clash with the numbers in `docs/engine-requests.md`.
@@ -47,7 +47,7 @@ Each session commits its own work; a stopped one resumes from its files. Long wo
 What goes to him is in `CLAUDE.md` (How work runs). His decisions stand in their docs' In shorts and are not reopened without him. Open:
 - the walk mode at eye level, whether people react to the camera, and the camera's play: settled by testing in the greybox, not by opinion (Øystein: "we have to test this"; `docs/plan.md`, 1g);
 - after the port: installing Unity's IL2CPP module to compare the player's rebuild times with Mono (`docs/research/building-blocks-decisions.md` §15). Recommended: yes, when step 5 needs it;
-- the reference downloads, approved on 21 October: each file is still listed for him with its source and size first;
+- downloads: public talk slides and papers from GDC Vault, SIGGRAPH course pages, studios' and authors' own sites and arXiv have a standing OK (Øystein, 22 October: "yes"). They go to `~/code/overstory-sources/`, outside the repo, and are logged afterwards with source and size in `docs/research/downloads.md`. Reference images and assets (approved 21 October) are still listed for him file by file with source and size first. Open: yt-dlp for talk transcripts (captions only), and whether he has journal access;
 - which game comes first: nothing is decided. The interface study's observer case keeps its play choices as defaults (`docs/research/interface-and-inspection.md`, For Øystein);
 - the exit criteria in `CLAUDE.md` (What it is for), a draft to agree with him, and the band, proposed as a shared milestone with the engine (`docs/engine-requests.md`).
 
