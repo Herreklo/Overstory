@@ -21,3 +21,14 @@ My first game. Ironclad, from Act 1 floor 6 to the floor 8 Merchant: beat Gremli
 **What was hollow:** Belonging is a clock (+16 for a round of trying, +13 for a round of failing, +24 for doing nothing), so doing nothing is the dominant strategy. Deduction got the same canned line from three people. My refusal was overruled. Sketchable things were never shown (0 of 48). Nothing could be lost.
 
 **Compared with others:** the opposite of the Slay the Spire port. That one had rules worth auditing and real loss. This had nothing to audit. I wouldn't buy it.
+
+## Thursday's Paper
+New reporter on the Courier, a harbour-town weekly, 1990; the editor's family is in the news. I played six rounds (June 1990, then May and June 1991), and five more weeks came as a summary.
+
+**Pull:** 6, 6, 6, 4, 5, 4; about 4 overall. **Marks:** engaged at editions, bored or "would quit" at interviews. One cheat: a wrong front page cost nothing. Delights: linking Audrey's ankle to harbour day changing hands, and Ken's mother ringing for a correction.
+
+**What kept me:** real meters to reverse-engineer (sales track novelty, trust is lagged vindication, patience is hidden), and Ken's family in every story, so every override cost.
+
+**What was hollow:** the people are lookup tables ("I couldn't tell you. It's done.", four times from three people). No source was ever wrong, and trust never fell in eleven editions. On autopilot, "comply, visit Eve, print everything" took trust to 10. It punished a guess I marked and not one I put unmarked in a headline.
+
+**Compared with others:** better than Saltlight, because it has stakes and a way to lose. Worse than the Slay the Spire port, because I can't audit it. Its people are as canned as Saltlight's.
