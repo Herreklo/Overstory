@@ -14,6 +14,65 @@ Results that surprised us or might be new, newest first. Each says what the evid
 
 ---
 
+## LT1g: the playable corner, a clay town, a walk and a first case (22 October)
+
+**Status:** in Phase 0 (design), 22 October. The round and the pick are done; the outline and its pre-mortem come next. The record is in `reviews/lt1/playable/`:
+- `brief.md`: agreed with Øystein;
+- `pitches.md`: 21 case pitches and 18 testing pitches, by Opus in roles;
+- `pick.md`: Fable's pick.
+
+Phase 1, the walk, starts in its own session once Unity is free. Phase 2, the play, follows. This is step 1g of `docs/plan.md`, the greybox.
+
+**The question.** Can we build something whole, with the world first: a town to walk and a case to play? Two things decide it:
+- whether reading the corner beats the page at carrying Agnes Fielding's death to the two people who were with her, before the Anchor says it aloud;
+- whether choosing whom to tell first costs enough to be a decision.
+
+It moves exit criteria 3 and 4, and tests the game rule in `CLAUDE.md` in play.
+
+**The case: Before Friday** (pitch C3.1, with Fable's changes).
+- **The death.** Agnes Fielding, 103, of house E, dies after a long illness (e-6557, public). The record gives her no kin.
+- **The two who came.** In November, Hannah Tanner climbed to her door every week (e-6531, private) and Olive Shaw kept turning up with something (e-6532, private). Nobody but the steps shows it.
+- **The day.** The player runs the café at A. On Friday 15 December, between 10:00 and 18:00, they find and tell people.
+- **The spread.** News spreads from whoever they tell, by one stated rule over ties from the export only. It shows on screen, is labelled local scene state, and is never written back.
+- **Before the Friday.** Three November evenings come first, each with one vantage chosen in advance and no replay.
+- **Score.** Who heard it from the player, minus those who heard early through them, minus each private act said aloud. The close shows the exposure ledger. A fail is Hannah hearing it at the bar.
+- **Labelled `authored`:** the player, the key, the day, the homes, the hours.
+- **Cut:** no Anchor interior. The death is never shown.
+
+**How it is judged.**
+- **The walk (Phase 1).** Øystein walks the build at eye height, through the judging views in `docs/foundations.md`.
+  - The light's lasting fix (1c) and the colour grade are judged in drizzle, low sun and blue hour, on clay and stone alike, under SEASON's rule: shadow and ambient colour come from the light, and the grade acts on the whole light, never per material.
+  - The harness's whole-scene run names the three biggest costs.
+- **The play (Phase 2).** Øystein plays three times:
+  - seed A out loud;
+  - seed B in silence, before any agent report on it;
+  - once trying to win without reading.
+- **The views:** eye level at A's window, on the steps, on the Row, and at the Anchor's door.
+- **The seeds:**
+  - A is Agnes, December 1989.
+  - B is Andy Shaw, October 1998 (e-8899). He has no kin. His last September's private visitors were Trevor Lane, Ben Reed and Oliver Brook of house B (e-8881 to e-8883).
+- **The script gate and three agents play first,** through the command port, as `pick.md` sets out.
+- **Pass lines, in points of 80:**
+  - the replay verifies, with zero leaks;
+  - the solver wins both seeds, and the text-only solver scores at least 12 lower;
+  - a page bot that tells the Anchor's lead first fails both seeds, and other bots win under 1 in 10;
+  - the branches at the first telling differ by at least 16;
+  - the frame-budget slope is positive;
+  - at most 10% of causal claims are unsourced, with none in the committed account;
+  - Øystein's no-read try scores at least 12 below his reading, and by his third session the usability list passes and he names the tell-order trade-off unprompted.
+
+**What it does not test:** fun and return; human misreadings (humans come only through the engine's human test); a building's history; the Anchor's inside; city scale; the decade payoff; whether the spread rule is true to life.
+
+**What would change our minds:**
+- the solver wins without the pixel-only perceptions (the steps tell nothing);
+- the branches score alike (there is no decision; move to I Saw It's attention grammar);
+- the bots win often;
+- Øystein's no-read try matches his reading;
+- invented causes come at last round's rate despite the templates and the tracer;
+- Øystein calls the evenings watching, not playing.
+
+---
+
 ## LT1, the building blocks' architecture (21 October)
 
 **Status:** decided; the strict review's fixes applied (ready after fixes: 4 must, 15 should, 6 could; `docs/research/building-blocks-review.md`). Step 1a. The design is `docs/building-blocks.md`, its reasons `docs/research/building-blocks-decisions.md`.
