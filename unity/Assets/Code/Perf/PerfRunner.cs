@@ -47,7 +47,10 @@ namespace Overstory.Perf
     /// Options may follow the format (R2b, the page sample's cost: quad-bc7-half, quad-rgba8-two, quad-bc7-tile4): 'half'
     /// draws that scene's offscreen frames at half the width and height (a quarter of the pixels, every vertex), 'two'
     /// reads P0 and H1 only (the quad's OS_QUAD_TWO_PAGES), 'tile&lt;k&gt;' draws the quad whose charts' UVs span k times
-    /// their texels (historyQuadTiled), so the pages are sampled minified, trilinear, with their mips.
+    /// their texels (historyQuadTiled), so the pages are sampled minified, trilinear, with their mips. R2c (why a
+    /// minified page costs) adds the sampling arms, at most one a scene (quad-bc7-tri-tile8, quad-bc7-two-nearmip):
+    /// 'nearmip', 'tri', 'lod', 'grad', 'direct', 'tex2d', 'alu', 'quiet' and 'noisy' set the quad's local keyword of that arm
+    /// (QuadArms; HistoryQuad.shader's header says what each does).
     ///
     /// The scale test (docs/research/scale-test.md): -district &lt;dir&gt; loads the district's chunk cache (DistrictLoader),
     /// times it and the rebuild benchmarks (DistrictBench) into the summary, and -perf-scenes district-near,district-l0,
@@ -130,6 +133,14 @@ namespace Overstory.Perf
             ["foglights"] = "FogLights", ["keyblock"] = "KeyBlock", ["palette"] = "Palette",
         };
         static readonly string[] FullScreen = { "beams", "foglights", "keyblock", "palette" };
+
+        /// <summary>R2c's sampling arms: a quad scene's option and the quad's local keyword it sets.</summary>
+        static readonly (string option, string keyword)[] QuadArms =
+        {
+            ("nearmip", "OS_QUAD_NEARMIP"), ("tri", "OS_QUAD_TRI"), ("lod", "OS_QUAD_LOD"), ("grad", "OS_QUAD_GRAD"),
+            ("direct", "OS_QUAD_DIRECT"), ("tex2d", "OS_QUAD_TEX2D"), ("alu", "OS_QUAD_ALU"), ("quiet", "OS_QUAD_QUIET"),
+            ("noisy", "OS_QUAD_NOISY"),
+        };
 
         /// <summary>Whether a quad scene (quad-&lt;format&gt;[-option...]) has the option.</summary>
         static bool QuadOption(string scene, string option) =>
@@ -301,11 +312,20 @@ namespace Overstory.Perf
             var quadFilter = historyQuad != null ? historyQuad.GetComponent<MeshFilter>() : null;
             var quadMesh = quadFilter != null ? quadFilter.sharedMesh : null;
             var twoPages = historyQuad != null ? new LocalKeyword(historyQuad.sharedMaterial.shader, "OS_QUAD_TWO_PAGES") : default;
+            // (R2c: a scene's sampling arm)
+            var arms = historyQuad != null
+                ? QuadArms.Select(a => (a.option, keyword: new LocalKeyword(historyQuad.sharedMaterial.shader, a.keyword))).ToArray()
+                : new (string option, LocalKeyword keyword)[0];
             foreach (var scene in sceneNames.Where(s => s.StartsWith("quad-")))
             {
                 int k = QuadTile(scene);
                 if (k != 1 && (historyQuadTiles == null || System.Array.IndexOf(historyQuadTiles, k) < 0))
                     Debug.LogError($"[PerfRunner] no quad tiled x{k} for '{scene}': it draws the untiled quad");
+                if (arms.Count(a => QuadOption(scene, a.option)) > 1)
+                    Debug.LogError($"[PerfRunner] '{scene}' names more than one sampling arm");
+                foreach (var a in arms)
+                    if (QuadOption(scene, a.option) && !a.keyword.isValid)
+                        Debug.LogError($"[PerfRunner] the quad has no keyword for '{a.option}'");
             }
 
             // the arms that set a keyword for every shader (Shaders/History.hlsl; StreetSurface.hlsl's OS_Atmosphere;
@@ -375,6 +395,8 @@ namespace Overstory.Perf
                         if (quadFilter != null)
                             quadFilter.sharedMesh = at >= 0 && historyQuadTiled[at] != null ? historyQuadTiled[at] : quadMesh;
                         historyQuad.sharedMaterial.SetKeyword(twoPages, QuadOption(seg.scene, "two"));
+                        foreach (var a in arms)
+                            historyQuad.sharedMaterial.SetKeyword(a.keyword, QuadOption(seg.scene, a.option));
                     }
                 }
                 SetPasses(seg.passes);
@@ -521,6 +543,8 @@ namespace Overstory.Perf
                 if (quadFilter != null)
                     quadFilter.sharedMesh = quadMesh;
                 historyQuad.sharedMaterial.SetKeyword(twoPages, false);
+                foreach (var a in arms)
+                    historyQuad.sharedMaterial.SetKeyword(a.keyword, false);
             }
             for (int i = 0; i < drawn.Length; i++)
                 if (drawn[i] != null)

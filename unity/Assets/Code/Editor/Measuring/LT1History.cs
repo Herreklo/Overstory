@@ -190,6 +190,31 @@ namespace Overstory.EditorTools
             return (built.rgba8, built.bc7);
         }
 
+        static string PlainPath(int slice) => $"{Generated}/pages-bc7-{SliceNames[slice]}.asset";
+
+        /// <summary>R2c's plain-texture arm (HistoryQuad.shader, OS_QUAD_TEX2D): the BC7 array's three slices as three
+        /// Texture2Ds, byte for byte every mip, with the array's sampler settings (trilinear, clamped, anisotropy 0). Made
+        /// from the saved array each time, so they never lag it.</summary>
+        internal static Texture2D[] PlainPages(Texture2DArray bc7)
+        {
+            var plain = new Texture2D[Slices];
+            for (int s = 0; s < Slices; s++)
+            {
+                var t = new Texture2D(W, H, bc7.format, Mips, true)
+                {
+                    name = $"pages-bc7-{SliceNames[s]}", filterMode = bc7.filterMode, wrapMode = bc7.wrapMode, anisoLevel = bc7.anisoLevel,
+                };
+                for (int m = 0; m < Mips; m++)
+                    t.SetPixelData(bc7.GetPixelData<byte>(m, s), m);
+                t.Apply(false, false);
+                AssetDatabase.DeleteAsset(PlainPath(s));
+                AssetDatabase.CreateAsset(t, PlainPath(s));
+                plain[s] = t;
+            }
+            AssetDatabase.SaveAssets();
+            return plain;
+        }
+
         class Built
         {
             public Texture2DArray rgba8, bc7;
@@ -300,6 +325,11 @@ namespace Overstory.EditorTools
             go.AddComponent<MeshFilter>().sharedMesh = QuadMesh();
             var r = go.AddComponent<MeshRenderer>();
             r.sharedMaterial = new Material(Shader.Find(QuadShader)) { name = "History quad" };
+            // (R2c's plain-texture arm reads the BC7 slices as Texture2Ds from the material)
+            var plain = PlainPages(rb);
+            r.sharedMaterial.SetTexture("_OS_QuadP0", plain[0]);
+            r.sharedMaterial.SetTexture("_OS_QuadP1", plain[1]);
+            r.sharedMaterial.SetTexture("_OS_QuadH1", plain[2]);
             r.shadowCastingMode = ShadowCastingMode.Off;
             r.receiveShadows = false;
             var table = PieceTable();

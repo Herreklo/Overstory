@@ -28,7 +28,8 @@ namespace Overstory.EditorTools
     ///     Unity -batchmode -quit -projectPath unity -executeMethod Overstory.EditorTools.LT1Perf.Build
     ///         [-runs 2] [-norun] [-out reviews/perf/2026-10-26] [-perf-frames 150] [-perf-warmup 30] [-perf-rounds 2]
     ///         [-perf-settle 600] [-perf-only street,high] [-perf-passes all,-sky,...,bare,history-off,haze-off]
-    ///         [-perf-scenes empty,corner,quad-rgba8,quad-bc7,quad-bc7-half,quad-bc7-two,quad-bc7-tile4,quad-bc7-tile8]
+    ///         [-perf-scenes empty,corner,quad-rgba8,quad-bc7,quad-bc7-half,quad-bc7-two,quad-bc7-tile4,quad-bc7-tile8,
+    ///                       quad-bc7-tri-tile8 (R2c's arms: nearmip, tri, lod, grad, direct, tex2d, alu, quiet, noisy)]
     ///         [-perf-views street,high] [-perf-empty-views street] [-perf-shots all|some]
     ///         [-district /abs/path/to/district] [-perf-district-views street,city]
     ///

@@ -19,6 +19,9 @@
 // every layer is its material's quiet mean, as a page group without the layer's page reads it (D5.9). A shader that
 // reads OS_History declares the quiet means in its UnityPerMaterial, one half4 a page, each channel the layer's value
 // (not its input): _OS_QuietP0, _OS_QuietP1, _OS_QuietH1. It may name its own by defining OS_QUIET_PAGE first.
+//
+// OS_PAGE_SAMPLE(a, page) (a measuring hook, R2c): a shader that defines it before this include samples a page its
+// own way. Only the history quad does, behind its local arm keywords; undefined, the default path below is unchanged.
 
 // ------------------------------------------------------------------------------------------------- the date
 
@@ -120,6 +123,9 @@ half4 OS_HistoryPage(OSAddress a, uint page)
 {
 #if defined(OS_HISTORY_OFF)
     return (half4)OS_QUIET_PAGE(page);
+#elif defined(OS_PAGE_SAMPLE)
+    // a measuring hook, never defined by a shipping shader: the history quad's sampling arms (R2c) define it
+    return (half4)OS_PAGE_SAMPLE(a, page);
 #else
     return (half4)SAMPLE_TEXTURE2D_ARRAY(_OS_PagesRGBA, sampler_OS_PagesRGBA, a.uv, a.piece.slice + page);
 #endif
