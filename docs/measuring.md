@@ -52,7 +52,7 @@ The builds:
   - cheek walls `0a3d7db3100df20b` (607,872 triangles, 35 % more than 451,594).
 - A wall's role is now the ground's alone, with no seed in it. A wall retains where the bank behind it stands more than 0.5 m over the lane's grade, along stretches of at least 2 m. In today's clay no stretch qualifies, so all four walls stand as parapets at hand height, with a back face built above the bank. The upper left wall's change from retaining to parapet is a valid draw from the facts, not a seeding artefact.
 - The added triangles are those backs, the closed ends (about 15,000) and the hearting behind fallen stones.
-- The tracked FBX and `mesh-hashes.json` hold this build, so the committed generators reproduce them. Until it is accepted, `zsh tools/golden.sh` fails against the 22 October frames.
+- The tracked FBX and `mesh-hashes.json` hold this build, so the committed generators reproduce them.
 
 ## Golden views and player-size stills
 
@@ -81,7 +81,7 @@ renders into `reviews/golden/current/` (about 15 s for all fifteen frames) and c
 - A test-only change, the slate's weathered colour a shade warmer on the stair (`LT1Golden.Views -tweak`, in memory, never saved), fails every frame: mean 0.001 (the street stop, where the stair is small) to 0.014 (on the steps), worst pixel 0.08 to 0.15. The heat maps show it on the stair's stones and nowhere else, not on the cheek walls or the clay.
 - The metric's own test (`golden_compare.py -- selftest`): identical images score zero everywhere, a small patch of changed colour scores inside the patch and nowhere far from it, and a larger change scores higher.
 
-**Baseline** (accepted 22 October). `reviews/golden/baseline/gully/<light>/<view>.png`, fifteen frames, 45 MB, with `frames.json` (size, MSAA, warm-up, Unity version, GPU). They are in plain git: Git LFS is not installed on this machine, and `.gitattributes` keeps renders out of it because LFS uploads cannot be reached from the cloud workspace.
+**Baseline** (the step-0b build, accepted 22 October; see Mesh hashes). `reviews/golden/baseline/gully/<light>/<view>.png`, fifteen frames, 45 MB, with `frames.json` (size, MSAA, warm-up, Unity version, GPU). They are in plain git: Git LFS is not installed on this machine, and `.gitattributes` keeps renders out of it because LFS uploads cannot be reached from the cloud workspace.
 
 Why it changed: the gully is now the one today's generators build (Mesh hashes, What the hashes found).
 - Against the first baseline (21 October, the old FBX) every frame differs: mean 0.002 to 0.005 at the street stop, 12 m and the city camera; 0.015 to 0.019 at the foot of the steps; 0.044 to 0.046 on them. Worst pixels 0.31 to 0.98, where stones moved by a pixel or two.
@@ -129,13 +129,7 @@ Shared with the 22 October build:
 
 The lower flight's 16 risers before its rest is a draw within the town's patience (11 to 16), so it stays.
 
-To accept:
-1. Export both kinds (`stone.py -- gully`, `wall.py -- gully_cheeks`).
-2. Check the hashes above.
-3. Run `zsh tools/golden.sh`.
-4. Copy `reviews/golden/current/gully` over `reviews/golden/baseline/gully`.
-
-Until then, the 22 October baseline stays the reference.
+Its frames became the baseline on 22 October at 17:00, after Øystein's yes: the hashes checked in `mesh-hashes.json` (the FBX unmodified), `tools/golden.sh` rendered them with every mean matching the table above, and `golden_compare.py -- accept` copied them over `reviews/golden/baseline/gully`. The step had been missed when he accepted the build, so the walk's preflight (W0) found every frame failing.
 
 ## The frame-time harness
 

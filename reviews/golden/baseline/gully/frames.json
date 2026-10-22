@@ -5,6 +5,8 @@
     "msaa": 4,
     "warmUp": 8,
     "tweak": false,
+    "historyOff": false,
+    "hazeOff": false,
     "unity": "6000.6.6f1",
     "gpu": "Apple M4",
     "api": "Metal",
