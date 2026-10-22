@@ -22,7 +22,27 @@ The checks (SN7's self-check), on L* of each view at its own size:
 - specks: pieces of at most 2 x 2 px brighter (or darker) than their 5 x 5 median by 3 MADs and at least the threshold;
 - calm: L*'s spread at each view, and the busyness measure of Done 5 (edge density and high-frequency share of L*);
 - value: the value map's percentiles; relief: the height's histogram and percentiles; laminae steps a riser shows;
-- tiling: the jump across the wrap against the mean step between neighbours inside, rows and columns.
+- tiling: the jump across the wrap against the mean step between neighbours inside, rows and columns;
+- ledges (version 3), each found in the stored height map near the generator's boundary: in every column, the row
+  of a broken edge's middle, where the face falls fastest down-dip. Its straightness: how far that trace strays from
+  the best straight line (range and RMS, mm) and its local angle off the axis over 33 mm (p2, p98 and the most,
+  degrees). The break falls almost evenly across its middle, so the trace is the centroid of the rows around the
+  fastest fall that fall at least half as fast, not the fastest row alone (which jumps with the fine tooth). Its
+  depth along its run: the fall from the highest point in the 35 mm up-dip to the lowest in the 35 mm down-dip (p5,
+  p50, p95, and p95 over p5, its swell). The same for a bed face's scarp;
+- spacing across the four split faces: each face's ledges and bands, the gaps between its ledges (mm, at their mean
+  rows) and the widest over the narrowest; across the set, the gaps' coefficient of variation, and side by side (two
+  faces at the same rows) the share of one face's ledges with a ledge of the other within 25 mm, at most over pairs;
+- lattice repeat: how much a split face's facets repeat themselves, on their fold map (the magnitude of the facets'
+  Laplacian, rebuilt by the generator once the stored maps' hashes match). Across the torus, the highest local peak
+  of the autocorrelation outside its central lobe (an ellipse 30 mm along u and 20 across) and where; and locally,
+  the same in each 256 mm window, as a mean and most over the sixteen windows: a lattice bent along the face loses
+  its peaks across the torus but keeps short rows of like cells, which is what the eye catches. The same across the
+  torus of the 1 m view's L* band-passed between 2 and 40 mm: high where the face looks alike shifted along u, as
+  straight ruled ledges do.
+
+The A/B on the spread limit (SN7): one split face built again in memory with only its facets' amplitude scaled
+(AB_GAIN), beside the face as built and the two references at 1 m and 5 m, with both faces' spread and checks.
 
 Beside the 1 m and 5 m views sit crops of two reference photographs (docs/references/stone/, in grey, cropped and
 scaled with macOS sips): 05, the split fronts of the Aksla steps (Odd Roar Aalborg, CC BY-SA 4.0), at about 1 mm a
@@ -61,6 +81,9 @@ THRESH = 4.0                                   # L* above (or below) its 3 x 3 o
 THIN = (2.0, 2.0, 40)                          # thin long lines: L* over the opening, most width and least length, px
 FLOAT = (1.0, 2.0, 10, 4)                      # floating lines: low and high L* (hysteresis), least length, length/width
 STREAK = (3.0, 40, 6)                          # streaks: L* over the 5 x 5 opening, least length, length over width
+REPEAT_LOBE = (30.0, 20.0)                     # the autocorrelation's central lobe left out, mm along u and across
+REPEAT_WIN = 256                               # the local repeat's windows, mm
+AB_PATCH, AB_GAIN = "split-2", 2.0             # the A/B on the spread limit: this face, its facets this many times
 REFS = os.path.join(ROOT, "docs", "references", "stone")
 # (file, crop x, y, w, h in the original's pixels, shown size, label): scales judged from the stones' sizes
 REF_1M = ("05-aksla-old-split-stone-steps.jpg", 896, 1079, 1024, 1024, 1024,
@@ -280,6 +303,140 @@ def busyness(L):
     return float((mag > 10.0).mean()), float(hf.var() / max(L.var(), 1e-9))
 
 
+def ledge_traces(h, boundaries, ledge, down=1):
+    """Each ledge's trace and depth as the stored height shows them (see the module's note): boundaries (n, N) and the
+    ledge flags from the generator only say where to look, within 30 mm up-dip and 40 mm down-dip of the boundary.
+    down: +1 where down-dip is down the image (every split face; a bed face by its drawn scarp), -1 where it is up."""
+    N = PT.N
+    cols = np.arange(N)
+    g = (np.roll(h, -1, 0) - np.roll(h, 1, 0)) * 0.5 * down                     # rising down-dip
+    g = sum(np.roll(g, k, 0) for k in range(-2, 3)) / 5.0                       # over 5 mm
+    out = []
+    for k, flag in enumerate(ledge):
+        if not flag:
+            continue
+        r0 = np.round(boundaries[k]).astype(np.int64)
+        offs = np.arange(-30, 41) * down
+        G = g[(r0[None, :] + offs[:, None]) % N, cols[None, :]]
+        # The break's slope is nearly even across its middle, so its steepest row alone wanders with the fine tooth;
+        # its middle is the centroid of the run around the steepest row that falls at least half as fast.
+        i = np.argmin(G, axis=0)
+        half = 0.5 * G[i, cols]
+        wgt = np.zeros_like(G)
+        wgt[i, cols] = half - G[i, cols]
+        for step in (1, -1):
+            on = np.ones(N, dtype=bool)
+            j = i.copy()
+            while on.any():
+                j = j + step
+                on &= (j >= 0) & (j < len(offs))
+                jj = np.clip(j, 0, len(offs) - 1)
+                on &= G[jj, cols] < half
+                wgt[jj[on], cols[on]] = (half - G[jj, cols])[on]
+        y = r0 + down * (wgt * np.arange(-30, 41)[:, None]).sum(axis=0) / wgt.sum(axis=0)   # rows, unwrapped
+        yi = np.round(y).astype(np.int64)
+        up = h[(yi[None, :] - down * np.arange(0, 36)[:, None]) % N, cols[None, :]].max(axis=0)
+        dn = h[(yi[None, :] + down * np.arange(0, 36)[:, None]) % N, cols[None, :]].min(axis=0)
+        depth = up - dn
+        fit = np.polyval(np.polyfit(cols, y, 1), cols)
+        res = y - fit
+        ys = PT.box1(PT.box1(y - y.mean(), 17), 17)                              # the trace over about 33 mm
+        ang = np.degrees(np.arctan((np.roll(ys, -8) - np.roll(ys, 8)) / 16.0))
+        out.append({"boundary": int(k), "mean_row_mm": round(float(y.mean() % N), 1),
+                    "straight_dev_mm": {"range": round(float(res.max() - res.min()), 2),
+                                        "rms": round(float(res.std()), 2)},
+                    "angle_deg": {"p2": round(float(np.percentile(ang, 2)), 2),
+                                  "p98": round(float(np.percentile(ang, 98)), 2),
+                                  "most": round(float(np.abs(ang).max()), 2)},
+                    "depth_mm": {"p5": round(float(np.percentile(depth, 5)), 2),
+                                 "p50": round(float(np.percentile(depth, 50)), 2),
+                                 "p95": round(float(np.percentile(depth, 95)), 2),
+                                 "swell_p95_over_p5": round(float(np.percentile(depth, 95) / max(np.percentile(depth, 5),
+                                                                                                  1e-6)), 2)}})
+    return out
+
+
+def spacing(faces):
+    """The set's spacing: faces is {name: (bands, [ledge mean rows, mm])}. Per face its ledges, bands, gaps and the
+    widest over the narrowest; across the set the gaps' coefficient of variation, and side by side the most, over
+    pairs, of one face's ledges with a ledge of the other within 25 mm (in rows on the torus)."""
+    N = PT.N
+    per, gaps_all = {}, []
+    for name, (bands, rows) in faces.items():
+        r = sorted(rows)
+        gaps = [round((r[(i + 1) % len(r)] - r[i]) % N if len(r) > 1 else N, 1) for i in range(len(r))]
+        gaps_all += gaps
+        per[name] = {"ledges": len(r), "bands": bands, "ledge_rows_mm": [round(x, 1) for x in r], "gaps_mm": gaps,
+                     "widest_over_narrowest": round(max(gaps) / min(gaps), 2)}
+    names = list(faces)
+    aligned = []
+    for a in names:
+        for b in names:
+            if a == b:
+                continue
+            ra, rb = np.array(faces[a][1]), np.array(faces[b][1])
+            d = np.abs((ra[:, None] - rb[None, :] + N / 2) % N - N / 2).min(axis=1)
+            aligned.append((float((d <= 25.0).mean()), a, b))
+    worst = max(aligned)
+    g = np.array(gaps_all)
+    return {"faces": per, "gaps_cv": round(float(g.std() / g.mean()), 3),
+            "gaps_mm_range": [round(float(g.min()), 1), round(float(g.max()), 1)],
+            "side_by_side_aligned_most": {"share": round(worst[0], 2), "of": worst[1], "with": worst[2]}}
+
+
+def _peaks(ac, d, reach):
+    """The autocorrelation's highest local maximum (over a 9 x 9 neighbourhood) outside its central lobe and within
+    reach (mm along u and across), and where; 0 where it has none."""
+    out = ((d[None, :] / REPEAT_LOBE[0]) ** 2 + (d[:, None] / REPEAT_LOBE[1]) ** 2 >= 1.0) & \
+        (np.abs(d[None, :]) <= reach[0]) & (np.abs(d[:, None]) <= reach[1])
+    mx = ac.copy()
+    for dy in range(-4, 5):
+        for dx in range(-4, 5):
+            if dx or dy:
+                mx = np.maximum(mx, np.roll(np.roll(ac, dy, 0), dx, 1))
+    m = np.where((ac >= mx) & out, ac, -np.inf)
+    i = np.unravel_index(np.argmax(m), m.shape)
+    if not np.isfinite(m[i]):
+        return 0.0, 0, 0                                                         # no peak: it falls away throughout
+    return float(m[i]), int(d[i[1]]), int(-d[i[0]])
+
+
+def repeat_peak(a, win=REPEAT_WIN):
+    """How much a map repeats itself. Across the whole torus: the highest local peak of its autocorrelation outside
+    the central lobe (REPEAT_LOBE), and where; a strict lattice peaks at its cell. Locally: the same in each window
+    of win mm (Hann-tapered, padded), its mean and most over the windows; a lattice bent along the face loses its
+    peaks across the torus but keeps them in rows a cell or two long, which is what the eye catches."""
+    N = a.shape[0]
+    z = a - a.mean()
+    F = np.fft.fft2(z)
+    ac = np.real(np.fft.ifft2(F * np.conj(F)))
+    ac /= ac[0, 0]
+    d = (np.arange(N) + N // 2) % N - N // 2
+    g, gu, gv = _peaks(ac, d, (N // 2, N // 2))
+    taper = np.outer(np.hanning(win), np.hanning(win))
+    dw = (np.arange(2 * win) + win) % (2 * win) - win
+    loc = []
+    for y0 in range(0, N, win):
+        for x0 in range(0, N, win):
+            w = a[y0:y0 + win, x0:x0 + win]
+            w = (w - w.mean()) * taper
+            Fw = np.fft.fft2(w, s=(2 * win, 2 * win))
+            acw = np.real(np.fft.ifft2(np.abs(Fw) ** 2))
+            acw /= acw[0, 0]
+            loc.append(_peaks(acw, dw, (win // 2, win // 2))[0])
+    return {"torus_peak": round(g, 3), "torus_at_du_dv_mm": [gu, gv],
+            "local_peak_mean": round(float(np.mean(loc)), 3), "local_peak_most": round(float(np.max(loc)), 3)}
+
+
+def fold_map(f):
+    """The facets' folds: the magnitude of their Laplacian, on the torus."""
+    return np.abs(np.roll(f, 1, 0) + np.roll(f, -1, 0) + np.roll(f, 1, 1) + np.roll(f, -1, 1) - 4.0 * f)
+
+
+def bandpass(L, lo=2.0, hi=40.0):
+    return gauss_lowpass(L, lo) - gauss_lowpass(L, hi)
+
+
 # -- the sheet ----------------------------------------------------------------------------------------------------------
 
 def grey(img):
@@ -376,12 +533,66 @@ def seam(a):
     return float(wrap_c / inner_c), float(wrap_r / inner_r)
 
 
+def view_checks(h, n, v):
+    """Each view's spread and line checks, for the A/B."""
+    res = {}
+    for label, mm in VIEWS:
+        L = lstar(view(h, n, v, mm))
+        fl, th, _ = floating_lines(L)
+        ls = lines_and_specks(L)
+        res[label] = {"Lstar_spread_p5_p95": round(float(np.percentile(L, 95) - np.percentile(L, 5)), 2),
+                      "floating_lines": fl, "through_lines": th,
+                      "thin_long": ls["bright_thin_long"] + ls["dark_thin_long"],
+                      "specks": ls["bright_specks"] + ls["dark_specks"]}
+    return res
+
+
+def ab_sheet(out, seed, ref1, ref5):
+    """The A/B on the spread limit: AB_PATCH as built (A) and with its facets' amplitude times AB_GAIN (B, built in
+    memory only), at 1 m beside reference 05 and at 5 m (x4) beside reference 10."""
+    faces = {}
+    for tag, gain in (("A", 1.0), ("B", AB_GAIN)):
+        maps, params = PT.make(AB_PATCH, seed, facet_gain=gain)
+        h, n, v = PT.decode(maps)
+        faces[tag] = (h, n, v, params["facet_amp_mm"] * gain, view_checks(h, n, v))
+    bg = (0.12, 0.12, 0.12)
+    W = 12 + 3 * (1024 + 12)
+    y2 = 40 + 1024 + 40
+    can = np.full((y2 + 820 + 60, W, 3), 0.12)
+    text(can, f"A/B ON THE SPREAD LIMIT: {AB_PATCH.upper()} AS BUILT (A) AND ITS FACETS X{AB_GAIN:g} (B), ONLY THE "
+              "AMPLITUDE CHANGED; FLAT, GREY, RAKING LIGHT FROM UPPER LEFT", 12, 8, scale=2, bg=bg)
+    for i, tag in enumerate(("A", "B")):
+        h, n, v, amp, chk = faces[tag]
+        x = 12 + i * (1024 + 12)
+        place(can, srgb(view(h, n, v, 1)), x, 40)
+        text(can, f"{tag}: FACETS {amp:.1f} MM, 1 M (1 MM A PX), SPREAD {chk['1 m']['Lstar_spread_p5_p95']:.2f} L-STAR",
+             x + 4, 44, scale=2)
+        place(can, enlarge(srgb(view(h, n, v, 5)), 4), x, y2)
+        text(can, f"{tag}: 5 M X4, SPREAD {chk['5 m']['Lstar_spread_p5_p95']:.2f} L-STAR (SN7: ABOUT 2)", x + 4, y2 + 4,
+             scale=2)
+    x = 12 + 2 * (1024 + 12)
+    if ref1 is not None:
+        place(can, ref1, x, 40)
+        text(can, REF_1M[6], x + 4, 44, scale=2)
+    if ref5 is not None:
+        place(can, enlarge(ref5, 4), x, y2)
+        text(can, "REF 10, ABOUT 4-5 MM A PX, X4", x + 4, y2 + 4, scale=2)
+    text(can, "REFERENCES IN GREY, SCALES JUDGED; COMPARE FORM AND MARK SIZE, NOT TONE (LICHEN)", 12, y2 + 820 + 20,
+         scale=2, bg=bg)
+    write_png(os.path.join(out, "patches-ab.png"), can)
+    return {"patch": AB_PATCH, "facet_gain": AB_GAIN,
+            "A": {"facet_amp_mm": round(faces["A"][3], 2), "views": faces["A"][4]},
+            "B": {"facet_amp_mm": round(faces["B"][3], 2), "views": faces["B"][4]}}
+
+
 def main(out=OUT):
     os.makedirs(out, exist_ok=True)
     manifest = json.load(open(PT.MANIFEST))
     report = {"light": {"elevation_deg": 30, "from": "upper left", "albedo": ALBEDO, "ambient": AMBIENT, "key": KEY},
               "threshold_Lstar": THRESH, "patches": {}}
     over_cells, tile_cells, hists = [], [], []
+    seed = manifest["worldSeed"]
+    rows_for_spacing = {}
     ref1, ref5 = reference(REF_1M), reference(REF_5M)
     report["references"] = {"1 m": REF_1M[6] if ref1 is not None else None, "5 m": REF_5M[6] if ref5 is not None else None}
     for name in PT.PATCHES:
@@ -417,6 +628,15 @@ def main(out=OUT):
         sh = seam(h)
         sl = seam(lstar(lin1))
         r["seam"] = {"height_cols": sh[0], "height_rows": sh[1], "Lstar_cols": sl[0], "Lstar_rows": sl[1]}
+        lay = {}
+        PT.make(name, seed, layers=lay)                                          # where to look; the maps above match
+        drawn = manifest["patches"][name]["drawn"]
+        down = 1 if name.startswith("split") or drawn["scarp"]["down_dip"] == "down" else -1
+        r["ledges"] = ledge_traces(h, lay["boundaries"], lay["ledge"], down)
+        if name.startswith("split"):
+            rows_for_spacing[name] = (drawn["bands"], [x["mean_row_mm"] for x in r["ledges"]])
+            r["lattice_repeat"] = {"facet_folds": repeat_peak(fold_map(lay["facets"])),
+                                   "Lstar_1m_bandpass": repeat_peak(bandpass(lstar(lin1)))}
         report["patches"][name] = r
         print(name, json.dumps({k: r["views"][k].get("bright_lines") for k in ("1 m", "5 m", "12 m")}), flush=True)
 
@@ -464,6 +684,9 @@ def main(out=OUT):
         two = np.tile(lin1, (2, 2))
         tile_cells.append((name, srgb(box(two, 4)), srgb(two[1024 - 160:1024 + 160, 1024 - 160:1024 + 160])))
         hists.append((name, histogram_panel(h, v)))
+
+    report["spacing"] = spacing(rows_for_spacing)
+    report["ab"] = ab_sheet(out, seed, ref1, ref5)
 
     # overview
     cw = 204 + 12 + 85 + 12 + 128 + 24
