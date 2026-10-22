@@ -1,0 +1,225 @@
+{
+ "what": "the machine's background load around a timing run (tools/unity_lock.py --timing): the busiest processes by ps's %CPU (of one core), before the run and sampled during it, the run's own processes apart",
+ "owner": "the walk W1 (perf scene-path proof)",
+ "purpose": "the frame-time harness: tools/perf.sh -runs 1 -out reviews/perf/2026-10-22/w1-scene-path -perf-views eye-on,street -perf-only eye-on@1300,street@1300",
+ "command": [
+  "zsh",
+  "/Users/oystein/code/Overstory/tools/perf.sh",
+  "-runs",
+  "1",
+  "-out",
+  "reviews/perf/2026-10-22/w1-scene-path",
+  "-perf-views",
+  "eye-on,street",
+  "-perf-only",
+  "eye-on@1300,street@1300"
+ ],
+ "started": "2026-10-22T16:45:25+02:00",
+ "ended": "2026-10-22T16:46:36+02:00",
+ "seconds": 71,
+ "exit": 0,
+ "cpus": 10,
+ "memory_gb": 24.0,
+ "open": [
+  "Blender, interactive"
+ ],
+ "before": {
+  "load": [
+   2.21,
+   2.33,
+   2.73
+  ],
+  "top": [
+   {
+    "name": "WindowServer",
+    "pid": 4171,
+    "cpu": 41.1,
+    "mem": 0.4
+   },
+   {
+    "name": "claude",
+    "pid": 51340,
+    "cpu": 19.3,
+    "mem": 1.9
+   },
+   {
+    "name": "Claude Helper (Renderer)",
+    "pid": 49843,
+    "cpu": 18.8,
+    "mem": 2.8
+   },
+   {
+    "name": "Creative Cloud UI Helper (Renderer)",
+    "pid": 41696,
+    "cpu": 10.4,
+    "mem": 1.1
+   },
+   {
+    "name": "Claude Helper",
+    "pid": 49830,
+    "cpu": 10.3,
+    "mem": 0.4
+   },
+   {
+    "name": "Ventura",
+    "pid": 45152,
+    "cpu": 9.6,
+    "mem": 0.1
+   },
+   {
+    "name": "Claude",
+    "pid": 49824,
+    "cpu": 8.9,
+    "mem": 1.8
+   },
+   {
+    "name": "searchpartyd",
+    "pid": 4303,
+    "cpu": 4.2,
+    "mem": 0.1
+   },
+   {
+    "name": "Claude Helper (Renderer)",
+    "pid": 52024,
+    "cpu": 2.8,
+    "mem": 0.4
+   },
+   {
+    "name": "zsh",
+    "pid": 53615,
+    "cpu": 2.1,
+    "mem": 0.0
+   },
+   {
+    "name": "Blender",
+    "pid": 58659,
+    "cpu": 1.6,
+    "mem": 0.4
+   },
+   {
+    "name": "bluetoothd",
+    "pid": 4163,
+    "cpu": 1.3,
+    "mem": 0.1
+   }
+  ],
+  "spotlight": [],
+  "spotlight_cpu": 0
+ },
+ "during": {
+  "samples": 2,
+  "every_s": 30.0,
+  "load": {
+   "min": 3.16,
+   "mean": 3.33,
+   "max": 3.49
+  },
+  "top": [
+   {
+    "name": "WindowServer",
+    "pid": 4171,
+    "cpu_mean": 42.6,
+    "cpu_max": 46.5
+   },
+   {
+    "name": "Claude Helper",
+    "pid": 49830,
+    "cpu_mean": 16.4,
+    "cpu_max": 18.0
+   },
+   {
+    "name": "Ventura",
+    "pid": 45152,
+    "cpu_mean": 10.4,
+    "cpu_max": 10.5
+   },
+   {
+    "name": "Google Chrome Helper (Aperitif Renderer)",
+    "pid": 5220,
+    "cpu_mean": 10.4,
+    "cpu_max": 20.7
+   },
+   {
+    "name": "Creative Cloud UI Helper (Renderer)",
+    "pid": 41696,
+    "cpu_mean": 8.9,
+    "cpu_max": 9.4
+   },
+   {
+    "name": "Claude Helper (Renderer)",
+    "pid": 49843,
+    "cpu_mean": 7.5,
+    "cpu_max": 7.8
+   },
+   {
+    "name": "coreaudiod",
+    "pid": 4186,
+    "cpu_mean": 3.7,
+    "cpu_max": 3.9
+   },
+   {
+    "name": "Blender",
+    "pid": 58659,
+    "cpu_mean": 1.9,
+    "cpu_max": 1.9
+   },
+   {
+    "name": "Claude Helper (Renderer)",
+    "pid": 52024,
+    "cpu_mean": 1.8,
+    "cpu_max": 2.5
+   },
+   {
+    "name": "claude",
+    "pid": 51340,
+    "cpu_mean": 0.9,
+    "cpu_max": 1.2
+   },
+   {
+    "name": "Creative Cloud UI Helper (GPU)",
+    "pid": 29862,
+    "cpu_mean": 0.9,
+    "cpu_max": 0.9
+   },
+   {
+    "name": "pbs",
+    "pid": 47968,
+    "cpu_mean": 0.7,
+    "cpu_max": 1.4
+   }
+  ],
+  "spotlight_cpu_mean": 0.0,
+  "run": [
+   {
+    "name": "Overstory",
+    "pid": 53743,
+    "cpu_mean": 7.8,
+    "cpu_max": 11.7
+   },
+   {
+    "name": "Unity.DataStore",
+    "pid": 53646,
+    "cpu_mean": 0.6,
+    "cpu_max": 0.6
+   },
+   {
+    "name": "Unity",
+    "pid": 53640,
+    "cpu_mean": 0.3,
+    "cpu_max": 0.4
+   },
+   {
+    "name": "Unity.Licensing.Client",
+    "pid": 53644,
+    "cpu_mean": 0.2,
+    "cpu_max": 0.5
+   },
+   {
+    "name": "dotnet",
+    "pid": 53648,
+    "cpu_mean": 0.1,
+    "cpu_max": 0.2
+   }
+  ]
+ }
+}

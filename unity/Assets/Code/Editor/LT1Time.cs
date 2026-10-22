@@ -66,14 +66,46 @@ namespace Overstory.EditorTools
         // -- the houses, as export_time.py wrote them --------------------------------------------------------------
 
         [System.Serializable] public class P3 { public float x, y, z; public Vector3 V => new Vector3(x, y, z); }
-        [System.Serializable] public class Row { public string arm, letter, file; public int year, id, tris; public P3 position, middle; public float yaw; }
+        [System.Serializable] public class Row { public string arm, letter, file, hash; public int year, id, tris; public P3 position, middle; public float yaw; }
         [System.Serializable] public class Export { public string style; public int worldSeed; public int[] years; public Row[] buildings; }
 
-        public static Export Houses()
+        public static Export Houses() => Houses(TimeJson);
+
+        /// <summary>A set of houses export_time.py wrote (its time.json, or another folder's manifest.json).</summary>
+        public static Export Houses(string record)
         {
-            var text = AssetDatabase.LoadAssetAtPath<TextAsset>(TimeJson)
-                ?? throw new FileNotFoundException("no corner through the years: run blender/tools/export_time.py");
+            var text = AssetDatabase.LoadAssetAtPath<TextAsset>(record)
+                ?? throw new FileNotFoundException($"no houses at {record}: run blender/tools/export_time.py");
             return JsonUtility.FromJson<Export>(text.text);
+        }
+
+        /// <summary>
+        /// One arm's houses in one year stood under a parent, each where export_time.py put it (its origin and turn in
+        /// street metres, from the heart's footprint in the diaries), drawn in the town's palette material and casting.
+        /// </summary>
+        public static List<GameObject> PlaceHouses(Transform parent, Export export, string arm, int year, Material street)
+        {
+            var placed = new List<GameObject>();
+            foreach (var b in export.buildings)
+            {
+                if (b.arm != arm || b.year != year)
+                    continue;
+                var model = AssetDatabase.LoadAssetAtPath<GameObject>(b.file) ?? throw new FileNotFoundException(b.file);
+                var go = (GameObject)PrefabUtility.InstantiatePrefab(model, parent);
+                go.name = $"{b.letter} ({b.id}) {year}";
+                go.transform.localPosition = StreetSpace.ToUnity(b.position.V);
+                go.transform.localRotation = Quaternion.Euler(0f, -b.yaw, 0f);
+                foreach (var r in go.GetComponentsInChildren<MeshRenderer>())
+                {
+                    var mats = new Material[r.sharedMaterials.Length];
+                    for (int i = 0; i < mats.Length; i++)
+                        mats[i] = street;
+                    r.sharedMaterials = mats;
+                    r.shadowCastingMode = ShadowCastingMode.On;
+                }
+                placed.Add(go);
+            }
+            return placed;
         }
 
         // -- the stage -----------------------------------------------------------------------------------------------
@@ -147,24 +179,7 @@ namespace Overstory.EditorTools
                 this.year = year;
                 for (int i = houses.childCount - 1; i >= 0; i--)
                     Object.DestroyImmediate(houses.GetChild(i).gameObject);
-                foreach (var b in export.buildings)
-                {
-                    if (b.arm != arm || b.year != year)
-                        continue;
-                    var model = AssetDatabase.LoadAssetAtPath<GameObject>(b.file) ?? throw new FileNotFoundException(b.file);
-                    var go = (GameObject)PrefabUtility.InstantiatePrefab(model, houses);
-                    go.name = $"{b.letter} ({b.id}) {year}";
-                    go.transform.localPosition = StreetSpace.ToUnity(b.position.V);
-                    go.transform.localRotation = Quaternion.Euler(0f, -b.yaw, 0f);
-                    foreach (var r in go.GetComponentsInChildren<MeshRenderer>())
-                    {
-                        var mats = new Material[r.sharedMaterials.Length];
-                        for (int i = 0; i < mats.Length; i++)
-                            mats[i] = street;
-                        r.sharedMaterials = mats;
-                        r.shadowCastingMode = ShadowCastingMode.On;
-                    }
-                }
+                PlaceHouses(houses, export, arm, year, street);
                 if (stage.skyMap != null)
                     stage.skyMap.Build();
             }

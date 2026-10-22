@@ -2,6 +2,12 @@
 
     python3 blender/tools/time_key.py
     blender -b --factory-startup --python blender/tools/export_time.py -- unity [--style gentle] [--arms real,shuffled]
+        [--years 1989,2000,2010,2020] [--out Assets/Art/Buildings/time]
+
+The playable corner's houses (LT1g, the walk, W1): only the record's arm, in 1989, at the style Øystein chose:
+
+    blender -b --factory-startup --python blender/tools/export_time.py -- unity --style stronger --arms real \
+        --years 1989 --out Assets/Art/Buildings/playable
 
 Reads reviews/lt1/time/readers/diaries.json (written by time_key.py: the record, and the shuffled control), resolves
 each house in each year, builds it with the test-quality generator (building.py) at the corner's real proportions,
@@ -11,7 +17,12 @@ checks it (validate.py; a failure stops the export and nothing is written), and 
   the same way, the top of its plinth at the heart's floor. A foundation block runs 8 m down under the body so the
   house meets the slope (the heart's masses do the same; it is buried wherever the ground is higher);
 - Assets/Art/Buildings/time/time.json: for each arm, year and house, the file, its origin and turn in street metres
-  (Unity's x, y, z is the street's x, z, y), and the house's middle for labels.
+  (Unity's x, y, z is the street's x, z, y), the house's middle for labels, and its mesh hash;
+- the mesh hashes beside each arm's files (<arm>/mesh-hashes.json, blender/tools/mesh_hash.py).
+
+--years keeps some of the diaries' years (all four by default); --out writes the set into another folder under the
+Unity project, with its record named manifest.json there (time.json only in the time test's own folder, which
+LT1Time reads). The FBX in any folder but time/ are rebuilt, not kept in git; the record and the hashes are.
 
 Nothing differs between two years of one house except what its plan says: the seeds are the diary's, so a part not
 touched by an event is built the same.
@@ -35,8 +46,10 @@ import validate  # noqa: E402
 import bake  # noqa: E402
 from resolve import resolve  # noqa: E402
 from export_street import export_fbx, install_lock, xyz  # noqa: E402
+import mesh_hash  # noqa: E402
 
 FOUNDATION = 8.0  # metres of foundation under the body, buried where the ground stands higher
+TIME_OUT = "Assets/Art/Buildings/time"  # the time test's own folder, whose record is time.json
 
 
 def foundation(ob, W, D):
@@ -74,9 +87,17 @@ def main(argv):
     opts = dict(zip(argv[1::2], argv[2::2]))
     style = opts.get("--style", "gentle")
     arms = opts.get("--arms", "real,shuffled").split(",")
+    out_rel = opts.get("--out", TIME_OUT).strip("/")
     src = json.load(open(os.path.join(ROOT, "reviews", "lt1", "time", "readers", "diaries.json")))
     ws = json.load(open(os.path.join(ROOT, "fixtures", "lt1-corner.json")))["worldSeed"]
     houses, years = src["houses"], src["years"]
+    if "--years" in opts:
+        wanted = [int(y) for y in opts["--years"].split(",")]
+        missing = [y for y in wanted if y not in years]
+        if missing:
+            print(f"FAIL the diaries have no year {missing} (they have {years})")
+            return 1
+        years = [y for y in years if y in wanted]
 
     bpy.ops.wm.read_factory_settings(use_empty=True)
     mat = palette.material()
@@ -105,19 +126,24 @@ def main(argv):
         print("nothing exported")
         return 1
 
-    out = os.path.join(unity, "Assets", "Art", "Buildings", "time")
+    out = os.path.join(unity, *out_rel.split("/"))
+    record = os.path.join(out, "time.json" if out_rel == TIME_OUT else "manifest.json")
     rows = []
     for b in built:
         bake.bake(b["obj"])  # what each face sees: sky, ground, openness
-        rel = f"Assets/Art/Buildings/time/{b['arm']}/bld_{b['letter']}_{b['year']}.fbx"
-        export_fbx(b["obj"], os.path.join(unity, rel))
+        rel = f"{out_rel}/{b['arm']}/bld_{b['letter']}_{b['year']}.fbx"
+        path = os.path.join(unity, rel)
+        export_fbx(b["obj"], path)
+        with install_lock(mesh_hash.manifest_path(path)):
+            hashed = mesh_hash.write_manifest(path)  # the mesh hashes beside the export
         rows.append(dict(arm=b["arm"], year=b["year"], letter=b["letter"], id=b["id"], file=rel,
-                         position=xyz(*b["origin"]), yaw=round(b["yaw"], 4), middle=xyz(*b["mid"]), tris=b["tris"]))
-    with install_lock(os.path.join(out, "time.json")), open(os.path.join(out, "time.json"), "w") as f:
+                         position=xyz(*b["origin"]), yaw=round(b["yaw"], 4), middle=xyz(*b["mid"]), tris=b["tris"],
+                         hash=hashed["hash"]))
+    with install_lock(record), open(record, "w") as f:
         json.dump(dict(style=style, worldSeed=ws, years=years, houses=[dict(letter=h["letter"], id=h["id"], heart=h["heart"]) for h in houses],
                        buildings=rows), f, indent=1)
         f.write("\n")
-    print(f"exported {len(rows)} houses ({sum(r['tris'] for r in rows)} triangles) at {style}: {', '.join(arms)} x {years}")
+    print(f"exported {len(rows)} houses ({sum(r['tris'] for r in rows)} triangles) at {style}: {', '.join(arms)} x {years} -> {record}")
     return 0
 
 

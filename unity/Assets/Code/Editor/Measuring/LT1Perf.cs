@@ -80,8 +80,9 @@ namespace Overstory.EditorTools
                 CompareRuns(done, Path.Combine(outDir, "runs.md"));
         }
 
-        /// <summary>The corner staged, the birch planted, the runner added; saved as the generated scene.</summary>
-        static void Compose()
+        /// <summary>The corner staged, the birch planted, the runner added; saved as the generated scene (the perf
+        /// corner's own unless another path is given).</summary>
+        internal static void Compose(string scenePath = ScenePath)
         {
             var (stage, go) = LT1Stone.Stage(false);
             var (_, birch, ground, h) = PlantBirch();
@@ -120,12 +121,12 @@ namespace Overstory.EditorTools
             runner.historyQuadTiles = new[] { 4, 8 };
             runner.historyQuadTiled = runner.historyQuadTiles.Select(k => LT1History.QuadMesh(k)).ToArray();
 
-            Directory.CreateDirectory(Path.Combine(Application.dataPath, "..", Generated));
+            Directory.CreateDirectory(Path.Combine(Application.dataPath, "..", Path.GetDirectoryName(scenePath)));
             AssetDatabase.Refresh();
             var scene = EditorSceneManager.GetActiveScene();
-            if (!EditorSceneManager.SaveScene(scene, ScenePath, true))
-                throw new System.Exception($"[LT1Perf] could not save {ScenePath}");
-            Debug.Log($"[LT1Perf] composed {ScenePath}: {runner.views.Length} views, {runner.moments.Length} lights");
+            if (!EditorSceneManager.SaveScene(scene, scenePath, true))
+                throw new System.Exception($"[LT1Perf] could not save {scenePath}");
+            Debug.Log($"[LT1Perf] composed {scenePath}: {runner.views.Length} views, {runner.moments.Length} lights");
         }
 
         /// <summary>The corner's birch planted in the open scene (in memory): its root, the tree, its ground and height.</summary>
@@ -161,7 +162,11 @@ namespace Overstory.EditorTools
             }
         }
 
-        static bool BuildPlayer(string app)
+        /// <summary>
+        /// A macOS player of one scene (the perf corner's unless another is given), with frame timing stats on, full
+        /// screen at 2560 by 1440 and running in the background; those settings are put back afterwards. True when it built.
+        /// </summary>
+        internal static bool BuildPlayer(string app, string scenePath = ScenePath)
         {
             bool timing = PlayerSettings.enableFrameTimingStats;
             bool background = PlayerSettings.runInBackground;
@@ -176,7 +181,7 @@ namespace Overstory.EditorTools
                 PlayerSettings.defaultScreenHeight = 1440;
                 var report = BuildPipeline.BuildPlayer(new BuildPlayerOptions
                 {
-                    scenes = new[] { ScenePath },
+                    scenes = new[] { scenePath },
                     locationPathName = app,
                     target = BuildTarget.StandaloneOSX,
                     options = BuildOptions.None,
