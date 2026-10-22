@@ -60,9 +60,16 @@ FOOT = 0.18             # the wall's foot under the steps' line
 RETAINS = 0.5           # a wall retains where the bank behind it stands this far over the lane's grade
 STRETCH = 2.0           # a wall keeps one role for at least this length
 BACKING = 0.035         # the soil and moss behind the joints, behind the face (cement pointing: 0.012)
-HEARTING = (0.12, 0.18) # the packing stones behind a fallen face stone, set back from the face
+HEARTING = (0.0, 0.02)  # where a face stone has fallen, the loose packing behind it has run out into its socket: how far
+REPOSE = 0.75           # back from the face the lowest of it lies (at the lip it fell over), and how much further back
+                        # for each metre up (it stands at about 53 degrees, as loose stone does), so the hole shows its
+                        # rubble, never a void
+SHEDS = 0.06            # a socket's floor raked steeper than this (the course's pitch) sheds water; only a level one
+                        # holds it
 SOCKET = 0.21           # the back of a fallen stone's socket, behind its hearting
 HEAD_LEN = (0.32, 0.62) # a wall's head (its end) is built of its longest stones, laid through it or as far in as they go
+EASE = 0.6              # a wall's courses ease from one pitch to the next over about this much either side of the change
+LONG_SHORT = ((0.42, 0.58), (0.2, 0.27))   # a rebuilt panel's end stones, long and short in alternate courses
 
 
 def recess(d):
@@ -104,6 +111,34 @@ def pitch_line(sp, z0):
     k = np.diff(P[:, 1]) / np.diff(P[:, 0])
     keep = np.concatenate([[True], np.abs(np.diff(k)) > 1e-6, [True]])
     return P[keep]
+
+
+def eased(PL, lo, hi, ease=EASE):
+    """The pitch line's breaks within [lo, hi] (a wall's length) eased, as a mason eases a wall's courses from the rake
+    to the level and back over a few stones: each change of pitch rounded by a parabola over `ease` either side, less
+    where the next change or the wall's end is nearer. A course never bends at a point, so no joint runs straight up
+    the wall and its battered face turns smoothly there (bent at the breaks, the face creased and every course broke
+    at the same place: the wall read as jogging out at a landing, and a landing's level courses as a stack). The
+    coping, straight slabs, still turns at the breaks. Returns f(s), the eased line's height, for scalars and arrays."""
+    q, z = PL[:, 0], PL[:, 1]
+    k = np.concatenate([[0.0], np.diff(z) / np.diff(q), [0.0]])       # (level beyond both ends, as np.interp is)
+    blends = []
+    for i in range(len(q)):
+        dk = k[i + 1] - k[i]
+        if not lo < q[i] < hi or abs(dk) < 1e-9:
+            continue
+        w = min(ease, q[i] - lo, hi - q[i],
+                (q[i] - q[i - 1]) / 2 if i > 0 else ease, (q[i + 1] - q[i]) / 2 if i < len(q) - 1 else ease)
+        if w >= 0.05:
+            blends.append((float(q[i]), float(dk), float(w)))
+
+    def f(s):
+        s = np.asarray(s, float)
+        out = np.interp(s, q, z)
+        for qb, dk, w in blends:
+            out = out + dk * (np.clip(s - qb + w, 0.0, 2.0 * w) ** 2 / (4.0 * w) - np.clip(s - qb, 0.0, w))
+        return out
+    return f
 
 
 def stretches(s, flags, least=STRETCH):
@@ -184,7 +219,9 @@ def lay(spec, seed=1):
             off = np.array([rng.uniform(0, 7), rng.uniform(0, 7)])
             out["UV0"].append(uv["UV"] + off)
             var = rng.random()
-            out["UV1"].append(np.stack([np.full(len(P), bare_y / 200.0), np.full(len(P), var)], -1))
+            # (bare_y and bed_y a number, or one a vertex where a piece spans old work and new: the backing)
+            out["UV1"].append(np.stack([np.broadcast_to(np.asarray(bare_y, float) / 200.0, (len(P),)),
+                                        np.full(len(P), var)], -1))
             # the water layer: how much water lies or runs here (see the copings and the courses below)
             out["UV2"].append(np.stack([kind.astype(float), np.clip(water if water is not None else np.full(len(P), 0.2), 0, 1)], -1))
             out["UV3"].append(np.stack([sky, np.full(len(P), 0.3) if ground is None else ground], -1))
@@ -203,10 +240,13 @@ def lay(spec, seed=1):
         def pitch(s):
             return np.interp(s, PL[:, 0], PL[:, 1])
 
+        courses_line = eased(PL, -0.3, run + 0.3)
+
         def base(s):
             """The wall's foot, under the steps' line: its courses run parallel to the pitch line, raked over each run
-            of steps and level over each landing, and break their joints at each change of pitch."""
-            return pitch(s) - sp["r"] - FOOT
+            of steps and level over each landing, eased from one pitch to the next (eased()); its face is battered
+            from it."""
+            return courses_line(s) - sp["r"] - FOOT
 
         bends = [float(q) for q in PL[:, 0] if -0.3 < q < run + 0.3]
 
@@ -232,14 +272,27 @@ def lay(spec, seed=1):
             # its height from the steps, never under the bank: a parapet at hand height over the pitch line
             top_line = np.maximum(np.where(retain, np.minimum(bank + 0.05, step_top(ss) + 3.0), pitch(ss) + PARAPET),
                                   bank + 0.05)
+            # the rebuilt panel: where the lane's water ran behind the lower wall on the bank's side. The crew took
+            # the bulged length down and built it again in cement, its ends stopped against the old dry work in a
+            # straight joint (mortared work is not toothed into loose dry work), each end's stones long and short in
+            # alternate courses, and its copings relaid
+            panel = None
+            for w in spec["works"]:
+                if w["kind"] == "rebuilt" and side == bank_side and fi == 0:
+                    prng = HS.Stream(seed, pnl, "rebuilt", w["year"])
+                    L_ = prng.uniform(*w["length"])
+                    s0 = prng.uniform(0.15, 0.35) * run
+                    panel = dict(s=(s0, s0 + L_), year=w["year"], mortar=w["mortar"])
+                    record.append(dict(flight=fi, side=side, rebuilt=[round(s0, 2), round(s0 + L_, 2)], year=w["year"]))
+            ends_p = list(panel["s"]) if panel is not None else []
             # the copings' layout first: they are the top, and a change of pitch falls at a joint between two (the
-            # coping before it is cut to it, or runs on to it); their joints and low ends are where the water off the
-            # top runs down the face
+            # coping before it is cut to it, or runs on to it), as does a rebuilt panel's end; their joints and low
+            # ends are where the water off the top runs down the face
             crng0 = HS.Stream(seed, pnl, "copes")
             copes, s_c = [], -0.3
             while s_c < run + 0.3:
                 e_c = min(s_c + crng0.uniform(0.45, 1.0), run + 0.3)
-                nb = next((q for q in bends if s_c + 0.25 <= q < e_c + 0.25), None)
+                nb = next((q for q in sorted(bends + ends_p) if s_c + 0.25 <= q < e_c + 0.25), None)
                 if nb is not None:
                     e_c = nb
                 copes.append((s_c, e_c))
@@ -259,15 +312,6 @@ def lay(spec, seed=1):
             drip_list = WT.drips([e_c for _, e_c in copes[:-1]], [crng0.uniform(0.4, 1.0) for _ in copes[:-1]]) + \
                 WT.drips([crng0.uniform(-0.3, run + 0.3) for _ in range(int(run / 1.5) + 1)],
                          [crng0.uniform(0.2, 0.6) for _ in range(int(run / 1.5) + 1)])
-            # the rebuilt panel: where the lane's water ran behind the lower wall on the bank's side
-            panel = None
-            for w in spec["works"]:
-                if w["kind"] == "rebuilt" and side == bank_side and fi == 0:
-                    prng = HS.Stream(seed, pnl, "rebuilt", w["year"])
-                    L_ = prng.uniform(*w["length"])
-                    s0 = prng.uniform(0.15, 0.35) * run
-                    panel = dict(s=(s0, s0 + L_), year=w["year"], mortar=w["mortar"])
-                    record.append(dict(flight=fi, side=side, rebuilt=[round(s0, 2), round(s0 + L_, 2)], year=w["year"]))
             # patchwork between: a face stone fallen here and there and left (care falling), one hole patched in
             # cement. Each fall is a place along the panel and a height up it, the upper courses likelier (the
             # stones there bear least weight)
@@ -313,6 +357,14 @@ def lay(spec, seed=1):
                 cid = f"{pnl}/co-{k}"
                 krng = HS.Stream(seed, cid, "course")       # the course's height and its stones' lengths, in order
                 ch = krng.uniform(*COURSE)
+                # the joints this course must take, and the stone that starts at each: a rebuilt panel's straight
+                # joints with the old work, its first and last stones long and short in alternate courses (the long at
+                # one end over the short at the other, so each end's joints are bridged course by course)
+                cuts = []
+                if panel is not None:
+                    long_, short_ = krng.uniform(*LONG_SHORT[0]), krng.uniform(*LONG_SHORT[1])
+                    first, last = (long_, short_) if k % 2 == 0 else (short_, long_)
+                    cuts = [(panel["s"][0], first), (panel["s"][1] - last, last), (panel["s"][1], None)]
                 s_cur = -0.3
                 joints, lost = [], []
                 j = 0
@@ -324,8 +376,12 @@ def lay(spec, seed=1):
                         e = s_cur + L_
                         if all(abs(e - jb) > BRIDGE for jb in below) or e > run + 0.3:
                             break
-                    # a change of pitch takes a joint: the stone before it is cut to it, or runs on to it
-                    nb = next((q for q in bends if s_cur + 0.15 <= q < e + 0.15), None)
+                    at = next((Lc for q, Lc in cuts if Lc is not None and abs(s_cur - q) < 1e-9), None)
+                    if at is not None:
+                        e = s_cur + at
+                    # a joint the course must take: the stone before it is cut to it, or runs on to it (a change of
+                    # pitch takes none: the courses ease through it)
+                    nb = next((q for q, _ in cuts if s_cur + 0.15 <= q < e + 0.15), None)
                     if nb is not None:
                         e = nb
                     e = min(e, run + 0.3)
@@ -410,11 +466,15 @@ def lay(spec, seed=1):
                 # the grit and water that collect in the hole) and the split ends of its neighbours in the course
                 quads = [(facing(np.array([at(s0, h0, SOCKET), at(s1, h0, SOCKET), at(s1, h1, SOCKET),
                                            at(s0, h1, SOCKET)]), (0, -side, 0)), "back", 6, WT.HOLDS)]
+                # (the floor lies at the course's pitch: raked with the flight it sheds the rain to its low end and
+                # stays damp in its grit; it holds standing water only where the course runs level, at a rest)
+                rake = abs(float(base(s1) - base(s0))) / max(s1 - s0, 1e-6)
+                floor_w = float(np.interp(rake, [SHEDS * 0.5, SHEDS], [WT.HOLDS, 0.45]))
                 for hh, nz, other in ((h0, 1, hl["k"] - 1), (h1, -1, hl["k"] + 1)):
                     for x0, x1 in minus(s0, s1, [(o["s0"], o["s1"]) for o in holes if o["k"] == other]):
                         quads.append((facing(np.array([at(x0, hh, 0.01), at(x1, hh, 0.01), at(x1, hh, SOCKET),
                                                        at(x0, hh, SOCKET)]), (0, 0, nz)), "bed", 3,
-                                      WT.HOLDS if nz > 0 else 0.2))
+                                      floor_w if nz > 0 else 0.2))
                 for sx, ns in ((s0, 1), (s1, -1)):
                     if not any(o["k"] == hl["k"] and o is not hl and (o["s1"] == sx or o["s0"] == sx) for o in holes):
                         quads.append((facing(np.array([at(sx, h0, 0.01), at(sx, h1, 0.01), at(sx, h1, SOCKET),
@@ -433,7 +493,11 @@ def lay(spec, seed=1):
                 put(Pq, kq, dict(F=[tuple(range(4 * i, 4 * i + 4)) for i in range(len(quads))], UV=uvq),
                     HS.Stream(seed, stid, "socket"), YEAR - fell, YEAR - fell, np.full(len(Pq), 0.3),
                     np.clip(1.0 - hq / 0.8, 0.35, 1.0), sky_q, flip=False, water=wq, ground=ground_q)
-                # the hearting: a row or two of small stones, each its own size and set back
+                # the hearting: rows of small stones, each its own size, run out into the socket since its face stone
+                # went (loose packing has nothing left to hold it): the lowest near the lip, each row further back by
+                # the slope loose stone stands at, each stone leaning back on it. Its faces turn up to the light, as a
+                # gap in a dry wall shows its rubble core (set back 12 to 18 cm, the packing was hidden under the stone
+                # above from every judging view and the hole read as its own floor, a flat void)
                 hrng = HS.Stream(seed, stid, "hearting")
                 rows, hz = [], h0
                 while h1 - hz > 0.02:
@@ -452,18 +516,21 @@ def lay(spec, seed=1):
                         htid = f"{stid}/ht-{m}"
                         m += 1
                         hr = HS.Stream(seed, htid, "lay")
-                        sb_ = hr.uniform(*HEARTING)
+                        sb_ = min(hr.uniform(*HEARTING) + (hz - h0) * REPOSE, SOCKET - 0.09)
                         stn = WS.face_stone(HS.h(seed, htid), L_ - 0.008, rh - 0.006, depth=0.05,
                                             bulge=hr.uniform(0.004, 0.012), jag=hr.uniform(0.004, 0.01),
                                             chip=hr.uniform(0.006, 0.014))
-                        V = stn["V"]
+                        V = stn["V"].copy()
+                        V[:, 2] -= V[:, 1] * REPOSE * hr.uniform(0.4, 1.0)      # (its top leant back on the slope)
                         sv = x + 0.004 + V[:, 0]
                         hrel = hz + 0.003 + V[:, 1]
                         P = np.stack([sv, side * (W / 2 + 0.006 + hrel * BATTER + sb_ - V[:, 2]), base(sv) + hrel], -1)
                         sky_h, ground_h = recess(sb_ - V[:, 2])
+                        # (stones shed water: damp in the hole, never holding it as the soil behind and the grit on
+                        # the floor do)
                         put(P, stn["kind"], dict(F=stn["F"], UV=np.stack([V[:, 0] + x, V[:, 1] + hz], -1)), hr,
                             YEAR - fell, YEAR - fell, np.full(len(V), 0.3), np.clip(1.0 - hrel / 0.8, 0.35, 1.0),
-                            sky_h, flip=(side == 1), water=np.full(len(V), WT.HOLDS), ground=ground_h)
+                            sky_h, flip=(side == 1), water=np.full(len(V), 0.3), ground=ground_h)
                         x += L_
             # the backing: soil and moss in the joints, a few centimetres behind the face, where the dry wall holds
             # them (in the rebuilt panel and the patched hole, cement pointing); open where a stone has fallen, and
@@ -473,14 +540,16 @@ def lay(spec, seed=1):
             for j in range(nb - 1):
                 for half_, (zf0, zf1) in enumerate(((0.0, 0.5), (0.5, 1.0))):
                     s_a, s_b = sb[j], sb[j + 1]
-                    sm = (s_a + s_b) / 2
-                    in_panel = panel is not None and panel["s"][0] <= sm <= panel["s"][1]
-                    cem = cemented(sm)
-                    d = 0.012 if cem else BACKING
-                    xs = sorted({s_a, s_b} | {q for q in bends if s_a < q < s_b} |
+                    # (cut at the panel's straight joints, so the pointing changes where the stones do)
+                    xs = sorted({s_a, s_b} | {q for q in bends + ends_p if s_a < q < s_b} |
                                 {q for hl in holes for q in (hl["s0"], hl["s1"]) if s_a < q < s_b})
-                    pts, fcs = [], []
+                    pts, fcs, cem_v, yrs_v = [], [], [], []
                     for x0, x1 in zip(xs[:-1], xs[1:]):
+                        sm = (x0 + x1) / 2
+                        in_panel = panel is not None and panel["s"][0] <= sm <= panel["s"][1]
+                        cem = cemented(sm)
+                        d = 0.012 if cem else BACKING
+                        yrs = YEAR - (panel["year"] if in_panel else (1979 if cem else spec["built"]))
                         H0, H1 = float(top(x0) - base(x0)), float(top(x1) - base(x1))
                         lo, hi = (H0 * zf0, H1 * zf0), (H0 * zf1, H1 * zf1)
                         bands = sorted((hl["h0"], hl["h1"]) for hl in holes if hl["s0"] <= x0 + 1e-9 and hl["s1"] >= x1 - 1e-9)
@@ -499,13 +568,15 @@ def lay(spec, seed=1):
                                 corner = [corner[0], corner[1], corner[3]]
                             fcs.append(tuple(range(len(pts), len(pts) + len(corner))))
                             pts += [[sq, side * (W / 2 + 0.006 + hq * BATTER + d), float(base(sq)) + hq] for sq, hq in corner]
+                            cem_v += [cem] * len(corner)
+                            yrs_v += [yrs] * len(corner)
                     if not pts:
                         continue
                     P = np.array(pts)
-                    kind = np.full(len(P), 4 if cem else 6, dtype=np.int8)
+                    kind = np.where(cem_v, 4, 6).astype(np.int8)
                     hgt = P[:, 2] - base(P[:, 0])
                     damp = np.clip(1.0 - hgt / 0.8, 0.35, 1.0)
-                    yrs = YEAR - (panel["year"] if in_panel else (1979 if cem else spec["built"]))
+                    yrs = np.array(yrs_v, float)
                     put(P, kind, dict(F=fcs, UV=P[:, [0, 2]]), HS.Stream(seed, f"{pnl}/bk-{j}-{half_}", "marks"),
                         yrs, yrs, np.full(len(P), 0.5), damp, np.full(len(P), 0.45), flip=(side == 1),
                         water=np.full(len(P), WT.HOLDS))
