@@ -29,6 +29,16 @@ State: **built** (in use, reviewed), **in progress**, **designed** (a design pag
 | Weather and seasons | rain, snow, frost, fog, wind; the year's turn; fallen leaves | partly (wetness, the trees' seasons); planned | `docs/trees.md` |
 | Records | signs, posters, notices, papers: perceived information, which may be wrong | designed (engine request 9) | `docs/engine-requests.md` |
 | People and crowds | figures, posture from state, crowds | planned (plan step 5) | `docs/research/people-deep-dive.md`, `docs/living-world.md` |
+| Seeds | the one hash spec: every visible choice that is not a fact is drawn from the world seed, a stable id (`schemas/naming.md`) and its purpose | built for the gully (stone, walls, upkeep) and in Unity (`Hash.cs`, the air motes); debts below | `blender/resolver/hashing.py`, `Core/Hash.cs`, `fixtures/golden/hash-vectors.json` |
+
+
+**Seed debts** (22 October). These still draw from the old randomness, and each moves onto the hash spec at its own step:
+- `blender/parts/stone/*/paint.py` and `parts/trees/birch/paint.py` use numpy's `default_rng` (with the material record, step 4);
+- `parts/trees/painting.py`, `tree_growth.py`, `house.py`, `stair_facts.py`, and the clay's `blockouts/heart_layout.py` and `heart_build.py` use `random.Random`. Moving the clay moves every golden frame.
+
+There are two other debts:
+- `upkeep.py` still uses `exp`: a lognormal settling rate and a Poisson count of quick fixes. These break D2.2's rule that choices are made from integers, the four operations and square roots only (step 2).
+- The Variety stairs' FBX and their manifest (`unity/Assets/Art/Stone/Variety/`) predate the hash spec and the landing rule. They are stale until they are rebuilt.
 
 ## Materials
 

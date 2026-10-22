@@ -36,7 +36,7 @@ reviews/<LTn>/             contact sheets and renders
 
 The same world, seed and history must always give the same picture.
 
-- Never use `UnityEngine.Random` or `System.Random` for anything visible. There is one hash spec, Python's `blender/resolver/hashing.py`: FNV-1a over UTF-8, SplitMix64 from `0x2545F4914F6CDD1D`, `unit = (h>>11)/2^53`. `Code/Core/Hash.cs` matches it and both reproduce `fixtures/golden/hash-vectors.json`. (Until the gully port's step 0b, `Hash.cs` hashes UTF-16 and differs.)
+- Never use `UnityEngine.Random` or `System.Random` for anything visible. There is one hash spec, Python's `blender/resolver/hashing.py`: FNV-1a over UTF-8, SplitMix64 from `0x2545F4914F6CDD1D`, `unit = (h>>11)/2^53`. `Code/Core/Hash.cs` matches it and both reproduce `fixtures/golden/hash-vectors.json`. `Overstory.EditorTools.HashVectors.Check` is its test, in batch mode.
 - Seed every visual choice from stable ids (record, slot and fill ids, part path and purpose), never from positions. A replaced part takes a new id and so a new seed. Choices use integers, the four operations and square root; sort by stable id.
 - No visual choice may depend on frame time, load order or what the camera saw first.
 

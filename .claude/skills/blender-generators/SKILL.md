@@ -30,7 +30,7 @@ The same building looks the same until its history changes it.
 - Seeds come from stable ids (part path and purpose) through SplitMix64, by `blender/resolver/hashing.py`, the one hash spec that `Hash.cs` matches. Never `random.Random`, and never keys from formatted floats. A replaced part takes a new id and a new seed.
 - Choices use only integers, the four operations and square root. A transcendental may place a vertex, never choose.
 - Everything sorts by stable id.
-- Today the stone, `house.py` and the trees still use `random.Random`; the port's step 0b moves the stone.
+- The gully's stone, walls and upkeep draw every seed through `blender/resolver/hashing.py` (`HS.Stream(seed, id, purpose)`, `HS.h`), keyed by the ids in `schemas/naming.md`. `house.py`, the trees, `stair_facts.py`, the clay and the grain painters still use `random` or numpy's generator: debts in `docs/systems.md` (Seeds).
 
 ## Units and metrics
 
