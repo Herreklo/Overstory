@@ -128,10 +128,6 @@ namespace Overstory.Perf
         static bool Off(string config, string pass) =>
             config == "bare" || config == "flat" || config == "-" + pass || (config == "-fullscreen" && System.Array.IndexOf(FullScreen, pass) >= 0);
 
-        // the arms that set a keyword for every shader (Shaders/History.hlsl; StreetSurface.hlsl's OS_Atmosphere)
-        static readonly GlobalKeyword HistoryOff = GlobalKeyword.Create("OS_HISTORY_OFF");
-        static readonly GlobalKeyword HazeOff = GlobalKeyword.Create("OS_HAZE_OFF");
-
         struct Seg
         {
             public string name, scene, passes;
@@ -279,6 +275,11 @@ namespace Overstory.Perf
                 return t;
             }
 
+            // the arms that set a keyword for every shader (Shaders/History.hlsl; StreetSurface.hlsl's OS_Atmosphere;
+            // made here: Unity allows no keyword in a MonoBehaviour's initializers)
+            var historyOff = GlobalKeyword.Create("OS_HISTORY_OFF");
+            var hazeOff = GlobalKeyword.Create("OS_HAZE_OFF");
+
             void SetPasses(string config)
             {
                 foreach (var pass in FeatureOf)
@@ -293,8 +294,8 @@ namespace Overstory.Perf
                     motes.enabled = false;                       // (the stage's motes set it from the rig on Apply)
                 camData.requiresColorOption = Off(config, "opaquetex") ? CameraOverrideOption.Off : colour0;
                 camData.requiresDepthOption = Off(config, "depthtex") ? CameraOverrideOption.Off : depth0;
-                Shader.SetKeyword(HistoryOff, config == "history-off");
-                Shader.SetKeyword(HazeOff, config == "haze-off");
+                Shader.SetKeyword(historyOff, config == "history-off");
+                Shader.SetKeyword(hazeOff, config == "haze-off");
             }
 
             var recorders = Counters.Select(c => ProfilerRecorder.StartNew(c.category, c.counter, 1)).ToArray();
