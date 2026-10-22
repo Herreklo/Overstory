@@ -137,3 +137,10 @@ Proposals wait here for the next milestone's fresh reviewer, who sees the plan a
 - **Change:** a fresh reviewer who has not seen our view answers it for the stair and cheek walls from frames at judged size, the code and Q14's test. Our proposal for it: redraw the stones (a rigid placement and shaping function under Q13's budget, judged against the target frame) and keep the port's stages, records, seeds and tools. A "start over" on more than the stones goes to Øystein as scope.
 - **Standing cost:** none beyond the review already planned.
 - **What would change our minds:** the reviewer finding the faults are settings, not the making.
+
+## Q16. The birch is rebuilt in 1e, not re-fitted
+
+- **Evidence:** Øystein, 22 October, looking at the walk's stills: "the tree looks not good in game". It costs 11 to 17 ms where it is in view (`reviews/lt1/playable/walk/w3-report.md`), as much as every material on screen. It was closed as a look test only, built on cut-out cards before the trees' craft was known, and cards are what the M4 draws worst (`docs/research/performance-craft.md`, item 4).
+- **Change:** by Q14's test (faults in how it is made; far over budget; never converged in the real scene) 1e starts the birch again, keeping its facts, seeds and growth record: an opaque core and lobes of leaf clusters, a depth pass first and colour without `clip()`, the town's sky per vertex, a triangle and frame budget set first (Q12, Q13), Firewatch's trunks, light and leaf clusters as the bar, judged in the walk at eye level in three lights.
+- **Standing cost:** none beyond 1e.
+- **What would change our minds:** a blind review finding a re-fitted card tree equal at eye level within budget.
