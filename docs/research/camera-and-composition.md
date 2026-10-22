@@ -11,7 +11,7 @@ Written on Opus, 21 October 2026, with two helper passes beside the main one: on
 - Our air needs a view along the ground. Distance is drawn as coloured layers of air (`docs/visual-direction.md`). A steep view sees everything at about the same distance, so the air has nothing to grade.
 - At eye level and the street stop, verticals stay vertical through a lens shift. A tilted camera makes buildings lean back, which architectural photographers avoid (secondary), and Unity's physical camera shifts the lens without tilting.
 - In narrow lanes the camera is a careful walker. It slides along walls on a coarse hull of its own, keeps a metre from every face, follows a smoothed line over the steps and slows where the walls are close. Zooming out cranes it up the lane; it crosses roofs only when it is above them. The sources agree: plan ahead rather than react, collide with a sphere a little larger than the near plane, and use springs, never clamps (Haigh-Hutchinson).
-- Nothing is cut away in the town. A hole in a wall or a lifted roof would read as damage, a false history. The camera goes to see instead.
+- Nothing is cut away in the town. A hole in a wall or a lifted roof would read as damage, a false history. The camera goes to see instead. (Questioned by Øystein, 22 October: a cut is the view, not the building. Cuts are tested beside moving the camera, in `docs/proposals.md` Q17.)
 - The generator emits camera data from the facts it builds from: a hull, a tube for every lane and stair, each doorway's poses, no-go volumes and dated vantages. Level designers author camera volumes by hand (Super Mario 64's trigger boxes, Journey's hints). Ours come from the town's records, and they only shape limits and preferences. The player's input always wins.
 - No depth-of-field blur from raised views. Blur that grows with depth makes a real scene look like a miniature (Held and colleagues, 2010). Our town must never read as a toy.
 - Comfort comes first: no shake, no bob, no smoothing on direct mouse look, a field-of-view setting, turning speed scaled to the lens, and a speed cap in lanes set by how close the walls are.
@@ -115,6 +115,8 @@ Zooming out in a lane cranes the camera straight up. Above the eaves and ridges 
 At low height the camera never hops over a house. A hop is a fast vertical move, which Nesky warns makes people sick (items 45 and 46). It shows backs no one built (`docs/research/pre-mortem.md`, story 8). And it breaks Arkane's rule in the town plan: no view of a place the player cannot go. Whether players want a drone's freedom anyway is tested in the greybox (For Øystein, 1).
 
 ### Occlusion from raised views
+
+The verdicts on cuts below are under test (`docs/proposals.md`, Q17).
 
 | Strategy | Games | Fits a free camera | Reads as a fact here | Verdict |
 | --- | --- | --- | --- | --- |

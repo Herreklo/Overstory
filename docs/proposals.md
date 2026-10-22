@@ -145,3 +145,19 @@ Proposals wait here for the next milestone's fresh reviewer, who sees the plan a
 - **Change:** by Q14's test (faults in how it is made; far over budget; never converged in the real scene) 1e starts the birch again, keeping its facts, seeds and growth record: an opaque core and lobes of leaf clusters, a depth pass first and colour without `clip()`, the town's sky per vertex, a triangle and frame budget set first (Q12, Q13), Firewatch's trunks, light and leaf clusters as the bar, judged in the walk at eye level in three lights.
 - **Standing cost:** none beyond 1e.
 - **What would change our minds:** a blind review finding a re-fitted card tree equal at eye level within budget.
+
+## Q17. Cutting away is tested, not ruled out
+
+- **Evidence:** Øystein, 22 October, on the rule that nothing is cut away: "damage is actual damage on the building, not making it easy to see playable character. two different things. and this might be a nice way to do it?" The rule (`docs/research/camera-and-composition.md`, bottom line and Occlusion from raised views) rests on a guess that a cut reads as damage, and no reader was asked. A cut belongs to the camera, as the cursor does: it moves with the view and claims nothing about the building, so it is none of the five kinds of thing on screen (`CLAUDE.md`), and the history rule does not reach it. Players of The Sims, XCOM and Baldur's Gate 3 read cuts as the view (our reading; no study found). What is left of the worry is narrower. In a game whose skill is reading wear, a cut must never look like a state of the material, such as a ragged, broken edge in the wall's own colours.
+- **Change:** the zoom test (1g's camera milestone) plays cutting beside moving the camera, as switches:
+  - (a) a soft cut round the focus, like Baldur's Gate 3's sphere but with a clean, even edge that reads as the lens;
+  - (b) walls between the camera and the focus faded, with the Sims' thick caps where a wall is cut;
+  - (c) the focus's silhouette drawn through walls;
+  - (d) the camera moving to see, which is the research's design.
+
+  The focus is whatever the player follows or selects. It is judged three ways:
+  - by playing it, Øystein first, then testers;
+  - by cold readers asked what is old, changed or damaged in frames with cuts on (criterion 1); a cut read as damage fails that variant;
+  - by its cost on the M4. A cut made with `clip()` costs the tile GPU as the birch's cards do, so it is measured, and a cheaper way is tried if it is over budget.
+- **Standing cost:** three switches and one reader question in the zoom test.
+- **What would change our minds:** readers reading a cut as damage at any of the camera's stops, or a cut that can't be made within budget.
