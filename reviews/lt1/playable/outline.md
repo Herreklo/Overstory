@@ -117,6 +117,7 @@ Each light stage ends in the rebuilt walk, so Øystein's walk is where it is jud
 This outline plans nothing for the case's build. No stage in Phase 1 serves only Phase 2: W3's and W4's four views are LT1g's judging views, and the house export takes 1989 only.
 
 **The ladder's rules.**
+- **The pre-mortem first.** Its open fixes (`premortem.md` §4) go into `case-spec.md` before it is frozen. Test 4 uses one of the run's deaths that Øystein has not read about.
 - **Freeze, then test.** The spread rule, the score and the authored hours are written in `reviews/lt1/playable/case-spec.md` and hashed before test 1 runs. A change after any result is a new case. It reruns on seed B, which nothing is tuned on.
 - Each test reports against the pass line written here before the next one starts.
 - A kill stops the ladder. Its evidence goes to Øystein as a scope question, not as a fix.
