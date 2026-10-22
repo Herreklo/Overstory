@@ -96,6 +96,7 @@ The rules:
 - **Write "done" first:** the question, the views, the budget and what would change our minds. A self-check against the core rules and the numbers comes before a strict review, so reviews find what only eyes can.
 - **Research just in time,** except the craft that shapes the foundations. Each area is studied right before its step.
 - **Write decisions once,** in the design docs, and don't reopen them without new evidence.
+- **Answer from the plan, never from memory** (Øystein, 22 October, on a recommendation that ran against the plan: "that scares me"). Before any recommendation on order, scope or what comes next, read the order in `NOW.md` and the step in `docs/plan.md`, and say which it is: "the plan says", or "I propose changing the plan because <new evidence>". A question is not evidence. A real point becomes a written proposal (the evidence, what it changes, what would change our minds), decided at a milestone, with a fresh reviewer that sees the plan and the proposal but not the chat for anything big.
 - **Stop when a loop won't converge.** Judge the form in grey light and change one thing at a time.
 - **Hold a pre-mortem before every big build** (Øystein, 22 October, on learning the stairs were built before their production craft was known: "that scares me"). A fresh reviewer imagines it is six months later and the work has failed, says why, and names what a lead technical artist at a studio would say we are missing. The blind spot it catches is the one the stairs had.
 

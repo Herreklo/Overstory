@@ -20,6 +20,15 @@ What is open and what is next. Every session reads this page first, so it stays 
 - **Researched:** the subject of most areas, and the craft of fourteen (`docs/research/`). Coverage and the remaining gaps are in `docs/systems.md`.
 - **Why building stopped (22 October):** the craft research came after the stone was built. One stair with its walls is about 816,000 triangles, with no distance levels and its history per vertex (Øystein: "these need extreme care... our building blocks; we need to do them perfect, so the rest becomes much easier"). The gully is the first thing rebuilt on the building blocks.
 
+## The order (`docs/plan.md`, The order)
+
+Answer every question about what comes next from this list. Changing it takes a written proposal (`CLAUDE.md`, Answer from the plan).
+1. The corner's stone on the building blocks: the architecture, the foundations, the light's lasting fix (1c), the land, the gully and walls re-fitted, then the birches (1e); then the landing's setts, the kerb and the plinths. 1f, the clay time test, is done. 1g, a playable greybox of the corner, may start now that 1f has its clay corner, once its play is researched.
+2. Buildings: House A, twelve more from the same parts, then the corner's five houses.
+3. The corner's ground and things. 4. The corner through the years. 5. People. 6. The heart at the city view. 7. Nature's living parts. 8. Interiors. 9. Weather and seasons. 10. Districts, the region, other towns.
+
+Proposed on 22 October, for one independent review before the port resumes: 1g (the playable corner) taking Unity while the port pauses after 2a, on the existing play studies (the unread talks are still held); the house-front research ahead of step 2, for the shared foundations; a kind counting as done only when it holds across its range.
+
 ## Next
 
 The week's plan starts from the architecture (`docs/plan.md`, Next week; steps in `docs/research/building-blocks-decisions.md` §13).
