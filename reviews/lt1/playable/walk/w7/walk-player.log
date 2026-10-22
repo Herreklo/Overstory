@@ -1,0 +1,53 @@
+Mono path[0] = '/Users/oystein/code/Overstory/unity/Builds/Playable/OverstoryPlayable.app/Contents/Resources/Data/Managed'
+Mono config path = '/Users/oystein/code/Overstory/unity/Builds/Playable/OverstoryPlayable.app/Contents/MonoBleedingEdge/etc'
+CodeReloadManager initialized
+Input System module state changed to: Initialized.
+[Physics::Module] Initialized fallback backend.
+[Physics::Module] Id: 0xdecafbad
+ preferred device: Apple M4 (high power)
+Metal devices available: 1
+0: Apple M4 (high power)
+Using device Apple M4 (high power)
+Initialize engine version: 6000.6.6f1 (d20c9ac777da)
+[EntityIdStore] init: VM path (explicit commit), pageSize=16384, blockCount=262144, entitiesPerBlock=1024, slots reserved=4294967296 bytes
+[Subsystems] Discovering subsystems at path /Users/oystein/code/Overstory/unity/Builds/Playable/OverstoryPlayable.app/Contents/Resources/Data/UnitySubsystems
+GfxDevice: creating device client; kGfxThreadingModeThreaded
+Initializing Metal device caps: Apple M4
+Mac GPU Family: 2
+Apple GPU Family: 9
+MSL Version: 3.0
+Has Float MSAA: 1
+Has Float Filtering: 1
+ReadWrite Texture Tier: 2
+Begin MonoManager ReloadAssembly
+- Finished resetting the current domain, in  0.004 seconds
+[Physics::Module] Selected backend (deferred post-plugins).
+[Physics::Module] Name: PhysX
+[Physics::Module] Id: 0xf2b8ea05
+[Physics::Module] SDK Version: 4.1.2
+[Physics::Module] Integration Version: 1.0.0
+[Physics::Module] Threading Mode: Multi-Threaded
+Metal RecreateSurface[0x12660a010]: surface size 2560x1440
+UnloadTime: 1.669500 ms
+[WalkWorld] 3756 boxes, 9 ramps, 224 ground chunks (678880 triangles), 5 drawn houses: built in 150 ms (read 8, boxes 14, ground cut 110, cooked 17)
+Shader 'Hidden/Universal Render Pipeline/GaussianDepthOfField' is not supported or has been stripped from the build (in 'DepthOfFieldGaussianPostProcessPass'). PostProcessing render passes will not execute.
+Shader 'Hidden/Universal Render Pipeline/GaussianDepthOfField' is not supported or has been stripped from the build (in 'DepthOfFieldGaussianPostProcessPass'). PostProcessing render passes will not execute.
+Shader 'Hidden/Universal Render Pipeline/BokehDepthOfField' is not supported or has been stripped from the build (in 'DepthOfFieldBokehPostProcessPass'). PostProcessing render passes will not execute.
+Shader 'Hidden/Universal Render Pipeline/PaniniProjection' is not supported or has been stripped from the build (in 'PaniniProjectionPostProcessPass'). PostProcessing render passes will not execute.
+[WalkScript] /Users/oystein/code/Overstory/tools/playable/walks/a-e-a.walk: reached 70 of 70 points in 140.7 s (4221 frames at 30 fps); falls 0, sticks 0, abandoned 0, under the surface 0; walker physics mean 53 µs, p99 299, max 2429; PASS
+Thread 0x17195f000 may have been prematurely finalized
+[Physics::Module] Cleanup current backend.
+[Physics::Module] Id: 0xf2b8ea05
+Input System module state changed to: ShutdownInProgress.
+Input Polling Thread exited.
+Input System module state changed to: Shutdown.
+Thread 0x170333000 may have been prematurely finalized
+Thread 0x17044b000 may have been prematurely finalized
+Thread 0x1703bf000 may have been prematurely finalized
+Thread 0x170793000 may have been prematurely finalized
+Thread 0x1705ef000 may have been prematurely finalized
+Thread 0x17067b000 may have been prematurely finalized
+Thread 0x1704d7000 may have been prematurely finalized
+Thread 0x170707000 may have been prematurely finalized
+Thread 0x170563000 may have been prematurely finalized
+CodeReloadManager destroyed

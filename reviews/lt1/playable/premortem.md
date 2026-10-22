@@ -79,6 +79,7 @@ It is April 2027 and the corner has failed. This covers Phase 1 and the ladder; 
 - Rosters are parsed from text with tests, labelled derived.
 - W3 places the runner.
 - W7 notes any review run on Opus.
+  - W7's strict review was not run on Fable or Opus: Øystein's own verdict on 22 October replaced it (the frame rate "laggy and jumpy", the climb "a bit boaty", the stairs "very buggy and not nice"; `walk/w7-report.md`).
 
 ## 5. Keep
 

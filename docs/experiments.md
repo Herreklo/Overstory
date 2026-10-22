@@ -49,6 +49,30 @@ Results that surprised us or might be new, newest first. Each says what the evid
 
 Phase 1, the walk and the light, starts in its own session once Unity is free. Phase 2 is the ladder: its Unity-free tests run beside the walk. This is step 1g of `docs/plan.md`, the greybox.
 
+**Phase 1a, the walk: done 22 October** (W1 to W5 and W7; `reviews/lt1/playable/walk/`, W7's report last).
+- **Kept:**
+  - the corner composed inside the clay town as a generated scene, with the gully's hashes checked on every run (`LT1Play.Compose`);
+  - the frame-time overlay and the Mac build (`tools/playable.sh`);
+  - the harness's playable arm (`tools/perf.sh playable`) and its pass split;
+  - the walker and its collision proxies (`CheckProxies`, the scripted walk);
+  - low sun's beams at a quarter of the pixels (W5: 62 ms to about 1);
+  - the walk without a tree until 1e.
+- **The gate's baseline** (W7, no tree): 27 to 60 fps.
+  - The frame is 21 to 33 ms in drizzle, 22 to 36 in low sun and 17 to 29 at the blue hour.
+  - The three biggest costs are now the materials' shaders (6 to 12 ms, owner unknown until L5), the shadow map (4 to 7, 1c) and MSAA (2 to 5, 1c).
+- **Dropped:**
+  - the card birch in the walk, and the clay stand-in tried in its place ("so incredibly big and lumpy", Øystein; both stay behind `-tree` for comparison only);
+  - the strict Fable review. Øystein's own verdict on 22 October replaced it: the frame rate "laggy and jumpy", the climb "a bit boaty", the eye "too close to the stairs at times", the scale "nice", the tree "looks not good in game", the stairs "very buggy and not nice" (redrawn in 2b, Q15);
+  - the one-minute capture and the four stills, since Øystein had already judged the walk;
+  - W6, the clay audit, which was cut.
+- **Known and waiting for the game:** the walker's feel. Whether there is a walker at all is open, so W7a was stopped before it compiled. It had measured four faults:
+  - pace reads the slope only once on a flight, so the eye heaves up at each run's foot (a 4.4 m/s² jolt);
+  - two chained springs float the eye about 0.13 m past each top;
+  - the lean swings 6° to 15° at landings;
+  - the eye drifts about 4 cm after stopping.
+
+  The drafted fix: read the ground ahead on a smoothed line, and follow eye height with one stiff spring.
+
 **The question.** Can we build something whole, with the world first: a town to walk and a case to play? Two things decide it:
 - whether reading the corner beats the page at carrying Agnes Fielding's death to the two people who were with her, before the Anchor says it aloud;
 - whether choosing whom to tell first costs enough to be a decision.

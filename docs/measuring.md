@@ -198,29 +198,24 @@ What the baseline says, for the building blocks:
         -perf-scenes empty,playable -perf-views eye-foot,street,a-window,anchor-door -perf-empty-views street -perf-shots some
     python3 tools/pass_budget.py reviews/perf/<date>/playable/passes/run-1 > reviews/perf/<date>/playable/passes/passes.md
 
-The baseline takes about 16 minutes a run: 36 segments, nine views in three lights and in low sun without the birch. The pass split takes about 21 minutes. Compose and build take about 15 s with the shaders warm.
+The baseline takes about 6 minutes a run since the birch left: 27 segments, nine views in three lights. The pass split takes about 12 minutes. Compose and build take about 15 s with the shaders warm. Give each new baseline its own `-out` (W7's is `reviews/perf/2026-10-22/playable/w7`), so an earlier one is not written over.
 
-**Baseline** (22 October; two runs; `reviews/perf/2026-10-22/playable/runs.md`). The runs agree within 3% on 22 of 36 segments' offscreen time. The worst is 10.2%, on the steps in low sun; the birch's A/B there, with no change of triangles, moved 5.5 ms, which shows the noise at about 100 ms.
+**Baseline** (22 October, W7: no tree, the beams at a quarter of the pixels; two runs; `reviews/perf/2026-10-22/playable/w7/runs.md`). The runs agree within 3% on only 10 of 27 segments' offscreen time, and the worst is 14.3% (A's window in low sun). Other sessions' Blender, node and Claude processes ran beside it (`machine.json`), so a difference under about 3 ms is not visible in it.
 
 | Light | Offscreen (ms) | Frame (ms) | Frames a second | Triangles a frame | Draws |
 | --- | --- | --- | --- | --- | --- |
-| Drizzle | 24.2 to 44.0 | 20.9 to 37.1 | 27 to 48 | 11.4 to 16.4 million | 122 to 156 |
-| Low sun | 86.7 to 107.3 | 74.8 to 93.8 | 11 to 13 | 11.4 to 16.8 million | 125 to 160 |
-| Blue hour | 19.7 to 36.6 | 17.3 to 31.9 | 31 to 58 | 3.9 to 5.9 million | 66 to 84 |
+| Drizzle | 24.2 to 38.8 | 20.6 to 33.0 | 30 to 48 | 11.1 to 15.9 million | 117 to 142 |
+| Low sun | 24.9 to 41.6 | 21.6 to 36.4 | 27 to 46 | 11.2 to 16.3 million | 121 to 149 |
+| Blue hour | 18.7 to 32.6 | 16.5 to 28.6 | 35 to 60 | 3.7 to 5.7 million | 64 to 76 |
 
-The figures are the means of the two runs' medians. The views run from dearest to cheapest: the city camera, the street stop, 12 m, eye level on the steps, then the eye views at the foot, at A's window, on the Row and on the steps. The Anchor's door is cheapest, since half its frame is the Row and the Basin. The main thread takes about 1 ms, so the frame is the GPU's. The clay town and the five houses count as scope, not regression: the five judging views cost 1 to 5 ms more than the gully's corner on 21 October (2 to 6%), and the birch's A/B agrees with that day's within the noise.
+The figures are the means of the two runs' medians. Eye level on the steps is dearest in every light, then the foot of the steps: the gully's stone fills those frames. The Anchor's door is cheapest, since half its frame is the Row and the Basin. The main thread takes about 1 ms, so the frame is the GPU's. Against W3's baseline (`reviews/perf/2026-10-22/playable/runs.md`, the full-size beams and the card birch), low sun is 62 to 77 ms cheaper, and the views with the birch in frame (the street stop, 12 m, the city camera) 9 to 15 ms cheaper in drizzle and at the blue hour.
 
-What the passes cost (`reviews/perf/2026-10-22/playable/passes/passes.md`; offscreen, at the foot of the steps, the street stop, A's window and the Anchor's door):
-- *Low sun's beams:* 64 to 66 ms. Turning the beams and the shadow map off together saves 69 to 74 ms. The split:
-  - the beams' own full-screen cost is 40 ms whatever is on screen (40.2 in the empty frame);
-  - the shadow map alone costs 5 to 8 ms;
-  - 24 to 26 ms is the beams' 40 taps a pixel reading a real shadow map (in the empty frame the map is empty and the reads are cheap).
-  Without both, low sun would cost what drizzle costs.
-- *The materials' shaders* (bare less flat): 9 to 14 ms at the eye views and the street stop, and 6 ms at the Anchor's door, in every light. Bare is 7 to 16 ms, and flat (the same geometry, unlit) only 1.3 to 2.1 ms.
-- *MSAA 4x:* 2 to 6 ms in drizzle and at the blue hour, and 8 to 13 ms in low sun.
-- *The shadow map:* 3 to 5 ms in drizzle, and 31 to 34 ms in low sun with the beams on.
-- *The others:* SSR 1 to 6 ms, SSAO 0 to 6 ms, post 0 to 1.4 ms (7 to 8 ms in low sun). The birch costs +1.3 to +11.1 ms in the pass run and +5 to +17 ms in the baseline's A/B where it is in view.
-- *Noise:* differences on a 35 ms frame wander by about ±2 ms (the beams read −2.3 at the street stop in drizzle), and none of these findings rests on one under a millisecond.
+What the passes cost (`reviews/perf/2026-10-22/playable/w7/passes/passes.md`; offscreen, at the foot of the steps, the street stop, A's window and the Anchor's door):
+- *The materials' shaders* (bare less flat): 6 to 12 ms in every light, 12 at the foot of the steps and 6 at the Anchor's door. Bare is 7 to 14 ms, and flat (the same geometry, unlit) only 1.3 to 2.4 ms.
+- *The shadow map:* 4 to 7 ms in drizzle and low sun, none at the blue hour.
+- *MSAA 4x:* 2 to 5 ms in every light.
+- *Low sun's beams:* 0 to 3 ms, about W5's 1 ms inside the noise. The empty frame's beams cost 1.2 ms.
+- *The others:* SSAO 1 to 4 ms, SSR 1 to 4 ms, post 1 to 4 ms, the full-screen passes together 1 to 6 ms (4 to 6 in low sun).
 
 **Low sun's beams at a quarter of the pixels** (LT1g, W5, 22 October; `reviews/lt1/playable/walk/w5-report.md`). `SunBeamsFeature` with `SunBeamsQuarter.shader` replaced the full-size pass in `PC_Renderer.asset`, under the same name. It works in four steps:
 - it draws the cloud layer once into a small world map;

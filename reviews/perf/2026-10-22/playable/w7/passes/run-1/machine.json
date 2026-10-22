@@ -1,0 +1,257 @@
+{
+ "what": "the machine's background load around a timing run (tools/unity_lock.py --timing): the busiest processes by ps's %CPU (of one core), before the run and sampled during it, the run's own processes apart",
+ "owner": "W7b",
+ "purpose": "the frame-time harness: tools/perf.sh playable -runs 1 -out reviews/perf/2026-10-22/playable/w7/passes -perf-frames 60 -perf-warmup 20 -perf-rounds 2 -perf-passes all,-beams,-shadows,-beams+shadows,-msaa,-ssao,-ssr,-post,-fullscreen,bare,flat -perf-scenes empty,playable -perf-views eye-foot,street,a-window,anchor-door -perf-empty-views street -perf-shots some",
+ "command": [
+  "zsh",
+  "/Users/oystein/code/Overstory/tools/perf.sh",
+  "playable",
+  "-runs",
+  "1",
+  "-out",
+  "reviews/perf/2026-10-22/playable/w7/passes",
+  "-perf-frames",
+  "60",
+  "-perf-warmup",
+  "20",
+  "-perf-rounds",
+  "2",
+  "-perf-passes",
+  "all,-beams,-shadows,-beams+shadows,-msaa,-ssao,-ssr,-post,-fullscreen,bare,flat",
+  "-perf-scenes",
+  "empty,playable",
+  "-perf-views",
+  "eye-foot,street,a-window,anchor-door",
+  "-perf-empty-views",
+  "street",
+  "-perf-shots",
+  "some"
+ ],
+ "started": "2026-10-22T21:38:15+02:00",
+ "ended": "2026-10-22T21:50:22+02:00",
+ "seconds": 728,
+ "exit": 0,
+ "cpus": 10,
+ "memory_gb": 24.0,
+ "open": [
+  "Blender, interactive"
+ ],
+ "before": {
+  "load": [
+   2.89,
+   3.83,
+   5.39
+  ],
+  "top": [
+   {
+    "name": "WindowServer",
+    "pid": 4171,
+    "cpu": 39.8,
+    "mem": 0.5
+   },
+   {
+    "name": "StocksWidget",
+    "pid": 49260,
+    "cpu": 24.4,
+    "mem": 0.2
+   },
+   {
+    "name": "Claude Helper (Renderer)",
+    "pid": 49843,
+    "cpu": 20.1,
+    "mem": 5.2
+   },
+   {
+    "name": "claude",
+    "pid": 76099,
+    "cpu": 15.4,
+    "mem": 1.7
+   },
+   {
+    "name": "Creative Cloud UI Helper (Renderer)",
+    "pid": 41696,
+    "cpu": 10.0,
+    "mem": 1.2
+   },
+   {
+    "name": "Claude Helper",
+    "pid": 49830,
+    "cpu": 8.9,
+    "mem": 0.5
+   },
+   {
+    "name": "Claude Helper (Renderer)",
+    "pid": 39075,
+    "cpu": 7.4,
+    "mem": 2.0
+   },
+   {
+    "name": "Claude",
+    "pid": 49824,
+    "cpu": 4.4,
+    "mem": 1.9
+   },
+   {
+    "name": "claude",
+    "pid": 88486,
+    "cpu": 2.6,
+    "mem": 2.5
+   },
+   {
+    "name": "claude",
+    "pid": 71844,
+    "cpu": 2.5,
+    "mem": 1.8
+   },
+   {
+    "name": "runningboardd",
+    "pid": 4176,
+    "cpu": 2.0,
+    "mem": 0.1
+   },
+   {
+    "name": "chronod",
+    "pid": 49243,
+    "cpu": 1.9,
+    "mem": 0.1
+   }
+  ],
+  "spotlight": [
+   {
+    "name": "mdworker_shared",
+    "pid": 39917,
+    "cpu": 0.6,
+    "mem": 0.1
+   },
+   {
+    "name": "mds_stores",
+    "pid": 4319,
+    "cpu": 0.3,
+    "mem": 0.3
+   },
+   {
+    "name": "mds",
+    "pid": 4129,
+    "cpu": 0.2,
+    "mem": 0.1
+   }
+  ],
+  "spotlight_cpu": 1.1
+ },
+ "during": {
+  "samples": 24,
+  "every_s": 30.0,
+  "load": {
+   "min": 2.03,
+   "mean": 3.41,
+   "max": 4.37
+  },
+  "top": [
+   {
+    "name": "WindowServer",
+    "pid": 4171,
+    "cpu_mean": 34.5,
+    "cpu_max": 48.2
+   },
+   {
+    "name": "Claude Helper (Renderer)",
+    "pid": 49843,
+    "cpu_mean": 25.4,
+    "cpu_max": 221.8
+   },
+   {
+    "name": "node",
+    "pid": 41362,
+    "cpu_mean": 18.3,
+    "cpu_max": 122.3
+   },
+   {
+    "name": "Claude Helper",
+    "pid": 49830,
+    "cpu_mean": 12.1,
+    "cpu_max": 27.0
+   },
+   {
+    "name": "Creative Cloud UI Helper (Renderer)",
+    "pid": 41696,
+    "cpu_mean": 7.2,
+    "cpu_max": 9.3
+   },
+   {
+    "name": "Claude",
+    "pid": 49824,
+    "cpu_mean": 6.9,
+    "cpu_max": 16.5
+   },
+   {
+    "name": "node",
+    "pid": 45071,
+    "cpu_mean": 6.1,
+    "cpu_max": 145.3
+   },
+   {
+    "name": "python3.13",
+    "pid": 43481,
+    "cpu_mean": 4.2,
+    "cpu_max": 100.0
+   },
+   {
+    "name": "(python3.13)",
+    "pid": 42192,
+    "cpu_mean": 4.1,
+    "cpu_max": 99.4
+   },
+   {
+    "name": "python3.13",
+    "pid": 43629,
+    "cpu_mean": 4.1,
+    "cpu_max": 98.8
+   },
+   {
+    "name": "python3.13",
+    "pid": 43776,
+    "cpu_mean": 4.1,
+    "cpu_max": 98.2
+   },
+   {
+    "name": "python3.13",
+    "pid": 42546,
+    "cpu_mean": 4.0,
+    "cpu_max": 96.9
+   }
+  ],
+  "spotlight_cpu_mean": 2.3,
+  "run": [
+   {
+    "name": "Overstory",
+    "pid": 40330,
+    "cpu_mean": 44.4,
+    "cpu_max": 97.0
+   },
+   {
+    "name": "Unity",
+    "pid": 40147,
+    "cpu_mean": 1.3,
+    "cpu_max": 28.2
+   },
+   {
+    "name": "Unity.DataStore",
+    "pid": 40159,
+    "cpu_mean": 0.3,
+    "cpu_max": 0.7
+   },
+   {
+    "name": "dotnet",
+    "pid": 40148,
+    "cpu_mean": 0.3,
+    "cpu_max": 5.1
+   },
+   {
+    "name": "UnityPackageManager",
+    "pid": 40158,
+    "cpu_mean": 0.2,
+    "cpu_max": 5.0
+   }
+  ]
+ }
+}
