@@ -4,7 +4,7 @@ Written 22 October 2026, before any geometry, from the craft study (`docs/resear
 
 ## The question
 
-Can the gully's stairs and cheek walls, redrawn as rigid stones laid by a mason's rules, hold up beside the target frame (`reviews/lt1/heart/target/3-street-gully-steps-target.png`) at every judging view, read as calm as the clay around them, show no fault of making, and cost a sixth of today's triangles within a frame-time budget?
+Can the gully's stairs and cheek walls, redrawn as rigid stones laid by a mason's rules, come at least as close to what Øystein wants as today's stones at every judging view, read as calm as the clay around them, show no fault of making, and cost a sixth of today's triangles within a frame-time budget?
 
 ## Why start again (Q14)
 
@@ -15,6 +15,16 @@ Every one of Q14's four conditions holds:
 - **A basic rule broken:** rocks bend (BB3).
 
 Øystein, 22 October: "very buggy and not nice"; "a bit much"; "poorly made. loose lines etc".
+
+Øystein, 22 October, of the street target frame (`reviews/lt1/heart/target/3-street-gully-steps-target.png`): "also our previous stones are much closer to what we want then this image". So that target is not the stone's bar: its walls are textured boxes, the checkered look its own commit called Minecraft (`affbda6`). It stays the bar for composition, light and the stone's calm against the clay. For the stone's look, the bar is today's stones at their best, his photographs (`docs/references/stone/`), the studios' references, and the eye-level target painted over our own redrawn forms at R3.
+
+**What today's stones have that he wants, kept** (`reviews/lt1/stone/gully/1600-low-sun/gully-eye-foot.png`):
+- each stone a solid block you can count: its own outline, length and value, so a flight reads as laid stones, never as a drawn pattern;
+- relief at the stone's scale: a block's thickness, its worn, rounded nosing lit over a shadowed front, joints as gaps between solid things;
+- character: a warm stone colour of its own against the clay, and value across and between stones that reads as worn, used stone;
+- edges drawn by light on the form.
+
+The redraw changes how the stones are made, not this look. It removes the bending, the triangle count, the floating and one-pixel lines, the specks, the mottled treads and the black slots (Done 6).
 
 **Kept:**
 - the kind and its seven stages (`kinds/stair.json`, `stair_stages.py`, `tools/run_kind.py`);
@@ -79,7 +89,7 @@ Widths are 4 to 12 mm in the walls and 4 to 10 mm between tread stones. A joint 
 - **Faded by footprint** (`OS_Near`): relief and value are true up close and merge to the face's one value before they fall under 2 px.
 - **Specular filtering:** Stone.shader calls Unity's `GeometricNormalFiltering` (Tokuyoshi and Kaplanyan) on the patch normal, against the one-pixel lines and specks.
 
-**SN7 Restraint.** One value per stone face, its hue within the stone's range, and at most one accent where a fact puts it. The walking surface is the calmest part. Starting numbers, from The Witness's final wall (unverified, calibrated at R2a and R3): in grey light a face holds within about 2 L*, and neighbouring stones are 1 to 6 L* apart. Detail is medium frequency; edges are drawn by light on the lit arris, never by a dark line beneath it. Three marks are drawn in 2b, and every other mark the shader and the bake make is cut, its fact kept:
+**SN7 Restraint.** Each stone has its own value and its hue within the stone's range, shaped across the stone by its form and wear (the lit arris, the worn middle, the darker foot), with at most one accent where a fact puts it. No mottle is finer than a quarter of the face's short side. The walking surface is the calmest part. The Witness's numbers (a face within about 2 L*, neighbours 1 to 6 L* apart) are withdrawn as limits. Theirs is a flatter style than ours, and the face patches held to them read as flat ruled paper, further from today's stones than before (Øystein, 22 October, above). The limits are measured on today's gully at R0, after R0b's fixes have taken out the specks and lines. The redraw keeps at least today's spread between neighbouring stones and across each stone's form, and cuts the small marks (specks, lines, mottle) that made it "a bit much". Detail is medium frequency; edges are drawn by light on the lit arris, never by a dark line beneath it. Three marks are drawn in 2b, and every other mark the shader and the bake make is cut, its fact kept:
 
 | Mark | In 2b | Where it returns |
 | --- | --- | --- |
@@ -165,17 +175,18 @@ The redraw is done when all of these hold, the numbers first and the eyes last:
    - specks are none;
    - floating lines (SN9) are none;
    - the joints' 5th percentile of L* sits above the darkest cast shadow on open ground, and their median is within 6 L* of the faces beside them in grey light (SN5).
-5. **Restrained:**
-   - at one-eighth size, the stone's busyness (edge density and high-frequency share of L*) at the street view is within 25% of the target frame's, in the same mask;
-   - at eye-foot and eye-on, within 25% of the eye-level target's (R3);
-   - at every view, its ratio to the clay beside it is no more than the targets' own stone-to-clay ratio. The measure is calibrated on R0's sheet, on today's gully, the clay and the street target, before any threshold is used;
+5. **Restrained, and at least as close as today's stones:**
+   - at one-eighth size, in the stone mask, the small marks (high-frequency share of L* and edge density) fall below today's gully at every view;
+   - the stone's character holds: the value spread between neighbouring stones and across each stone's form is at least today's, both measured on R0's sheet after R0b's fixes;
+   - at the street view, the stone's busyness against the clay beside it is no more than the street target's own stone-to-clay ratio (the target kept for calm against the clay only);
+   - at eye-foot and eye-on, within 25% of the eye-level target's busyness (R3). Every measure is calibrated on R0's sheet before any threshold is used;
    - the reviewer reads the eighth-size frames.
 6. **The old faults gone,** each confirmed by a check or a native crop:
    - the four open faults: bent courses, the notch at the rest, pillows, the loose fan;
    - the three shared ones: mottled treads, black slots, one-pixel lines;
    - floating lines, disconnected from the shape (Øystein, 22 October).
 7. **Facts kept:** every mark that reads as history traces to a record event; two builds hash the same.
-8. **Holds at every view:** a strict review on Fable, from native crops at eye-foot, eye-on, street, into12 and high in three lights, beside the street target and the eye-level target, says it holds, and says whether more than the stones must go (Q15).
+8. **Holds at every view:** a strict review on Fable, from native crops at eye-foot, eye-on, street, into12 and high in three lights, beside today's stones at the same view and light, the eye-level target and Øystein's photographs (the street target for composition and light only), says it holds and is at least as close to what he wants as today's, and says whether more than the stones must go (Q15).
 9. **Proposed, not accepted:** the new golden frames and their sheet go to Øystein, who alone accepts a baseline.
 
 ## What would change our minds
@@ -186,20 +197,21 @@ The redraw is done when all of these hold, the numbers first and the eyes last:
 - **The cheek walls turn out dressed or mortared from 1874** (the photographs tie block steps to formal flights, 28 and 42): raked copings on level-bedded ashlar, a kneeler at each foot, and the record changed first.
 - **Courses read too coarse beside the board's walls (03, 09, 10):** smaller courses within SN8's gate, which then binds.
 - **Over the frame budget with L1 and its shadows:** L1 switches nearer, then the walls' far panels merge into one mesh each.
+- **Today's stones still read closer to what Øystein wants at R2a's side-by-side:** the redraw takes more of their form (a block's thickness, the nosing, value between stones) before anything else changes.
 - **A blind review finding the budgeted stone worse at eye level than today's** (Q13's own reopen).
 
 ## The ladder
 
 | Rung | What | Answer it gives | Unity |
 | --- | --- | --- | --- |
-| R0 | Today's gully A/B, at the five views in drizzle and the blue hour; busyness measured on today's gully, the clay and the street target | the frame budget's base; Done 5's calibration | yes, when the lock is free |
+| R0 | Today's gully A/B, at the five views in drizzle and the blue hour; busyness and the stone's value spreads measured on today's gully after R0b's fixes, the clay, and the street target for calm against the clay only | the frame budget's base; Done 5's calibration | yes, when the lock is free |
 | R0b | Shading only, on today's mesh, one change at a time: the stone's own (`GeometricNormalFiltering`, the joint value floor, the cut marks off) and the pipeline's (bloom with a Karis average, shadow normal bias 0.5 against 0.2, SSAO off), the pipeline's as overrides at render time, never saved; one-pixel lines and specks counted at native size | how much of the lines and specks the redraw owns | yes, in R0's run |
 | R1 | Elevations in integer mm: every wall unrolled, by panel, its features first (heads, rests, the coping's steps, the step ends as occupied cells, the 1961 panel's edges, fallen stones), courses filled by choosing; the steps' stones and joints; SN10's tests; a 2D sheet | the layout is a mason's, before any mesh | no |
-| R2a | Look-dev: the six face patches, then a wall stone, a step and a coping at L0 and L1, grey first and then in material, in the target's light, at 1, 5 and 12 m; the L0 to L1 switch A/B'd at 8, 10 and 12 m, with the town's fog on | the surface model and the levels, on three stones before thousands | yes, to judge |
+| R2a | Look-dev: the six face patches, then a wall stone, a step and a coping at L0 and L1, grey first and then in material, in the target's light, at 1, 5 and 12 m, beside the same three stones from today's gully at the same views and light, so Øystein can judge them at least as close as before; the L0 to L1 switch A/B'd at 8, 10 and 12 m, with the town's fog on | the surface model and the levels, on three stones before thousands | yes, to judge |
 | R2b | Grey form in Blender: the parts and the laying through the stages, every piece one grey; SN1, SN8 and SN9's checks; a quick sheet at the judging cameras in neutral light | the form and the counts, cheaply | no |
 | R3 | Grey form in Unity: the golden views in grey light, native crops, the frame-time A/B; then the eye-level target, painted over the eye-foot and eye-on grey renders with `blender/tools/paintover.py` as the street target was, the clay beside it as it is planned | form at the views, the cost, and the eye level's bar | yes |
 | R4 | Materials: the patches, the three marks, the bake's fields made calm, specular filtering; three lights; Done 4 and 5's frame checks | restraint and clean making | yes |
-| R5 | The strict review on Fable, from a lean packet: native crops beside both targets, the numbers, this design | the verdict | no |
+| R5 | The strict review on Fable, from a lean packet: native crops beside today's stones and the eye-level target, the numbers, this design | the verdict | no |
 | R6 | The proposed golden frames and sheet, to Øystein | his acceptance | no |
 
 Each rung passes before the next starts, except that R1, and R2a's patches (made and checked in Blender), run while R0 waits for the lock: neither depends on R0's answers. A rung that will not converge stops: judge the form in grey light, one change at a time.
@@ -230,7 +242,7 @@ If the box runs over, these are cut first, and the second re-baseline is named i
 | 6 | Level beds; the batter in the face | Taken: SN2 |
 | 7 | Step ends as occupied cells; a rule for the course above each ledge | Taken: SN2's footing, the course lines from the step tops |
 | 8 | L1 at 10 m, a shadow proxy, fills counted, a thin-triangle gate | Taken: SN8. L1 is the shadow proxy; the switch distance is R2a's A/B; the fills became one surface per panel (SN5); the gate is by pixels, not aspect, since a chamfer is thin by nature |
-| 9 | Done 5 calibrated | Taken: on R0's sheet, with the eye-level target added |
+| 9 | Done 5 calibrated | Taken: on R0's sheet, with the eye-level target added; the street target kept for calm against the clay only (Øystein, 22 October) |
 | 10 | A vertex format decided before R2 | From the plan: the vertex layout is `schemas/channels.json`, and moving history out of the vertices is the port's step 3, a format changed only where a written record fails (`docs/plan.md`, P8). 2b writes through today's bake, kept behind one function for step 3 to replace |
 | 11 | "Also in 2b" to its own step | In part: they stay for one re-baseline, are counted in the box, and are the first cut |
 | 12 | The box at 4 days | Taken |
