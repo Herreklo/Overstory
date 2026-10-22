@@ -22,7 +22,8 @@ The checks (SN7's self-check), on L* of each view at its own size:
 - specks: pieces of at most 2 x 2 px brighter (or darker) than their 5 x 5 median by 3 MADs and at least the threshold;
 - calm: L*'s spread at each view, and the busyness measure of Done 5 (edge density and high-frequency share of L*);
 - value: the value map's percentiles; relief: the height's histogram and percentiles; laminae steps a riser shows;
-- tiling: the jump across the wrap against the mean step between neighbours inside, rows and columns;
+- tiling: the jump across the wrap against the mean step between neighbours inside, rows and columns; and the same
+  against the steps of the three rows (columns) either side of the wrap, which a ledge crossing the wrap leaves at 1;
 - ledges (version 3), each found in the stored height map near the generator's boundary: in every column, the row
   of a broken edge's middle, where the face falls fastest down-dip. Its straightness: how far that trace strays from
   the best straight line (range and RMS, mm) and its local angle off the axis over 33 mm (p2, p98 and the most,
@@ -533,6 +534,17 @@ def seam(a):
     return float(wrap_c / inner_c), float(wrap_r / inner_r)
 
 
+def seam_local(a):
+    """The jump across the wrap over the steps between the three rows (columns) either side of it, column by column
+    (row by row), then averaged: 1.0 where the face runs on across the wrap. seam() compares the wrap with the whole
+    face's mean step, so a ledge's break that happens to cross the wrap reads there as a seam; this one does not."""
+    def one(b):
+        wrap = np.abs(b[0] - b[-1])
+        near = (np.abs(b[1:4] - b[0:3]).sum(axis=0) + np.abs(b[-3:] - b[-4:-1]).sum(axis=0)) / 6.0
+        return float(wrap.mean() / max(near.mean(), 1e-9))
+    return one(a.T), one(a)
+
+
 def view_checks(h, n, v):
     """Each view's spread and line checks, for the A/B."""
     res = {}
@@ -628,6 +640,9 @@ def main(out=OUT):
         sh = seam(h)
         sl = seam(lstar(lin1))
         r["seam"] = {"height_cols": sh[0], "height_rows": sh[1], "Lstar_cols": sl[0], "Lstar_rows": sl[1]}
+        shl, sll = seam_local(h), seam_local(lstar(lin1))
+        r["seam_local"] = {"height_cols": round(shl[0], 2), "height_rows": round(shl[1], 2),
+                           "Lstar_cols": round(sll[0], 2), "Lstar_rows": round(sll[1], 2)}
         lay = {}
         PT.make(name, seed, layers=lay)                                          # where to look; the maps above match
         drawn = manifest["patches"][name]["drawn"]

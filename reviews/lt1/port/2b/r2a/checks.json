@@ -143,6 +143,12 @@
     "Lstar_cols": 1.167267318258197,
     "Lstar_rows": 4.006540807133241
    },
+   "seam_local": {
+    "height_cols": 1.02,
+    "height_rows": 1.07,
+    "Lstar_cols": 1.04,
+    "Lstar_rows": 1.1
+   },
    "ledges": [
     {
      "boundary": 0,
@@ -338,6 +344,12 @@
     "height_rows": 0.7378461187949126,
     "Lstar_cols": 1.105945419704343,
     "Lstar_rows": 0.5282664523658425
+   },
+   "seam_local": {
+    "height_cols": 1.02,
+    "height_rows": 1.02,
+    "Lstar_cols": 1.04,
+    "Lstar_rows": 0.88
    },
    "ledges": [
     {
@@ -554,6 +566,12 @@
     "Lstar_cols": 1.0727932770502526,
     "Lstar_rows": 0.760387851524935
    },
+   "seam_local": {
+    "height_cols": 1.02,
+    "height_rows": 1.15,
+    "Lstar_cols": 1.04,
+    "Lstar_rows": 0.97
+   },
    "ledges": [
     {
      "boundary": 1,
@@ -730,6 +748,12 @@
     "height_rows": 0.8112662598195556,
     "Lstar_cols": 1.3163935098516235,
     "Lstar_rows": 0.9428481875401384
+   },
+   "seam_local": {
+    "height_cols": 1.01,
+    "height_rows": 1.06,
+    "Lstar_cols": 1.08,
+    "Lstar_rows": 1.16
    },
    "ledges": [
     {
@@ -921,6 +945,12 @@
     "Lstar_cols": 1.3025805379619084,
     "Lstar_rows": 0.7824592284881956
    },
+   "seam_local": {
+    "height_cols": 1.08,
+    "height_rows": 1.08,
+    "Lstar_cols": 1.1,
+    "Lstar_rows": 1.06
+   },
    "ledges": [
     {
      "boundary": 0,
@@ -1071,6 +1101,12 @@
     "height_rows": 0.4817572238669722,
     "Lstar_cols": 1.3175677689239564,
     "Lstar_rows": 0.9393582514116852
+   },
+   "seam_local": {
+    "height_cols": 1.0,
+    "height_rows": 1.03,
+    "Lstar_cols": 1.06,
+    "Lstar_rows": 1.06
    },
    "ledges": [
     {
