@@ -1,5 +1,5 @@
 {
- "tool": "patches 2",
+ "tool": "patches 3",
  "describes": "The slaty rock's face patches (blender/parts/stone/slate/patches.py; SN6): four split faces and two bed faces, 1024 by 1024 texels at 1 mm, seamless. Hashes are of the pixels (16-bit, big-endian, row-major), so they hold whatever the PNG's compression.",
  "pack": "stavanger-1989",
  "worldSeed": 1989,
@@ -17,40 +17,72 @@
    "files": {
     "height": {
      "file": "cache/stone/patches/slate-split-0-height.png",
-     "pixels": "955792e339fef47bdbb9d111c040b88dda0eca82064fa7a8bf5335054ffdd764"
+     "pixels": "7692a75cc264457678a044ca44ae26a8c854c6087cac963c55bbcc79d3579ad9"
     },
     "normal": {
      "file": "cache/stone/patches/slate-split-0-normal.png",
-     "pixels": "ff493595b67df3825acbc7b39a2a79de5f718a6b25c2284609aaf124527882f1"
+     "pixels": "ea0f8971cb1328a2f061d9fa05377914535b4bcb5bd712254cd9e966845ca2e1"
     },
     "value": {
      "file": "cache/stone/patches/slate-split-0-value.png",
-     "pixels": "50464080c82decbca7ac52890362e96bc413319ffc19af029e8df6fadf731d20"
+     "pixels": "63049a750adf5dd867d82aff68f9c6519830321dbe6a77bbce983c7ab875dec3"
     }
    },
    "drawn": {
+    "ledges": 2,
+    "ledge_gaps_mm": [
+     276,
+     748
+    ],
     "bands": 3,
     "thickness_mm": [
-     431,
-     342,
-     251
+     276,
+     472,
+     276
     ],
-    "wander_mm": 4,
-    "lean_deg": [
-     0.53,
-     -0.67,
-     -0.91
+    "wander_mm": 1,
+    "trace_slope_deg": [
+     7.1,
+     2.7,
+     5.2
+    ],
+    "trace_scale": 1.0,
+    "boundary_gap_min_mm": 254.6,
+    "band_lean_deg": [
+     0.2,
+     0.11,
+     0.16
     ],
     "facet_amp_mm": 1.8,
-    "facet_shear_cells": -1,
+    "facets": {
+     "corners": 48,
+     "corners_by_reach_mm": {
+      "80": 32,
+      "110": 14,
+      "150": 2
+     },
+     "triangles": 96
+    },
     "step_list": [
      {
-      "boundary": 1,
-      "height": 6,
-      "floor": 0.61,
-      "lean": 119,
-      "arris": 0.6,
+      "boundary": 0,
+      "major": true,
+      "most": 6.8,
+      "floor": 4.0,
+      "swells": 3,
+      "lean": 138,
+      "arris": 0.7,
       "arris_drop": 0.76
+     },
+     {
+      "boundary": 2,
+      "major": false,
+      "most": 2.6,
+      "floor": 1.6,
+      "swells": 3,
+      "lean": 269,
+      "arris": 0.6,
+      "arris_drop": 0.6
      }
     ],
     "tooth_gain": [
@@ -71,62 +103,89 @@
    "files": {
     "height": {
      "file": "cache/stone/patches/slate-split-1-height.png",
-     "pixels": "755a050a3901a20c30e4d94ee775858138bb414fc861c382ef2ac08c026fa375"
+     "pixels": "eb2a7c9e117ee93d65e152b0ea8a75c08784a6a5f9833c122a6ccd5d357e80b5"
     },
     "normal": {
      "file": "cache/stone/patches/slate-split-1-normal.png",
-     "pixels": "4921c9dafefd5ab51c9dd9fc54a0581b52fe18b3552a98852b0fe48ae7a1e6ad"
+     "pixels": "b39a518ed25a4ed9996c72ddba238d925c699359f2c76def2c90829787dedde5"
     },
     "value": {
      "file": "cache/stone/patches/slate-split-1-value.png",
-     "pixels": "c3368d8c0a2eb98c82fe9f52fea0833409814dc58d54262bd6a08ad47c1a2e92"
+     "pixels": "6483d4ac45b0a2b6557e4f990a650e0248247d70d24d29bed6b31026ee705015"
     }
    },
    "drawn": {
-    "bands": 6,
+    "ledges": 3,
+    "ledge_gaps_mm": [
+     423,
+     124,
+     477
+    ],
+    "bands": 5,
     "thickness_mm": [
-     250,
-     172,
-     208,
-     166,
-     109,
-     119
+     173,
+     175,
+     129,
+     423,
+     124
     ],
-    "wander_mm": 2,
-    "lean_deg": [
-     0.92,
-     -1.33,
-     -1.1,
-     -1.38,
-     1.2,
-     1.7
+    "wander_mm": 1,
+    "trace_slope_deg": [
+     6.5,
+     3.4,
+     2.3,
+     5.5,
+     4.8
     ],
-    "facet_amp_mm": 2.3,
-    "facet_shear_cells": 1,
+    "trace_scale": 1.0,
+    "boundary_gap_min_mm": 115.8,
+    "band_lean_deg": [
+     0.48,
+     0.16,
+     0.54,
+     0.2,
+     0.53
+    ],
+    "facet_amp_mm": 1.6,
+    "facets": {
+     "corners": 46,
+     "corners_by_reach_mm": {
+      "80": 26,
+      "110": 18,
+      "150": 2
+     },
+     "triangles": 92
+    },
     "step_list": [
      {
-      "boundary": 2,
-      "height": 3,
-      "floor": 0.55,
-      "lean": 118,
+      "boundary": 0,
+      "major": false,
+      "most": 3.0,
+      "floor": 1.8,
+      "swells": 2,
+      "lean": 74,
+      "arris": 0.5,
+      "arris_drop": 0.62
+     },
+     {
+      "boundary": 3,
+      "major": false,
+      "most": 2.9,
+      "floor": 1.8,
+      "swells": 3,
+      "lean": 60,
       "arris": 0.6,
-      "arris_drop": 0.6
+      "arris_drop": 0.61
      },
      {
       "boundary": 4,
-      "height": 3,
-      "floor": 0.65,
-      "lean": 60,
+      "major": true,
+      "most": 5.9,
+      "floor": 4.0,
+      "swells": 3,
+      "lean": 249,
       "arris": 0.6,
-      "arris_drop": 0.66
-     },
-     {
-      "boundary": 5,
-      "height": 4,
-      "floor": 0.63,
-      "lean": 60,
-      "arris": 0.5,
-      "arris_drop": 0.62
+      "arris_drop": 0.78
      }
     ],
     "tooth_gain": [
@@ -134,15 +193,13 @@
      1.0,
      1.0,
      0.8,
-     0.8,
-     0.6
+     0.8
     ],
     "band_tone": [
      -1,
      1,
      -1,
      0,
-     -1,
      -1
     ]
    }
@@ -153,40 +210,61 @@
    "files": {
     "height": {
      "file": "cache/stone/patches/slate-split-2-height.png",
-     "pixels": "3a1b425320253a35e7b77b37c19254ebdd66f6f4df85ee1d930c73f8fbe37e00"
+     "pixels": "2741200f0c062f01a06b64638daaa303725fd14118e22ffddfecfe8d0c6ae7a1"
     },
     "normal": {
      "file": "cache/stone/patches/slate-split-2-normal.png",
-     "pixels": "4a39e69ec4858b8e43de0e9adfa47f2166fc76f1474fd790feb4ae180dfe4a64"
+     "pixels": "49422fd24923bf8e2c5db861eb517e80ad5017e85c0b5eecb44043c2125ac45a"
     },
     "value": {
      "file": "cache/stone/patches/slate-split-2-value.png",
-     "pixels": "a06842599d94d8612c9aaae666c1453261b0f7f2701f55fc01e6463621645c1c"
+     "pixels": "91f26fa542dd4bb2bfd6acb867458b237fda6ca2e11ae17973ed2f53bea75f7b"
     }
    },
    "drawn": {
+    "ledges": 1,
+    "ledge_gaps_mm": [
+     1024
+    ],
     "bands": 3,
     "thickness_mm": [
-     386,
-     263,
-     375
+     445,
+     288,
+     291
     ],
-    "wander_mm": 4,
-    "lean_deg": [
-     0.59,
-     0.87,
-     0.61
+    "wander_mm": 1,
+    "trace_slope_deg": [
+     2.5,
+     7.3,
+     2.8
+    ],
+    "trace_scale": 1.0,
+    "boundary_gap_min_mm": 280.4,
+    "band_lean_deg": [
+     0.16,
+     0.17,
+     0.14
     ],
     "facet_amp_mm": 2.3,
-    "facet_shear_cells": 2,
+    "facets": {
+     "corners": 45,
+     "corners_by_reach_mm": {
+      "80": 26,
+      "110": 14,
+      "150": 5
+     },
+     "triangles": 90
+    },
     "step_list": [
      {
-      "boundary": 0,
-      "height": 4,
-      "floor": 0.66,
-      "lean": 154,
-      "arris": 0.6,
-      "arris_drop": 0.77
+      "boundary": 1,
+      "major": true,
+      "most": 5.9,
+      "floor": 4.0,
+      "swells": 4,
+      "lean": 240,
+      "arris": 0.8,
+      "arris_drop": 0.72
      }
     ],
     "tooth_gain": [
@@ -207,56 +285,85 @@
    "files": {
     "height": {
      "file": "cache/stone/patches/slate-split-3-height.png",
-     "pixels": "9b4e88e9c1d1a459d1c957b6cfb8703722ece9ede02eebd3f8d8a3ce3a09750a"
+     "pixels": "244a886ad189fdf88b74daaa5623f5785fd3bc5a05303695c2ee17ae56658170"
     },
     "normal": {
      "file": "cache/stone/patches/slate-split-3-normal.png",
-     "pixels": "aa0a68f84861e83e37160625fe3e468916bc6838ef3b65cbe11190c3b96283dd"
+     "pixels": "44ac75a6600b0ccbea58ca7d6c506571965efed035788ae634da05a8cdf396b3"
     },
     "value": {
      "file": "cache/stone/patches/slate-split-3-value.png",
-     "pixels": "209c11f45d93f77bccb766375243c4decdc820602f2df9adec66b46909fa1669"
+     "pixels": "59097f7239041508b2927d27a35b59ea44f92f1bda22c850570335b542409677"
     }
    },
    "drawn": {
-    "bands": 3,
+    "ledges": 2,
+    "ledge_gaps_mm": [
+     249,
+     775
+    ],
+    "bands": 4,
     "thickness_mm": [
-     438,
-     302,
-     284
+     320,
+     249,
+     185,
+     270
     ],
     "wander_mm": 3,
-    "lean_deg": [
-     0.52,
-     -0.76,
-     -0.81
+    "trace_slope_deg": [
+     2.7,
+     6.9,
+     6.4,
+     2.1
+    ],
+    "trace_scale": 1.0,
+    "boundary_gap_min_mm": 171.9,
+    "band_lean_deg": [
+     0.13,
+     0.28,
+     0.31,
+     0.27
     ],
     "facet_amp_mm": 2.0,
-    "facet_shear_cells": 2,
+    "facets": {
+     "corners": 43,
+     "corners_by_reach_mm": {
+      "80": 24,
+      "110": 16,
+      "150": 3
+     },
+     "triangles": 86
+    },
     "step_list": [
      {
-      "boundary": 0,
-      "height": 6,
-      "floor": 0.55,
-      "lean": 258,
-      "arris": 0.5,
-      "arris_drop": 0.78
+      "boundary": 1,
+      "major": false,
+      "most": 2.7,
+      "floor": 1.7,
+      "swells": 3,
+      "lean": 182,
+      "arris": 0.7,
+      "arris_drop": 0.68
      },
      {
-      "boundary": 1,
-      "height": 3,
-      "floor": 0.7,
-      "lean": 138,
-      "arris": 0.8,
-      "arris_drop": 0.65
+      "boundary": 2,
+      "major": false,
+      "most": 2.9,
+      "floor": 1.8,
+      "swells": 2,
+      "lean": 117,
+      "arris": 0.5,
+      "arris_drop": 0.69
      }
     ],
     "tooth_gain": [
      0.8,
      1.0,
+     0.8,
      0.8
     ],
     "band_tone": [
+     0,
      0,
      0,
      0
@@ -269,26 +376,30 @@
    "files": {
     "height": {
      "file": "cache/stone/patches/slate-bed-0-height.png",
-     "pixels": "7e733d9f8cbd4f573ad4317678415f88382d3f3653b0dce7caf64bcd20e2022b"
+     "pixels": "2b090281564824e4223edaf57c402954f352c3e9def14e3cb61065c23d481928"
     },
     "normal": {
      "file": "cache/stone/patches/slate-bed-0-normal.png",
-     "pixels": "48ce94a201051a0e83d3382e1a6bcf089565c951fdb2aaf9c22db0318a3cd0e6"
+     "pixels": "c7b237748ca26abe8be736694f0bca7222d307c1a6ec380d56536cc610e24589"
     },
     "value": {
      "file": "cache/stone/patches/slate-bed-0-value.png",
-     "pixels": "1af82c0b6cc2c3b5702f64849ab7c8ea23edb128234f09a4d7fdf913160a8ba5"
+     "pixels": "9e72cbb87f2954949b2ab967108febe3b55c78a838b3e1083db3e1d2578c8c1c"
     }
    },
    "drawn": {
-    "scarps": 1,
-    "undulation_cells": 8,
+    "undulation_cells": [
+     4,
+     8
+    ],
     "undulation_mm": 1.6,
     "bevel": 5.7,
     "scarp": {
-     "depth": 2.0,
-     "floor": 0.49,
+     "most": 2.8,
+     "floor": 2.1,
+     "swells": 3,
      "row": 14,
+     "trace_slope_deg": 5.0,
      "down_dip": "down",
      "fresh_mm": 111
     }
@@ -300,22 +411,33 @@
    "files": {
     "height": {
      "file": "cache/stone/patches/slate-bed-1-height.png",
-     "pixels": "152760d0466a068dd6402cd1304b3fda7740aa199a0586fa62a4c228d3cc11a3"
+     "pixels": "cd487826f7bd7f8ce3b7b58729685ccbfb6bafa1e144c9cbf2c3ab91f7d216d6"
     },
     "normal": {
      "file": "cache/stone/patches/slate-bed-1-normal.png",
-     "pixels": "8575f3c3493e18aa14e59d02385f776a1254e158cdfa93f03a62cc87ae100625"
+     "pixels": "29d062634517244e693fe6625e854124d1c7aaa883a80d22ec82bf46259c7df3"
     },
     "value": {
      "file": "cache/stone/patches/slate-bed-1-value.png",
-     "pixels": "01cd2794895a82e2ea869e40e5bf07e19059e03250934d0ac2831536a69401bf"
+     "pixels": "5e0edb02adf3f63e24c3fec2881fd0c39a09924813bb7dc992e4341fcbc39140"
     }
    },
    "drawn": {
-    "scarps": 0,
-    "undulation_cells": 5,
+    "undulation_cells": [
+     7,
+     5
+    ],
     "undulation_mm": 1.4,
-    "bevel": 4.7
+    "bevel": 4.7,
+    "scarp": {
+     "most": 2.9,
+     "floor": 2.1,
+     "swells": 2,
+     "row": 942,
+     "trace_slope_deg": 6.1,
+     "down_dip": "up",
+     "fresh_mm": 118
+    }
    }
   }
  }
