@@ -12,8 +12,12 @@ float _OS_NearForce;     // debug: 0 by distance, 1 painted everywhere, 2 the ne
 // by the street stop every mark is its painted shape.
 half OS_Near(float footprint)
 {
+#if defined(OS_L5_NEAR)
+    return 0.0h;    // (L5's arm, bare-near: every near mark skipped, the painted shape everywhere)
+#else
     half n = 1.0h - saturate((half)((footprint - 0.0012) / 0.0028));
     return _OS_NearForce > 1.5 ? 1.0h : (_OS_NearForce > 0.5 ? 0.0h : n);
+#endif
 }
 
 #endif

@@ -247,6 +247,8 @@ Shader "Overstory/Stone"
             // R0b's arms (reviews/lt1/port/2b/design.md, The ladder; Editor/LT1R0b.cs): only in the editor, never in a
             // player (a shader_feature no material sets); without it the pass is as it was
             #pragma shader_feature_fragment _ OS_R0B
+            // L5's term arms (the harness's bare-<term> and all-shadow, docs/measuring.md): each skips one term, off in the game
+            #pragma multi_compile_fragment _ OS_L5_TOWNSKY OS_L5_CLOUDS OS_L5_LAMPS OS_L5_BRUSH OS_L5_SHADOW OS_L5_REFL OS_L5_GROWTH OS_L5_ROSETTES OS_L5_NEAR
             #pragma multi_compile _ _MAIN_LIGHT_SHADOWS _MAIN_LIGHT_SHADOWS_CASCADE
             #pragma multi_compile _ _ADDITIONAL_LIGHTS
             #pragma multi_compile_fragment _ _ADDITIONAL_LIGHT_SHADOWS

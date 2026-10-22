@@ -22,6 +22,9 @@ float4 _OS_SunBounce;   // the sun's light bounced up from lit ground (linear), 
 // two walls keeps a strip of sky; a wall's foot in a yard keeps less; a roof or the open quay keeps it all.
 half OS_TownSky(float3 positionWS, half3 n)
 {
+#if defined(OS_L5_TOWNSKY)
+    return 1.0h;    // (L5's arm, the harness's bare-townsky: the term skipped, the value with no sky map)
+#else
     if (_OS_SkyMapOn < 0.5)
         return 1.0h;
     float3 o = positionWS + n * 0.6; // off the face, so a wall does not hide itself
@@ -55,6 +58,7 @@ half OS_TownSky(float3 positionWS, half3 n)
         full += w;
     }
     return full > 1e-3 ? open / full : 1.0h;
+#endif
 }
 
 float _OS_ShadowChroma; // look D: how strongly shade takes the sky's colour (1 as the light gives it)
@@ -62,12 +66,16 @@ float _OS_ShadowChroma; // look D: how strongly shade takes the sky's colour (1 
 // How much sun reaches a point through the clouds: 1 in a break, low under a cloud.
 half OS_CloudLight(float3 positionWS, half3 toSun)
 {
+#if defined(OS_L5_CLOUDS)
+    return 1.0h;    // (L5's arm, bare-clouds: the term skipped, the value with no cloud)
+#else
     if (_OS_Clouds.x <= 0.001)
         return 1.0h;
     // follow the sun's ray up to the cloud layer
     float up = max(toSun.y, 0.05);
     float2 p = positionWS.xz + toSun.xz * ((_OS_Clouds.w - positionWS.y) / up);
     return lerp(1.0h, 0.12h, OS_CloudCover(OS_CloudField(p, 0.0), 0.0));
+#endif
 }
 
 // look B, the painted ramp
@@ -362,7 +370,11 @@ half3 OS_ShadeP(InputData id, StreetSurface s, OSBake b, float3 positionWS)
     ao.directAmbientOcclusion = lerp(1.0h, ao.directAmbientOcclusion, OS_OCCLUSION);
     #endif
     half4 shadowMask = half4(1, 1, 1, 1);
+#if defined(OS_L5_BRUSH)
+    half brush = 0.0h;      // (L5's arm, bare-brush: the brushwork skipped)
+#else
     half brush = OS_Brush(positionWS, n) * _OS_Paint.w;
+#endif
 
     // the base: muted so light carries the colour, broken a little by the brush, darker and damper
     // where a surface looks at the ground
@@ -374,7 +386,11 @@ half3 OS_ShadeP(InputData id, StreetSurface s, OSBake b, float3 positionWS)
     albedo = lerp(albedo, albedo * _OS_Grime.rgb * 2.0h, grime);
 
     // the sun first (its shadow says which ground a face looks onto)
+#if defined(OS_L5_SHADOW)
+    Light main = GetMainLight();    // (L5's arm, all-shadow: the shadow map's sample and filter skipped, unshadowed)
+#else
     Light main = GetMainLight(id.shadowCoord, id.positionWS, shadowMask);
+#endif
     half sunShadow = main.shadowAttenuation * OS_CloudLight(positionWS, main.direction);
 
     // the sky term, shade in the sky's colour; the ground's light as the face sees it
@@ -405,7 +421,7 @@ half3 OS_ShadeP(InputData id, StreetSurface s, OSBake b, float3 positionWS)
 
     // lamps and lit rooms: soft pools, and their glints in wet stone
     half3 specular = 0;
-    #if defined(_ADDITIONAL_LIGHTS)
+    #if defined(_ADDITIONAL_LIGHTS) && !defined(OS_L5_LAMPS)     // (L5's arm, bare-lamps: the light loop skipped)
     uint count = GetAdditionalLightsCount();
     #if USE_CLUSTER_LIGHT_LOOP
     [loop] for (uint lightIndex = 0; lightIndex < min(URP_FP_DIRECTIONAL_LIGHTS_COUNT, MAX_VISIBLE_LIGHTS); lightIndex++)
@@ -425,7 +441,11 @@ half3 OS_ShadeP(InputData id, StreetSurface s, OSBake b, float3 positionWS)
     #endif
 
     // reflections where it is wet or glazed, softened like paint
+#if defined(OS_L5_REFL)
+    half3 reflection = 0;   // (L5's arm, bare-refl: the reflection probes' sample skipped)
+#else
     half3 reflection = GlossyEnvironmentReflection(reflect(-v, n), id.positionWS, 1.0h - s.smoothness, ao.indirectAmbientOcclusion, id.normalizedScreenSpaceUV);
+#endif
     half fresnel = 0.04h + 0.96h * pow(1.0h - saturate(dot(n, v)), 5.0h);
     colour += reflection * fresnel * s.smoothness * s.smoothness * 0.85h + specular;
 

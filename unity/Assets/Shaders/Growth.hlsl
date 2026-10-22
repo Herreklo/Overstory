@@ -64,6 +64,7 @@ half3 OS_LichenAt(float2 q, half years, half seed, float footprint)
         rim = cover * (1.0h - smoothstep(th + soft, th + 0.025h, f)) * 0.4h * near;
     }
     // the young colonies between, few and small, each a rosette from its own year
+#if !defined(OS_L5_ROSETTES)    // (L5's arm, bare-rosettes: the young colonies' loop skipped)
     {
         float cell = 0.04;
         float2 pc = q / cell + seed * 18.8;
@@ -92,6 +93,7 @@ half3 OS_LichenAt(float2 q, half years, half seed, float footprint)
             }
         }
     }
+#endif
     // further off (from past the street stop), each stone's lichen as a film over it, as much as its own years and
     // quiet give: a wall reads by its stones and a flight by its quiet ends, never by blobs that cross the joints
     half mid = saturate((half)((footprint - 0.005) / 0.006));
@@ -114,6 +116,14 @@ OSGrowth OS_GrowthLayer(half3 albedo, half smoothness, float2 q, half lichenYear
                         float3 positionWS)
 {
     OSGrowth g;
+#if defined(OS_L5_GROWTH)
+    // (L5's arm, bare-growth: the whole layer skipped, the surface bare)
+    g.albedo = albedo;
+    g.smoothness = smoothness;
+    g.height = 0.0h;
+    g.cover = 0.0h;
+    return g;
+#else
     float footprint = max(length(ddx(positionWS)), length(ddy(positionWS)));
     half3 li = OS_LichenAt(q, lichenYears, seed, footprint);
     // near, the crust cracked into tiny plates (areoles) a millimetre or two across, greyer in places, a few dark
@@ -167,6 +177,7 @@ OSGrowth OS_GrowthLayer(half3 albedo, half smoothness, float2 q, half lichenYear
     g.height = h;
     g.cover = saturate(max(li.x, cover));
     return g;
+#endif
 }
 
 #endif

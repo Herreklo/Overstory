@@ -41,7 +41,17 @@ namespace Overstory.Perf
     ///
     /// Two arms leave every pass on and set a shader keyword everywhere (step 3, history pages): 'history-off'
     /// (OS_HISTORY_OFF, every history layer its material's quiet mean, no page read) and 'haze-off' (OS_HAZE_OFF, the
-    /// air's OS_Atmosphere skipped). -perf-scenes quad-rgba8,quad-bc7 adds the history quad (LT1History): every renderer
+    /// air's OS_Atmosphere skipped).
+    ///
+    /// L5's arms (1c, who owns the materials' shaders' cost; reviews/lt1/light/l5-report.md), each off in the game:
+    /// 'flat-&lt;family&gt;' is 'bare' with only that family's materials drawn in the unlit material (a family is the
+    /// Overstory shader's name in lower case, 'water' for the street shader's harbour, 'other' for any other shader), so
+    /// bare less flat-&lt;family&gt; is that family's own cost; 'bare-&lt;term&gt;' is 'bare' with one term of the street
+    /// and stone shaders skipped through its OS_L5_&lt;TERM&gt; keyword (townsky, clouds, lamps, brush, refl, growth,
+    /// rosettes, near; 'bare-haze' sets OS_HAZE_OFF), and 'all-&lt;term&gt;' the same with every pass on ('all-shadow': the
+    /// shadow map drawn but not sampled). A skipped term returns the value it has when it is absent, never a cheaper
+    /// stand-in. The player logs its families' renderers and triangles once ([PerfRunner] family).
+    /// -perf-scenes quad-rgba8,quad-bc7 adds the history quad (LT1History): every renderer
     /// hidden but the motes and a full-screen grid of 4,096 pieces reading three synthetic pages through
     /// Shaders/History.hlsl, RGBA8 or BC7, measured from the empty scene's views in 'all' and 'history-off' only.
     /// Options may follow the format (R2b, the page sample's cost: quad-bc7-half, quad-rgba8-two, quad-bc7-tile4): 'half'
@@ -171,9 +181,32 @@ namespace Overstory.Perf
 
         /// <summary>Whether a configuration turns a pass off ('-a+b' turns off each it names; 'fullscreen' names the four).</summary>
         static bool Off(string config, string pass) =>
-            config == "bare" || config == "flat"
+            config == "bare" || config == "flat" || config.StartsWith("flat-") || config.StartsWith("bare-")
             || (config.StartsWith("-") && config.Substring(1).Split('+')
                 .Any(p => p == pass || (p == "fullscreen" && System.Array.IndexOf(FullScreen, pass) >= 0)));
+
+        /// <summary>L5's terms: each skipped by its keyword OS_L5_&lt;TERM&gt; in the street and stone shaders.</summary>
+        static readonly string[] L5Terms = { "townsky", "clouds", "lamps", "brush", "shadow", "refl", "growth", "rosettes", "near" };
+
+        /// <summary>The term an L5 arm skips ('bare-near', 'all-shadow'), null for any other configuration.</summary>
+        static string L5Term(string config)
+        {
+            foreach (var prefix in new[] { "bare-", "all-" })
+                if (config.StartsWith(prefix) && System.Array.IndexOf(L5Terms, config.Substring(prefix.Length)) >= 0)
+                    return config.Substring(prefix.Length);
+            return null;
+        }
+
+        /// <summary>A material's family for L5's flat arms: its Overstory shader's name in lower case ('water' for the
+        /// street shader's harbour), 'other' for any other shader.</summary>
+        static string FamilyOf(Material m)
+        {
+            if (m == null || m.shader == null)
+                return "none";
+            string name = m.shader.name;
+            string f = name.StartsWith("Overstory/") ? name.Substring("Overstory/".Length).ToLowerInvariant() : "other";
+            return f == "street" && m.IsKeywordEnabled("_OS_WATER") ? "water" : f;
+        }
 
         struct Seg
         {
@@ -355,6 +388,28 @@ namespace Overstory.Perf
             // made here: Unity allows no keyword in a MonoBehaviour's initializers)
             var historyOff = GlobalKeyword.Create("OS_HISTORY_OFF");
             var hazeOff = GlobalKeyword.Create("OS_HAZE_OFF");
+            var l5 = L5Terms.ToDictionary(t => t, t => GlobalKeyword.Create("OS_L5_" + t.ToUpperInvariant()));
+            foreach (var c in configs.Where(c => (c.StartsWith("bare-") && c != "bare-haze" || c.StartsWith("all-")) && L5Term(c) == null))
+                Debug.LogError($"[PerfRunner] no L5 term for '{c}'");
+            Debug.Log($"[PerfRunner] the stage's look: {stage.look}");
+            if (configs.Any(c => L5Term(c) != null) && stage.look != "P")
+                Debug.LogWarning("[PerfRunner] L5's lamps, brush, shadow and refl arms are in look P only, and the stage's look is not P");
+            // (the families the flat arms name, with their renderers and triangles, once)
+            foreach (var g in drawn.Where(r => r != null && r.enabled)
+                         .SelectMany(r => r.sharedMaterials.Select((m, k) => (m, k, r)))
+                         .GroupBy(x => FamilyOf(x.m)).OrderBy(g => g.Key))
+            {
+                long tris = g.Sum(x => x.r.TryGetComponent<MeshFilter>(out var mf) && mf.sharedMesh != null && x.k < mf.sharedMesh.subMeshCount
+                    ? (long)mf.sharedMesh.GetIndexCount(x.k) / 3 : 0);
+                var roots = g.GroupBy(x => x.r.transform.root.name).OrderByDescending(r => r.Count()).Take(6)
+                    .Select(r => $"{r.Key} {r.Count()}");
+                Debug.Log($"[PerfRunner] family {g.Key}: {g.Select(x => x.r).Distinct().Count()} renderers, {g.Count()} material slots, " +
+                          $"{tris} triangles; shaders {string.Join(", ", g.Select(x => x.m != null ? x.m.shader.name : "none").Distinct())}; " +
+                          $"roots {string.Join(", ", roots)}");
+            }
+            foreach (var c in configs.Where(c => c.StartsWith("flat-")))
+                if (!drawn.Any(r => r != null && r.sharedMaterials.Any(m => FamilyOf(m) == c.Substring("flat-".Length))))
+                    Debug.LogError($"[PerfRunner] no material of the family '{c.Substring("flat-".Length)}' for '{c}'");
 
             void SetPasses(string config)
             {
@@ -371,7 +426,9 @@ namespace Overstory.Perf
                 camData.requiresColorOption = Off(config, "opaquetex") ? CameraOverrideOption.Off : colour0;
                 camData.requiresDepthOption = Off(config, "depthtex") ? CameraOverrideOption.Off : depth0;
                 Shader.SetKeyword(historyOff, config == "history-off");
-                Shader.SetKeyword(hazeOff, config == "haze-off");
+                Shader.SetKeyword(hazeOff, config == "haze-off" || config == "bare-haze");
+                foreach (var t in l5)
+                    Shader.SetKeyword(t.Value, L5Term(config) == t.Key);
                 if (features.TryGetValue("SunBeams", out var beams) && beams.feature is SunBeamsFeature sb)
                 {
                     sb.fullSize = config == "beams-full";
@@ -397,7 +454,10 @@ namespace Overstory.Perf
                     {
                         drawn[i].enabled = drawnOn[i] && seg.scene == composed;
                         drawn[i].sharedMaterials = seg.passes == "flat" && flat != null
-                            ? drawnWith[i].Select(_ => flat).ToArray() : drawnWith[i];
+                            ? drawnWith[i].Select(_ => flat).ToArray()
+                            : seg.passes.StartsWith("flat-") && flat != null
+                            ? drawnWith[i].Select(m => FamilyOf(m) == seg.passes.Substring("flat-".Length) ? flat : m).ToArray()
+                            : drawnWith[i];
                     }
                 stage.rig = seg.light.rig;
                 shot.position = seg.view.position;
