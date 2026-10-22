@@ -17,7 +17,7 @@ What is running and what is next, under about 1,100 words. The order, the boxes 
 ## The order
 
 From `docs/plan.md` (The order; This week). Answer what comes next from it; changing it takes a written proposal (`CLAUDE.md`, Decide once). Boxes are per cent of the weekly limit; at 1.5 times its box a step stops for a re-plan, written here.
-- **Now:** 1c in the walked corner (LA, L1 and L2 first; the rest sized from their gap), with the port's 2b beside it.
+- **Now:** 1c in the walked corner (LA, L1 and L2 first; the rest sized from their gap), with the port's 2b beside it. On paper beside them: the areas study (`docs/town-plan.md`, TP6), which settles which areas the town has, why each is there, and how each reads from above. The zoom test judges the result.
 - **Then:** 1g's camera milestone, the zoom test (below); the strict review of port steps 0 to 2; R3 to R7; port steps 4 to 7; 1d; 1e; the setts, kerb and plinths. 1g's play is the milestone after the walk, beside 2b.
 
 ## Running now, by line of work

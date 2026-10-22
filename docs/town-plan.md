@@ -6,11 +6,12 @@ The plan is part of the setting pack. It sets the land and the building history.
 
 ## In short
 
-- **TP1** Fictional, on Stavanger's structure and place (its light computed from 58.97°N, 5.73°E); nothing copied street for street. Evidence: `research/stavanger-centre.md`. Reopens: none named.
+- **TP1** Fictional, on Stavanger's structure and place (its light computed from 58.97°N, 5.73°E); nothing copied street for street. Evidence: `research/stavanger-centre.md`. Reopened by Øystein, 22 October: Stavanger is evidence, not a template (TP6).
 - **TP2** Every proper name is an English placeholder in `packs/stavanger-1989/names.json`, replaceable alone, lettering ready for æ, ø and å; signs and street text in English, in each era's styles. Øystein's. Evidence: `ae14d0e`, `35ae89f`. Reopens: when he names things.
 - **TP3** A dense town of a few hundred buildings for now, costed per building and per km of street; variety from districts and eras, a kit per house type and era, libraries only where factory-made, bespoke parts for bespoke houses (disputed). Øystein's. Evidence: `plan.md`, Leaner 3 and 5. Reopens: a game needing a metropolis.
 - **TP4** The centre (about 1.5 km) is laid by hand in clay, area by area, each judged at the middle and far stops; districts by rules from it and the real map, checked from the far stop; exit criterion 5 tested on the whole town, not the corner. Evidence: `research/generating-the-past.md`. Reopens: none named.
 - **TP5** All change is a dated fact, geometry rebuilt from facts: no hand-placed shipped geometry, baked light or mesh over many plots. Evidence: `research/world-that-remembers.md`. Reopens: none named.
+- **TP6** Areas by design. Each area is there for a reason the town and its stories need (class and money, work, an era, leisure) and looks different from its neighbours at a glance from above. The set makes an interesting town, not a copy of Stavanger. It includes old money as a real district (Eiganes), a forest, a stadium and a concert hall. The corner is fixed in detail; the rest stays fluid until the areas study and the zoom test judge it from above. Øystein's, 22 October, after seeing the clay from above in the app: "some are a bit too similar. I miss 'Eiganes' different class of houses, old money"; "Not only copying Stavanger, but making a interesting village"; "We also need forrest, a stadium, a concert hall etc". Evidence: in the clay, the Heights are one row of villas on Crest Lane and the Culture House a plain block. The stadium and most of Tower Wood lie outside the clay. Three areas in the tables are workers' housing of overlapping eras: Tin Town, Ropewalk and the western housing. Reopens: the areas study.
 
 ## The first of many
 
