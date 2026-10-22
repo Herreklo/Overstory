@@ -44,7 +44,6 @@ Each session commits its own work; a stopped one resumes from its files. Long wo
 ## Waiting for Øystein
 
 What goes to him is in `CLAUDE.md` (How work runs). His decisions stand in their docs' In shorts and are not reopened without him. Open:
-- re-blessing golden's five low-sun frames after W5's beams (0.002 to 0.07 levels mean; the sheet is `reviews/lt1/playable/walk/w5/golden-sheet-gully-1600-low-sun.png`). Recommended: yes;
 - an optional 10 to 15 minute walk of the app, whenever suits him;
 - installing Unity's IL2CPP module when the port's step 5 needs it (`docs/research/building-blocks-decisions.md` §15). Recommended: yes;
 - downloads: public slides, papers and talk captions have a standing OK, logged in `docs/research/downloads.md` (its rules there); reference images and assets are still listed for him file by file;
