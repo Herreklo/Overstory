@@ -13,3 +13,12 @@ What the round cost and why its design changed (prereg.md, amendment 1). Read fr
 - At most 20 agents run at once, so a run's game master and player take two slots and at most eight runs play together, leaving room for a setup or an auditor.
 
 Later readings are added below as the round runs.
+
+| Time | 5-hour window | Weekly, all models | What ran |
+| --- | --- | --- | --- |
+| 22 Oct 00:31 | 0% | 27% | the window reset; three setups and four mystery runs start |
+| 01:24 | 16% | 31% | two setups done; four journalist runs start |
+| 01:36 | 22% | 33% | three mystery runs done; three more journalist runs start |
+| 02:41 | 53% | 41% | all 11 runs done; paused (Øystein, through the lead) after the mystery's 4 and the journalist's 7 |
+
+The 11 runs and their three setups used about 14% of the week, with other sessions running alongside: about 1.1% a run, close to the estimate.
