@@ -197,7 +197,7 @@ The redraw is done when all of these hold, the numbers first and the eyes last:
 | R5 | The strict review on Fable, from a lean packet: native crops beside both targets, the numbers, this design | the verdict | no |
 | R6 | The proposed golden frames and sheet, to Øystein | his acceptance | no |
 
-Each rung passes before the next starts, except that R1 runs while R0 waits for the lock. A rung that will not converge stops: judge the form in grey light, one change at a time.
+Each rung passes before the next starts, except that R1, and R2a's patches (made and checked in Blender), run while R0 waits for the lock: neither depends on R0's answers. A rung that will not converge stops: judge the form in grey light, one change at a time.
 
 **Box:** craft and design, about 1 Opus-day. The build, re-sized after the pre-mortem, is about 4 Opus-days: R0 and R0b 0.5, R1 0.4, R2a 0.5, R2b 1.0, R3 0.4, R4 0.5, R5 and R6 0.3, the chores below 0.3. It stops for a re-plan at 6.
 
