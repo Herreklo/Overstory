@@ -44,7 +44,7 @@ Two runs (23:06 and 23:22) with w7's settings (`-perf-frames 60 -perf-warmup 20 
 - Terms were measured in bare, without MSAA's edge samples; only the shadow sample was measured in the full frame.
 - The families fall short of the lump by up to 1.7 ms at the foot: paid only when both shaders run.
 - Look P, four views, the walk's corner; no tree.
-- **Golden** (`tools/golden.sh`, end against start): drizzle and blue hour identical with the arms in; low sun changed on every sunlit face (20,000 to 650,000 pixels, worst 0.08). Not L5's: with its arms out the same frames change by the same counts. It appeared after 22:47; the only other shader change since is R0b's (cd79b22). Later runs add 8 to 97 pixels in drizzle and blue hour, arms in or out.
+- **Golden** (`tools/golden.sh`, end against start): drizzle and blue hour identical with the arms in; low sun changed on every sunlit face (20,000 to 650,000 pixels, worst 0.08). Not L5's: with its arms out the same frames change by the same counts. It appeared after 22:47; the only other shader change since is R0b's (cd79b22). Later runs add 8 to 97 pixels in drizzle and blue hour, arms in or out. *Resolved (coordinating session, 22 October, a clean tree after a5efca7):* low sun's change is W5's beams, matching `reviews/lt1/playable/walk/w5/golden-report.md` to the pixel in all five frames. It is not R0b's. It waits for Øystein's re-bless of the low-sun frames (`NOW.md`). Drizzle and blue hour are identical to the baseline, so the 8 to 97 pixels came from the working tree at the time (M_Sky.mat and the settings files were dirty).
 
 ## Who fixes what
 
