@@ -10,11 +10,11 @@
    { "slot": "position", "format": "Float32x3", "bytes": 12, "components": ["x", "y", "z"] },
    { "slot": "normal", "format": "SNorm16x4", "bytes": 8, "components": ["x", "y", "z", "padding"] },
    { "slot": "uv0", "format": "Float16x2", "bytes": 4, "components": ["grain-u", "grain-v"], "content": "grain, metric per piece" },
-   { "slot": "uv1", "format": "UNorm16x2", "bytes": 4, "components": ["page-u", "page-v"], "content": "the address into its page group's maps" },
+   { "slot": "uv1", "format": "UNorm16x2", "bytes": 4, "components": ["page-u", "page-v"], "content": "the address into its page group's maps. A piece's bare year and variation are the piece table's, never the vertex's (step 3)" },
    { "slot": "uv2", "format": "Float32x2", "bytes": 8, "components": ["mark-u", "mark-v"], "content": "the mark coordinate, continuous along a run (the brush)" },
-   { "slot": "uv3", "format": "UInt16x2", "bytes": 4, "components": ["piece-index", "edge-distance"], "content": "the piece index in its chunk's piece table; the edge distance in tenths of a millimetre" },
-   { "slot": "uv4", "format": "UNorm8x4", "bytes": 4, "components": ["face-kind", "hollow-rate", "flutter-weight-or-element-depth", "own-occlusion"] },
-   { "slot": "uv5", "format": "Float16x4", "bytes": 8, "optional": true, "components": ["rest-x", "rest-y", "rest-z", "padding"], "content": "the rest or undisplaced position, for deforming and wind-moved parts" },
+   { "slot": "uv3", "format": "UInt16x2", "bytes": 4, "components": ["piece-index", "edge-distance"], "content": "the piece index in its chunk's piece table (its clocks, age, variation and flags: chunk-format.md, section 4); the edge distance in tenths of a millimetre, which with the face kind gives the hands' reach (layers.json, lichen)" },
+   { "slot": "uv4", "format": "UNorm8x4", "bytes": 4, "components": ["face-kind", "hollow-rate", "flutter-weight-or-element-depth", "own-occlusion"], "notes": { "hollow-rate": "reserved: walked stone writes 0, since its dish is h1.r times the thing's wear rate (layers.json, derived); a material that dishes without polishing writes it", "flutter-weight-or-element-depth": "0 on stone" } },
+   { "slot": "uv5", "format": "Float16x4", "bytes": 8, "optional": true, "components": ["rest-x", "rest-y", "rest-z", "padding"], "content": "the rest or undisplaced position, for deforming and wind-moved parts. Stone writes none: its moss and held water moved to h1.b and the derived hollow at step 3 (layers.json)" },
    { "slot": "uv6", "format": "UInt16x2", "bytes": 4, "optional": true, "components": ["element-index", "element-depth"], "content": "trees, people, flexible parts" }
   ]
  },

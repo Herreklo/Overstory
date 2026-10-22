@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://overstory.invalid/schemas/interval.schema.json",
   "title": "Life interval",
-  "description": "What the life stage writes: for one fill or piece and one history layer, a span of years in which the layer runs at one rate from one reset. The layer's value at a date is its material's curve at rate / 1000 x (date - resetYear + ageOffsetMonths / 12) (decisions D5.1). The texel inputs in the place and history pages are baked from these. All integers: years and months, per mille.",
+  "description": "What the life stage writes: for one fill or piece and one history layer, a span of years in which the layer runs at one speed from one clock. The layer's value at a date is the texel's drive applied to its material's curve, run at rate / 1000 of the thing's speed over (date - clock): an amplitude times the curve, or a rate into it, as the layer's law in schemas/layers.json says (decisions D5.1). The clock is resetYear, or the reach's date where a texel is within the reach. The pages' drives and the piece table's clocks are baked from these; no texel holds an offset, and the piece table keeps the age a piece brought in whole years (D5.4). Care is not an interval: it is the thing's, read as a uniform. All integers: years and months, per mille.",
   "type": "object",
   "additionalProperties": false,
   "required": ["on", "layer", "from", "to", "resetYear", "rate", "ageOffsetMonths", "cause"],
@@ -14,11 +14,20 @@
     "layer": { "$ref": "record.schema.json#/$defs/mapId", "description": "A layer of schemas/layers.json." },
     "from": { "$ref": "record.schema.json#/$defs/date" },
     "to": { "$ref": "record.schema.json#/$defs/dateOrNull", "description": "Null while it still runs at the fabric date." },
-    "resetYear": { "type": "integer", "minimum": 1000, "maximum": 9999, "description": "The year the layer last started from nothing: the stone laid, the face bared, the coat put on." },
+    "resetYear": { "type": "integer", "minimum": 1000, "maximum": 9999, "description": "The year the layer last started from nothing: the stone laid (placed, for polish), the face bared or cleaned (bare, for lichen and moss: placed less the age brought), the coat put on." },
     "rate": { "type": "integer", "minimum": 0, "maximum": 10000, "description": "Per mille of the material's own rate: 1000 runs the curve as the material record gives it." },
-    "ageOffsetMonths": { "type": "integer", "description": "Age the surface brought with it, in months: a reclaimed stone's years in the heap, or a negative offset where a layer starts late." },
+    "ageOffsetMonths": { "type": "integer", "description": "Age the surface brought with it, in months: a reclaimed stone's years in the heap. The piece table holds it in whole years, so a stone's is a multiple of 12. A layer that starts late takes its material's delay (layers.json), not an offset." },
+    "reach": {
+      "description": "Optional: a disturbance that restarts part of the fill, the texels within its reach. hands: a piece lifted by hands, whose lichen at the hands' reach (from the face kind and edge distance) runs from here. bed: the bed relaid, whose moss runs from here where the page's bed reach (h1.a) is 1.",
+      "type": "object", "additionalProperties": false, "required": ["at", "by"],
+      "properties": {
+        "at": { "$ref": "record.schema.json#/$defs/date", "description": "The piece table's disturbed clock." },
+        "by": { "enum": ["hands", "bed"] },
+        "cause": { "$ref": "record.schema.json#/$defs/eventId", "description": "The event that lifted the piece or relaid its bed." }
+      }
+    },
     "cause": {
-      "description": "The event or rule that started this interval (a works campaign, falling care, a gutter that failed).",
+      "description": "The event or rule that started this interval (a works campaign, a change of use, a gutter that failed; never care, which is a uniform).",
       "anyOf": [{ "$ref": "record.schema.json#/$defs/eventId" }, { "$ref": "record.schema.json#/$defs/ruleName" }]
     }
   }

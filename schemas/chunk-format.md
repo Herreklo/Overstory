@@ -85,7 +85,7 @@ Then a section table, 12 bytes a section: u16 section id, u16 flags, u32 offset,
 | 1 | string table | u32 count, then each a u16 length and UTF-8 bytes: record ids, fill ids, part paths, act kinds |
 | 2 | thing table | 24 bytes: u32 record id (string), u16 atlas rectangle x, y, w, h in the shell atlas's texels (zero below L3), u32 facts-buffer index, u16 part-slot base, 6 bytes reserved |
 | 3 | part table | 8 bytes: u32 part path (string), u32 part version |
-| 4 | piece table | 24 bytes: u64 seed, u32 fill id (string), u16 thing, u16 part, u16 reset year counted from the pack's first year, u8 material class, u8 flags, u32 reserved. UV3's piece index addresses it |
+| 4 | piece table | 32 bytes: u64 seed, u32 fill id (string), u16 thing, u16 part, four u16 resets (placed, disturbed, cleaned, reserved), u16 variation, u8 age brought (whole years), u8 inherited polish (/255), u8 material class, u8 flags (bit 0 walked, bit 1 lifted by hands, bit 2 reclaimed), 2 bytes reserved. UV3's piece index addresses it; its GPU entry is below |
 | 5 | vertices | the layout named in the header |
 | 6 | indices | u16 or u32 |
 | 7 | draws | 12 bytes: u16 shader family index (into the string table), u16 material class, u32 first index, u32 index count |
@@ -97,6 +97,35 @@ Then a section table, 12 bytes a section: u16 section id, u16 flags, u32 offset,
 | 13 | breaklines | u32 count, then pairs of vertex indices: edges a level must keep |
 
 The thing table's atlas rectangle is reserved now for the painted far town: each thing's place in its cell's shell atlas, so a thing's atlas is rebaked alone when the change query names it.
+
+### The piece table's clocks
+
+A piece's resets are its history's clocks (`layers.json`; decisions D5.1, D5.4). Each is a u16 of year × 16 + month, counted from the pack's first year (`pack.json`'s `firstYear`). Months run 1 to 12, and a date known only to the year takes month 1, so it decodes to the whole year as the date global does (January is the year itself); 0 is never a date and means none.
+
+- **placed:** when the piece was laid. Polish and the hollow run from it.
+- **disturbed:** when its bed was last relaid, or it was lifted. Lichen at the hands' reach runs from it where the piece is flagged lifted by hands, and moss at the bed reach from the later of it and bare.
+- **cleaned:** when a works campaign last cleaned it. Lichen and moss never run from before it.
+- **reserved:** zero until a kind needs a fifth clock.
+
+Bare is not stored: it is placed less the age the piece brought (a reclaimed stone's years in the heap), in whole years. The inherited polish is the floor a reused stone's polish never falls under.
+
+### The piece table on the GPU, 16 bytes
+
+The draw needs where a piece's pages are and its clocks, not its ids. Each chunk's piece table goes to a global `StructuredBuffer` of 16-byte entries, read in the vertex stage by UV3's piece index and passed flat to the fragment (`Shaders/History.hlsl`):
+
+| Offset | Type | Field |
+| --- | --- | --- |
+| 0 | u16 | its page group's first slice in the page arrays |
+| 2 | u16 | variation |
+| 4 | u16 | placed |
+| 6 | u16 | disturbed |
+| 8 | u16 | cleaned |
+| 10 | u16 | reserved reset, zero |
+| 12 | u8 | age brought, whole years |
+| 13 | u8 | inherited polish (/255) |
+| 14 | u16 | flags, as on disk (bit 0 walked, bit 1 lifted by hands, bit 2 reclaimed) |
+
+The seed, ids, thing, part and material class stay on disk: the draw's material gives its class.
 
 ## A pages unit
 

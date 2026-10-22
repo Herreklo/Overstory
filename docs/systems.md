@@ -21,6 +21,7 @@ State: **built** (in use, reviewed), **in progress**, **designed** (a design pag
 | Wear | every contact of use: feet, hands, boots; polish, hollows, rounded nosings | built (wheels, sitting: planned) | `wear.py` |
 | Growth on surfaces | lichen and moss by years, quiet, damp and light | built | `growth.py`, `Growth.hlsl`, `GrowthPack`, `docs/nature.md` |
 | Upkeep and repairs | keepers and care, patchwork, campaigns, renewals, by era | built (stone); every material next | `upkeep.py`, `docs/upkeep.md` |
+| History as a function | each layer drawn from the record and the date: a drive per texel in the history pages, clocks per piece, speed and care per thing, the date a global; every shader reads it through one include | designed (decisions D5.1, D5.4, D5.10); the law fitted on the gully, the date, the include and the cost measured (step 3's R1 to R2c); the pages, the stone on them, the A/B, the years sheet and the gully's cost next (R3 to R7) | `docs/building-blocks.md`, `schemas/layers.json`, `schemas/maps.json`, `Shaders/History.hlsl`, `reviews/lt1/history/` |
 | Detail by distance | true up close, painted from afar | built | `Detail.hlsl` |
 | Distance tiers | near, street, city, far: simpler geometry and merged meshes by distance; budgets | designed; next after the corner's stone | `docs/foundations.md` |
 | The living fabric | one record and runner for every made or planted thing; changes flow through shared fields (feet, water, sky, wind and salt, care, vacancy); the history budget per view | designed | `docs/living-fabric.md` |
@@ -85,7 +86,7 @@ Every system, material and kind is studied twice before it is built (`CLAUDE.md`
 | Light and colour | `colour-and-shading.md`, `masters-of-colour.md` (thin) | `lighting-and-colour.md` |
 | Water, wear, growth, repairs | `repairs.md`, `stone.md`, `nature.md` | `materials-at-scale.md`, `history-in-things.md` |
 | History in things | `world-that-remembers.md`, `house-changes.md`, `repairs.md` | `history-in-things.md` |
-| History pages: binding, block compression, time inputs per texel, charts | `history-in-things.md` (Gu's factorisation), `wear.py` and `growth.py` (the laws) | `history-pages.md` (step 3's R0; bc7e's real error and the binding's cost learned at R2, chart waste at R3, border shimmer at R6) |
+| History pages: binding, block compression, time inputs per texel, charts | `history-in-things.md` (Gu's factorisation), `wear.py` and `growth.py` (the laws) | `history-pages.md` (step 3's R0; the binding and its cost measured at R2 to R2c: a sample is cheap, a busy output is not; a real page's BC7 error and the chart waste at R3, border shimmer at R6, the binding under the Resident Drawer at 3.4) |
 | Tiers, instancing, quality control | `tools-and-performance.md` (thin) | `performance-at-scale.md` |
 | Kits and generators | `generating-the-past.md` (thin) | `kits-and-generation.md`, `where-generation-runs.md` |
 | Towns and cities | `urban-design.md`, `city-forces.md`, `city-types.md`, `town-change.md`, `stavanger-centre.md` | `kits-and-generation.md`, `urban-design.md` |

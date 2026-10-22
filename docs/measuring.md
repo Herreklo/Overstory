@@ -146,6 +146,8 @@ composes, builds (about 6 minutes the first time, seconds after) and runs the pl
 
 Two arms leave every pass on and set a shader keyword everywhere (step 3; `reviews/lt1/history/r2.md`): `-perf-passes history-off` (`OS_HISTORY_OFF`: every history layer at its material's quiet mean, no page or piece read) and `haze-off` (`OS_HAZE_OFF`: `OS_Atmosphere` skipped in the stone, street, tree and motes shaders); `LT1Golden.Views -history-off` or `-haze-off` renders the same arm. `-perf-scenes quad-rgba8,quad-bc7` adds the history quad (`LT1History`: 4,096 pieces reading three synthetic pages through `Shaders/History.hlsl`), measured in `all` and `history-off` from the empty scene's views; `summary.json` gives each segment's per-round offscreen medians (`round_offscreen_ms`).
 
+A quad scene takes options after its format (`half`, `two`, `tile<k>` and R2c's sampling arms; `reviews/lt1/history/r2.md`). What they found: a busy output costs in the passes after the draw, not in the draw. The quad sampling its pages minified and writing a flat colour costs +0.05 ms; writing texel-rate noise with no sample, +2.2 ms. So the pass budget below, measured on quiet frames, understates a busy screen by about 2.2 ms, and a shader's cost is measured on its own real output, never on a stand-in.
+
 **Accepted (21 October).** Two runs (`reviews/perf/2026-10-21/runs.md`):
 - the GPU time agrees within 3.1% in all 24 segments;
 - the frame agrees within 3% in 22 of 24; the other two (on the steps and 12 m up, in drizzle) differ by 5.0 and 5.2%, their medians sitting between two refresh ticks;

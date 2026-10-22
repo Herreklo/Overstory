@@ -2,6 +2,17 @@
 
 Every change to the files in `schemas/` with its migration. The contracts' version is `schemaVersion`, carried by every record, kind, pack file and fixture. `tools/migrate.py` runs `migrations/NNN_<name>.py` in order on every file behind; `tools/migrate.py --check` fails while any is behind. `tools/validate_record.py` checks records, kinds, parts and the registries against the current version.
 
+## 2, unchanged: history as a function (22 October, the gully port's step 3)
+
+No migration: no record, kind or part holds intervals or pages yet, and every addition is optional. Decisions D5.1, D5.4 and S2 amended, D5.10 new.
+
+Changed:
+- `maps.json`: p0 holds feet (R) and static water (G); h1 holds polish's amplitude, lichen's rate, moss's damp and the bed reach, baked on each piece as laid and rebuilt on geometry, a rate or a reach. New `charts` (per run of one face kind, a 16-texel grid, 2 texels of padding, 3 mips, trilinear), `pageFormat` (BC7 per page from the real page's error at R3's end, 99th percentile at most 2/255; a failing pair goes BC5; no grain in pages) and `bakers` (one bake function, golden page hashes; step 3 bakes offline until step 5). New unknowns: page format and chart shimmer.
+- `layers.json`: a `law` per fitted layer (amplitude or rate, its clock, curve and delay); moss's `scale`, `careFactor` and `order` (clip, then the trodden thinning); the hollow as a `derived` layer, with no channel; `readers` per family (the stone reads p0 and h1). h1.a is the bed reach.
+- `interval.schema.json`: the description says how an interval drives the law; an optional `reach` (a lift by hands or a relaid bed, its date the piece's disturbed clock); the age brought is whole years.
+- `chunk-format.md` §4: the piece table is 32 bytes with four named resets (placed, disturbed, cleaned, reserved) as year × 16 + month, the age brought in whole years and the inherited polish; its GPU entry is 16 bytes.
+- `channels.json`: uv1's bare year and variation are the piece table's; uv3 carries the hands' reach; uv4.y (the hollow rate) is reserved and walked stone writes 0; stone writes no uv5.
+
 ## 2, unchanged: the stair as a kind (22 October, the gully port's step 2a)
 
 No migration: every addition is optional, and no record, kind or part needs rewriting.
