@@ -61,6 +61,11 @@ Shader "Overstory/Stone"
     #include "Water.hlsl"
 
     TEXTURE2D(_GrainMap); SAMPLER(sampler_GrainMap);
+#if defined(OS_R0B)
+    // R0b's arms, each 1 to turn it on: the specular through GeometricNormalFiltering, a joint's soil floored to 6 L*
+    // under its face, SN7's cut marks off, the mesh alone (one rock colour, no relief), each pixel's kind and piece
+    float _OS_R0b_GNF, _OS_R0b_JointFloor, _OS_R0b_CutMarks, _OS_R0b_Flat, _OS_R0b_Kinds;
+#endif
 
     // The light bent by a height on the surface (the surface gradient, from screen derivatives).
     half3 OS_BumpStone(float3 positionWS, half3 n, float height)
@@ -96,6 +101,10 @@ Shader "Overstory/Stone"
         half relief = lerp(gm.g, gm.a, face) - 0.5h;
         // iron in the rock rusting in sparse spots (the stone's own texture, claiming nothing)
         half rust = smoothstep(0.74h, 0.8h, (half)OS_Noise(q * 9.0 + var * 41.0)) * smoothstep(0.45h, 0.6h, (half)OS_Noise(q * 47.0));
+#if defined(OS_R0B)
+        if (_OS_R0b_CutMarks > 0.5)
+            rust = 0.0h;
+#endif
         half3 rock = lerp(_Stone.rgb, _Edge.rgb, face * 0.7h);
         // weathering: fresh rock dark and blue, weathered to its paler grey skin over the years
         rock = lerp(_Fresh.rgb, rock, saturate(years / _Weather));
@@ -106,6 +115,10 @@ Shader "Overstory/Stone"
         half hp = frac((half)var * 7.13h);
         half3 tint = hp < 0.25h ? half3(1.12h, 0.99h, 0.86h) : (hp < 0.5h ? half3(0.96h, 1.02h, 0.95h)
                    : (hp < 0.75h ? half3(0.95h, 0.98h, 1.05h) : half3(1.0h, 1.0h, 1.0h)));
+#if defined(OS_R0B)
+        if (_OS_R0b_CutMarks > 0.5)
+            tint = half3(1.0h, 1.0h, 1.0h);
+#endif
         rock *= lerp(half3(1.0h, 1.0h, 1.0h), tint, (half)_Grain.w);
         // polish: the weathered skin worn off where feet go, the rock beneath darker and smoother
         rock *= 1.0h - (half)_Polish.x * hist.r;
@@ -126,6 +139,10 @@ Shader "Overstory/Stone"
         {
             // a joint's filling (kind 6): soil washed in and held there, damp, the moss's own ground
             half crumb = (half)OS_Noise(q * 90.0 + var * 13.0);
+#if defined(OS_R0B)
+            if (_OS_R0b_CutMarks > 0.5)
+                crumb = 0.5h;
+#endif
             rock = _Soil.rgb * (0.8h + 0.4h * crumb);
             smooth = 0.12h;
             h = (crumb - 0.5h) * 0.6h;
@@ -136,12 +153,24 @@ Shader "Overstory/Stone"
             // near, its sand and its fine crazing; further off its value and its age only (they speckle from afar)
             half nearC = OS_Near(max(length(ddx(positionWS)), length(ddy(positionWS))));
             half sand = lerp(0.5h, (half)OS_Noise(q * 260.0 + var * 17.0), nearC);
+#if defined(OS_R0B)
+            if (_OS_R0b_CutMarks > 0.5)
+                sand = 0.5h;
+#endif
             // (on this coast grime and a film come in a few years: half grey by six, near its old grey by twenty)
             half grime = 1.0h - exp(-years / 9.0h);
             half3 cem = lerp(_Cement.rgb, _CementOld.rgb, grime) * (0.9h + 0.2h * sand);
             half film = saturate(hist.b * 1.6h) * grime * smoothstep(0.3h, 0.7h, (half)OS_Noise(q * 12.0 + var * 5.0));
+#if defined(OS_R0B)
+            if (_OS_R0b_CutMarks > 0.5)
+                film = 0.0h;
+#endif
             cem = lerp(cem, _CementFilm.rgb, film * 0.7h);
             half craze = smoothstep(0.03h, 0.0h, abs((half)OS_Noise(q * 38.0 + var * 9.0) - 0.5h)) * grime * nearC;
+#if defined(OS_R0B)
+            if (_OS_R0b_CutMarks > 0.5)
+                craze = 0.0h;
+#endif
             cem *= 1.0h - 0.25h * craze;
             half lost = 0.0h;
             if (kind < 4.5h)
@@ -159,6 +188,10 @@ Shader "Overstory/Stone"
         // the water layer (Water.hlsl): this surface's material answers it (the rock's own profile, cement's, a
         // joint's soil); where water runs down a face it leaves streaks of algae film and grime; lichen keeps to the
         // dry places between, moss and algae follow the wet
+#if defined(OS_R0B)
+        if (_OS_R0b_Flat > 4.5 && _OS_R0b_Flat < 5.5)
+            rock = lerp(_Fresh.rgb, _Stone.rgb, saturate(years / _Weather));
+#endif
         half4 prof = kind > 5.5h ? _OS_WaterSoil : (kind > 3.5h ? _OS_WaterCement : _Water);
         half streak = OS_Streak(q, water, up, years, var, prof.w);
         rock = lerp(rock, _Streak.rgb, streak * 0.6h);
@@ -166,8 +199,19 @@ Shader "Overstory/Stone"
         moss = saturate(moss * (0.7h + 0.6h * water));
 
         // growth: nature's thin layer (Growth.hlsl), from where and how long the stone's facts give
+#if defined(OS_R0B)
+        half3 rockBare = rock;
+        if (_OS_R0b_Flat > 5.5 && _OS_R0b_Flat < 6.5)
+            lichenYears = 0.0h;
+        if (_OS_R0b_Flat > 6.5)
+            moss = 0.0h;
+#endif
         OSGrowth gr = OS_GrowthLayer(rock, smooth, q, lichenYears, moss, sky, var, positionWS);
         rock = gr.albedo;
+#if defined(OS_R0B)
+        if (_OS_R0b_Flat > 3.5 && _OS_R0b_Flat < 4.5)
+            rock = rockBare;
+#endif
         smooth = gr.smoothness;
         h += gr.height * (half)(_Relief.y / max(_Relief.x, 1e-5));
 
@@ -200,6 +244,9 @@ Shader "Overstory/Stone"
             // quiet mean, and the history interpolator gone; haze off, OS_Atmosphere skipped
             #pragma multi_compile _ OS_HISTORY_OFF
             #pragma multi_compile_fragment _ OS_HAZE_OFF
+            // R0b's arms (reviews/lt1/port/2b/design.md, The ladder; Editor/LT1R0b.cs): only in the editor, never in a
+            // player (a shader_feature no material sets); without it the pass is as it was
+            #pragma shader_feature_fragment _ OS_R0B
             #pragma multi_compile _ _MAIN_LIGHT_SHADOWS _MAIN_LIGHT_SHADOWS_CASCADE
             #pragma multi_compile _ _ADDITIONAL_LIGHTS
             #pragma multi_compile_fragment _ _ADDITIONAL_LIGHT_SHADOWS
@@ -287,6 +334,14 @@ Shader "Overstory/Stone"
                 half water = (half)piece.w;
                 StoneOut so = OS_StoneSurface(input.uv, history, (half)piece.z, years, (half)piece.y,
                                               input.positionWS, town, water, n.y);
+#if defined(OS_R0B)
+                // (1 the mesh alone: one rock colour and no relief; 2 the colour alone; 3 the relief alone; 4 and 5,
+                // the growth's colour and the rock's own, are in OS_StoneSurface)
+                if (_OS_R0b_Flat > 0.5 && _OS_R0b_Flat < 2.5)
+                    so.albedo = lerp(_Fresh.rgb, _Stone.rgb, saturate(years / _Weather));
+                if (_OS_R0b_Flat > 0.5 && (_OS_R0b_Flat < 1.5 || (_OS_R0b_Flat > 2.5 && _OS_R0b_Flat < 3.5)))
+                    so.height = 0.0h;
+#endif
                 n = OS_BumpStone(input.positionWS, n, so.height * (half)_Relief.x);
 
                 StreetSurface s;
@@ -301,6 +356,11 @@ Shader "Overstory/Stone"
                 half up = n.y;
                 half wet = OS_WetNow(water, up, so.water.z);
                 OS_Wet(s.albedo, s.smoothness, s.normalWS, wet, so.water, history.r, history.a, up);
+#if defined(OS_R0B)
+                // (the gloss filtered by the shading normal's screen-space variance, HDRP's defaults 0.1 and 0.2)
+                if (_OS_R0b_GNF > 0.5)
+                    s.smoothness = (half)GeometricNormalFiltering(s.smoothness, s.normalWS, 0.1, 0.2);
+#endif
 
                 InputData id = (InputData)0;
                 id.positionWS = input.positionWS;
@@ -323,6 +383,18 @@ Shader "Overstory/Stone"
             #else
                 half3 colour = OS_ShadeA(id, s, b);
             #endif
+#if defined(OS_R0B)
+                // (a joint's soil no darker than 6 L* under the face's rock in the same light, by its albedo's share)
+                if (_OS_R0b_JointFloor > 0.5 && piece.z > 5.5)
+                {
+                    half3 faceRock = lerp(_Fresh.rgb, _Stone.rgb, saturate(years / _Weather));
+                    float ratio = dot((float3)faceRock, float3(0.2126, 0.7152, 0.0722)) / max(dot((float3)so.albedo, float3(0.2126, 0.7152, 0.0722)), 1e-3);
+                    float y = max(dot((float3)colour, float3(0.2126, 0.7152, 0.0722)), 1e-6);
+                    float lFace = 116.0 * pow(y * max(ratio, 1.0), 1.0 / 3.0) - 16.0;
+                    float yMin = pow(max(lFace - 6.0 + 16.0, 0.0) / 116.0, 3.0);
+                    colour *= (half)max(1.0, yMin / y);
+                }
+#endif
                 colour = OS_Atmosphere(colour, input.positionWS);
                 if (_History > 2.5)
                     colour = normalize(input.normalWS) * 0.5h + 0.5h;
@@ -331,6 +403,10 @@ Shader "Overstory/Stone"
                 else if (_History > 0.5)
                     colour = piece.z > 3.5 ? half3(0.9h, 0.45h, 0.0h)
                                            : half3(history.r, history.g * 2.0h, history.b) * 0.5h;
+#if defined(OS_R0B)
+                if (_OS_R0b_Kinds > 0.5)
+                    colour = half3((half)piece.z / 8.0h, (half)frac(piece.y), b.ground);
+#endif
                 outColor = half4(colour, 1);
             #ifdef _WRITE_RENDERING_LAYERS
                 outRenderingLayers = EncodeMeshRenderingLayer();

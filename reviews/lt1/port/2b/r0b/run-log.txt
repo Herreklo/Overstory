@@ -1,0 +1,44 @@
+gully renderers 4; shadowNormalBias 0.5; ssao True
+1600-low-sun eye-foot: msaa 4, bloom intensity 0.35, threshold 1.1, clamp 65472, hq True
+1600-low-sun eye-on: msaa 4, bloom intensity 0.35, threshold 1.1, clamp 65472, hq True
+1600-low-sun eye-down: msaa 4, bloom intensity 0.35, threshold 1.1, clamp 65472, hq True
+1600-low-sun street: msaa 4, bloom intensity 0.35, threshold 1.1, clamp 65472, hq True
+1600-low-sun into12: msaa 4, bloom intensity 0.35, threshold 1.1, clamp 65472, hq True
+1600-low-sun high: msaa 4, bloom intensity 0.35, threshold 1.1, clamp 65472, hq True
+gully renderers 4; shadowNormalBias 0.5; ssao True
+1300-drizzle eye-foot: msaa 4, bloom intensity 0.15, threshold 1.1, clamp 65472, hq True
+1300-drizzle eye-on: msaa 4, bloom intensity 0.15, threshold 1.1, clamp 65472, hq True
+1300-drizzle eye-down: msaa 4, bloom intensity 0.15, threshold 1.1, clamp 65472, hq True
+1300-drizzle street: msaa 4, bloom intensity 0.15, threshold 1.1, clamp 65472, hq True
+1300-drizzle into12: msaa 4, bloom intensity 0.15, threshold 1.1, clamp 65472, hq True
+1300-drizzle high: msaa 4, bloom intensity 0.15, threshold 1.1, clamp 65472, hq True
+gully renderers 4; shadowNormalBias 0.5; ssao True
+1300-drizzle eye-foot: msaa 4, bloom intensity 0.15, threshold 1.1, clamp 65472, hq True
+1300-drizzle eye-on: msaa 4, bloom intensity 0.15, threshold 1.1, clamp 65472, hq True
+1300-drizzle eye-down: msaa 4, bloom intensity 0.15, threshold 1.1, clamp 65472, hq True
+1300-drizzle street: msaa 4, bloom intensity 0.15, threshold 1.1, clamp 65472, hq True
+1300-drizzle into12: msaa 4, bloom intensity 0.15, threshold 1.1, clamp 65472, hq True
+1300-drizzle high: msaa 4, bloom intensity 0.15, threshold 1.1, clamp 65472, hq True
+gully renderers 4; shadowNormalBias 0.5; ssao True
+1600-low-sun eye-foot: msaa 4, bloom intensity 0.35, threshold 1.1, clamp 65472, hq True
+1600-low-sun eye-on: msaa 4, bloom intensity 0.35, threshold 1.1, clamp 65472, hq True
+1600-low-sun eye-down: msaa 4, bloom intensity 0.35, threshold 1.1, clamp 65472, hq True
+1600-low-sun street: msaa 4, bloom intensity 0.35, threshold 1.1, clamp 65472, hq True
+1600-low-sun into12: msaa 4, bloom intensity 0.35, threshold 1.1, clamp 65472, hq True
+1600-low-sun high: msaa 4, bloom intensity 0.35, threshold 1.1, clamp 65472, hq True
+gully renderers 4; shadowNormalBias 0.5; ssao True
+1750-blue-hour eye-foot: msaa 4, bloom intensity 0.15, threshold 1.1, clamp 65472, hq True
+1750-blue-hour eye-on: msaa 4, bloom intensity 0.15, threshold 1.1, clamp 65472, hq True
+1750-blue-hour eye-down: msaa 4, bloom intensity 0.15, threshold 1.1, clamp 65472, hq True
+1750-blue-hour street: msaa 4, bloom intensity 0.15, threshold 1.1, clamp 65472, hq True
+1750-blue-hour into12: msaa 4, bloom intensity 0.15, threshold 1.1, clamp 65472, hq True
+1750-blue-hour high: msaa 4, bloom intensity 0.15, threshold 1.1, clamp 65472, hq True
+gully renderers 4; shadowNormalBias 0.5; ssao True
+gully renderers 4; shadowNormalBias 0.5; ssao True
+gully renderers 4; shadowNormalBias 0.5; ssao True
+gully renderers 4; shadowNormalBias 0.5; ssao True
+gully renderers 4; shadowNormalBias 0.5; ssao True
+gully renderers 4; shadowNormalBias 0.5; ssao True
+gully renderers 4; shadowNormalBias 0.5; ssao True
+gully renderers 4; shadowNormalBias 0.5; ssao True
+gully renderers 4; shadowNormalBias 0.5; ssao True
