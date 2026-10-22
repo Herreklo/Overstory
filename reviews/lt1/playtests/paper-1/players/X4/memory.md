@@ -35,3 +35,15 @@
 **What was hollow:** no cause of death ever on record; no way to tell a blank from a lie; random slips in the records that I was scored against; accounts written before my last turns came back; threats that never bit.
 
 **Compared:** far better than Saltlight, because it has stakes and wrong answers. Below the Hesper, whose clues were all placed on purpose.
+
+## Game 4: "Thursday's Paper" (the new reporter on the Courier, a harbour town, June 1990 and May to July 1991)
+
+**Pull:** 6, 5, 6, 7, 7, 6, then 3 for the summarised tenth hour; about 5 to 6 overall. Trust reached 10, sales averaged 903 and I was kept on. I wouldn't buy it.
+
+**Marks:** mostly engaged or curious, bored at empty watches and thin fronts, would quit once (Neil's three bare "No comment"s). Delight five times, the best when the county paper scooped me and when my first front paid and still stood a year on. Five cheats: one sentence in many mouths ("the better work", "whoever's is the stronger", "and it shows"), and answers that slid off their questions.
+
+**What kept me:** a rival that moved without me, Ken's family in the race for the chief's post, and a rule I found myself (people go on record only about themselves).
+
+**What was hollow:** a deciding "record" nobody keeps; no evidence that isn't a person; no path to who fed the county paper; points for attributing, not for finding out.
+
+**Compared:** above Answerable on stakes, below it on deduction; far above Saltlight; well below the Hesper.
