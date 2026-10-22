@@ -16,12 +16,14 @@ Results that surprised us or might be new, newest first. Each says what the evid
 
 ## LT1g: the playable corner, a clay town, a walk and a first case (22 October)
 
-**Status:** in Phase 0 (design), 22 October. The round and the pick are done; the outline and its pre-mortem come next. The record is in `reviews/lt1/playable/`:
+**Status:** Phase 0 (design) done, 22 October. The record is in `reviews/lt1/playable/`:
 - `brief.md`: agreed with Øystein;
 - `pitches.md`: 21 case pitches and 18 testing pitches, by Opus in roles;
-- `pick.md`: Fable's pick.
+- `pick.md`: Fable's pick;
+- `outline.md`: Phase 1's build, and Phase 2 as a ladder of cheap tests;
+- `premortem.md`: a fresh reviewer's pre-mortem, its fixes applied.
 
-Phase 1, the walk, starts in its own session once Unity is free. Phase 2, the play, follows. This is step 1g of `docs/plan.md`, the greybox.
+Phase 1, the walk and the light, starts in its own session once Unity is free. Phase 2 is the ladder: its Unity-free tests run beside the walk. This is step 1g of `docs/plan.md`, the greybox.
 
 **The question.** Can we build something whole, with the world first: a town to walk and a case to play? Two things decide it:
 - whether reading the corner beats the page at carrying Agnes Fielding's death to the two people who were with her, before the Anchor says it aloud;
@@ -32,7 +34,7 @@ It moves exit criteria 3 and 4, and tests the game rule in `CLAUDE.md` in play.
 **The case: Before Friday** (pitch C3.1, with Fable's changes).
 - **The death.** Agnes Fielding, 103, of house E, dies after a long illness (e-6557, public). The record gives her no kin.
 - **The two who came.** In November, Hannah Tanner climbed to her door every week (e-6531, private) and Olive Shaw kept turning up with something (e-6532, private). Nobody but the steps shows it.
-- **The day.** The player runs the café at A. On Friday 15 December, between 10:00 and 18:00, they find and tell people.
+- **The day.** The player is at A, at the foot of the steps. The town's one café in 1989 is Peter Lane's, so the player's trade is open (Øystein's choice, from test 5). On Friday 15 December, between 10:00 and 18:00, they find and tell people.
 - **The spread.** News spreads from whoever they tell, by one stated rule over ties from the export only. It shows on screen, is labelled local scene state, and is never written back.
 - **Before the Friday.** Three November evenings come first, each with one vantage chosen in advance and no replay.
 - **Score.** Who heard it from the player, minus those who heard early through them, minus each private act said aloud. The close shows the exposure ledger. A fail is Hannah hearing it at the bar.
@@ -43,33 +45,37 @@ It moves exit criteria 3 and 4, and tests the game rule in `CLAUDE.md` in play.
 - **The walk (Phase 1).** Øystein walks the build at eye height, through the judging views in `docs/foundations.md`.
   - The light's lasting fix (1c) and the colour grade are judged in drizzle, low sun and blue hour, on clay and stone alike, under SEASON's rule: shadow and ambient colour come from the light, and the grade acts on the whole light, never per material.
   - The harness's whole-scene run names the three biggest costs.
-- **The play (Phase 2).** Øystein plays three times:
-  - seed A out loud;
-  - seed B in silence, before any agent report on it;
-  - once trying to win without reading.
+- **The play (Phase 2): the ladder.** Øystein ruled on 22 October that Phase 2's build, about 16 Opus-days, is too much to commit to before we know what to test. So five cheap tests come first (`outline.md`, section 3).
+  - Together they cost about one Opus-day (8% of the weekly limit) and an hour of Øystein's.
+  - None needs the command port, solver, bots, agent players or replays.
+  - The spread rule, the score and the hours are frozen and hashed before the first test.
 - **The views:** eye level at A's window, on the steps, on the Row, and at the Anchor's door.
 - **The seeds:**
   - A is Agnes, December 1989.
   - B is Andy Shaw, October 1998 (e-8899). He has no kin. His last September's private visitors were Trevor Lane, Ben Reed and Oliver Brook of house B (e-8881 to e-8883).
-- **The script gate and three agents play first,** through the command port, as `pick.md` sets out.
-- **Pass lines, in points of 80:**
-  - the replay verifies, with zero leaks;
-  - the solver wins both seeds, and the text-only solver scores at least 12 lower;
-  - a page bot that tells the Anchor's lead first fails both seeds, and other bots win under 1 in 10;
-  - the branches at the first telling differ by at least 16;
-  - the frame-budget slope is positive;
-  - at most 10% of causal claims are unsourced, with none in the committed account;
-  - Øystein's no-read try scores at least 12 below his reading, and by his third session the usability list passes and he names the tell-order trade-off unprompted.
+- **The ladder's pass lines,** in points of 80:
+  1. **The tie script,** over the export's ties at the seed's month, on both seeds:
+     - the branches at the first telling (Hannah first, Olive first) differ by at least 16;
+     - the best line beats the page's (the Anchor's lead first) and Peter-first by at least 16;
+     - telling the two back to back is not best;
+     - the page's line reaches at least six people by 18:00;
+     - the ranking holds with every spread parameter at half and one and a half times.
+  2. **Sight, then stills:** one vantage sees both doors and most of Hannah's climb; on stills at the real hours, a cold reader says which door each figure left and entered.
+  3. **Two cold readers** on Sonnet: the one with the stills and the page names Hannah from the steps and Olive, each sourced, and invents nothing. The one with the page only does not name Hannah, or marks her as a guess.
+  4. **Øystein's paper run,** under an hour, refereed by the tie script: he names the tell-order trade-off unprompted and wants seed B.
+  5. **The facts check:** every contradiction between the case, the export and the houses' diaries has a fix in our authored layer.
+- **After the ladder.** If it passes, the testing design and the case's build are sized afresh, as their own decision with Øystein: the command port, the solver and the agents of `pick.md`, and Øystein's three plays (seed A out loud, seed B in silence, one try without reading).
 
 **What it does not test:** fun and return; human misreadings (humans come only through the engine's human test); a building's history; the Anchor's inside; city scale; the decade payoff; whether the spread rule is true to life.
 
-**What would change our minds:**
-- the solver wins without the pixel-only perceptions (the steps tell nothing);
-- the branches score alike (there is no decision; move to I Saw It's attention grammar);
-- the bots win often;
-- Øystein's no-read try matches his reading;
-- invented causes come at last round's rate despite the templates and the tracer;
-- Øystein calls the evenings watching, not playing.
+**What would change our minds,** each a kill line in the ladder:
+- the first-telling branches score within 8 of each other, still flat after one frozen change (there is no decision; move to I Saw It's attention grammar);
+- the ranking flips inside the sweep (the rule is tuned, not designed);
+- no vantage shows the climb, even in daylight (the steps tell nothing);
+- the page-only reader names both visitors with confidence (the screen adds nothing);
+- the reader with the stills reads the climb as something false, or invents causes;
+- Øystein calls the evenings watching, or sees the Friday's answer without a trade-off;
+- a contradiction only the engine could settle.
 
 ---
 

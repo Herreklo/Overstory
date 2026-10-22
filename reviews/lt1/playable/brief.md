@@ -35,9 +35,7 @@ Build a Mac build Øystein can open and play. It is LT1's harbour town in 1989, 
 
 ## Phase 2, the play
 
-- The picked case in greybox: blockout people at their places from the records, a placeholder interface, a way to win and a way to fail.
-- The command port and two or three agent players, as designed.
-- A short results note in this folder.
+Øystein ruled on 22 October that the case's build is too much to commit to before we know what to test. Phase 2 is the test ladder in `outline.md`, section 3: five cheap tests of the pick's risks, about one Opus-day in all. The build is sized only if the ladder passes, as its own decision with Øystein.
 
 ## Rules and done
 
