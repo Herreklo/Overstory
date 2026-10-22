@@ -59,6 +59,6 @@ Build a Mac build Øystein can open and play. It is LT1's harbour town in 1989, 
 
 The look goes on in the same town, not apart from it. Every real part replaces its clay in place, so the town is both the greybox and the showcase.
 
-- **The light and the air on the clay.** The sky, the haze, the moods and the painted far town are shared systems that no later part change throws away. Interleave them with Phase 1.
-- **The stone's history drawn per pixel (step 3).** R2c showed it costs about 0.04 ms, so the stone can show its age sharply at every distance. It resumes inside the corner when the port does.
-- **The next real part, chosen by the walk.** It's whichever part looks worst beside the stone in the walk. Research its craft first, then build it in Blender, judged on a quick sheet before it goes into the town.
+- **The light and the air on the clay.** The sky, the haze, the moods and the painted far town are shared systems that no later part change throws away. This is plan step 1c, the light's lasting fix, on the stone's critical path. Interleave it with Phase 1.
+- **The stone completed end to end first.** Nothing is complete yet: the birches closed only as a look test, on cards the reference machine draws dearly; the stone is in the port; the houses exist only at test quality. So no new kind starts at quality until the stone is done. Done means the port's steps 0 to 7, the four known faults fixed, the look at the bar against its target frame at every judging view, distance and light, and Øystein's acceptance. The port resumes inside the corner next week. Per-pixel history costs about 0.04 ms (R2c).
+- **Then the plan's order:** the birches re-fitted (1e), then House A (step 2). The house-front research done now (`docs/research/house-fronts.md`) feeds the port's shared foundations (materials as pack records, levels, chunks), so they don't come out stone-shaped. It doesn't start the house.
