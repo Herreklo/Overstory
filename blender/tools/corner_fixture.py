@@ -257,7 +257,7 @@ lamps = [dict(id="lamp-landing", x=mm(44.2), y=mm(33.0), z=mm(8.0), variant="pos
               installed=1955, cause="the council brings electric light to the lane")]
 
 fixture = dict(
-    schemaVersion=1,
+    schemaVersion=2,
     note="The beauty corner (docs/experiments.md, LT1, the reset), written by blender/tools/corner_fixture.py. "
          "Authored by hand: the lane, the five houses and their histories to 2020 (events after 1989 by named rules, "
          "`rules`), the wall, the lantern, the trees and the ground's history. "
