@@ -23,3 +23,11 @@ I'm the coroner's officer. There were two deaths, Mary Tanner and Andy Shaw, eac
 - **What kept me:** records that contradict each other, the song question, the threat of standing loss, and the close's table of what was true.
 - **Hollow:** deaths with no doctor, no finder and no cause, and questions 3 and 5 always "no one". Witnesses don't react when caught. Nobody grieves or wants anything from me, and I have no self. The account was due before my last turns resolved. Hidden rules of evidence, with a check that tested truth while the hearing tested proof.
 - **Compared:** much better than Saltlight (stakes, a fail state, a reckoning), weaker than Hob's Ford (no wants, no companions). Obra Dinn and Pentiment do it better. I fell for the wrong-man poster myself, which was fair.
+
+## Game 4: The Courier (the same harbour town, June 1990 to July 1991)
+I'm the new reporter on a weekly. The editor, Ken, vets anything naming his family, and three of his people are racing for the council chief's chair.
+
+- **Marks:** engaged by Ken's veto ("Run it, then"), by tips used as weapons, by Holmes's "I knew. The whole yard knew", and by the year page. Bored and cheated by the interview template (no comment, no comment, one line for print), by echoed lines and by dead turns. Pull ran 6, 7, 6, 7, 6, 5, then 3 for the five weeks; overall 5.
+- **What kept me:** a compromised boss, a town that remembers my questions, and history I can read.
+- **Hollow:** no self, and colleagues cost a turn. I printed a woman's cancer unasked and trust went up. I had the job by round 3, so the stakes ran out. The claims story ran to "nobody complains".
+- **Compared:** better than Saltlight and Answerable, below Hob's Ford. Pentiment does it better.
