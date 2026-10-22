@@ -136,6 +136,7 @@ Proposals wait here for the next milestone's fresh reviewer, who sees the plan a
 
 - **Change:** a fresh reviewer who has not seen our view answers it for the stair and cheek walls from frames at judged size, the code and Q14's test. Our proposal for it: redraw the stones (a rigid placement and shaping function under Q13's budget, judged against the target frame) and keep the port's stages, records, seeds and tools. A "start over" on more than the stones goes to Øystein as scope.
 - **Standing cost:** none beyond the review already planned.
+- **Øystein's verdict, 22 October evening:** "same with the stairs really. the look very buggy and not nice". So 2b redraws the stones by Q14 (rigid placement and shaping under Q13's budget, from the target frame, his walk's notes as their done); the reviewer judges only whether more than the stones must go.
 - **What would change our minds:** the reviewer finding the faults are settings, not the making.
 
 ## Q16. The birch is rebuilt in 1e, not re-fitted
