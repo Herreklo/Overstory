@@ -66,6 +66,37 @@ Shader "Overstory/Stone"
     // under its face, SN7's cut marks off, the mesh alone (one rock colour, no relief), each pixel's kind and piece
     float _OS_R0b_GNF, _OS_R0b_JointFloor, _OS_R0b_CutMarks, _OS_R0b_Flat, _OS_R0b_Kinds;
 #endif
+#if defined(OS_PATCHES)
+    // R2a's stones (reviews/lt1/port/2b/r2a/stones/plan.md, the contract): the face patches (SN6) and L1's lit line
+    // (SN8), set by the judging harness (Editor/LT1R2a.cs), every number from data: the patches' array, their size and
+    // the arms' slices from their manifest (blender/parts/stone/slate/patches.manifest.json), the chamfer's form from
+    // the part's definition; each face's patch, arrises and chamfer width from the mesh (UV6, UV7)
+    TEXTURE2D_ARRAY(_OS_PatchMap); SAMPLER(sampler_OS_PatchMap);   // xyz the normal (tangent space; the mips' averages
+                                                                    // unnormalised), w the face value's multiplier
+    float _OS_PatchPerMetre;    // patches a metre (1 / a patch's size)
+    float _OS_PatchShift[8];    // added to a face's slice: the arm judged (all 0: as built)
+    float4 _OS_Chamfer;         // x its leg along each face, metres per mm of the code's width; y, z its normal's
+                                // shares of the face's normal and of the arris's outward direction (its angle)
+    float _OS_PatchFlat;        // debug, 1: the patches flat (the face's normal, value 1), the control
+    float _OS_PatchLineOff;     // debug, 1: L1 without its lit line
+
+    // The share of a pixel (a unit box) where a field linear across it lies under t, the field 0 at the pixel's centre
+    // and its screen gradient (gx, gy): the box filter of a straight edge, exact (a trapezoid's integral)
+    float OS_BoxBelow(float t, float gx, float gy)
+    {
+        float a = max(max(abs(gx), abs(gy)), 1e-12), b = max(min(abs(gx), abs(gy)), 1e-12);
+        float h = 0.5 * (a + b), k = 0.5 * (a - b);
+        if (t <= -h)
+            return 0.0;
+        if (t >= h)
+            return 1.0;
+        if (t < -k)
+            return (t + h) * (t + h) / (2.0 * a * b);
+        if (t > k)
+            return 1.0 - (h - t) * (h - t) / (2.0 * a * b);
+        return 0.5 + t / a;
+    }
+#endif
 
     // The light bent by a height on the surface (the surface gradient, from screen derivatives).
     half3 OS_BumpStone(float3 positionWS, half3 n, float height)
@@ -88,7 +119,11 @@ Shader "Overstory/Stone"
     };
 
     StoneOut OS_StoneSurface(float2 g, half4 hist, half kind, half years, half var, float3 positionWS, half sky,
-                             half water, half up)
+                             half water, half up
+#if defined(OS_PATCHES)
+                             , half patchValue    // the face patch's value: it multiplies the face's one value
+#endif
+                             )
     {
         StoneOut o;
         half face = step(1.5h, kind) * step(kind, 2.5h);
@@ -99,11 +134,19 @@ Shader "Overstory/Stone"
         half4 gm = SAMPLE_TEXTURE2D(_GrainMap, sampler_GrainMap, q);
         half tone = lerp((gm.r - 0.5h) * (half)_Grain.x, (gm.b - 0.5h) * (half)_Grain.y, face);
         half relief = lerp(gm.g, gm.a, face) - 0.5h;
+#if defined(OS_PATCHES)
+        // (SN6: the tiled grain map leaves the stone's faces, its relief and one value the face patch's)
+        tone = 0.0h;
+        relief = 0.0h;
+#endif
         // iron in the rock rusting in sparse spots (the stone's own texture, claiming nothing)
         half rust = smoothstep(0.74h, 0.8h, (half)OS_Noise(q * 9.0 + var * 41.0)) * smoothstep(0.45h, 0.6h, (half)OS_Noise(q * 47.0));
 #if defined(OS_R0B)
         if (_OS_R0b_CutMarks > 0.5)
             rust = 0.0h;
+#endif
+#if defined(OS_PATCHES)
+        rust = 0.0h;    // (SN7: rust spots cut)
 #endif
         half3 rock = lerp(_Stone.rgb, _Edge.rgb, face * 0.7h);
         // weathering: fresh rock dark and blue, weathered to its paler grey skin over the years
@@ -119,9 +162,15 @@ Shader "Overstory/Stone"
         if (_OS_R0b_CutMarks > 0.5)
             tint = half3(1.0h, 1.0h, 1.0h);
 #endif
+#if defined(OS_PATCHES)
+        tint = half3(1.0h, 1.0h, 1.0h);     // (SN7: the per-piece hue bins cut)
+#endif
         rock *= lerp(half3(1.0h, 1.0h, 1.0h), tint, (half)_Grain.w);
         // polish: the weathered skin worn off where feet go, the rock beneath darker and smoother
         rock *= 1.0h - (half)_Polish.x * hist.r;
+#if defined(OS_PATCHES)
+        rock *= patchValue;
+#endif
         half smooth = lerp(0.14h, (half)_Polish.y, hist.r);
         // relief: the painted grain's, smoothed where feet have polished it
         // (a split face is rough: its plates stand proud by several millimetres, so raking light breaks it into small
@@ -194,6 +243,9 @@ Shader "Overstory/Stone"
 #endif
         half4 prof = kind > 5.5h ? _OS_WaterSoil : (kind > 3.5h ? _OS_WaterCement : _Water);
         half streak = OS_Streak(q, water, up, years, var, prof.w);
+#if defined(OS_PATCHES)
+        streak = 0.0h;  // (SN7: run-off streaks cut)
+#endif
         rock = lerp(rock, _Streak.rgb, streak * 0.6h);
         half lichenYears = hist.g * 200.0h * (1.0h - 0.85h * saturate(water * 1.2h - 0.1h));
         moss = saturate(moss * (0.7h + 0.6h * water));
@@ -247,6 +299,9 @@ Shader "Overstory/Stone"
             // R0b's arms (reviews/lt1/port/2b/design.md, The ladder; Editor/LT1R0b.cs): only in the editor, never in a
             // player (a shader_feature no material sets); without it the pass is as it was
             #pragma shader_feature_fragment _ OS_R0B
+            // R2a's stones (r2a/stones/plan.md; Editor/LT1R2a.cs): the face patches and L1's lit line, read from UV6 and
+            // UV7 in the vertex stage; a shader_feature only the judging runs' unsaved materials set
+            #pragma shader_feature_local _ OS_PATCHES
             // L5's term arms (the harness's bare-<term> and all-shadow, docs/measuring.md): each skips one term, off in the game
             #pragma multi_compile_fragment _ OS_L5_TOWNSKY OS_L5_CLOUDS OS_L5_LAMPS OS_L5_BRUSH OS_L5_SHADOW OS_L5_REFL OS_L5_GROWTH OS_L5_ROSETTES OS_L5_NEAR
             #pragma multi_compile _ _MAIN_LIGHT_SHADOWS _MAIN_LIGHT_SHADOWS_CASCADE
@@ -278,6 +333,10 @@ Shader "Overstory/Stone"
                 float2 uv3 : TEXCOORD3;
                 float2 uv4 : TEXCOORD4;
                 float2 uv5 : TEXCOORD5;
+            #if defined(OS_PATCHES)
+                float2 uv6 : TEXCOORD6;     // (d0, d1)
+                float2 uv7 : TEXCOORD7;     // (d2, code)
+            #endif
                 UNITY_VERTEX_INPUT_INSTANCE_ID
             };
 
@@ -292,6 +351,10 @@ Shader "Overstory/Stone"
             #endif
                 float4 piece : TEXCOORD4;    // x years / 200, y seed, z face, w variation
                 float2 bake : TEXCOORD5;
+            #if defined(OS_PATCHES)
+                float3 edge : TEXCOORD6;     // the distance in metres to each of the triangle's three edges
+                nointerpolation float code : TEXCOORD7;    // slice + 8 mask + 64 chamfer width in mm, one per face
+            #endif
                 UNITY_VERTEX_INPUT_INSTANCE_ID
                 UNITY_VERTEX_OUTPUT_STEREO
             };
@@ -312,6 +375,10 @@ Shader "Overstory/Stone"
             #endif
                 o.piece = float4(input.uv1, input.uv2);
                 o.bake = input.uv3;
+            #if defined(OS_PATCHES)
+                o.edge = float3(input.uv6, input.uv7.x);
+                o.code = input.uv7.y;
+            #endif
                 return o;
             }
 
@@ -334,8 +401,38 @@ Shader "Overstory/Stone"
                 half years = (half)piece.x * 200.0h;
                 half town = OS_TownSky(input.positionWS, n);
                 half water = (half)piece.w;
+#if defined(OS_PATCHES)
+                // the face's patch (SN6): its slice from UV7's code, moved to the arm judged, sampled at the face's
+                // metres; its bands filtered away by the mips as they shrink, and its relief and value taken to the
+                // patch's mean (its last mip) by footprint, as every near mark is (OS_Near, Detail.hlsl)
+                float code = round(input.code);
+                float slice = fmod(code, 8.0);
+                float maskBits = fmod(floor(code / 8.0), 8.0);
+                float chamferMm = floor(code / 64.0);
+                bool patched = slice < 6.5;
+                float3 dpx = ddx(input.positionWS), dpy = ddy(input.positionWS);
+                float2 duvx = ddx(input.uv), duvy = ddy(input.uv);
+                float4 patch = float4(0.0, 0.0, 1.0, 1.0);
+                if (patched && _OS_PatchFlat < 0.5)
+                {
+                    float layer = slice + _OS_PatchShift[(uint)slice];
+                    float2 uvP = input.uv * _OS_PatchPerMetre;
+                    float4 fine = SAMPLE_TEXTURE2D_ARRAY_GRAD(_OS_PatchMap, sampler_OS_PatchMap, uvP, layer,
+                                                              duvx * _OS_PatchPerMetre, duvy * _OS_PatchPerMetre);
+                    uint pw, ph, pe, levels;
+                    _OS_PatchMap.GetDimensions(0, pw, ph, pe, levels);
+                    float4 mean = SAMPLE_TEXTURE2D_ARRAY_LOD(_OS_PatchMap, sampler_OS_PatchMap, uvP, layer, levels - 1);
+                    patch = lerp(mean, fine, (float)OS_Near(max(length(dpx), length(dpy))));
+                }
+                float patchLen = max(length(patch.xyz), 1e-4);
+                half3 patchN = (half3)(patch.xyz / patchLen);
+#endif
                 StoneOut so = OS_StoneSurface(input.uv, history, (half)piece.z, years, (half)piece.y,
-                                              input.positionWS, town, water, n.y);
+                                              input.positionWS, town, water, n.y
+#if defined(OS_PATCHES)
+                                              , (half)patch.w
+#endif
+                                              );
 #if defined(OS_R0B)
                 // (1 the mesh alone: one rock colour and no relief; 2 the colour alone; 3 the relief alone; 4 and 5,
                 // the growth's colour and the rock's own, are in OS_StoneSurface)
@@ -344,10 +441,28 @@ Shader "Overstory/Stone"
                 if (_OS_R0b_Flat > 0.5 && (_OS_R0b_Flat < 1.5 || (_OS_R0b_Flat > 2.5 && _OS_R0b_Flat < 3.5)))
                     so.height = 0.0h;
 #endif
+#if defined(OS_PATCHES)
+                half3 nGeo = n;     // the face's own normal: the patch's frame and the lit line's
+                if (patched)
+                {
+                    // the patch's normal on the face, in the frame of UV0's screen derivatives (Schüler's cotangent
+                    // frame: UV0 is metres in the face's plane, so the frame is orthonormal, a mirror in u included)
+                    float3 dp2perp = cross(dpy, (float3)n), dp1perp = cross((float3)n, dpx);
+                    float3 T = dp2perp * duvx.x + dp1perp * duvy.x;
+                    float3 B = dp2perp * duvx.y + dp1perp * duvy.y;
+                    float invmax = rsqrt(max(max(dot(T, T), dot(B, B)), 1e-30));
+                    n = (half3)normalize((T * patchN.x + B * patchN.y) * invmax + (float3)n * patchN.z);
+                }
+#endif
                 n = OS_BumpStone(input.positionWS, n, so.height * (half)_Relief.x);
 
                 StreetSurface s;
                 s.albedo = _Grey > 0.5 ? half3(0.42h, 0.42h, 0.42h) : so.albedo;
+#if defined(OS_PATCHES)
+                // (the patch's value is the face's form: in grey light too, as patches.md measures a face)
+                if (_Grey > 0.5)
+                    s.albedo *= (half)patch.w;
+#endif
                 s.emission = 0;
                 s.metallic = 0;
                 s.smoothness = so.smoothness;
@@ -362,6 +477,13 @@ Shader "Overstory/Stone"
                 // (the gloss filtered by the shading normal's screen-space variance, HDRP's defaults 0.1 and 0.2)
                 if (_OS_R0b_GNF > 0.5)
                     s.smoothness = (half)GeometricNormalFiltering(s.smoothness, s.normalWS, 0.1, 0.2);
+#endif
+#if defined(OS_PATCHES)
+                // the gloss filtered by the shading normal's variance (SN6; Tokuyoshi and Kaplanyan, with HDRP's
+                // defaults 0.1 and 0.2 as R0b's arm): its change across the screen, and where the patch's mips
+                // averaged it, the averaged normal's shortening
+                s.smoothness = (half)NormalFiltering(s.smoothness, GeometricNormalVariance(s.normalWS, 0.1)
+                                                                   + TextureNormalVariance(patchLen), 0.2);
 #endif
 
                 InputData id = (InputData)0;
@@ -385,6 +507,71 @@ Shader "Overstory/Stone"
             #else
                 half3 colour = OS_ShadeA(id, s, b);
             #endif
+#if defined(OS_PATCHES)
+                // L1's lit line (SN8): where the mesh marks an arris L0 chamfers (UV7's mask), L0's chamfer drawn in the
+                // shading on the arris itself (UV6 and UV7's edge distances), its form the part's (its angle from the
+                // part's definition, its width from the code), shaded as L0's is (its own kind, the town's one light),
+                // and laid over the face by the share of the face's part of the pixel it covers (the strip's edge
+                // box-filtered: no shimmer, and it fades as it thins)
+                if (maskBits > 0.5 && _OS_PatchLineOff < 0.5)
+                {
+                    float leg = chamferMm * _OS_Chamfer.x;
+                    float3 dEx = ddx(input.edge), dEy = ddy(input.edge);
+                    float3 r1 = cross(dpy, (float3)nGeo), r2 = cross((float3)nGeo, dpx);
+                    float sgn = dot(dpx, r1) < 0.0 ? -1.0 : 1.0;
+                    uint bits = (uint)maskBits;
+                    float3 eSum = 0.0;
+                    float cSum = 0.0, keep = 1.0;
+                    [unroll]
+                    for (int k = 0; k < 3; k++)
+                    {
+                        if (((bits >> k) & 1u) == 0u)
+                            continue;
+                        // (the share of the pixel beyond the arris is not this face's: the strip's share is of the rest)
+                        float d = input.edge[k];
+                        float beyond = OS_BoxBelow(-d, dEx[k], dEy[k]);
+                        float c = saturate((OS_BoxBelow(leg - d, dEx[k], dEy[k]) - beyond) / max(1.0 - beyond, 1e-4));
+                        // the arris's outward direction in the face: down the distance's surface gradient
+                        float3 grad = sgn * (dEx[k] * r1 + dEy[k] * r2);
+                        eSum -= c * grad * rsqrt(max(dot(grad, grad), 1e-30));
+                        cSum += c;
+                        keep *= 1.0 - c;
+                    }
+                    float cover = 1.0 - keep;
+                    // (where two strips meet at a corner, their directions blend by share: a mitre)
+                    float3 e = eSum / max(cSum, 1e-6);
+                    half3 nC = (half3)normalize((float3)nGeo * _OS_Chamfer.y + e * _OS_Chamfer.z);
+                    StoneOut sc = OS_StoneSurface(input.uv, history, 1.0h, years, (half)piece.y, input.positionWS,
+                                                  town, water, nC.y, 1.0h);
+                    if (cover > 1.0 / 1024.0)
+                    {
+                        StreetSurface sC;
+                        sC.albedo = _Grey > 0.5 ? half3(0.42h, 0.42h, 0.42h) : sc.albedo;
+                        sC.emission = 0;
+                        sC.metallic = 0;
+                        sC.smoothness = sc.smoothness;
+                        sC.normalWS = nC;
+                        half wetC = OS_WetNow(water, nC.y, sc.water.z);
+                        OS_Wet(sC.albedo, sC.smoothness, sC.normalWS, wetC, sc.water, history.r, history.a, nC.y);
+                        InputData idC = id;
+                        idC.normalWS = sC.normalWS;
+                        // (the chamfer's sky by the loose stones' bake rule, the contract's UV3: 0.5 + 0.5 n up)
+                        OSBake bC = OS_ReadBake(half4((half)(input.bake.x + 0.5 * (nC.y - nGeo.y)), (half)input.bake.y,
+                                                      1.0h, 1.0h));
+                        bC.town = OS_TownSky(input.positionWS, nC);
+                    #if defined(_OS_LOOK_B)
+                        half3 colourC = OS_ShadeB(idC, sC, bC, input.positionWS);
+                    #elif defined(_OS_LOOK_D)
+                        half3 colourC = OS_ShadeD(idC, sC, bC, input.positionWS);
+                    #elif defined(_OS_LOOK_P)
+                        half3 colourC = OS_ShadeP(idC, sC, bC, input.positionWS);
+                    #else
+                        half3 colourC = OS_ShadeA(idC, sC, bC);
+                    #endif
+                        colour = lerp(colour, colourC, (half)cover);
+                    }
+                }
+#endif
 #if defined(OS_R0B)
                 // (a joint's soil no darker than 6 L* under the face's rock in the same light, by its albedo's share)
                 if (_OS_R0b_JointFloor > 0.5 && piece.z > 5.5)

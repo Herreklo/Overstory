@@ -1,0 +1,10 @@
+# R2a stones, Unity side: the run log (Editor/LT1R2a.cs; frames in frames/, ignored)
+
+## 2026-10-23, the off-state proof of Stone.shader's OS_PATCHES arm
+- before: Stone.shader as committed (md5 07cc2c5e3bb56682933652a74df985a1), LT1R2a.Proof -tag before: eye-foot,
+  1600-low-sun, LT1Stone.Stage(false), PlayerFrame 2560x1440 MSAA 4x, LT1Golden.WarmUp + 1 renders.
+- after: Stone.shader with the arm (md5 3885b9de246668b5ea0f9813f0b64c87), the keyword off (no material sets
+  it), the same run with -tag after; the shader reimported in that run.
+- tools/r0b_count.py --same frames/proof/before.png frames/proof/after.png:
+  bytes identical; pixels differing 0, largest difference 0
+  (both md5 63ca739befec39069ae86887cb0d9931)
