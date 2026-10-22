@@ -56,3 +56,13 @@ Proposals wait here for the next milestone's fresh reviewer, who sees the plan a
   Work missing from the walk is named as not landed.
 - **Standing cost:** a script, and two lines in Friday's note.
 - **What would change our minds:** the numbers falling while the walk doesn't improve. Then they measure the wrong thing.
+
+## Q6. The format check covers the whole range of places
+
+- **Evidence:**
+  - Øystein, 22 October: "we need to build for the future. do one thing right one time, instead of medium many many times."
+  - The plan review's biggest pre-mortem finding was that seven formats are already shaped around stone.
+  - P8 checks port steps 4 and 5 against three written records: a House A front, a birch chunk, and a land chunk with water. None of them is a dense city block or a wood.
+- **Change:** two written records join P8's three: a dense city block (many fronts, shared walls, many lamps) and a chunk of mixed wood. The light's L0 already does this for the light record (`reviews/lt1/playable/outline.md`, 1b).
+- **Standing cost:** none in the always-read files. About half an Opus-day before port step 4 opens.
+- **What would change our minds:** the two records showing nothing that the three didn't already show.
