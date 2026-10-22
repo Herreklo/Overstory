@@ -116,6 +116,7 @@ Proposals wait here for the next milestone's fresh reviewer, who sees the plan a
 ## Q12. A frame-time budget for each element, before it is built
 
 - **Change:** every new kind, system or effect gets a budget in milliseconds at the judging views on the M4, written in its "done" before building, and the harness checks it when the element joins the corner. The corner aims at about 12 ms, leaving room for people, the simulation and the interface. Over budget stops the step, as overrunning its box does. The gate gains a date: the corner under 16.7 ms by LT1's end.
+- **The floor first:** W3 measured the shared per-pixel pipeline (our surface shader, MSAA, haze, post) above 16.7 ms before any detail arrives (the clay district at 21 to 25 ms with the beams off). So 1c starts with L5, the per-shader trace (0.25 d), and the performance craft study (`docs/research/performance-craft.md`, started 22 October) before L1; every later light stage builds on a known floor.
 - **Standing cost:** a line in each brief; a harness arm per element.
 - **What would change our minds:** elements whose cost cannot be known before a first build; then the budget is set at the first grey-form rung instead.
 
