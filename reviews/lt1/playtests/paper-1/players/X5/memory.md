@@ -23,3 +23,15 @@
   - Everyone is one gesture plus a number of years.
   - It trained me to stop looking, so I ignored its own best threads: the cardigan unclaimed since August, the house for sale, the sisters who see everyone on the stair.
 - **Compared with others:** Papers, Please had stakes that melted by the afternoon. Saltlight never had any. It writes better than Papers, Please plays, but it isn't a game. Pull: 6 against 2.
+
+## Thursday's Paper (reporter on the Courier, a harbour-town weekly, June 1990, then May to June 1991)
+- **Pull by round:** 6, 7, 6, 7, 5, 4, 3. **Overall:** 5. Year one held me. Year two drifted.
+- **Marks:** engaged and curious early, bored and confused late, and three cheats in round 6 alone. Delight came from Sutton knowing I'd asked Lily about him, Lily's "I hadn't forgotten", and Jonah's "since '88". "No correction" was the best line in the game.
+- **What kept me:** the press-night deadline, a county paper scooping me, patience at 2, then 1,003 and the job. In year two, Ken's family rule finally bit, in a race between his partner and his brother.
+- **What was hollow:**
+  - Nobody said anything wrong for print, so the promised risk of a correction never existed.
+  - Templates showed through ("I wouldn't know", "they're in my office", short-staffed N months).
+  - Nobody decides the race.
+  - Trust climbed to 10 on its own. Holding a story and disclosing a conflict both cost nothing.
+  - Watch gave nothing, and there was no goal after the job.
+- **Compared with others:** the best frame of the three. In year one it beat my paper Papers, Please in places. Its people are thinner than Saltlight's. It needs meters that answer you, as The Republia Times has.
