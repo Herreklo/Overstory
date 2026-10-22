@@ -324,8 +324,17 @@ def ids_and_diff_cli():
     g = naming.Grammar.load()
     for text, level in (("st-gully", "record"), ("st-gully/3", "event"), ("st-gully/fl-0/tr-3/sl-1", "slot"),
                         ("st-gully/fl-0/tr-3/sl-1/0", "fill"), ("st-gully/fl-0/tr-3/sl-1/0#1", "piece"),
-                        ("st-gully/fl-0/tr-3/sl-1/0/ck", "slot"), ("st-gully/fl-0/tr-3/12/4", None)):
+                        ("st-gully/fl-0/tr-3/sl-1/0/ck", "slot"), ("st-gully/fl-0/tr-3/12/4", None),
+                        ("st-gully/fl-0/tr-3/sl-1/0/ck/pt", "slot"), ("st-gully/fl-0/tr-3/sets/rw-2/0#4", "piece"),
+                        ("wl-gully/fl-0/l/co-12/sp-6/ht-3", "slot"), ("st-passage-at--172", None)):
         check(REC.classify(g, text) == level, "%s is %s, not %s" % (text, REC.classify(g, text), level))
+    # step 0b's seed keys, each under its kind's rule (schemas/naming.md)
+    for rule, path in (("stair-flaw-part", "fl-0/tr-3/sl-1/0/ck/pt"), ("stair-flaw-part", "fl-1/tr-0/sl-2/1/ck/front"),
+                       ("stair-flaw", "fl-0/tr-3/sl-1/0/dab"), ("stair-sett-row", "fl-0/tr-3/sets/rw-2"),
+                       ("stair-row", "fl-1/turn/rw-0"), ("wall-hearting", "fl-0/l/co-12/sp-6/ht-3"),
+                       ("wall-backing", "fl-0/r/bk-4-1"), ("wall-coping", "fl-1/l/cp-7")):
+        check(g.match(rule, path), "%s is not a %s by naming.md" % (path, rule))
+    check(not g.match("stair-flaw-part", "fl-0/tr-3/sl-1/ck/pt"), "a crack's pointing under a slot, not its fill")
     with contextlib.redirect_stdout(io.StringIO()):
         same = diff_stage.main(["diff_stage.py", GOLDEN, GOLDEN])
         differ = diff_stage.main(["diff_stage.py", os.path.join(GOLDEN, "life.json"), os.path.join(TMP, "p2", "b",

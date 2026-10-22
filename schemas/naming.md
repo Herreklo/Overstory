@@ -19,12 +19,14 @@ An id is a path. After the record come segments, each a name (`tr-3`, `bed`) or 
 - A slot's place and size are fixed when it is made. A later change of place or size closes it and makes a new slot; a new slot whose name would repeat an older one's takes `-g<n>` (the second generation is `-g1`).
 - A name that only groups others (a flight, a tread, a wall's panel) is a slot of type `group`: it holds slots, no fills.
 - Ids are written in full in files. A second pack's ids take `<pack>:` in front when loaded, never in files.
+- **Seed keys** (`hashing.py`): an id alone seeds the part function that makes its thing; every other draw adds its purpose, words and integers saying what it decides (`"lay"`, `"crack", "gap"`, `"campaign", 1961`). A purpose never stands for a thing: what can be replaced, picked or pinned has a slot. A tread's slabs and a row's setts are keyed on their fill and its pieces, so a stone laid anew draws anew; the other stones on their slot, which stands for its first fill until upkeep gives it a second.
+- A record's token is minted, never made from a display name. `stone.py` and `wall.py` still fall back to the lane's name when a stair's facts carry no id, and eight of the plan's stairs come out with `--`, which the record rule refuses: three passages at a negative x (`st-passage-at--172`) and five ways whose names hold a comma or brackets (`st-the-way-to-d--1107--empty-since-1986`). They are a defect, minted afresh at step 2b's re-baseline.
 
 **Record prefixes.** Engine-owned: `p` person, `h` household, `pl` place, `v` venture, `g` group, `e` engine event. Ours: `bld` building, `st` stair or flight of steps, `wl` wall, `way` street, lane, square or quay, `plot`, `unit` plan unit, `lamp`, `tree`, `plant` other planted thing, `sign`, `room`, `doc` poster, paper or deed, `photo`, `item` carried thing or garment, `trace` social trace, `org` a keeper that is not a person (a department, a firm), `ug` underground run, `rock` natural stone, `act` ground act. A new prefix is added here before its first record.
 
 ## The stair's slots
 
-As the generators name them since the hash spec (`stone.py`, `upkeep.py`), but for a row's setts, which the generator still counts as bare positions under the row; they become pieces of the row's fill at step 2's re-baseline (`CHANGELOG.md`). Flights count from the foot; steps from the foot of their flight; positions across a step from the left, looking up the stair.
+As the generators name them since step 0b (`stone.py`, `upkeep.py`). Flights count from the foot; steps from the foot of their flight; positions across a step from the left, looking up the stair.
 
 | Slot | Form under the stair | Type |
 | --- | --- | --- |
@@ -36,16 +38,18 @@ As the generators name them since the hash spec (`stone.py`, `upkeep.py`), but f
 | The setts of a step; their bed; a row (the setts are the pieces of its fill) | `<step>/sets`, `<step>/sets/bed`, `<step>/sets/rw-<r>` | group, socket, socket |
 | A landing behind a step; its rows; their slabs and joints | `<step>/ld`, `<landing>/rw-<r>`, `<row>/sl-<k>`, `<row>/jt-<k>` | group, group, socket, socket |
 | A stone's crack; a dab of cement on it | `<slab fill>/ck`, `<slab fill>/dab` | socket |
+| A crack's pointing; its front | `<slab fill>/ck/pt`, `<slab fill>/ck/front` | socket |
 | The walking line; a handrail | `walk`, `fl-<n>/hr-<l or r>` | affordance |
 
 ## The wall's slots
 
-As `wall.py` names them, but for a stone's place, which the generator still counts as a bare position under the course; it takes `sp-` at step 2's re-baseline (`CHANGELOG.md`). A panel is the wall's length beside one flight on one side; courses count from the foot; a stone's place counts along its course.
+As `wall.py` names them since step 0b. A panel is the wall's length beside one flight on one side; courses count from the foot; a stone's place counts along its course; the hearting a fallen stone shows counts by rows from the foot, then along each row. The wall's heads (its closed ends) have no slots yet: a head's stones are keyed on their course with `"head"`, the end (0 the foot, 1 the far end) and their count across it, and its backing on the panel with `"head"` and the end. They take slots at step 2b's re-baseline.
 
 | Slot | Form under the wall | Type |
 | --- | --- | --- |
 | Panel | `fl-<n>/<l or r>` | group |
 | Course; a stone's place in it | `<panel>/co-<k>`, `<course>/sp-<j>` | group, socket |
+| A hearting stone, seen where the face stone has fallen | `<place>/ht-<m>` | socket |
 | Backing cell; coping | `<panel>/bk-<j>-<0 or 1>`, `<panel>/cp-<c>` | socket |
 
 ## The house's slots
@@ -116,10 +120,12 @@ stair-bed: {stair-step}/(bed|bed/pt|sets/bed)
 stair-setts: {stair-step}/sets
 stair-sett-row: {stair-setts}/rw-{count}
 stair-flaw: {stair-slab}/{count}/(ck|dab)
+stair-flaw-part: {stair-slab}/{count}/ck/(pt|front)
 stair-affordance: walk|{stair-flight}/hr-[lr]
 wall-panel: fl-{count}/[lr]
 wall-course: {wall-panel}/co-{count}
 wall-stone: {wall-course}/sp-{count}
+wall-hearting: {wall-stone}/ht-{count}
 wall-backing: {wall-panel}/bk-{count}-[01]
 wall-coping: {wall-panel}/cp-{count}
 house-face: (a{count})?[fblr]

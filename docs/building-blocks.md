@@ -327,6 +327,7 @@ Reasons: decisions §8.
 - One motion class per element: still, hinged, swinging, flexible, floating, emitting. The anchor class is derived; a flag says card or skinned.
 - People's identity numbers are in the contract; their far mesh and archetypes are *provisional*. The gait seed is in identity from birth. Faces keep both routes open, with blend shapes kept on import.
 - Affordances are dated sockets read at the date: treads, walking line, landings, handrails, sit, lean, stand, sills, shelter, grips. Every walked surface registers a walking line to the feet field.
+- A flight's landings keep the landing rule: the shortest is one stride and one going, so it is crossed in step, and no run between them goes over 18 risers or 3.3 m of rise, the limit of real practice (`stone.py`'s `step_plan`; `blender/tools/setout_check.py`).
 - Flags, laundry, smoke and splashes step on twos from a shared clock; people and the camera stay smooth (`docs/research/what-moves.md`). *Provisional:* a motion sheet.
 - Wind is one field, a pure function of position and absolute time. Every motion is a function of the record and absolute time; cloth is the one warm-started exception.
 - Clips and rules are engine-neutral data.

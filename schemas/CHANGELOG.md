@@ -2,6 +2,10 @@
 
 Every change to the files in `schemas/` with its migration. The contracts' version is `schemaVersion`, carried by every record, kind, pack file and fixture. `tools/migrate.py` runs `migrations/NNN_<name>.py` in order on every file behind; `tools/migrate.py --check` fails while any is behind. `tools/validate_record.py` checks records, kinds, parts and the registries against the current version.
 
+## 2, unchanged: the grammar holds step 0b's seed keys (22 October)
+
+No migration: no key in code changed, so step 0b's proposed baseline stands. `naming.md` gains `stair-flaw-part` (a crack's pointing and front, `<slab fill>/ck/pt`, `/ck/front`) and `wall-hearting` (`<place>/ht-<m>`), and says how a seed key is made: an id, then purpose words and integers. The setts as pieces of their row's fill and the wall's `sp-` places, pending below, landed in step 0b. Left for step 2b's re-baseline: the wall's heads, keyed on their course with `"head"`, take slots; the eight stair ids that slug a lane's name to `--` are minted afresh.
+
 ## 2, unchanged: the hash chain and the stage contract (22 October, the gully port's step 2 groundwork)
 
 No migration: no field changed, and no record, kind or part needs rewriting.
