@@ -202,13 +202,13 @@ For the paper playtests (1f+), where each may hold or turn into a chore:
 
 Each was written in its own round of ideas. They disagree, and none is a decision.
 
-**Candidates for a second round of paper playtests** (21 October; `docs/plan.md`, 1f+), beside the first seven: football club, band, observer, family saga, journalist, murder mystery, and an RPG role. These four have the strongest loops on what exists today:
+**Candidates for a second round of paper playtests** (21 October; `docs/plan.md`, 1f+), beside the first seven: football club, band, observer, family saga, journalist, murder mystery, and an RPG role. The candidates were nine: the postal carrier, the restorer, the town photographer and archivist, the Courier's editor or the Anchor's landlord, the councillor or planner, the town doctor, the café owner, a child growing up, and the house itself. Recommended for round 2, these four have the strongest loops on what exists today:
 1. **The Courier's editor**, the information game. It uses the engine's most distinctive data.
 2. **The postal carrier**, routines and absences, paired with a slow mystery.
 3. **The restorer**, which tests criterion 1 directly through play.
 4. **The town photographer**, time and records as play.
 
-Two hybrids to try: the photographer as the journalist's tool; the postal carrier as the way into the murder mystery (`README.md`, Combinations). The ideas are in `roles.md` and `mysteries.md` (The round). The first round stopped at 11 of 24 runs, and no second round has run.
+Two hybrids to try: the photographer as the journalist's tool; the postal carrier as the way into the murder mystery (`README.md`, Combinations). The ideas are in `roles.md`, `mysteries.md` (The round), `groups.md` (The venture) and `lives.md`. The first round stopped at 11 of 24 runs, and no second round has run.
 
 **Seven games built on reading a world,** ranked by whether anyone would want to play them, then by how cleverly they use the engine. None has been built or played. The precedents and rules behind them are in `docs/research/game-precedents.md`.
 1. The Traitors, with the town as host (`multiplayer.md`).

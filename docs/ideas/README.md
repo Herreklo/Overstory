@@ -31,7 +31,7 @@ The catalogue of every game idea for Overstory: one card per idea, grouped by fa
 
 **A game, not a walking simulator** (`CLAUDE.md`, Øystein, 21 October). Every game built on Overstory has goals, challenge, stakes, mastery, failure, and decisions that cost something. Reading the world is a skill that pays off in play, as deduction does in Return of the Obra Dinn or scouting in Football Manager, never the whole of the play. A concept that would only be looked at, however beautiful, is not a game. Its question, how it is judged and what would change our minds are written before it is built. Game-ness is judged with Jesper Juul's classic game model (`first-game-options.md`, What this is for).
 
-**The exit criteria** (`CLAUDE.md`, What it is for; a draft to agree with Øystein). Each idea is rated against them: a building's history read at a glance; a person recognised across scenes and years; a consequence the page does not make obvious; the scene preferred to the page without misleading; a street at city scale holding its look and frame rate.
+**The exit criteria** (`CLAUDE.md`, What it is for; a draft to agree with Øystein). The six options are rated against them (`first-game-options.md`): a building's history read at a glance; a person recognised across scenes and years; a consequence the page does not make obvious; the scene preferred to the page without misleading; a street at city scale holding its look and frame rate.
 
 **The spreadsheet test.** A game idea uses Overstory when the player's main act is reading the world. If it would play as well as a spreadsheet, the world on screen is decoration (`game-layer-ideas.md`, What each idea asks of Overstory).
 
@@ -41,13 +41,13 @@ The catalogue of every game idea for Overstory: one card per idea, grouped by fa
 3. **Time that can jump,** with the screen always following the record.
 4. **Evidence, not verdicts:** accounts and records can be wrong.
 
-**Before any idea is chosen,** gameplay needs much more research: balance, difficulty and engagement (Øystein, 22 October: "we can do it later"). `docs/research/fun.md`, `play-craft.md` and `playtesting.md` cover fun, feel and testing. Balance and long-term engagement depend on the game, so they are studied once one is picked.
+**Before any idea is chosen,** gameplay needs much more research: balance, difficulty and engagement (written for the old games' ideas; Øystein, 22 October: "we can do it later"). `docs/research/fun.md`, `play-craft.md` and `playtesting.md` cover fun, feel and testing. Balance and long-term engagement depend on the game, so they are studied once one is picked.
 
 **Claims about other games** come from press, wikis and interviews, sourced in `first-game-options.md` (Sources) and `docs/research/game-precedents.md`. An idea marked *(old game)* starts from an older game that reached for something its tech or its time could not give. A town of developing people whose history stays is the missing part in each. Those details of old games are from memory and are checked before any idea is built on them.
 
 ## Status: the paper playtests
 
-Round 1 of the paper playtests gave seven concepts a playable card (`docs/playtests/paper-1/method.md`, cards in `cards/`). It stopped at 11 of 24 runs (Øystein: "Maybe stop playtest, and focus on building?"; `NOW.md`). Only the mystery (4 runs) and the paper (7 runs) were played; the club's 8 runs were among the 13 left when it stopped. The band, the restorer, the family and the role were not played. There is no verdict. The interim note is `docs/playtests/paper-1/analysis/interim.md`. The concepts are redesigned from its needs when people play the greybox (`NOW.md`).
+Round 1 of the paper playtests gave seven concepts a playable card (`docs/playtests/paper-1/method.md`, cards in `cards/`). It stopped at 11 of 24 runs (Øystein: "Maybe stop playtest, and focus on building?"; `NOW.md`). Only the mystery (4 runs) and the paper (7 runs) were played; the club's 8 runs were among the 13 left when it stopped. The band, the restorer, the family and the role were not played. There is no verdict, and the ledgers are not yet audited. The interim note is `docs/playtests/paper-1/analysis/interim.md`. The concepts are redesigned from its needs when people play the greybox (`NOW.md`).
 
 Across the 11 runs, players asked who is kin to whom in 10.
 
@@ -65,13 +65,13 @@ Each card gives the pitch; the loop; precedents; what it uses from the town and 
 - **Precedents.** Bad News, Pentiment, Paradise Killer, Shadows of Doubt, Return of the Obra Dinn, Sherlock Holmes Consulting Detective, Columbo, The Past Within.
 - **Uses.** Natural deaths, secrets, lies and accounts the engine has now; who knew what (1), sifting (7), records (9), where and when (28); murder would need new requests, within Rule 8.
 - **Multiplayer.** Co-op and rival reporters on one case; two investigators in different decades; the culprit as a player and the daily case (`multiplayer.md`).
-- **Status.** Øystein, 22 October, on the casebook: "actual a good idea. this could work very similar as well. The big thing is the story and mystery though, but maybe would could do this in a very clever generative way?"; "something fun for multiplayer stuff would also be nice." Paper playtest (*Answerable*, 4 runs, no verdict): lives on predicted better, 33% and 25% right against 8% and 10%, but arm and model are confounded; lives on solved the case worse, 15 and 25 of 100 against 45 and 55; all four players called the hearing's rules a cheat; all four runs asked who found and certified the dead, and the engine records neither. The hypothesis that lives make the mystery solvable leans against.
+- **Status.** Øystein, 22 October, on the casebook: "actual a good idea. this could work very similar as well. The big thing is the story and mystery though, but maybe would could do this in a very clever generative way?"; "something fun for multiplayer stuff would also be nice." Paper playtest (*Answerable*, 4 runs, no verdict): lives on predicted better, 33% and 25% right against 8% and 10%, but arm and model are confounded; lives on solved the case worse, 15 and 25 of 100 against 45 and 55, a gap made wholly by three facts whose lives-off answer was "nothing on record" (the other seven tied); all four players called the hearing's rules a cheat; all four runs asked who found and certified the dead, and the engine records neither. The hypothesis that lives make the mystery solvable leans against.
 - **Detail.** `mysteries.md` (A death in the town).
 
 #### Inquest: the ghost who closes a hole
 
 *You are a ghost with one very specific death, your own: find every hole that lined up to kill you, close one, and see what the town became.*
-- **Loop.** An inquiry from records, the Afterward (the town thirty years on) and rationed returns; then one change, run forward, with its ripples marked. No change is the right answer.
+- **Loop.** An inquiry from records, the Afterward (the town thirty years on) and rationed returns; then one change, run forward, with its ripples marked. There is no right answer: every reachable change saves the victim, and they differ in what else they do.
 - **Forms.** The board of inquiry, for any accident; the hand-over; Fate against the inquiry; the ghost in the cemetery; the ghost who cannot act and only nudges.
 - **Precedents.** Return of the Obra Dinn, The Case of the Golden Idol, The Sexy Brutale, Ghost Trick, Outer Wilds, Twelve Minutes (as a warning), Spoon River Anthology, Reason's Swiss cheese model.
 - **Uses.** A deterministic engine that can prove each hole by running the world again; records as accounts (9); deaths with a moment, branching and things in events (not yet requested; `game-layer-ideas.md`). Every change is precomputed, so it needs no live player commands.
@@ -128,7 +128,8 @@ Each card gives the pitch; the loop; precedents; what it uses from the town and 
 - **Precedents.** What Remains of Edith Finch, Here.
 - **Uses.** Time, the fabric, the family saga.
 - **Multiplayer.** None written.
-- **Status.** None recorded. It may be an experience rather than a game.
+- **Risk.** It may be an experience rather than a game.
+- **Status.** None recorded.
 - **Detail.** `lives.md` (The house itself).
 
 ### Building a group or a place
@@ -235,7 +236,7 @@ A festival and a hotel are named only as columns of the needs table (`game-layer
 
 *One of the town's people, with a past you didn't choose and a goal by a date; the town answers monthly.*
 - **Precedents.** Baldur's Gate 3, Persona, Pathologic 2, The Witcher 3, Divinity, Yakuza.
-- **Uses.** The engine's memory of who saw what as reactivity; any idea can be played as a role with a body in the town.
+- **Uses.** The engine's memory of who saw what as reactivity; any of the six options can also be played as a role with a body in the town.
 - **Multiplayer.** None written.
 - **Status.** Paper playtest: *Word Gets Round* card, not played.
 - **Detail.** `roles.md` (A role in the town); `lives.md` (Is there a role-playing game here?).
@@ -320,7 +321,7 @@ The Courier's editor stays a standalone candidate: deadlines, a rival paper, pri
 
 What the strongest share: time as a lever (loops, jumps, relays), reading as the skill, and records that can be wrong. Those are what only this engine has. They also share most of their systems: inspection and the casebook, jumps, records and sifting.
 
-**Within families.** The band with the venture as its home base (`groups.md`). The ghost and the board of inquiry as one game with two modes (`inquest.md`). The paper as the death's second role, sharing its systems (`first-game-options.md`, section 5).
+**Within families.** The band with the venture as its home base (`groups.md`). The ghost and the board of inquiry as one game with two modes (`inquest.md`). The paper, which shares the death's systems and could be its second role (`first-game-options.md`, section 5).
 
 **The paper playtest panels' hybrids,** each written before the sessions. Read them in their panels:
 - `docs/playtests/paper-1/panel/experience.md` (Hybrids I'd try): the obituarist, fielding eleven, the anthology, the loft;

@@ -89,7 +89,7 @@ The engine reports that living barely changes anyone: thirty years move how some
 
 ### A first playable slice: the first gig
 
-One band, four musicians, one manager. A rehearsal room, a small venue, a studio. One album cycle (about eighteen months). Preparation, performance, immediate consequences, lasting memories. Then a jump of several years back to the same venue, to see whether earlier choices made a history the player recognises.
+From the game layer's ideas, collected from two external reviews of the Person Model Lab (October 2026) and discussion (`game-layer-ideas.md`). One band, four musicians, one manager. A rehearsal room, a small venue, a studio. One album cycle (about eighteen months). Preparation, performance, immediate consequences, lasting memories. Then a jump of several years back to the same venue, to see whether earlier choices made a history the player recognises.
 
 ### Multiplayer: a band is a hidden-role game
 
@@ -178,4 +178,4 @@ The acorn, a small place run from 1989 to 2030, is in `lives.md`. The loft's lan
 
 ## The scene builder
 
-The music game's sibling: not one band but the venues, rehearsal rooms, posters, local paper and audiences that make a town known for a sound. It runs on the rule that cheap old space breeds new life (`docs/research/world-that-remembers.md`, principle 10).
+One of the ideas that pass the spreadsheet test in Overstory's reading of the open notebook (20 October 2026; `game-layer-ideas.md`, What each idea asks of Overstory). The music game's sibling: not one band but the venues, rehearsal rooms, posters, local paper and audiences that make a town known for a sound. It runs on the rule that cheap old space breeds new life (`docs/research/world-that-remembers.md`, principle 10).

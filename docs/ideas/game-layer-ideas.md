@@ -1,20 +1,20 @@
 # Ideas for the game layer
 
-Status: ideas, not decisions; no game is chosen (`NOW.md`). The first six sections were collected from two external reviews of the Person Model Lab (October 2026) and discussion. The later sections gather what several game ideas share: what if, shown; records; what each idea asks of Overstory; the games that only read a finished history; and what the reading games need from the engine. The catalogue of ideas is `README.md`.
+Status: ideas, not decisions; no game is chosen (`NOW.md`). The sections from Promises to The test that matters, the first gig among them (now in `groups.md`), were collected from two external reviews of the Person Model Lab (October 2026) and discussion. The later sections gather what several game ideas share: what if, shown; records; what each idea asks of Overstory; the games that only read a finished history; and what the reading games need from the engine. The catalogue of ideas is `README.md`.
 
 ## In short
 
-- **Promises** are remembered by the person they were made to, and tested years later.
+- **Promises** are remembered by the person they were made to, and may be tested years later.
 - **Chemistry** is discovered by trying, never calculated; a replacement does not inherit it.
 - **The rehearsal room** is a pressure cooker: the player shapes conditions and does not control people.
-- **Legendary and successful** are two kinds of progress, and legend comes only from causal events.
+- **Legendary and successful** are two kinds of progress, and legend comes only from causal events and relationships.
 - **People become important** before you know it.
 - **Fun** must feel like discovery, agency and recognition, all three.
 - **What if, shown:** one saved history, one changed decision, two towns side by side.
 - **Records** are dated objects with a maker and a purpose, and can be wrong; they age like surfaces.
 - **The fabric and records** are needed by nearly every idea.
 - **Two games only read a finished history**; the others need player actions in the engine, rated Hard.
-- **Seven engine needs** of the reading games, first written as requests 11 to 17 elsewhere, are mapped below to `docs/engine-requests.md`; five are not yet requested.
+- **Seven engine needs** of the reading games, first written as requests 11 to 17 elsewhere, are mapped below to `docs/engine-requests.md`; four are not yet requested, and two only in part.
 
 ## Promises matter more than contracts
 
@@ -55,7 +55,7 @@ Put the prototype in front of ten people who know nothing about the implementati
 
 ## What if, shown: the counterfactual observatory
 
-One saved history, one changed decision, two versions of the same street side by side. The diff between the two towns' plans becomes a view: what changed, and what the town resisted.
+One of the ideas that pass the spreadsheet test (What each idea asks of Overstory, below) in Overstory's reading of the open notebook (20 October 2026). One saved history, one changed decision, two versions of the same street side by side. The diff between the two towns' plans becomes a view: what changed, and what the town resisted.
 
 It runs through other ideas. A group game can show at its end what would have happened if you had kept the drummer (`groups.md`, Our edge). Inquest proves each hole by running the world again without it (`inquest.md`). The prototype "the favour and its twin" shows the town without the player's favours after a jump (`docs/research/playtesting.md`, section 10). An aligned toggle between two playthroughs at one date is the same machinery as one record at two dates (`docs/research/time-on-screen.md`).
 
@@ -89,7 +89,7 @@ The festival and the hotel appear only in this table; no page describes them fur
 
 ## Games that read a finished history
 
-Two of the seven games built on reading a world only read a finished history, so they can start on a snapshot once the front door's part two (#22) lands: the Traitors, with the town as host (`multiplayer.md`) and Columbo (`mysteries.md`). The other five need player actions to go back into the engine, which `docs/research/reality-check.md` rates Hard. Inquest is reachable for the same reason: every change is precomputed, so a case is a finished set of runs that the player reads (`inquest.md`, Is it possible?).
+Two of the seven games built on reading a world only read a finished history, so they can start on a snapshot once the front door's part two (#22) lands: the Traitors, with the town as host (`multiplayer.md`) and Columbo (`mysteries.md`). The other five need player actions to go back into the engine, which `docs/research/reality-check.md` rates Hard. Inquest is more reachable than it looks, for the same reason: every change is precomputed, so a case is a finished set of runs that the player reads (`inquest.md`, Is it possible?).
 
 ## What the reading games need from the engine
 

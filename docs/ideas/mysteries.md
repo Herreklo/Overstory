@@ -55,7 +55,7 @@ Overstory must not grow its own crime simulation (`docs/research/pre-mortem.md`)
 
 **Repeatable without going stale.** Shadows of Doubt wears through learned patterns, templated documents, cases that fizzle or fall open, and a closing form: its cases come from templates and its documents repeat. Here:
 - the case is a life, not a template: the sifter picks a death with a rich chain, more than one person with a cause. Cases come from chains, never from types (request 7): the café's six attempts, the till and the boat;
-- count kinds, fold repeats: the engine's readers reward lives with more kinds of happening, and its pages repeat the festival, the hat and "count me in", so a sifter prefers chains of many kinds and folds the repeats;
+- count kinds, fold repeats: the engine's readers reward lives with more kinds of happening, and its pages repeat the festival, the hat and "count me in", so a sifter should prefer chains of many kinds and fold the repeats;
 - most deaths are not murders, and the player knows it, so "what happened" never presumes "who did it";
 - evidence is drawn from the record into the world (a worn path, a window lit at three, a sign changed); written records are few, each with a maker and a purpose;
 - a solver checks before play that the main facts can be learned from what a player can reach, and that no single clue gives them away;
@@ -63,6 +63,8 @@ Overstory must not grow its own crime simulation (`docs/research/pre-mortem.md`)
 - no form at the end, but an account given to someone, with consequences; then the record, marked as the record, scores it fact by fact (who, where, when, why), never a verdict on anyone's character, as the interface study allows after a chapter;
 - the town ages between cases, so a detective's career is a long save among people already known. The same street holds different chains in 1989 and 1999, so a town that moves forward does not run out;
 - the player's own traces: their acts enter the record and the fabric like anyone's (`docs/research/time-on-screen.md`, The player's own traces), so a later case can involve them.
+
+The real run suggested five of these guards (`stories-in-the-world.md`): cases from chains, counting kinds and folding repeats, cases that end in "?", the town ageing under the cases, and the player's own traces.
 
 **Needs.** The town at several dates, scene state by hour, records, a few interiors; the case board, the photograph, the journal.
 

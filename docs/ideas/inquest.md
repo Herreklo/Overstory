@@ -102,9 +102,9 @@ Two earlier forms of the ghost were written in other rounds of ideas. Each keeps
 
 It was second of the seven games built on reading a world (`first-game-options.md`, section 7, Other recorded rankings).
 
-### The ghost who cannot act *(old game)*
+### The ghost who cannot act
 
-From *Murdered: Soul Suspect* (2014), which wasted its premise, and *Ghost Trick* (2010). You died in 1989. You cannot act, only be near and nudge: a draught that opens a letter, a light that flickers. Years pass, and grief moves through your family and the house (`stories-in-the-world.md`, A death, and grief). The goal: the truth found before the last person who knows it dies.
+Labelled "new" in its round (*Murdered: Soul Suspect*, 2014, wasted its premise; *Ghost Trick*, 2010). You died in 1989. You cannot act, only be near and nudge: a draught that opens a letter, a light that flickers. Years pass, and grief moves through your family and the house (`stories-in-the-world.md`, A death, and grief). The goal: the truth found before the last person who knows it dies.
 
 It was written as a connection in the old games' round (`README.md`, Combinations and connections).
 

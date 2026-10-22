@@ -211,3 +211,16 @@ Every section unchanged. `game-precedents.md` was copied because `inquest.md` an
 - `CLAUDE.md`: the Docs table's `docs/ideas/` cell names the catalogue.
 - Links updated: `docs/research/fun.md` (Sources, `more-game-types.md`), `docs/research/playtesting.md` (option 6 now also names `mysteries.md`), `docs/playtests/paper-1/method.md` (the restorer, now also `roles.md`), `docs/research/time-on-screen.md` (two links to `worlds-on-screen.md`).
 - Left as it is: `docs/notes/2026-10-21-6-overstory-to-understory.md` names `more-game-types` as part of a note already sent; it is a record. Links from `reviews/` reach only `first-game-options.md` and `stories-in-the-world.md`, which still exist.
+
+## Fresh check (23 October)
+
+A fresh checker compared every input page with its new home, sentence by sentence. Content was complete; these losses of nuance were repaired in place:
+- `game-layer-ideas.md`: the reviews' provenance covers every section from Promises to The test that matters (not "the first six"); its In short keeps "may be tested years later" and "causal events and relationships"; four needs are not yet requested and two only in part (not five); Inquest is "more reachable than it looks" (its own words), not "reachable".
+- `mysteries.md`: the sifter "should prefer" chains of many kinds (it was "prefers"); the five guards' source, the real run, is named again.
+- `inquest.md`: the ghost who cannot act was labelled "new" in its round, not *(old game)*; the marker is removed.
+- `README.md`: Inquest's "no right answer" restored (it read "No change is the right answer"); the mystery playtest's solve gap keeps its cause (three facts with "nothing on record"; the other seven tied) and the unaudited ledgers; a role "with a body in the town" applies to the six options, not any idea (also in `roles.md`); the paper "could be" the death's second role; only the six options are rated on the criteria; the research note's round is named; the house itself's risk is no longer under Status.
+- `first-game-options.md`, section 7: the nine round-2 candidates and "Recommended for round 2" restored.
+- The open notebook's ideas that pass the spreadsheet test (the restoration architect, the archivist, social archaeology, the anthology, the scene builder, the counterfactual observatory) keep that verdict and its date; the first gig keeps its source.
+- `multiplayer.md`: the engine as referee is the Traitors' point, not all three ideas'.
+
+Links: no live link reaches a dissolved page; the only mentions are this map and the sent note above. The blind rule: no new or changed page describes the playable corner's case.

@@ -113,7 +113,7 @@ Reshaped from "the return", a photographer's visits, which was mostly looking. I
 
 ### The restoration architect
 
-You take on an old building or a block. You work out why it changed, which traces are original and which were later, and what to keep. The building system becomes the game: the coat stack is the evidence, the era shelves are the vocabulary, and a careless 1970s window is a clue and a choice. In the interface study the archivist and the restorer share one dial setting: records and traces, phase views from conservation practice (a colour per period, a dashed outline for what is gone, no colour for the undated), and conjecture drawn looser (`docs/research/interface-and-inspection.md`, section 7).
+One of the ideas that pass the spreadsheet test in Overstory's reading of the open notebook (20 October 2026; `game-layer-ideas.md`, What each idea asks of Overstory). You take on an old building or a block. You work out why it changed, which traces are original and which were later, and what to keep. The building system becomes the game: the coat stack is the evidence, the era shelves are the vocabulary, and a careless 1970s window is a clue and a choice. In the interface study the archivist and the restorer share one dial setting: records and traces, phase views from conservation practice (a colour per period, a dashed outline for what is gone, no colour for the undated), and conjecture drawn looser (`docs/research/interface-and-inspection.md`, section 7).
 
 ### Elsewhere in the repo, for the restorer
 
@@ -138,11 +138,11 @@ From the four games the run supports (`stories-in-the-world.md`). Learn a street
 
 ### The town archivist
 
-A photograph, a deed, an old newspaper, a family name. You rebuild lives across generations from records that disagree, with the houses as one source among the papers. Traces cannot lie; records can, and the game is in the gap.
+One of the ideas that pass the spreadsheet test in Overstory's reading of the open notebook (20 October 2026; `game-layer-ideas.md`, What each idea asks of Overstory). A photograph, a deed, an old newspaper, a family name. You rebuild lives across generations from records that disagree, with the houses as one source among the papers. Traces cannot lie; records can, and the game is in the gap.
 
 ### Social archaeology
 
-You arrive decades after a place changed and work out what it used to be: closed businesses, faded posters, renovated houses, a street widened halfway. The fabric pass's output is the level.
+One of the ideas that pass the spreadsheet test in Overstory's reading of the open notebook (20 October 2026; `game-layer-ideas.md`, What each idea asks of Overstory). You arrive decades after a place changed and work out what it used to be: closed businesses, faded posters, renovated houses, a street widened halfway. The fabric pass's output is the level.
 
 ### Elsewhere in the repo, for the observer and the photographer
 
@@ -178,4 +178,4 @@ What the town must give its politics (the town hall, the conservation fight, the
 
 The seventh concept of the paper playtests: a role in the living town with Baldur's Gate 3-like reactivity, whose acts and relationships play out over years. Its card is *Word Gets Round* (`docs/playtests/paper-1/cards/rpg.md`); its status is in `README.md`.
 
-Why the town can carry a role-playing game, and what it costs, is under option 4, the role-playing game of a life and its heirs (`lives.md`, Is there a role-playing game here?). Any idea here can also be played as a role with a body in the town: the dials change, not the world. The systems panel's "the role as a dial" and the narrative panel's "the band as a role" are in `README.md` (Combinations).
+Why the town can carry a role-playing game, and what it costs, is under option 4, the role-playing game of a life and its heirs (`lives.md`, Is there a role-playing game here?). Any of the six options can also be played as a role with a body in the town; the dials change, not the world. The systems panel's "the role as a dial" and the narrative panel's "the band as a role" are in `README.md` (Combinations).

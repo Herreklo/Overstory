@@ -9,7 +9,7 @@ Ideas, not decisions: no game is chosen (`NOW.md`). Every idea is catalogued in 
 - **The Traitors, with the town as host:** friends investigate one death from different true archives, and one of them steers the group wrong with true evidence.
 - **One of them is a player:** one player lives as a resident among simulated ones; the others hunt them.
 - **The daily case:** one seed a day for everyone, compared.
-- The engine as referee runs through all three: it holds the truth, so players can lie with true evidence and nobody writes consistent dossiers by hand. The rules taken from precedents (split knowledge forces talk; narrow channels between players) are in `docs/research/game-precedents.md`.
+- In the Traitors the engine is the referee: it holds the truth, so players do the lying with true evidence and nobody writes consistent dossiers by hand. The rules taken from precedents (split knowledge forces talk; narrow channels between players) are in `docs/research/game-precedents.md`.
 
 ## The Traitors, with the town as host
 
