@@ -24,7 +24,7 @@ WHAT = {
     "shadows": "the sun's shadow map, four cascades of one 4096 map",
     "ssao": "screen-space ambient occlusion (full resolution)",
     "ssr": "screen-space reflections",
-    "beams": "the sun's beams (SunBeams.shader: 40 shadow-map taps a pixel)",
+    "beams": "the sun's beams (SunBeamsQuarter.shader: a quarter of the pixels, 16 steps, one hard tap; the old full pass is the beams-full arm)",
     "foglights": "the lamps in the fog (FogLights.shader; the colour copy only, no lamp is lit in these lights)",
     "keyblock": "the woodblock print's key block (look D only; the colour copy and an early out here)",
     "palette": "the style's colour pass (Palette.shader)",
