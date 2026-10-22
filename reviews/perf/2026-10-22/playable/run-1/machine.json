@@ -1,0 +1,220 @@
+{
+ "what": "the machine's background load around a timing run (tools/unity_lock.py --timing): the busiest processes by ps's %CPU (of one core), before the run and sampled during it, the run's own processes apart",
+ "owner": "W3 (the walk's harness)",
+ "purpose": "the frame-time harness: tools/perf.sh playable -runs 2",
+ "command": [
+  "zsh",
+  "/Users/oystein/code/Overstory/tools/perf.sh",
+  "playable",
+  "-runs",
+  "2"
+ ],
+ "started": "2026-10-22T17:39:53+02:00",
+ "ended": "2026-10-22T18:12:52+02:00",
+ "seconds": 1980,
+ "exit": 0,
+ "cpus": 10,
+ "memory_gb": 24.0,
+ "open": [
+  "Blender, interactive"
+ ],
+ "before": {
+  "load": [
+   2.22,
+   2.67,
+   2.73
+  ],
+  "top": [
+   {
+    "name": "WindowServer",
+    "pid": 4171,
+    "cpu": 41.9,
+    "mem": 0.3
+   },
+   {
+    "name": "launchd",
+    "pid": 1,
+    "cpu": 33.4,
+    "mem": 0.1
+   },
+   {
+    "name": "Claude Helper (Renderer)",
+    "pid": 49843,
+    "cpu": 31.0,
+    "mem": 3.6
+   },
+   {
+    "name": "Claude Helper",
+    "pid": 49830,
+    "cpu": 20.1,
+    "mem": 0.4
+   },
+   {
+    "name": "claude",
+    "pid": 51340,
+    "cpu": 9.8,
+    "mem": 2.1
+   },
+   {
+    "name": "Creative Cloud UI Helper (Renderer)",
+    "pid": 41696,
+    "cpu": 8.6,
+    "mem": 1.3
+   },
+   {
+    "name": "claude",
+    "pid": 55161,
+    "cpu": 4.0,
+    "mem": 1.3
+   },
+   {
+    "name": "claude",
+    "pid": 51084,
+    "cpu": 3.0,
+    "mem": 2.2
+   },
+   {
+    "name": "Claude",
+    "pid": 49824,
+    "cpu": 2.4,
+    "mem": 1.7
+   },
+   {
+    "name": "Blender",
+    "pid": 58659,
+    "cpu": 2.0,
+    "mem": 0.4
+   },
+   {
+    "name": "com.apple.DriverKit-AppleBCMWLAN",
+    "pid": 4320,
+    "cpu": 1.2,
+    "mem": 0.1
+   },
+   {
+    "name": "zsh",
+    "pid": 66282,
+    "cpu": 1.0,
+    "mem": 0.0
+   }
+  ],
+  "spotlight": [],
+  "spotlight_cpu": 0
+ },
+ "during": {
+  "samples": 65,
+  "every_s": 30.0,
+  "load": {
+   "min": 1.95,
+   "mean": 4.43,
+   "max": 10.07
+  },
+  "top": [
+   {
+    "name": "WindowServer",
+    "pid": 4171,
+    "cpu_mean": 25.4,
+    "cpu_max": 47.1
+   },
+   {
+    "name": "Claude Helper",
+    "pid": 49830,
+    "cpu_mean": 12.3,
+    "cpu_max": 42.7
+   },
+   {
+    "name": "Claude Helper (Renderer)",
+    "pid": 49843,
+    "cpu_mean": 12.2,
+    "cpu_max": 148.9
+   },
+   {
+    "name": "Google Chrome Helper (Aperitif Renderer)",
+    "pid": 59077,
+    "cpu_mean": 10.1,
+    "cpu_max": 45.0
+   },
+   {
+    "name": "Creative Cloud UI Helper (Renderer)",
+    "pid": 41696,
+    "cpu_mean": 6.3,
+    "cpu_max": 8.3
+   },
+   {
+    "name": "Google Chrome Helper (Aperitif)",
+    "pid": 4836,
+    "cpu_mean": 4.6,
+    "cpu_max": 25.4
+   },
+   {
+    "name": "Claude",
+    "pid": 49824,
+    "cpu_mean": 3.2,
+    "cpu_max": 18.9
+   },
+   {
+    "name": "Python",
+    "pid": 67541,
+    "cpu_mean": 3.1,
+    "cpu_max": 100.0
+   },
+   {
+    "name": "Python",
+    "pid": 67058,
+    "cpu_mean": 3.1,
+    "cpu_max": 99.4
+   },
+   {
+    "name": "coreaudiod",
+    "pid": 4186,
+    "cpu_mean": 3.0,
+    "cpu_max": 4.1
+   },
+   {
+    "name": "Google Chrome",
+    "pid": 4416,
+    "cpu_mean": 2.8,
+    "cpu_max": 20.9
+   },
+   {
+    "name": "claude",
+    "pid": 51340,
+    "cpu_mean": 1.8,
+    "cpu_max": 23.7
+   }
+  ],
+  "spotlight_cpu_mean": 1.3,
+  "run": [
+   {
+    "name": "Overstory",
+    "pid": 69876,
+    "cpu_mean": 12.9,
+    "cpu_max": 100.5
+   },
+   {
+    "name": "Overstory",
+    "pid": 66451,
+    "cpu_mean": 7.7,
+    "cpu_max": 95.9
+   },
+   {
+    "name": "Unity.DataStore",
+    "pid": 66314,
+    "cpu_mean": 0.3,
+    "cpu_max": 0.6
+   },
+   {
+    "name": "UnityPackageManager",
+    "pid": 66312,
+    "cpu_mean": 0.1,
+    "cpu_max": 8.5
+   },
+   {
+    "name": "Unity",
+    "pid": 66307,
+    "cpu_mean": 0.1,
+    "cpu_max": 0.4
+   }
+  ]
+ }
+}

@@ -50,13 +50,13 @@ The play, the brief's phase 2, is the milestone after the walk. It is boxed and 
 - One stair with its walls is about 816,000 triangles.
 - The repository is 2.2 GB of git history. Unity holds 407 MB of art, 373 MB of it in 222 FBX files, 272 MB of that stone.
 
-**Frame time today** (the harness, 21 October; `docs/measuring.md`): the corner runs at 28 to 42 ms in drizzle, 84 to 96 ms in low sun, and 25 to 35 ms at the blue hour. That's 10 to 40 fps against the 60 fps target.
-- About 15 million triangles a frame with sun shadows, and 5.5 million without.
-- Something drawn only in low sun costs about 55 to 65 ms; the sun beams are the suspect.
-- The birch costs 10 to 16 ms in view, and 25 ms when it fills the frame.
-- URP's dither is redrawn every frame, so a still camera shimmers by about half a level. That is decided with the light (1c).
+**Frame time today** (the walk's whole scene, 22 October, W3; `docs/measuring.md`, The walk's whole scene). This is the frame-rate gate's baseline. The walk's corner in the clay town, over the five judging views and LT1g's four, runs at:
+- 21 to 37 ms in drizzle;
+- 75 to 94 ms in low sun;
+- 17 to 32 ms at the blue hour.
 
-The walk's first whole-scene run replaces these as the baseline (The order, the frame-rate gate).
+That is 11 to 58 fps against the 60 fps target. The frame holds 11 to 17 million triangles with the sun's shadows, and 4 to 6 million without them.
+- URP's dither is redrawn every frame, so a still camera shimmers by about half a level. That is decided with the light (1c).
 
 At today's rate a thousand stairs would take about 19 hours to generate and 16 GB of FBX. The architecture must change how they are made, not tune them.
 
@@ -116,6 +116,12 @@ For example, the gully is done only with the Variety stairs rebuilt, and the bir
 
 **The standing frame and the frame-rate gate** (the plan review, P1 and P9). Every milestone ends in the playable corner (1g), walked. The harness runs the whole scene at the judging views in three lights, under the Unity lock's `--timing`, and the milestone's strict review judges the result.
 - The walk's first run is the baseline. The clay town counts as scope, not as a regression.
+- The baseline (22 October, W3; `reviews/perf/2026-10-22/playable/`): offscreen 24 to 44 ms in drizzle, 87 to 107 ms in low sun, 20 to 37 ms at the blue hour. Its three biggest costs, with their owners:
+  - low sun's beams, 64 to 66 ms (1c). Of that, 40 ms is the full-screen pass itself, and 24 to 26 ms is its taps reading a real shadow map;
+  - the materials' shaders, 9 to 14 ms at the eye and street views in every light (6 at the Anchor's door). The owner is not known until L5 says which shader carries it; until then it sits with the shader families in the port's step 4;
+  - the birch, 11 to 17 ms where it is in view (1e).
+
+  Close behind these are MSAA 4x, 2 to 6 ms (8 to 13 in low sun; 1c's pipeline), and the shadow map alone, 5 to 8 ms (1c).
 - A rise without a change of scope stops the step, just as overrunning its box does.
 - The number must hold or fall at each milestone until the corner is under 16.7 ms at every judging view in three lights.
 - The fixes that need no levels each have a place: the beams and the haze with 1c, the shader families with the port's step 4, and the birch's cost with 1e. The Monday session puts any fix first.
