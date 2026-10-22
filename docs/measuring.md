@@ -31,14 +31,19 @@ Everything runs on the reference machine (`docs/foundations.md`): the Mac mini w
 
 So on 22 October the gully was exported again from today's generators (two builds bit for bit the same), its golden views rendered and looked at, and both accepted as the baseline (Golden views, Baseline). The port's first rule, that the gully's geometry hash must not change, is measured against these hashes.
 
-**Proposed, not fit** (22 October, step 0b: seeds on the hash spec). Since `dbd455c` the generators draw every seed from stable ids through `blender/resolver/hashing.py`, so the gully re-draws.
-- Three builds hash the same: two in scratch folders and one in the project. Every array Unity reads is bit for bit identical, and so are the side files.
-- The FBX bytes differ only in the header's creation time and in the object ids Blender's exporter makes from Python's salted `hash()`. The mesh hash leaves both out by design.
+**Proposed** (22 October, step 0b: seeds on the hash spec; Øystein accepts). The gully re-draws because of three changes:
+- since `dbd455c`, the generators draw every seed from stable ids (`schemas/naming.md`) through `blender/resolver/hashing.py`;
+- since `13e1b3b`, the set-out keeps its rests;
+- since `7c5086c` and `21ec5df`, the cheek walls are built from the ground's facts.
+
+The builds:
+- Three builds hash the same: two in scratch folders and one in the project. Every array Unity reads is bit for bit identical, and so are the side files. The FBX bytes differ only in the header's creation time and in the object ids Blender's exporter makes from Python's salted `hash()`. The mesh hash leaves both out by design.
 - The new hashes:
-  - stairs `070dc63e1e563310` (353,542 triangles; the lower flight 33 steps at 0.152 m, the upper 48 at 0.167 m);
-  - cheek walls `602abcc71d6e58f0` (544,970 triangles, up 21 %). The upper flight's left wall now retains its bank at 2 of 66 sample points where it retained at 17. It stands mostly as a parapet, so its back face is built too.
-- The review found the new build unfit (Golden views, below), so these hashes are not the baseline.
-- The tracked FBX and `mesh-hashes.json` stay at the accepted build. Until a fixed build is accepted, the committed generators do not reproduce them, and `mesh_hash check` after an export says so.
+  - stairs `bff7858b698f3efd` (354,126 triangles; the lower flight has 30 steps and one rest of 1.30 m);
+  - cheek walls `0a3d7db3100df20b` (607,872 triangles, 35 % more than 451,594).
+- A wall's role is now the ground's alone, with no seed in it. A wall retains where the bank behind it stands more than 0.5 m over the lane's grade, along stretches of at least 2 m. In today's clay no stretch qualifies, so all four walls stand as parapets at hand height, with a back face built above the bank. The upper left wall's change from retaining to parapet is a valid draw from the facts, not a seeding artefact.
+- The added triangles are those backs, the closed ends (about 15,000) and the hearting behind fallen stones.
+- The tracked FBX and `mesh-hashes.json` hold this build, so the committed generators reproduce them. Until it is accepted, `zsh tools/golden.sh` fails against the 22 October frames.
 
 ## Golden views and player-size stills
 
@@ -82,29 +87,46 @@ Why it changed: the gully is now the one today's generators build (Mesh hashes, 
 - the lichen reads as decals in grey light: a uniform bright rim, and young rosettes all coin-round and one size;
 - one-pixel bedding lines on the big riser catch the wet gloss: likely to shimmer.
 
-**Proposed, not fit** (22 October, step 0b: the gully from the generators on the hash spec; it has not been accepted). Every frame fails against the baseline:
+**Proposed** (22 October, step 0b: the gully from the generators on the hash spec; Øystein accepts). Every frame fails against the 22 October baseline, as a re-drawn gully must:
 
-| Views | Mean | Worst pixel |
-| --- | --- | --- |
-| On the steps | 0.13 | |
-| At the foot | 0.07 to 0.08 | |
-| Street stop, 12 m and the city camera | 0.010 to 0.021 | |
-| All fifteen frames | | 0.50 to 0.98 |
+| Views | Mean |
+| --- | --- |
+| On the steps | 0.15 to 0.16 |
+| At the foot | 0.077 to 0.089 |
+| Street stop, 12 m and the city camera | 0.013 to 0.031 |
 
-The cause is the re-drawn set-out and stones. Part of the low-sun change is the air motes, which now draw from `Core/Hash.cs` (`4fc4948`). With the old FBX, the low sun alone moved by up to 1,241 pixels at the city camera, and the drizzle and blue-hour frames did not move at all.
+Part of the low-sun change is the air motes, which now draw from `Core/Hash.cs` (`4fc4948`).
 
-A fresh Fable agent judged eight blind pairs of native-size crops, taken where the frames differ most (`reviews/golden/rebaseline-2026-10-22-seeds.md`).
+Blind strict reviews: fresh Fable agents judged eight pairs of native-size crops, taken where the frames differ most. The records are in `reviews/golden/rebaseline-2026-10-22-seeds.md` and `-seeds-2.md`, with their keys. Against the 22 October build, the last review found this build better in 8 of 8 pairs.
 
-New in the hash-spec build:
-- **No landings on the lower flight** (four pairs). This is a fault in the set-out function, not in the seeding. `step_plan` promises a rest wherever a run outgrows its builder's patience, which the town sets at 11 to 16 steps. But when the rise drawn from the stone is below about 0.162 m, the lower flight (5.0 m over 10.2 m) has no run left over, and the function silently drops its landings. That happens in 225 of 500 seeds. The old seed happened to miss it.
-- Deeper black slots on the wall top.
-- A loose block proud of a riser.
+Faults found on the way and fixed in the function where each belonged:
+- the set-out silently dropped rests the facts require (option A, `13e1b3b`);
+- cement dabs stood up to 38 mm proud of a riser;
+- fallen-stone holes drew as black voids. The lining was baked as unlit soil; the holes now show lit rubble at its angle of repose;
+- the wall ends were hollow; they are now closed by heads laid through the thickness;
+- the left wall jogged at the rest, because of forced course joints;
+- the 1961 stretch met the old work in a ragged stack; it now meets it at a straight joint with long-and-short ends.
 
-New in the old build: a comb of bright bars on a wall stone's end.
+Still open, so the build is not yet at the bar. In the reviewer's order:
+1. The courses bend through the change of pitch, where a mason would step or taper them. This came from the jog's fix.
+2. A small notch where the coping steps at the rest (12 m, about 15 px).
+3. Wall stones read as pillows on undercut shadow, without beds.
+4. A loose fan of stones at the right wall's top end, at eye level.
 
-Shared by both builds: the faults frozen above, plus wall-top step faces going pure black in low sun and at blue hour, and lichen on the trodden centres of the treads.
+Shared with the 22 October build:
+- tread mottling across the walking line, near white in drizzle;
+- black slots at tread joints;
+- one-pixel nosing lines, orange rims on courses in low sun and single specks, all risks to shimmer.
 
-The frames stay unaccepted until the set-out function keeps its rests on every draw. The 22 October baseline stays the reference.
+The lower flight's 16 risers before its rest is a draw within the town's patience (11 to 16), so it stays.
+
+To accept:
+1. Export both kinds (`stone.py -- gully`, `wall.py -- gully_cheeks`).
+2. Check the hashes above.
+3. Run `zsh tools/golden.sh`.
+4. Copy `reviews/golden/current/gully` over `reviews/golden/baseline/gully`.
+
+Until then, the 22 October baseline stays the reference.
 
 ## The frame-time harness
 
