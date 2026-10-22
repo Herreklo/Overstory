@@ -182,6 +182,7 @@ The redraw is done when all of these hold, the numbers first and the eyes last:
 
 - **Repetition seen in the face patches at eye level** (two stones read as one patch): more patches per working, 8 to 16, before adding a single triangle.
 - **R0b shows the lines and specks were mostly the pipeline's** (90% gone on today's mesh): the redraw keeps its form decisions, and its clean-making checks move to proving the new mesh adds none.
+  Run on 22 October (`r0b/result.md`, `cd79b22`): it did not fire. The pipeline makes none and the stone's named terms 0 to 3%. Growth's colour makes 53% of the lines and 73% of the specks (moss 36% of the lines, lichen 17%), and the mesh alone 48% and 27%, on joints and 1 px nosings. So the redraw owns them all: the mesh's share through SN4's chamfers and SN5's fills, lichen's through SN7, and moss's at R4.
 - **The stepped tops read as a sawtooth at the street stop or into12:** longer level runs, with an extra course where a step grows too big (BTCV); never a rake on dry work.
 - **The cheek walls turn out dressed or mortared from 1874** (the photographs tie block steps to formal flights, 28 and 42): raked copings on level-bedded ashlar, a kneeler at each foot, and the record changed first.
 - **Courses read too coarse beside the board's walls (03, 09, 10):** smaller courses within SN8's gate, which then binds.
@@ -198,7 +199,7 @@ The redraw is done when all of these hold, the numbers first and the eyes last:
 | R2a | Look-dev: the six face patches, then a wall stone, a step and a coping at L0 and L1, grey first and then in material, in the target's light, at 1, 5 and 12 m; the L0 to L1 switch A/B'd at 8, 10 and 12 m, with the town's fog on | the surface model and the levels, on three stones before thousands | yes, to judge |
 | R2b | Grey form in Blender: the parts and the laying through the stages, every piece one grey; SN1, SN8 and SN9's checks; a quick sheet at the judging cameras in neutral light | the form and the counts, cheaply | no |
 | R3 | Grey form in Unity: the golden views in grey light, native crops, the frame-time A/B; then the eye-level target, painted over the eye-foot and eye-on grey renders with `blender/tools/paintover.py` as the street target was, the clay beside it as it is planned | form at the views, the cost, and the eye level's bar | yes |
-| R4 | Materials: the patches, the three marks, the bake's fields made calm, specular filtering; three lights; Done 4 and 5's frame checks | restraint and clean making | yes |
+| R4 | Materials: the patches, the three marks, the bake's fields made calm (moss among them: its line at the back of each tread is kept soft and band-limited in `Growth.hlsl`, which only the stone uses today; R0b found it today's largest maker of lines), specular filtering; three lights; Done 4 and 5's frame checks | restraint and clean making | yes |
 | R5 | The strict review on Fable, from a lean packet: native crops beside both targets, the numbers, this design | the verdict | no |
 | R6 | The proposed golden frames and sheet, to Øystein | his acceptance | no |
 
