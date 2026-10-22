@@ -32,6 +32,9 @@ unity/Assets/Experiments/LT1/Perf.meta
 # the history quad's synthetic pages and scene (step 3, LT1History: rebuilt, their hashes in reviews/lt1/history/r2-pages.json)
 unity/Assets/Experiments/LT1/History/Generated/
 unity/Assets/Experiments/LT1/History/Generated.meta
+# R2a's stones (port step 2b: blender/parts/stone/slate/stones.py, rebuilt; their mesh hashes in stones.manifest.json)
+unity/Assets/Experiments/LT1/R2a/Generated/
+unity/Assets/Experiments/LT1/R2a/Generated.meta
 reviews/perf/**/frames.csv
 reviews/perf/**/*.png
 reviews/perf/**/player.log
