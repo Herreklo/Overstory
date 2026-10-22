@@ -31,6 +31,15 @@ Everything runs on the reference machine (`docs/foundations.md`): the Mac mini w
 
 So on 22 October the gully was exported again from today's generators (two builds bit for bit the same), its golden views rendered and looked at, and both accepted as the baseline (Golden views, Baseline). The port's first rule, that the gully's geometry hash must not change, is measured against these hashes.
 
+**Proposed, not fit** (22 October, step 0b: seeds on the hash spec). Since `dbd455c` the generators draw every seed from stable ids through `blender/resolver/hashing.py`, so the gully re-draws.
+- Three builds hash the same: two in scratch folders and one in the project. Every array Unity reads is bit for bit identical, and so are the side files.
+- The FBX bytes differ only in the header's creation time and in the object ids Blender's exporter makes from Python's salted `hash()`. The mesh hash leaves both out by design.
+- The new hashes:
+  - stairs `070dc63e1e563310` (353,542 triangles; the lower flight 33 steps at 0.152 m, the upper 48 at 0.167 m);
+  - cheek walls `602abcc71d6e58f0` (544,970 triangles, up 21 %). The upper flight's left wall now retains its bank at 2 of 66 sample points where it retained at 17. It stands mostly as a parapet, so its back face is built too.
+- The review found the new build unfit (Golden views, below), so these hashes are not the baseline.
+- The tracked FBX and `mesh-hashes.json` stay at the accepted build. Until a fixed build is accepted, the committed generators do not reproduce them, and `mesh_hash check` after an export says so.
+
 ## Golden views and player-size stills
 
 **What it measures.** Whether a change altered what the player sees of the gully, where, and by how much. `LT1Golden.Views` stages the gully exactly as `LT1Stone.Frames` does (the same staging, views and aim, now shared, with frames byte-identical before and after the sharing) and renders it at the judging views:
@@ -72,6 +81,30 @@ Why it changed: the gully is now the one today's generators build (Mesh hashes, 
 - where a stone's end stands proud of its neighbour, the joint is a flat black bar with no end face; it stripes the flight with dark ticks at the street stop;
 - the lichen reads as decals in grey light: a uniform bright rim, and young rosettes all coin-round and one size;
 - one-pixel bedding lines on the big riser catch the wet gloss: likely to shimmer.
+
+**Proposed, not fit** (22 October, step 0b: the gully from the generators on the hash spec; it has not been accepted). Every frame fails against the baseline:
+
+| Views | Mean | Worst pixel |
+| --- | --- | --- |
+| On the steps | 0.13 | |
+| At the foot | 0.07 to 0.08 | |
+| Street stop, 12 m and the city camera | 0.010 to 0.021 | |
+| All fifteen frames | | 0.50 to 0.98 |
+
+The cause is the re-drawn set-out and stones. Part of the low-sun change is the air motes, which now draw from `Core/Hash.cs` (`4fc4948`). With the old FBX, the low sun alone moved by up to 1,241 pixels at the city camera, and the drizzle and blue-hour frames did not move at all.
+
+A fresh Fable agent judged eight blind pairs of native-size crops, taken where the frames differ most (`reviews/golden/rebaseline-2026-10-22-seeds.md`).
+
+New in the hash-spec build:
+- **No landings on the lower flight** (four pairs). This is a fault in the set-out function, not in the seeding. `step_plan` promises a rest wherever a run outgrows its builder's patience, which the town sets at 11 to 16 steps. But when the rise drawn from the stone is below about 0.162 m, the lower flight (5.0 m over 10.2 m) has no run left over, and the function silently drops its landings. That happens in 225 of 500 seeds. The old seed happened to miss it.
+- Deeper black slots on the wall top.
+- A loose block proud of a riser.
+
+New in the old build: a comb of bright bars on a wall stone's end.
+
+Shared by both builds: the faults frozen above, plus wall-top step faces going pure black in low sun and at blue hour, and lichen on the trodden centres of the treads.
+
+The frames stay unaccepted until the set-out function keeps its rests on every draw. The 22 October baseline stays the reference.
 
 ## The frame-time harness
 
