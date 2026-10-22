@@ -84,7 +84,8 @@ BUILT = {
 # of its flight; a tread slab sl-<k>, a riser rs-<k>, a kerb kb-<k> and the joint left of slab k jt-<k> are slots of
 # their step, a landing behind it ld, its rows rw-<r>; a slab's fill counts the stones that have stood in its slot
 # (upkeep.py), so a slab replaced is a new stone with its own seed; a fill's pieces (a cracked slab's halves) are #0
-# and #1. (A draft of schemas/naming.md's stair rule: renaming an id re-seeds what it names.)
+# and #1, and a step-ramp's setts are the pieces of their row's fill, <step>/sets/rw-<r>/0#<c>. (schemas/naming.md's
+# stair rule: renaming an id re-seeds what it names.)
 def stair_id(spec):
     """The stair's record id: its own, or st- and its lane's name."""
     return spec.get("id") or "st-" + slug(spec["lane"]).replace("_", "-")
@@ -138,57 +139,206 @@ def flights_of(lane):
     return out
 
 
-def step_plan(f, spec, fi, seed=1):
-    """How a mason sets a flight out: the rise from the stone (a split block's own thickness, a dressed flight's era
-    standard, rough stones as they come), the going from the stride (two rises and a going about 0.63 m), and the run
-    left over as landings: one at a turn (the start of every flight after the first), and one wherever a run of steps
-    grows longer than its builder would climb without a rest (the town a dozen or so, owners as they please), each a
-    stride or more. Returns dict(n, r, g, S (each step's front along the flight), D (its tread's depth to the next
-    front, a landing's included), start (the landing before the first step))."""
+# The landing rule: a run of steps longer than its builder would climb without a rest gets a landing, and a landing is
+# long enough to cross in step. Sources: Approved Document M 1.33; DIN 18065 (a landing every 18 steps at most);
+# Norway's TEK §12-14 (no unbroken run over 3.3 m of rise); DGUV (a landing is whole strides plus one going: the
+# shortest, one stride and one going, about 0.9 to 1 m).
+PATIENCE = {"town": (11, 16), "society": (10, 14)}      # risers a builder lets run unbroken; owners as they please
+OWN_PATIENCE = (8, 20)
+RUN_RISERS_MAX = 18      # the limit of real practice (DIN 18065)
+RUN_RISE_MAX = 3.3       # m (TEK §12-14)
+STRIDE_MAX = 0.70        # two rises and a going, at most, where spare run lengthens the goings (the stride's range
+                         # setout_check.py holds every flight to: 0.59 to 0.70)
+
+
+def stone_rises(spec):
+    """The rise the stone gives, as a range (m): a split block's own thickness, rough stones as they come, a thin
+    tread on its riser; a dressed flight's era standard, one value."""
+    if spec.get("built_as", "tread_on_riser") == "block":
+        return (0.15, 0.15) if spec.get("finish", "split") == "dressed" else (0.15, 0.18)
+    return (0.15, 0.17)
+
+
+def going_of(r):
+    """The going a rise asks for: two rises and a going a stride (Blondel), within what a foot fits and a leg spans."""
+    return float(np.clip(STRIDE - 2.0 * r, 0.27, 0.40))
+
+
+def landing_min(g):
+    """The shortest landing on a flight of going g: one stride and one going, so it is crossed in step (DGUV)."""
+    return STRIDE + g
+
+
+def practice_limit(r):
+    """The most risers real practice lets run unbroken at rise r: 18, and no more than 3.3 m of rise."""
+    return max(1, min(RUN_RISERS_MAX, int(math.floor(RUN_RISE_MAX / r + 1e-9))))
+
+
+def rests_needed(n, max_run):
+    """The landings n risers need so no run between them is longer than max_run."""
+    return max(0, int(math.ceil(n / max_run)) - 1)
+
+
+def fits(n, H, run, max_run=None):
+    """Whether n risers over a rise H fit a run of the given length (m) with the rests they need: n goings and k of
+    the shortest landings within it, n.g + k.L_min <= run. max_run: the builder's patience in risers, or None for the
+    limit of real practice at this rise. Pure: the narrowing and the set-out's own check both ask it."""
+    r = H / n
+    g = going_of(r)
+    k = rests_needed(n, practice_limit(r) if max_run is None else max_run)
+    return n * g + k * landing_min(g) <= run + 1e-9
+
+
+def _narrow(f, spec, fi, seed):
+    """The set-out's draws and its narrowing, pure. The rise's unit draw u and the builder's patience are drawn first,
+    in that order, from the flight's own stream; the riser counts the stone's range can give are then narrowed to the
+    contiguous run of them that fits (fits()), and u is mapped onto the rises of that run, so a flight whose whole
+    range fits draws exactly the rise it drew before the rule. If none fits the patience, the limit of real practice
+    stands in for it (flagged); if none fits that either, the flight cannot be built (ok False, its reason given).
+    Returns (dict, the stream, at its place after the two draws)."""
     a, b = f["a"], f["b"]
     run = float(np.linalg.norm((b - a)[:2]))
     H = float(b[2] - a[2])
     rng = HS.Stream(seed, flight_id(spec, fi), "setout")
-    how, finish = spec.get("built_as", "tread_on_riser"), spec.get("finish", "split")
+    lo, hi = stone_rises(spec)
+    u = rng.random() if hi > lo else None
+    patience = rng.randint(*PATIENCE.get(spec["upkeep"][0]["by"], OWN_PATIENCE))
+    out = dict(run=run, H=H, lo=lo, hi=hi, u=u, patience=patience, fallback=None, ok=True, reason=None)
+    if f.get("flag"):
+        return dict(out, ok=False, reason=f["flag"]), rng
+    ns = list(range(max(1, int(round(H / hi))), max(1, int(round(H / lo))) + 1))
+    n_today = max(1, int(round(H / (lo + (hi - lo) * u if u is not None else lo))))
+    limit = patience
+    ok = [n for n in ns if fits(n, H, run, patience)]
+    if not ok:
+        limit = None
+        ok = [n for n in ns if fits(n, H, run, None)]
+    if not ok:
+        n = ns[0]
+        g = going_of(H / n)
+        k = rests_needed(n, practice_limit(H / n))
+        reason = (f"no rise in the stone's range ({lo:.2f} to {hi:.2f} m) fits: {H:.2f} m of "
+                  f"rise over {run:.2f} m of run needs at least {n} risers of {H / n:.3f} m, going {g:.3f} m, and "
+                  f"{k} landings of {landing_min(g):.2f} m at the limit of real practice ({RUN_RISERS_MAX} risers, "
+                  f"{RUN_RISE_MAX} m), {n * g + k * landing_min(g):.2f} m in all; turn the stair: the plan's fault")
+        return dict(out, ok=False, reason=reason, n_range=(ns[0], ns[-1])), rng
+    # (fits() grows with n, so the risers that fit run from the fewest; still, take the run of them nearest the
+    # stone's own draw)
+    blocks, cur = [], [ok[0]]
+    for n in ok[1:]:
+        if n == cur[-1] + 1:
+            cur.append(n)
+        else:
+            blocks.append(cur)
+            cur = [n]
+    blocks.append(cur)
+    na, nb = min(((b_[0], b_[-1]) for b_ in blocks), key=lambda ab: max(ab[0] - n_today, n_today - ab[1], 0))
+    # the rises that round to that run, within the stone's range
+    lo_n, hi_n = max(lo, H / (nb + 0.5)), (min(hi, H / (na - 0.5)) if na > 1 else hi)
+    r_t = lo_n + (hi_n - lo_n) * u if u is not None else lo
+    n = min(max(max(1, int(round(H / r_t))), na), nb)
+    out.update(n=n, n_range=(na, nb), stone_range=(ns[0], ns[-1]))
+    if limit is None:
+        r = H / n
+        g = going_of(r)
+        k_p = rests_needed(n, patience)
+        out["fallback"] = dict(
+            rule="landing", flight=fi, flag="the builder's patience overridden by the limit of real practice",
+            reason=f"no rise in the stone's range fits {patience} risers a run: {n} risers need {k_p} landings "
+                   f"of {landing_min(g):.2f} m, {n * g + k_p * landing_min(g):.2f} m of run where there is "
+                   f"{run:.2f} m", patience=patience, limit=practice_limit(r), n=n, r=round(r, 4),
+            g=round(g, 4), rests=rests_needed(n, practice_limit(r)), run=round(run, 3), H=round(H, 3),
+            landing_min=round(landing_min(g), 3))
+    return out, rng
+
+
+def setout_feasible(f, spec, fi, seed=1):
+    """Whether a flight of the plan can be set out by the landing rule, for a town-plan checker at plan time, without
+    building: dict(ok, fallback (True when only the limit of real practice fits), reason (why not, when not), n_range
+    (the riser counts that fit), patience)."""
+    if f.get("form") == "step_ramp":
+        return dict(ok=True, fallback=False, reason=None, n_range=(f["n"], f["n"]), patience=None)
+    nar, _ = _narrow(f, spec, fi, seed)
+    return dict(ok=nar["ok"], fallback=nar["fallback"] is not None, reason=nar["reason"],
+                n_range=nar.get("n_range"), patience=nar["patience"])
+
+
+def step_plan(f, spec, fi, seed=1):
+    """How a mason sets a flight out (the landing rule): the rise from the stone, the going from the stride, the run
+    left over as landings. The stone gives a range of rises (a split block's own thickness, a dressed flight's era
+    standard, rough stones as they come); the going is what two rises and a going of a stride (0.63 m) leave; the
+    builder's patience (the town a dozen or so risers, a society a few less, owners as they please) says how many
+    risers may run unbroken. The rise is drawn from the stone's range narrowed to the riser counts n whose n goings
+    and the rests they need, each at least one stride and one going (landing_min), fit the run (fits()); a flight
+    whose whole range fits draws what it drew before the rule. If no count fits the builder's patience, the limit of
+    real practice stands in for it (18 risers, 3.3 m of rise), written as the flight's flag; if none fits that either,
+    the stair cannot be built as planned and this raises (turn the stair: the plan's fault), as it does if the
+    landings laid are fewer than the rests needed. A landing at a turn (the start of every flight after the first)
+    gives way to the steps and their rests. Returns dict(n, r, g, S (each step's front along the flight), D (its
+    tread's depth to the next front, a landing's included), start (the landing before the first step), rests (the
+    landings needed), limit (the risers a run may hold), landing_min, cuts (the steps a landing follows), landings
+    (their lengths), fallback (None, or the flag))."""
+    a, b = f["a"], f["b"]
+    run = float(np.linalg.norm((b - a)[:2]))
+    H = float(b[2] - a[2])
     if f.get("form") == "step_ramp":
         n = f["n"]
         g = run / n
-        return dict(n=n, r=H / n, g=g, S=[i * g for i in range(n)], D=[g] * n, start=0.0)
-    if how == "block":
-        r_t = 0.15 if finish == "dressed" else rng.uniform(0.15, 0.18)
-    else:
-        r_t = rng.uniform(0.15, 0.17)
-    n = max(1, int(round(H / r_t)))
+        return dict(n=n, r=H / n, g=g, S=[i * g for i in range(n)], D=[g] * n, start=0.0, rests=0, limit=None,
+                    landing_min=None, cuts=[], landings=[], fallback=None)
+    where = f"{spec.get('lane', stair_id(spec))} ({flight_id(spec, fi)})"
+    nar, rng = _narrow(f, spec, fi, seed)
+    if not nar["ok"]:
+        raise ValueError(f"{where}: {nar['reason']}")
+    n = nar["n"]
     r = H / n
-    g = float(np.clip(STRIDE - 2.0 * r, 0.27, 0.40))
+    g = going_of(r)
+    L = landing_min(g)
+    limit = nar["patience"] if nar["fallback"] is None else practice_limit(r)
+    k = rests_needed(n, limit)
+    # the set-out's own check (the same rule as the narrowing)
+    if not fits(n, H, run, nar["patience"] if nar["fallback"] is None else None):
+        raise ValueError(f"{where}: {n} risers and {k} landings do not fit "
+                         f"{run:.2f} m of run; turn the stair: the plan's fault")
+    # (the landing at a turn gives way to the steps and the rests they need, never they to it)
     start = min(max(f["width"], 1.0), 1.6) if fi > 0 else 0.0
+    start = max(0.0, min(start, run - n * g - k * L))
     left = run - start - n * g
-    if left < 0.0:
-        start = max(0.0, start + left)
-        left = run - start - n * g
-        if left < 0.0:
-            g = (run - start) / n
-            left = 0.0
-    keeper = spec["upkeep"][0]["by"]
-    max_run = rng.randint(*{"town": (11, 16), "society": (10, 14)}.get(keeper, (8, 20)))
-    count = max(0, int(math.ceil(n / max_run)) - 1)
+    count = k
     if left > 0.0 and count == 0 and left > 0.9:
         count = 1
     if count and left / count > 3.0:
         count = int(math.ceil(left / 3.0))
-    if count and left / count < 0.7:
-        count = int(left / 0.7)
+    if count and left / count < L:
+        count = max(k, int(left / L + 1e-9))
     if count == 0:
-        g = (run - start) / n
+        # no landing: the run left over spread over the goings, as far as a stride allows (two rises and a going
+        # at most STRIDE_MAX); what is left lengthens the top step
+        g = min((run - start) / n, max(g, STRIDE_MAX - 2.0 * r))
         land = 0.0
     else:
         land = left / count
     # the runs between landings, as even as the builder made them
-    cuts = sorted(set(int(round(n * (k + 1) / (count + 1) + rng.uniform(-1.5, 1.5))) for k in range(count)))
+    cuts = sorted(set(int(round(n * (j + 1) / (count + 1) + rng.uniform(-1.5, 1.5))) for j in range(count)))
     cuts = [c for c in cuts if 1 <= c < n]
-    # (each landing its own length, as the ground and the builder gave it: all alike read as drawn)
+    if len(cuts) < k:
+        raise ValueError(f"{where}: {len(cuts)} landings laid where {n} "
+                         f"risers need {k} (no run over {limit}); the set-out lost one")
+    if max(np.diff([0] + cuts + [n])) > limit:
+        # (the builder's unevenness gives way where it would leave a run longer than the limit: each landing moved
+        # no further than it must, in order up the flight)
+        prev, m = 0, len(cuts)
+        for j, c in enumerate(cuts):
+            c = max(c, n - (m - j) * limit, prev + 1)
+            cuts[j] = prev = min(c, prev + limit, n - (m - j))
+    # (each landing its own length, as the ground and the builder gave it: all alike read as drawn; none shorter than
+    # landing_min, what a short one lacks taken from the longer ones)
     lens = [rng.uniform(0.6, 1.4) for _ in cuts]
     lens = [land * len(cuts) * x / max(sum(lens), 1e-6) for x in lens]
+    short = sum(max(0.0, L - x) for x in lens)
+    over = [max(0.0, x - L) for x in lens]
+    if short > 1e-9 and sum(over) > 0.0:
+        lens = [max(L, x) - short * o / sum(over) for x, o in zip(lens, over)]
     land_at = dict(zip(cuts, lens))
     S, D, pos = [], [], start
     for i in range(n):
@@ -197,7 +347,8 @@ def step_plan(f, spec, fi, seed=1):
         D.append(d)
         pos += d
     D[-1] = max(g, run - S[-1])
-    return dict(n=n, r=r, g=g, S=S, D=D, start=start)
+    return dict(n=n, r=r, g=g, S=S, D=D, start=start, rests=k, limit=limit, landing_min=L, cuts=cuts, landings=lens,
+                fallback=nar["fallback"])
 
 
 def widths(rng, total, below, lo=0.7, hi=2.3, below2=(), ks=None):
@@ -257,6 +408,48 @@ def top_line(placed, x, s_vals, reach=0.04):
     return z
 
 
+def top_faces(F, kind):
+    """A piece's top faces (every corner of kind 0), as triangles."""
+    return np.array([(f[0], f[t], f[t + 1]) for f in F if all(kind[q] == 0 for q in f)
+                     for t in range(1, len(f) - 1)], dtype=np.int64).reshape(-1, 3)
+
+
+def top_at(x, s, placed, tris):
+    """The height of a placed piece's top under each point (x, s) in plan: read off the top face it lies over; past
+    the top's edge (over a break), the nearest face's slope carried on, kept within the heights of its corners.
+    placed: the piece's vertices as put placed them (x, s, z); tris: its top faces (top_faces)."""
+    A, B, C = placed[tris[:, 0]], placed[tris[:, 1]], placed[tris[:, 2]]
+    e0, e1 = B[:, :2] - A[:, :2], C[:, :2] - A[:, :2]
+    den = e0[:, 0] * e1[:, 1] - e1[:, 0] * e0[:, 1]
+    ok = np.abs(den) > 1e-12                     # (faces squashed onto a break's cut have no plan area)
+    den = np.where(ok, den, 1.0)
+    px, ps = x[:, None] - A[None, :, 0], s[:, None] - A[None, :, 1]
+    u = (px * e1[None, :, 1] - e1[None, :, 0] * ps) / den
+    v = (e0[None, :, 0] * ps - px * e0[None, :, 1]) / den
+    w = 1.0 - u - v
+    z = w * A[None, :, 2] + u * B[None, :, 2] + v * C[None, :, 2]
+    # how far outside each face a point lies, in metres (its barycentric overshoot times the face's size)
+    size = np.sqrt(np.abs(den))
+    out = np.where(ok[None, :], np.maximum(np.maximum(-u, -v), np.maximum(-w, 0.0)) * size[None, :], np.inf)
+    k = out.argmin(axis=1)
+    rows = np.arange(len(x))
+    lo = np.minimum(np.minimum(A[k, 2], B[k, 2]), C[k, 2])
+    hi = np.maximum(np.maximum(A[k, 2], B[k, 2]), C[k, 2])
+    return np.clip(z[rows, k], lo, hi)
+
+
+def seat_dab(Pd, rel, placed, tris, x0, s0, z0, below=0.001):
+    """A cement dab struck flush with the stone it is bonded to, as the stone stands now round the break (dropped with
+    its half, worn, its nosing rounded): its top on the stone's top under each of its points (top_at), its highest
+    point a millimetre below it (cement wears faster than slate, so it is never proud of it). Pd: the dab's vertices
+    in its slab's frame, placed at x0 across, s0 along and z0 up; rel: each one's height below the dab's struck top as
+    it was made (the trowel's marks, the skin feathered under the stone, the skirt down the break's face); placed and
+    tris: the stone as put placed it and its top faces. Returns Pd at its new heights."""
+    Pd = Pd.copy()
+    Pd[:, 2] = top_at(x0 + Pd[:, 0], s0 + Pd[:, 1], placed, tris) - below + (rel - rel.max()) - z0
+    return Pd
+
+
 def lay(spec, seed=1):
     """The flights of one stair, laid and aged: each step from its life (upkeep.py), so its bed, its joints and its
     slabs carry their own years, and its repairs are spread over the flight as the years left them. Returns a list of
@@ -288,15 +481,19 @@ def lay(spec, seed=1):
         up = d2 / run                                    # uphill, in plan
         right = np.array([up[1], -up[0]])                # so right, up, z is right-handed
         rise = float(b[2] - a[2])
-        sp = step_plan(f, spec, fi, seed)
-        n, h, g = sp["n"], sp["r"], sp["g"]
-        SS, DD = sp["S"], sp["D"]
-        cur = dict(S=0.0, D=g)                           # the step being laid (put reads where along it a point lies)
         if f.get("flag"):
             # (not built: a ladder of stone tells a false story; the plan is fixed instead)
             print("PLAN FLAG", spec["lane"], fi, f["flag"])
             flags.append(dict(flight=fi, flag=f["flag"]))
             continue
+        sp = step_plan(f, spec, fi, seed)
+        if sp["fallback"]:
+            # (the builder's patience could not be kept on this run: the limit of real practice set its landings)
+            print("SETOUT FLAG", spec["lane"], fi, sp["fallback"])
+            flags.append(dict(sp["fallback"]))
+        n, h, g = sp["n"], sp["r"], sp["g"]
+        SS, DD = sp["S"], sp["D"]
+        cur = dict(S=0.0, D=g)                           # the step being laid (put reads where along it a point lies)
         out_main = dict(V=[], F=[], COL=[], UV0=[], UV1=[], UV2=[], UV3=[])
         out_setts = dict(V=[], F=[], COL=[], UV0=[], UV1=[], UV2=[], UV3=[])
         out = out_main
@@ -548,7 +745,7 @@ def lay(spec, seed=1):
                         ws = min(Ls, W / 2 - 0.01 - xx)
                         if ws < 0.05:
                             break
-                        cid = f"{rid}/{c_}"
+                        cid = f"{rid}/0#{c_}"        # (a row's setts are the pieces of its fill)
                         crng_ = HS.Stream(seed, cid, "lay")
                         pc = SETT.sett(HS.h(seed, cid), ws - crng_.uniform(0.005, 0.009),
                                        rw - crng_.uniform(0.005, 0.008), crown=crng_.uniform(0.002, 0.005))
@@ -685,7 +882,8 @@ def lay(spec, seed=1):
                     tops.append(put(P, piece, HS.Stream(seed, pid, "marks"), x0, s0, z_top - t_tr, True, worn_y, bare_y, bed_y,
                                     polish0=0.3 if reclaimed else 0.0, lifted_y=YEAR - sl["lifted"]))
                     # a corner broken off and dabbed with cement: it fills the cut back to the stone's own front and
-                    # end, struck flush with them and with the top, as deep as the break went
+                    # end, struck flush with them and with the stone's top as it is now round the break (dropped with
+                    # its half, worn), as deep as the break went
                     if broken and corner["filled"]:
                         cn = piece["corner"]
                         e0, f0 = cn["end"], cn["front"]
@@ -699,7 +897,8 @@ def lay(spec, seed=1):
                         if corner["side"] == "r":
                             Vd[:, 0] = w - Vd[:, 0]
                             dab["F"] = [tuple(reversed(q)) for q in dab["F"]]
-                        Pd = tf(Vd, dx)
+                        Pd = seat_dab(tf(Vd, dx), Vd[:, 2] - (t_tr - 0.002), tops[-1],
+                                      top_faces(piece["F"], piece["kind"]), x0, s0, z_top - t_tr)
                         cast_y = YEAR - corner["filled"][1]
                         put(Pd, dab, HS.Stream(seed, f"{key}/dab", "marks"), x0, s0, z_top - t_tr, True, cast_y, cast_y, cast_y)
             # the joints between the tread's slabs and its cracks: pointed in cement where a crew or a quick fix
@@ -762,6 +961,12 @@ def lay(spec, seed=1):
                             S=[round(float(v), 3) for v in SS],
                             a=[float(v) for v in a], b=[float(v) for v in b], width=float(W))))
     return meshes, origin, flags
+
+
+# the named stairs the variety sheet builds and blender/tools/setout_check.py sets out
+VARIETY = ["Gully Steps", "Tanner's Steps", "Bishop's Steps", "the Hundred Steps", "the path to Lookout Park",
+           "passage at -172", "passage at 92", "passage at 110", "stair-lane 2", "stair-lane 6",
+           "the way to D (1107, empty since 1986)", "the Crack"]
 
 
 def make(name, m):
@@ -840,9 +1045,7 @@ if __name__ == "__main__":
         import heart_layout as H
         import stair_facts as SF
         sys.path.insert(0, os.path.join(HERE, "..", "tools"))
-        names = argv[2:] or ["Gully Steps", "Tanner's Steps", "Bishop's Steps", "the Hundred Steps",
-                             "the path to Lookout Park", "passage at -172", "passage at 92", "passage at 110",
-                             "stair-lane 2", "stair-lane 6", "the way to D (1107, empty since 1986)", "the Crack"]
+        names = argv[2:] or VARIETY
         for nm in names:
             lane = next((l for l in H.LANES if l["name"] == nm), None)
             sp = SF.facts_for(lane) if lane else None
