@@ -2,7 +2,7 @@
 
 What is running and what is next, under about 1,100 words. The order, the boxes and this week are in `docs/plan.md`; each decision is in its design doc's In short; history is in `docs/experiments.md` and git.
 
-**Next job:** the walk (1g), W0 to W7, for Friday 23 October: `reviews/lt1/playable/outline.md` §2, with `brief.md` and `premortem.md` (§4's fixes). A session told "go" starts here, on Opus, in its own session.
+**Next job:** the walk's W5 to W7 (1g), for Friday 23 October, on Opus in its own session: `reviews/lt1/playable/outline.md` §2. Done on 22 October: W0 (the gully's step-0b frames made the golden baseline with Øystein's yes, `401f8e4`), W1 (`aff1022`), W2 (`78c9a8f`); W3 and W4 were running at handover: start Unity work only once commits `LT1: W3, …` and `LT1: W4, …` are in `git log` and `tools/unity_lock.py status` is free, then read `reviews/lt1/playable/walk/w1-w2-report.md`, `w3-report.md`, `w4-report.md`. W6 is cut first; W7's strict review is on Fable. Weekly usage was 63% at 18:30.
 
 ## Where we are (22 October)
 
@@ -26,7 +26,7 @@ Each session commits its own work; a stopped one resumes from its files. Long wo
 
 - **The playable corner (1g),** on this branch, in `reviews/lt1/playable/`: `brief.md`, `pick.md` (the case, Before Friday), `outline.md` and `premortem.md`.
   - Øystein cut Phase 2's build (about 16 Opus-days) until cheap tests answer (Øystein: "we need to be more sure what to test - before comitting to something like this"). In its place, a ladder of five tests, about one Opus-day (`outline.md` §3), with the pre-mortem's fixes in `case-spec.md` before it is frozen. The case's build is sized only if the ladder passes, as its own decision with Øystein. Øystein does not read `pick.md` or the case spec, so test 4 stays blind.
-  - *Next:* the walk for Friday, then the ladder in its order.
+  - *Next:* W5 to W7. The ladder: tests 5 (pass with fixes), 1 and 2a (both change, not kill) are done (`reviews/lt1/playable/ladder/`, not for Øystein); the case's two fixes go in before 2b runs on the walk's build. Øystein chose the player lives at A with no trade (22 October). Faults routed to W6: `heart_layout.py` still casts A as a café (the playable's Compose drops its shop lights from the diaries), and any heart rebuild moves D's way into the golden views.
 - **The gully port, paused** at a clean point, all pushed: step 1, step 2a (hashes unchanged) and step 3's early rungs, with Fable's verdict in the docs.
   - *Next:* it resumes at 2b inside the playable corner, on the Blender side; what's left, in order, is in `reviews/lt1/port-handover.md`. Before step 4 opens, `reviews/lt1/port/foundation-needs.md`: steps 4 and 5 are each done only when a House A front, a birch chunk and a 64 m land chunk with water validate against their formats.
 - **The paper playtests, stopped** (Øystein, 22 October: "Maybe stop playtest, and focus on building?") at 11 of 24 runs. Their outcome is the interim note (`docs/playtests/paper-1/analysis/interim.md`); its two engine requests are filed, and nothing more runs from them.
