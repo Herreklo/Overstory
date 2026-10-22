@@ -1,0 +1,240 @@
+Test 2a, sight. Layout 2a-layout.json (heart_layout f809e6e8); case-spec block 876b3185
+A's 1989 plan: 9.0 x 9.0 m, floor 1.90, centre (42.16, 6.24); 20 windows and its shopfront
+
+=== The birch's bare ===
+elsewhere: the Landing (45.0, 42.0)                            Hannah's climb: head  85%, whole  63%, longest run  56 m; doors: hers no, E's yes; px (Lens35, far/median/near) (76, 189, 1551); spread 163 deg (wider than)
+                                                                 blocked by the ground (6), retaining wall 182 (4), retaining wall 180 (1)
+A: back first floor window, x 45.6 y 10.7                      Hannah's climb: head  83%, whole  66%, longest run  31 m; doors: hers no, E's yes; px (Lens35, far/median/near) (50, 93, 248); spread 42 deg (fits)
+                                                                 blocked by wall 106 (6), Low Terrace down 9 (5), retaining wall 183 (1)
+A: back first floor window, x 41.1 y 10.7                      Hannah's climb: head  82%, whole  65%, longest run  34 m; doors: hers no, E's yes; px (Lens35, far/median/near) (46, 76, 220); spread 50 deg (fits)
+                                                                 blocked by retaining wall 253 (6), the window's opening (4), the birch's trunk (3)
+elsewhere: the steps' foot (49.3, 2.5)                         Hannah's climb: head  80%, whole  58%, longest run  57 m; doors: hers no, E's no; px (Lens35, far/median/near) (45, 78, 172); spread 19 deg (fits)
+                                                                 blocked by wall 106 (7), B (105) (6), Low Terrace down 9 (1)
+the Row (49.3, -12.0)                                          Hannah's climb: head  77%, whole  59%, longest run  55 m; doors: hers no, E's no; px (Lens35, far/median/near) (38, 58, 103); spread 9 deg (fits)
+                                                                 blocked by B (105) (9), wall 106 (7)
+A: back first floor window, x 43.3 y 10.7                      Hannah's climb: head  75%, whole  58%, longest run  26 m; doors: hers no, E's yes; px (Lens35, far/median/near) (50, 88, 235); spread 45 deg (fits)
+                                                                 blocked by retaining wall 253 (6), wall 106 (6), Low Terrace down 9 (3), the window's opening (2)
+A: back first floor window, x 38.8 y 10.8                      Hannah's climb: head  66%, whole  44%, longest run  18 m; doors: hers no, E's no; px (Lens35, far/median/near) (46, 87, 205); spread 47 deg (fits)
+                                                                 blocked by the window's opening (6), retaining wall 253 (5), C (1203, cooper 1879) (5), High Terrace up 21 (4)
+elsewhere: the Low Terrace at the steps (51.5, 23.8)           Hannah's climb: head  41%, whole  34%, longest run  29 m; doors: hers yes, E's no; px (Lens35, far/median/near) (192, 480, 4082); spread 179 deg (wider than)
+                                                                 blocked by the ground (28), retaining wall 180 (14)
+A: back ground floor window, x 41.1 y 10.7                     Hannah's climb: head  31%, whole  27%, longest run  22 m; doors: hers no, E's no; px (Lens35, far/median/near) (123, 179, 223); spread 42 deg (fits)
+                                                                 blocked by retaining wall 252 (20), retaining wall 253 (19), the window's opening (4), the birch's trunk (3)
+A: back ground floor window, x 43.3 y 10.7                     Hannah's climb: head  31%, whole  28%, longest run  22 m; doors: hers no, E's no; px (Lens35, far/median/near) (121, 187, 239); spread 40 deg (fits)
+                                                                 blocked by the birch's trunk (22), retaining wall 253 (14), retaining wall 183 (5), Low Terrace down 9 (3)
+A: back ground floor window, x 38.8 y 10.8                     Hannah's climb: head  28%, whole  23%, longest run  18 m; doors: hers no, E's no; px (Lens35, far/median/near) (117, 170, 207); spread 37 deg (fits)
+                                                                 blocked by retaining wall 252 (29), retaining wall 253 (7), the window's opening (6), C (1203, cooper 1879) (5)
+A: front ground floor window, x 43.2 y 1.7                     Hannah's climb: head   0%, whole   0%, longest run   0 m; doors: hers no, E's no; px (Lens35, far/median/near) -; spread -
+                                                                 blocked by the window's opening (71)
+A: left ground floor window, x 37.7 y 9.3                      Hannah's climb: head   0%, whole   0%, longest run   0 m; doors: hers no, E's no; px (Lens35, far/median/near) -; spread -
+                                                                 blocked by the window's opening (71)
+A: left ground floor window, x 37.7 y 6.3                      Hannah's climb: head   0%, whole   0%, longest run   0 m; doors: hers no, E's no; px (Lens35, far/median/near) -; spread -
+                                                                 blocked by the window's opening (71)
+A: right ground floor window, x 46.6 y 3.2                     Hannah's climb: head   0%, whole   0%, longest run   0 m; doors: hers no, E's no; px (Lens35, far/median/near) -; spread -
+                                                                 blocked by the window's opening (68), Low Terrace down 9 (3)
+A: right ground floor window, x 46.7 y 6.2                     Hannah's climb: head   0%, whole   0%, longest run   0 m; doors: hers no, E's no; px (Lens35, far/median/near) -; spread -
+                                                                 blocked by the window's opening (67), Low Terrace down 9 (4)
+A: right ground floor window, x 46.7 y 9.2                     Hannah's climb: head   0%, whole   0%, longest run   0 m; doors: hers no, E's no; px (Lens35, far/median/near) -; spread -
+                                                                 blocked by the window's opening (65), Low Terrace down 9 (6)
+A: front first floor window, x 41.0 y 1.8                      Hannah's climb: head   0%, whole   0%, longest run   0 m; doors: hers no, E's no; px (Lens35, far/median/near) -; spread -
+                                                                 blocked by the window's opening (71)
+A: front first floor window, x 43.2 y 1.7                      Hannah's climb: head   0%, whole   0%, longest run   0 m; doors: hers no, E's no; px (Lens35, far/median/near) -; spread -
+                                                                 blocked by the window's opening (71)
+A: front first floor window, x 45.5 y 1.7                      Hannah's climb: head   0%, whole   0%, longest run   0 m; doors: hers no, E's no; px (Lens35, far/median/near) -; spread -
+                                                                 blocked by the window's opening (71)
+A: left first floor window, x 37.6 y 3.3                       Hannah's climb: head   0%, whole   0%, longest run   0 m; doors: hers no, E's no; px (Lens35, far/median/near) -; spread -
+                                                                 blocked by the window's opening (71)
+A: right first floor window, x 46.6 y 3.2                      Hannah's climb: head   0%, whole   0%, longest run   0 m; doors: hers no, E's no; px (Lens35, far/median/near) -; spread -
+                                                                 blocked by the window's opening (68), Low Terrace down 9 (2), B (105) (1)
+A: right first floor window, x 46.7 y 6.2                      Hannah's climb: head   0%, whole   0%, longest run   0 m; doors: hers no, E's no; px (Lens35, far/median/near) -; spread -
+                                                                 blocked by the window's opening (67), Low Terrace down 9 (4)
+A: right first floor window, x 46.7 y 9.2                      Hannah's climb: head   0%, whole   0%, longest run   0 m; doors: hers no, E's no; px (Lens35, far/median/near) -; spread -
+                                                                 blocked by the window's opening (65), Low Terrace down 9 (6)
+A: front ground floor shopfront, x 39.8 y 1.8                  Hannah's climb: head   0%, whole   0%, longest run   0 m; doors: hers no, E's no; px (Lens35, far/median/near) -; spread -
+                                                                 blocked by the window's opening (71)
+the Anchor's door (Harbour Row 22)                             Hannah's climb: head   0%, whole   0%, longest run   0 m; doors: hers no, E's no; px (Lens35, far/median/near) -; spread -
+                                                                 blocked by Harbour Row 22 (71)
+the Anchor's door as W3 cast it (Harbour Row 24)               Hannah's climb: head   0%, whole   0%, longest run   0 m; doors: hers no, E's no; px (Lens35, far/median/near) -; spread -
+                                                                 blocked by Harbour Row 24 (71)
+
+Other routes, from the best window, the Row and the Anchor's door:
+  A: back first floor window, x 45.6 y 10.7            Olive's (the Anchor along the Row and up to E)   head  50%, whole  40%, px35 (50, 96, 614)
+  A: back first floor window, x 45.6 y 10.7            Olive's, from Row 24 (the Anchor as W3 cast it)  head  58%, whole  47%, px35 (50, 96, 614)
+  A: back first floor window, x 45.6 y 10.7            seed B: Ben (Row 23 to Andy's door)              head  24%, whole  24%, px35 (211, 282, 614)
+  A: back first floor window, x 45.6 y 10.7            seed B: Oliver (B to Andy's door)                head  37%, whole  37%, px35 (211, 282, 614)
+  A: back first floor window, x 45.6 y 10.7            seed B: Trevor (the Low Terrace from the west)   head  53%, whole  53%, px35 (211, 253, 267)
+  A: back first floor window, x 45.6 y 10.7            doors: Hannah's door (Low Terrace up 18) no, E's door yes, Andy's door (Low Terrace down 9) no, Karen's door (High Terrace up 21) no
+  the Row (49.3, -12.0)                                Olive's (the Anchor along the Row and up to E)   head  94%, whole  84%, px35 (38, 92, 570)
+  the Row (49.3, -12.0)                                Olive's, from Row 24 (the Anchor as W3 cast it)  head  93%, whole  81%, px35 (38, 92, 570)
+  the Row (49.3, -12.0)                                seed B: Ben (Row 23 to Andy's door)              head  87%, whole  87%, px35 (96, 169, 570)
+  the Row (49.3, -12.0)                                seed B: Oliver (B to Andy's door)                head  79%, whole  79%, px35 (103, 184, 594)
+  the Row (49.3, -12.0)                                seed B: Trevor (the Low Terrace from the west)   head  19%, whole  19%, px35 (102, 102, 103)
+  the Row (49.3, -12.0)                                doors: Hannah's door (Low Terrace up 18) no, E's door no, Andy's door (Low Terrace down 9) no, Karen's door (High Terrace up 21) no
+  the Anchor's door (Harbour Row 22)                   Olive's (the Anchor along the Row and up to E)   head  36%, whole  36%, px35 (77, 129, 562)
+  the Anchor's door (Harbour Row 22)                   Olive's, from Row 24 (the Anchor as W3 cast it)  head  25%, whole  25%, px35 (77, 91, 156)
+  the Anchor's door (Harbour Row 22)                   seed B: Ben (Row 23 to Andy's door)              head  52%, whole  52%, px35 (77, 109, 293)
+  the Anchor's door (Harbour Row 22)                   seed B: Oliver (B to Andy's door)                head  26%, whole  26%, px35 (67, 73, 75)
+  the Anchor's door (Harbour Row 22)                   seed B: Trevor (the Low Terrace from the west)   head   0%, whole   0%, px35 -
+  the Anchor's door (Harbour Row 22)                   doors: Hannah's door (Low Terrace up 18) no, E's door no, Andy's door (Low Terrace down 9) no, Karen's door (High Terrace up 21) no
+  the Anchor's door as W3 cast it (Harbour Row 24)     Olive's (the Anchor along the Row and up to E)   head  36%, whole  36%, px35 (144, 231, 563)
+  the Anchor's door as W3 cast it (Harbour Row 24)     Olive's, from Row 24 (the Anchor as W3 cast it)  head  25%, whole  25%, px35 (144, 200, 563)
+  the Anchor's door as W3 cast it (Harbour Row 24)     seed B: Ben (Row 23 to Andy's door)              head  52%, whole  52%, px35 (144, 271, 563)
+  the Anchor's door as W3 cast it (Harbour Row 24)     seed B: Oliver (B to Andy's door)                head  26%, whole  26%, px35 (114, 133, 140)
+  the Anchor's door as W3 cast it (Harbour Row 24)     seed B: Trevor (the Low Terrace from the west)   head   0%, whole   0%, px35 -
+  the Anchor's door as W3 cast it (Harbour Row 24)     doors: Hannah's door (Low Terrace up 18) no, E's door no, Andy's door (Low Terrace down 9) no, Karen's door (High Terrace up 21) no
+
+Every door in sight, by vantage (a figure's head or chest at the door):
+  A: back ground floor window, x 38.8 y 10.8                     D (1107, empty since 1986); High Terrace up 20; Top Terrace up 21
+  A: back ground floor window, x 41.1 y 10.7                     D (1107, empty since 1986); High Terrace up 20; Top Terrace up 21
+  A: front ground floor window, x 43.2 y 1.7                     none
+  A: back ground floor window, x 43.3 y 10.7                     D (1107, empty since 1986); High Terrace up 20
+  A: left ground floor window, x 37.7 y 9.3                      none
+  A: left ground floor window, x 37.7 y 6.3                      none
+  A: right ground floor window, x 46.6 y 3.2                     none
+  A: right ground floor window, x 46.7 y 6.2                     none
+  A: right ground floor window, x 46.7 y 9.2                     none
+  A: back first floor window, x 38.8 y 10.8                      D (1107, empty since 1986); High Terrace up 20; Top Terrace up 21
+  A: front first floor window, x 41.0 y 1.8                      none
+  A: back first floor window, x 41.1 y 10.7                      D (1107, empty since 1986); E (304, 1826); High Terrace up 20; Top Terrace up 21
+  A: front first floor window, x 43.2 y 1.7                      none
+  A: back first floor window, x 43.3 y 10.7                      D (1107, empty since 1986); E (304, 1826); High Terrace up 20
+  A: front first floor window, x 45.5 y 1.7                      none
+  A: back first floor window, x 45.6 y 10.7                      D (1107, empty since 1986); E (304, 1826)
+  A: left first floor window, x 37.6 y 3.3                       none
+  A: right first floor window, x 46.6 y 3.2                      none
+  A: right first floor window, x 46.7 y 6.2                      none
+  A: right first floor window, x 46.7 y 9.2                      none
+  A: front ground floor shopfront, x 39.8 y 1.8                  A (104, café 1988)
+  the Row (49.3, -12.0)                                          A (104, café 1988); B (105); D (1107, empty since 1986); Harbour Row 17; Harbour Row 18; Harbour Row 19; Harbour Row 20; Harbour Row 21; Harbour Row 22; Harbour Row 23; Harbour Row 24; Harbour Row 25; Harbour Row 26
+  the Anchor's door (Harbour Row 22)                             A (104, café 1988); B (105); Harbour Row 17; Harbour Row 18; Harbour Row 19; Harbour Row 20; Harbour Row 21; Harbour Row 22; Harbour Row 23; Harbour Row 24; Harbour Row 25; Harbour Row 26
+  the Anchor's door as W3 cast it (Harbour Row 24)               A (104, café 1988); B (105); Harbour Row 17; Harbour Row 18; Harbour Row 19; Harbour Row 20; Harbour Row 21; Harbour Row 22; Harbour Row 23; Harbour Row 24; Harbour Row 25; Harbour Row 26
+  elsewhere: the steps' foot (49.3, 2.5)                         D (1107, empty since 1986)
+  elsewhere: the Low Terrace at the steps (51.5, 23.8)           Low Terrace up 15; Low Terrace up 17; Low Terrace up 18; Low Terrace up 19; Low Terrace up 20; Low Terrace up 22; Low Terrace up 23; Low Terrace up 24; Low Terrace down 7; Low Terrace down 8; Low Terrace down 9; Low Terrace down 10; Low Terrace down 11; Low Terrace down 12; Low Terrace down 13; Low Terrace down 14; Low Terrace down 15
+  elsewhere: the Landing (45.0, 42.0)                            C (1203, cooper 1879); D (1107, empty since 1986); E (304, 1826); High Terrace up 18; High Terrace up 19; High Terrace up 20; High Terrace up 21; High Terrace down 4; Top Terrace up 21
+
+The Row swept along y -8 (Hannah's climb, head in sight; px Lens35 far/median/near):
+  x -10: 0%  x -5: 0%  x 0: 0%  x 5: 0%  x 10: 0%  x 15: 0%  x 20: 0%  x 25: 4%  x 30: 4%  x 35: 0%  x 40: 0%  x 45: 6%  x 50: 77%  x 55: 0%  x 60: 0%  x 65: 0%  x 70: 0%
+
+=== The birch's opaque ===
+elsewhere: the Landing (45.0, 42.0)                            Hannah's climb: head  85%, whole  63%, longest run  56 m; doors: hers no, E's yes; px (Lens35, far/median/near) (76, 189, 1551); spread 163 deg (wider than)
+                                                                 blocked by the ground (6), retaining wall 182 (4), retaining wall 180 (1)
+A: back first floor window, x 45.6 y 10.7                      Hannah's climb: head  83%, whole  66%, longest run  31 m; doors: hers no, E's yes; px (Lens35, far/median/near) (50, 93, 248); spread 42 deg (fits)
+                                                                 blocked by wall 106 (6), Low Terrace down 9 (5), retaining wall 183 (1)
+A: back first floor window, x 41.1 y 10.7                      Hannah's climb: head  82%, whole  65%, longest run  34 m; doors: hers no, E's yes; px (Lens35, far/median/near) (46, 76, 220); spread 50 deg (fits)
+                                                                 blocked by retaining wall 253 (6), the window's opening (4), the birch's trunk (3)
+elsewhere: the steps' foot (49.3, 2.5)                         Hannah's climb: head  80%, whole  58%, longest run  57 m; doors: hers no, E's no; px (Lens35, far/median/near) (45, 78, 172); spread 19 deg (fits)
+                                                                 blocked by wall 106 (7), B (105) (6), Low Terrace down 9 (1)
+the Row (49.3, -12.0)                                          Hannah's climb: head  77%, whole  59%, longest run  55 m; doors: hers no, E's no; px (Lens35, far/median/near) (38, 58, 103); spread 9 deg (fits)
+                                                                 blocked by B (105) (9), wall 106 (7)
+A: back first floor window, x 43.3 y 10.7                      Hannah's climb: head  75%, whole  58%, longest run  26 m; doors: hers no, E's yes; px (Lens35, far/median/near) (50, 88, 235); spread 45 deg (fits)
+                                                                 blocked by retaining wall 253 (6), wall 106 (6), Low Terrace down 9 (3), the window's opening (2)
+A: back first floor window, x 38.8 y 10.8                      Hannah's climb: head  66%, whole  44%, longest run  18 m; doors: hers no, E's no; px (Lens35, far/median/near) (46, 87, 205); spread 47 deg (fits)
+                                                                 blocked by the window's opening (6), retaining wall 253 (5), C (1203, cooper 1879) (5), High Terrace up 21 (4)
+elsewhere: the Low Terrace at the steps (51.5, 23.8)           Hannah's climb: head  41%, whole  34%, longest run  29 m; doors: hers yes, E's no; px (Lens35, far/median/near) (192, 480, 4082); spread 179 deg (wider than)
+                                                                 blocked by the ground (28), retaining wall 180 (14)
+A: back ground floor window, x 41.1 y 10.7                     Hannah's climb: head  31%, whole  27%, longest run  22 m; doors: hers no, E's no; px (Lens35, far/median/near) (123, 179, 223); spread 42 deg (fits)
+                                                                 blocked by retaining wall 252 (20), retaining wall 253 (19), the window's opening (4), the birch's trunk (3)
+A: back ground floor window, x 43.3 y 10.7                     Hannah's climb: head  31%, whole  28%, longest run  22 m; doors: hers no, E's no; px (Lens35, far/median/near) (121, 187, 239); spread 40 deg (fits)
+                                                                 blocked by the birch's trunk (22), retaining wall 253 (14), retaining wall 183 (5), Low Terrace down 9 (3)
+A: back ground floor window, x 38.8 y 10.8                     Hannah's climb: head  28%, whole  23%, longest run  18 m; doors: hers no, E's no; px (Lens35, far/median/near) (117, 170, 207); spread 37 deg (fits)
+                                                                 blocked by retaining wall 252 (29), retaining wall 253 (7), the window's opening (6), C (1203, cooper 1879) (5)
+A: front ground floor window, x 43.2 y 1.7                     Hannah's climb: head   0%, whole   0%, longest run   0 m; doors: hers no, E's no; px (Lens35, far/median/near) -; spread -
+                                                                 blocked by the window's opening (71)
+A: left ground floor window, x 37.7 y 9.3                      Hannah's climb: head   0%, whole   0%, longest run   0 m; doors: hers no, E's no; px (Lens35, far/median/near) -; spread -
+                                                                 blocked by the window's opening (71)
+A: left ground floor window, x 37.7 y 6.3                      Hannah's climb: head   0%, whole   0%, longest run   0 m; doors: hers no, E's no; px (Lens35, far/median/near) -; spread -
+                                                                 blocked by the window's opening (71)
+A: right ground floor window, x 46.6 y 3.2                     Hannah's climb: head   0%, whole   0%, longest run   0 m; doors: hers no, E's no; px (Lens35, far/median/near) -; spread -
+                                                                 blocked by the window's opening (68), Low Terrace down 9 (3)
+A: right ground floor window, x 46.7 y 6.2                     Hannah's climb: head   0%, whole   0%, longest run   0 m; doors: hers no, E's no; px (Lens35, far/median/near) -; spread -
+                                                                 blocked by the window's opening (67), Low Terrace down 9 (4)
+A: right ground floor window, x 46.7 y 9.2                     Hannah's climb: head   0%, whole   0%, longest run   0 m; doors: hers no, E's no; px (Lens35, far/median/near) -; spread -
+                                                                 blocked by the window's opening (65), Low Terrace down 9 (6)
+A: front first floor window, x 41.0 y 1.8                      Hannah's climb: head   0%, whole   0%, longest run   0 m; doors: hers no, E's no; px (Lens35, far/median/near) -; spread -
+                                                                 blocked by the window's opening (71)
+A: front first floor window, x 43.2 y 1.7                      Hannah's climb: head   0%, whole   0%, longest run   0 m; doors: hers no, E's no; px (Lens35, far/median/near) -; spread -
+                                                                 blocked by the window's opening (71)
+A: front first floor window, x 45.5 y 1.7                      Hannah's climb: head   0%, whole   0%, longest run   0 m; doors: hers no, E's no; px (Lens35, far/median/near) -; spread -
+                                                                 blocked by the window's opening (71)
+A: left first floor window, x 37.6 y 3.3                       Hannah's climb: head   0%, whole   0%, longest run   0 m; doors: hers no, E's no; px (Lens35, far/median/near) -; spread -
+                                                                 blocked by the window's opening (71)
+A: right first floor window, x 46.6 y 3.2                      Hannah's climb: head   0%, whole   0%, longest run   0 m; doors: hers no, E's no; px (Lens35, far/median/near) -; spread -
+                                                                 blocked by the window's opening (68), Low Terrace down 9 (2), B (105) (1)
+A: right first floor window, x 46.7 y 6.2                      Hannah's climb: head   0%, whole   0%, longest run   0 m; doors: hers no, E's no; px (Lens35, far/median/near) -; spread -
+                                                                 blocked by the window's opening (67), Low Terrace down 9 (4)
+A: right first floor window, x 46.7 y 9.2                      Hannah's climb: head   0%, whole   0%, longest run   0 m; doors: hers no, E's no; px (Lens35, far/median/near) -; spread -
+                                                                 blocked by the window's opening (65), Low Terrace down 9 (6)
+A: front ground floor shopfront, x 39.8 y 1.8                  Hannah's climb: head   0%, whole   0%, longest run   0 m; doors: hers no, E's no; px (Lens35, far/median/near) -; spread -
+                                                                 blocked by the window's opening (71)
+the Anchor's door (Harbour Row 22)                             Hannah's climb: head   0%, whole   0%, longest run   0 m; doors: hers no, E's no; px (Lens35, far/median/near) -; spread -
+                                                                 blocked by Harbour Row 22 (71)
+the Anchor's door as W3 cast it (Harbour Row 24)               Hannah's climb: head   0%, whole   0%, longest run   0 m; doors: hers no, E's no; px (Lens35, far/median/near) -; spread -
+                                                                 blocked by Harbour Row 24 (71)
+
+Other routes, from the best window, the Row and the Anchor's door:
+  A: back first floor window, x 45.6 y 10.7            Olive's (the Anchor along the Row and up to E)   head  50%, whole  40%, px35 (50, 96, 614)
+  A: back first floor window, x 45.6 y 10.7            Olive's, from Row 24 (the Anchor as W3 cast it)  head  58%, whole  47%, px35 (50, 96, 614)
+  A: back first floor window, x 45.6 y 10.7            seed B: Ben (Row 23 to Andy's door)              head  24%, whole  24%, px35 (211, 282, 614)
+  A: back first floor window, x 45.6 y 10.7            seed B: Oliver (B to Andy's door)                head  37%, whole  37%, px35 (211, 282, 614)
+  A: back first floor window, x 45.6 y 10.7            seed B: Trevor (the Low Terrace from the west)   head  53%, whole  53%, px35 (211, 253, 267)
+  A: back first floor window, x 45.6 y 10.7            doors: Hannah's door (Low Terrace up 18) no, E's door yes, Andy's door (Low Terrace down 9) no, Karen's door (High Terrace up 21) no
+  the Row (49.3, -12.0)                                Olive's (the Anchor along the Row and up to E)   head  94%, whole  84%, px35 (38, 92, 570)
+  the Row (49.3, -12.0)                                Olive's, from Row 24 (the Anchor as W3 cast it)  head  93%, whole  81%, px35 (38, 92, 570)
+  the Row (49.3, -12.0)                                seed B: Ben (Row 23 to Andy's door)              head  87%, whole  87%, px35 (96, 169, 570)
+  the Row (49.3, -12.0)                                seed B: Oliver (B to Andy's door)                head  79%, whole  79%, px35 (103, 184, 594)
+  the Row (49.3, -12.0)                                seed B: Trevor (the Low Terrace from the west)   head  19%, whole  19%, px35 (102, 102, 103)
+  the Row (49.3, -12.0)                                doors: Hannah's door (Low Terrace up 18) no, E's door no, Andy's door (Low Terrace down 9) no, Karen's door (High Terrace up 21) no
+  the Anchor's door (Harbour Row 22)                   Olive's (the Anchor along the Row and up to E)   head  36%, whole  36%, px35 (77, 129, 562)
+  the Anchor's door (Harbour Row 22)                   Olive's, from Row 24 (the Anchor as W3 cast it)  head  25%, whole  25%, px35 (77, 91, 156)
+  the Anchor's door (Harbour Row 22)                   seed B: Ben (Row 23 to Andy's door)              head  52%, whole  52%, px35 (77, 109, 293)
+  the Anchor's door (Harbour Row 22)                   seed B: Oliver (B to Andy's door)                head  26%, whole  26%, px35 (67, 73, 75)
+  the Anchor's door (Harbour Row 22)                   seed B: Trevor (the Low Terrace from the west)   head   0%, whole   0%, px35 -
+  the Anchor's door (Harbour Row 22)                   doors: Hannah's door (Low Terrace up 18) no, E's door no, Andy's door (Low Terrace down 9) no, Karen's door (High Terrace up 21) no
+  the Anchor's door as W3 cast it (Harbour Row 24)     Olive's (the Anchor along the Row and up to E)   head  36%, whole  36%, px35 (144, 231, 563)
+  the Anchor's door as W3 cast it (Harbour Row 24)     Olive's, from Row 24 (the Anchor as W3 cast it)  head  25%, whole  25%, px35 (144, 200, 563)
+  the Anchor's door as W3 cast it (Harbour Row 24)     seed B: Ben (Row 23 to Andy's door)              head  52%, whole  52%, px35 (144, 271, 563)
+  the Anchor's door as W3 cast it (Harbour Row 24)     seed B: Oliver (B to Andy's door)                head  26%, whole  26%, px35 (114, 133, 140)
+  the Anchor's door as W3 cast it (Harbour Row 24)     seed B: Trevor (the Low Terrace from the west)   head   0%, whole   0%, px35 -
+  the Anchor's door as W3 cast it (Harbour Row 24)     doors: Hannah's door (Low Terrace up 18) no, E's door no, Andy's door (Low Terrace down 9) no, Karen's door (High Terrace up 21) no
+
+Every door in sight, by vantage (a figure's head or chest at the door):
+  A: back ground floor window, x 38.8 y 10.8                     D (1107, empty since 1986); High Terrace up 20; Top Terrace up 21
+  A: back ground floor window, x 41.1 y 10.7                     D (1107, empty since 1986); High Terrace up 20; Top Terrace up 21
+  A: front ground floor window, x 43.2 y 1.7                     none
+  A: back ground floor window, x 43.3 y 10.7                     D (1107, empty since 1986); High Terrace up 20
+  A: left ground floor window, x 37.7 y 9.3                      none
+  A: left ground floor window, x 37.7 y 6.3                      none
+  A: right ground floor window, x 46.6 y 3.2                     none
+  A: right ground floor window, x 46.7 y 6.2                     none
+  A: right ground floor window, x 46.7 y 9.2                     none
+  A: back first floor window, x 38.8 y 10.8                      D (1107, empty since 1986); High Terrace up 20; Top Terrace up 21
+  A: front first floor window, x 41.0 y 1.8                      none
+  A: back first floor window, x 41.1 y 10.7                      D (1107, empty since 1986); E (304, 1826); High Terrace up 20; Top Terrace up 21
+  A: front first floor window, x 43.2 y 1.7                      none
+  A: back first floor window, x 43.3 y 10.7                      D (1107, empty since 1986); E (304, 1826); High Terrace up 20
+  A: front first floor window, x 45.5 y 1.7                      none
+  A: back first floor window, x 45.6 y 10.7                      D (1107, empty since 1986); E (304, 1826)
+  A: left first floor window, x 37.6 y 3.3                       none
+  A: right first floor window, x 46.6 y 3.2                      none
+  A: right first floor window, x 46.7 y 6.2                      none
+  A: right first floor window, x 46.7 y 9.2                      none
+  A: front ground floor shopfront, x 39.8 y 1.8                  A (104, café 1988)
+  the Row (49.3, -12.0)                                          A (104, café 1988); B (105); D (1107, empty since 1986); Harbour Row 17; Harbour Row 18; Harbour Row 19; Harbour Row 20; Harbour Row 21; Harbour Row 22; Harbour Row 23; Harbour Row 24; Harbour Row 25; Harbour Row 26
+  the Anchor's door (Harbour Row 22)                             A (104, café 1988); B (105); Harbour Row 17; Harbour Row 18; Harbour Row 19; Harbour Row 20; Harbour Row 21; Harbour Row 22; Harbour Row 23; Harbour Row 24; Harbour Row 25; Harbour Row 26
+  the Anchor's door as W3 cast it (Harbour Row 24)               A (104, café 1988); B (105); Harbour Row 17; Harbour Row 18; Harbour Row 19; Harbour Row 20; Harbour Row 21; Harbour Row 22; Harbour Row 23; Harbour Row 24; Harbour Row 25; Harbour Row 26
+  elsewhere: the steps' foot (49.3, 2.5)                         D (1107, empty since 1986)
+  elsewhere: the Low Terrace at the steps (51.5, 23.8)           Low Terrace up 15; Low Terrace up 17; Low Terrace up 18; Low Terrace up 19; Low Terrace up 20; Low Terrace up 22; Low Terrace up 23; Low Terrace up 24; Low Terrace down 7; Low Terrace down 8; Low Terrace down 9; Low Terrace down 10; Low Terrace down 11; Low Terrace down 12; Low Terrace down 13; Low Terrace down 14; Low Terrace down 15
+  elsewhere: the Landing (45.0, 42.0)                            C (1203, cooper 1879); D (1107, empty since 1986); E (304, 1826); High Terrace up 18; High Terrace up 19; High Terrace up 20; High Terrace up 21; High Terrace down 4; Top Terrace up 21
+
+The Row swept along y -8 (Hannah's climb, head in sight; px Lens35 far/median/near):
+  x -10: 0%  x -5: 0%  x 0: 0%  x 5: 0%  x 10: 0%  x 15: 0%  x 20: 0%  x 25: 4%  x 30: 4%  x 35: 0%  x 40: 0%  x 45: 6%  x 50: 77%  x 55: 0%  x 60: 0%  x 65: 0%  x 70: 0%
+
+The sun at Stavanger (58.97 N, 5.73 E), elevation in degrees at the authored hours:
+  Wednesday 15 November 1989 (CET, UTC+1): 15:30 +3.7, 16:30 -2.3; sunset 16:17
+  Wednesday 22 November 1989 (CET, UTC+1): 15:30 +2.3, 16:30 -3.6; sunset 16:04
+  Wednesday 29 November 1989 (CET, UTC+1): 15:30 +1.2, 16:30 -4.6; sunset 15:53
+  Friday 15 December 1989 (CET, UTC+1): 10:00 +2.0, 12:00 +7.5, 14:00 +5.8, 16:00 -2.6, 18:00 -15.8; sunset 15:40
+  Wednesday 09 September 1998 (CEST, UTC+2): 15:30 +32.2, 16:30 +27.0; sunset 20:19
+  Wednesday 16 September 1998 (CEST, UTC+2): 15:30 +29.5, 16:30 +24.3; sunset 19:58
+  Wednesday 23 September 1998 (CEST, UTC+2): 15:30 +26.7, 16:30 +21.5; sunset 19:37
+  Friday 16 October 1998 (CEST, UTC+2): 10:00 +11.3, 12:00 +20.5, 14:00 +22.0, 16:00 +15.4, 18:00 +2.9; sunset 18:31
