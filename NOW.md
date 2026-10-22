@@ -34,7 +34,7 @@ Each session commits its own work; a stopped one resumes from its files. Long wo
 - **Held, on Opus:**
   - the camera and play-craft studies' unread talks and masters, listed in the Limits sections of `docs/research/play-craft.md`, `camera-and-composition.md` and `collision-and-navigation.md`, once the port runs and the weekly allows; read online only, since a download waits for Øystein's OK;
   - a review of the playtest programme (`docs/research/playtesting.md`), when the greybox is close.
-- **Housekeeping, the dates:** labels saying "22 October" for work of 20 or 21 October get the date of the commit that wrote them (`git blame`), checked by eye; real dates stay (the Bergen photo, the 1998 records, `usage_scan.py`'s range, the playtests' own files).
+- **Housekeeping, the dates:** a "22 October" label on work of 20 or 21 October takes its commit's date (`git blame`), checked by eye; real dates (photos, records, the playtests' files) stay.
 - **Inquest,** a stored game idea on the unmerged branch `ideas/inquest`. Its engine requests are numbered 11 to 17, which clash with the numbers in `docs/engine-requests.md`.
 
 ## For Friday's reviewer
