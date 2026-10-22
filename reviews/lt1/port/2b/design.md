@@ -44,16 +44,14 @@ Nothing changes a vertex after the part has made it. Joint soil and moss may fol
 **SN2 Level beds.** Every bed is level, along the wall and across it. The batter, about one in six, is in the face alone: each stone's face is a plane cut at the batter, and its beds stay level (the pre-mortem's story 5).
 - No course follows the pitch. Each course starts on the stepped footing uphill and ends under the coping downhill. Through a rest the field runs on unchanged.
 - **Footing.** On the stair side it is the steps themselves: the step ends tail 150 mm into the wall and are drawn on the elevation as occupied cells, and the wall is built on them. The course lines are taken from the step tops: one line on each step top, and at most one line between two step tops, so every course meets the stair on a step's top or against a step end's side, never in a wedge, and no stone is under 50 mm high. On the bank side the footing steps with the ground, each step a whole course.
-- **Panels.** A wall is laid by panel, between its features (heads, kneelers, knees, the 1961 panel's edges), each panel on its own id and seed. A record event re-lays its panel and no other.
-- **The coping** is raked over a flight and level over a rest, and is laid on the cut tops of level-bedded stones:
-  - a **kneeler** at the foot of every raked run, at the lane and at every rest-to-flight break: a stone with a level bed, wider than it is high, tailing into the wall, the coping's section worked on its top (Rivington Part I, 1904, p. 54; Mitchell 1902; `research-local.md`);
-  - **intermediate kneelers** along a long raked run, as all three textbooks put them "at intervals"; none gives a spacing, so ours is one every 8 to 12 steps (2.4 to 3.6 m of going), our own choice;
-  - a **knee stone** at every flight-to-rest break, one stone carrying both tops, so there is no notch (open fault 2). This is our choice and unsourced: nothing pushes at that break, and a plain joint on it is as defensible. It stays for the fault it removes, and the local photographs may correct it;
-  - coping joints rebated, so each slab bears on the one below.
-- **Rake cuts.** The last stone of each course under the rake is chosen long enough that the rake cut leaves a trapezoid face. No face is narrower than 50 mm or more acute than 25° (no slivers).
+- **Panels.** A wall is laid by panel, between its features (heads, rests, the 1961 panel's edges), each panel on its own id and seed. A record event re-lays its panel and no other.
+- **The top** is whole courses, by the wall's role, as the town's own dry lane walls are built. In the twenty local photographs no dry wall beside a flight has a raked coping (`docs/references/stone/`, 29, 32, 33 and 36 to 40); raked copings appear only on dressed granite (42), rendered work and cast kerbs.
+  - **A retaining wall** whose bank stands at or over its top has no coping. Its top course is level stones, the bank's turf and plants run over them, and its top line steps with the bank, a whole course a step (32, 36, 38).
+  - **A parapet** has level slab copings that step down square at a joint, a whole course a step, as dry wallers set slab copes on a slope (BTCV). A step falls only on a step top's course line, so every coping lies on whole courses. Whether a level run spans one going or two is chosen in grey form at R2b, by how the stepped top reads; an extra course goes in where a step would grow too big (BTCV). Over a rest the coping runs level and drops square at the next flight (29).
+  - No stone is cut to a rake, so the gully has no rake cuts, kneelers or knee stones, and the notch at the rest (open fault 2) cannot form. The kneeler stays the rule for a raked coping on dressed work (Rivington Part I, 1904, p. 54; Mitchell 1902; 42's foot block), which the gully's walls are not.
 - **Wall ends** are heads of the biggest stones, ties and runners alternating, with a square topstone (fault 4's loose fan goes).
 
-**SN3 Steps.** Block steps of split slate, as the record says.
+**SN3 Steps.** Block steps of split slate, as the record says. In the town's dry lanes most treads are slabs on laid risers (32, 36, 38, 39, 41), and block steps belong to its formal flights (28, 29, 35, 42); the record decides.
 - **Across:** one or two stones a step, never three, never pieced in depth. A joint falls outside the walking line's middle third, alternating sides, and no joint lies within 150 mm of the joint on the step below (no running joint).
 - **Lap:** each step's front bears on the back of the one below, lapping 40 to 60 mm.
 - **Ends:** both ends go 150 mm into the walls.
@@ -62,7 +60,7 @@ Nothing changes a vertex after the part has made it. Joint soil and moss may fol
 
 **SN4 Form.** A stone is drawn as a mason leaves it, with few, large, planar marks.
 - **Every line is an edge of the form** (Øystein, 22 October: the loose lines were also "floating lines, disconnected from the shape"). A line on screen is an arris, a joint between two stones, or the boundary of a mark a fact puts there. It starts and ends at another edge, never in the middle of a face. No texture, shader term or strip piece draws a line of its own.
-- **The face outline:** four to seven straight edges; no per-vertex noise anywhere. Most stones have no knocked corner. Chips, each a planar cut, go on the corners of the mass (heads, kneelers, coping ends, the open ends of steps) and where a fact puts them, as on The Witness's final wall (`research-studios-stylised.md`).
+- **The face outline:** four to seven straight edges; no per-vertex noise anywhere. Most stones have no knocked corner. Chips, each a planar cut, go on the corners of the mass (heads, the coping's steps, coping ends, the open ends of steps) and where a fact puts them, as on The Witness's final wall (`research-studios-stylised.md`).
 - **Beds and arrises:** beds flat, arrises square.
 - **Chamfers:** every exposed arris has a chamfer of 10 to 12 mm, at least 2 px at 8 m through the 28 mm lens, where L0 hands over to L1 (SN8). The nosing's rounding is wear, from the facts.
 - **A split face:** at most three planar facets, stepped at least 15 mm where laminae broke. Finer relief lives in the grain map.
@@ -110,7 +108,7 @@ Triangles. The export fails above:
 | Piece | L0 | L1 |
 | --- | --- | --- |
 | wall face stone | 40 | 16 |
-| coping, head, kneeler, knee, through | 120 | 48 |
+| coping, head, through | 120 | 48 |
 | step stone, rest slab | 300 | 120 |
 | sett | 24 | 12 |
 | a panel's fill | 8 | 8 |
@@ -140,7 +138,8 @@ Low sun is measured and reported. Until 1c's beams it is not gated.
 - **welds and T-junctions** on each piece;
 - **slivers:** a face under 50 mm or 25°;
 - **joint depth** greater than width;
-- **open ends:** every wall end is a head; every run of coping ends at a head, a kneeler or a knee;
+- **open ends:** every wall end is a head; every run of coping ends at a head or a square step onto the run below;
+- **no rake:** no stone or coping is cut to a slope;
 - **chamfer width** under 2 px at 8 m through the 28 mm lens;
 - **floating lines** (SN4), on the golden frames at native size. Lines found by a top-hat in both polarities, over 10 px long, are compared with the mesh's own edges, from a render of piece ids and normals. Any line more than 2 px from an edge fails; none is allowed.
 
@@ -157,7 +156,7 @@ The redraw is done when all of these hold, the numbers first and the eyes last:
 1. **Rigid:** every piece passes SN1's check.
 2. **Laid true:**
    - every course is level; every course ends at a footing or the coping;
-   - a kneeler stands at every upward break and a knee at every downward one;
+   - every wall's top is whole courses: a level coping stepped square, or the bank over a level top course; no stone is cut to a rake;
    - every step laps its neighbour and goes into both walls;
    - SN10's bond tests pass.
 3. **In budget:** SN8's triangle and thin-triangle gates pass at export for both levels, and its frame-time A/B passes at every view in drizzle and at the blue hour.
@@ -183,7 +182,8 @@ The redraw is done when all of these hold, the numbers first and the eyes last:
 
 - **Repetition seen in the face patches at eye level** (two stones read as one patch): more patches per working, 8 to 16, before adding a single triangle.
 - **R0b shows the lines and specks were mostly the pipeline's** (90% gone on today's mesh): the redraw keeps its form decisions, and its clean-making checks move to proving the new mesh adds none.
-- **The rake's cut tops read as a row of small wedges under the coping:** stepped slab copings, set level, as dry wallers lay them (BTCV), A/B'd in grey form.
+- **The stepped tops read as a sawtooth at the street stop or into12:** longer level runs, with an extra course where a step grows too big (BTCV); never a rake on dry work.
+- **The cheek walls turn out dressed or mortared from 1874** (the photographs tie block steps to formal flights, 28 and 42): raked copings on level-bedded ashlar, a kneeler at each foot, and the record changed first.
 - **Courses read too coarse beside the board's walls (03, 09, 10):** smaller courses within SN8's gate, which then binds.
 - **Over the frame budget with L1 and its shadows:** L1 switches nearer, then the walls' far panels merge into one mesh each.
 - **A blind review finding the budgeted stone worse at eye level than today's** (Q13's own reopen).
@@ -194,7 +194,7 @@ The redraw is done when all of these hold, the numbers first and the eyes last:
 | --- | --- | --- | --- |
 | R0 | Today's gully A/B, at the five views in drizzle and the blue hour; busyness measured on today's gully, the clay and the street target | the frame budget's base; Done 5's calibration | yes, when the lock is free |
 | R0b | Shading only, on today's mesh, one change at a time: the stone's own (`GeometricNormalFiltering`, the joint value floor, the cut marks off) and the pipeline's (bloom with a Karis average, shadow normal bias 0.5 against 0.2, SSAO off), the pipeline's as overrides at render time, never saved; one-pixel lines and specks counted at native size | how much of the lines and specks the redraw owns | yes, in R0's run |
-| R1 | Elevations in integer mm: every wall unrolled, by panel, its features first (heads, kneelers, knees, the step ends as occupied cells, the 1961 panel's edges, fallen stones), courses filled by choosing; the steps' stones and joints; SN10's tests; a 2D sheet | the layout is a mason's, before any mesh | no |
+| R1 | Elevations in integer mm: every wall unrolled, by panel, its features first (heads, rests, the coping's steps, the step ends as occupied cells, the 1961 panel's edges, fallen stones), courses filled by choosing; the steps' stones and joints; SN10's tests; a 2D sheet | the layout is a mason's, before any mesh | no |
 | R2a | Look-dev: the six face patches, then a wall stone, a step and a coping at L0 and L1, grey first and then in material, in the target's light, at 1, 5 and 12 m; the L0 to L1 switch A/B'd at 8, 10 and 12 m, with the town's fog on | the surface model and the levels, on three stones before thousands | yes, to judge |
 | R2b | Grey form in Blender: the parts and the laying through the stages, every piece one grey; SN1, SN8 and SN9's checks; a quick sheet at the judging cameras in neutral light | the form and the counts, cheaply | no |
 | R3 | Grey form in Unity: the golden views in grey light, native crops, the frame-time A/B; then the eye-level target, painted over the eye-foot and eye-on grey renders with `blender/tools/paintover.py` as the street target was, the clay beside it as it is planned | form at the views, the cost, and the eye level's bar | yes |
