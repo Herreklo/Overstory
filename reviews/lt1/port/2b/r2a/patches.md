@@ -279,3 +279,31 @@ It also breaks the crescent rows (faults 2 and 4), and gives bed-1 its scarp or 
 5. **bed-1: a scarp, or retire it.**
    - Given a scarp, facing the light, so the two bed faces differ: bed-0 has a shadowed edge and bed-1 a lit one. bed-1's scarp is a through line at 5 m, where the face holds 1.13 L*, and fades by 12 m.
    - Six patches kept. Nothing in the numbers argues for fewer, and repetition across stones is judged only once stones are laid.
+
+## The coordinator's read, 23 October, 00:20
+
+**Not passed as a finished face, and a fourth round on the flat sheet would not finish it. The patches go to R2a's stones as they are.**
+
+What the eye sees, on `patches-tiling.png` and `patches-ab.png`:
+- The ledges no longer read as ruled lines.
+- But each ledge reads as a soft cord: a lit line over a dark one, of even width, on a smooth wave.
+- Between the ledges the split faces read as grey plaster.
+- Beside 05 and 10, A (2 L*) and B (facets ×2, about 3 L*) are both far from the stone, and B is hardly different from A.
+
+**Why the sheet cannot settle it:**
+- **R0b** (`../r0b/result.md`): today's rock colour and grain relief make none of the gully's lines and specks (+1% and −2%). The faults SN7's face limit guards against come from moss and the mesh's outlines.
+- **This A/B:** the references' marks are the block's own form (planes stepped at centimetres, cracks across a whole stone, chipped corners) and lichen. A patch of 2 to 5 mm cannot carry them, so in SN4 they belong to the stone's mesh (at most three planar facets, stepped at least 15 mm), and in 2b's facts to the stone's value.
+- The patch is judged on a stone or nowhere.
+
+**What R2a's stones test, one change at a time against the patches as built,** on the wall stone at L0, in grey and then in the target's light, at 1 and 5 m with the footprint fade on:
+1. **facets ×2** on the split faces, about 3 L* at 5 m, with every line check at zero (this round's B);
+2. **minor ledges off,** leaving the lamina steps to the mesh: does the cord go, and does the face hold?
+
+The bed faces stay at about 2 L* (the walking surface is the calmest part).
+SN7's number for the split face is then set from that A/B, with its evidence, and recorded in the design.
+
+**Open, carried to the stones:**
+- the cord-like ledges and their smooth traces;
+- split-1 at 2.06 L*;
+- the crescent rows' fix resting on the eye;
+- repetition across stones.
