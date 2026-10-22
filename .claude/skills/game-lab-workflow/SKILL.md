@@ -1,11 +1,18 @@
 ---
 name: game-lab-workflow
-description: Use when planning, running, judging or recording a look test or any visual or game experiment in the Game Lab (Unity, Blender, the world view, scenes, characters).
+description: Use when planning, running, judging or recording a look test or any visual or game experiment in the Game Lab (Unity, Blender, the world view, scenes, characters), and when planning the order of work, briefing agents, choosing models or deciding what goes to Øystein. Holds the order rules in full, what goes to Øystein, and the practice for sessions, agents and tokens.
 ---
 
 # Running an experiment in the Game Lab
 
 Every piece of visual or game work is an experiment. One experiment per session.
+
+The five steps (from `CLAUDE.md`), one experiment per session on its own branch (`lt/1-first-street`):
+1. Write the experiment's question and how it will be judged at the top of `docs/experiments.md`. Commit and push.
+2. Outline the build; build once agreed.
+3. End in something Øystein can judge in Unity: a contact sheet, a render or a playable scene, in `reviews/`.
+4. Record what we keep and drop in `docs/experiments.md`; update the design docs to describe the current direction.
+5. Merge to main and update `NOW.md`.
 
 ## Before building
 
@@ -54,3 +61,53 @@ Update `NOW.md`: what is open, what is next.
 - Dramatic light hiding weak shapes.
 - Variety that encodes nothing.
 - Anything that would need Unity to decide something the engine should decide.
+
+## What goes to Øystein
+
+The rule is in `CLAUDE.md` (How work runs): scope, play, permissions and the milestones he judges go to him, each with a recommendation; everything else is decided, recorded with its reasons, and shown to him as finished work he can overturn. His words on it (moved here from `NOW.md`):
+- **Work runs without waiting for him** (Øystein, 21 October, evening: "I just want you to handle things tonight, unless it is super important, you can just continue working"). Sessions carry the plan on, start the next step when the one before reports, and bring him only what is truly his.
+- **The architecture's decisions are delegated** (Øystein, 22 October: "I trust you know how to handle this feedback, and based on a good analysis make the correct decisions moving forward"). Only taste, scope and play go to him.
+- **Look and craft questions are ours** (Øystein, 22 October: "You have to figure these things out. As long as we are critical and only aim for high quality, this should answer itself."). They are decided on frames and motion sheets, with strict reviews, and Øystein judges the milestones. This covers, for example, the night sky's colour, lamp glass and the tonemapper; the brush's size by octaves and any boil; and near ground cover as strokes or blades.
+
+## Working in the right order, in full
+
+Moved here from `CLAUDE.md`, which keeps each rule in a line and "Decide once, answer from the plan" in full.
+
+Quality is fixed. Time and tokens are saved by doing the right thing at the right time (Øystein, 22 October: "think about ways to build more efficiently, so we don't waste time and effort on the wrong things at the wrong time"). What has cost most so far:
+- polish on foundations that later changed: the stairs took eight rounds, then had to be rebuilt for distance levels and history maps;
+- work made before its craft was known: the light's four debts were fixed by guesses, and the trees were built from cut-out cards, which the reference machine draws dearly;
+- judging that flattered: stills rendered at twice the size hid shimmer;
+- sketches made too fast to keep (20 October).
+
+The rules:
+- **Hardest to change comes first.** Data formats, the architecture, the measuring tools and scale come before parts. Look polish comes last, in the ensemble.
+- **Biggest risk comes first.** Whatever could invalidate the most work (scale, cost on the reference machine, motion, whether history reads at all) is tested early, at the cheapest fidelity that can answer it.
+- **Climb a ladder of fidelity.** A number before a render, grey form before materials, a quick sheet before the town, clay before parts, a still before motion. Move up only when the rung below passes.
+- **Test play and ideas in greybox early,** as in normal game development (Øystein, 22 October): clay places, blockout people and placeholder interfaces, played before everything looks finished. The look is developed alongside, never as a gate before play.
+- **One thing end to end before many things.** A kind goes through every stage, distance level, view, light and motion before the next kind starts.
+- **Write "done" first:** the question, the views, the budget and what would change our minds. A self-check against the core rules and the numbers comes before a strict review, so reviews find what only eyes can.
+- **Research just in time,** except the craft that shapes the foundations. Each area is studied right before its step.
+- **Decide once, answer from the plan:** in `CLAUDE.md`.
+- **Stop when a loop won't converge.** Judge the form in grey light and change one thing at a time.
+- **Hold a pre-mortem before every big build** (Øystein, 22 October, on learning the stairs were built before their production craft was known: "that scares me"). A fresh reviewer imagines it is six months later and the work has failed, says why, and names what a lead technical artist at a studio would say we are missing. The blind spot it catches is the one the stairs had.
+
+## Sessions, agents and tokens
+
+Moved here from `CLAUDE.md`, which keeps Øystein's rule (quality first: never a weaker model or less information to save tokens; only waste goes) and the models in a line. Details are in `docs/research/working-with-claude.md`.
+
+**Models.** Choose the model by the kind of work, and say in one line when a step calls for a different one. Helper agents get the model their job needs.
+- **Fable 5.1:** decisions that shape the project, and judgement: what an experiment proves, system and fitting rules, art direction, judging renders, checking reviews against the code. It costs the most and has its own weekly limit, so it gets decisions and strict reviews only, from lean packets: a register, digests, a report, chosen crops. Reading, drafting, research and checks go to Opus agents, which hand Fable what it needs.
+- **Opus 5.5:** building once designed: generators, the Unity side, debugging, docs; and research.
+- **Sonnet 5.5:** mechanical work with a check behind it: batch renders, moves, exports and status that the stress test or a hash proves unchanged.
+
+**Where the usage went,** measured on 20 and 21 October: re-reading the main session's context was a third of all usage (mean context 562k); subagents were nearly half; Fable's reviews were a sixth. A task notification's token count is the agent's final context, not its cost.
+
+**The practice:**
+- **One job per session.** Start fresh at a job boundary or near 200k of context, from a short handover in `NOW.md`. `/clear` is free; `/compact` is a large request. Set the model and effort at the start and never switch models mid-session: delegate instead.
+- **Keep the main context small.** Images, logs, research and reviews run in fresh agents; the main session gets verdicts, numbers and paths. Batch independent calls.
+- **Give each job what it needs, once.** Start from the synthesis or a doc's In short, then read in full every section the decision rests on, and don't re-read what is already known. Read files in ranges and logs by their tail.
+- **Fresh agents, not forks.** A brief names the decision, the files and sections, and the output and its length; a report over 500 words goes to a file. The brief says whether the agent may start others.
+- **Numbers first, eyes second.** The harness, golden views, hashes and value spreads do the first pass, so reviewers spend their eyes on what only eyes can judge. They see frames at the size they will be judged, with native crops where a judgement is made. A leaner review packet replaces the full set only after a blind test shows it finds the same faults.
+- **Research aims at a gap before its step.** Scout first, keep a shared source list, read each source once, take notes as you go, and hand to a fresh writer once context passes 200k.
+- **Rework costs most.** Research the craft, try a quick sheet, measure before judging, decide before building.
+- **Check usage at the start of each day,** and log a line per job in `docs/usage-log.md` (`tools/usage_scan.py` reads the transcripts). When usage runs low, stop at a milestone boundary with everything pushed.

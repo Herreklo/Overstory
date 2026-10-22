@@ -75,4 +75,4 @@ A quick sheet in Blender checks that a generator works; it judges nothing. Judge
 
 ## Honest limits
 
-Good at parametric, architectural and hard-surface shapes, stone and plants by rule, batch work. Weak at organic sculpting, faces, hands, hand-painted texture, animation: say so and suggest a free or open base (no budget for commissions).
+Good at parametric, architectural and hard-surface shapes, stone and plants by rule, batch work. Weak at organic sculpting, faces, hands, hand-painted texture, animation: say so and suggest a free or open base. No commissions and no Houdini: its free version forbids commercial use, and there is no money for Indie; free and open bases only (Øystein, 21 October).
