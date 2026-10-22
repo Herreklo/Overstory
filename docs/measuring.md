@@ -222,6 +222,20 @@ What the passes cost (`reviews/perf/2026-10-22/playable/passes/passes.md`; offsc
 - *The others:* SSR 1 to 6 ms, SSAO 0 to 6 ms, post 0 to 1.4 ms (7 to 8 ms in low sun). The birch costs +1.3 to +11.1 ms in the pass run and +5 to +17 ms in the baseline's A/B where it is in view.
 - *Noise:* differences on a 35 ms frame wander by about ±2 ms (the beams read −2.3 at the street stop in drizzle), and none of these findings rests on one under a millisecond.
 
+**Low sun's beams at a quarter of the pixels** (LT1g, W5, 22 October; `reviews/lt1/playable/walk/w5-report.md`). `SunBeamsFeature` with `SunBeamsQuarter.shader` replaced the full-size pass in `PC_Renderer.asset`, under the same name. It works in four steps:
+- it draws the cloud layer once into a small world map;
+- it marches at half width and half height, with 16 steps and one hard shadow tap a step, a 4×4 ordered offset, and each ray's shadow coordinates and cascades set up once;
+- a 5-tap blur across and down, weighed by ray length, cancels the offsets;
+- a depth-aware composite adds the beams onto the frame.
+
+The harness measures A against B in one build: `-perf-passes all,beams-full,-beams`. The `beams-full` arm sets `SunBeamsFeature.fullSize`, the old pass. Results, no tree, two runs of three rounds (`reviews/perf/2026-10-22/playable/w5-final/`):
+- The beams alone cost 0.9 ms on average over nine views, against 62 before (54 to 70). Single readings run from −0.9 to +2.9 ms, inside the ±2 ms noise, so whether they are under 0.5 ms is not known.
+- Low sun's offscreen frame is now 26 to 42 ms, what drizzle costs (35 to 38 at the foot of the steps, against 90 to 97 before).
+- The golden frames in drizzle and the blue hour are bit-identical. Low sun moves by under 0.07 levels of 255 on average, and by at most 4 levels at single pixels.
+- The shimmer is the same as the old pass's, and a still camera gets none from the beams.
+
+One trap for every frame comparison: URP's post dither follows the frame count. Frames from runs that drew different sets of views differ by about ±1 level everywhere, so compare golden frames only from full `tools/golden.sh` runs.
+
 ## The pass budget
 
 **What it measures.** What each pass of the pipeline costs on the M4 at 1440p, so the architecture's frame budget by pass (`docs/building-blocks.md`, Budgets) rests on numbers. The harness draws each segment with every pass on, then with each pass alone turned off, then with every pass off (`bare`: the opaque geometry lit by the sun alone, no shadows, no MSAA). A pass's cost is the difference in offscreen time. The passes are the sky, the sun's shadow map, SSAO, SSR, the four full-screen passes (sun beams, fog lights, the key block, the palette), post-processing, MSAA 4×, the air's motes, and the opaque and depth textures the pipeline copies. It does this for the corner and for an empty frame (the corner with every renderer hidden: the sky, the lights and post alone, where a fixed cost shows without the geometry's noise). Three A/Bs follow from the first answers: every frame drawn offscreen at half the width and height (a quarter of the pixels, every vertex; `-perf-offscreen-scale 0.5`), so the pixels' share of a cost shows; the street shader without its leaf cards' `clip()`; and the bare corner drawn in a flat unlit material (`flat`), so the street shader's own cost shows.

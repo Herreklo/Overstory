@@ -1,0 +1,299 @@
+{
+ "what": "the machine's background load around a timing run (tools/unity_lock.py --timing): the busiest processes by ps's %CPU (of one core), before the run and sampled during it, the run's own processes apart",
+ "owner": "W5 beams",
+ "purpose": "the frame-time harness: tools/perf.sh playable -runs 2 -out reviews/perf/2026-10-22/playable/w5 -perf-passes all,beams-full,-beams -perf-only eye-foot@1600,eye-on@1600,street@1600,into12@1600,high@1600,a-window@1600,steps@1600,row@1600,anchor-door@1600",
+ "command": [
+  "zsh",
+  "/Users/oystein/code/Overstory/tools/perf.sh",
+  "playable",
+  "-runs",
+  "2",
+  "-out",
+  "reviews/perf/2026-10-22/playable/w5",
+  "-perf-passes",
+  "all,beams-full,-beams",
+  "-perf-only",
+  "eye-foot@1600,eye-on@1600,street@1600,into12@1600,high@1600,a-window@1600,steps@1600,row@1600,anchor-door@1600"
+ ],
+ "started": "2026-10-22T19:54:12+02:00",
+ "ended": "2026-10-22T20:18:12+02:00",
+ "seconds": 1440,
+ "exit": 0,
+ "cpus": 10,
+ "memory_gb": 24.0,
+ "open": [
+  "Blender, interactive"
+ ],
+ "before": {
+  "load": [
+   3.97,
+   4.14,
+   3.75
+  ],
+  "top": [
+   {
+    "name": "Claude Helper (Renderer)",
+    "pid": 49843,
+    "cpu": 40.1,
+    "mem": 4.3
+   },
+   {
+    "name": "WindowServer",
+    "pid": 4171,
+    "cpu": 35.4,
+    "mem": 0.4
+   },
+   {
+    "name": "Claude Helper",
+    "pid": 49830,
+    "cpu": 18.0,
+    "mem": 0.4
+   },
+   {
+    "name": "mdworker_shared",
+    "pid": 98622,
+    "cpu": 14.1,
+    "mem": 0.1
+   },
+   {
+    "name": "mdworker_shared",
+    "pid": 98623,
+    "cpu": 13.9,
+    "mem": 0.1
+   },
+   {
+    "name": "claude",
+    "pid": 76099,
+    "cpu": 12.8,
+    "mem": 1.6
+   },
+   {
+    "name": "mdworker_shared",
+    "pid": 98608,
+    "cpu": 9.1,
+    "mem": 0.1
+   },
+   {
+    "name": "mdworker_shared",
+    "pid": 98609,
+    "cpu": 8.7,
+    "mem": 0.1
+   },
+   {
+    "name": "Claude",
+    "pid": 49824,
+    "cpu": 7.3,
+    "mem": 1.8
+   },
+   {
+    "name": "Creative Cloud UI Helper (Renderer)",
+    "pid": 41696,
+    "cpu": 6.8,
+    "mem": 1.4
+   },
+   {
+    "name": "mdworker_shared",
+    "pid": 98599,
+    "cpu": 4.9,
+    "mem": 0.1
+   },
+   {
+    "name": "Claude Helper",
+    "pid": 49846,
+    "cpu": 4.6,
+    "mem": 0.5
+   }
+  ],
+  "spotlight": [
+   {
+    "name": "mdworker_shared",
+    "pid": 98622,
+    "cpu": 14.1,
+    "mem": 0.1
+   },
+   {
+    "name": "mdworker_shared",
+    "pid": 98623,
+    "cpu": 13.9,
+    "mem": 0.1
+   },
+   {
+    "name": "mdworker_shared",
+    "pid": 98608,
+    "cpu": 9.1,
+    "mem": 0.1
+   },
+   {
+    "name": "mdworker_shared",
+    "pid": 98609,
+    "cpu": 8.7,
+    "mem": 0.1
+   },
+   {
+    "name": "mdworker_shared",
+    "pid": 98599,
+    "cpu": 4.9,
+    "mem": 0.1
+   },
+   {
+    "name": "mdworker_shared",
+    "pid": 98606,
+    "cpu": 4.4,
+    "mem": 0.1
+   },
+   {
+    "name": "mds",
+    "pid": 4129,
+    "cpu": 2.3,
+    "mem": 0.1
+   },
+   {
+    "name": "mdworker_shared",
+    "pid": 98240,
+    "cpu": 2.2,
+    "mem": 0.1
+   },
+   {
+    "name": "mds_stores",
+    "pid": 4319,
+    "cpu": 2.1,
+    "mem": 0.4
+   },
+   {
+    "name": "mdworker_shared",
+    "pid": 98232,
+    "cpu": 1.0,
+    "mem": 0.1
+   },
+   {
+    "name": "mdworker_shared",
+    "pid": 98239,
+    "cpu": 0.1,
+    "mem": 0.1
+   },
+   {
+    "name": "mdworker_shared",
+    "pid": 98566,
+    "cpu": 0.1,
+    "mem": 0.1
+   }
+  ],
+  "spotlight_cpu": 62.9
+ },
+ "during": {
+  "samples": 47,
+  "every_s": 30.0,
+  "load": {
+   "min": 2.56,
+   "mean": 4.96,
+   "max": 12.32
+  },
+  "top": [
+   {
+    "name": "WindowServer",
+    "pid": 4171,
+    "cpu_mean": 32.0,
+    "cpu_max": 51.9
+   },
+   {
+    "name": "node",
+    "pid": 4283,
+    "cpu_mean": 20.1,
+    "cpu_max": 137.5
+   },
+   {
+    "name": "Claude Helper (Renderer)",
+    "pid": 49843,
+    "cpu_mean": 17.5,
+    "cpu_max": 203.4
+   },
+   {
+    "name": "node",
+    "pid": 3534,
+    "cpu_mean": 13.8,
+    "cpu_max": 159.2
+   },
+   {
+    "name": "node",
+    "pid": 4284,
+    "cpu_mean": 11.6,
+    "cpu_max": 148.7
+   },
+   {
+    "name": "node",
+    "pid": 3535,
+    "cpu_mean": 11.6,
+    "cpu_max": 154.8
+   },
+   {
+    "name": "node",
+    "pid": 4286,
+    "cpu_mean": 11.4,
+    "cpu_max": 127.9
+   },
+   {
+    "name": "node",
+    "pid": 4282,
+    "cpu_mean": 11.4,
+    "cpu_max": 133.7
+   },
+   {
+    "name": "Claude Helper",
+    "pid": 49830,
+    "cpu_mean": 10.9,
+    "cpu_max": 24.9
+   },
+   {
+    "name": "node",
+    "pid": 2555,
+    "cpu_mean": 9.6,
+    "cpu_max": 133.3
+   },
+   {
+    "name": "Creative Cloud UI Helper (Renderer)",
+    "pid": 41696,
+    "cpu_mean": 7.4,
+    "cpu_max": 10.6
+   },
+   {
+    "name": "node",
+    "pid": 2554,
+    "cpu_mean": 6.6,
+    "cpu_max": 107.5
+   }
+  ],
+  "spotlight_cpu_mean": 0.6,
+  "run": [
+   {
+    "name": "Overstory",
+    "pid": 98826,
+    "cpu_mean": 13.3,
+    "cpu_max": 97.7
+   },
+   {
+    "name": "Overstory",
+    "pid": 3578,
+    "cpu_mean": 9.8,
+    "cpu_max": 99.2
+   },
+   {
+    "name": "Unity.DataStore",
+    "pid": 98659,
+    "cpu_mean": 0.4,
+    "cpu_max": 0.8
+   },
+   {
+    "name": "UnityPackageManager",
+    "pid": 98657,
+    "cpu_mean": 0.1,
+    "cpu_max": 6.8
+   },
+   {
+    "name": "Unity",
+    "pid": 98643,
+    "cpu_mean": 0.1,
+    "cpu_max": 0.5
+   }
+  ]
+ }
+}

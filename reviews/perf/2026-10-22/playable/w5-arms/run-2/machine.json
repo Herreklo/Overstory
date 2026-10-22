@@ -1,0 +1,228 @@
+{
+ "what": "the machine's background load around a timing run (tools/unity_lock.py --timing): the busiest processes by ps's %CPU (of one core), before the run and sampled during it, the run's own processes apart",
+ "owner": "W5 beams",
+ "purpose": "the frame-time harness: tools/perf.sh playable -runs 2 -out reviews/perf/2026-10-22/playable/w5-arms -perf-passes all,beams-copy,beams-nocomposite,-beams -perf-only eye-foot@1600,street@1600,steps@1600,high@1600 -perf-rounds 3",
+ "command": [
+  "zsh",
+  "/Users/oystein/code/Overstory/tools/perf.sh",
+  "playable",
+  "-runs",
+  "2",
+  "-out",
+  "reviews/perf/2026-10-22/playable/w5-arms",
+  "-perf-passes",
+  "all,beams-copy,beams-nocomposite,-beams",
+  "-perf-only",
+  "eye-foot@1600,street@1600,steps@1600,high@1600",
+  "-perf-rounds",
+  "3"
+ ],
+ "started": "2026-10-22T20:18:34+02:00",
+ "ended": "2026-10-22T20:29:56+02:00",
+ "seconds": 682,
+ "exit": 0,
+ "cpus": 10,
+ "memory_gb": 24.0,
+ "open": [
+  "Blender, interactive"
+ ],
+ "before": {
+  "load": [
+   4.83,
+   4.74,
+   4.75
+  ],
+  "top": [
+   {
+    "name": "node",
+    "pid": 7431,
+    "cpu": 150.6,
+    "mem": 1.4
+   },
+   {
+    "name": "WindowServer",
+    "pid": 4171,
+    "cpu": 32.1,
+    "mem": 0.3
+   },
+   {
+    "name": "claude",
+    "pid": 76099,
+    "cpu": 10.9,
+    "mem": 1.8
+   },
+   {
+    "name": "Creative Cloud UI Helper (Renderer)",
+    "pid": 41696,
+    "cpu": 8.0,
+    "mem": 1.1
+   },
+   {
+    "name": "Claude Helper (Renderer)",
+    "pid": 49843,
+    "cpu": 4.2,
+    "mem": 3.9
+   },
+   {
+    "name": "Claude Helper",
+    "pid": 49830,
+    "cpu": 3.6,
+    "mem": 0.3
+   },
+   {
+    "name": "Blender",
+    "pid": 58659,
+    "cpu": 1.2,
+    "mem": 0.3
+   },
+   {
+    "name": "claude",
+    "pid": 82433,
+    "cpu": 1.1,
+    "mem": 1.2
+   },
+   {
+    "name": "Creative Cloud UI Helper (GPU)",
+    "pid": 29862,
+    "cpu": 0.8,
+    "mem": 0.1
+   },
+   {
+    "name": "claude",
+    "pid": 88486,
+    "cpu": 0.7,
+    "mem": 1.7
+   },
+   {
+    "name": "com.apple.DriverKit-AppleBCMWLAN",
+    "pid": 4320,
+    "cpu": 0.6,
+    "mem": 0.2
+   },
+   {
+    "name": "zsh",
+    "pid": 7437,
+    "cpu": 0.6,
+    "mem": 0.0
+   }
+  ],
+  "spotlight": [],
+  "spotlight_cpu": 0
+ },
+ "during": {
+  "samples": 22,
+  "every_s": 30.0,
+  "load": {
+   "min": 1.94,
+   "mean": 5.43,
+   "max": 13.72
+  },
+  "top": [
+   {
+    "name": "WindowServer",
+    "pid": 4171,
+    "cpu_mean": 31.4,
+    "cpu_max": 48.5
+   },
+   {
+    "name": "node",
+    "pid": 9704,
+    "cpu_mean": 14.9,
+    "cpu_max": 122.5
+   },
+   {
+    "name": "node",
+    "pid": 9705,
+    "cpu_mean": 14.1,
+    "cpu_max": 127.6
+   },
+   {
+    "name": "node",
+    "pid": 9703,
+    "cpu_mean": 14.1,
+    "cpu_max": 113.0
+   },
+   {
+    "name": "node",
+    "pid": 10938,
+    "cpu_mean": 14.1,
+    "cpu_max": 116.3
+   },
+   {
+    "name": "node",
+    "pid": 9702,
+    "cpu_mean": 14.0,
+    "cpu_max": 113.7
+   },
+   {
+    "name": "node",
+    "pid": 10933,
+    "cpu_mean": 14.0,
+    "cpu_max": 115.6
+   },
+   {
+    "name": "node",
+    "pid": 9700,
+    "cpu_mean": 13.8,
+    "cpu_max": 115.2
+   },
+   {
+    "name": "node",
+    "pid": 10935,
+    "cpu_mean": 13.4,
+    "cpu_max": 100.8
+   },
+   {
+    "name": "Claude Helper (Renderer)",
+    "pid": 49843,
+    "cpu_mean": 9.9,
+    "cpu_max": 22.8
+   },
+   {
+    "name": "node",
+    "pid": 10934,
+    "cpu_mean": 8.8,
+    "cpu_max": 102.8
+   },
+   {
+    "name": "node",
+    "pid": 9701,
+    "cpu_mean": 8.7,
+    "cpu_max": 97.5
+   }
+  ],
+  "spotlight_cpu_mean": 0.8,
+  "run": [
+   {
+    "name": "Overstory",
+    "pid": 8735,
+    "cpu_mean": 16.8,
+    "cpu_max": 95.1
+   },
+   {
+    "name": "Overstory",
+    "pid": 7629,
+    "cpu_mean": 9.1,
+    "cpu_max": 96.2
+   },
+   {
+    "name": "UnityPackageManager",
+    "pid": 7467,
+    "cpu_mean": 0.6,
+    "cpu_max": 13.9
+   },
+   {
+    "name": "Unity.DataStore",
+    "pid": 7468,
+    "cpu_mean": 0.5,
+    "cpu_max": 0.9
+   },
+   {
+    "name": "Unity",
+    "pid": 7462,
+    "cpu_mean": 0.1,
+    "cpu_max": 0.4
+   }
+  ]
+ }
+}

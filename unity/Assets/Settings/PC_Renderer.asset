@@ -149,17 +149,13 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b00045f12942b46c698459096c89274e, type: 3}
+  m_Script: {fileID: 11500000, guid: 7ffa0625fe41406fa3ad2932a17d4d92, type: 3}
   m_Name: SunBeams
-  m_EditorClassIdentifier: Unity.RenderPipelines.Universal.Runtime::UnityEngine.Rendering.Universal.FullScreenPassRendererFeature
+  m_EditorClassIdentifier: Assembly-CSharp::Overstory.Scenes.SunBeamsFeature
   m_Active: 1
-  injectionPoint: 550
-  fetchColorBuffer: 1
-  requirements: 1
-  passMaterial: {fileID: 2100000, guid: be50fdd85cfdd4356bb07440e5b88be6, type: 2}
-  passIndex: 0
-  bindDepthStencilAttachment: 0
-  m_Version: 1
+  shader: {fileID: 4800000, guid: e0de2b356d234dae89e78aafc5145924, type: 3}
+  fullSize: 0
+  fullMaterial: {fileID: 2100000, guid: be50fdd85cfdd4356bb07440e5b88be6, type: 2}
 --- !u!114 &8731856260101704842
 MonoBehaviour:
   m_ObjectHideFlags: 1

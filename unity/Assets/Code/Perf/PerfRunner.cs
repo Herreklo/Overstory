@@ -63,6 +63,10 @@ namespace Overstory.Perf
     /// draw it whole ('corner' or 'playable', the default being the build's own; its segments keep their plain names);
     /// asking for the other one is an error and measures nothing. A configuration may turn several passes off together:
     /// '-beams+shadows' is every pass on but those two (W3's split of low sun's cost).
+    ///
+    /// The beams' A/B (W5; reviews/lt1/playable/walk/w5-report.md): 'beams-full' leaves every pass on and draws the sun's
+    /// beams as they were before W5 (SunBeamsFeature.fullSize: the full-size pass), so A and B are measured in one build;
+    /// 'beams-copy' and 'beams-nocomposite' set SunBeamsFeature.arm (how the beams meet the frame).
     /// </summary>
     public class PerfRunner : MonoBehaviour
     {
@@ -344,6 +348,9 @@ namespace Overstory.Perf
                         Debug.LogError($"[PerfRunner] the quad has no keyword for '{a.option}'");
             }
 
+            if (configs.Any(c => c.StartsWith("beams-")) && !(features.TryGetValue("SunBeams", out var sbf) && sbf.feature is SunBeamsFeature))
+                Debug.LogError("[PerfRunner] the 'beams-' arms need the SunBeams feature (SunBeamsFeature)");
+
             // the arms that set a keyword for every shader (Shaders/History.hlsl; StreetSurface.hlsl's OS_Atmosphere;
             // made here: Unity allows no keyword in a MonoBehaviour's initializers)
             var historyOff = GlobalKeyword.Create("OS_HISTORY_OFF");
@@ -365,6 +372,11 @@ namespace Overstory.Perf
                 camData.requiresDepthOption = Off(config, "depthtex") ? CameraOverrideOption.Off : depth0;
                 Shader.SetKeyword(historyOff, config == "history-off");
                 Shader.SetKeyword(hazeOff, config == "haze-off");
+                if (features.TryGetValue("SunBeams", out var beams) && beams.feature is SunBeamsFeature sb)
+                {
+                    sb.fullSize = config == "beams-full";
+                    sb.arm = config.StartsWith("beams-") && config != "beams-full" ? config.Substring("beams-".Length) : "";
+                }
             }
 
             var recorders = Counters.Select(c => ProfilerRecorder.StartNew(c.category, c.counter, 1)).ToArray();
