@@ -104,3 +104,35 @@ Proposals wait here for the next milestone's fresh reviewer, who sees the plan a
 - **Change:** `tools/usage_scan.py` measures what share of usage is mechanical work a check proves (renders, exports, hashes). Only if it is large does a local model for that work become a proposal, run when no frame time is being measured.
 - **Standing cost:** one measurement.
 - **What would change our minds:** the share being small, as the 20 and 21 October measurements suggest (context re-reading a third, helpers nearly half, Fable a sixth).
+
+## Evidence for Q12 to Q15 (22 October, evening)
+
+- The walk's first runs: the corner draws in about 30 to 45 ms on the M4 (GPU 45 ms at eye-foot in drizzle), against F3's 16.7. The beams alone cost about 60 ms in low sun; the birch 10 to 16; the opaque shaders 12.5, owner unknown.
+- Drawn flat, the corner's 2.74 million triangles cost 1.9 ms; in their shaders, 14.5 (`docs/building-blocks.md`). Time goes to per-pixel work, but shadows, memory and scale still pay per triangle.
+- The gully is about 960,000 triangles (stairs 354,126, walls 607,872, up 35% in its last rebuild), half the whole frame's 2 million for one flight and its walls. The triangle gate starts only in 1e, so the stone's export warns and never fails.
+- The stone is sheared on the rake (non-rigid) in three places (BB3). The stairs took eight rounds, then a rebuild. Øystein, 22 October: "i do not want a slow game - or a game that needs a very good gaming pc"; "they look a bit buggy"; "if something is bad, sometimes it is better to start again"; "make sure we have a good process on this, and not just do the same mistake over and over".
+- The frame-rate gate only asks the number to "hold or fall" at each milestone, with no date for 16.7 ms, and new scope may raise it.
+
+## Q12. A frame-time budget for each element, before it is built
+
+- **Change:** every new kind, system or effect gets a budget in milliseconds at the judging views on the M4, written in its "done" before building, and the harness checks it when the element joins the corner. The corner aims at about 12 ms, leaving room for people, the simulation and the interface. Over budget stops the step, as overrunning its box does. The gate gains a date: the corner under 16.7 ms by LT1's end.
+- **Standing cost:** a line in each brief; a harness arm per element.
+- **What would change our minds:** elements whose cost cannot be known before a first build; then the budget is set at the first grey-form rung instead.
+
+## Q13. The triangle gate on the stone in 2b, not 1e
+
+- **Change:** the gate (`docs/plan.md`, 1e) starts with the port's 2b: the stair and cheek walls get a triangle budget per tier from `docs/foundations.md`, and their export fails above it. Detail beyond the budget moves into normal maps and the history pages.
+- **Standing cost:** the gate's tool, earlier.
+- **What would change our minds:** a blind review finding the budgeted stone worse at eye level than today's.
+
+## Q14. Patch or start again: a test before each round of fixes
+
+- **Change:** before fixing a part, ask whether its faults are in its foundation or in how it is made. Start again (keeping the pipeline, the facts, the hashes and the tools around it) when any one holds: the faults come from how the part is made rather than from settings; it is over its triangle or frame budget by more than half; a third round of fixes has not converged; or a rule it breaks is basic (rocks bend). Record which, with the evidence, in the experiment's entry.
+- **Standing cost:** a line in the workflow skill.
+- **What would change our minds:** restarts that cost more than the rounds they replaced, measured over the next three parts.
+
+## Q15. The strict review of port steps 0 to 2 asks "start over or adjust?"
+
+- **Change:** a fresh reviewer who has not seen our view answers it for the stair and cheek walls from frames at judged size, the code and Q14's test. Our proposal for it: redraw the stones (a rigid placement and shaping function under Q13's budget, judged against the target frame) and keep the port's stages, records, seeds and tools. A "start over" on more than the stones goes to Øystein as scope.
+- **Standing cost:** none beyond the review already planned.
+- **What would change our minds:** the reviewer finding the faults are settings, not the making.
