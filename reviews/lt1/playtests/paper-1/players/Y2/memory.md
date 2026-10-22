@@ -32,3 +32,14 @@ Two cases (Mary Tanner, Andy Shaw), six rounds plus the exit.
 **What was hollow.** I am a blank folder: no face, no companion, nothing to lose but a number. "I couldn't say" five times, and the open/guarded tags did not predict who talked. The account is frozen before the findings, so Colin's "cancer" changed nothing. Standing rewards "?"; the hidden score was 15 of 100. Cause of death was unanswerable. The tenth hour had threads and no verbs.
 
 **Compared with other games.** Better than Saltlight (a clock, something to lose); thinner than the BG3 paper game on character and dilemma. Nearest to Obra Dinn's check-three, but with no face to look at. About $9.99 on sale.
+
+## The Courier (second reporter on a harbour-town paper, 1990 to 1991)
+Three goes a week plus an edition. Six rounds plus the exit.
+
+**Marks and pull.** Pull 6, 6, 5, 5, 5, 4, ending at 3. Curious early, bored from round 3. Small delights: the mill office with no steps, the daily swim at seven, Una's "if it's worth the ink".
+
+**What kept me.** Marking every claim (saw it, witness, heard from someone named, record), and Susie's "not for print: Neil's my son". 938 and 879 were the only sales numbers that told me anything.
+
+**What was hollow.** Every why walled by one stock sentence ("I couldn't tell you. It's done"). Dated strays never joined up; I think the links were mine. Careful empty weeks were rewarded, trust hit 10 of 10 by week five, nothing could hurt me. Wasted turns (an empty county paper, a hidden harbour-day date). The tenth hour played my habits for me.
+
+**Compared with other games.** Same harbour-town family as Answerable but weaker: no case, no hearing, no face of mine. Above Saltlight (a clock, a number that sometimes moved). Far thinner than the BG3 paper game. About $4.99.
