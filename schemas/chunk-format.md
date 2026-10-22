@@ -136,4 +136,4 @@ One per 16 m page group (and one per 32 m cell for the shell atlas). Header 32 b
 1. **The GPU block encoder** (`maps.json`'s `gpu-encoder`). It fixes nothing here: pages are stored in their GPU format whichever encoder made them. Learned when it is timed, before any page bakes in the player (before step 5).
 2. **The place bake's cost per house.** No field here. Learned in the spike before step 5.
 3. **The shell atlas's bake cost per cell.** The input is decided (L2, `maps.json`'s `shellBake`); the cost is learned before step 5.
-4. **The cold read** (purge, then a district loaded on workers). It may change the compression per content and the size of the near file. Both are per-entry or per-file choices, so neither changes this layout. Learned before 3.4.
+4. **The cold read** (purge, then a district loaded on workers). It may change the compression per content and the size of the near file. Both are per-entry or per-file choices, so neither changes this layout. Learned before the port's step 5 (3.4).

@@ -2,9 +2,18 @@
 
 The tools every later change to the world is judged with: mesh hashes, the golden views, the frame-time harness and the motion sheets. They come before the building blocks (`docs/plan.md`, Monday), so the gully can be rebuilt on them and shown to be the same up close and cheaper at distance. They are built to be correct and repeatable first. Each was tested against the acceptance written for it (the harness meets its 3% on GPU time everywhere and on the frame in 22 of 24 segments), and the numbers below are today's baseline.
 
-Numbers do the first pass, eyes the second (`CLAUDE.md`, Using tokens well). A change that alters a hash, a golden frame, a frame time or a shimmer score is found by the tools; a reviewer then looks where they point.
+Numbers do the first pass, eyes the second (M1; `CLAUDE.md`, Using tokens well). A change that alters a hash, a golden frame, a frame time or a shimmer score is found by the tools; a reviewer then looks where they point.
 
 Everything runs on the reference machine (`docs/foundations.md`): the Mac mini with the M4, Unity 6000.6.6f1 in batch mode on `unity/`, one job at a time through the Unity lock (`tools/unity_lock.py`; the unity-conventions skill, Using Unity), which waits while the editor or another job has it open, Blender 5.2.2 in the background. Nothing here needs anything installed; what would make the tools better is at the end.
+
+## In short
+
+- **M1** Numbers find a change first (mesh hashes, golden views, harness, motion sheets); eyes then look where they point. All runs on the M4 under the Unity lock; timing in a built player, never the editor. Evidence: `CLAUDE.md`. Reopens: none named.
+- **M2** Golden views: five views in three lights at 2560 by 1440, one sample a pixel, never supersampled; a frame passes at a FLIP-like mean of at most 0.0005 and worst pixel 0.05. Evidence: `research/painted-marks-in-motion.md`. Reopens: none named.
+- **D14.1** (disputed) A strict review accepts a baseline while building; Øystein accepts milestone sheets. Evidence: `research/building-blocks-decisions.md` §10. Reopens: none named.
+- **M3** (disputed) The gully's accepted baseline proves only that the port changes nothing; the look is judged against the target frame. Fixing a frozen known defect is a deliberate change, not a regression. Evidence: `reviews/golden/rebaseline-2026-10-22-seeds-2.md`. Reopens: none named.
+- **M4** A cost is measured on its real output, never a stand-in: a busy output costs up to 2.2 ms after the draw. A/Bs compare offscreen time; memory is the system's footprint. Evidence: `reviews/lt1/history/r2.md`. Reopens: none named.
+- **M5** Shimmer compares one camera path before and after a change, never two paths. Evidence: `reviews/motion/2026-10-21/shimmer.md`. Reopens: none named.
 
 ## Mesh hashes
 
@@ -57,13 +66,13 @@ in the three lights (`1300-drizzle`, `1600-low-sun`, `1750-blue-hour`). Every fr
 
 `blender/tools/golden_compare.py` compares each frame with its baseline by a perceptual difference after NVIDIA's FLIP, written in numpy because FLIP is not installed: the frames in an opponent colour space filtered by FLIP's contrast-sensitivity kernels, the Hunt-adjusted HyAB colour distance, and FLIP's edge and point features on luminance, combined as FLIP combines them, at the pixels a degree of the reference player's screen (a 27-inch 1440p monitor at 70 cm: 52.4). It is an approximation, not checked pixel for pixel against NVIDIA's tool, so its numbers are FLIP-like. Per frame it writes a heat map on FLIP's scale (magma, black to pale yellow), the same amplified ten times, and a strip of baseline, test and both maps; per folder a sheet; and a report with the mean, the 99.9th percentile, the worst pixel and how many pixels changed at all.
 
-**The threshold.** A frame passes when its mean is at most 0.0005 and its worst pixel at most 0.05. The noise floor is zero (below), so the threshold is set by what a real change scores, not by noise; it can be tightened.
+**The threshold** (M2). A frame passes when its mean is at most 0.0005 and its worst pixel at most 0.05. The noise floor is zero (below), so the threshold is set by what a real change scores, not by noise; it can be tightened.
 
 **How to run it.**
 
     tools/golden.sh [-moments 1600 -views street,high]
 
-renders into `reviews/golden/current/` (about 15 s for all fifteen frames) and compares into `reviews/golden/compare/` (about 10 s), both kept out of git, and exits 1 if a frame fails. It runs under the Unity lock in timing mode, as the harness does (below), and writes `reviews/golden/compare/machine.json`. A partial render compares only the frames it made. To accept a new baseline (only Øystein accepts one; the AI proposes it with its sheet):
+renders into `reviews/golden/current/` (about 15 s for all fifteen frames) and compares into `reviews/golden/compare/` (about 10 s), both kept out of git, and exits 1 if a frame fails. It runs under the Unity lock in timing mode, as the harness does (below), and writes `reviews/golden/compare/machine.json`. A partial render compares only the frames it made. To accept a new baseline (D14.1; only Øystein accepts one; the AI proposes it with its sheet):
 
     blender -b --factory-startup --python blender/tools/golden_compare.py -- accept reviews/golden/current reviews/golden/baseline
 
@@ -81,7 +90,7 @@ Why it changed: the gully is now the one today's generators build (Mesh hashes, 
 - A fresh Fable agent judged seven blind pairs of native-size crops where the frames differ most (`reviews/golden/rebaseline-2026-10-22.md`). It found every pair equal: the differences are the generator's own noise (stone positions, which face kind lands where, where moss falls), each as plausible as the other, so both builds are fit to be the reference.
 - It proposed the new one on the main session's brief, and Øystein accepted it (22 October).
 
-**Known defects, frozen into the baseline** (shared by both builds; fixing one is a deliberate change to the reference, not a regression):
+**Known defects, frozen into the baseline** (M3; shared by both builds; fixing one is a deliberate change to the reference, not a regression):
 - the left cheek wall's low end reads as see-through thin slabs at the street stop, and as a black band between the wall and the tread ends from 12 m (the wall's skins seem to have no end cap);
 - where a stone's end stands proud of its neighbour, the joint is a flat black bar with no end face; it stripes the flight with dark ticks at the street stop;
 - the lichen reads as decals in grey light: a uniform bright rim, and young rosettes all coin-round and one size;
@@ -146,7 +155,7 @@ composes, builds (about 6 minutes the first time, seconds after) and runs the pl
 
 Two arms leave every pass on and set a shader keyword everywhere (step 3; `reviews/lt1/history/r2.md`): `-perf-passes history-off` (`OS_HISTORY_OFF`: every history layer at its material's quiet mean, no page or piece read) and `haze-off` (`OS_HAZE_OFF`: `OS_Atmosphere` skipped in the stone, street, tree and motes shaders); `LT1Golden.Views -history-off` or `-haze-off` renders the same arm. `-perf-scenes quad-rgba8,quad-bc7` adds the history quad (`LT1History`: 4,096 pieces reading three synthetic pages through `Shaders/History.hlsl`), measured in `all` and `history-off` from the empty scene's views; `summary.json` gives each segment's per-round offscreen medians (`round_offscreen_ms`).
 
-A quad scene takes options after its format (`half`, `two`, `tile<k>` and R2c's sampling arms; `reviews/lt1/history/r2.md`). What they found: a busy output costs in the passes after the draw, not in the draw. The quad sampling its pages minified and writing a flat colour costs +0.05 ms; writing texel-rate noise with no sample, +2.2 ms. So the pass budget below, measured on quiet frames, understates a busy screen by about 2.2 ms, and a shader's cost is measured on its own real output, never on a stand-in.
+A quad scene takes options after its format (`half`, `two`, `tile<k>` and R2c's sampling arms; `reviews/lt1/history/r2.md`). What they found: a busy output costs in the passes after the draw, not in the draw. The quad sampling its pages minified and writing a flat colour costs +0.05 ms; writing texel-rate noise with no sample, +2.2 ms. So the pass budget below, measured on quiet frames, understates a busy screen by about 2.2 ms, and a shader's cost is measured on its own real output, never on a stand-in (M4).
 
 **Accepted (21 October).** Two runs (`reviews/perf/2026-10-21/runs.md`):
 - the GPU time agrees within 3.1% in all 24 segments;
@@ -287,7 +296,7 @@ The proposed numbers are provisional until each fix is A/B'd on the harness.
 
 The world's clock is the light's own, so the world holds still and only the camera moves. Low sun by default (`-moments` for the others); `-birch` plants the corner's birch; `-nodither` turns the camera's dithering off, in memory; `-test crawl|smooth` stands the measure's known case on the first steps (below).
 
-`blender/tools/motion_measure.py` measures each sequence. For each pair of consecutive frames it takes the luma (Rec. 709 weights on the sRGB values, in 8-bit levels), their difference, and the fine part of that difference (less its own Gaussian blur of 1.5 px): what changed at the scale of a pixel or two, where shimmer, crawl and popping live. The *shimmer* is that fine change's mean magnitude in levels; the *flicker* is the share of pixels whose fine change is over 3 levels. Per sequence: their mean, median and worst pair, and a sheet of the first frame beside a map of where the fine change gathers (2 levels at the top of the scale). A moving camera moves every edge, so a moving path never measures zero: compare the same path before and after a change, never two paths. The swim test, which tells a sliding mark from an aliasing one, is still to come.
+`blender/tools/motion_measure.py` measures each sequence. For each pair of consecutive frames it takes the luma (Rec. 709 weights on the sRGB values, in 8-bit levels), their difference, and the fine part of that difference (less its own Gaussian blur of 1.5 px): what changed at the scale of a pixel or two, where shimmer, crawl and popping live. The *shimmer* is that fine change's mean magnitude in levels; the *flicker* is the share of pixels whose fine change is over 3 levels. Per sequence: their mean, median and worst pair, and a sheet of the first frame beside a map of where the fine change gathers (2 levels at the top of the scale). A moving camera moves every edge, so a moving path never measures zero: compare the same path before and after a change, never two paths (M5). The swim test, which tells a sliding mark from an aliasing one, is still to come.
 
 **How to run it.**
 

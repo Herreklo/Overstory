@@ -4,22 +4,30 @@
 
 For every kind of fact the town shows, it says whose it is. It answers the pre-mortem's third story, "Overstory became the engine" (`docs/research/pre-mortem.md`): our rules grow the past and set owners and care, and will clash with the engine's households when homes land (#59).
 
+## In short
+
+- **FC1** The engine decides that and why, our rules how it looks, the seed which exactly. History is a fact with one owner; the engine's wins: what was drawn from ours is redrawn, the span from S reruns on its facts, a contradicting curation pin dropped and reported. Care never comes from character (Rule 8); patchwork, texture, land and era parts stay ours. Evidence: The rule. Reopens: the engine's facts.
+- **FC2** People start at S (1959 for 1989, #23); before S, our curated starting record, never rendered. From 1989 only engine events, accepted player commands included, change it; we derive only its gaps. Evidence: Two years. Reopens: #23.
+- **D3.3** Four labels (21 October): `simulated`, `generated-past`, `derived` (no readable year unless a story pins it), `authored`; `engine` retired (disputed). Evidence: `building-blocks-decisions.md` §4. Reopens: none named.
+- **FC3** Hand-off checks: each household addressed at S; one owner a plot; no `authored` or `derived` after S where the engine has it; every 1989 business housed; replacements logged. Evidence: Checks. Reopens: none named.
+- **36** The real run: unedited, `simulated`, drawn at 1989 by our rules; a broken rule changes ours, never the engine (disputed). Evidence: A frame. Reopens: none named.
+
 ## The rule
 
-- The engine decides that a thing happened and why. Our rules decide how it looks. The seed decides which exactly (`docs/living-fabric.md`).
+- The engine decides that a thing happened and why (FC1). Our rules decide how it looks. The seed decides which exactly (`docs/living-fabric.md`).
 - Anything that reads as history is a fact with one owner below.
 - When the engine has a fact, it wins. Ours is replaced, what was drawn from it is drawn again, and no visual claim survives that contradicts it.
 
 ## Two years
 
-- **The people's start year** (S: 1959 for a game shown in 1989, #23). Before S lies the starting record: made once by our rules, curated, never rendered. From S the engine decides people, owners, care and works, as far as it models them (`docs/town-system.md`, §3).
+- **The people's start year** (FC2; S: 1959 for a game shown in 1989, #23). Before S lies the starting record: made once by our rules, curated, never rendered. From S the engine decides people, owners, care and works, as far as it models them (`docs/town-system.md`, §3).
 - **The show year** (1989). From here only the engine's events change the record, the player's accepted commands among them. Our rules derive only what the engine does not model. The corner fixture's events after 1989 are test stand-ins.
 
 Both sides write the years from S to 1989 today. That span is the seam.
 
 ## Labels
 
-As in `docs/engine-contract.md` and `docs/town-system.md`. Some notes say `engine` for `simulated`; the architecture picks one word.
+As in `docs/engine-contract.md` and `docs/town-system.md` (D3.3). Some notes say `engine` for `simulated`; the architecture picks one word.
 - `simulated`: decided by the engine.
 - `generated-past`: form written once from the pack's script (units, plots, first buildings, fires, plans); kept if the engine's fabric pass takes it over.
 - `derived`: an actor's decision made by our rule. It shows no year a player can read unless a story pins it as a fact.
@@ -50,7 +58,7 @@ Bare numbers are requests in `docs/engine-requests.md`; #n are engine issues.
 
 ## Checks at the hand-off (draft)
 
-From the pre-mortem: every engine household has an address at S; no plot has two owners at once; no `authored` or `derived` fact after S where the engine has one for the same thing; every business the engine has in 1989 stands in a building; every replacement is logged, so drift shows.
+From the pre-mortem (FC3): every engine household has an address at S; no plot has two owners at once; no `authored` or `derived` fact after S where the engine has one for the same thing; every business the engine has in 1989 stands in a building; every replacement is logged, so drift shows.
 
 ## A frame from a real engine run
 
@@ -58,7 +66,7 @@ Request 10 in `docs/engine-requests.md` (one real run). One corner frame is draw
 
 **The fixture asked for:** a small world from an actual run, exported unedited through the front door (`r41` or later): its tag, ruleset, seed and start year (the engine's own until #23); people with ids, births, deaths, kin, jobs and money; households as the engine implies them; places and ventures with their opening months; events to 1989 with ids, months, who and causes.
 
-**What we do with it:**
+**What we do with it** (36):
 1. Commit it under `fixtures/` as it came, labelled `simulated`.
 2. Map it onto the corner: ventures take buildings and households take addresses by our rules (`derived`); the engine has no buildings or homes yet.
 3. Replace every corner fact the run decides, and draw the corner at 1989 with the share of `simulated` facts counted.

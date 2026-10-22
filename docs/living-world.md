@@ -2,6 +2,14 @@
 
 Status: direction, not yet tested. How the game shows a world that the Understory engine simulates.
 
+## In short
+
+- **LW1** The engine runs as its own process; player acts are commands it accepts or refuses; a save holds engine and ruleset versions, checkpoints and commands. Evidence: `facts-contract.md`. Reopens: none named.
+- **LW2** Two clocks: the engine's months; scenes' minutes and hours, scheduled from facts, committing back only consequential outcomes. Who owns what across a month boundary is open. Evidence: D12.6 (`research/building-blocks-decisions.md`). Reopens: settled with the engine, plan step 8.
+- **LW3** A building and a business are separate; the screen never confuses facts, traces, fallible records, beliefs and discoveries; control, influence and knowledge are dials per game, role and scene. Evidence: `research/interface-and-inspection.md`. Reopens: none named.
+- **LW4** Scenes are written, not voiced; voices only as the town's murmur. Motion: free libraries (MPFB's rig, CMU, 100STYLE; Mixamo once its terms are checked), hand-edited against video, from footage only where licensed; no motion-capture sessions. Øystein's (22 October). Procedural layers follow state, traits only what strangers can read. Evidence: `research/behaviour-on-screen.md`. Reopens: smooth or stepped, judged on frames.
+- **LW5** People are blockout figures until their own research step settles how they are drawn; MPFB and painted faces are direction until then (disputed). Øystein's. Evidence: `plan.md`, Leaner 7. Reopens: that step.
+
 ## The loop
 
 People create people. People create places. Places create memories and events. Memories and events change people. Every step is decided by the engine, deterministic and explainable, so the world writes its own history and can say why.
@@ -16,9 +24,9 @@ Two things keep the loop alive:
 - **Unity draws.** It reads the engine's facts and shows them. It never invents one.
 - **Blender builds the parts.** Generators make families of kit pieces before the game ships. Nothing is modelled at runtime.
 
-The engine runs beside Unity as its own process. Player actions go to the engine as commands it can accept or refuse; what it accepts becomes events. A save holds the engine and ruleset version, checkpoints and the player's commands, so a save survives changes to the rules.
+The engine runs beside Unity as its own process (LW1). Player actions go to the engine as commands it can accept or refuse; what it accepts becomes events. A save holds the engine and ruleset version, checkpoints and the player's commands, so a save survives changes to the rules.
 
-**Two clocks.** The engine moves social life month by month. Scenes run in minutes and hours: who walks where, who is in the bar tonight, the weather this evening. Scene detail is scheduled deterministically from the engine's facts; only consequential outcomes (a promise, a meeting, a booking) are committed back as events. Which side owns what, and what happens when a scene crosses a month boundary, is an open design question to settle with the engine project.
+**Two clocks** (LW2). The engine moves social life month by month. Scenes run in minutes and hours: who walks where, who is in the bar tonight, the weather this evening. Scene detail is scheduled deterministically from the engine's facts; only consequential outcomes (a promise, a meeting, a booking) are committed back as events. Which side owns what, and what happens when a scene crosses a month boundary, is an open design question to settle with the engine project.
 
 ## Places
 
@@ -31,7 +39,7 @@ Each place has three layers:
 
 **Variety comes from combination and history,** not from more models: a few hundred pieces give hundreds of thousands of buildings. Every visual difference carries something true (era, wealth, wear, the owner's character), so the player can read places the way they read people. `blender/tools/trace_check.py` checks the plan side of this: every part a plan shows names the diary event that put it there.
 
-## What the player can know
+## What the player can know (LW3)
 
 **The record has four layers,** and the screen never confuses them:
 1. **Facts:** what happened, decided by the engine.
@@ -48,13 +56,15 @@ Each place has three layers:
 
 Each kind of scene is a social practice: a rehearsal, a dinner, a gig, an interview, each with roles and expectations, while every person in it still makes their own choices. The choices are the engine's; each practice gets a staging idiom from Overstory (`docs/research/scenes-and-sound.md`). Whether the engine or the scene holds the practice itself belongs to the two-clocks question above. Each kind of scene is also a small production of its own. Cheap ones come first (a conversation in a bar); expensive ones (a full match) come when a game needs them.
 
-## People
+## People (LW5)
+
+**Until their own step, people are blockout figures** (Øystein: people are their own research project, with great care): grey bodies with readable silhouettes and simple motion. Gameplay and ideas are tested with them early, as in normal game development, before everything looks finished (Øystein, 22 October). How people are drawn and stylised is not settled by any shortcut; it is studied and tested in its own step, and what follows is the direction until then.
 
 **One good base, many parameters.** One free base body and skeleton (MPFB, built on in-house; no commissions), its machinery kept and its surface replaced (`docs/research/characters.md`). Everything else is generated:
 - **Body:** height, build, posture and ageing set from the person's own values, inherited from parents, so children look like their parents.
 - **Clothes:** a few modular pieces per slot, chosen by money, work, era and taste. Clothes are evidence the player learns to read.
 - **Faces:** painted rather than rigged; expressions are swapped textures the engine's emotional state can choose.
-- **Voices:** scenes are written, not voiced (Øystein, 22 October). Faces carry expression and never lip-sync. Voices are heard only as the town's murmur, never as words.
+- **Voices** (LW4): scenes are written, not voiced (Øystein, 22 October). Faces carry expression and never lip-sync. Voices are heard only as the town's murmur, never as words.
 
 **Animation:** a small library on the shared skeleton, with procedural layers on top: how upright someone stands, how big their gestures are, how much they fidget, where they look, how close they stand. The layers are driven mostly by the person's state now (tired, hurried, carrying, grieving). Traits take only the share strangers can truly read, since motion mapped straight from a trait hands the player a verdict (`docs/research/behaviour-on-screen.md`). Few animations, thousands of distinct people, and posture becomes evidence.
 

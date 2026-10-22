@@ -1,10 +1,18 @@
 # The world's systems
 
-A map of everything the world is made of and how it fits together, with the state of each and where it is designed. Three levels, each built once and reused: **shared systems** act on everything (water runs down any face); **materials** give each thing its identity (slate, granite, timber, paint); **kinds of things** are built from materials by generators from facts (a stair, a wall, a house), and every instance in the world is generated, never made by hand. A kind is made once with care (its parts, its rules, a variety sheet, a review); a material once (its pigment, grain, working, water, wear and ageing); a system once for all. The plan's steps are in `NOW.md`; the rule that reuse stops at systems is in `CLAUDE.md`.
+A map of everything the world is made of and how it fits together, with the state of each and where it is designed. Three levels, each built once and reused (SY1): **shared systems** act on everything (water runs down any face); **materials** give each thing its identity (slate, granite, timber, paint); **kinds of things** are built from materials by generators from facts (a stair, a wall, a house), and every instance in the world is generated, never made by hand. A kind is made once with care (its parts, its rules, a variety sheet, a review); a material once (its pigment, grain, working, water, wear and ageing); a system once for all. The plan's steps are in `NOW.md`; the rule that reuse stops at systems is in `CLAUDE.md`.
 
 State: **built** (in use, reviewed), **in progress**, **designed** (a design page, not built), **planned** (in the plan or the research, no design yet).
 
-## Who decides
+## In short
+
+- **SY1** Systems act on everything, materials give identity, kinds are generated from facts; each built once, no instance by hand. Evidence: the opening. Reopens: none named.
+- **SY2** Engine: people, money, ventures, plans, works, homes, feet. Pack: land, eras, rules, species, climate. Ours: how a fact looks; derived facts until the engine has them. Evidence: Who decides. Reopens: none named.
+- **SY3** A kind joins with research, parts on a quick sheet, its material, the shared systems, facts, tiers, one foreign-pack part, a variety sheet, a strict review, Øystein; done per the plan (disputed: "birch done"). Evidence: How a new thing joins. Reopens: none named.
+- **SY4** Subject and craft first; a gap blocks building. Gaps, due before: house changes 1989–2020, step 4 (1f authored meanwhile); lamp and handrail, step 3; other street things, step 6; rooms, step 8; weather, step 9; sound, scenes. Management screens: once the first game is chosen or the greybox needs them. Evidence: Research coverage. Reopens: none named.
+- **D2.1, D2.2** Non-fact choices come from world seed, stable id and purpose; each debt moves at its own step, paint at port step 4; the Variety stairs stale until rebuilt. Evidence: Seeds. Reopens: none named.
+
+## Who decides (SY2)
 
 | Who | Decides | Where |
 | --- | --- | --- |
@@ -33,7 +41,7 @@ State: **built** (in use, reviewed), **in progress**, **designed** (a design pag
 | Seeds | the one hash spec: every visible choice that is not a fact is drawn from the world seed, a stable id (`schemas/naming.md`) and its purpose | built for the gully (stone, walls, upkeep) and in Unity (`Hash.cs`, the air motes); debts below | `blender/resolver/hashing.py`, `Core/Hash.cs`, `fixtures/golden/hash-vectors.json` |
 
 
-**Seed debts** (22 October). These still draw from the old randomness, and each moves onto the hash spec at its own step:
+**Seed debts** (22 October; D2.1, D2.2). These still draw from the old randomness, and each moves onto the hash spec at its own step:
 - `blender/parts/stone/*/paint.py` and `parts/trees/birch/paint.py` use numpy's `default_rng` (with the material record, step 4);
 - `parts/trees/painting.py`, `tree_growth.py`, `house.py`, `stair_facts.py`, and the clay's `blockouts/heart_layout.py` and `heart_build.py` use `random.Random`. Moving the clay moves every golden frame.
 
@@ -79,7 +87,7 @@ Each with its own identity from facts (where it came from, how it was worked, ho
 
 ## Research coverage
 
-Every system, material and kind is studied twice before it is built (`CLAUDE.md`: research the subject and the craft): its **subject** (what it is, its facts, history and look) and its **craft** (how the best studios and masters build it at quality and scale, for our stack). A gap here blocks building. "Running" means the study is being written.
+Every system, material and kind is studied twice before it is built (SY4; `CLAUDE.md`: research the subject and the craft): its **subject** (what it is, its facts, history and look) and its **craft** (how the best studios and masters build it at quality and scale, for our stack). A gap here blocks building. "Running" means the study is being written.
 
 | Area | Subject | Craft |
 | --- | --- | --- |
@@ -92,12 +100,12 @@ Every system, material and kind is studied twice before it is built (`CLAUDE.md`
 | Towns and cities | `urban-design.md`, `city-forces.md`, `city-types.md`, `town-change.md`, `stavanger-centre.md` | `kits-and-generation.md`, `urban-design.md` |
 | Stone, made | `stone.md`, `repairs.md` | `materials-at-scale.md`, `performance-at-scale.md`, `kits-and-generation.md` |
 | Land, rock, water, coast | `nature.md`, `stone.md` | `land-rock-and-water.md` |
-| Buildings and their parts | `house-changes.md` (to 1989; what owners and the town did from 1989 to 2020, and which parts date those years, is a **gap**, found by LT1f, before plan step 4), `wooden-town-architecture.md`, `house-fronts.md` (repaint practice and cycle, course layout, profiles, factory joinery; failure rates on this coast and the weather wall still open) | `kits-and-generation.md`, `materials-at-scale.md`, `house-fronts.md` (what the fronts need from the port's steps 4 and 5: coats as clocks, painted marks as masked coats, thin repeating features drawn from their facts, lap shadows from the shader, casters, library parts; the front family's cost is unmeasured, learned at step 5) |
+| Buildings and their parts | `house-changes.md` (to 1989; what owners and the town did from 1989 to 2020, and which parts date those years, is a **gap**, found by LT1f, which authored its houses' events after 1988 by named rules of real practice meanwhile; researched before plan step 4), `wooden-town-architecture.md`, `house-fronts.md` (repaint practice and cycle, course layout, profiles, factory joinery; failure rates on this coast and the weather wall still open) | `kits-and-generation.md`, `materials-at-scale.md`, `house-fronts.md` (what the fronts need from the port's steps 4 and 5: coats as clocks, painted marks as masked coats, thin repeating features drawn from their facts, lap shadows from the shader, casters, library parts; the front family's cost is unmeasured, learned at step 5) |
 | Trees and nature | `trees.md`, `vegetation.md`, `park-trees.md`, `nature.md` | `performance-at-scale.md`, `animation-and-motion.md` (wind); `ground-cover-and-plants.md` (ground cover, plants, and the trees re-checked against the reference machine; three large decks unopened: its Gaps) |
 | People as models | `people.md`, `people-deep-dive.md` | `characters.md` |
 | Behaviour on screen | `people.md` (thin) | `behaviour-on-screen.md` (search budget ran out: its Gaps list sources to close) |
 | Animation and motion | `what-moves.md` (thin) | `animation-and-motion.md` |
-| Street things, vehicles, boats, animals | `between-buildings.md`, `what-moves.md` (thin) | **gap**, before plan step 6 (animals: gulls, cats, dogs, with it) |
+| Street things, vehicles, boats, animals | `between-buildings.md`, `what-moves.md` (thin) | **gap**: before plan step 3 for the lamp and the handrail, which step 3 builds; before plan step 6 for the rest (animals: gulls, cats, dogs, with it) |
 | Windows, glass, signs, lettering, records | `interface.md` (thin), `wooden-town-architecture.md` | `fronts-windows-and-signs.md` (what is seen through windows, lit windows, signs by era, street records; search budget ran out for some games: its Gaps) |
 | Interiors | `scenes-and-sound.md` (thin) | the view through windows in `fronts-windows-and-signs.md`; rooms: **gap**, before plan step 8 |
 | Weather, seasons and effects | `trees.md` (seasons), `lighting-and-colour.md` (partly) | **gap**, before plan step 9 (with smoke, steam, spray and fire) |
@@ -113,4 +121,4 @@ Every system, material and kind is studied twice before it is built (`CLAUDE.md`
 
 ## How a new thing joins
 
-A kind joins by a checklist (`docs/living-fabric.md`, Making it nice to work with): its subject and craft researched (above); its parts made once and shaped on a quick sheet; its material, or a new one with its identity; which shared systems act on it and how (water, wear, growth, repairs); its facts, by rule until the engine has them; its tiers and counts; one foreign-pack part; a variety sheet in the game's light; a strict review; Øystein's judgement. A material joins with its pigment, grain, working, water profile, wear and crack rates, and how it ages. A shared system is built once and every kind and material takes it.
+This lists what a kind brings (SY3); when it is done is the plan's definition (`docs/plan.md`, The order, Done: across its range, walked in the playable corner, at the bar against its target frame, accepted by Øystein; until then its state is the rung it has reached). A kind joins by a checklist (`docs/living-fabric.md`, Making it nice to work with): its subject and craft researched (above); its parts made once and shaped on a quick sheet; its material, or a new one with its identity; which shared systems act on it and how (water, wear, growth, repairs); its facts, by rule until the engine has them; its tiers and counts; one foreign-pack part; a variety sheet in the game's light; a strict review; Øystein's judgement. A material joins with its pigment, grain, working, water profile, wear and crack rates, and how it ages. A shared system is built once and every kind and material takes it.

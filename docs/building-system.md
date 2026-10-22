@@ -4,7 +4,11 @@ How buildings are generated, change over time and show their history. The resear
 
 ## In short
 
-A building is a diary of dated events. The engine writes the diary. A resolver turns the diary, read up to a given year, into a plan. Unity builds the plan from plain walls and roofs it generates itself and from detailed kit parts made in Blender. The same diary always gives the same building. Anything that reads as history (a later window, a ghost sign, a porch added in another era) is a fact from the diary; small seeded variation (a lean, a board width) is texture that claims no history.
+- **BS1** A building is a diary of dated events, read up to the year shown. The engine decides every fact, the resolver how it looks; Unity invents none. What reads as history is a diary fact. Evidence: `research/world-that-remembers.md`. Reopens: none named.
+- **BS2** (disputed) A later part never deletes what it covers. Parts come from their installing decade's shelf; a new event re-picks only its cells. Coats carry their year, read against the date. Evidence: `research/building-blocks-decisions.md` §9 (D4.3). Reopens: none named.
+- **BS3** A misfit gives way in order: shrinks to two boards, a simpler crown, lower in its storey, then left out. A diary fact beats a resolver's choice; a diary-named addition without room is kept as unplaced. Evidence: none linked. Reopens: none named.
+- **BS4** Hard rules reject and report; soft rules give way quietly. A door and its wall differ by 15 L\* or more. No sheet leaves unless the stress test, street fixtures and full-size inspection pass. Evidence: `blender/tools/stress.py`. Reopens: none named.
+- **BS5** (disputed) Resolver and builder run in Python until their C# port before House A; then the player builds walls and roofs around Blender's kit parts. Evidence: `research/building-blocks-decisions.md` §1. Reopens: none named.
 
 ## The diary
 
@@ -36,7 +40,7 @@ The resolver runs five passes, in this order.
 
 ## Parts come from the decade they were installed
 
-Each part on a shelf carries a year range. A part is chosen in two steps: first filter by the installing event's year, then pick with a seed from `hash(worldSeed, buildingId, eventId, cell)`. A 1968 window replacement therefore gets a 1960s window, and a new event re-picks only the cells it touches. Additions are scored on whether they follow the host's lines (eave height, window rhythm); careful eras follow them, careless eras break them, so a street shows which decades looked after it.
+Each part on a shelf carries a year range (BS2). A part is chosen in two steps: first filter by the installing event's year, then pick with a seed from `hash(worldSeed, buildingId, eventId, cell)`. A 1968 window replacement therefore gets a 1960s window, and a new event re-picks only the cells it touches. Additions are scored on whether they follow the host's lines (eave height, window rhythm); careful eras follow them, careless eras break them, so a street shows which decades looked after it.
 
 ## Materials
 
@@ -46,7 +50,7 @@ Every colour difference also shows in value. A door differs from its wall by at 
 
 ## Rules
 
-- Hard rules keep everything buildable: a storey stands on a storey, an overhang has support, a window has a room behind it, every gutter has a downpipe, every door a path to a street. A plan that breaks one is rejected and reported.
+- Hard rules (BS4) keep everything buildable: a storey stands on a storey, an overhang has support, a window has a room behind it, every gutter has a downpipe, every door a path to a street. A plan that breaks one is rejected and reported.
 - Soft rules shape taste: no two neighbouring fronts identical from the same era, detail at junctions and calm on walls. A soft rule that can't be met is quietly given up.
 - Roofs are built over the combined footprint where possible, and fall back to one roof per volume when that fails validation.
 - Stylisation is a set of parameters (proportion push, lean, sag, irregularity, trim size, bevels) shared by every generator, in named strengths: gentle, strong and stronger. Proportions (pitch, eave depth, board width, window size, trim) carry the boldness; deformation (lean, sag, bow) stays small, because it is what reads as caricature and what breaks construction. The wobble lives inside each piece; edges stay on the grid so pieces fit.
@@ -65,7 +69,7 @@ Every part fits where it is placed, or it changes until it does. A part never cu
 - A small roof (porch, dormer, cross-gable, hoist) keeps its tiles in proportion: at least four courses on a slope, thinner courses and a smaller ridge cap.
 - Under a sloping roof line, every board and batten stops at the line where it stands.
 - A porch is solved before any wall is built. It narrows, lowers its pitch (down to nearly flat) and changes height until its roof stays under the sills above it, under the main eave and cornice, and clear of the windows beside it. The windows beside it then fit under its eave. Belt courses stop at a porch.
-- When something still does not fit, it gives way in this order: it shrinks to two boards, its crown becomes simpler, it moves down within its storey, and last it is left out, which leaves plain wall. A diary fact (the porch) wins over a part the resolver chose (a window over it). An addition the resolver chose with no room for it is simply not there; one the diary names is kept as unplaced.
+- When something still does not fit, it gives way in this order (BS3): it shrinks to two boards, its crown becomes simpler, it moves down within its storey, and last it is left out, which leaves plain wall. A diary fact (the porch) wins over a part the resolver chose (a window over it). An addition the resolver chose with no room for it is simply not there; one the diary names is kept as unplaced.
 
 ## Checks
 
@@ -79,7 +83,7 @@ Every built building is checked before it is rendered or exported (`blender/gene
 
 ## Who decides
 
-The engine decides every fact in the diary, including why. The resolver decides how a fact looks, from the diary and the seed. Unity builds and draws. Nothing in Unity invents a fact.
+The engine decides every fact in the diary, including why (BS1). The resolver decides how a fact looks, from the diary and the seed. Unity builds and draws. Nothing in Unity invents a fact.
 
 ## Determinism
 
@@ -90,6 +94,6 @@ The engine decides every fact in the diary, including why. The resolver decides 
 
 ## Where it lives
 
-The resolver is prototyped in Python (`blender/resolver/`) so it can run in Blender, headless or interactive. Once its rules settle it is ported to C# for Unity, and the plan hasher proves both give the same plans.
+The resolver is prototyped in Python (BS5; `blender/resolver/`) so it can run in Blender, headless or interactive. Once its rules settle it is ported to C# for Unity, and the plan hasher proves both give the same plans.
 
 Until then a street goes to Unity through `blender/tools/export_street.py`: it resolves every building at one year and strength, checks each one and the street as a whole (no two buildings closer than a metre), and writes the buildings and street kit (lamps by era, bollards) as FBX, the palette as maps, and the street resolved as `street.json`. A building stands with the front of whatever is on the ground (steps, porch, bay) on the building line; eaves may overhang the pavement. Unity places what `street.json` says and generates the ground from the fixture's street block (`unity/Assets/Code/Assembly/StreetGround.cs`): flags, kerb, setts in courses with a gutter and binding stones, coping, the quay wall and the ground behind. How each stone sits is seeded texture and claims no history.

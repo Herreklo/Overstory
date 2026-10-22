@@ -1,8 +1,16 @@
 # The town plan
 
-The first town: its land, its areas, how they meet and what happens in each. It is planned here and laid out in clay before any area is built at final quality, one area at a time (`docs/visual-direction.md`, How the look is built). The town is fictional. Its structure is Stavanger's, taken as evidence: a harbour basin with quays on both sides, an old wooden town on the slope, warehouses turned pubs, a market square at the basin's head with the cathedral and a lake, a tower on a knoll, a newer town in its eras, an oil base at the mouth, villas above, a wooded hill with a water tower, low islands in the fjord. Real maps (OpenStreetMap) are the reference for lane networks, plot widths and density; nothing is copied street for street.
+The first town: its land, its areas, how they meet and what happens in each. It is planned here and laid out in clay before any area is built at final quality, one area at a time (`docs/visual-direction.md`, How the look is built). The town is fictional (TP1). Its structure is Stavanger's, taken as evidence: a harbour basin with quays on both sides, an old wooden town on the slope, warehouses turned pubs, a market square at the basin's head with the cathedral and a lake, a tower on a knoll, a newer town in its eras, an oil base at the mouth, villas above, a wooded hill with a water tower, low islands in the fjord. Real maps (OpenStreetMap) are the reference for lane networks, plot widths and density; nothing is copied street for street.
 
 The plan is part of the setting pack. It sets the land and the building history. Who runs a pub, who lives where and what opens or closes are the engine's facts; until the engine supplies them, fixtures author them, and the plan only says what a place offers (cheap old warehouses by the water draw bars, as Jacobs and Zukin found).
+
+## In short
+
+- **TP1** Fictional, on Stavanger's structure and place (its light computed from 58.97°N, 5.73°E); nothing copied street for street. Evidence: `research/stavanger-centre.md`. Reopens: none named.
+- **TP2** Every proper name is an English placeholder in `packs/stavanger-1989/names.json`, replaceable alone, lettering ready for æ, ø and å; signs and street text in English, in each era's styles. Øystein's. Evidence: `ae14d0e`, `35ae89f`. Reopens: when he names things.
+- **TP3** A dense town of a few hundred buildings for now, costed per building and per km of street; variety from districts and eras, a kit per house type and era, libraries only where factory-made, bespoke parts for bespoke houses (disputed). Øystein's. Evidence: `plan.md`, Leaner 3 and 5. Reopens: a game needing a metropolis.
+- **TP4** The centre (about 1.5 km) is laid by hand in clay, area by area, each judged at the middle and far stops; districts by rules from it and the real map, checked from the far stop; exit criterion 5 tested on the whole town, not the corner. Evidence: `research/generating-the-past.md`. Reopens: none named.
+- **TP5** All change is a dated fact, geometry rebuilt from facts: no hand-placed shipped geometry, baked light or mesh over many plots. Evidence: `research/world-that-remembers.md`. Reopens: none named.
 
 ## The first of many
 
@@ -21,9 +29,9 @@ This is the starter town. Later come other towns, bigger cities and metropolises
 
 **Its place in the world.** The starter town has a latitude, longitude and time zone (Stavanger's: 58.97°N, 5.73°E, Central European Time), and its light is computed from them, so every later city's light is a fact of where it stands. Its routes out (the ferry quay, the station, the airport, the motorway) are the doors to a world map later (`docs/ideas/world-map.md`).
 
-## Names
+## Names (TP2)
 
-Every name in the town is English: descriptive where that is clearest, fun or odd where a local would say it so. Real places are named by their real names only where they are cited as evidence. The glossary of the starter town:
+Every name in the town is English: descriptive where that is clearest, fun or odd where a local would say it so. Real places are named by their real names only where they are cited as evidence. Every proper name (shops, streets, people, the town itself) is a placeholder for now: Øystein will name things himself later, so each lives as data in one place, `packs/stavanger-1989/names.json`, and can be replaced without touching anything else; the lettering is ready for æ, ø and å (Øystein, 21 October). Signs and street text are in English, lettered in each era's styles (Øystein, 22 October). The glossary of the starter town:
 
 | Name | What it is | After |
 | --- | --- | --- |
@@ -54,7 +62,9 @@ Every name in the town is English: descriptive where that is clearest, fun or od
 
 The town itself has no name yet.
 
-## Size
+## Size (TP3)
+
+**For now, a dense town, not a metropolis** (Øystein, 22 October): the first world is a rich harbour town of a few hundred buildings. The architecture stays open to bigger cities, with every choice still costed per building and per kilometre of street, but no metropolis work until a game needs one. **Its variety comes from its districts and eras** (Øystein: "if we think Stavanger, you have Gamle Stavanger, Eiganes, 1970s and 80s factory built, as well as more fancy brick and masonry houses; limiting it too much would take something away"). Each house type and era gets its own kit: the old town's small wooden houses; the villas, which were often bespoke; the catalogue houses of the 1970s and 80s; brick and masonry. A part comes from a library only where it truly was factory-made, and bespoke houses get bespoke parts.
 
 The town is the size of Stavanger in 1989: about 95,000 people over a built area of about 5 by 4 km, with farms, a beach and the fjord at its edges. Its centre, around the Basin and about 1.5 km across, is planned area by area below; the town around it is planned by district (The town around the centre). The centre is laid out by hand in clay. The districts around it are laid out by rules learned from the centre and from the real map, and checked in clay from the far stop. Exit criterion 5 (a street at city scale holds its look and frame rate) is tested on the whole town, not on the corner.
 
@@ -298,7 +308,7 @@ Expansion stalls at barriers and leaves fringe belts, and the edge is always the
 
 **Who decides.** These are facts, so the engine's fabric pass owns them (`docs/engine-requests.md`); the plan supplies the setting pack's land and its script of eras. The same machinery grows other towns and, later, cities, each with its own land and script.
 
-## Changing the town in the machine
+## Changing the town in the machine (TP5)
 
 Change is cheap as long as one rule holds: everything that can change is a dated fact, and the geometry is rebuilt from the facts. A house is never deleted; its diary says `demolished`, and the next build leaves it out.
 
@@ -334,7 +344,7 @@ What keeps change local: layout is data in the setting pack, buildings are assem
 
 The airport lies beyond, to the south-west, reached by the motorway.
 
-## The order in clay
+## The order in clay (TP4)
 
 1. **The corner**, refined (the old town around the landing).
 2. **The heart:** the basin, both shores and the square: the old town's lower slope, Harbour Row, the pub quay and pub street, the Grid's first blocks, Watch Knoll. The corner's camera 2 then looks at a real pub quay.

@@ -2,7 +2,7 @@
 
 Fable 5.1, 21 October 2026 (evening session). Input: the register (`docs/research/building-blocks-inputs.md`), the architecture pre-mortem, the packet of surrounding docs, the code inventory, the facts contract. Everything in `NOW.md` "Decided" is taken as fixed and not reopened.
 
-Status words: **FIRM** (decided on evidence or judgement; build on it). **PROV** (provisional: a named measurement settles it; the default is what to build on meanwhile). "Needed by" names the step: 3.0 seeds, 3.1 stages, 3.2 history, 3.3 materials, 3.4 levels, House A, or later.
+Status words: **FIRM** (decided on evidence or judgement; build on it). **PROV** (provisional: a named measurement settles it; the default is what to build on meanwhile). "Needed by" names the step: 3.0 seeds, 3.1 stages, 3.2 history, 3.3 materials, 3.4 levels, House A, or later. These are the port's steps under their old names: 3.0 is step 0b, 3.1 steps 1 and 2, 3.2 step 3, 3.3 step 4 and 3.4 step 5 (§13).
 
 Stack assumed throughout: Blender 4.x Python offline; Unity 6000.6 URP 17.6 C# with Burst; the base M4 Mac mini, 16 GB unified memory, 60 fps at 1440p, so 16.7 ms a frame.
 
@@ -295,7 +295,7 @@ Each kind declares its counts per level as an export check (D14.5): each level a
 | # | Decision | Reason | Status | Needed by |
 | --- | --- | --- | --- | --- |
 | D4.1 | Split by the shape of the cause: records and outlines (signs, posters, a removed shopfront's line, rust below a fixing) are dated mesh decals from one atlas per family, drawn by the host's stack and baked into the shell far off; water-borne stains are carriers in the water bake, down the flow path across parts, fading from the removal year; URP's Decal Projector only for transient scene state | decals stack and pick; carriers cross parts | decals FIRM; carriers PROV: the gully's handrail post as the first case | decals House A; carriers after the corner's wash |
-| D4.2 | One material record in `packs/<pack>/materials/`: identity, pigment, grain script and seed, tooling, water profile, wear, growth affinity, paint failure, city bake, albedo range, porosity, smoothness, translucency, scatter, a curve per process, texel targets, an acoustic class (reserved). Families in a `Texture2DArray`; an editor step writes the Unity asset from the record and replaces `LT1Trees.Materials` and `LT1Stone`'s values | materials §1; gap 18 | FIRM | 3.3 |
+| D4.2 | One material record in `packs/<pack>/materials/`: identity, pigment, grain script and seed, tooling, water profile, wear, growth affinity, paint failure, city bake, albedo range, porosity, smoothness, translucency, scatter, a curve per process, texel targets, an acoustic class (reserved). Families in a `Texture2DArray`; an editor step writes the Unity asset from the record and replaces `LT1Trees.Materials` and `LT1Stone`'s values | materials §1; gap 18 | FIRM | port step 4 (3.3) |
 | D4.3 | Coats as fills with their year; the shader reads the year against the date; up to eight a wall in a data texture by wall id | "years since" rebakes on every jump | FIRM | House A |
 | D4.4 | A board-and-trim atlas, 4 by 1 m at 1 mm; boards stay geometry at L0 and L1; grain follows D6.4 | the low sun needs the relief | PROV: look test | House A |
 | D4.5 | Hex-tiling for concrete, asphalt and ground; the Kuwahara city bake is the painted far town's test | M8 | PROV: look test at step 3 | step 3 |

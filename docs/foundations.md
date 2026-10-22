@@ -2,9 +2,17 @@
 
 What every system shares, so each new one plugs in rather than starting again (`NOW.md`, the plan, step 0). The systems' own designs (`docs/trees.md`, `docs/stone.md`, `docs/nature.md`, `docs/building-system.md`) follow these; when a system finds that one of them is wrong, this page changes first.
 
+## In short
+
+- **F1** Parts are judged at eye level, the street stop, 12 m and the city camera, in three lights; a weak side is fixed in the part. Evidence: none linked. Reopens: none named.
+- **F2** (disputed) Cold readers are model readers in the engine's blind method (Øystein, 22 October): fresh, on another model, in three roles; three a round, six at a gate. A gate, at street stop and 12 m, needs four in five parts right, two in three histories found, at most one false claim a frame; shuffled facts must cut parts right by thirty points; real frames may not exceed layers-off false claims. Evidence: `research/history-in-things.md` §10. Reopens: the engine's human test (people win).
+- **F3** The reference machine is an ordinary M4 Mac mini, no gaming PC (Øystein, 22 October): 60 fps at 1440p, default settings, every judging view. Evidence: `measuring.md`. Reopens: none named.
+- **F4** (disputed) One part draws the same claim at every tier; tiers are judging bands. Evidence: `research/building-blocks-decisions.md` §6. Reopens: none named.
+- **F5** Shade is the light's, never a layer's; water and gravity order stains and growth; the light step replaces guessed fixes by looking. Evidence: `research/lighting-and-colour.md` §7. Reopens: none named.
+
 ## The judging views
 
-Every part, and every assembly of parts, is judged from the same views, so no part is held to a lower bar than another. Every part must look good from every angle: the camera's behaviour is a later play decision, and a part that only looks good from one side is fixed in the part.
+Every part, and every assembly of parts, is judged from the same views (F1), so no part is held to a lower bar than another. Every part must look good from every angle: the camera's behaviour is a later play decision, and a part that only looks good from one side is fixed in the part.
 
 - **Eye level:** a person's height (1.6 to 1.7 m) with the part one to five metres away; at its foot, on it, looking down at it.
 - **The street stop:** about 2.8 m up, the part a few to twenty-five metres away.
@@ -15,7 +23,7 @@ Every part, and every assembly of parts, is judged from the same views, so no pa
 
 ## Cold readers
 
-Whether history reads (criterion 1 in `CLAUDE.md`) is judged by cold readers, never by the maker. The method is the engine's blind reading (`docs/method/reading.md` in Understory), and the tasks, controls and failures are those in `docs/research/history-in-things.md`, section 10. Øystein decided (22 October) that model readers stand in for strangers.
+Whether history reads (criterion 1 in `CLAUDE.md`) is judged by cold readers, never by the maker. The method is the engine's blind reading (`docs/method/reading.md` in Understory), and the tasks, controls and failures are those in `docs/research/history-in-things.md`, section 10. Øystein decided (22 October) that model readers stand in for strangers (F2).
 
 - **The readers.** Fresh agents with nothing but the frames and a brief, on a model other than the one that made the work. Each reads in a role: someone who has walked such a street all their life, a building historian, a player of exploration games. The historian is there because experts and the public read aged things most differently. Three readers for a round while building; six at a gate (two per role, across two models).
 - **The material.** Frames from the judging views at the player's pixel size, cut into tiles so a reader sees every pixel a player would. A reader that sees less than a player makes the test stricter, never easier. The brief says only that these are views of a town.
@@ -35,7 +43,7 @@ Results go in `docs/experiments.md` against the frames.
 
 ## Detail by tier
 
-One part, its facts and its seed, drawn at four tiers, the same thing at each, never a different claim:
+One part, its facts and its seed, drawn at four tiers, the same thing at each, never a different claim (F4):
 
 | Tier | When | What it draws | Budget (provisional, to be measured) |
 | --- | --- | --- | --- |
@@ -44,7 +52,7 @@ One part, its facts and its seed, drawn at four tiers, the same thing at each, n
 | City | 80 to 400 m | runs of parts merged (a flight, a wall, a house), detail baked into their textures | a flight about 2,000; a tree about 1,500; a house about 1,500 |
 | Far | beyond 400 m | impostors and the terrain's own baked colour | a few triangles |
 
-**The reference machine is an ordinary computer** (Øystein, 22 October: playing should not need a gaming PC at all). Every budget is set on the Mac mini with an Apple M4 (10-core GPU). Benchmarks put it at about a third to a half of an RTX 3060, roughly the class of a recent laptop's built-in graphics. On it, at default settings, the game holds 60 frames a second on a 1440p screen in every judging view. Where the harness shows it pays, the game draws below the screen's size and upscales; that choice is made together with the antialiasing. Weaker machines get lower settings; nothing is designed for a gaming card. Its GPU draws in tiles, so the costs differ from a PC card's. Opaque overdraw and MSAA are cheap there. Alpha-tested cut-outs (leaf cards, grass) and dense small triangles are dear, so the trees and the ground cover are designed with that in mind (`docs/research/performance-at-scale.md`).
+**The reference machine is an ordinary computer** (F3; Øystein, 22 October: playing should not need a gaming PC at all). Every budget is set on the Mac mini with an Apple M4 (10-core GPU). Benchmarks put it at about a third to a half of an RTX 3060, roughly the class of a recent laptop's built-in graphics. On it, at default settings, the game holds 60 frames a second on a 1440p screen in every judging view. Where the harness shows it pays, the game draws below the screen's size and upscales; that choice is made together with the antialiasing. Weaker machines get lower settings; nothing is designed for a gaming card. Its GPU draws in tiles, so the costs differ from a PC card's. Opaque overdraw and MSAA are cheap there. Alpha-tested cut-outs (leaf cards, grass) and dense small triangles are dear, so the trees and the ground cover are designed with that in mind (`docs/research/performance-at-scale.md`).
 
 A frame's whole budget on that machine, provisional until the performance harness measures it: about 2 million visible triangles and under 3,000 draw calls, with shared parts instanced through the GPU Resident Drawer. That is half the earlier figure for a mid-range card, because the M4 is about half of one. Detail lives in painted textures, which cost little, before geometry; real geometry goes where it shows (a silhouette, a nosing, a hollow). Each part's done-list includes its tiers and their counts; the corner is frame-timed each time a part joins it.
 
@@ -77,7 +85,7 @@ Lichen grows as rosettes: each colony from a point in its own year, spreading ab
 | Detail by distance | — | `Detail.hlsl` (`OS_Near`) | — |
 | Light | the bakes (sky, ground) | `StreetLooks.hlsl` (`OS_ShadeP`) | the rigs |
 
-Shade is the light's, never the object's (SEASON's lesson, `docs/research/colour-and-shading.md`, rule 1): every surface is lit by the town's one shade function (`OS_ShadeP`, `StreetLooks.hlsl`), and no layer carries a shadow tint. A layer's dark (a joint, a nosing's underside) is its occlusion, baked or the light's.
+Shade is the light's, never the object's (F5; SEASON's lesson, `docs/research/colour-and-shading.md`, rule 1): every surface is lit by the town's one shade function (`OS_ShadeP`, `StreetLooks.hlsl`), and no layer carries a shadow tint. A layer's dark (a joint, a nosing's underside) is its occlusion, baked or the light's.
 
 ## The living fabric
 

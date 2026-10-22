@@ -2,13 +2,20 @@
 
 The repair strand of the living fabric (`docs/living-fabric.md`: one record and one runner for every made or planted thing, flow through shared fields, a history budget per view). How a built or planted thing changes after it is made: who keeps it, how well, and what is done to it when it wears, settles, breaks or dies. Every system shares it: stone, walls, paving, quays, houses, roofs, timber and trees (`docs/foundations.md`, The shared surface layers, 6). Its research is `docs/research/repairs.md` (who repaired what, how, with what, and how it looks), with `docs/research/house-changes.md` for houses. Its code is `blender/generators/upkeep.py`, its parts are `blender/parts/repair/`, and its materials are the shaders' own (cement in `Stone.shader`).
 
+## In short
+
+- **UK1** A repair follows its year's practice and materials (lime to about 1910, cement dabs from 1910, concrete casts 1940 to 1965, asphalt on paving everywhere after 1960, stone again from about 1980). After 20 to 40 years one in its own material differs in form and growth, not colour; in another material, for good (disputed). Evidence: `research/repairs.md`. Reopens: none named.
+- **UK2** Four ways: left alone, patched, a campaign, renewed. A campaign's scope is its cause's reach; spot work stays under about a quarter of a part, past that the whole part; a reset reuses its own stones (over nine in ten), then depot stone, then new. Evidence: `research/repairs.md`. Reopens: none named.
+- **UK3** Starting rates, unverified: a tended public part has a campaign every 30 to 60 years, renewal once in 80 to 150; untended, nothing until it fails; a thirty-step flight up to one quick fix a decade before 1960, one or two after. Evidence: `research/repairs.md`. Reopens: none named.
+- **UK4** Keepers, care and works are facts (fixtures until request 6); patchwork drawn from them, seeded, claims no dated event; a repair a story needs is a fact with its cause. Evidence: `facts-contract.md`. Reopens: none named.
+
 ## What we want
 
 - **Real practice.** A repair looks the way the town or an owner of its year would have made it, with what that year had at hand. A step is not new in an old flight because a story wanted a dark band.
 - **Spread over the thing and the years.** Repairs follow their causes, and most causes act on a stretch: frost lifts a run of steps, water washes out a bed, a wall bulges along its weak length. So repairs come in runs, and quick fixes are scattered between them. One part different from all the rest needs a cause that touched one part.
 - **Readable, never loud.** After twenty to forty years, a repair in the thing's own material differs in form and growth, not colour: a straighter line, fresher joints, smaller lichen, no hollow. A repair in another material (cement, concrete, asphalt, a brick) differs for good.
 
-## Four ways a thing changes
+## Four ways a thing changes (UK2)
 
 1. **Left alone.** It wears, settles, cracks, grows over and loses corners for as long as no one acts. Neglect shows, and it is a fact of who kept the thing and how well.
 2. **Patched.** Quick fixes, one at a time, by a lone workman, an owner or a neighbour: a cement dab in a broken corner, cement smeared into a crack, a wedge under a rocking step, an asphalt blob in a sett street, a brick in a stone wall, a tin patch on a board. Cheap, local, made with whatever the decade had, and often laid over an earlier patch, since a patch weakens its own edges.
@@ -19,7 +26,7 @@ The repair strand of the living fabric (`docs/living-fabric.md`: one record and 
 
 A thing's upkeep is a fact, decade by decade: who kept it (the town's road department, the harbour, a utility, an owner, a cooperative) and how much they cared. The town's care follows its budgets. Oslo cut its paving to almost nothing after the 1899 crash, and after about 1960 patched its setts with asphalt instead of keeping them. An owner's care follows money and whether they live there. The same flight is kept differently in the 1930s and the 1970s, and it shows in what was patched and with what.
 
-## Materials by era
+## Materials by era (UK1)
 
 What a crew or an owner had at hand (research, Materials by era):
 
@@ -55,9 +62,9 @@ Each repair is its own material with its own date, aged by the same layers as ev
 - **The life.** `upkeep.py` runs a thing's parts decade by decade from its facts: damage by cause, patchwork at the research's rates (a public flight of about thirty steps: up to one quick fix a decade before 1960, one or two after), the facts' campaigns and renewals in their years. It returns each part's state now, and the generator writes it into the part's record (`unity/Assets/Art/Stone/stone_gully.json`, each step's `life`), so anything that shows the thing reads the same history.
 - **The parts.** A repair's own shape is a part in `blender/parts/repair/`, fitted by the generator to what it repairs: cement dabs fitted to a slab's broken outline, pointing struck along a joint to the stone's top.
 - **The drawing.** Each repair material is a kind the surface's shader draws with its own pigment and ageing (cement as kinds 4, pointing, and 5, a dab, in `Stone.shader`), under the same light and growth as everything else.
-- **Facts and interpretation.** Who kept a thing, how well, and the works done on it are facts: from the engine's fabric pass when it comes (`docs/engine-requests.md`, 6), authored in fixtures until then. Patchwork is drawn from those facts, seeded, as a shabby front is drawn from age and upkeep: it claims that the thing was kept this way, never a dated event of its own. A repair a story needs (a step replaced after a fall) is a fact with its cause.
+- **Facts and interpretation** (UK4). Who kept a thing, how well, and the works done on it are facts: from the engine's fabric pass when it comes (`docs/engine-requests.md`, 6), authored in fixtures until then. Patchwork is drawn from those facts, seeded, as a shabby front is drawn from age and upkeep: it claims that the thing was kept this way, never a dated event of its own. A repair a story needs (a step replaced after a fall) is a fact with its cause.
 
-## Rates and rules (starting values, unverified)
+## Rates and rules (starting values, unverified; UK3)
 
 - A campaign's scope is its cause's reach: from landing to landing, or the lower run where water gathers; a wall's bulged length, 2 to 6 m; a sett relay over a block's width.
 - A tended public part gets a campaign every 30 to 60 years and full renewal once in 80 to 150; an untended one gets nothing until it fails.

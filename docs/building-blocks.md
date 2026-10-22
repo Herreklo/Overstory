@@ -1,6 +1,6 @@
 # The building blocks
 
-How every material, kind of thing and system is built, for the first town, a bigger city and the three example games. Reasons are in `docs/research/building-blocks-decisions.md`, by section. The order of work is in `docs/plan.md`, whose step names (3.0 to 3.4, 1c, House A) are used here.
+How every material, kind of thing and system is built, for the first town, a bigger city and the three example games. Reasons are in `docs/research/building-blocks-decisions.md`, by section. The order of work is in `docs/plan.md`, whose step names (1c, House A) are used here. The names 3.0 to 3.4 are the gully port's steps under their old names: 3.0 is the port's step 0b (seeds), 3.1 its steps 1 and 2 (schemas and stages), 3.2 its step 3 (history), 3.3 its step 4 (materials) and 3.4 its step 5 (levels) (`docs/research/building-blocks-decisions.md` §13).
 
 The stack: Blender 4.x Python offline; Unity 6000.6, URP 17.6, C# with Burst. The reference machine is the base M4 Mac mini, 16 GB unified memory, 60 fps at 1440p, so 16.7 ms a frame.
 
@@ -8,11 +8,13 @@ The stack: Blender 4.x Python offline; Unity 6000.6, URP 17.6, C# with Burst. Th
 
 ## In short
 
-1. **Parts are made offline; the town is assembled in the player.** Fixed parts are judged meshes from Blender. Fitted parts are judged functions. Plan, life, placement, fitted geometry, extrinsic bakes and cheap checks run in C# in the player.
-2. **Contracts are files, not prose.** JSON Schema in `schemas/`, golden fixtures per stage, parity tested in data at every stage boundary before any mesh.
-3. **History is a function of the record and the date.** Maps hold inputs (a drive per texel and layer; the clocks per piece). The date is a shader global, so a jump costs one uniform. Every far shell gets its own atlas, painted or plain, baked on demand, and alone caches an output bake, invalidated by the change query; until its atlas lands, a shell draws plain.
-4. **Ids are stable down to slot and fill; pieces are derived.** Record ids are typed strings, never reused. Piece and pick indices exist only at draw time.
-5. **Budgets are in milliseconds, megabytes and triangles, per pass and per kilometre, on 16 GB.** All provisional, but a line exists for each before geometry moves. The frame is pixel-bound: the opaque pass costs what its shaders cost, not its triangles, so shading has its own line by family over a flat raster floor.
+- **BB1** Blender makes parts; C# in the player assembles the town (Øystein accepted); a kind's Python freezes, deleted after C# parity and one strict review. Evidence: decisions §1. Reopens: none named.
+- **D1.6, D14.2** Schemas parity-tested per stage before meshes; generated binaries untracked; git history not rewritten. Evidence: decisions §2, §14. Reopens: LT1's merge (Øystein).
+- **D5.1** History is a function of record and date; only shells cache a bake. Evidence: decisions §5. Reopens: none named.
+- **S2** Every pass has a line before geometry moves: M4, 1440p, 16.7 ms, 2.0 reserve, opaque 5.0 (history 0.5); 2 million triangles; 6 GB. Evidence: `measuring.md`. Reopens: each fix's harness A/B.
+- **S1** (disputed) No temporal accumulation or alpha-to-coverage; SMAA at native with depth priming; STP once every mover writes motion vectors. MSAA 4× until port step 5 (3.4) keeps step 3's A/B clean; then shimmer and golden views choose, on levelled geometry. Evidence: Light. Reopens: step 5.
+- **D6.4** (disputed) Only the mass-produced repeats; hand-split wall stones stay unique. Evidence: `research/scale-test.md`. Reopens: House A's final chunks breaking the pool (Øystein decides).
+- **BB2** Painted far town test: after the gully port, before House A's far level. Evidence: decisions §14. Reopens: Øystein.
 
 ## The stage map
 
@@ -28,13 +30,13 @@ Every kind runs through seven stages, each with a hashed output.
 | 6 Export and cache | library parts as FBX with a JSON sidecar through the editor importer; chunks never as FBX, but as a binary cache in `cache/chunks/` and `StreamingAssets` | the chunk file |
 | 7 Checks | offline in Python (record, kit, parity, mesh hashes, golden views, motion sheets, cold readers); in the player in C# (budgets per level, refused fits, plan validity, the cache verified on load) | pass or fail, logged |
 
-**One source of truth per stage and kind,** since two live sources drift. Python (`resolve.py`, `upkeep.py`, `blender/parts/*.py`) is the source until a kind's port. Then it is frozen as the parity reference, and deleted once the C# passes parity on the golden fixtures and one strict review. Look sheets then run the C# through Unity in batch mode. Plan and life flip the week after the gully port; the house resolver before House A; geometry per family, stone first.
+**One source of truth per stage and kind** (BB1), since two live sources drift. Python (`resolve.py`, `upkeep.py`, `blender/parts/*.py`) is the source until a kind's port. Then it is frozen as the parity reference, and deleted once the C# passes parity on the golden fixtures and one strict review. Look sheets then run the C# through Unity in batch mode. Plan and life flip the week after the gully port; the house resolver before House A; geometry per family, stone first.
 
 Reasons: decisions §0, §1.
 
 ## Contracts and where files live
 
-**Schemas** are hand-written JSON Schema (draft 2020-12). Python validates with `jsonschema` (MIT). C# types are hand-written twins, held to the schemas by parity tests over `fixtures/golden/<kind>/<stage>.json`.
+**Schemas** (D1.6) are hand-written JSON Schema (draft 2020-12). Python validates with `jsonschema` (MIT). C# types are hand-written twins, held to the schemas by parity tests over `fixtures/golden/<kind>/<stage>.json`.
 
 | File in `schemas/` | Describes |
 | --- | --- |
@@ -55,7 +57,7 @@ Reasons: decisions §0, §1.
 
 **The hash chain** (`tools/hashes.py`, later `Hashes.cs`): `schemaVersion`, `rulesetVersion` (kind file and part function versions) and `worldSeed`, then the record, plan, life and mesh hashes, then `bakeVersion` (the `OS_History` include, the layer curves, the bake and shell-bake code, the shaders) and the bake hash. Each is a cache key, and a stage with unchanged inputs is skipped.
 
-**Generated files are rebuilt, not tracked.** FBX, chunks, library meshes and tree timelines leave git; hash manifests and part sources stay. Golden baselines keep one current baseline per kind, view and light in git, at the size judged; a superseded one leaves the tree and stays as its hash in the manifest. Plain git until LFS is reachable. The tree drops its 385 MB of FBX at 3.1. History is not rewritten.
+**Generated files are rebuilt, not tracked** (D14.2). FBX, chunks, library meshes and tree timelines leave git; hash manifests and part sources stay. Golden baselines keep one current baseline per kind, view and light in git, at the size judged; a superseded one leaves the tree and stays as its hash in the manifest. Plain git until LFS is reachable. The tree drops its 385 MB of FBX at 3.1. History is not rewritten now; it is revisited at LT1's merge (Øystein, 21 October).
 
 Reasons: decisions §2, §10.
 
@@ -142,7 +144,7 @@ That is 44 bytes, 56 with both options. The light's inputs sit in the place page
 
 A unit with more than 65,536 takes a second slot. Swarms pick through tile and seed, people by their own path. Lamps, boats, flags and laundry are kit instances and pick through the user value.
 
-**History is a function of the record and the date.** Pages store inputs: one drive per texel per layer, and the layer's form says what it scales. Polish and moss take an amplitude times their material's curve; lichen takes a rate into it. Each layer runs from one of its piece's clocks, chosen per texel by a reach. The thing's speed (its footfall) and its care are per thing, and the date is a shader global (`_OS_Date`, a float, never half). So a jump costs a uniform, and a watched town draws as a jumped one. On the gully the law is exact in float at 1989 and at every earlier build, and within 0.5/255 in 8 bits (`reviews/lt1/history/fit.md`).
+**History is a function of the record and the date** (D5.1). Pages store inputs: one drive per texel per layer, and the layer's form says what it scales. Polish and moss take an amplitude times their material's curve; lichen takes a rate into it. Each layer runs from one of its piece's clocks, chosen per texel by a reach. The thing's speed (its footfall) and its care are per thing, and the date is a shader global (`_OS_Date`, a float, never half). So a jump costs a uniform, and a watched town draws as a jumped one. On the gully the law is exact in float at 1989 and at every earlier build, and within 0.5/255 in 8 bits (`reviews/lt1/history/fit.md`).
 - **The law** (`layers.json`), with t the date in years. The constants are slate's until the material records hold them (step 4):
   - polish = max(H1.R × (1 − e^(−k·min(t − placed, 40))), the piece's inherited polish), k the thing's footfall / 400,000 a year;
   - lichen = clip(H1.G × max(t − c − 12, 0) / 200), c the bare year, or the disturbed year within the hands' reach (face kind and edge distance) of a piece lifted by hands;
@@ -213,7 +215,7 @@ The tiers in `docs/foundations.md` are judging bands, not switch distances. Tree
 
 **Precision.** Records and plans hold positions as integers in mm. Meshes are Float32 relative to their own unit's corner, so a 128 m block holds 0.02 mm. Units are placed from the plan relative to a world origin, rebased to the camera's 64 m chunk when the camera passes 2 km from it; within 2 km a float holds 0.25 mm. Shaders that read absolute position (wind, fields) get the origin as a split global; marks read UV2 and ids, so a rebase moves none. *Provisional:* the rebase's hitch. The scale test drew to 2 km in Unity's float coordinates (0.24 mm steps) without a rebase.
 
-**Repetition.** Only what really was mass-produced repeats. Bricks, roof tiles, factory windows and doors, catalogue houses, and setts (hand-split but to standard sizes) come from libraries, each instance varied by placement, wear and history. Everything made by hand for one place is its own: a unique fitted piece, made in the player per chunk from its record and seed, costing build time and memory, never disk. One stair with its walls is 816,000 triangles and 36 MB at full detail today; the levels and the 4 m chunk keep unique pieces at full detail only near the camera. A repeat-finding check on golden views proves no library piece is found. Hand-split wall stones not made to standard sizes stay their own too, since the geometry fits its pool with levels: at test quality, L0 for every house in the 300 m streaming radius would be 600 MB, and L0 reaches only 20 m (the scale test). Only if House A's final-quality chunks break the pool does Øystein decide whether those stones may come from a large library where no repeat can be found.
+**Repetition** (D6.4). Only what really was mass-produced repeats. Bricks, roof tiles, factory windows and doors, catalogue houses, and setts (hand-split but to standard sizes) come from libraries, each instance varied by placement, wear and history. Everything made by hand for one place is its own: a unique fitted piece, made in the player per chunk from its record and seed, costing build time and memory, never disk. One stair with its walls is 816,000 triangles and 36 MB at full detail today; the levels and the 4 m chunk keep unique pieces at full detail only near the camera. A repeat-finding check on golden views proves no library piece is found. Hand-split wall stones not made to standard sizes stay their own too, since the geometry fits its pool with levels: at test quality, L0 for every house in the 300 m streaming radius would be 600 MB, and L0 reaches only 20 m (the scale test). Only if House A's final-quality chunks break the pool does Øystein decide whether those stones may come from a large library where no repeat can be found.
 
 **Hand-over.** A dithered cross-fade, never animated, since that breaks the Resident Drawer. Both sides share marks, seed and history address, and switch where values match. At L2 to L3 it fades per cell with hysteresis. *Provisional.*
 
@@ -223,7 +225,7 @@ The tiers in `docs/foundations.md` are judging bands, not switch distances. Tree
 
 **Rows by hash.** Slate courses and sett rows come from a per-row hash evaluated alike in C# and HLSL, so far levels draw the same slates without a bake.
 
-**The painted far town.** Shells and blocks are built either way; unpainted, they are the district level from the same data. A look test decides only whether the atlas is painted (anisotropic Kuwahara on albedo and normal, one direction map) or plain. Reserved at 3.1: aligned cells; a per-thing atlas rectangle in the chunk format; per-triangle ids on shells; the shell's channels; `_OS_BAKE` in every shader (unlit albedo at the date, normal, history, ids), shared with the light's debug views; the cached bake; per-cell cross-fade. The shell level costs 18 to 20 days once, painted or plain, against 35 to 40 for far levels per kind (the study's estimate). Painting is about 3 of those days, so the test decides the look and those days only. *Provisional:* the test, 5 to 7 days (four arms, three lights, motion sheets, M4 timing, cold readers, six drop rules), timed by Øystein.
+**The painted far town** (BB2). Shells and blocks are built either way; unpainted, they are the district level from the same data. A look test decides only whether the atlas is painted (anisotropic Kuwahara on albedo and normal, one direction map) or plain. Reserved at 3.1: aligned cells; a per-thing atlas rectangle in the chunk format; per-triangle ids on shells; the shell's channels; `_OS_BAKE` in every shader (unlit albedo at the date, normal, history, ids), shared with the light's debug views; the cached bake; per-cell cross-fade. The shell level costs 18 to 20 days once, painted or plain, against 35 to 40 for far levels per kind (the study's estimate). Painting is about 3 of those days, so the test decides the look and those days only. *Provisional:* the test, 5 to 7 days (four arms, three lights, motion sheets, M4 timing, cold readers, six drop rules), timed by Øystein: after the gully port and before House A's far level (21 October).
 
 Reasons: decisions §6.
 
@@ -231,7 +233,7 @@ Reasons: decisions §6.
 
 All provisional until each fix is A/B'd on the harness. The measurements are the harness's pass run (`docs/measuring.md`, The pass budget) and the scale test (`docs/research/scale-test.md`). The baseline: the blue hour 25 to 35 ms with 5.5 million triangles, 76 draws and no casters; drizzle 28 to 42; low sun 84 to 96; the birch 10 to 16; memory 1.4 GB by the system's footprint; the main thread about 1 ms, so the frame is GPU-bound. Scale adds no new failure to the frame: a 2 km district, with L0 to 200 m and shells beyond and the beams off, draws the street stop, 12 m and city camera in 21 to 25 ms in the blue hour and 27 to 31 in drizzle and low sun, the same per-pixel floor as the corner.
 
-**Frame by pass** (GPU ms at 1440p; 14.7 used, 2.0 reserve). Today is the street stop in its dearest light (`docs/measuring.md`, The pass budget).
+**Frame by pass** (S2; GPU ms at 1440p; 14.7 used, 2.0 reserve). Today is the street stop in its dearest light (`docs/measuring.md`, The pass budget).
 
 | Pass | ms | Today | Note |
 | --- | --- | --- | --- |
@@ -303,7 +305,7 @@ Reasons: decisions §7.
 
 ## Light, time and world state
 
-- **Nothing relies on temporal accumulation,** so marks stay stable and golden views repeat. The port builds for SMAA at native 1440p with depth priming on; MSAA 2× and 4× stay harness arms, FSR 1 the fallback for fewer pixels, STP only once every mover writes motion vectors. Shaders do not rely on alpha-to-coverage. The reason: MSAA 4× costs 3.4 to 6.5 ms at the corner against a 0.8 ms line, and turns depth priming off while the opaque pass is mostly shading.
+- **Nothing relies on temporal accumulation** (S1), so marks stay stable and golden views repeat. The port builds for SMAA at native 1440p with depth priming on; MSAA 2× and 4× stay harness arms, FSR 1 the fallback for fewer pixels, STP only once every mover writes motion vectors. Shaders do not rely on alpha-to-coverage. The reason: MSAA 4× costs 3.4 to 6.5 ms at the corner against a 0.8 ms line, and turns depth priming off while the opaque pass is mostly shading.
 - The scenes keep MSAA 4× until 3.4, so step 3's history A/B changes one thing. At 3.4 the filter is chosen on levelled geometry (a median triangle of ten pixels or more, since MSAA pays at edges), by the motion sheets' shimmer measure and the golden views, with the cross-fade and the leaf cards' clip judged under each arm; the baselines are re-accepted once (*provisional*).
 - **One world state,** owned once and hashed: fabric date (year, month), day of year, the hour as the sun's position, weather, wind (climate and moving, one fetch), tide, latitude, longitude, time zone. The light's layers replay from it.
 - **The shade's three lookups** (sky radiance from a model, the seen ground, the seen town) sit in `OS_ShadeP`, since the light's four debts share one cause. *Provisional.*

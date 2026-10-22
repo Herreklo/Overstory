@@ -2,6 +2,14 @@
 
 The order of the work and the current week's plan in detail. `NOW.md` holds the state and links here; update this page when a step starts or ends.
 
+## In short
+
+- **PL1** Steps 1–10: stone, buildings, ground, years, people, city, nature, interiors, weather, region. Evidence: The order. Reopens: a proposal.
+- **P2** Done: holds its range (variety, levels, three lights, 1-spp motion, town count, budget), walked in 1g, at the bar, Øystein accepts. Else its rung: number, grey form, sheet, levels, motion, count, three lights, accepted; never "close". Evidence: plan review. Reopens: unnameable ranges.
+- **P1, P9, P3, P7** Milestones: walked in 1g, timed whole. The first walk is the baseline, clay counting as scope; an unscoped rise stops the step; hold or fall until under 16.7 ms at every judging view in three lights. 1.5× a box forces a re-plan; no dates past the next milestone, re-estimated at the stone or 13 November. Evidence: the same. Reopens: walk over 1.5×, 16.6% noise, re-plans from boxes.
+- **P8** Port steps 4 and 5: done when a House A front, a birch chunk and a 64 m land chunk with water validate unbuilt; formats change only where a record fails, no field without one. Evidence: `foundation-needs.md`. Reopens: none named.
+- **PL2–4** 1g's time: stroke by stroke, the toggle as baseline, the photograph close only. Evidence: 1g. Reopens: more readers.
+
 ## This week (22 to 26 October)
 
 Written by the plan review of 22 October (`docs/research/plan-review-2026-10-22.md`). From Monday 26 October, the Monday session rewrites this block from `NOW.md`'s order.
@@ -18,7 +26,7 @@ Written by the plan review of 22 October (`docs/research/plan-review-2026-10-22.
 - the In shorts, with `CLAUDE.md` halved into its skills and `NOW.md` brought under its budget: 2;
 - the rest is reserve.
 
-A step that reaches 1.5 times its box stops for a re-plan, a few lines written beside it in `NOW.md`. Øystein is told only when a re-plan moves a milestone or the scope.
+A step that reaches 1.5 times its box stops for a re-plan (P3), a few lines written beside it in `NOW.md`. Øystein is told only when a re-plan moves a milestone or the scope.
 
 **Then, on the stone's path:**
 1. 1c in the walked corner, beams first, with the port's 2b beside it on the Blender side;
@@ -28,7 +36,7 @@ A step that reaches 1.5 times its box stops for a re-plan, a few lines written b
 
 The play, the brief's phase 2, is the milestone after the walk. It is boxed and runs beside 2b.
 
-**Every week:**
+**Every week** (P7):
 - Monday, after the reset: one session writes this block from `NOW.md`'s order, with each step's box. It also checks the warning signs in the pre-mortems (`docs/research/pre-mortem.md`, `pre-mortem-architecture.md`, `plan-review-2026-10-22.md`).
 - Friday: Øystein walks the corner and plays whatever case exists.
 - One strict review per milestone, never per round (Fable, or Opus if Fable is out, noted).
@@ -58,7 +66,7 @@ At today's rate a thousand stairs would take about 19 hours to generate and 16 G
 Its reasons are in `docs/research/building-blocks-decisions.md`, and its open numbers in its table "Open until measured".
 The questions left for Øystein are in `NOW.md`.
 
-**Leaner without losing brilliance** (Øystein, 22 October: "we need to make the game leaner, I fear; is it possible without losing visual brilliance?"). The proposals and where each stands:
+**Leaner without losing brilliance** (PL3; Øystein, 22 October: "we need to make the game leaner, I fear; is it possible without losing visual brilliance?"). The proposals and where each stands:
 1. *Paint the far town:* past about 50 m, a painted backdrop baked from the near models for each date, instead of distance versions for every kind. Øystein: "I would have to see this, but sounds promising." It becomes a look test in the foundations, designed in `docs/research/painted-far-town.md`. A single painted picture can't survive a free camera, so the design is painted shells: each thing a coarse mesh from its plan, in 32 m cells, carrying painted albedo, normals, history channels and ids, lit live by the town's one shade function. Four versions are compared (a reference, conventional distance levels, unpainted shells and painted shells) in the corner's views and three lights, with motion sheets, M4 timing and cold readers. Six named results would make us drop it.
 2. *Make the 1989 town once,* curated, with records by rule, instead of growing two centuries plot by plot. Decided (Øystein: "as long as we can change this later"). The 1989 town is stored as records that can be regenerated, edited, or replaced later by a growth simulation or by the engine's own past. It also removes the pre-mortem's risk that Overstory becomes the engine.
 3. *Libraries only where things were factory-made:* each house type and era gets its own kit (decided; see `NOW.md`).
@@ -115,7 +123,7 @@ For example, the gully is done only with the Variety stairs rebuilt, and the bir
 
 The work is built round the beauty corner: each system's first slice is the corner's own. It is a world, not a town: the same systems serve a fishing village, the countryside and a metropolis through setting packs.
 
-The steps keep their numbers, since other docs cite them. Step 1 is reopened on the building blocks (Øystein: "think about the order we do things"):
+The steps keep their numbers, since other docs cite them (PL1). Step 1 is reopened on the building blocks (Øystein: "think about the order we do things"):
 0. *The foundations page and the light's debts:* done. The lasting light fix is step 1c.
 1. *The corner's stone, rebuilt on the building blocks.* The order now (the plan review):
    - first, 1g's design and walk;
@@ -127,7 +135,7 @@ The steps keep their numbers, since other docs cite them. Step 1 is reopened on 
 
    The sub-steps:
    - 1a, the architecture;
-   - 1b, the foundations (the framework, materials as data, history storage, distance levels and instancing, the harness, golden views, the scale test). The port's steps 4 and 5 leave room for houses, trees and land, but build nothing for them. Each step is done only when three written records validate against its formats, without being built:
+   - 1b, the foundations (the framework, materials as data, history storage, distance levels and instancing, the harness, golden views, the scale test). The port's steps 4 and 5 (the plan review, P8) leave room for houses, trees and land, but build nothing for them. Each step is done only when three written records validate against its formats, without being built:
      - a House A front: a coat stack, a glazed window, a painted sign;
      - a birch chunk;
      - a 64 m land chunk with water faces.
@@ -141,7 +149,7 @@ The steps keep their numbers, since other docs cite them. Step 1 is reopened on 
    - 1d, the corner's land (natural ground plus dated acts, breaklines, the rock knuckle);
    - 1e, the gully and walls re-fitted, then the birches. This is mostly porting, keeping their facts, rules, style and review findings.
 
-   - 1f, the game's question tested early, in clay (`CLAUDE.md`, Working in the right order: biggest risk first). The corner's houses are built from their diaries at 1989, 2000, 2010 and 2020 by the test-quality generator. The diaries need events after 1988 first: none has any yet. Two or three of the most promising ways of showing time are prototyped, from a wide creative exploration. Cold readers read them (criteria 1 and 4) before any final house part is made. It needs none of the architecture, so it can start as soon as there is room, and its findings shape the houses and the history budget.
+   - 1f, the game's question tested early, in clay (`CLAUDE.md`, Working in the right order: biggest risk first). The corner's houses are built from their diaries at 1989, 2000, 2010 and 2020 by the test-quality generator. Their events after 1988 were authored by named rules of real practice and labelled `authored` (`docs/experiments.md`, 1f); 1f found that the research on what owners and the town did from 1989 to 2020 is a gap, studied before step 4. Two or three of the most promising ways of showing time are prototyped, from a wide creative exploration. Cold readers read them (criteria 1 and 4) before any final house part is made. It needs none of the architecture, so it can start as soon as there is room, and its findings shape the houses and the history budget.
 
    - 1f+, paper playtests with agent players (Øystein: "can you playtest as well... really analyse the concepts, what feels fun, what feels engaging"). The round's purpose (Øystein): "We will not land on a game after this, but we will definitely know what's missing, and what we HAVE to improve." Its main output is a must-improve register for the engine, Overstory's systems, the interface and content, each item marked must, should or could with its evidence. The concepts' ranking comes second. The register becomes the bundle of engine requests and Overstory's next priorities. Stopped on 22 October after 11 of 24 runs, to put the week into building (Øystein). Its interim note (`docs/playtests/paper-1/analysis/interim.md`) stands in for the register. The concepts are redesigned from the needs it found and tested next with people in the greybox (1g).
      - a game-master agent runs each first-game concept in text, from real simulated lives where possible (Understory's published records, read-only);
@@ -157,7 +165,7 @@ The steps keep their numbers, since other docs cite them. Step 1 is reopened on 
      - the free camera;
      - blockout people, driven by the real engine run when it arrives (`docs/engine-requests.md`, request 36), else by authored fixtures;
      - hover and inspect as placeholders;
-     - showing time from 1f as a switch: repainted stroke by stroke (leading) against the toggle in place (the baseline it must beat), with more readers than 1f's one each.
+     - showing time from 1f as a switch (PL2): repainted stroke by stroke (leading) against the toggle in place (the baseline it must beat), with more readers than 1f's one each. In 1f, stroke by stroke found 7 of 8 changes with no false claim, the toggle 6 and the window 3, one reader each (Øystein, 21 October, on 1f's sheet). The photograph held at its spot stays, for close views only. The exploration stays wide (Øystein: "there are many cool ways to show time progressing, we should try to be very creative here"), within the constraints in `docs/research/time-on-screen.md`.
 
      Its play questions are settled by testing variants side by side, never by opinion (Øystein, on the camera: "we have to test this"):
      - a walker or a drone in the lanes;
@@ -198,7 +206,7 @@ Each area is researched, subject and craft, before its step starts (`docs/system
 
 ## Rough sizes (22 October; step 1 re-estimated on 21 October from the architecture)
 
-**These are guesses made before the evidence** (the plan review, 22 October). They rest on the stairs' pace before the craft research, and the one re-estimate since grew a step four- to sixfold: the port was planned at three days and is 13.5 to 17.5 Opus-days. So no date past the next milestone holds. When the stone is complete, or on 13 November if that comes first, the whole plan is re-estimated in per cent of the weekly limit per finished kind, from `docs/usage-log.md`.
+**These are guesses made before the evidence** (the plan review, 22 October, P3). They rest on the stairs' pace before the craft research, and the one re-estimate since grew a step four- to sixfold: the port was planned at three days and is 13.5 to 17.5 Opus-days. So no date past the next milestone holds. When the stone is complete, or on 13 November if that comes first, the whole plan is re-estimated in per cent of the weekly limit per finished kind, from `docs/usage-log.md`.
 
 These are weeks of the weekly usage limit, which sets our pace more than the hours do. The studies' own day counts read like a human team's and overestimate our pace. In the week to 22 October, the stairs went from nothing to "close", with their upkeep, wear, water and growth systems, in about a day and a half of work. So these sizes come from the kinds left to make, the foundations, and what the stairs and birches took.
 
@@ -264,7 +272,7 @@ A world for many games has no end: new towns, eras and packs are open-ended cont
   - from the Roads in sea fog the town is lost.
 
   Clay is structure only. The sketches of the night of 20 October (`blender/tools/grow_town.py`, `fixtures/lt1-town.json`, the terrain module, the light-ray pass, the dramatic rigs) are sketches to learn from, not a base. The last look Øystein judged a step forward is commit `4c7215a` (look P on Harbour Row).
-- **Asset gate:** reached on 20 October and told to Øystein. Parts are made one at a time against their reference boards, with Øystein's OK before references are downloaded (given 21 October; each file is still listed with its source and size for his yes before it is downloaded).
+- **Asset gate** (PL4): reached on 20 October and told to Øystein. Parts are made one at a time against their reference boards, with Øystein's OK before references are downloaded (given 21 October; each file is still listed with its source and size for his yes before it is downloaded).
 - **Later experiments:** LT2, a small venue at night with two people talking; LT3, the street through the years with seasons and weather (`docs/experiments.md`).
 - **After 1989** (needed before step 4, since the world on screen starts in 1989 and moves forward): the content after 1989 is missing. It needs research and the pack's catalogue (`docs/research/town-change.md`: the oil-money years, restored stairs, universal design's ramps and rails, cafés, graffiti), so the world has something to change into.
 - **Waiting for Øystein:** in `NOW.md`.

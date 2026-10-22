@@ -2,6 +2,14 @@
 
 Agreed 22 October (Øystein delegated the decisions: "you know what to do here"). How the town's whole physical fabric (stone, streets, houses, shopfronts, interiors, yards, trees, quays, the land at the edge) changes because of the lives lived in it, and how those changes flow into each other. It takes the upkeep system (`docs/upkeep.md`, `blender/generators/upkeep.py`, the gully steps' life in `stone_gully.json`) all the way. Claims from outside sources that we could not check are marked (unverified).
 
+## In short
+
+- **LF1** One record (`made`, `keepers`, `uses`, `works`, `events`) and one yearly runner, `life(thing, tables)`, for everything made or planted; flow through shared fields, not links; lives computed in the player on change, D12.1 (disputed). Evidence: `research/world-that-remembers.md`. Reopens: none named.
+- **LF2** A fact decides that and why, a rule how it looks, the seed which exactly; a derived patch carries `derived` and no year a player can read unless pinned as a fact. Evidence: `facts-contract.md`. Reopens: request 19 adopted.
+- **LF3** Construction (`made.how`) is a fact only a renewal changes; quarters, the underground, demolition and slow works are the same record at larger scope; nothing may assume a frozen plan. Evidence: `research/town-change.md`. Reopens: none named.
+- **LF4** History budget per thing: one at the city camera, two at 12 m, three at the street stop, all at eye level, clustered; one cause makes one shape; counted as well as reviewed. Evidence: `experiments.md`, LT1f. Reopens: provisional until the corner's years sheet.
+- **LF5** Care: the engine's money, presence, age and events through the pack's curve (request 13), never character (disputed); feelings reach things only by recorded acts (20), care over years or a fallible record. Evidence: `facts-contract.md`. Reopens: none named.
+
 ## The idea in one paragraph
 
 Every made or planted thing has a record of the same shape: when it was made and by whom, who kept it and how much they cared, what it was used for and how much, the works done on it, and the events that hit it. The engine decides the people's side of that record (who, why, how much money, which decision). Overstory derives the physical side by rules that are deterministic, written down and seeded (how deep the wear, how big the lichen, where the patches fell). Things do not talk to each other; they read and write a few shared fields over the town (feet, water, shade, wind and salt, care, vacancy), and a change flows by rebuilding what reads a field that changed. Most change is slow drift (wear, growth, fading); works reset some layers and leave the rest; so the town in 1989 contains the town of 1988. On screen each thing tells few histories per view, clustered where their causes cluster, so the read is history and not speckle.
@@ -10,7 +18,7 @@ This is mostly maintenance, not building. Real towns are made of upkeep: what ge
 
 ## 1. The model
 
-### The things and their record
+### The things and their record (LF1)
 
 A thing is anything with a life: a flight of steps, a wall, a stretch of paving, a house, its shopfront, a sign, a room, a yard, a lawn, a tree, a quay, a boat, a field. Its record:
 
@@ -26,7 +34,7 @@ A thing is anything with a life: a flight of steps, a wall, a stretch of paving,
 
 The gully steps already carry `made`, `keepers` (as `upkeep`), `works` and `life`. The change is to give every thing the same shape and one runner.
 
-### Construction is a fact
+### Construction is a fact (LF3)
 
 A thing's `made.how` names its construction from the pack's catalogue, and the construction is a fact like the year. The gully has two already: one thick split slab a step, each resting on the one below (`block`), and thin treads on block risers (`tread_on_riser`). A catalogue entry holds everything that follows from how a thing was built: its parts and their sizes; its laying rules (bridged joints, a batter, bedding, overlap); what breaks in it and how (a thin tread cracks across; a block settles and tilts; a cast step spalls at the nosing and shows its aggregate; an Eternit sheet chalks and chips at its fixings); what its keepers do about it by era; its rates; and what it reads as at each tier.
 
@@ -58,7 +66,7 @@ Every element shares this. The house already does: its volumes take their materi
 
 A pack's catalogue is content; the shape of an entry and the rules for choosing and moving are the system.
 
-### Facts, interpretations and texture
+### Facts, interpretations and texture (LF2)
 
 The five kinds of thing on screen (`CLAUDE.md`) sort the record's outputs:
 
@@ -166,7 +174,7 @@ The same house let to two families instead gets two window types, floor by floor
 - A band rehearses where space is cheap (the vacancy field) and plays where the bar's shows are; each show is a poster drawn from the booked fact, and the wall by the venue becomes the band's coat stack.
 - The council's own plans ("to widen the harbour road") become works when the engine decides them (request 14), carried out in part.
 
-**How inner states show.** Only through acts and the traces they leave (`CLAUDE.md`, evidence not verdicts). The engine keeps feelings, strain, sore spots and wants; none of them reaches the fabric on its own. A feeling reaches it in three ways, each a fact: an act on a thing (a window boarded, a hedge planted against a neighbour, a door repainted, a sign torn down); a change in care over years (grief, drink or debt that lets a house go; a new partner who digs the garden); or a record that claims a reason (the paper's line, a neighbour's account), which may be wrong. Never as mood lighting on a sad house, a decal for grief or a colour for anger: a mood grades how a scene is seen and may not change a fact (`docs/visual-direction.md`, Mood). The engine's own human test says why: a vivid act read as a whole character made readers worse. So the house shows the act, a record may claim the cause, and the reading is the player's. Anger that never becomes an act is invisible, and should be.
+**How inner states show** (LF5). Only through acts and the traces they leave (`CLAUDE.md`, evidence not verdicts). The engine keeps feelings, strain, sore spots and wants; none of them reaches the fabric on its own. A feeling reaches it in three ways, each a fact: an act on a thing (a window boarded, a hedge planted against a neighbour, a door repainted, a sign torn down); a change in care over years (grief, drink or debt that lets a house go; a new partner who digs the garden); or a record that claims a reason (the paper's line, a neighbour's account), which may be wrong. Never as mood lighting on a sad house, a decal for grief or a colour for anger: a mood grades how a scene is seen and may not change a fact (`docs/visual-direction.md`, Mood). The engine's own human test says why: a vivid act read as a whole character made readers worse. So the house shows the act, a record may claim the cause, and the reading is the player's. Anger that never becomes an act is invisible, and should be.
 
 **Feasible now, next, and hard.**
 
@@ -185,7 +193,7 @@ The same house let to two families instead gets two window types, floor by floor
 | Street stop | lichen size on quiet edges; cement dabs and smears; trench lines and covers; ghost signs; posters; the doorstep's hollow; a dropped kerb; fixing scars | the grain |
 | Eye level | tooling, crazing, the cement's sand, moss cushions, a patch's shoulder, the worn paint on a door's handle side, the smoothed ledge where people sit | nothing: this is where detail lives, clustered |
 
-### Rationing: the history budget
+### Rationing: the history budget (LF4)
 
 The strict reviews keep finding even speckle. The cause is marks without a shared cause, spread evenly. The rule: **marks from one cause are one shape.** A reset run is one straighter line; a lichen colony is one field with lobed edges; the quiet edge of a flight is one dark band; neglect is one darker house. Then a budget per view: at the city camera each thing tells at most one history; at 12 m two; at the street stop three; at eye level all of them, but clustered at edges, junctions, the walking line and the drip line, with calm between (Night City's dressers and Townscaper found the same). Which histories a thing tells is chosen by weight (the research's principle 2: caused by a named person, inside the game's window, unusual, linked to the player), and the rest become ordinary ageing. The budget is measured, not only reviewed: a count of distinct marks per thing per tier, and the form's value spread (`crown_value.py` generalised), beside the three-value rule a stone already has.
 

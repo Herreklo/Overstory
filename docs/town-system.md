@@ -2,6 +2,13 @@
 
 How every town and city in the game is laid out, how it changes, and how it plugs into what exists: the town-scale part of the living fabric (`docs/living-fabric.md`, Big change). It merges `docs/research/urban-design.md`, `city-forces.md`, `city-types.md` and `town-change.md`. Drafted by the design lead on Opus (Fable was out); Øystein's three decisions in section 9 are made. Research marks carry over; numbers are starting values.
 
+## In short
+
+- **TS1** Show from 1989, remember from 1870: the screen changes forward from 1989; the past is only the starting record, made once by rule and curated, never rendered, stored so it can be regenerated, edited or replaced (disputed); era content only for what survives into 1989; an earlier game adds its own eras. Øystein's. Evidence: `plan.md`, Leaner 2. Reopens: "as long as we can change this later".
+- **§9 Ø2** Years pass per game, a week to generations: a record and date draw one town, watched or jumped; the 3D world shows the player's acts as anyone's, through the record; whether living through differs from jumping is the engine's. Øystein's. Evidence: D12.5. Reopens: none named.
+- **§9 Ø1, Ø3** T0, T1 now beside the corner, T2, T3 beside its buildings, the heart's geometry at step 6; eras after 1989 only as the first scenario needs. Øystein's. Evidence: `b562ae6`. Reopens: none named.
+- **§9.1–2, 4, 6, 11** Plan units top every way, plot and building; the heart tagged now, regrown at step 6, the corner frozen; plans from the script before 1959 (#23), the engine's after; belts computed, never stored; checks gate every grown unit. Evidence: `research/town-change.md`. Reopens: none named.
+
 ## The idea in one paragraph
 
 A town is a sequence of founding acts laid on land that already had lines on it. Each act lays one plan unit: an area of one type (a fire grid, a row of sea houses, a slope of owner-built lanes, an estate), laid by one founder in one year, with its own plot module and the building rules of its year. Plots then run their cycle on lines that hardly move: built, filled in behind, emptied, cleared, rebuilt, merged in booms, divided in hard times. Growth comes in pulses, and at each halt a belt of big plots and institutions forms against whatever stopped it. Plans are dated documents whose claims reach the ground only as their mechanism allows, so most leave scars. Under the street lies a dated stack of mains, cellars, tunnels and shelters. All of it is the living fabric's record at a larger scope, read at a year. Irregularity comes only from seams, land and history, never from noise.
@@ -71,7 +78,7 @@ Where the better-off live is a pack dial, set by what the centre offers that the
 
 ## 3. Growing the past, then playing forward
 
-The grown past is the starting record only: it explains how the 1989 town looks, and it is generated once by rule and never rendered (Øystein, 22 October: show from 1989, remember from 1870).
+The grown past is the starting record only (TS1): it explains how the 1989 town looks, and it is generated once by rule and never rendered (Øystein, 22 October: show from 1989, remember from 1870).
 
 1. **The frame:** the land and its old lines before the oldest act.
 2. **The first routes:** the sea and the quay as the matrix; ridge and coast paths; the country road at a horse's grade.

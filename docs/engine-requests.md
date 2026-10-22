@@ -1,17 +1,27 @@
 # What the game needs from the engine
 
-Each request: what is needed, why the game needs it, and what the player would see. Øystein takes these to the engine project; this repo never changes the engine. Engine issues labelled `overstory` track the filed ones.
+Each request: what is needed, why the game needs it, and what the player would see (ER1). Øystein takes these to the engine project; this repo never changes the engine. Engine issues labelled `overstory` track the filed ones.
+
+## In short
+
+- **ER1** Each request: the need, why, what the player would see; sent in bundles on the `overstory` channel (disputed). Evidence: `CLAUDE.md`, Standing rules. Reopens: Øystein.
+- **ER2** Front door `r41` or later: debug tools only, no player command; nothing rests on "because X told her" before round 42. Evidence: What we can use now. Reopens: round 42.
+- **ER5** The engine's human test holds one visual task, at most 10 minutes, after the page reading; it fits criterion 1, not 4, which needs its own readers or half seeing the scene first. Evidence: The human test's readers. Reopens: none named.
+- **36** World 9989 (21 October): a corner frame from it before plan step 2. Evidence: request 36. Reopens: none named.
+- **1, 2** Filed: #22 (the front door's part two), #23 (people from 1959 for 1989); meanwhile `authored` fixtures. Evidence: Filed. Reopens: each landing.
+- **ER3** Need order: 32, 33 (cheap now); 28, timetables; 29, 30 before any staged act (step 5); 34, 35, 31. Steps 1–4 use fixtures. Evidence: From the craft studies. Reopens: none named.
+- **ER4** Playtest requests: one bundle after the greybox's first round, backed by tests. Evidence: After the playtests. Reopens: the tests.
 
 ## What we can use now
 
-- **Tag `r41` or later**, the engine's front door (`src/boundary.ts`). Its reads show the truth, so they serve debugging tools such as the diary inspector and the bridge schema, never anything a player sees. It has no player command. Any engine text shown on screen comes from `r41` or later.
+- **Tag `r41` or later** (ER2), the engine's front door (`src/boundary.ts`). Its reads show the truth, so they serve debugging tools such as the diary inspector and the bridge schema, never anything a player sees. It has no player command. Any engine text shown on screen comes from `r41` or later.
 - **How to read it safely:**
   - `advance` runs whole months only; a part of a month runs a whole one.
   - The handle from `createWorld` is the world itself: treat it as read-only.
   - Compare exports across versions with `events()` directly, not the engine's identity check.
   - A told account can be cited as a reason by the wrong event. No scene or player read rests on "because X told her" until the engine's round 42 lands.
 - **Those who lost a band place.** When two or more wanted a band's place, each one not taken gets a `notpicked` event (`who: [loser, chosen]`), with why the other got it and how long the loser wanted it. The loser's answer (confront, sulk, let it go) follows as its own event, and pride or anger starts a grudge rivalry. The events are readable through `events()`; the rivalry itself waits for #22.
-- **The human test's readers.** The engine's human test has room for one visual task of 10 minutes at most, run after the page reading, with Overstory's own material and scoring and the engine's method (`docs/method/reading.md` in Understory). It fits criterion 1 (a reader dates a building and says which parts are old, changed or neglected). It cannot test criterion 4: a reader who has read the page first already knows what happened, so criterion 4 needs its own readers or an order where half see the scene first.
+- **The human test's readers** (ER5). The engine's human test has room for one visual task of 10 minutes at most, run after the page reading, with Overstory's own material and scoring and the engine's method (`docs/method/reading.md` in Understory). It fits criterion 1 (a reader dates a building and says which parts are old, changed or neglected). It cannot test criterion 4: a reader who has read the page first already knows what happened, so criterion 4 needs its own readers or an order where half see the scene first.
 - Until the items below land, LT1 and LT2 run on fixtures labelled `authored`.
 
 The engine's order: a reading that counts every fault, the first human test, round 42 (reasons that bear on the act chosen), round 43 (wants for later life), the band for a year with homes and #22 taken up again, then housekeeping. #20 and #23 are paused.
@@ -78,7 +88,7 @@ All proposed, 22 October; pending the building-blocks architecture, which may ch
 
 They keep the engine general. Hours, rites, timetables and the load of a job are setting content in the pack; the engine carries only their shape. None asks the engine to put a person's character on screen: inner causes, traits and readings stay in the record, and reach the screen only as someone's account (evidence, not verdicts).
 
-In order of need, 32 and 33 come first. They are cheap now and costly to retrofit once the record's format is set (next week's architecture here, #22's ids and saves there). Next come 28 and the timetables in 1, which land best with #22 and homes, and after them 29 and 30, which the engine's own human test can use too. Last come 34, 35 and 31.
+In order of need (ER3), 32 and 33 come first. They are cheap now and costly to retrofit once the record's format is set (next week's architecture here, #22's ids and saves there). Next come 28 and the timetables in 1, which land best with #22 and homes, and after them 29 and 30, which the engine's own human test can use too. Last come 34, 35 and 31.
 
 28. **Where and when an act happened** (behaviour, B1).
    - *Needs:* each event between people names where it happened: a place, a home (15), or the habit, work or group that brought them together; and, where the engine knows it, the week or the part of the day. A staged act must happen where it happened, or the scene invents history (criteria 3 and 4). It also settles half of the two clocks (`docs/living-world.md`): the engine owns the place, Overstory the minute inside the habit's slot. The interface needs it to say who could have been there, and the change query to find the events in a building or a street.
@@ -138,7 +148,7 @@ In order of need, 32 and 33 come first. They are cheap now and costly to retrofi
 
 ## After the playtests: a bundle for Understory
 
-Decided with Øystein (21 October): the engine requests that come out of the playtests are gathered and sent to Understory together, once the paper playtests and the greybox's first round are done. Each one is backed by what the tests showed. Øystein carries them over, or asks us to comment on the engine's Overstory-labelled issue. Candidates so far, to confirm by the tests:
+Decided with Øystein (21 October; ER4): the engine requests that come out of the playtests are gathered and sent to Understory together, once the paper playtests and the greybox's first round are done. Each one is backed by what the tests showed. Øystein carries them over, or asks us to comment on the engine's Overstory-labelled issue. Candidates so far, to confirm by the tests:
 - **Crime and its aftermath.** Theft beyond the till skims the engine already makes; death that is not natural; suspicion, inquests and the police as a place of work. Rule 8 and "evidence, not verdicts" still hold: no sensationalism, and accounts may be wrong.
 - **Who found the dead, and who certified the death.** Every mystery player in the paper playtests asked, and the engine records neither (`docs/playtests/paper-1/analysis/interim.md`).
 - **Who is kin to whom, readable.** Players asked in 10 of 11 runs (the same note).
