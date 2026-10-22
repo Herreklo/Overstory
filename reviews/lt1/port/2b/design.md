@@ -46,8 +46,9 @@ Nothing changes a vertex after the part has made it. Joint soil and moss may fol
 - **Footing.** On the stair side it is the steps themselves: the step ends tail 150 mm into the wall and are drawn on the elevation as occupied cells, and the wall is built on them. The course lines are taken from the step tops: one line on each step top, and at most one line between two step tops, so every course meets the stair on a step's top or against a step end's side, never in a wedge, and no stone is under 50 mm high. On the bank side the footing steps with the ground, each step a whole course.
 - **Panels.** A wall is laid by panel, between its features (heads, kneelers, knees, the 1961 panel's edges), each panel on its own id and seed. A record event re-lays its panel and no other.
 - **The coping** is raked over a flight and level over a rest, and is laid on the cut tops of level-bedded stones:
-  - a **kneeler** at the foot of every raked run, at the lane and at every rest-to-flight break: a big stone with a level bed, its top cut to take the run;
-  - a **knee stone** at every flight-to-rest break, one stone carrying both tops, so there is no notch (open fault 2);
+  - a **kneeler** at the foot of every raked run, at the lane and at every rest-to-flight break: a stone with a level bed, wider than it is high, tailing into the wall, the coping's section worked on its top (Rivington Part I, 1904, p. 54; Mitchell 1902; `research-local.md`);
+  - **intermediate kneelers** along a long raked run, as all three textbooks put them "at intervals"; none gives a spacing, so ours is one every 8 to 12 steps (2.4 to 3.6 m of going), our own choice;
+  - a **knee stone** at every flight-to-rest break, one stone carrying both tops, so there is no notch (open fault 2). This is our choice and unsourced: nothing pushes at that break, and a plain joint on it is as defensible. It stays for the fault it removes, and the local photographs may correct it;
   - coping joints rebated, so each slab bears on the one below.
 - **Rake cuts.** The last stone of each course under the rake is chosen long enough that the rake cut leaves a trapezoid face. No face is narrower than 50 mm or more acute than 25° (no slivers).
 - **Wall ends** are heads of the biggest stones, ties and runners alternating, with a square topstone (fault 4's loose fan goes).
