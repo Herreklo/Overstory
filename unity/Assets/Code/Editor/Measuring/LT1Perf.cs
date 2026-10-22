@@ -38,13 +38,15 @@ namespace Overstory.EditorTools
     /// the background) are put back afterwards. The generated scene and the player are not kept in git.
     ///
     /// The walk's whole scene (LT1g, W3; reviews/lt1/playable/walk/w3-report.md): BuildPlayable composes the corner as the
-    /// walk's player shows it (LT1Play.ComposeOpen: the clay town, the five houses at 1989, the birch, the lamps as the
+    /// walk's player shows it (LT1Play.ComposeOpen: the clay town, the five houses at 1989, no tree until 1e unless
+    /// -tree card or clay (LT1Play.TreeDefault, proposal Q16: the gate's baseline has no tree), the lamps as the
     /// facts have them), places the runner in it with the walk's nine views (the five judging views and LT1g's four),
     /// leaves out the play's own behaviours but PlayCorner (the frame-time overlay's label and its own frame-timing capture
     /// would be in the numbers), and builds and runs it as Build does, into reviews/perf/&lt;date&gt;/playable/ by default.
     /// Every option above applies; its scene is 'playable' (-perf-scenes empty,playable).
     ///
-    ///     tools/perf.sh playable [-runs 2] [-perf-passes all,-beams,-shadows,-beams+shadows,bare,flat] ...
+    ///     tools/perf.sh playable [-runs 2] [-perf-passes all,-beams,-shadows,-beams+shadows,bare,flat] [-tree none|clay|card]
+    ///         [-perf-ab 1300-drizzle,1600-low-sun]   (the lights in which every view is measured again without the tree)
     /// </summary>
     public static class LT1Perf
     {
@@ -144,11 +146,13 @@ namespace Overstory.EditorTools
             {
                 name = m, rig = AssetDatabase.LoadAssetAtPath<LightRig>($"Assets/Experiments/LT1/Heart/Light/Heart_{m}.asset"),
             }).ToArray();
-            runner.birches = new[] { birch };
-            var leaves = birch.GetComponentsInChildren<MeshRenderer>();
+            // (no tree in the walk's corner until 1e: no A/B then)
+            runner.birches = birch == null ? new GameObject[0] : new[] { birch };
+            var leaves = birch == null ? new MeshRenderer[0] : birch.GetComponentsInChildren<MeshRenderer>();
             runner.boundsOf = leaves;
             runner.bounds = leaves.Select(r => r.localBounds).ToArray();
-            runner.withoutBirchesIn = new[] { "1600-low-sun" };
+            // (-perf-ab <light,...>: the lights the A/B measures without the tree; low sun unless asked)
+            runner.withoutBirchesIn = Cli.Arg("-perf-ab", "1600-low-sun").Split(',');
             runner.keep = new[] { Shader.Find("Hidden/Overstory/TownHeight"), Shader.Find("Hidden/Overstory/SkyMapProbe") }
                 .Where(s => s != null).ToArray();
             runner.rendererData = AssetDatabase.LoadAssetAtPath<UniversalRendererData>("Assets/Settings/PC_Renderer.asset");
@@ -184,8 +188,11 @@ namespace Overstory.EditorTools
                     left.Add(mb.GetType().Name);
                     Object.DestroyImmediate(mb);
                 }
-            var trees = GameObject.Find(BirchRoot) ?? throw new MissingReferenceException("[LT1Perf] no birch in the walk's corner");
-            var birch = trees.transform.GetChild(0).gameObject;
+            // the corner's tree, if the switch planted one (LT1Play.TreeKind)
+            var trees = GameObject.Find(BirchRoot);
+            var birch = trees == null || trees.transform.childCount == 0 ? null : trees.transform.GetChild(0).gameObject;
+            if ((birch == null) != (LT1Play.TreeKind == "none"))
+                throw new MissingReferenceException($"[LT1Perf] the walk's corner {(birch == null ? "has no tree" : "has a tree")}, but -tree is {LT1Play.TreeKind}");
             var views = corner.views.Select(v => new PerfRunner.View { name = v.name, position = v.position, target = v.target, fov = v.fov }).ToArray();
             var runner = AddRunner(stage, birch, views, "playable");
             Save(scenePath);

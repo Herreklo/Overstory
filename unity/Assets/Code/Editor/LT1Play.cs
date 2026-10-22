@@ -21,7 +21,8 @@ namespace Overstory.EditorTools
     /// Compose writes the generated scene (ScenePath, never kept in git): the heart's clay, staged as the gully's frames
     /// stage it (LT1Stone.Stage: the stone stair and cheek walls, the rigs and styles, the town's globals); the corner's
     /// five houses at 1989 in place of the heart's grey masses for them, each where export_time.py put it from the
-    /// heart's footprint in the diaries (HousesRecord; LT1Time.PlaceHouses); the corner's birch (LT1Perf.PlantBirch);
+    /// heart's footprint in the diaries (HousesRecord; LT1Time.PlaceHouses); no tree until 1e builds the corner's birch
+    /// again (-tree none, the default; -tree card or clay for comparison: PlantTree, LT1PlayTree.cs, proposal Q16);
     /// and the play object, with PlayCorner (the five judging views, the three judging lights, the heart's moods) and
     /// FrameTimeOverlay. Nothing in it is invented: every place, rig and mood comes from the records and tools named.
     /// It refuses to run unless the gully's stair and walls hash as accepted (Stairs, Walls: blender/tools/mesh_hash.py
@@ -32,6 +33,7 @@ namespace Overstory.EditorTools
     ///     Unity -batchmode -quit -projectPath unity -executeMethod Overstory.EditorTools.LT1Play.Compose
     ///         [-stills reviews/lt1/playable/walk/w1] [-moments 1300-drizzle] [-views eye-foot,...]
     ///         [-houses Assets/Art/Buildings/time/time.json]   (another set of houses at 1989, to compare)
+    ///         [-tree none|clay|card]   (no tree, the default until 1e; the card birch or its clay stand-in, to compare)
     ///     Unity ... -executeMethod Overstory.EditorTools.LT1Play.Build      (Compose, then the player at App)
     ///     Unity ... -executeMethod Overstory.EditorTools.LT1Play.Check      (the saved scene checked again)
     ///
@@ -200,8 +202,8 @@ namespace Overstory.EditorTools
             var street = AssetDatabase.LoadAssetAtPath<Material>("Assets/Art/Materials/M_Street.mat");
             var placed = LT1Time.PlaceHouses(houses, export, Arm, Year, street);
 
-            // the corner's birch in C's yard (as the harness plants it)
-            var (_, birch, _, height) = LT1Perf.PlantBirch();
+            // the corner's birch in C's yard: none until 1e builds it again; card or clay with -tree (LT1PlayTree.cs, Q16)
+            var (_, height, treeKind, cardBounds) = PlantTree();
 
             // what the player switches between: the judging views, lights and moods, in their tools' order
             var play = new GameObject(PlayRoot);
@@ -226,9 +228,8 @@ namespace Overstory.EditorTools
             corner.view = 0;
             corner.moment = 0;
             corner.mood = -1;
-            var leaves = birch.GetComponentsInChildren<MeshRenderer>();
-            corner.boundsOf = leaves;
-            corner.bounds = leaves.Select(r => r.localBounds).ToArray();
+            corner.boundsOf = cardBounds;
+            corner.bounds = cardBounds.Select(r => r.localBounds).ToArray();
             corner.keep = new[] { Shader.Find("Hidden/Overstory/TownHeight"), Shader.Find("Hidden/Overstory/SkyMapProbe") }
                 .Where(s => s != null).ToArray();
 
@@ -240,10 +241,10 @@ namespace Overstory.EditorTools
             stage.shot = null;
             Object.DestroyImmediate(shot);
             if (stage.skyMap != null)
-                stage.skyMap.Build();     // the town's sky map over the houses, the stone and the birch
+                stage.skyMap.Build();     // the town's sky map over the houses, the stone and any tree
 
             Debug.Log($"[LT1Play] the corner: stone {stone.name}; {placed.Count} houses ({string.Join(", ", placed.Select(h => h.name))}); " +
-                      $"the birch {height:F1} m; {corner.views.Length} views, {corner.moments.Length} lights, {corner.moods.Length} moods; " +
+                      $"{(treeKind == "none" ? "no tree (until 1e)" : $"the birch {height:F1} m ({treeKind})")}; {corner.views.Length} views, {corner.moments.Length} lights, {corner.moods.Length} moods; " +
                       $"no business in {Year}: {(dark.Count == 0 ? "none" : string.Join(", ", dark))}");
             return (stage, corner);
         }
@@ -466,7 +467,7 @@ namespace Overstory.EditorTools
 
         /// <summary>
         /// The saved scene opened and checked: the gully's hashes, the stone in it from the hashed FBX, the five houses
-        /// from the record, the birch, the three lights. Throws on any miss, so a batch run exits with an error.
+        /// from the record, the one tree of the kind asked (-tree), the three lights. Throws on any miss, so a batch run exits with an error.
         /// </summary>
         public static void Check()
         {
@@ -507,10 +508,24 @@ namespace Overstory.EditorTools
             if (masses == null || masses.gameObject.activeSelf)
                 problems.Add("the heart's grey masses for the houses are still shown");
 
+            // the corner's tree, of the kind asked (-tree, or TreeDefault): none, the card birch from its FBX, or the clay one
             var trees = GameObject.Find(LT1Perf.BirchRoot);
-            int birches = trees == null ? 0 : trees.transform.Cast<Transform>().Count(t => Source(t.gameObject).StartsWith("Assets/Art/Trees/birch/"));
-            if (birches != 1)
-                problems.Add($"{birches} birches, not 1");
+            var planted = trees == null ? new List<Transform>() : trees.transform.Cast<Transform>().ToList();
+            int cards = planted.Count(t => Source(t.gameObject).StartsWith("Assets/Art/Trees/birch/"));
+            var clayTrees = planted.Where(t => t.name == ClayTreeName
+                                               && t.TryGetComponent<MeshFilter>(out var mf) && mf.sharedMesh != null
+                                               && t.TryGetComponent<MeshRenderer>(out var mr) && mr.sharedMaterial != null
+                                               && AssetDatabase.GetAssetPath(mr.sharedMaterial) == "Assets/Art/Materials/M_Street.mat").ToList();
+            int birches = cards + clayTrees.Count;
+            string treeKind = planted.Count == 0 ? "none" : cards == 1 && clayTrees.Count == 0 ? "card" : clayTrees.Count == 1 && cards == 0 ? "clay" : "unknown";
+            int wantTrees = TreeKind == "none" ? 0 : 1;
+            if (birches != wantTrees || planted.Count != wantTrees)
+                problems.Add($"{planted.Count} trees ({cards} card, {clayTrees.Count} clay), not {wantTrees}");
+            else if (treeKind != TreeKind)
+                problems.Add($"the tree is {treeKind}, not the {TreeKind} asked");
+            string treeLine = treeKind == "clay"
+                ? $"clay, {clayTrees[0].GetComponent<MeshFilter>().sharedMesh.triangles.Length / 3} triangles in M_Street"
+                : treeKind;
 
             var corner = Object.FindAnyObjectByType<PlayCorner>();
             int rigs = corner == null || corner.moments == null ? 0 : corner.moments.Select(m => m.rig).Where(r => r != null).Distinct().Count();
@@ -541,7 +556,7 @@ namespace Overstory.EditorTools
             Debug.Log($"[LT1Play] check {ScenePath}:\n" +
                       $"  the gully: stairs {stairs}, walls {walls} (accepted {Stairs}, {Walls}); in the scene {stoneStairs} stairs, {stoneWalls} cheek walls\n" +
                       $"  {houses.Count} houses at {Year} ({export.style}): {string.Join("; ", houseLines)}\n" +
-                      $"  {birches} birch\n" +
+                      $"  {birches} trees ({treeLine})\n" +
                       $"  lamps from {lampsAt}: {lamps.Length}, {lamps.Count(l => l.kind == "shop")} shop lights; a business in {Year}: " +
                       $"{string.Join(", ", open.Select(o => $"{o.Key} {(o.Value ? "yes" : "no")}"))}\n" +
                       $"  {rigs} rigs: {(corner == null ? "" : string.Join(", ", corner.moments.Select(m => m.name)))}\n" +
