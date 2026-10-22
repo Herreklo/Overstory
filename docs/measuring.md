@@ -31,7 +31,7 @@ Everything runs on the reference machine (`docs/foundations.md`): the Mac mini w
 
 So on 22 October the gully was exported again from today's generators (two builds bit for bit the same), its golden views rendered and looked at, and both accepted as the baseline (Golden views, Baseline). The port's first rule, that the gully's geometry hash must not change, is measured against these hashes.
 
-**Proposed** (22 October, step 0b: seeds on the hash spec; Øystein accepts). The gully re-draws because of three changes:
+**Accepted by Øystein (22 October),** as the regression reference only: it shows the port changes nothing, not that the look is right. The look is judged against the target frame (`reviews/lt1/heart/target/3-street-gully-steps-target.png`) and the bar, beside the render (Øystein: "not sure if the before version is the right thing to compare it against"). Step 0b: seeds on the hash spec. The gully re-draws because of three changes:
 - since `dbd455c`, the generators draw every seed from stable ids (`schemas/naming.md`) through `blender/resolver/hashing.py`;
 - since `13e1b3b`, the set-out keeps its rests;
 - since `7c5086c` and `21ec5df`, the cheek walls are built from the ground's facts.
@@ -87,7 +87,7 @@ Why it changed: the gully is now the one today's generators build (Mesh hashes, 
 - the lichen reads as decals in grey light: a uniform bright rim, and young rosettes all coin-round and one size;
 - one-pixel bedding lines on the big riser catch the wet gloss: likely to shimmer.
 
-**Proposed** (22 October, step 0b: the gully from the generators on the hash spec; Øystein accepts). Every frame fails against the 22 October baseline, as a re-drawn gully must:
+**Accepted by Øystein (22 October)** as the regression reference; the look is judged against the target frame. Step 0b: the gully from the generators on the hash spec. Every frame fails against the 22 October baseline, as a re-drawn gully must:
 
 | Views | Mean |
 | --- | --- |
@@ -143,6 +143,8 @@ Until then, the 22 October baseline stays the reference.
     tools/perf.sh [-runs 2] [-perf-only street,high] [-perf-frames 150] [-perf-rounds 2]
 
 composes, builds (about 6 minutes the first time, seconds after) and runs the player full screen at 2560 by 1440, about 11 minutes a run. Each run writes `reviews/perf/<date>/run-<n>/summary.json` and `summary.md`, with every frame in `frames.csv`, the screenshots and the player's log beside them (out of git); `runs.md` says how far the day's complete runs agree. The player takes the screen: leave the machine alone while it runs. The first attempt stopped part way (why is not known: a key, or another app taking the screen); a run that stops writes no summary and is left out of the comparison. A build rewrites some settings as housekeeping (URP's stripping prefilters, the default volume profile's list of overrides, the graphics settings' warm-up fields); `tools/perf.sh` puts back those that were clean before, so a run leaves git as it found it, and the golden views render bit-identical after it.
+
+Two arms leave every pass on and set a shader keyword everywhere (step 3; `reviews/lt1/history/r2.md`): `-perf-passes history-off` (`OS_HISTORY_OFF`: every history layer at its material's quiet mean, no page or piece read) and `haze-off` (`OS_HAZE_OFF`: `OS_Atmosphere` skipped in the stone, street, tree and motes shaders); `LT1Golden.Views -history-off` or `-haze-off` renders the same arm. `-perf-scenes quad-rgba8,quad-bc7` adds the history quad (`LT1History`: 4,096 pieces reading three synthetic pages through `Shaders/History.hlsl`), measured in `all` and `history-off` from the empty scene's views; `summary.json` gives each segment's per-round offscreen medians (`round_offscreen_ms`).
 
 **Accepted (21 October).** Two runs (`reviews/perf/2026-10-21/runs.md`):
 - the GPU time agrees within 3.1% in all 24 segments;
