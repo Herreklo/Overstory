@@ -19,3 +19,13 @@
 **What was hollow.** Everything. No stakes by design, and the one lead I made myself (the grey cardigan) was struck down with "You can't take that with you" and answered by three people with the same sentence. Belonging is a clock, not a reward for what I do. The ferry never answered a question about time, twice. The lantern walk ran without me, so "you can't miss anything" meant I wasn't needed.
 
 **Compared with others.** Papers, Please had a squeeze that went slack at the moral test. This has no squeeze at all, so there is nothing to go slack. Both gave kind or empty replies to questions. Watch for: does the game plant a clue, then break the promise that it was one? That costs more trust than having no clues.
+
+## Thursday's Paper (the Courier, harbour town, June 1990 to July 1991)
+
+**Marks and pull.** Marks ran curious, curious, bored, confused | curious, bored, engaged, bored | bored, engaged, engaged, confused | engaged, bored, curious, engaged | bored, confused, engaged, curious | confused, curious, engaged, engaged. Pull: 4, 4, 4, 4, 5, 6, 3 at the exit.
+
+**What kept me.** Una Waller catching Sid's wrong tip, the first error I found myself. Lily alone at the Anchor, where the place changed what she would say. Greta's phone message, the one time a person reached for me. Working out two hidden rules myself ("not for print" follows whom the speaker talks about; named conflict sells, notices don't).
+
+**What was hollow.** Trust only climbed, to 10, and no one said what moved it. Ken's veto cost one point once. Refused questions had no unlock. Quarrels were one sentence with names swapped. Reading, watching and "why" returned voids. The store page promised to show what the town made of my pages; it made nothing. The last five weeks were summarised because I had nothing left to choose.
+
+**Compared with others.** Best of my three: burning a source cost something visible. Still no real squeeze. Papers, Please squeezed and went slack; Saltlight never squeezed; this one is satisfied by week two. Watch for: does a game confirm when my deduction is right, and does it show what my act did to a person?
