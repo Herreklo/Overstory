@@ -34,7 +34,7 @@ Each session commits its own work; a stopped one resumes from its files. Long wo
 - **The paper playtests, stopped** at 11 of 24 runs (Øystein: "Maybe stop playtest, and focus on building?"). Outcome and next: `docs/playtests/paper-1/analysis/interim.md`; the concepts are redesigned from its needs when people play the greybox.
 - **Held, on Opus:** the camera and play-craft studies' unread talks and masters (their Limits sections), each read before the step that rests on it; a review of the playtest programme when the greybox is close.
 - **Housekeeping:** a "22 October" label on older work takes its commit's date (`git blame`).
-- **Inquest,** a stored game idea on the unmerged branch `ideas/inquest`. Its engine requests are numbered 11 to 17, which clash with the numbers in `docs/engine-requests.md`.
+- **Game ideas,** Inquest among them, are catalogued in `docs/ideas/README.md`, with Inquest's engine needs mapped to current request numbers.
 
 ## For the milestone's reviewer (Monday 26 October)
 

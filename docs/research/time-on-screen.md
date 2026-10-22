@@ -218,7 +218,7 @@ Play changes the record, so two playthroughs reach different towns, and whether 
 - **The player's acts look like anyone's.** A poster the band put up, the path worn to the loft's side door, a shop the player's character opened: each is an event with an actor and is drawn by the same rules. Nothing in the world marks it as the player's. Colantonio's point that players value seeing their acts persist is met by persistence, not by a spotlight.
 - **They weigh more in the budget.** "Linked to the player" is already a weight, so a return after a jump puts one of the player's traces in the views it visits, if one exists. Recognition (`docs/town-plan.md`) is this moment.
 - **The why-probe can filter by actor.** "What did I change here?" is a query on the change list, answered in the journal or the probe, never in the paint.
-- **Two records, one date** is the same machinery as one record, two dates. An aligned toggle between two playthroughs at one date is the counterfactual observatory in `docs/ideas/worlds-on-screen.md`, at no extra cost.
+- **Two records, one date** is the same machinery as one record, two dates. An aligned toggle between two playthroughs at one date is the counterfactual observatory in `docs/ideas/game-layer-ideas.md`, at no extra cost.
 
 One risk needs a guard. If the engine records more small events where the player has been, those places will look busier. That is true to the record, but a reader must not take a quieter place for a neglected one. Patchwork, coats and growth are derived from care and use at the same rates everywhere, so the fabric's condition never depends on whether anyone watched; only named small acts differ.
 
@@ -290,7 +290,7 @@ Ranked by what each buys for criteria 1, 3 and 4 and for the architecture. Costs
 
 ## For Øystein to decide
 
-1. **The comparison in play (play).** Recommended: the world's own media first. A photograph from the town archive, or one the player took earlier, held up at its spot, toggles in place to the present, as *Dear Photograph* and Klett's insets do. A free interface toggle only in games whose play is reading the past (the archivist, the restoration architect in `docs/ideas/worlds-on-screen.md`). It follows `docs/research/interface.md` (the world's own media first) and keeps the world free of overlays.
+1. **The comparison in play (play).** Recommended: the world's own media first. A photograph from the town archive, or one the player took earlier, held up at its spot, toggles in place to the present, as *Dear Photograph* and Klett's insets do. A free interface toggle only in games whose play is reading the past (the archivist, the restoration architect in `docs/ideas/roles.md`). It follows `docs/research/interface.md` (the world's own media first) and keeps the world free of overlays.
 2. **The time-lapse as spectacle (taste).** Recommended: allowed as an opening or a chapter's passage, where it is beautiful for slow things (trees, a plot's cycle, a quay pushed out), always bracketed by dated stills and followed by a comparison. Never the only way a change is shown, because gradual change hides what changed.
 3. **Whether the player's own acts are ever marked as theirs (play).** Recommended: never in the world; in the journal and the why-probe only. Persistence is the reward; a spotlight would turn evidence into a verdict on the player.
 

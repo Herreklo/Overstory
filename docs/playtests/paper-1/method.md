@@ -32,7 +32,7 @@ Agents can't feel fun. Reasoning, comparison with the best games and careful sim
 | --- | --- | --- | --- |
 | 1 | `football` | The club: a small-town amateur football club; the squad is the town's real people from world 9989 | lives on and off |
 | 2 | `band` | The band: a band in a quay loft whose gigs change the street | lives on and off |
-| 3 | `restorer` | The observer reshaped as a game: a restorer who returns to places, reads what lives did to them, and buys and restores against money and time (`first-game-options.md`, option 3) | lives on |
+| 3 | `restorer` | The observer reshaped as a game: a restorer who returns to places, reads what lives did to them, and buys and restores against money and time (`first-game-options.md`, option 3; now in `docs/ideas/roles.md`, The restorer) | lives on |
 | 4 | `family` | A life and its heirs: a family across generations, an inherited house worn and changed | lives on |
 | 5 | `journalist` | The paper: a reporter at the Courier finding out what happened to someone | lives on and off |
 | 6 | `mystery` | A death in the town, read through lives, records and traces over the years (nearest: Shadows of Doubt, Pentiment) | lives on and off |

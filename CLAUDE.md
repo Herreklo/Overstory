@@ -76,7 +76,7 @@ Quality comes first (Øystein, 22 October: "My main thing is that I want work of
 | `docs/living-fabric.md`, `upkeep.md`, `building-system.md` | The record of every made thing; keeping and repair; buildings from diaries |
 | `docs/facts-contract.md`, `engine-contract.md`, `engine-requests.md` | Whose each fact is; the engine's data format; what we need from it |
 | `docs/experiments.md`, `usage-log.md` | Every experiment and its outcome; each job's usage |
-| `docs/research/`, `docs/ideas/` | Research (synthesis: `world-that-remembers.md`); game ideas, not decisions |
+| `docs/research/`, `docs/ideas/` | Research (synthesis: `world-that-remembers.md`); game ideas, not decisions (catalogue: `docs/ideas/README.md`) |
 
 Skills live in `.claude/skills/` and change with the design: `game-lab-workflow`, `blender-generators`, `unity-conventions`, `engine-bridge`.
 

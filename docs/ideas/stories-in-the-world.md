@@ -262,39 +262,11 @@ From the run and the packs, never invented. Counts are of the 76 people in town 
 
 ## 6. Potentials for play
 
-### Four games
-
-| Game | The loop these patterns support | What carries it |
-| --- | --- | --- |
-| The murder mystery (today, a death mystery) | A death opens a case. The player reads the dead person's routines, money and ties from the street and from accounts: whom they leaned on, who wrote what, who stayed away | absences, accounts with tellers, the hat, the headstone, the house left behind |
-| The journalist | The Courier has an editor, reporters, deadlines and a visit from head office. The player writes what the town reads; a report is a record that can be wrong | records (request 9); accounts against traces; the paper's own "plan to go online and stop the Saturday print" (pack 33) |
-| The observer | Learn a street's routines, notice what changes, ask why, keep a journal (`interface-and-inspection.md`) | habits as timetables; the change query; the aligned toggle |
-| The family saga | Follow a household across decades: who leaves for the city, who comes home for the funeral and stays, who sells the house | homes (15); facts as intervals (33); things that recur with their people |
-
-The observer is cheapest on today's engine, because habits and their breaks already carry causes. The journalist fits the engine's own institutions best (the Courier, the council's plans, the harbour day), and records would switch it on. A family saga needs homes first.
-
-### A death that is a mystery
-
-The engine's worst acts are taking a little at work, covering up a mistake, letting someone else take the blame and running a rival down. A murder mystery would need, within Rule 8:
-
-1. A death with a human cause. An act family for harm, rare and weighed like the others, would take its intent from states the engine already has: a rivalry, a debt, a secret about to come out.
-2. A place and a time (request 28), so who could have been there is a question the record answers.
-3. Who saw and who was told (request 1), so accounts can be independent.
-4. Lies that hold. The engine has `liecover` and `allfine`; a suspect's account must be able to be false and stay consistent.
-5. Things with owners (request 17), so an object can place a person.
-6. An accident that can kill. The setting already has "went over the side" and the storm. A fatal fall at the harbour, sometimes with someone nearby, asks the oldest small-town question: did he fall?
-
-Overstory must not grow its own crime simulation (`docs/research/pre-mortem.md`). This is a request to the engine, and its scope is Øystein's call. Until then *Bad News*'s frame works on today's run. Andy Shaw's death leaves money two friends gave him, a disputed song, a feud ended three months before, a band that lost him, and a roof another man helped with.
-
-### Keeping it fresh
-
-Shadows of Doubt goes stale because its cases come from templates and its documents repeat (`docs/ideas/first-game-options.md`). The run suggests five guards.
-
-- **Cases come from chains, never from types.** A case is a sifted chain from the record (request 7): the café's six attempts, the till and the boat.
-- **Count kinds, fold repeats.** The engine's readers reward lives with more kinds of happening, and its pages repeat the festival, the hat and "count me in". A sifter should prefer chains of many kinds and fold the repeats.
-- **Let some cases end in "?".** Arthur's debt and Harry's theft cannot be solved. Saying so is honest and keeps solving from becoming routine.
-- **The town ages under the cases.** The same street holds different chains in 1989 and 1999, so a town that moves forward does not run out.
-- **The player's own traces.** Their acts enter the record and the fabric like anyone's (`NOW.md`, Decided), so a later case can involve them.
+The games these patterns support now live with their families of game ideas, catalogued in `README.md`. Each keeps what this section said of it:
+- **The murder mystery** (today, a death mystery), with what a death that is a mystery would need from the engine and the five guards that keep it fresh: `mysteries.md` (A death in the town).
+- **The journalist:** `roles.md` (The paper).
+- **The observer:** `roles.md` (The observer, the photographer and the archivist).
+- **The family saga:** `lives.md` (A family across generations).
 
 ## 7. What is missing
 

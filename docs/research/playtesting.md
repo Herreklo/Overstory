@@ -108,7 +108,7 @@ People bind one vivid act to a face as character within seconds, lastingly, and 
 
 ### Testing a mystery
 
-The murder-mystery route (`first-game-options.md`, option 6) brings its own lessons.
+The murder-mystery route (`docs/ideas/mysteries.md`, A death in the town; option 6 of `first-game-options.md`) brings its own lessons.
 - *Commit before confirming.* Obra Dinn confirms fates in threes, since instant feedback in Papers, Please made guessing easy (Pope, in translation); players found a loophole, cycling the third (secondary). Golden Idol's testers hated "all right or all wrong", so it says when two or fewer blanks are wrong, and never checks blanks one by one, which would invite brute force (Klavins).
 - *Cite the evidence.* Ace Attorney charges a penalty for each wrong piece of evidence presented (secondary). A claim with no evidence is a guess; a rumour cited as fact is a misread source.
 - *Keep the truth fixed.* Paradise Killer: "There must always be an immutable truth to the game's fiction." Pentiment cut alibis, which rule people out, so motive rules them in (secondary).
