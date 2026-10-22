@@ -9,12 +9,18 @@ front most. No wear and no growth: those are the piece's history, laid on by the
 
 Lengths in metres; x across the slab (its width), y from its front edge (0) to its back (depth), z up from its bed
 (0) to its top (thick). Numpy only; deterministic from the seed.
+The seed is the piece's key, an int or a string (its stable id hashed with the world seed: h(worldSeed, id)); its
+draws come from the hash spec's stream (blender/resolver/hashing.py), never the random module.
 """
 
 import math
-import random
+import os
+import sys
 
 import numpy as np
+
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "..", "resolver"))
+import hashing as HS  # noqa: E402  (the one hash spec)
 
 GRID = 0.08          # the top's grid across: enough for a worn hollow (half a metre wide) to be real shape
 ROWS = (0.0, 0.012, 0.03, 0.06, 0.11)   # its rows from the front: fine over the nosing, where it rounds and wears
@@ -71,7 +77,7 @@ def slab(seed, width, depth, thick, front_round=0.012, side_round=0.006, layers=
     Returns V (n, 3), F (list of index tuples), and per vertex: kind (0 top, 1 rounded edge, 2 split face, 3 bed),
     edge (on the top: distance to its outline, m; elsewhere 0), s (on the faces: distance round the outline from the
     front left corner, m), and UV (n, 2): the top in metres (x, y), the faces round and up (s, z)."""
-    rng = random.Random(f"slab-{seed}")
+    rng = HS.Stream(seed, "slab")
     nu = max(int(math.ceil(width / grid)), 3) + 1
     ys = [y for y in ROWS if y < depth - 0.05] + list(np.arange(ROWS[-1] + ROW, depth - 0.04, ROW)) + [depth]
     nv = len(ys)

@@ -17,7 +17,6 @@ UV5 (moss, water held).
 import json
 import math
 import os
-import random
 import sys
 
 import numpy as np
@@ -26,6 +25,8 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 sys.path.insert(0, os.path.join(HERE, "..", "parts", "stone", "slate"))
 sys.path.insert(0, os.path.join(HERE, "..", "blockouts"))
+sys.path.insert(0, os.path.join(HERE, "..", "resolver"))
+import hashing as HS  # noqa: E402  (the one hash spec)
 import growth as GR  # noqa: E402
 import water as WT  # noqa: E402
 import wear as WR  # noqa: E402
@@ -39,7 +40,7 @@ YEAR = ST.YEAR
 # 14): the lane they line, the stone, when they were built, who kept them and how well, and the works their records
 # hold.
 WALLS = {
-    "gully_cheeks": dict(lane="Gully Steps", stone="slate", built=1874, footfall=ST.FLIGHTS["gully"]["footfall"],
+    "gully_cheeks": dict(id="wl-gully", lane="Gully Steps", stone="slate", built=1874, footfall=ST.FLIGHTS["gully"]["footfall"],
                          upkeep=[dict(by="town", since=1874, care=0.4), dict(by="town", since=1946, care=0.3),
                                  dict(by="town", since=1965, care=0.2)],
                          # (the lane's water ran behind the lower wall on the bank's side until it bulged)
@@ -70,7 +71,13 @@ def ground_near(f, reach=8.0):
 
 
 def lay(spec, seed=1):
+    """Seeds (docs/building-blocks.md, Seeds and determinism): every draw is keyed on the world seed, the stable id of
+    what it is for and its purpose (blender/resolver/hashing.py), never a position. The ids: the wall is its record
+    (wl-<token>); a panel is the length beside one flight on one side, <wall>/fl-<n>/<l|r>; a course co-<k> from the
+    foot; a stone is its span's ordinal j along its course, <panel>/co-<k>/<j>; the backing's cells bk-<j>-<0|1>; the
+    copings cp-<c>. (A draft of schemas/naming.md's wall rule: renaming an id re-seeds what it names.)"""
     import heart_layout as H
+    wid = spec.get("id") or "wl-" + ST.slug(spec["lane"]).replace("_", "-")
     lane = next(l for l in H.LANES if l["name"] == spec["lane"])
     fl = ST.flights_of(lane)
     origin = fl[0]["a"].copy()
@@ -116,10 +123,11 @@ def lay(spec, seed=1):
                                 for s_ in np.linspace(0, run, 6)]) for sd in (1, -1)}
         bank_side = max(rise_of, key=rise_of.get)
         for side in (1, -1):
+            pnl = f"{wid}/fl-{fi}/{'r' if side > 0 else 'l'}"
             # the bank beside the flight: retained where it rises, a parapet where it falls away
             ss = np.linspace(-0.3, run + 0.3, max(8, int(run / 0.5)))
 
-            sp = ST.step_plan(f, ST.FLIGHTS["gully"] if spec["lane"] == "Gully Steps" else spec, fi)
+            sp = ST.step_plan(f, ST.FLIGHTS["gully"] if spec["lane"] == "Gully Steps" else spec, fi, seed)
             S_arr = np.array(sp["S"])
 
             def step_top(s):
@@ -143,20 +151,21 @@ def lay(spec, seed=1):
                               retain=[bool(v) for v in retain]))
             # its foot below the steps' line (the courses run parallel to the flight, from a raked base)
             base = lambda s: a[2] + s * slope - 0.18
-            wrng = random.Random(f"{spec['lane']}-wall-{seed}-{fi}-{side}")
             # the rebuilt panel: where the lane's water ran behind the lower wall on the bank's side
             panel = None
             for w in spec["works"]:
                 if w["kind"] == "rebuilt" and side == bank_side and fi == 0:
-                    L_ = wrng.uniform(*w["length"])
-                    s0 = wrng.uniform(0.15, 0.35) * run
+                    prng = HS.Stream(seed, pnl, "rebuilt", w["year"])
+                    L_ = prng.uniform(*w["length"])
+                    s0 = prng.uniform(0.15, 0.35) * run
                     panel = dict(s=(s0, s0 + L_), year=w["year"], mortar=w["mortar"])
                     record.append(dict(flight=fi, side=side, rebuilt=[round(s0, 2), round(s0 + L_, 2)], year=w["year"]))
             # patchwork between: a few stones fallen and left (care falling), one hole patched in cement
+            wrng = HS.Stream(seed, pnl, "patchwork")
             fallen = [wrng.uniform(0.0, run) for _ in range(wrng.randint(1, 3))]
             patched = wrng.uniform(0.0, run)
             # the copings' layout first: their joints and low ends are where the water off the top runs down the face
-            crng0 = random.Random(f"{spec['lane']}-copelay-{seed}-{fi}-{side}")
+            crng0 = HS.Stream(seed, pnl, "copes")
             copes, s_c = [], -0.3
             while s_c < run + 0.3:
                 e_c = min(s_c + crng0.uniform(0.45, 1.0), run + 0.3)
@@ -181,12 +190,17 @@ def lay(spec, seed=1):
             below = []
             k = 0
             while True:
-                ch = wrng.uniform(*COURSE)
+                cid = f"{pnl}/co-{k}"
+                krng = HS.Stream(seed, cid, "course")       # the course's height and its stones' lengths, in order
+                ch = krng.uniform(*COURSE)
                 s_cur = -0.3
                 joints = []
+                j = 0
                 while s_cur < run + 0.3:
+                    stid = f"{cid}/{j}"
+                    j += 1
                     for _ in range(20):
-                        L_ = wrng.uniform(*STONE_LEN)
+                        L_ = krng.uniform(*STONE_LEN)
                         e = s_cur + L_
                         if all(abs(e - j) > BRIDGE for j in below) or e > run + 0.3:
                             break
@@ -197,10 +211,11 @@ def lay(spec, seed=1):
                         s_cur = e
                         continue
                     in_panel = panel is not None and panel["s"][0] <= sm <= panel["s"][1]
-                    gone = any(abs(sm - fs) < 0.25 for fs in fallen) and z > 0.3 and wrng.random() < 0.35
-                    srng = random.Random(f"{spec['lane']}-ws-{seed}-{fi}-{side}-{k}-{s_cur:.3f}")
+                    gone = any(abs(sm - fs) < 0.25 for fs in fallen) and z > 0.3 and \
+                        HS.unit(HS.h(seed, stid, "gone")) < 0.35
+                    srng = HS.Stream(seed, stid, "lay")
                     if not gone:
-                        stn = WS.face_stone(f"{fi}{side}{k}{s_cur:.3f}", e - s_cur - 0.006, ch - 0.004,
+                        stn = WS.face_stone(HS.h(seed, stid), e - s_cur - 0.006, ch - 0.004,
                                             depth=0.06, bulge=srng.uniform(0.003, 0.009),
                                             jag=srng.uniform(0.004, 0.01), chip=srng.uniform(0.006, 0.016))
                         V = stn["V"]
@@ -239,7 +254,7 @@ def lay(spec, seed=1):
             nb = max(4, int(run / 0.25))
             sb = np.linspace(-0.3, run + 0.3, nb)
             for j in range(nb - 1):
-                for zf0, zf1 in ((0.0, 0.5), (0.5, 1.0)):
+                for half_, (zf0, zf1) in enumerate(((0.0, 0.5), (0.5, 1.0))):
                     s_a, s_b = sb[j], sb[j + 1]
                     sm = (s_a + s_b) / 2
                     in_panel = panel is not None and panel["s"][0] <= sm <= panel["s"][1]
@@ -254,14 +269,15 @@ def lay(spec, seed=1):
                     hgt = P[:, 2] - np.array([base(q) for q in ssq])
                     damp = np.clip(1.0 - hgt / 0.8, 0.35, 1.0)
                     yrs = YEAR - (panel["year"] if in_panel else (1979 if cem else spec["built"]))
-                    put(P, kind, dict(F=[(0, 1, 2, 3)], UV=P[:, [0, 2]]), random.Random(f"back-{fi}-{side}-{j}-{zf0}"),
+                    put(P, kind, dict(F=[(0, 1, 2, 3)], UV=P[:, [0, 2]]), HS.Stream(seed, f"{pnl}/bk-{j}-{half_}", "marks"),
                         yrs, yrs, np.full(4, 0.5), damp, np.full(4, 0.45), flip=(side == 1), water=np.full(4, WT.HOLDS))
             # the copings: slabs laid flat along the top, their fronts a little proud of the face
             for c, (s_cur, e) in enumerate(copes):
                 sm = (s_cur + e) / 2
-                thick = wrng.uniform(0.07, 0.1)
-                crng = random.Random(f"{spec['lane']}-cope-{seed}-{fi}-{side}-{c}")
-                pc = SL.slab(f"{spec['lane']}-cope-{fi}-{side}-{c}", e - s_cur - 0.008, DEPTH, thick,
+                cpid = f"{pnl}/cp-{c}"
+                crng = HS.Stream(seed, cpid, "lay")
+                thick = crng.uniform(0.07, 0.1)
+                pc = SL.slab(HS.h(seed, cpid), e - s_cur - 0.008, DEPTH, thick,
                              front_round=crng.uniform(0.004, 0.009), side_round=0.004, flake=0.3,
                              chip=crng.uniform(0.01, 0.025), edge_jag=crng.uniform(0.008, 0.014), layers=2)
                 V = pc["V"]

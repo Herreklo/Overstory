@@ -10,11 +10,17 @@ run along a joint, wider than the joint, smeared onto the stone either side, its
 
 kind 5 (cast cement) and 4 (pointing) for the stone shader (Stone.shader). Lengths in metres; numpy only;
 deterministic from the seed.
+The seed is the piece's key, an int or a string (its stable id hashed with the world seed: h(worldSeed, id)); its
+draws come from the hash spec's stream (blender/resolver/hashing.py), never the random module.
 """
 
-import random
+import os
+import sys
 
 import numpy as np
+
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "resolver"))
+import hashing as HS  # noqa: E402  (the one hash spec)
 
 
 def dab(seed, front, side, reach, height, skin=0.012, rays=14, rings=(0.0, 0.06, 0.15, 0.3, 0.55, 0.75, 0.9, 1.0), deep=None):
@@ -26,7 +32,7 @@ def dab(seed, front, side, reach, height, skin=0.012, rays=14, rings=(0.0, 0.06,
     break's floor (deep, or most of the slab) with a 2 to 4 mm shoulder. reach: (x, y) how far the break reaches. Meshed in a fan from the corner, so
     its edge follows the break. The broken corner at (0, 0); x along the step, y back from the nosing, z up to the
     stone's top at height."""
-    rng = random.Random(f"dab-{seed}")
+    rng = HS.Stream(seed, "dab")
     c = np.array([-0.001, -0.001])      # (struck flush with the old faces, never a lip)
     w_amp, w_f, w_ph = rng.uniform(0.5, 0.9), rng.uniform(5, 9), rng.uniform(0, 6)
 
@@ -99,7 +105,7 @@ def dab(seed, front, side, reach, height, skin=0.012, rays=14, rings=(0.0, 0.06,
 def pointing(seed, length, width, n=None):
     """Pointing run along a joint: a flat strip a little wider than the joint, its two edges wandering where the
     trowel smeared it onto the stone."""
-    rng = random.Random(f"pointing-{seed}")
+    rng = HS.Stream(seed, "pointing")
     n = n or max(3, int(np.ceil(length / 0.06)) + 1)
     xs = np.linspace(0.0, length, n)
     wob = lambda: np.interp(xs, np.sort(np.concatenate([[0, length], [rng.uniform(0, length) for _ in range(3)]])),

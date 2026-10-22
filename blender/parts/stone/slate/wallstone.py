@@ -8,12 +8,18 @@ never seen.
 
 Lengths in metres; u along the wall (0 at the stone's left end), v up from its bed (0) to its top (height), w out of
 the wall's face (0 the face plane, positive out). Numpy only; deterministic from the seed.
+The seed is the piece's key, an int or a string (its stable id hashed with the world seed: h(worldSeed, id)); its
+draws come from the hash spec's stream (blender/resolver/hashing.py), never the random module.
 """
 
 import math
-import random
+import os
+import sys
 
 import numpy as np
+
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "..", "resolver"))
+import hashing as HS  # noqa: E402  (the one hash spec)
 
 
 def _outline(rng, length, height, jag, chip, step=0.05):
@@ -52,7 +58,7 @@ def _outline(rng, length, height, jag, chip, step=0.05):
 def face_stone(seed, length, height, depth=0.07, bulge=0.006, jag=0.008, chip=0.012):
     """One stone's face in a wall. Returns V (n, 3), F, kind (all 2: a split face), UV (n, 2: u and v in metres, so the
     laminae run along the wall), and w0 (the face plane's offset of each vertex, for the generator's lean)."""
-    rng = random.Random(f"wallstone-{seed}")
+    rng = HS.Stream(seed, "wallstone")
     P = _outline(rng, length, height, min(jag, height * 0.2), min(chip, height * 0.35))
     n = len(P)
     centre = np.array([length / 2, height / 2])

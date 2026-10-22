@@ -7,15 +7,21 @@ thousands, so it is about forty triangles; its worn crystals and its hewn sides 
 
 Lengths in metres; x along the sett (0 to length), y across (0 to width), z up to its crown at 0, its sides down to
 -depth. kind 0 top, 1 the worn arris, 2 a hewn side. Numpy only; deterministic from the seed.
+The seed is the piece's key, an int or a string (its stable id hashed with the world seed: h(worldSeed, id)); its
+draws come from the hash spec's stream (blender/resolver/hashing.py), never the random module.
 """
 
-import random
+import os
+import sys
 
 import numpy as np
 
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "..", "resolver"))
+import hashing as HS  # noqa: E402  (the one hash spec)
+
 
 def sett(seed, length, width, crown=0.004, round_=0.006, skew=0.006, depth=0.05):
-    rng = random.Random(f"sett-{seed}")
+    rng = HS.Stream(seed, "sett")
     # the outline: four corners a little out of square, each edge with one kink where the hammer took a flake
     c = [(0.0, 0.0), (length, 0.0), (length, width), (0.0, width)]
     c = [(x + rng.uniform(-skew, skew), y + rng.uniform(-skew, skew)) for x, y in c]
