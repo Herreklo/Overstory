@@ -161,3 +161,23 @@ Proposals wait here for the next milestone's fresh reviewer, who sees the plan a
   - by its cost on the M4. A cut made with `clip()` costs the tile GPU as the birch's cards do, so it is measured, and a cheaper way is tried if it is over budget.
 - **Standing cost:** three switches and one reader question in the zoom test.
 - **What would change our minds:** readers reading a cut as damage at any of the camera's stops, or a cut that can't be made within budget.
+
+## Q18. The world, its forms and their drawing are kept apart, and checked
+
+- **Evidence:**
+  - Øystein, 22 October: "ideally everythig is made in a way that making changes, adjustments, to style, to era, to world should as easy as possible, without adding more complexity". Then: "will this also male syling easier to change? say a different game require a different visual profile?"
+  - Data, not code (`CLAUDE.md`, the pack is data; `d2b1697`) makes values easy to change: palette, era parts and sizes, the push, and the moods, which are already a profile (VD3, `Style_game`). It does not cover a different way of drawing, such as a one-bit dither, ink outlines with flat colour or a miniature. That is shading, the far town's brush, light and post, which is code.
+  - The same night showed how such rules drift unchecked. The stone held 38 sizes in `masonry.py`, and the pack's `metrics.json` was never made. Growth's look lives in `Growth.hlsl`, written for this one style; R0b found growth's colour makes 53% of the gully's one-pixel lines (`cd79b22`).
+  - The foundation is there: history is read from maps (the `unity-conventions` skill).
+- **Change:** three layers kept apart:
+  - the world: facts and history, the engine's;
+  - the forms: parts and their history maps, held as data;
+  - the drawing: shaders, light, brush and post, swappable as one look.
+
+  Two steps make it real:
+  - (a) `tools/check.py` gains one rule: no fact or history baked into a colour, and no shader deciding where something is, grows or wears; it only draws what the maps say.
+  - (b) a paper check by a fresh Opus agent. For each built kind (stone, the house generator, trees, the street, the light) it lists what two contrasting styles would have to change, layer by layer. Anything that would have to change outside the drawing layer is a fault, fixed while it is cheap.
+
+  No rendered test in a second style is proposed (Øystein: "yes not the test").
+- **Standing cost:** one rule in the check command. The paper check is about 1 to 2% of a week on Opus, once.
+- **What would change our minds:** the paper check finding the layers already apart, so (a) alone is enough; or keeping them apart costing more than the parts it protects. A chosen game committing to this one style for good would not, since the town must make many games (`docs/town-plan.md`).
