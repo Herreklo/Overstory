@@ -2,21 +2,39 @@
 
 The order of the work and the current week's plan in detail. `NOW.md` holds the state and links here; update this page when a step starts or ends.
 
-## Next week: the building blocks (from Monday 26 October)
+## This week (22 to 26 October)
 
-**The goal for Friday:**
-- the architecture decided and reviewed;
-- the tools that measure everything built;
-- the scale test run;
-- the gully's port begun on the new foundations, toward the proof (the same up close, a fraction of the cost at distance): steps 0 to 2 reviewed, step 3 as far as it gets (the cut line below).
+Written by the plan review of 22 October (`docs/research/plan-review-2026-10-22.md`). From Monday 26 October, the Monday session rewrites this block from `NOW.md`'s order.
 
-Øystein sees two things: the architecture's few questions (Monday or Tuesday) and the proof sheet with its numbers (Friday).
+**Friday 23 October's milestone** is a Mac build Øystein walks, on whatever is honestly complete:
+- the clay town, with the corner inside it at today's quality;
+- whole-scene frame times at the judging views in three lights, taken under the Unity lock's `--timing` (or by hand on a quiet machine, and said so);
+- the first case and the testing design, picked (`reviews/lt1/playable/brief.md`, phases 0 and 1).
 
-**Why this shape:**
-- *Measure before changing.* Nothing is judged without the frame-time harness and the golden views (`docs/research/performance-at-scale.md`). They also protect the gully's look while its generator is rebuilt.
-- *Prove on one kind before generalising.* The gully is the best-known thing we have: six reviews, a known look, a known cost. Porting it end to end tests every part of the architecture at once, while errors are cheap.
-- *Scale early.* The scale test can change the architecture (where generation runs, how the town streams), so it runs before the framework's details are fixed.
-- *Fable for judgement only.* Its own weekly limit ran out this week. Opus builds; Sonnet runs the mechanical checks.
+**The boxes** are in per cent of the weekly limit, from `docs/usage-log.md`'s unit costs. 48% was left at 07:45 UTC on 22 October, and the limit resets on Monday 26 October at 12:00 UTC.
+- the playable corner's phase 0, the design: 5 (no Unity, run in parallel);
+- its phase 1, the walk: 16;
+- 1c's A/B on the beams, on the walk's first whole-scene run: 3;
+- the In shorts, with `CLAUDE.md` halved into its skills and `NOW.md` brought under its budget: 2;
+- the rest is reserve.
+
+A step that reaches 1.5 times its box stops for a re-plan, a few lines written beside it in `NOW.md`. Øystein is told only when a re-plan moves a milestone or the scope.
+
+**Then, on the stone's path:**
+1. 1c in the walked corner, beams first, with the port's 2b beside it on the Blender side;
+2. the strict review of the port's steps 0 to 2, against the target frame;
+3. R3 to R7;
+4. `reviews/lt1/port/foundation-needs.md`, read before the port's step 4 opens.
+
+The play, the brief's phase 2, is the milestone after the walk. It is boxed and runs beside 2b.
+
+**Every week:**
+- Monday, after the reset: one session writes this block from `NOW.md`'s order, with each step's box. It also checks the warning signs in the pre-mortems (`docs/research/pre-mortem.md`, `pre-mortem-architecture.md`, `plan-review-2026-10-22.md`).
+- Friday: Øystein walks the corner and plays whatever case exists.
+- One strict review per milestone, never per round (Fable, or Opus if Fable is out, noted).
+- The top of `NOW.md`, kept under its budget, is the one status source.
+
+## Standing notes
 
 **Baselines (measured 22 October on the M4):**
 - The house generator at test quality built and checked 129 buildings in 10.2 s (50 random diaries at four years, Blender's start included), about 13 a second.
@@ -28,53 +46,13 @@ The order of the work and the current week's plan in detail. `NOW.md` holds the 
 - About 15 million triangles a frame with sun shadows, and 5.5 million without.
 - Something drawn only in low sun costs about 55 to 65 ms; the sun beams are the suspect.
 - The birch costs 10 to 16 ms in view, and 25 ms when it fills the frame.
-- The committed gully FBX is not what its generators build, even at its own commit, and the walls have drifted since. The gully is exported again and its golden views re-accepted before the port.
 - URP's dither is redrawn every frame, so a still camera shimmers by about half a level. That is decided with the light (1c).
+
+The walk's first whole-scene run replaces these as the baseline (The order, the frame-rate gate).
 
 At today's rate a thousand stairs would take about 19 hours to generate and 16 GB of FBX. The architecture must change how they are made, not tune them.
 
-**The days.** These are rough, in order of dependency. Each step ends in a commit and a pushed state, never mid-change.
-1. *Monday: the architecture, and the measuring tools in parallel.* Both done on 21 October: the architecture is `docs/building-blocks.md` (reasons in `docs/research/building-blocks-decisions.md`), the tools are `docs/measuring.md`. Two sessions in the same checkout, on different files; each pulls with rebase before every push.
-   - *The architecture* runs on Fable in a fresh session. Opus agents first check the fourteen studies against the bar, one study each. The bar: primary sources read where they open, claims marked (secondary) or (unverified), concrete for our stack, no thin sections. Each agent returns a compact digest: the study's decisions and costs, its dependencies, its conflicts with other studies, its weak spots, and pointers to its sections. A study goes back for another pass only where a gap would change a decision. The known weak spots:
-     - behaviour-on-screen and kits-and-generation ran short of web searches;
-     - land-rock-and-water had talks that would not open;
-     - characters lacks 1989 dress;
-     - performance's game figures are secondary;
-     - any of the four newest studies may have been cut short by the budget.
-
-     Fable then reads the digests, opens the original sections where a decision hinges on them, and writes `docs/building-blocks.md`.
-   - *The tools* run on Opus in its own session:
-     - the frame-time harness on the corner (`Overstory.Perf.PerfRunner`, a macOS player build at 1440p, the judging views in three lights; performance study, steps 1 and 8);
-     - mesh hashes for every export;
-     - the golden views of today's gully, the baseline every change is compared against with FLIP;
-     - a motion-sheet renderer: 60 fps video at 1440p with one sample per pixel, plus stills scaled to the player's footprint. Every judged frame so far was rendered at twice the size and averaged down. That hid shimmer and crawling marks and set distance fades 1.5 times too far, and no mark has ever been judged moving (`docs/research/painted-marks-in-motion.md`). The golden views use it too.
-2. *Tuesday: the scale test, then the architecture's review.*
-   - *The scale test* generates a district several square kilometres across, drawn with the corner's real shaders rather than clay alone, so the look's cost at city scale is known before step 6 (`docs/research/pre-mortem.md`), from the test-quality house generator and the clay ground. The harness measures it for build time, memory, disk and frame time at the street stop, 12 m and the city camera. Its numbers settle where generation runs and how the town streams; the architecture leaves those provisional until then. It also measures three things for where generation runs (`docs/research/where-generation-runs.md`): the time to load and rebuild a chunk in a built player, the chunks a second the camera's movement demands, and the cache size per kilometre. It settles what the architecture leaves provisional (`docs/building-blocks.md`, Open until measured):
-     - the per-pass frame budget, with the low-sun pass A/B'd first (its extra 55 to 65 ms is a bug, found before any triangle work);
-     - chunk and unit sizes (4, 32, 64 and 128 m by default);
-     - a shipped cache against building on demand;
-     - map density (2, 4 and 8 cm against coarser, with synthetic maps) and the bake time of one page;
-     - memory against the 6 GB pools, including a second date or record;
-     - disk per kilometre;
-     - the streaming budget: main-thread ms a frame for swaps, chunks and MB uploaded a frame, renderers resident. The harness also measures the birches in the corner, which the ground cover study estimates are the dearest pixels in the frame (their eye-facing cards are alpha-tested, which Apple's GPUs shade before they can be hidden; `docs/research/ground-cover-and-plants.md`).
-   - *The review* (done 21 October: `docs/research/pre-mortem-architecture.md`, `docs/research/building-blocks-review.md`, ready after fixes, fixes applied) opens with a pre-mortem (`CLAUDE.md`, Working in the right order): a fresh reviewer imagines the architecture failed six months on, says why, and names what a studio's lead technical artist would say is missing. A strict review (Fable) follows, then Øystein's questions in one message, each with a recommendation.
-   - *The skills follow the architecture:* `blender-generators`, `unity-conventions` and `CLAUDE.md`'s docs table and Practical line, updated 21 October.
-3. *Wednesday to Friday: the gully on the building blocks (Opus).* Each step is checked against the golden views and the harness before the next, and ends in a commit and a pushed state. Re-estimated against the architecture (`docs/research/building-blocks-decisions.md` §13):
-
-   | Step | What | Estimate | By Friday |
-   | --- | --- | --- | --- |
-   | 0a | A fresh export of today's gully and walls; golden views re-accepted by a strict review; the baseline | half a day | done |
-   | 0b | Seeds: one hash spec, `Hash.cs` matched to `hashing.py`, the vector file; `stone.py`, `wall.py`, `upkeep.py` on SplitMix64 over part ids; a new baseline | 1 day | done |
-   | 1 | The schema files, the naming grammar, the layer and map registries, the change query, the world state; the house kind and one window's slot record written and validated, not built; `validate_record.py`; `migrate.py` with migration 001 | 1 to 1.5 days | done |
-   | 2 | Stone split into the seven stages as `kinds/stair.json` with one runner; facts from a fixture; the plan hasher and the hash chain; golden fixtures per stage; `diff_stage.py`; the geometry hash unchanged; the export carrying breaklines, joints, affordances and the motion class | 2 days | done or nearly |
-   | 3 | History as a function: rates, reset years and age offsets into the place and history pages, the date a global, `OS_History` in the shaders; the A/B in grey light at eye level, FLIP within threshold; the years sheet shows jumps only at works | 2 to 3 days | **the cut line**: started, perhaps not accepted |
-   | 4 | Materials as pack records; the editor step that writes the Unity assets | 1 day | next week |
-   | 5 | Levels from the generator, 4 m chunks, the shell ribbon, caster proxies, the Drawer's pragmas and the highlight compare; the id test | 3 to 4 days | next week |
-   | 6 | The picking spike (1 to 1.5 days) and the grey walker (1 to 2 days) | 2 to 3.5 days | next week |
-   | 7 | Measure before and after at every judging view; the strict review; the proof sheet | 1 day | Friday, on whatever is honestly complete |
-
-   The steps add to 13.5 to 17.5 Opus-days for the whole port, and 6.5 to 8 through step 3. The week has three. No stage is ported to C# this week; the only C# change is matching `Hash.cs` to the hash spec (0b).
-4. *The cut line.* Friday's milestone is steps 0 to 2 reviewed, with step 3 as far as it has got and its A/B shown as it is. The architecture, the tools and the scale test do not move. Øystein sees the proof sheet with its numbers on whatever is honestly complete.
+**The gully's port:** its steps and estimates are in `docs/research/building-blocks-decisions.md` §13, and what is done and what is left in `reviews/lt1/port-handover.md`.
 
 **What the architecture decides** is written once, in `docs/building-blocks.md`: the stages, the contracts, ids, what every part carries, levels, budgets and what changes in existing work.
 Its reasons are in `docs/research/building-blocks-decisions.md`, and its open numbers in its table "Open until measured".
@@ -95,17 +73,18 @@ Also: build more, write less. Docs only where a decision needs recording; the bu
 **From the pre-mortem** (`docs/research/pre-mortem.md`, ranked failure stories; on Opus, to be checked by Fable; the architecture's own pre-mortem is `docs/research/pre-mortem-architecture.md`):
 - a half-page contract saying which facts are Overstory's and which are the engine's, before the architecture builds on either;
 - one real engine run exported as a fixture, asked of the engine project in `docs/engine-requests.md`, so a frame is drawn from the engine at least once before step 2;
-- the usage log by kind of work (build, measure, review, research, docs) and what each produced, with the plan re-sized by 13 November in per cent of the weekly limit per finished kind;
+- the usage log by kind of work (build, measure, review, research, docs) and what each produced, which the re-estimate in Rough sizes uses;
 - the grey walker on the gully steps before step 2, the cheapest test of people.
 
 **Budget:**
-- The weekly limit resets on Monday at about 13:00 Oslo time.
-- Rough shares: the architecture a fifth; the tools and the scale test a quarter; the gully's port a third; a fifth kept in reserve for Øystein's requests and fixes.
-- Fable's own limit goes to the architecture and the two reviews.
+- The weekly limit resets on Monday at 12:00 UTC (13:00 Oslo time in winter).
 - Usage is checked at the start of each day. When it runs low, work stops at a milestone boundary with everything pushed (`CLAUDE.md`, Using tokens well).
-- Before relying on them, test the lean review packet blind (one past strict review re-run with it, its findings compared) and Haiku for search (spot audits) (`docs/research/working-with-claude.md`).
+- Fable's own limit goes to decisions and to one strict review per milestone.
+- Two things are tested blind before we rely on them (`docs/research/working-with-claude.md`):
+  - the lean review packet: one past strict review is re-run with it, and its findings are compared;
+  - Haiku for search, by spot audits.
 
-## The order (the plan agreed 22 October, reviewed by Fable)
+## The order (agreed 22 October, reviewed by Fable; amended by the plan review of 22 October)
 
 Every system is treated the same way:
 - research of the subject and the craft;
@@ -113,16 +92,52 @@ Every system is treated the same way:
 - parts made one at a time, judged in grey light from eye level to the raised views, from several headings and in three lights;
 - rules and generators, never hand placement, with the shared layers on top;
 - frames measured and checked against the core rules;
-- strict reviews (Fable, else Opus, noted), then Øystein's judgement.
+- one strict review at its milestone (Fable, or Opus if Fable is out, noted), then Øystein's judgement.
+
+**Done** (the plan review, P2). A kind is done when it holds across its range in LT1's 1989 town, walked in the playable corner, at the bar against its target frame, and accepted by Øystein. Its range covers:
+- its variety;
+- every distance level;
+- three lights;
+- motion at one sample a pixel;
+- its count at town scale;
+- staying inside its frame budget.
+
+Until then, its state is written as the rung it has reached, with what still waits. The rungs are: a number, grey form, a sheet, levels, motion, the count, three lights, accepted. "Close" is never a state.
+
+For example, the gully is done only with the Variety stairs rebuilt, and the birches only over their ages and sites, with levels and wind at town scale. `docs/systems.md`'s "How a new thing joins" lists what a kind brings; this says when it is done.
+
+**The standing frame and the frame-rate gate** (the plan review, P1 and P9). Every milestone ends in the playable corner (1g), walked. The harness runs the whole scene at the judging views in three lights, under the Unity lock's `--timing`, and the milestone's strict review judges the result.
+- The walk's first run is the baseline. The clay town counts as scope, not as a regression.
+- A rise without a change of scope stops the step, just as overrunning its box does.
+- The number must hold or fall at each milestone until the corner is under 16.7 ms at every judging view in three lights.
+- The fixes that need no levels each have a place: the beams and the haze with 1c, the shader families with the port's step 4, and the birch's cost with 1e. The Monday session puts any fix first.
+- A question under a millisecond is measured on its own, but always on the real output (`reviews/lt1/history/r2.md`, R2c).
 
 The work is built round the beauty corner: each system's first slice is the corner's own. It is a world, not a town: the same systems serve a fishing village, the countryside and a metropolis through setting packs.
 
 The steps keep their numbers, since other docs cite them. Step 1 is reopened on the building blocks (Øystein: "think about the order we do things"):
 0. *The foundations page and the light's debts:* done. The lasting light fix is step 1c.
-1. *The corner's stone, rebuilt on the building blocks:*
+1. *The corner's stone, rebuilt on the building blocks.* The order now (the plan review):
+   - first, 1g's design and walk;
+   - then 1c in the walked corner, with the port's 2b beside it;
+   - the strict review of the port's steps 0 to 2;
+   - the port's R3 to R7;
+   - the port's steps 4 to 7;
+   - then the rest of step 1, as listed below.
+
+   The sub-steps:
    - 1a, the architecture;
-   - 1b, the foundations (the framework, materials as data, history storage, distance levels and instancing, the harness, golden views, the scale test);
-   - 1c, the light's lasting fix (the lookups, the sky model, rigs as layers);
+   - 1b, the foundations (the framework, materials as data, history storage, distance levels and instancing, the harness, golden views, the scale test). The port's steps 4 and 5 leave room for houses, trees and land, but build nothing for them. Each step is done only when three written records validate against its formats, without being built:
+     - a House A front: a coat stack, a glazed window, a painted sign;
+     - a birch chunk;
+     - a 64 m land chunk with water faces.
+
+     A format changes only where a written record fails to fit it, and no field is added without a record (`reviews/lt1/port/foundation-needs.md`).
+   - 1c, the light's lasting fix and the colour grade (the lookups, the sky model, rigs as layers). It comes first after the walk, in the walked corner. Øystein, 22 October: "yes lighting and color grading very important. (also remember Seasons shading philosophy)".
+     - It holds to the core rules, SEASON's lesson first: shadow and ambient colour come from the light, never from the object (`docs/research/colour-and-shading.md`).
+     - The art and the grade act on the whole light, never on one material (`docs/research/lighting-and-colour.md`).
+     - Each change is tested in at least drizzle, low sun and the blue hour, and judged against the target frames.
+     - It starts with the low sun's extra 55 to 65 ms (the beams) and settles the dither's shimmer.
    - 1d, the corner's land (natural ground plus dated acts, breaklines, the rock knuckle);
    - 1e, the gully and walls re-fitted, then the birches. This is mostly porting, keeping their facts, rules, style and review findings.
 
@@ -155,7 +170,13 @@ The steps keep their numbers, since other docs cite them. Step 1 is reopened on 
 
      Each variant is a switch in the greybox. The playtest programme compares them with agent players first, then Øystein and his testers.
 
-     It is judged by playing it. It feeds the choice of the first game, and it can start once 1f has its clay corner. Before it starts, its play is researched at the same depth as the building blocks (Øystein: "we need to be extremely clever and do deep research how other games do things; master craftsmanship, finesse"). The studies are `camera-and-composition.md`, `collision-and-navigation.md`, `play-craft.md` (feel, focus, guidance, transitions, narrow streets) and `interface-and-inspection.md`, with the options in `docs/ideas/first-game-options.md`. The playtest itself is designed in `docs/research/playtesting.md` (Øystein: "the playtest will be extremely important"): the programme, the tools the greybox needs (a note key, exact replays from determinism, telemetry), what to measure, and what is worth trying. Opus writes it first; Fable reviews and extends it after the usage reset.
+     It is judged by playing it, and it feeds the choice of the first game. Its play is researched at the same depth as the building blocks (Øystein: "we need to be extremely clever and do deep research how other games do things; master craftsmanship, finesse").
+
+     It starts now (the plan review, 22 October), on the play studies that exist, read from their In shorts. The talks and masters they couldn't open stay held. It is the standing frame (above):
+     - the port resumes inside it at 2b;
+     - its three biggest costs go to the frame-rate gate, and the port keeps its own order;
+     - its first case is built from facts the engine records today, and what the case lacks goes into the next request bundle (`docs/engine-requests.md`);
+     - its play (the brief's phase 2) is the milestone after the walk, beside 2b. The studies are `camera-and-composition.md`, `collision-and-navigation.md`, `play-craft.md` (feel, focus, guidance, transitions, narrow streets) and `interface-and-inspection.md`, with the options in `docs/ideas/first-game-options.md`. The playtest itself is designed in `docs/research/playtesting.md` (Øystein: "the playtest will be extremely important"): the programme, the tools the greybox needs (a note key, exact replays from determinism, telemetry), what to measure, and what is worth trying. Opus writes it first; Fable reviews and extends it after the usage reset.
 
    Then the landing's setts, the kerb and the plinths.
 2. *Buildings, built right the first time:* House A by the generator, twelve more from the same parts, then the corner's five houses; coats, windows and signs; a first cold reader.
@@ -177,7 +198,9 @@ Each area is researched, subject and craft, before its step starts (`docs/system
 
 ## Rough sizes (22 October; step 1 re-estimated on 21 October from the architecture)
 
-These are weeks of the weekly usage limit, which sets our pace more than the hours do. The studies' own day counts read like a human team's and overestimate our pace. In the week to 22 October, the stairs went from nothing to "close", with their upkeep, wear, water and growth systems, in about a day and a half of work. So these sizes come from the kinds left to make, the foundations, and what the stairs and birches took. They are re-estimated after next week from the usage log (`docs/usage-log.md`).
+**These are guesses made before the evidence** (the plan review, 22 October). They rest on the stairs' pace before the craft research, and the one re-estimate since grew a step four- to sixfold: the port was planned at three days and is 13.5 to 17.5 Opus-days. So no date past the next milestone holds. When the stone is complete, or on 13 November if that comes first, the whole plan is re-estimated in per cent of the weekly limit per finished kind, from `docs/usage-log.md`.
+
+These are weeks of the weekly usage limit, which sets our pace more than the hours do. The studies' own day counts read like a human team's and overestimate our pace. In the week to 22 October, the stairs went from nothing to "close", with their upkeep, wear, water and growth systems, in about a day and a half of work. So these sizes come from the kinds left to make, the foundations, and what the stairs and birches took.
 
 | Steps | What | Weeks |
 | --- | --- | --- |
@@ -248,7 +271,7 @@ A world for many games has no end: new towns, eras and packs are open-ended cont
 
 ## Running things
 
-- Close the Unity editor on `unity/` before running it in batch mode.
+- Every Unity run, and every install into `unity/`, goes through the lock: `tools/unity_lock.py run --owner … --purpose … -- <command>`. Frame-time runs add `--timing` (the `unity-conventions` skill). Close the Unity editor on `unity/` first; the lock waits for it.
 - **Blender** is `/Applications/Blender.app/Contents/MacOS/Blender -b --factory-startup --python <script> -- <args>`:
   - the stress test: `blender/tools/stress.py -- --n 50 --styles strong`;
   - the clay heart: `blender/blockouts/heart_build.py -- unity`, about 6 minutes;

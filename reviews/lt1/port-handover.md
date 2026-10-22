@@ -50,4 +50,6 @@ The port is paused at a clean point, with everything pushed to `lt/1-harbour-str
   - `.venv`: 3.9, with jsonschema and no numpy;
   - Blender's: 3.13, with numpy.
 
-The port's full plan and its agents' reports are in the shared notes folder (`~/Library/Application Support/Claude/side-session-notes/local_0e3ca6d7-2c63-47bd-84ff-694d8f731ac7/`): `gully-port-plan.md`, `step-1-report.md`, `step-2-split-plan.md`, `step-2a-report.md`.
+The port's full plan and its agents' reports are in `reviews/lt1/port/` (copied from the shared notes folder by the plan review on 22 October; read this copy): `gully-port-plan.md`, `step-1-report.md`, `step-2-split-plan.md`, `step-2a-report.md`.
+
+**Before step 4 opens,** read `reviews/lt1/port/foundation-needs.md`: what steps 4 and 5 must leave room for, which stone alone would not show, and the three records each step must validate (the plan review, 22 October).

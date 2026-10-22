@@ -22,12 +22,19 @@ What is open and what is next. Every session reads this page first, so it stays 
 
 ## The order (`docs/plan.md`, The order)
 
-Answer every question about what comes next from this list. Changing it takes a written proposal (`CLAUDE.md`, Answer from the plan).
-1. The corner's stone on the building blocks: the architecture, the foundations, the light's lasting fix (1c), the land, the gully and walls re-fitted, then the birches (1e); then the landing's setts, the kerb and the plinths. 1f, the clay time test, is done. 1g, a playable greybox of the corner, may start now that 1f has its clay corner, once its play is researched.
+Answer what comes next from this list; changing it takes a written proposal (`CLAUDE.md`, Decide once). Boxes are % of the weekly limit; at 1.5 times, a step stops for a re-plan written here.
+1. The corner's stone on the building blocks, inside the playable corner (1g, `reviews/lt1/playable/brief.md`):
+   - now: 1g's design (box 5, no Unity) and walk (box 16), which Øystein walks on Friday.
+   - then:
+     - 1c, the light and grade, in the walked corner (beams first: box 3), with 2b beside it;
+     - the strict review of steps 0 to 2, then R3 to R7;
+     - steps 4 to 7, then the land (1d);
+     - the birches (1e), then the setts, kerb and plinths.
+   - 1g's play follows the walk, beside 2b.
 2. Buildings: House A, twelve more from the same parts, then the corner's five houses.
 3. The corner's ground and things. 4. The corner through the years. 5. People. 6. The heart at the city view. 7. Nature's living parts. 8. Interiors. 9. Weather and seasons. 10. Districts, the region, other towns.
 
-Proposed on 22 October, for one independent review before the port resumes: 1g (the playable corner) taking Unity while the port pauses after 2a, on the existing play studies (the unread talks are still held); the house-front research ahead of step 2, for the shared foundations; a kind counting as done only when it holds across its range.
+A kind is done only across its range (`docs/plan.md`, Done). Reviewed 22 October: `docs/research/plan-review-2026-10-22.md`.
 
 ## Next
 
