@@ -70,8 +70,8 @@ Phase 1, the walk and the light, starts in its own session once Unity is free. P
   - two chained springs float the eye about 0.13 m past each top;
   - the lean swings 6° to 15° at landings;
   - the eye drifts about 4 cm after stopping.
-- **Øystein's walk of the app** (22 October, evening, after the beams and with no tree): walking and moving the camera are "horrible, slow and gluey and a bit hard to control", to be fixed later; hovering over the city works. "The city scape has the potential to look very nice"; "the lighting and the mood needs work, but has great potential. we just need to treat everything with great care."
-  - So the free camera's control (its speeds and springs) joins the walker's feel as known debt, and the zoom test owns it: control that answers at once is part of what that test must pass, at street level and over the city.
+- **Øystein's walk of the app** (22 October, evening, after the beams and with no tree): walking and moving the camera are "horrible, slow and gluey and a bit hard to control", to be fixed later (on a trackpad, "but still"); seen from above, the city can look nice: "The city scape has the potential to look very nice"; "the lighting and the mood needs work, but has great potential. we just need to treat everything with great care."
+  - So the free camera's control (its speeds and springs) joins the walker's feel as known debt, and the zoom test owns it: control that answers at once, on a trackpad as well as a mouse, is part of what that test must pass, at street level and over the city.
 
   The drafted fix: read the ground ahead on a smoothed line, and follow eye height with one stiff spring.
 
