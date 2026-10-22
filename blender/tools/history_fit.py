@@ -9,6 +9,7 @@ It drives a frozen copy of the generators, never the live ones (they are being r
     blender -b --factory-startup --python blender/tools/history_fit.py -- prove   <frozen> <scratch>
     blender -b --factory-startup --python blender/tools/history_fit.py -- collect <frozen> <cache>
     blender -b --factory-startup --python blender/tools/history_fit.py -- fit     <frozen> <cache> [<fit.md>]
+    blender -b --factory-startup --python blender/tools/history_fit.py -- care    <frozen> <cache> [<fit.md>]
 
 prepare  instruments the frozen copy (and only it): stone.py's put() appends its inputs and outputs to stone.TRACE,
          upkeep.flight() appends each event it applies to upkeep.LOG. The arithmetic is untouched (two expressions are
@@ -23,6 +24,11 @@ fit      the fit: (a) the clocks checked; (b) the page model against the 1989 va
          the flights' own arguments). Writes the tables into
          <fit.md> between the markers <!-- fit:tables --> and <!-- /fit:tables --> (the prose around them is kept),
          and prints them.
+care     R1b, the verdict's decision 4: whether a change of care can be a per-thing uniform in the shader rather than a
+         rebake of H1. Lays the gully once more on each side of the three care changes (1930, 1946, 1965) into
+         <cache> if they are not there, then tests three shader forms with care a uniform (below, "care") at 1989,
+         at the four earlier builds at their own care, and at the jumps; float and 8-bit. Writes its tables between
+         <!-- care:tables --> and <!-- /care:tables --> in <fit.md> (a section added at the end if missing).
 
 Runs in Blender's Python (numpy); nothing here needs bpy except `prove`.
 """
@@ -832,6 +838,227 @@ def fit(frozen, cache, out_md=None):
         print("WROTE", out_md)
 
 
+# ------------------------------------------------------------------------------------------------------------- care
+#
+# R1b. The frozen code's moss amplitude (stone.put, growth.moss) is
+#     A = clip(damp x f(care), 0, 1) x T,    f(care) = 1.15 - 0.75 care,    T = 1 - 0.85 clip(mtr, 0, 1)
+# care scales the damp, the clip comes next, the trodden thinning T last. mtr is moss's own traffic: trod (the
+# thing's: wear.busy of its footfall over its width) times feet, the walking line with a bump at a tread's front
+# (1 on a joint's soil and off the walked faces). R1 baked A at one care and scaled it. The forms tested here, each
+# with care a uniform:
+#     "after"    the verdict's: the page holds U = damp x T; clip(U x f(care), 0, 1), the clip after the thinning
+#     "ceiling"  the page holds U and a ceiling C = T where the bed reach is 1 (else 1): min(U x f(care), C). Equal
+#                to A wherever the clip cannot bind on a reach-0 texel (damp x f(0) < 1 there; checked on every
+#                build). C rides in H1.A with the reach: A = reach x (0.5 + 0.5 T), the reach read at A >= 0.25 and
+#                C = 2A - 1 (T >= 0.15, so a reach-1 texel never stores under 0.575)
+#     "damp"     the code's own order: the page holds damp in H1.B and feet in P0.R; trod is the thing's, with care:
+#                clip(damp x f(care), 0, 1) x (1 - 0.85 clip(trod x feet)). No premise.
+# 8-bit: H1.B holds U / DRIVE_SCALE or damp / DRIVE_SCALE (both at most 1.7 x 1.2 = 2.04 by the code; 1.96 and 2.04
+# measured: a scale of 2 clipped damp's top and cost 4.7/255 at care 1); P0.R holds feet (0 to 1).
+
+CARE_CHANGES = (1930, 1946, 1965)     # the gully's keepers' care changes; a build at Y reads the care of Y - 1
+DRIVE_SCALE = 2.04                    # the code's bound on damp and U: 1.7 x 1.2
+REACH_AT = 0.25
+CARE_FORMS = (("after", False), ("ceiling", False), ("ceiling", True), ("damp", True))
+MARK_CA, MARK_CB = "<!-- care:tables -->", "<!-- /care:tables -->"
+
+
+def _care_vertices(d, WR):
+    """assemble(d), with each vertex's trod (the thing's, per flight) and feet = mtr / trod."""
+    V, P = assemble(d)
+    V["trod"] = np.concatenate([np.full(t["n"], WR.busy(t["footfall"], t["W"])) for t in d["trace"]])
+    V["feet"] = np.where(V["trod"] > 0, V["mtr"] / np.maximum(V["trod"], 1e-12), 0.0)
+    return V, P
+
+
+def _drive(V):
+    """The unclipped moss drive U = damp x T, and T, per vertex (the code's own terms)."""
+    T = 1.0 - 0.85 * np.clip(V["mtr"], 0.0, 1.0)
+    return V["damp"] * T, T
+
+
+def _q(x, scale):
+    return np.round(np.clip(x / scale, 0.0, 1.0) * 255.0) / 255.0 * scale
+
+
+def care_amp(V, care, form, enc=False):
+    """The moss amplitude the shader would compute at a care, from the page; 8-bit where enc. Returns the amplitude
+    and the bed reach as read."""
+    U, T = _drive(V)
+    reach = V["reach_code"].astype(bool)
+    f = _care_f(care)
+    if form == "damp":
+        damp, feet = (_q(V["damp"], DRIVE_SCALE), _q(V["feet"], 1.0)) if enc else (V["damp"], V["feet"])
+        return np.clip(damp * f, 0.0, 1.0) * (1.0 - 0.85 * np.clip(V["trod"] * feet, 0.0, 1.0)), reach
+    C = np.where(reach, T, 1.0)
+    if enc:
+        U = _q(U, DRIVE_SCALE)
+        a8 = _q8(np.where(reach, 0.5 + 0.5 * T, 0.0))
+        reach = a8 >= REACH_AT
+        C = np.where(reach, np.clip(2.0 * a8 - 1.0, 0.0, 1.0), 1.0)
+    if form == "after":
+        return np.clip(U * f, 0.0, 1.0), reach
+    return np.clip(np.minimum(U * f, C), 0.0, 1.0), reach
+
+
+def care_moss(V, care, t, k, form, enc=False):
+    """Moss at date t from the page, with care as a uniform."""
+    I = inputs(V, enc=enc)
+    I["AM"], r = care_amp(V, care, form, enc)
+    I["reach"] = r.astype(float)
+    return model(V, I, t, k)["moss"]
+
+
+def _care_builds(ST, UP, cache):
+    """The gully laid on each side of each care change (YEAR c reads c - 1's care, YEAR c + 1 reads c's), traced into
+    <cache> as collect does (trace and event log only), unless already there."""
+    need = sorted({y for c in CARE_CHANGES for y in (c, c + 1)})
+    for y in need:
+        if os.path.exists(os.path.join(cache, f"trace-{y}.pkl")):
+            continue
+        ST.YEAR = y
+        ST.TRACE, UP.LOG = [], []
+        ST.lay(ST.FLIGHTS["gully"], 1)
+        out = dict(year=y, trace=ST.TRACE, log=list(UP.LOG))
+        ST.TRACE, UP.LOG = None, None
+        with open(os.path.join(cache, f"trace-{y}.pkl"), "wb") as fh:
+            pickle.dump(out, fh, protocol=4)
+        print("COLLECT", y, len(out["trace"]), "puts", len(out["log"]), "events")
+    ST.YEAR = TODAY
+    got = {}
+    for y in need:
+        with open(os.path.join(cache, f"trace-{y}.pkl"), "rb") as fh:
+            got[y] = pickle.load(fh)
+    return got
+
+
+def care(frozen, cache, out_md=None):
+    ST, UP, HS = _import(frozen)
+    WR = ST.WR
+    with open(os.path.join(cache, f"trace-{TODAY}.pkl"), "rb") as fh:
+        d89 = pickle.load(fh)
+    V, P = _care_vertices(d89, WR)
+    k = d89["trace"][0]["footfall"] / 4e5
+    pairs = _care_builds(ST, UP, cache)
+    builds = {}
+    for Y in YEARS:
+        with open(os.path.join(cache, f"trace-{Y}.pkl"), "rb") as fh:
+            builds[Y] = pickle.load(fh)
+    rows = []
+
+    def cells(errs):
+        return " | ".join(f"{_f(a)} / {_f(b)}" for a, b in errs)
+
+    def binds(Vx, c, sel=slice(None)):
+        return int((Vx["damp"][sel] * _care_f(c) > 1).sum())
+
+    # the premises, on every build used here
+    worst, ranges, feet_max, dmp_float = 0.0, dict(U=[np.inf, 0.0], damp=[np.inf, 0.0]), 0.0, 0.0
+    for d in [d89] + list(builds.values()) + list(pairs.values()):
+        Vd, _ = _care_vertices(d, WR)
+        U, _ = _drive(Vd)
+        r = Vd["reach_code"].astype(bool)
+        worst = max(worst, float((Vd["damp"][~r] * _care_f(0.0)).max()))
+        for nm, x in (("U", U), ("damp", Vd["damp"])):
+            ranges[nm] = [min(ranges[nm][0], float(x.min())), max(ranges[nm][1], float(x.max()))]
+        feet_max = max(feet_max, float(Vd["feet"].max()))
+        dmp_float = max(dmp_float, max(float(np.abs(care_amp(Vd, c, "damp")[0] - inputs(Vd, care=c)["AM"]).max())
+                                       for c in (0.0, 0.25, 0.5, 1.0)))
+
+    # (0) the amplitude against a rebake at the same care, on 1989's fields, care 0 to 1
+    sweep = np.round(np.arange(0.0, 1.0001, 0.05), 2)
+    e0 = []
+    for form, enc in CARE_FORMS:
+        ee = [np.abs(care_amp(V, c, form, enc)[0] - inputs(V, care=c)["AM"]) for c in sweep]
+        e0.append((max(float(e.max()) for e in ee), max(float(np.percentile(e, 99.9)) for e in ee)))
+    rows.append(f"| (0) the amplitude against a rebake, 1989's fields, care 0 to 1 by 0.05 (the worst care) | "
+                f"{len(V['kind']):,} ({max(binds(V, c) for c in sweep):,}) | {cells(e0)} |")
+
+    # (i) 1989 against today's per-vertex moss
+    e1 = [_err(care_moss(V, V["care"], TODAY, k, f_, en), V["moss32"]) for f_, en in CARE_FORMS]
+    rows.append(f"| (i) 1989 at {V['care']}, every vertex, against today's moss | {len(V['kind']):,} "
+                f"({binds(V, V['care']):,}) | {cells(e1)} |")
+
+    # (ii) the earlier builds at their own care, on the fills unchanged since: each build's own page; then 1989's page
+    # with the uniform set to the build's care, against the same page rebaked at that care
+    e2b = []
+    for Y in YEARS:
+        VY, PY, s89, sY, why = unchanged(V, P, d89, builds[Y])
+        VY, _ = _care_vertices(builds[Y], WR)
+        cY = VY["care"]
+        e = [_err(care_moss(VY, cY, Y, k, f_, en)[sY], VY["moss32"][sY]) for f_, en in CARE_FORMS]
+        rows.append(f"| (ii) {Y} at {cY}, its own page, on the fills unchanged since ({why['kept']} pieces) | "
+                    f"{len(sY):,} ({binds(VY, cY, sY):,}) | {cells(e)} |")
+        reb = model(V, inputs(V, care=cY), Y, k)["moss"]
+        e2b.append((Y, cY, s89, [_err(care_moss(V, cY, Y, k, f_, en)[s89], reb[s89]) for f_, en in CARE_FORMS]))
+    for Y, cY, s89, e in e2b:
+        rows.append(f"| (ii) 1989's page at {Y} with the uniform at {cY}, against it rebaked at {cY} (the same fills) | "
+                    f"{len(s89):,} ({binds(V, cY, s89):,}) | {cells(e)} |")
+
+    # (iii) the jumps at the care changes, per vertex, against the old code's own jump, on the pieces unchanged across
+    # the pair: each build's own page; then one page (the build's before the change) with the uniform switched, split
+    # into the fields both builds share and the fields the year's settling moved (the old code re-measures a settled
+    # stone; a page baked as laid does not, decision 5)
+    jumps = []
+    for c in CARE_CHANGES:
+        dA, dB = pairs[c], pairs[c + 1]
+        VB, PB = _care_vertices(dB, WR)
+        _, PA, sB, sA, why = unchanged(VB, PB, dB, dA)
+        VA, _ = _care_vertices(dA, WR)
+        cA, cB = VA["care"], VB["care"]
+        old = VB["moss32"][sB] - VA["moss32"][sA]
+        held = (np.abs(VA["damp"][sA] - VB["damp"][sB]) < 1e-9) & (np.abs(VA["mtr"][sA] - VB["mtr"][sB]) < 1e-9) & \
+               (VA["reach_code"][sA] == VB["reach_code"][sB]) & (VA["Mc"][sA] == VB["Mc"][sB])
+        band = (VA["kind"][sA] == 2) | ~VA["walked"][sA]
+        own, one_h, one_m = [], [], []
+        for f_, en in CARE_FORMS:
+            j_own = care_moss(VB, cB, c + 1, k, f_, en)[sB] - care_moss(VA, cA, c, k, f_, en)[sA]
+            own.append(_err(j_own, old))
+            j_one = care_moss(VA, cB, c + 1, k, f_, en)[sA] - care_moss(VA, cA, c, k, f_, en)[sA]
+            one_h.append(_err(j_one, old, held))
+            one_m.append(_err(j_one, old, ~held))
+        over = np.abs(care_moss(VA, cB, c + 1, k, "ceiling")[sA] - care_moss(VA, cA, c, k, "ceiling")[sA] - old) > 1 / 255
+        jumps.append((c, cA, cB, len(sA), why, float(np.abs(old).max()), float(np.abs(old).mean()), float(-old.min()),
+                      int(over.sum()), int((over & band).sum())))
+        rows.append(f"| (iii) {c}, care {cA} to {cB}: the {c} and {c + 1} builds, each its own page "
+                    f"({why['kept']} pieces) | {len(sA):,} | {cells(own)} |")
+        rows.append(f"| (iii) {c}: one page (the {c} build's), the uniform switched; fields the two builds share | "
+                    f"{int(held.sum()):,} | {cells(one_h)} |")
+        rows.append(f"| (iii) {c}: the same; fields the year's settling moved | {int((~held).sum()):,} | "
+                    f"{cells(one_m)} |")
+
+    L = ["Moss, in 255ths, max / 99.9th; in brackets, the vertices where the clip binds (damp x f(care) > 1).",
+         "",
+         "| Test | vertices (clip binds) | the verdict's form (clip after T), float | the code's order (ceiling, or "
+         "damp and feet), float | 8-bit: ceiling in H1.A | 8-bit: damp in H1.B, feet in P0.R |",
+         "| --- | --- | --- | --- | --- | --- |"] + rows
+    L.append("")
+    L.append(f"Premises: where the bed reach is 0, damp x f(0) <= {worst:.3f} (the ceiling's premise); the damp form "
+             f"against a rebake, float, care 0 to 1: {_f(dmp_float)}. Ranges: U {ranges['U'][0]:.3f} to "
+             f"{ranges['U'][1]:.3f}, damp {ranges['damp'][0]:.3f} to {ranges['damp'][1]:.3f}, feet to {feet_max:.3f}, "
+             f"trod {V['trod'].max():.4f}. 8-bit: H1.B / {DRIVE_SCALE:g}; H1.A = reach x (0.5 + 0.5 T), read at "
+             f"{REACH_AT}; P0.R = feet.")
+    L.append("")
+    L.append("The old code's jumps (max, mean, largest fall); vertices where the code's order, one page, misses by "
+             "over 1/255, and of them on a front's foot band; pieces left out (events, prefix, clocks, missing):")
+    L.append("")
+    for c, cA, cB, n, why, mx, mn, fall, nov, nband in jumps:
+        L.append(f"- {c} ({cA} to {cB}): {_f(mx)}, {_f(mn)}, {_f(fall)}; {nov:,}, {nband:,}; "
+                 f"{why['events']}, {why['prefix']}, {why['clocks']}, {why['missing']}.")
+    text = "\n".join(L)
+    print(text)
+    if out_md:
+        with open(out_md) as fh:
+            doc = fh.read()
+        if MARK_CA not in doc:
+            doc = doc.rstrip("\n") + f"\n\n## R1b: care as a uniform\n\n{MARK_CA}\n{MARK_CB}\n"
+        a, b = doc.index(MARK_CA), doc.index(MARK_CB)
+        doc = doc[:a + len(MARK_CA)] + "\n" + text + "\n" + doc[b:]
+        with open(out_md, "w") as fh:
+            fh.write(doc)
+        print("WROTE", out_md)
+
+
 if __name__ == "__main__":
     argv = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else sys.argv[1:]
     cmd = argv[0]
@@ -843,5 +1070,7 @@ if __name__ == "__main__":
         collect(argv[1], argv[2])
     elif cmd == "fit":
         fit(argv[1], argv[2], argv[3] if len(argv) > 3 else None)
+    elif cmd == "care":
+        care(argv[1], argv[2], argv[3] if len(argv) > 3 else None)
     else:
         raise SystemExit(__doc__)

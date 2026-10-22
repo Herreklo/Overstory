@@ -186,3 +186,51 @@ So a stone "unchanged since 1953" is not unchanged in the old code: it settles, 
 - BC7 on H1, against the 1/255 target, and on a binary H1.A at a chart's edge (R5).
 - Moss falling at a care improvement. 1946 asks the amplitude to drop by up to 31/255 on fully grown moss, which a clock cannot do (R6).
 - The fields as laid, and the upkeep fix, both in step 2a.
+
+## R1b: care as a uniform
+
+Can a change of care be a per-thing uniform, not a rebake of H1 (decision 4)? R1's frozen copy, still `PROVE bff7858b698f3efd OK`; the live checkout untouched.
+
+    $B care <scratch>/frozen <scratch>/cache reviews/lt1/history/fit.md   # lays 1930, 1931, 1946, 1947, 1965 (75 s); the numbers below
+
+- **The verdict's form fails:** 115/255 at 1989 (99.9th 24), 64 to 115 at the earlier builds. The code clips *before* the trodden thinning: `A = clip(damp·f(care), 0, 1)·T`, `T = 1 − 0.85·clip(mtr)`. Every vertex is trodden a little (T < 1), so clipping `damp·T·f` over-mosses each clipped one.
+- **The code's order is exact:** 0.00 at 1989, at each build at its own care, against a rebake at any care, and on the jumps wherever the old fields stayed put. It needs T in the shader. Two homes: (a) a ceiling `C = T` packed with the bed reach in H1.A; (b) damp in H1.B, `feet` (mtr / trod) in P0.R, trod per thing.
+- **8-bit:** the drive reaches 2.04 (the code's bound), so H1.B has scale 2.04, and its rounding is 0.98/255 at care 0.25 (R1's: 0.5). (a): 1.00 at 1989, jumps to 1.73 (C's step is 2/255). (b): 1.29 at 1989, 1.54 at the worst care, jumps 0.62 to 0.77. Both are under the 8-bit target of 2; only (b) keeps the jumps under 1.
+- **The rest is settling:** with one page, the jumps miss by up to 232/255 where the year's settling moved the fields, 99% on a front's foot band. The code's `off` scales with `1 + 1.5·(1 − care)`, so stones move at a care change. A rebake misses the same. Decision 5's as-laid page removes it.
+- **Polish and lichen** read no care, only geometry (`off`, a crack's drop): no care term.
+
+**What it changes.** Decision 4 holds, corrected: store damp, not damp × T, in home (b). H1.A stays binary, the law needs no premise, and moss's page drops care and footfall. Decision 3: H1.B is unclipped damp at scale 2.04; P0.R is feet, which the stone already samples. Decision 8: H1.B's BC error grows ×2.04·f(care), so its line is about 1/255 stored. The uniform is the care of year t − 1, as the code reads it.
+
+<!-- care:tables -->
+Moss, in 255ths, max / 99.9th; in brackets, the vertices where the clip binds (damp x f(care) > 1).
+
+| Test | vertices (clip binds) | the verdict's form (clip after T), float | the code's order (ceiling, or damp and feet), float | 8-bit: ceiling in H1.A | 8-bit: damp in H1.B, feet in P0.R |
+| --- | --- | --- | --- | --- | --- |
+| (0) the amplitude against a rebake, 1989's fields, care 0 to 1 by 0.05 (the worst care) | 183,570 (5,459) | 138.91 / 59.13 | 0.00 / 0.00 | 1.17 / 1.17 | 1.54 / 1.37 |
+| (i) 1989 at 0.25, every vertex, against today's moss | 183,570 (3,099) | 115.15 / 23.61 | 0.00 / 0.00 | 1.00 / 0.98 | 1.29 / 1.15 |
+| (ii) 1953 at 0.45, its own page, on the fills unchanged since (605 pieces) | 149,533 (104) | 64.06 / 0.00 | 0.00 / 0.00 | 0.98 / 0.83 | 1.09 / 0.97 |
+| (ii) 1964 at 0.45, its own page, on the fills unchanged since (686 pieces) | 165,196 (120) | 84.59 / 0.00 | 0.00 / 0.00 | 0.98 / 0.83 | 1.09 / 0.97 |
+| (ii) 1966 at 0.25, its own page, on the fills unchanged since (686 pieces) | 165,196 (2,774) | 105.55 / 21.88 | 0.00 / 0.00 | 1.00 / 0.98 | 1.29 / 1.14 |
+| (ii) 1975 at 0.25, its own page, on the fills unchanged since (708 pieces) | 170,019 (2,777) | 115.15 / 24.04 | 0.00 / 0.00 | 1.00 / 0.98 | 1.29 / 1.14 |
+| (ii) 1989's page at 1953 with the uniform at 0.45, against it rebaked at 0.45 (the same fills) | 149,533 (104) | 64.06 / 0.00 | 0.00 / 0.00 | 0.98 / 0.83 | 1.09 / 0.97 |
+| (ii) 1989's page at 1964 with the uniform at 0.45, against it rebaked at 0.45 (the same fills) | 165,196 (120) | 84.59 / 0.00 | 0.00 / 0.00 | 0.98 / 0.83 | 1.09 / 0.97 |
+| (ii) 1989's page at 1966 with the uniform at 0.25, against it rebaked at 0.25 (the same fills) | 165,196 (2,772) | 105.55 / 21.88 | 0.00 / 0.00 | 1.00 / 0.98 | 1.29 / 1.14 |
+| (ii) 1989's page at 1975 with the uniform at 0.25, against it rebaked at 0.25 (the same fills) | 170,019 (2,776) | 115.15 / 24.04 | 0.00 / 0.00 | 1.00 / 0.98 | 1.29 / 1.14 |
+| (iii) 1930, care 0.5 to 0.3: the 1930 and 1931 builds, each its own page (581 pieces) | 165,816 | 40.09 / 13.77 | 0.00 / 0.00 | 1.63 / 1.50 | 1.60 / 1.32 |
+| (iii) 1930: one page (the 1930 build's), the uniform switched; fields the two builds share | 98,252 | 40.09 / 17.01 | 0.00 / 0.00 | 1.59 / 1.02 | 0.67 / 0.45 |
+| (iii) 1930: the same; fields the year's settling moved | 67,564 | 231.79 / 22.96 | 231.79 / 21.39 | 231.70 / 21.51 | 231.70 / 21.49 |
+| (iii) 1946, care 0.3 to 0.45: the 1946 and 1947 builds, each its own page (661 pieces) | 177,003 | 30.97 / 14.35 | 0.00 / 0.00 | 1.77 / 1.61 | 1.75 / 1.44 |
+| (iii) 1946: one page (the 1946 build's), the uniform switched; fields the two builds share | 126,783 | 30.97 / 17.41 | 0.00 / 0.00 | 1.73 / 1.10 | 0.62 / 0.50 |
+| (iii) 1946: the same; fields the year's settling moved | 50,220 | 167.40 / 14.99 | 167.40 / 14.99 | 167.40 / 14.96 | 167.32 / 14.92 |
+| (iii) 1965, care 0.45 to 0.25: the 1965 and 1966 builds, each its own page (718 pieces) | 179,917 | 39.42 / 18.77 | 0.00 / 0.00 | 1.81 / 1.62 | 1.80 / 1.48 |
+| (iii) 1965: one page (the 1965 build's), the uniform switched; fields the two builds share | 133,779 | 39.42 / 21.21 | 0.00 / 0.00 | 1.73 / 1.13 | 0.77 / 0.57 |
+| (iii) 1965: the same; fields the year's settling moved | 46,138 | 171.11 / 27.96 | 171.11 / 27.96 | 171.11 / 27.95 | 171.11 / 27.95 |
+
+Premises: where the bed reach is 0, damp x f(0) <= 0.966 (the ceiling's premise); the damp form against a rebake, float, care 0 to 1: 0.00. Ranges: U 0.000 to 1.963, damp 0.000 to 2.040, feet to 1.000, trod 0.9845. 8-bit: H1.B / 2.04; H1.A = reach x (0.5 + 0.5 T), read at 0.25; P0.R = feet.
+
+The old code's jumps (max, mean, largest fall); vertices where the code's order, one page, misses by over 1/255, and of them on a front's foot band; pieces left out (events, prefix, clocks, missing):
+
+- 1930 (0.5 to 0.3): 192.36, 6.72, 190.80; 9,036, 8,962; 0, 30, 0, 12.
+- 1946 (0.3 to 0.45): 190.58, 4.95, 190.58; 9,718, 9,687; 0, 4, 0, 0.
+- 1965 (0.45 to 0.25): 171.11, 6.74, 133.10; 11,171, 11,150; 0, 0, 0, 4.
+<!-- /care:tables -->
