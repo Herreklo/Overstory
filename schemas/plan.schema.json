@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://overstory.invalid/schemas/plan.schema.json",
+  "title": "Plan",
+  "description": "What the plan stage writes for one record: every fill the record has ever held, each as a part placed in the record's own frame, with its seed, the fit it used, its placing event or rule and the draw chunk it falls in. The plan holds every date; the geometry stage draws the fills standing at the fabric date. All integers. Its hash is the next link of the chain after the record's.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "record", "recordHash", "rulesetVersion", "worldSeed", "items"],
+  "properties": {
+    "schemaVersion": { "$ref": "record.schema.json#/$defs/schemaVersion" },
+    "record": { "$ref": "record.schema.json#/$defs/recordId" },
+    "recordHash": { "$ref": "part.schema.json#/$defs/hash64" },
+    "rulesetVersion": { "$ref": "part.schema.json#/$defs/hash64", "description": "A hash of the kind file and its parts' versions." },
+    "worldSeed": { "$ref": "part.schema.json#/$defs/hash64" },
+    "items": {
+      "description": "One per fill, sorted by fill id.",
+      "type": "array",
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["fill", "part", "seed", "place", "fit", "chunk"],
+        "properties": {
+          "fill": { "$ref": "record.schema.json#/$defs/fillId" },
+          "part": { "$ref": "record.schema.json#/$defs/partPath" },
+          "variant": { "$ref": "record.schema.json#/$defs/word" },
+          "seed": { "$ref": "part.schema.json#/$defs/hash64", "description": "SplitMix64 from the fill id and the world seed (blender/resolver/hashing.py)." },
+          "place": {
+            "description": "Where the part's pivot sits in the record's own frame, its turn about z and its tilt (a slab's fall, a lean).",
+            "type": "object", "additionalProperties": false, "required": ["at", "heading"],
+            "properties": {
+              "at": { "$ref": "record.schema.json#/$defs/vec3mm" },
+              "heading": { "$ref": "record.schema.json#/$defs/millidegrees" },
+              "tilt": { "type": "array", "items": { "type": "integer", "minimum": -90000, "maximum": 90000 }, "minItems": 2, "maxItems": 2, "description": "About x and y, in millidegrees." }
+            }
+          },
+          "fit": { "$ref": "slot.schema.json#/$defs/fill/properties/fit" },
+          "placedBy": { "$ref": "record.schema.json#/$defs/eventId" },
+          "rule": { "$ref": "record.schema.json#/$defs/ruleName" },
+          "chunk": { "$ref": "record.schema.json#/$defs/unitId", "description": "The 4 m draw chunk its pivot falls in (ch-<i>-<j>), in the pack's world frame." },
+          "surface": {
+            "description": "For a fill in a surface region: its face class and the texel the plan chose by schemas/maps.json's rule. A yard face takes its texel to belowMm above the ground it meets and aboveTexelMm over it.",
+            "type": "object", "additionalProperties": false, "required": ["faceClass", "texelMm"],
+            "properties": {
+              "faceClass": { "$ref": "slot.schema.json#/properties/surface/properties/faceClass" },
+              "texelMm": { "type": "integer", "minimum": 1 },
+              "belowMm": { "type": "integer", "minimum": 0 },
+              "aboveTexelMm": { "type": "integer", "minimum": 1 }
+            },
+            "dependentRequired": { "belowMm": ["aboveTexelMm"], "aboveTexelMm": ["belowMm"] }
+          },
+          "params": { "$ref": "record.schema.json#/$defs/params" }
+        },
+        "oneOf": [{ "required": ["placedBy"] }, { "required": ["rule"] }]
+      }
+    }
+  }
+}

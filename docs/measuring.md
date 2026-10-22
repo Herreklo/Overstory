@@ -299,7 +299,7 @@ Nothing was installed for these tools. These would make them better, each with i
 
 ## Local tools (installed 21 October, with Øystein's OK)
 
-These live in a project virtual environment, `.venv/` (not in git). To recreate it: `python3 -m venv .venv && .venv/bin/pip install flip-evaluator imageio-ffmpeg`.
+These live in a project virtual environment, `.venv/` (not in git), with `jsonschema` for the record checks (`tools/validate_record.py`). To recreate it: `python3 -m venv .venv && .venv/bin/pip install -r requirements.txt` (the pins, Python 3.9.6).
 - **NVIDIA FLIP** (`flip-evaluator`, from github.com/NVlabs/flip): the reference image comparison, used to check `golden_compare.py`'s approximation. Run it as `.venv/bin/flip`, or import `flip_evaluator` from `.venv/bin/python`.
 - **ffmpeg**, bundled by `imageio-ffmpeg`, so no Homebrew is needed. It turns motion sheets into videos. The path is printed by `.venv/bin/python -c "import imageio_ffmpeg; print(imageio_ffmpeg.get_ffmpeg_exe())"`.
 - **Git LFS is not installed,** on purpose: `.gitattributes` keeps renders in plain git because LFS isn't reachable from the cloud workspace. The repository's size is handled by the architecture's decision to keep generated meshes out of git.

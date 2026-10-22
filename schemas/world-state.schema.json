@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://overstory.invalid/schemas/world-state.schema.json",
+  "title": "World state",
+  "description": "The one world state (decisions D7.3, D10.6, D12.2), owned once and hashed: the fabric date, the day and the time of day, the weather, the wind, the tide and where on Earth the pack lies. The light's layers, the wind field and every motion replay from it; the shaders read its date as a global. The sun's position is derived from the date, the time of day and the place by one function, never stored, so it cannot disagree with the clock. All integers.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "pack", "fabric", "dayOfYear", "timeOfDayS", "weather", "wind", "tideMm", "latitudeMicrodeg", "longitudeMicrodeg", "utcOffsetMinutes"],
+  "properties": {
+    "schemaVersion": { "$ref": "record.schema.json#/$defs/schemaVersion" },
+    "pack": { "$ref": "record.schema.json#/$defs/packId" },
+    "fabric": { "$ref": "record.schema.json#/$defs/date", "description": "The fabric date: which fills stand and how far every layer has run. Year and month." },
+    "dayOfYear": { "type": "integer", "minimum": 1, "maximum": 366, "description": "The day, for the sun and the season. Its month must agree with the fabric date's when that has one." },
+    "timeOfDayS": { "type": "integer", "minimum": 0, "maximum": 86399, "description": "Local time in seconds since midnight. With the day and the place it gives the sun's position; with the day and the year it is the absolute time the wind and every motion read (D10.7)." },
+    "weather": {
+      "type": "object", "additionalProperties": false, "required": ["cover", "precipitation", "intensity", "surfacesWet", "haze"],
+      "properties": {
+        "cover": { "$ref": "record.schema.json#/$defs/perMille", "description": "Cloud cover." },
+        "precipitation": { "enum": ["none", "drizzle", "rain", "sleet", "snow"] },
+        "intensity": { "$ref": "record.schema.json#/$defs/perMille" },
+        "surfacesWet": { "$ref": "record.schema.json#/$defs/perMille", "description": "How wet open surfaces are now, from the hours before: the 16:00 low sun after showers is wet under a clear sky." },
+        "haze": { "$ref": "record.schema.json#/$defs/perMille" }
+      }
+    },
+    "wind": {
+      "description": "climate: the prevailing wind that shaped growth and salt over years. moving: the wind that moves things now. fetch: the open water upwind along the moving wind, for the waves.",
+      "type": "object", "additionalProperties": false, "required": ["climate", "moving", "fetchMm"],
+      "properties": {
+        "climate": { "allOf": [{ "$ref": "#/$defs/wind" }], "unevaluatedProperties": false },
+        "moving": {
+          "allOf": [{ "$ref": "#/$defs/wind" }],
+          "properties": { "gust": { "$ref": "record.schema.json#/$defs/perMille" } },
+          "required": ["gust"],
+          "unevaluatedProperties": false
+        },
+        "fetchMm": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "tideMm": { "type": "integer", "description": "The water level above chart datum." },
+    "latitudeMicrodeg": { "type": "integer", "minimum": -90000000, "maximum": 90000000 },
+    "longitudeMicrodeg": { "type": "integer", "minimum": -180000000, "maximum": 180000000 },
+    "utcOffsetMinutes": { "type": "integer", "minimum": -720, "maximum": 840, "description": "The time zone's offset on the day, summer time included." }
+  },
+  "$defs": {
+    "wind": {
+      "type": "object",
+      "required": ["fromMillidegrees", "speedMmPerS"],
+      "properties": {
+        "fromMillidegrees": { "$ref": "record.schema.json#/$defs/millidegrees", "description": "The way it blows from, clockwise from north." },
+        "speedMmPerS": { "type": "integer", "minimum": 0 }
+      }
+    }
+  }
+}

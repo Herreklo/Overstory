@@ -1,0 +1,77 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://overstory.invalid/schemas/chunk.schema.json",
+  "title": "Container",
+  "description": "A container file's header and index as JSON (schemas/chunk-format.md holds the byte layout). Tools dump a container to this shape and the golden chunk's test compares it. Reserved at step 1: no writer or reader yet. 64-bit values are 16 hex digits.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["header", "index"],
+  "properties": {
+    "header": {
+      "type": "object", "additionalProperties": false,
+      "required": ["containerVersion", "schemaVersion", "rulesetVersion", "worldSeed", "bakeVersion", "unit", "flags"],
+      "properties": {
+        "containerVersion": { "const": 1 },
+        "schemaVersion": { "type": "integer", "minimum": 1 },
+        "rulesetVersion": { "$ref": "part.schema.json#/$defs/hash64" },
+        "worldSeed": { "$ref": "part.schema.json#/$defs/hash64" },
+        "bakeVersion": { "$ref": "part.schema.json#/$defs/hash64" },
+        "unit": { "type": "string", "pattern": "^(lc|bk)-(?:0|m?[1-9][0-9]*)-(?:0|m?[1-9][0-9]*)$", "$comment": "naming: container-unit", "description": "A land chunk (near file) or a block (block file)." },
+        "flags": { "const": 0 }
+      }
+    },
+    "index": {
+      "description": "Sorted by unit kind, i, j, level, then content.",
+      "type": "array",
+      "items": { "$ref": "#/$defs/entry" }
+    },
+    "units": {
+      "description": "Each unit's header and section table, by the index entry's position.",
+      "type": "array",
+      "items": { "$ref": "#/$defs/unit" }
+    }
+  },
+  "$defs": {
+    "entry": {
+      "type": "object", "additionalProperties": false,
+      "required": ["unit", "level", "content", "compression", "hashKey", "offset", "storedLength", "length"],
+      "properties": {
+        "unit": { "$ref": "record.schema.json#/$defs/unitId" },
+        "level": { "anyOf": [{ "$ref": "record.schema.json#/$defs/levelName" }, { "type": "null" }] },
+        "content": { "enum": ["records", "mesh", "pages", "shell-atlas", "ground", "collision-proxy", "caster-proxy"] },
+        "compression": { "enum": ["none", "deflate"] },
+        "hashKey": { "$ref": "part.schema.json#/$defs/hash64" },
+        "offset": { "type": "integer", "minimum": 64 },
+        "storedLength": { "type": "integer", "minimum": 0 },
+        "length": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "unit": {
+      "type": "object", "additionalProperties": false,
+      "required": ["magic", "version", "sections"],
+      "properties": {
+        "magic": { "enum": ["OSU", "OSP"], "description": "OSU a mesh unit, OSP a pages unit." },
+        "version": { "const": 1 },
+        "things": { "type": "integer", "minimum": 0 },
+        "pieces": { "type": "integer", "minimum": 0 },
+        "vertices": { "type": "integer", "minimum": 0 },
+        "indices": { "type": "integer", "minimum": 0 },
+        "vertexLayout": { "enum": ["vertex", "vertex-uv5", "vertex-uv6", "vertex-uv5-uv6", "shell"] },
+        "indexWidth": { "enum": [2, 4] },
+        "pages": { "type": "integer", "minimum": 0 },
+        "sections": {
+          "type": "array",
+          "items": {
+            "type": "object", "additionalProperties": false, "required": ["id", "offset", "length"],
+            "properties": {
+              "id": { "type": "integer", "minimum": 1, "maximum": 65535, "description": "1 strings, 2 things, 3 parts, 4 pieces, 5 vertices, 6 indices, 7 draws, 8 invalidation, 9 collision proxy, 10 affordances, 11 motion, 12 geometry pool, 13 breaklines." },
+              "flags": { "type": "integer", "minimum": 0, "maximum": 65535 },
+              "offset": { "type": "integer", "minimum": 0 },
+              "length": { "type": "integer", "minimum": 0 }
+            }
+          }
+        }
+      }
+    }
+  }
+}

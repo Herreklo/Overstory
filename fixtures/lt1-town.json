@@ -1,5 +1,5 @@
 {
- "schemaVersion": 1,
+ "schemaVersion": 2,
  "note": "The town above Harbour Row, grown by blender/tools/grow_town.py from the site facts below: a stand-in for the engine's fabric pass. Lengths in millimetres.",
  "worldSeed": 1989,
  "site": {

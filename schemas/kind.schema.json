@@ -1,0 +1,152 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://overstory.invalid/schemas/kind.schema.json",
+  "title": "Kind",
+  "description": "A kind of thing as data (kinds/<kind>.json): what each of the seven stages runs and with what, the slots it admits, the families it accepts, its levels and budgets, how its parts move, what can be done on it, its collision, the fields it reads and writes and the history layers it uses. One runner reads it and never branches on the kind's name. A field that only one kind would use belongs in that kind's stage params, never here.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "kind", "version", "describes", "recordPrefixes", "frame", "eventKinds", "roles", "stages", "slots", "levels", "budgets", "motion", "affordances", "collision", "fields", "layers"],
+  "properties": {
+    "schemaVersion": { "$ref": "record.schema.json#/$defs/schemaVersion" },
+    "kind": { "$ref": "record.schema.json#/$defs/kindName" },
+    "version": { "type": "integer", "minimum": 1, "description": "Raised with every change of rule. With the part functions' versions it makes the rulesetVersion of the hash chain." },
+    "describes": { "type": "string", "minLength": 1 },
+    "recordPrefixes": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "string", "pattern": "^(?:bld|st|wl|way|plot|unit|lamp|tree|plant|sign|room|doc|photo|item|trace|org|ug|rock|act|p|h|pl|v|g|e)$", "$comment": "naming: prefix" } },
+    "frame": { "type": "string", "minLength": 1, "description": "Where its records' own frame sits and how its axes run, in plain words." },
+    "eventKinds": { "description": "The event kinds its records may hold.", "type": "array", "minItems": 1, "uniqueItems": true, "items": { "$ref": "record.schema.json#/$defs/word" } },
+    "roles": {
+      "description": "The fill roles it uses, in the order fills placed by one event are numbered.",
+      "type": "array", "minItems": 1, "uniqueItems": true,
+      "items": { "$ref": "slot.schema.json#/$defs/fill/properties/role" }
+    },
+    "stages": {
+      "type": "object", "additionalProperties": false,
+      "required": ["facts", "plan", "life", "geometry", "bake", "export", "checks"],
+      "properties": {
+        "facts": { "$ref": "#/$defs/integerStage" },
+        "plan": { "$ref": "#/$defs/integerStage" },
+        "life": { "$ref": "#/$defs/integerStage" },
+        "geometry": { "$ref": "#/$defs/stage" },
+        "bake": { "$ref": "#/$defs/stage" },
+        "export": { "$ref": "#/$defs/stage" },
+        "checks": { "$ref": "#/$defs/stage" }
+      }
+    },
+    "slots": {
+      "description": "The slots its records may hold: each by its naming rule in schemas/naming.md, with its type, the roles its fills take and the families each role accepts.",
+      "type": "array", "minItems": 1,
+      "items": {
+        "type": "object", "additionalProperties": false, "required": ["rule", "type", "roles"],
+        "properties": {
+          "rule": { "$ref": "record.schema.json#/$defs/word", "description": "A rule name from naming.md's grammar (house-opening, stair-slab)." },
+          "type": { "$ref": "slot.schema.json#/properties/type" },
+          "roles": {
+            "description": "Each role its fills may take, with the part families that role accepts. A group takes none.",
+            "type": "object",
+            "propertyNames": { "$ref": "slot.schema.json#/$defs/fill/properties/role" },
+            "additionalProperties": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "$ref": "#/$defs/family" } }
+          }
+        }
+      }
+    },
+    "levels": {
+      "description": "The five levels (decisions §6): each with its error in millimetres (a level is safe beyond about 2,000 times it), its triangle budget for one thing of the kind, and the unit it merges into.",
+      "type": "object", "additionalProperties": false, "required": ["l0", "l1", "l2", "l3", "l4"],
+      "properties": { "l0": { "$ref": "#/$defs/level" }, "l1": { "$ref": "#/$defs/level" }, "l2": { "$ref": "#/$defs/level" }, "l3": { "$ref": "#/$defs/level" }, "l4": { "$ref": "#/$defs/level" } }
+    },
+    "budgets": {
+      "type": "object", "additionalProperties": false, "required": ["view", "shadingOverFlatUs", "provisional"],
+      "properties": {
+        "view": { "const": "street-stop", "description": "Shading is budgeted at the street stop, where the pass budget measures it." },
+        "shadingOverFlatUs": {
+          "description": "GPU microseconds at 1440p on the M4 that the kind's surfaces may cost over the same triangles drawn flat, by shader family (decisions §15, S2). History through OS_History is counted once, in its own 0.5 ms line, never here.",
+          "type": "object", "minProperties": 1,
+          "propertyNames": { "$ref": "record.schema.json#/$defs/word" },
+          "additionalProperties": { "type": "integer", "minimum": 0 }
+        },
+        "triangles": {
+          "description": "Visible triangles the kind may draw at each judging view (docs/foundations.md), all its things together.",
+          "type": "object",
+          "propertyNames": { "$ref": "record.schema.json#/$defs/view" },
+          "additionalProperties": { "type": "integer", "minimum": 0 }
+        },
+        "provisional": { "type": "boolean" }
+      }
+    },
+    "motion": {
+      "description": "How its elements move (decisions D10.1): one class per element; the anchor is derived from the class; deform says whether it moves as a card or a skinned mesh.",
+      "type": "array", "minItems": 1,
+      "items": {
+        "type": "object", "additionalProperties": false, "required": ["element", "class", "deform"],
+        "properties": {
+          "element": { "$ref": "record.schema.json#/$defs/word" },
+          "class": { "enum": ["still", "hinged", "swinging", "flexible", "floating", "emitting"] },
+          "deform": { "enum": ["none", "card", "skinned"] }
+        }
+      }
+    },
+    "affordances": {
+      "description": "What can be done on it, as dated sockets read at the date (decisions D10.4), each from a slot rule.",
+      "type": "array",
+      "items": {
+        "type": "object", "additionalProperties": false, "required": ["name", "walkable", "rule"],
+        "properties": {
+          "name": { "$ref": "record.schema.json#/$defs/word" },
+          "walkable": { "type": "boolean" },
+          "rule": { "$ref": "record.schema.json#/$defs/word" }
+        }
+      }
+    },
+    "collision": {
+      "description": "The roles its parts' levels take (none, proxy, full) and the level its chunk's merged proxy is built from.",
+      "type": "object", "additionalProperties": false, "required": ["roles", "proxyLevel"],
+      "properties": {
+        "roles": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "enum": ["none", "proxy", "full"] } },
+        "proxyLevel": { "$ref": "record.schema.json#/$defs/levelName" }
+      }
+    },
+    "fields": {
+      "type": "object", "additionalProperties": false, "required": ["reads", "writes"],
+      "properties": {
+        "reads": { "type": "array", "uniqueItems": true, "items": { "$ref": "record.schema.json#/$defs/mapId" } },
+        "writes": { "type": "array", "uniqueItems": true, "items": { "$ref": "record.schema.json#/$defs/mapId" } }
+      }
+    },
+    "layers": {
+      "description": "The history layers of schemas/layers.json its surfaces carry.",
+      "type": "array", "uniqueItems": true, "items": { "$ref": "record.schema.json#/$defs/mapId" }
+    }
+  },
+  "$defs": {
+    "family": { "type": "string", "pattern": "^[a-z][a-z0-9]*(-[a-z0-9]+)*(/[a-z][a-z0-9]*(-[a-z0-9]+)*){0,3}$", "$comment": "naming: family" },
+    "level": {
+      "type": "object", "additionalProperties": false, "required": ["errorMm", "triangles", "mergeUnit"],
+      "properties": {
+        "errorMm": { "type": "integer", "minimum": 0 },
+        "triangles": { "type": "integer", "minimum": 0 },
+        "mergeUnit": { "description": "ch: the 4 m draw chunk. ce: the 32 m cell. bk: the 128 m block. instance: drawn as its own instance (lamps, boats, people).", "enum": ["ch", "ce", "bk", "instance"] }
+      }
+    },
+    "stageCommon": {
+      "type": "object",
+      "required": ["status", "python", "csharp", "reads", "params"],
+      "properties": {
+        "status": { "description": "live: runs from this source now. planned: not built yet. frozen: the Python is kept as the parity reference while the C# is proved. ported: the C# is the source.", "enum": ["live", "planned", "frozen", "ported"] },
+        "python": { "anyOf": [{ "type": "null" }, { "type": "string", "pattern": "^[a-z0-9_/.-]+\\.py:[A-Za-z_][A-Za-z0-9_]*$" }], "description": "Its entry point: file:function." },
+        "csharp": { "anyOf": [{ "type": "null" }, { "type": "string", "pattern": "^[A-Za-z_][A-Za-z0-9_.]*$" }], "description": "Its C# entry point: Type.Method." },
+        "reads": { "description": "The pack's tables it reads (eras, metrics, materials, parts).", "type": "array", "uniqueItems": true, "items": { "$ref": "record.schema.json#/$defs/word" } }
+      }
+    },
+    "stage": {
+      "allOf": [{ "$ref": "#/$defs/stageCommon" }],
+      "unevaluatedProperties": false,
+      "properties": { "params": { "type": "object" } }
+    },
+    "integerStage": {
+      "description": "Facts, plan and life choose, so their params are integers, words and booleans (decisions D2.2).",
+      "allOf": [{ "$ref": "#/$defs/stageCommon" }],
+      "unevaluatedProperties": false,
+      "properties": { "params": { "$ref": "record.schema.json#/$defs/params" } }
+    }
+  }
+}

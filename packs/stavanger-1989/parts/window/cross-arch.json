@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 2,
+  "part": "window/cross-arch",
+  "version": 1,
+  "describes": "A jugend window: a cross of mullion and transom under an arched top light, its frame fitted to the opening.",
+  "madeAs": "fitted",
+  "era": { "first": 1905, "last": 1925 },
+  "sizes": { "w": [700, 1100], "h": [1200, 1800], "d": [100, 200] },
+  "fits": ["fitted"],
+  "pivot": "opening-bottom-left",
+  "sockets": [
+    { "name": "sill", "accepts": ["sill", "flower-box"] },
+    { "name": "curtain", "accepts": ["dressing"] }
+  ],
+  "removalMark": null,
+  "motion": [
+    { "element": "frame", "class": "still", "deform": "none" },
+    { "element": "sash", "class": "hinged", "deform": "none" }
+  ],
+  "intrinsicChannels": ["face-kind", "edge-distance", "own-occlusion"],
+  "marks": [{ "name": "paint-edge-wear", "smallestFeatureMm": 4 }],
+  "shaderFamily": "street",
+  "materials": ["pine-board", "crown-glass"],
+  "function": { "python": null, "csharp": null },
+  "lifecycle": { "state": "draft" }
+}

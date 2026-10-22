@@ -1,0 +1,56 @@
+{
+ "schemaVersion": 2,
+ "describes": "The vertex and per-instance channels every mesh and instance carries (decisions §5, docs/building-blocks.md 'What a part carries'). Meshes at L0 to L2 are written through MeshData in the player, so the layout is ours; library parts cross FBX with a sidecar naming each UV set's channel. tools/validate_record.py checks that each layout's bytes add up. Byte widths are provisional until the gully's A/B at 3.2.",
+ "status": "provisional",
+ "vertex": {
+  "levels": ["l0", "l1", "l2"],
+  "bytes": 44,
+  "bytesWithOptions": 56,
+  "slots": [
+   { "slot": "position", "format": "Float32x3", "bytes": 12, "components": ["x", "y", "z"] },
+   { "slot": "normal", "format": "SNorm16x4", "bytes": 8, "components": ["x", "y", "z", "padding"] },
+   { "slot": "uv0", "format": "Float16x2", "bytes": 4, "components": ["grain-u", "grain-v"], "content": "grain, metric per piece" },
+   { "slot": "uv1", "format": "UNorm16x2", "bytes": 4, "components": ["page-u", "page-v"], "content": "the address into its page group's maps" },
+   { "slot": "uv2", "format": "Float32x2", "bytes": 8, "components": ["mark-u", "mark-v"], "content": "the mark coordinate, continuous along a run (the brush)" },
+   { "slot": "uv3", "format": "UInt16x2", "bytes": 4, "components": ["piece-index", "edge-distance"], "content": "the piece index in its chunk's piece table; the edge distance in tenths of a millimetre" },
+   { "slot": "uv4", "format": "UNorm8x4", "bytes": 4, "components": ["face-kind", "hollow-rate", "flutter-weight-or-element-depth", "own-occlusion"] },
+   { "slot": "uv5", "format": "Float16x4", "bytes": 8, "optional": true, "components": ["rest-x", "rest-y", "rest-z", "padding"], "content": "the rest or undisplaced position, for deforming and wind-moved parts" },
+   { "slot": "uv6", "format": "UInt16x2", "bytes": 4, "optional": true, "components": ["element-index", "element-depth"], "content": "trees, people, flexible parts" }
+  ]
+ },
+ "shell": {
+  "levels": ["l3", "l4"],
+  "bytes": 28,
+  "constantPerTriangle": ["uv3"],
+  "note": "Ids are constant over each triangle: vertices split where an id changes, and the shader reads them without interpolation.",
+  "slots": [
+   { "slot": "position", "format": "Float32x3", "bytes": 12, "components": ["x", "y", "z"] },
+   { "slot": "normal", "format": "SNorm16x4", "bytes": 8, "components": ["x", "y", "z", "padding"] },
+   { "slot": "uv1", "format": "UNorm16x2", "bytes": 4, "components": ["atlas-u", "atlas-v"], "content": "the address in its cell's shell atlas" },
+   { "slot": "uv3", "format": "UInt16x2", "bytes": 4, "components": ["thing-index", "part-slot-and-material-class"], "bits": { "part-slot-and-material-class": [{ "field": "part-slot", "bits": 10 }, { "field": "material-class", "bits": 6 }] } }
+  ]
+ },
+ "tangent": {
+  "stored": false,
+  "rule": "Each shader derives the frame per pixel from the screen derivatives of the UV set its normal detail lives in: uv1 for the bent normal, the maps' relief and the shell's normal atlas; uv0 for a material's grain normal.",
+  "reserved": { "slot": "tangent", "format": "SNorm8x4", "bytes": 4, "when": "the gully's A/B at L2 and on shells shows coarse triangles facet" }
+ },
+ "sizes": {
+  "Float32x3": 12, "Float32x2": 8, "Float16x4": 8, "Float16x2": 4, "SNorm16x4": 8, "SNorm8x4": 4,
+  "UNorm16x2": 4, "UInt16x2": 4, "UNorm8x4": 4, "UInt32": 4
+ },
+ "pickIndex": {
+  "format": "UInt32",
+  "status": "provisional until the picking spike",
+  "fields": [
+   { "field": "path", "bits": [30, 31], "values": ["chunk", "cell", "block", "instance"], "note": "chunk at l0 and l1, cell at l2 and l3, block at l4, a kit instance" },
+   { "field": "unit-slot", "bits": [16, 29], "note": "the resident unit's slot, 16,384" },
+   { "field": "item", "bits": [0, 15], "note": "uv3's piece index, a shell's thing index, or the cell's facts buffer index, 65,536; a unit with more takes a second slot" }
+  ]
+ },
+ "perInstance": {
+  "status": "provisional until the picking spike",
+  "kit": { "userValue": "the pick index", "facts": ["record-index", "part-index", "seed", "reset-year", "care", "season-and-hue", "wind-phase", "coat-table-offset"] },
+  "swarm": { "facts": ["transform", "part-and-species", "seed-and-rank", "wind-phase", "field-tile"] }
+ }
+}

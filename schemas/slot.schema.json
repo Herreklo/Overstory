@@ -1,0 +1,105 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://overstory.invalid/schemas/slot.schema.json",
+  "title": "Slot",
+  "description": "A place in a thing that holds parts over time (decisions D3.1). A slot is never deleted: it is made, may close, and holds its fills in date order. Its place and size are fixed when it is made; a change of either closes it and makes a new slot. Fills of one role never overlap in time within a slot, so a window's surround and its body stand in one opening at once, and a stack of dressings is a stack of sockets.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "type", "from", "to", "fills"],
+  "properties": {
+    "id": { "$ref": "record.schema.json#/$defs/slotId" },
+    "type": {
+      "description": "group: a named division that holds other slots and no fills (a flight, a tread, a wall's panel). opening: a hole through its host (a window, a door, a shop opening). socket: a place a part stands in or hangs from (a slab's place, a sill, a bracket). surface: a region of a face that takes coats, pointing and growth. pane: a division of a window's glazing. affordance: a dated place to walk, sit, lean or hold (decisions D10.4). works: a works site, its fills the dated phases (hoarding, pit, scaffold; D12.7).",
+      "enum": ["group", "opening", "socket", "surface", "pane", "affordance", "works"]
+    },
+    "from": { "$ref": "record.schema.json#/$defs/date" },
+    "madeBy": { "$ref": "record.schema.json#/$defs/eventId" },
+    "rule": { "$ref": "record.schema.json#/$defs/ruleName", "description": "The rule that made it, for a slot no event made (a crack in a stone)." },
+    "to": { "$ref": "record.schema.json#/$defs/dateOrNull" },
+    "closedBy": { "$ref": "record.schema.json#/$defs/eventId" },
+    "closeRule": { "$ref": "record.schema.json#/$defs/ruleName" },
+    "host": { "$ref": "record.schema.json#/$defs/slotId", "description": "The slot it is cut in or fixed to: an opening's surface region, a socket's opening." },
+    "spans": {
+      "description": "Slots this one takes the place of while it is open (the 1931 shop opening over two window openings). They must lie inside it, and none of their fills may stand while it is open.",
+      "type": "array", "minItems": 1, "items": { "$ref": "record.schema.json#/$defs/slotId" }
+    },
+    "at": { "$ref": "record.schema.json#/$defs/vec3mm", "description": "Its lower left outer corner, seen from outside: in its host's axes from the host's corner when it has a host, else in the thing's own frame." },
+    "size": { "$ref": "record.schema.json#/$defs/size3mm", "description": "Its width to the right seen from outside, its height and its depth inward. A hosted slot takes its host's axes; a surface region's axes are its face's, which the kind's frame names (the house's front runs along x, up z, in y). A hosted slot lies inside its host." },
+    "surface": {
+      "description": "A surface region's face class, set by the plan's one function from what the face is and what it looks onto (blender/resolver/face_class.py, schemas/maps.json), and checked by the validator. It sets the texel of the region's pages.",
+      "type": "object", "additionalProperties": false, "required": ["facing", "looksOnto", "faceClass"],
+      "properties": {
+        "facing": { "enum": ["wall", "roof", "walked", "ground"] },
+        "looksOnto": { "enum": ["street", "lane", "square", "quay", "steps", "water", "yard", "garden", "building", "sky", "earth"] },
+        "faceClass": { "enum": ["street", "yard", "roof", "ground"] }
+      }
+    },
+    "affordance": {
+      "type": "object", "additionalProperties": false, "required": ["name", "walkable"],
+      "properties": {
+        "name": { "$ref": "record.schema.json#/$defs/word", "description": "tread, landing, walking-line, handrail, sit, lean, stand, sill, shelter, grip." },
+        "walkable": { "type": "boolean" }
+      }
+    },
+    "fills": { "type": "array", "items": { "$ref": "#/$defs/fill" } }
+  },
+  "allOf": [
+    { "oneOf": [{ "required": ["madeBy"] }, { "required": ["rule"] }] },
+    { "if": { "properties": { "to": { "type": "object" } } }, "then": { "oneOf": [{ "required": ["closedBy"] }, { "required": ["closeRule"] }] } },
+    { "if": { "properties": { "type": { "const": "group" } } }, "then": { "properties": { "fills": { "maxItems": 0 } } }, "else": { "required": ["at", "size"] } },
+    { "if": { "properties": { "type": { "const": "surface" } } }, "then": { "required": ["surface"] }, "else": { "not": { "required": ["surface"] } } },
+    { "if": { "properties": { "type": { "const": "affordance" } } }, "then": { "required": ["affordance"] }, "else": { "not": { "required": ["affordance"] } } }
+  ],
+  "$defs": {
+    "fill": {
+      "description": "One part standing in its slot for a span of years. Numbered from 0 in date order, never renumbered.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "role", "part", "from", "to", "fit", "origin"],
+      "properties": {
+        "id": { "$ref": "record.schema.json#/$defs/fillId" },
+        "role": {
+          "description": "body: what fills the place (a window, a shopfront, a slab). surround: what frames it (a casing). dressing: what is hung on or in it (a curtain, a flower box). coat: a coat of paint or render. pointing: mortar in a joint. repair: a mend (a dab, a patch, a filled crack). works: a works phase. The kind file gives their order within one event.",
+          "enum": ["body", "surround", "dressing", "coat", "pointing", "repair", "works"]
+        },
+        "part": { "$ref": "record.schema.json#/$defs/partPath" },
+        "variant": { "$ref": "record.schema.json#/$defs/word" },
+        "params": { "$ref": "record.schema.json#/$defs/params" },
+        "placedBy": { "$ref": "record.schema.json#/$defs/eventId" },
+        "rule": { "$ref": "record.schema.json#/$defs/ruleName", "description": "The rule that placed it, for a fill no dated event placed (patchwork: docs/upkeep.md). Such a fill is derived and shown as an interpretation." },
+        "from": { "$ref": "record.schema.json#/$defs/date" },
+        "to": { "$ref": "record.schema.json#/$defs/dateOrNull" },
+        "end": { "description": "removed: taken out, leaving its removal mark. covered: still there under what came next (an old coat).", "enum": ["removed", "covered"] },
+        "endedBy": { "$ref": "record.schema.json#/$defs/eventId" },
+        "endRule": { "$ref": "record.schema.json#/$defs/ruleName" },
+        "fit": {
+          "type": "object", "additionalProperties": false, "required": ["mode", "size"],
+          "properties": {
+            "mode": { "description": "exact: made to the size. stretch: stretched within the part's limits. adaptor: an adaptor piece closes the gap. cut: cut down to fit. fitted: a fitted part's function made it to the size.", "enum": ["exact", "stretch", "adaptor", "cut", "fitted"] },
+            "size": { "$ref": "record.schema.json#/$defs/size3mm", "description": "The size it was fitted to, inside the slot's size." }
+          }
+        },
+        "removalMark": {
+          "description": "What its removal left on its host (a removed shopfront's line). Null when it left nothing.",
+          "anyOf": [
+            { "type": "null" },
+            { "type": "object", "additionalProperties": false, "required": ["part"], "properties": { "part": { "$ref": "record.schema.json#/$defs/partPath" }, "params": { "$ref": "record.schema.json#/$defs/params" } } }
+          ]
+        },
+        "origin": { "description": "new, or reclaimed from stock or another thing.", "enum": ["new", "reclaimed"] },
+        "copyOf": { "$ref": "record.schema.json#/$defs/fillId", "description": "An earlier fill this one copies (the 2016 copies of the 1912 windows): its part keeps the copied fill's era." },
+        "provenance": { "$ref": "record.schema.json#/$defs/provenance", "description": "When absent, its placing event's." },
+        "screen": { "enum": ["fact", "interpretation"], "description": "When absent: fact if an event placed it, interpretation if a rule did." }
+      },
+      "allOf": [
+        { "oneOf": [{ "required": ["placedBy"] }, { "required": ["rule"] }] },
+        { "if": { "required": ["rule"] }, "then": { "required": ["provenance"], "properties": { "provenance": { "const": "derived" } } } },
+        { "if": { "properties": { "to": { "type": "object" } } },
+          "then": { "required": ["end"], "oneOf": [{ "required": ["endedBy"] }, { "required": ["endRule"] }] },
+          "else": { "not": { "anyOf": [{ "required": ["end"] }, { "required": ["endedBy"] }, { "required": ["endRule"] }] } } },
+        { "if": { "required": ["end"], "properties": { "end": { "const": "covered" } } }, "then": { "not": { "required": ["removalMark"] } } },
+        { "if": { "required": ["end"], "properties": { "end": { "const": "removed" } } }, "then": { "required": ["removalMark"] } }
+      ]
+    }
+  }
+}

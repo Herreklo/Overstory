@@ -1,0 +1,77 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://overstory.invalid/schemas/change-query.schema.json",
+  "title": "Change query",
+  "description": "changes(scope, t0, t1) and its answer (decisions D12.4): every change to the things in scope between two dates, each with its cause, actor, provenance, precision and weight, the parts it touched, the regions it dirties in each judging view, and how far each layer drifted. It feeds the history budget, highlights, the why-probe, the journal, the readers' key and the shell rebake. Until the stages run in the player, a plan diff at two years stands in for it.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "query", "changes"],
+  "properties": {
+    "schemaVersion": { "$ref": "record.schema.json#/$defs/schemaVersion" },
+    "query": {
+      "type": "object", "additionalProperties": false, "required": ["scope", "t0", "t1"],
+      "properties": {
+        "scope": {
+          "description": "The things asked about: records by id, or every thing in some units.",
+          "type": "object", "additionalProperties": false,
+          "properties": {
+            "records": { "type": "array", "minItems": 1, "items": { "$ref": "record.schema.json#/$defs/recordId" } },
+            "units": { "type": "array", "minItems": 1, "items": { "$ref": "record.schema.json#/$defs/unitId" } }
+          },
+          "minProperties": 1
+        },
+        "t0": { "$ref": "record.schema.json#/$defs/date" },
+        "t1": { "$ref": "record.schema.json#/$defs/date" }
+      }
+    },
+    "changes": {
+      "description": "In date order, then by record id.",
+      "type": "array",
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["record", "at", "cause", "actor", "provenance", "precision", "weight", "parts", "regions", "drift"],
+        "properties": {
+          "record": { "$ref": "record.schema.json#/$defs/recordId" },
+          "event": { "$ref": "record.schema.json#/$defs/eventId", "description": "The dated event, when one made the change." },
+          "rule": { "$ref": "record.schema.json#/$defs/ruleName", "description": "The rule, when the change has no event of its own (patchwork, falling care, a growing crack)." },
+          "at": { "$ref": "record.schema.json#/$defs/date" },
+          "cause": { "type": "string", "minLength": 1 },
+          "actor": { "$ref": "record.schema.json#/$defs/actor" },
+          "provenance": { "$ref": "record.schema.json#/$defs/provenance" },
+          "precision": { "$ref": "record.schema.json#/$defs/precision" },
+          "weight": { "$ref": "record.schema.json#/$defs/perMille" },
+          "parts": {
+            "description": "The slots and fills it made, ended or changed.",
+            "type": "array",
+            "items": { "anyOf": [{ "$ref": "record.schema.json#/$defs/slotId" }, { "$ref": "record.schema.json#/$defs/fillId" }] }
+          },
+          "regions": {
+            "description": "What it dirties, per judging view and level: the units whose mesh rebuilds and the pages that rebake.",
+            "type": "array",
+            "items": {
+              "type": "object", "additionalProperties": false, "required": ["view", "level", "units", "pages"],
+              "properties": {
+                "view": { "$ref": "record.schema.json#/$defs/view" },
+                "level": { "$ref": "record.schema.json#/$defs/levelName" },
+                "units": { "type": "array", "items": { "$ref": "record.schema.json#/$defs/unitId" } },
+                "pages": { "type": "array", "items": { "$ref": "record.schema.json#/$defs/pageId" } }
+              }
+            }
+          },
+          "drift": {
+            "description": "How far each layer moved between t0 and t1 where it touched, per mille of the layer's full range.",
+            "type": "array",
+            "items": {
+              "type": "object", "additionalProperties": false, "required": ["layer", "magnitude"],
+              "properties": {
+                "layer": { "$ref": "record.schema.json#/$defs/mapId" },
+                "magnitude": { "$ref": "record.schema.json#/$defs/perMille" }
+              }
+            }
+          }
+        },
+        "oneOf": [{ "required": ["event"] }, { "required": ["rule"] }]
+      }
+    }
+  }
+}

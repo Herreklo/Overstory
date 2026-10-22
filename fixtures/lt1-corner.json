@@ -1,5 +1,5 @@
 {
- "schemaVersion": 1,
+ "schemaVersion": 2,
  "note": "The beauty corner (docs/experiments.md, LT1, the reset), written by blender/tools/corner_fixture.py. Authored by hand: the lane, the five houses and their histories to 2020 (events after 1989 by named rules, `rules`), the wall, the lantern, the trees and the ground's history. Context houses are placeholders round it. Lengths in millimetres.",
  "worldSeed": 1989,
  "provenance": "authored",

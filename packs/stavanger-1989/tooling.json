@@ -1,0 +1,8 @@
+{
+  "schemaVersion": 2,
+  "pack": "stavanger-1989",
+  "describes": "The tools this pack's stages, fixtures and baselines are built with. A change of any of them is a new baseline (docs/building-blocks.md, Seeds and determinism).",
+  "blender": { "version": "5.2.2", "python": "3.13.13", "numpy": "2.3.4", "path": "/Applications/Blender.app/Contents/MacOS/Blender", "runs": "every stage that needs numpy, as -b --factory-startup --python <script> -- <args>" },
+  "unity": { "version": "6000.6.6f1", "changeset": "d20c9ac777da" },
+  "python": { "version": "3.9.6", "venv": ".venv", "requirements": "requirements.txt", "runs": "tools/validate_record.py and tools/migrate.py; no numpy" }
+}

@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 2,
+  "pack": "stavanger-1989",
+  "describes": "The harbour town shown in 1989: its years, its frame and where its tables live. Era content, materials, names and parts sit beside this file.",
+  "peopleStart": 1959,
+  "showYear": 1989,
+  "firstYear": 1800,
+  "frame": "x east, y north, z up, in millimetres from the pack's origin",
+  "notes": {
+    "peopleStart": "S in docs/facts-contract.md: before it actors are roles and the past is the pack's; from it the engine decides people, owners, care and works.",
+    "showYear": "From here only the engine's events change a record; hand-written events after it are test stand-ins.",
+    "firstYear": "The earliest reset year; the shell index counts years from it in one byte, so it holds to 2055."
+  }
+}

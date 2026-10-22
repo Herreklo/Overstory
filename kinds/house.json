@@ -1,0 +1,58 @@
+{
+  "schemaVersion": 2,
+  "kind": "house",
+  "version": 1,
+  "describes": "A house: its faces, storeys, openings, surface regions, roofs, dormers and works, as dated slots. On paper at step 1, so the same schemas admit a second kind before the stair is built in code (pre-mortem story 3). Its stages are planned: the resolver (blender/resolver/resolve.py) still draws houses from the corner's bundle until House A ports it.",
+  "recordPrefixes": ["bld"],
+  "frame": "Origin at the front's left corner, seen from outside, on the ground storey's floor. x runs along the front to the right, y into the house, z up. Faces are f, b, l and r in this frame; additions take their count first.",
+  "eventKinds": ["built", "extended", "re-roofed", "repainted", "window-replaced", "windows-restored", "shop-fitted", "shop-removed", "business-opened", "business-closed", "boarded", "unboarded", "works-begun", "works-ended", "demolished"],
+  "roles": ["body", "surround", "dressing", "coat", "pointing", "repair", "works"],
+  "stages": {
+    "facts": { "status": "planned", "python": null, "csharp": null, "reads": [], "params": {} },
+    "plan": { "status": "planned", "python": null, "csharp": null, "reads": ["eras", "metrics", "parts"], "params": {} },
+    "life": { "status": "planned", "python": null, "csharp": null, "reads": ["materials"], "params": {} },
+    "geometry": { "status": "planned", "python": null, "csharp": null, "reads": ["parts"], "params": {} },
+    "bake": { "status": "planned", "python": null, "csharp": null, "reads": ["materials"], "params": {} },
+    "export": { "status": "planned", "python": null, "csharp": null, "reads": [], "params": {} },
+    "checks": { "status": "live", "python": "tools/validate_record.py:validate", "csharp": null, "reads": ["parts"], "params": {} }
+  },
+  "slots": [
+    { "rule": "house-opening", "type": "opening", "roles": { "body": ["window", "door", "shopfront"], "surround": ["trim"] } },
+    { "rule": "house-dormer", "type": "opening", "roles": { "body": ["dormer"], "surround": ["trim"] } },
+    { "rule": "house-pane", "type": "pane", "roles": { "body": ["glass"], "dressing": ["dressing"] } },
+    { "rule": "house-opening-socket", "type": "socket", "roles": { "body": ["sill", "sign", "lamp", "flower-box"], "dressing": ["dressing"] } },
+    { "rule": "house-face-socket", "type": "socket", "roles": { "body": ["downpipe", "sign", "lamp", "bracket"] } },
+    { "rule": "house-affordance", "type": "affordance", "roles": { "body": ["step", "bench"] } },
+    { "rule": "house-surface", "type": "surface", "roles": { "body": ["cladding", "render"], "coat": ["coat"], "repair": ["cladding", "render"] } },
+    { "rule": "house-roof", "type": "surface", "roles": { "body": ["roof"], "coat": ["coat"], "repair": ["roof"] } },
+    { "rule": "house-works", "type": "works", "roles": { "works": ["works"] } }
+  ],
+  "levels": {
+    "l0": { "errorMm": 2, "triangles": 20000, "mergeUnit": "ch" },
+    "l1": { "errorMm": 4, "triangles": 12000, "mergeUnit": "ch" },
+    "l2": { "errorMm": 10, "triangles": 7200, "mergeUnit": "ce" },
+    "l3": { "errorMm": 25, "triangles": 1500, "mergeUnit": "ce" },
+    "l4": { "errorMm": 100, "triangles": 100, "mergeUnit": "bk" }
+  },
+  "budgets": {
+    "view": "street-stop",
+    "shadingOverFlatUs": { "street": 600 },
+    "provisional": true
+  },
+  "motion": [
+    { "element": "body", "class": "still", "deform": "none" },
+    { "element": "sash", "class": "hinged", "deform": "none" },
+    { "element": "door-leaf", "class": "hinged", "deform": "none" },
+    { "element": "hanging-sign", "class": "swinging", "deform": "none" },
+    { "element": "awning", "class": "flexible", "deform": "card" }
+  ],
+  "affordances": [
+    { "name": "step", "walkable": true, "rule": "house-affordance" },
+    { "name": "sit", "walkable": false, "rule": "house-affordance" },
+    { "name": "lean", "walkable": false, "rule": "house-affordance" },
+    { "name": "shelter", "walkable": false, "rule": "house-affordance" }
+  ],
+  "collision": { "roles": ["none", "proxy", "full"], "proxyLevel": "l1" },
+  "fields": { "reads": ["wind-salt", "sun-dose", "wetness", "feet"], "writes": ["flow"] },
+  "layers": ["polish", "lichen", "moss", "wash", "deposit", "splash", "contact", "soot", "salt"]
+}

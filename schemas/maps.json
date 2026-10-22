@@ -1,0 +1,75 @@
+{
+ "schemaVersion": 2,
+ "describes": "The map registry (decisions §5 D8.1, §15 S3 and S4). Each map's channels, owner, unit, texel, format and encoder, readers, what rebuilds it and where it is resident. Fields are coarse and owned by the land; place and history maps are fine and owned by the page group, sampled from the fields and the chunks' geometry. Maps store inputs (rates, age offsets, the light's inputs); the shell atlas is the one cached output. Lengths in millimetres.",
+ "units": {
+  "ch": { "sizeMm": 4000, "is": "the draw chunk: draws, rebuilds and keys the mesh at l0 and l1, and is the pick slot" },
+  "pg": { "sizeMm": 16000, "is": "the page group: one set of place and history pages for its 4 x 4 chunks, addressed by uv1, rebaked by region" },
+  "ce": { "sizeMm": 32000, "is": "the cell: merges l2 and l3, and holds a shell atlas" },
+  "lc": { "sizeMm": 64000, "is": "the land and streaming chunk: fields, height and ground; a container file of near levels" },
+  "bk": { "sizeMm": 128000, "is": "the block: merges l4; a container file of its records, shells, l4 and ground" }
+ },
+ "faceClasses": {
+  "function": "blender/resolver/face_class.py:face_class",
+  "rule": "The plan sets each surface region's face class from what the face is (facing) and what it looks onto, by this table and nothing else; tools/validate_record.py checks every region against it. A combination not in the table is an error.",
+  "table": [
+   { "facing": "walked", "looksOnto": ["sky"], "faceClass": "street" },
+   { "facing": "wall", "looksOnto": ["street", "lane", "square", "quay", "steps", "water"], "faceClass": "street" },
+   { "facing": "wall", "looksOnto": ["yard", "garden", "building"], "faceClass": "yard" },
+   { "facing": "wall", "looksOnto": ["earth"], "faceClass": "ground" },
+   { "facing": "roof", "looksOnto": ["sky"], "faceClass": "roof" },
+   { "facing": "ground", "looksOnto": ["sky"], "faceClass": "ground" }
+  ],
+  "decisions": [
+   "A face to steps or to the harbour is a street face: steps are walked, and a face to the water is the town's front from the sea and the quay.",
+   "A wall's face to earth (a retaining wall's buried back) is ground: it is seen, if ever, as ground."
+  ]
+ },
+ "texel": {
+  "materialMm": { "walked": 20, "wall": 40, "roof": 80, "ground": 80 },
+  "byFaceClass": {
+   "street": { "mm": "material", "note": "the material's texel on every floor" },
+   "yard": { "mm": "material", "belowMm": 2000, "aboveTexelMm": 80, "note": "the material's texel to 2 m above the ground the face meets, where splash, damp and contact sit; 80 mm above" },
+   "roof": { "mm": 80 },
+   "ground": { "mm": 80 }
+  },
+  "marks": "A mark's texel is half its smallest feature (two texels across it), from the part's marks.",
+  "rule": "A surface's texel is the coarser (the larger) of its face class's texel and the finest of its parts' mark texels.",
+  "packingWastePerMille": 150,
+  "status": "FIRM as a rule (S3); the waste provisional"
+ },
+ "residency": {
+  "pages": { "reachMm": 80000, "levels": ["l0", "l1", "l2"], "streams": "whole pages, not by mip" },
+  "shellAtlas": { "levels": ["l3", "l4"], "note": "baked on demand within l3's reach; a shell draws plain from its material class and reset year until its atlas lands; a block reads cached small mips where they exist and draws plain elsewhere; no atlas ships city-wide" }
+ },
+ "rebake": { "budgetMsPerPage": 2.0, "pagePixels": [1024, 512], "runs": "on the GPU behind the dated card", "status": "provisional; drawing a page measured at 0.7 ms, CPU compression 5.3 to 8.7 ms, so compression is on the GPU" },
+ "maps": [
+  { "id": "height-sky", "describes": "height; sky seen and the horizon angle", "channels": { "r": "height", "g": "sky-seen", "b": "horizon-angle" }, "owner": "land", "unit": "lc", "texel": { "heartMm": 500, "beyondMm": 2000 }, "format": { "source": "R16 + RG8", "gpu": "none" }, "encoder": null, "readers": ["far shadows", "the horizon", "the light"], "rebuild": ["a ground act"], "budget": "shared" },
+  { "id": "ground", "describes": "the ground's soil, seasonal albedo, wetness", "channels": { "r": "soil", "g": "seasonal-albedo", "b": "wet", "a": "reserved" }, "owner": "land", "unit": "lc", "texel": { "minMm": 250, "maxMm": 500 }, "format": { "source": "RGBA8", "gpu": "none" }, "encoder": null, "readers": ["feet of rock, walls and plinths", "blade roots", "seen ground"], "rebuild": ["a ground act", "the season"], "budget": "shared", "note": "g is an index into the material's range" },
+  { "id": "fields", "describes": "the land's coarse fields, a slice each", "slices": ["soil", "flow", "wetness", "wind-salt", "sun-dose", "made-ground", "feet"], "owner": "land", "unit": "lc", "texel": { "heartMinMm": 500, "heartMaxMm": 1000, "beyondMinMm": 2000, "beyondMaxMm": 4000 }, "format": { "source": "Texture2DArray R8 or R16", "gpu": "none" }, "encoder": null, "readers": ["place-map bakes", "the placer", "deposits"], "rebuild": ["an act", "the feet plan", "the decade"], "budget": "shared" },
+  { "id": "p0", "describes": "place: feet, water held, sky seen, ground seen", "channels": { "r": "feet", "g": "water-held", "b": "sky-seen", "a": "ground-seen" }, "owner": "page-group", "unit": "pg", "texel": { "rule": "face-class" }, "format": { "source": "RGBA8", "gpu": "BC7" }, "encoder": { "offline": "none: pages bake in the player", "player": "unknown-gpu-encoder", "status": "unknown" }, "readers": ["every shader, through OS_History"], "rebuild": ["geometry", "a neighbour's rain shadow"], "budget": "shared" },
+  { "id": "p1", "describes": "place: openness, weather exposure", "channels": { "r": "openness", "g": "weather-exposure", "b": "reserved", "a": "reserved" }, "owner": "page-group", "unit": "pg", "texel": { "rule": "face-class" }, "format": { "source": "RGBA8", "gpu": "BC7" }, "encoder": { "offline": "none: pages bake in the player", "player": "unknown-gpu-encoder", "status": "unknown" }, "readers": ["every shader, through OS_History"], "rebuild": ["geometry", "a neighbour"], "budget": "shared" },
+  { "id": "h1", "describes": "history: polish, lichen and moss rates; the age offset", "channels": { "r": "polish", "g": "lichen", "b": "moss", "a": "age-offset" }, "owner": "page-group", "unit": "pg", "texel": { "rule": "face-class" }, "format": { "source": "RGBA8", "gpu": "BC7" }, "encoder": { "offline": "none: pages bake in the player", "player": "unknown-gpu-encoder", "status": "unknown" }, "readers": ["every shader, through OS_History"], "rebuild": ["a reset", "a rate change"], "budget": "shared" },
+  { "id": "h2", "describes": "history, story groups: wash, deposit, splash, contact", "channels": { "r": "wash", "g": "deposit", "b": "splash", "a": "contact" }, "owner": "page-group", "unit": "pg", "texel": { "rule": "face-class" }, "format": { "source": "RGBA8", "gpu": "BC7" }, "encoder": { "offline": "none: pages bake in the player", "player": "unknown-gpu-encoder", "status": "unknown" }, "readers": ["every shader, through OS_History"], "rebuild": ["the history budget", "a rate change"], "budget": "story" },
+  { "id": "h3", "describes": "history, story groups, reserved: carrier, soot, salt", "channels": { "r": "carrier", "g": "soot", "b": "salt", "a": "reserved" }, "owner": "page-group", "unit": "pg", "texel": { "rule": "face-class" }, "format": { "source": "RGBA8", "gpu": "BC7" }, "encoder": { "offline": "none: pages bake in the player", "player": "unknown-gpu-encoder", "status": "unknown" }, "readers": ["every shader, through OS_History"], "rebuild": ["when the layer lands"], "budget": "story", "status": "reserved" },
+  { "id": "bent-normal", "describes": "the bent normal's direction", "channels": { "r": "x", "g": "y" }, "owner": "page-group", "unit": "pg", "texel": { "rule": "face-class" }, "format": { "source": "RG8", "gpu": "BC5" }, "encoder": { "offline": "none: pages bake in the player", "player": "unknown-gpu-encoder", "status": "unknown" }, "readers": ["the shade"], "rebuild": ["geometry"], "budget": "shared", "levels": ["l0", "l1", "l2"] },
+  { "id": "litter", "describes": "deposits: leaves and litter", "channels": { "r": "litter" }, "owner": "page-group", "unit": "pg", "texel": { "mm": 80 }, "format": { "source": "R8", "gpu": "BC4" }, "encoder": { "offline": "none: pages bake in the player", "player": "unknown-gpu-encoder", "status": "unknown" }, "readers": ["the ground", "plants"], "rebuild": ["the day's wind", "feet", "keepers"], "budget": "shared" },
+  { "id": "shell-albedo", "describes": "a shell's albedo at the date: pigment with slow history", "channels": { "r": "r", "g": "g", "b": "b" }, "owner": "cell", "unit": "ce", "texel": { "minMm": 30, "maxMm": 50 }, "format": { "source": "RGBA8", "gpu": "BC3" }, "encoder": { "offline": "none", "player": "unknown-gpu-encoder", "status": "unknown" }, "readers": ["shells", "blocks"], "rebuild": ["the change query names a thing in the cell"], "bake": "shell" },
+  { "id": "shell-normal", "describes": "a shell's normal", "channels": { "r": "x", "g": "y" }, "owner": "cell", "unit": "ce", "texel": { "minMm": 30, "maxMm": 50 }, "format": { "source": "RG8", "gpu": "BC5" }, "encoder": { "offline": "none", "player": "unknown-gpu-encoder", "status": "unknown" }, "readers": ["shells", "blocks"], "rebuild": ["the change query names a thing in the cell"], "bake": "shell" },
+  { "id": "shell-light", "describes": "a shell's light inputs", "channels": { "r": "sky-seen", "g": "ground-seen", "b": "openness", "a": "weather-exposure" }, "owner": "cell", "unit": "ce", "texel": { "minMm": 30, "maxMm": 50 }, "format": { "source": "RGBA8", "gpu": "BC3" }, "encoder": { "offline": "none", "player": "unknown-gpu-encoder", "status": "unknown" }, "readers": ["shells", "blocks"], "rebuild": ["the change query names a thing in the cell"], "bake": "shell" },
+  { "id": "shell-index", "describes": "a shell's index: the thing in the cell and its reset year", "channels": { "r": "thing", "g": "reset-year-from-first-year" }, "owner": "cell", "unit": "ce", "texel": { "minMm": 30, "maxMm": 50 }, "format": { "source": "R8G8", "gpu": "none" }, "encoder": null, "readers": ["shells", "blocks"], "rebuild": ["the change query names a thing in the cell"], "bake": "shell", "note": "uncompressed: ids must not blend. g counts years from the pack's first year." },
+  { "id": "impostor", "describes": "the impostor baker's atlas", "owner": "library", "unit": "species", "texel": { "rule": "fixed" }, "format": { "source": "RGBA8", "gpu": "BC7" }, "encoder": { "offline": "Unity's texture importer", "player": null, "status": "known" }, "readers": ["far trees"], "rebuild": ["the species' timeline"] }
+ ],
+ "shellBake": {
+  "input": "l2",
+  "how": "A cell's shell atlas is drawn from its things' L2 meshes and their pages, with the shaders in their bake mode, into the shell's own UV1 layout. The cell's pages are built for the bake when they are not resident, and let go after.",
+  "why": "One look source, so a thing reads the same across the L2 to L3 switch; every kind gets its far atlas from its near function, with no far painter per kind.",
+  "cache": "Cells cache their atlases in the disk cache, keyed by the bake hash, and drop one when the change query names a thing in the cell. Never shipped beyond the heart's start date.",
+  "status": "FIRM as the input (decided at step 1); the cost per cell against the city pan's 90 cells a second is unknown, learned before step 5 with the place bake's cost"
+ },
+ "unknowns": [
+  { "id": "gpu-encoder", "what": "A GPU block encoder for BC7, BC5, BC4 and BC3 in the player, and its time per 1024 x 512 page on the M4.", "shapes": "each map's encoder.player field, filled with its name when chosen; no field's shape", "learnedAt": "timed before any page bakes in the player: step 3's pages bake offline, so before step 5" },
+  { "id": "place-bake-cost", "what": "The place bake (p0, p1) in the player: its cost per house against driving's 40 near chunks a second.", "shapes": "no schema field; the rebake budget line", "learnedAt": "a spike before step 5" },
+  { "id": "shell-bake-cost", "what": "The shell atlas bake's cost per cell, from L2, against the city pan's 90 cells a second.", "shapes": "no schema field; whether shellBake.input stays l2 if it fails", "learnedAt": "before step 5, with the place bake's spike" },
+  { "id": "cold-read", "what": "A cold read: purge, then a district loaded on workers from its container files.", "shapes": "no schema field; the container's page compression choice (schemas/chunk-format.md)", "learnedAt": "before 3.4" }
+ ]
+}

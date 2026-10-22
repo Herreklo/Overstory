@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://overstory.invalid/schemas/interval.schema.json",
+  "title": "Life interval",
+  "description": "What the life stage writes: for one fill or piece and one history layer, a span of years in which the layer runs at one rate from one reset. The layer's value at a date is its material's curve at rate / 1000 x (date - resetYear + ageOffsetMonths / 12) (decisions D5.1). The texel inputs in the place and history pages are baked from these. All integers: years and months, per mille.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["on", "layer", "from", "to", "resetYear", "rate", "ageOffsetMonths", "cause"],
+  "properties": {
+    "on": {
+      "description": "The fill or piece it is about. A replaced part is a new fill and so starts its own intervals.",
+      "anyOf": [{ "$ref": "record.schema.json#/$defs/fillId" }, { "$ref": "record.schema.json#/$defs/pieceId" }]
+    },
+    "layer": { "$ref": "record.schema.json#/$defs/mapId", "description": "A layer of schemas/layers.json." },
+    "from": { "$ref": "record.schema.json#/$defs/date" },
+    "to": { "$ref": "record.schema.json#/$defs/dateOrNull", "description": "Null while it still runs at the fabric date." },
+    "resetYear": { "type": "integer", "minimum": 1000, "maximum": 9999, "description": "The year the layer last started from nothing: the stone laid, the face bared, the coat put on." },
+    "rate": { "type": "integer", "minimum": 0, "maximum": 10000, "description": "Per mille of the material's own rate: 1000 runs the curve as the material record gives it." },
+    "ageOffsetMonths": { "type": "integer", "description": "Age the surface brought with it, in months: a reclaimed stone's years in the heap, or a negative offset where a layer starts late." },
+    "cause": {
+      "description": "The event or rule that started this interval (a works campaign, falling care, a gutter that failed).",
+      "anyOf": [{ "$ref": "record.schema.json#/$defs/eventId" }, { "$ref": "record.schema.json#/$defs/ruleName" }]
+    }
+  }
+}

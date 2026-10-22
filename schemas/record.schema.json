@@ -1,0 +1,200 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://overstory.invalid/schemas/record.schema.json",
+  "title": "Record",
+  "description": "One dated thing: a building, a stair, a wall, a tree, a sign, a room, a photograph. Every kind is a record of this shape; what a kind adds goes in its slots and in event params, never in a field of its own. Positions are integer millimetres; dates are years and months; weights and care are per mille. The shared definitions here ($defs) are used by every other schema.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "id", "kind", "pack", "screen", "provenance", "precision", "actor", "weight", "where", "keepers", "care", "lifespan", "events", "links", "pins", "slots"],
+  "properties": {
+    "schemaVersion": { "$ref": "#/$defs/schemaVersion" },
+    "id": { "$ref": "#/$defs/recordId" },
+    "kind": { "$ref": "#/$defs/kindName", "description": "The kind file that draws it: kinds/<kind>.json." },
+    "pack": { "$ref": "#/$defs/packId", "description": "The pack whose eras, parts and materials it is made of." },
+    "note": { "type": "string", "description": "For whoever edits the record. Never drawn: readable text on screen comes from events and the pack's names." },
+    "screen": { "$ref": "#/$defs/screen" },
+    "provenance": { "$ref": "#/$defs/provenance" },
+    "precision": { "$ref": "#/$defs/precision", "description": "How exactly the thing's own dates are known; an event may say otherwise for itself." },
+    "actor": { "$ref": "#/$defs/actor", "description": "Who made the thing: the actor of the event that made it." },
+    "weight": { "$ref": "#/$defs/perMille", "description": "How much the thing matters to the town's stories. The change query starts from it." },
+    "where": { "$ref": "#/$defs/where" },
+    "keepers": {
+      "description": "Who kept the thing, in date order. Each keeper runs to the next one's from, so no thing has two keepers at once. A thing no one keeps names the role 'no one'.",
+      "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/keeper" }
+    },
+    "care": {
+      "description": "How well it was kept, in date order, each running to the next one's from. Care comes from money, presence, age and dated events, never from anyone's character (Rule 8).",
+      "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/care" }
+    },
+    "lifespan": { "$ref": "#/$defs/lifespan" },
+    "events": {
+      "description": "What happened to the thing, in date order, numbered from 1 and never renumbered or deleted. A fact the engine replaces stays, marked supersededBy.",
+      "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/event" }
+    },
+    "links": { "type": "array", "items": { "$ref": "#/$defs/link" } },
+    "pins": {
+      "description": "Curation: a value held against regeneration, on a slot, fill or event (decisions D1.10).",
+      "type": "array", "items": { "$ref": "#/$defs/pin" }
+    },
+    "slots": {
+      "description": "The places the thing holds parts: openings, sockets, surface regions, panes, affordances, works, and the groups that hold them. Never deleted.",
+      "type": "array", "items": { "$ref": "slot.schema.json" }
+    }
+  },
+  "$defs": {
+    "schemaVersion": { "const": 2, "description": "The contract set's version (schemas/CHANGELOG.md). Every record, kind, pack file and fixture carries it; tools/migrate.py brings an older file up." },
+    "recordId": { "type": "string", "pattern": "^(?:bld|st|wl|way|plot|unit|lamp|tree|plant|sign|room|doc|photo|item|trace|org|ug|rock|act|p|h|pl|v|g|e)-[a-z0-9]+(-[a-z0-9]+)*$", "$comment": "naming: record" },
+    "eventId": { "type": "string", "pattern": "^(?:bld|st|wl|way|plot|unit|lamp|tree|plant|sign|room|doc|photo|item|trace|org|ug|rock|act|p|h|pl|v|g|e)-[a-z0-9]+(-[a-z0-9]+)*/[1-9][0-9]*$", "$comment": "naming: event" },
+    "slotId": { "type": "string", "pattern": "^(?:bld|st|wl|way|plot|unit|lamp|tree|plant|sign|room|doc|photo|item|trace|org|ug|rock|act|p|h|pl|v|g|e)-[a-z0-9]+(-[a-z0-9]+)*/[a-z]+(-[a-z0-9]+)*(/((?:0|[1-9][0-9]*)/)?[a-z]+(-[a-z0-9]+)*)*$", "$comment": "naming: slot" },
+    "fillId": { "type": "string", "pattern": "^(?:bld|st|wl|way|plot|unit|lamp|tree|plant|sign|room|doc|photo|item|trace|org|ug|rock|act|p|h|pl|v|g|e)-[a-z0-9]+(-[a-z0-9]+)*/[a-z]+(-[a-z0-9]+)*(/((?:0|[1-9][0-9]*)/)?[a-z]+(-[a-z0-9]+)*)*/(?:0|[1-9][0-9]*)$", "$comment": "naming: fill" },
+    "pieceId": { "type": "string", "pattern": "^(?:bld|st|wl|way|plot|unit|lamp|tree|plant|sign|room|doc|photo|item|trace|org|ug|rock|act|p|h|pl|v|g|e)-[a-z0-9]+(-[a-z0-9]+)*/[a-z]+(-[a-z0-9]+)*(/((?:0|[1-9][0-9]*)/)?[a-z]+(-[a-z0-9]+)*)*/(?:0|[1-9][0-9]*)#(?:0|[1-9][0-9]*)$", "$comment": "naming: piece" },
+    "partPath": { "type": "string", "pattern": "^[a-z][a-z0-9]*(-[a-z0-9]+)*(/[a-z][a-z0-9]*(-[a-z0-9]+)*){1,3}$", "$comment": "naming: part-path" },
+    "kindName": { "type": "string", "pattern": "^[a-z]+(-[a-z]+)*$", "$comment": "naming: kind" },
+    "word": { "type": "string", "pattern": "^[a-z]+(-[a-z0-9]+)*$", "$comment": "naming: word" },
+    "ruleName": { "type": "string", "pattern": "^[a-z]+(-[a-z0-9]+)*(\\.[a-z]+(-[a-z0-9]+)*)*$", "$comment": "naming: rule" },
+    "packId": { "type": "string", "pattern": "^[a-z]+(-[a-z0-9]+)*$", "$comment": "naming: pack" },
+    "unitId": { "type": "string", "pattern": "^(ch|pg|ce|lc|bk)-(?:0|m?[1-9][0-9]*)-(?:0|m?[1-9][0-9]*)$", "$comment": "naming: unit" },
+    "levelName": { "type": "string", "pattern": "^l[0-4]$", "$comment": "naming: level" },
+    "mapId": { "type": "string", "pattern": "^[a-z][a-z0-9]*(-[a-z0-9]+)*$", "$comment": "naming: map" },
+    "pageId": { "type": "string", "pattern": "^(pg|ce)-(?:0|m?[1-9][0-9]*)-(?:0|m?[1-9][0-9]*)/[a-z][a-z0-9]*(-[a-z0-9]+)*$", "$comment": "naming: page" },
+    "view": { "description": "The judging views (docs/foundations.md): eye level, the street stop, into it (about 12 m up), the city camera.", "enum": ["eye-level", "street-stop", "into-it", "city-camera"] },
+    "perMille": { "type": "integer", "minimum": 0, "maximum": 1000 },
+    "mm": { "type": "integer", "description": "Millimetres." },
+    "vec3mm": { "type": "array", "items": { "type": "integer" }, "minItems": 3, "maxItems": 3, "description": "x, y, z in millimetres." },
+    "size3mm": { "type": "array", "items": { "type": "integer", "minimum": 0 }, "minItems": 3, "maxItems": 3, "description": "Width, height, depth in millimetres." },
+    "millidegrees": { "type": "integer", "minimum": 0, "maximum": 359999 },
+    "date": {
+      "description": "A year, and a month when known. The precision field says which is meant.",
+      "type": "object", "additionalProperties": false, "required": ["year"],
+      "properties": {
+        "year": { "type": "integer", "minimum": 1000, "maximum": 9999 },
+        "month": { "type": "integer", "minimum": 1, "maximum": 12 }
+      }
+    },
+    "dateOrNull": { "anyOf": [{ "$ref": "#/$defs/date" }, { "type": "null" }] },
+    "provenance": {
+      "description": "Whose the fact is (docs/facts-contract.md): simulated, decided by the engine; generated-past, written once by the pack's script before the people's start year; derived, an actor's decision made by our rule; authored, by hand. The word engine is retired.",
+      "enum": ["simulated", "generated-past", "derived", "authored"]
+    },
+    "precision": { "enum": ["year", "decade", "month"] },
+    "screen": {
+      "description": "Its place among the five kinds of thing on screen. fact: canonical, from the record. interpretation: a visual reading of facts (a shabby front from age and upkeep). texture: seeded, stable, claims no history. perceived: a person's account or a record such as a poster, which may be wrong. Local scene state is the fifth and is never stored in a record (decisions D12.6).",
+      "enum": ["fact", "interpretation", "texture", "perceived"]
+    },
+    "eventScreen": { "description": "An event is history, so it is a fact or someone's account of one.", "enum": ["fact", "perceived"] },
+    "actor": {
+      "description": "Who acted: a record (a person, household or keeper by id), a role in plain words ('a cannery owner'), or nature ('frost'). Before the people's start year actors are roles, never persons.",
+      "oneOf": [
+        { "type": "object", "additionalProperties": false, "required": ["id"], "properties": { "id": { "$ref": "#/$defs/recordId" } } },
+        { "type": "object", "additionalProperties": false, "required": ["role"], "properties": { "role": { "type": "string", "minLength": 1 } } },
+        { "type": "object", "additionalProperties": false, "required": ["nature"], "properties": { "nature": { "$ref": "#/$defs/word" } } }
+      ]
+    },
+    "value": {
+      "description": "A param value: integers, words, booleans and lists or maps of them. No fractions: facts, plans and lives are integers (decisions D2.2).",
+      "anyOf": [
+        { "type": "integer" }, { "type": "string" }, { "type": "boolean" }, { "type": "null" },
+        { "type": "array", "items": { "$ref": "#/$defs/value" } },
+        { "type": "object", "additionalProperties": { "$ref": "#/$defs/value" } }
+      ]
+    },
+    "params": { "type": "object", "additionalProperties": { "$ref": "#/$defs/value" } },
+    "where": {
+      "description": "Where the thing stands. at is the origin of its own frame (the kind file says where that is) in the frame of the record named by in, or in the pack's world frame (x east, y north, z up) when in is absent. heading turns its frame about z, counter-clockwise from the parent's x.",
+      "type": "object", "additionalProperties": false, "required": ["at", "heading"],
+      "properties": {
+        "in": { "$ref": "#/$defs/recordId" },
+        "at": { "$ref": "#/$defs/vec3mm" },
+        "heading": { "$ref": "#/$defs/millidegrees" },
+        "size": { "type": "array", "items": { "type": "integer", "minimum": 0 }, "minItems": 2, "maxItems": 2, "description": "Its footprint's width and depth in millimetres, when the kind has one." }
+      }
+    },
+    "eventWhere": {
+      "description": "Which parts of the thing an event touched.",
+      "type": "object", "additionalProperties": false, "required": ["slots"],
+      "properties": { "slots": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/slotId" } } }
+    },
+    "keeper": {
+      "type": "object", "additionalProperties": false, "required": ["from", "keeper", "provenance"],
+      "properties": {
+        "from": { "$ref": "#/$defs/date" },
+        "keeper": { "$ref": "#/$defs/actor" },
+        "provenance": { "$ref": "#/$defs/provenance" },
+        "precision": { "$ref": "#/$defs/precision" },
+        "event": { "$ref": "#/$defs/eventId", "description": "The event that made them keeper, or the first that shows them as keeper." },
+        "rule": { "$ref": "#/$defs/ruleName" },
+        "cause": { "type": "string" }
+      }
+    },
+    "care": {
+      "type": "object", "additionalProperties": false, "required": ["from", "care", "basis", "provenance"],
+      "properties": {
+        "from": { "$ref": "#/$defs/date" },
+        "care": { "$ref": "#/$defs/perMille" },
+        "basis": {
+          "description": "The facts the care comes from. Character is never one of them (Rule 8).",
+          "type": "array", "minItems": 1, "uniqueItems": true, "items": { "enum": ["money", "presence", "age", "events"] }
+        },
+        "provenance": { "$ref": "#/$defs/provenance" },
+        "rule": { "$ref": "#/$defs/ruleName" },
+        "event": { "$ref": "#/$defs/eventId" },
+        "cause": { "type": "string" }
+      }
+    },
+    "lifespan": {
+      "description": "From its making to its removal. A thing removed keeps its record.",
+      "type": "object", "additionalProperties": false, "required": ["from", "madeBy", "to", "removedBy"],
+      "properties": {
+        "from": { "$ref": "#/$defs/date" },
+        "madeBy": { "$ref": "#/$defs/eventId" },
+        "to": { "$ref": "#/$defs/dateOrNull" },
+        "removedBy": { "anyOf": [{ "$ref": "#/$defs/eventId" }, { "type": "null" }] }
+      }
+    },
+    "event": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "at", "precision", "kind", "params", "cause", "actor", "weight", "screen", "provenance"],
+      "properties": {
+        "id": { "$ref": "#/$defs/eventId" },
+        "at": { "$ref": "#/$defs/date" },
+        "precision": { "$ref": "#/$defs/precision" },
+        "kind": { "$ref": "#/$defs/word", "description": "What happened: built, shop-fitted, repainted. The kind file lists the words it admits." },
+        "params": { "$ref": "#/$defs/params" },
+        "cause": { "type": "string", "minLength": 1, "description": "Why, in plain words." },
+        "actor": { "$ref": "#/$defs/actor" },
+        "weight": { "$ref": "#/$defs/perMille" },
+        "where": { "$ref": "#/$defs/eventWhere" },
+        "screen": { "$ref": "#/$defs/eventScreen" },
+        "provenance": { "$ref": "#/$defs/provenance" },
+        "rule": { "$ref": "#/$defs/ruleName", "description": "The rule it follows. Required when derived; an authored event may name the rule it stands for." },
+        "engineEvent": { "$ref": "#/$defs/recordId", "description": "The engine's own id for a simulated event (e-...)." },
+        "supersededBy": { "$ref": "#/$defs/eventId", "description": "The simulated event that replaced this one. The replaced event stays, so every replacement is logged." },
+        "standIn": { "type": "boolean", "description": "Written by hand for a year after the show year, where only the engine's events will change the record: a test stand-in." }
+      },
+      "allOf": [
+        { "if": { "properties": { "provenance": { "const": "derived" } } }, "then": { "required": ["rule"] } },
+        { "if": { "properties": { "provenance": { "const": "simulated" } } }, "then": { "required": ["engineEvent"] } }
+      ]
+    },
+    "link": {
+      "description": "part-of: the group or place it belongs to (decisions D3.5). on: the plot or way it stands on. faces: a way a face looks onto. houses: a venture, household or room it holds. same-as: the engine's or another pack's record of the same thing. made-from: a thing its material came from.",
+      "type": "object", "additionalProperties": false, "required": ["rel", "id"],
+      "properties": {
+        "rel": { "enum": ["part-of", "on", "faces", "houses", "same-as", "made-from"] },
+        "id": { "$ref": "#/$defs/recordId" },
+        "from": { "$ref": "#/$defs/date" },
+        "to": { "$ref": "#/$defs/dateOrNull" }
+      }
+    },
+    "pin": {
+      "type": "object", "additionalProperties": false, "required": ["on", "set", "why", "by"],
+      "properties": {
+        "on": { "anyOf": [{ "$ref": "#/$defs/slotId" }, { "$ref": "#/$defs/fillId" }, { "$ref": "#/$defs/eventId" }] },
+        "set": { "$ref": "#/$defs/params" },
+        "why": { "type": "string", "minLength": 1 },
+        "by": { "$ref": "#/$defs/actor" },
+        "at": { "$ref": "#/$defs/date" }
+      }
+    }
+  }
+}

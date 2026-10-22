@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "note": "Fixture for LT1, authored by hand. Building diaries will come from the fabric pass (engine-requests: open items); until then these hand-written diaries stand in. They are look-test data, not simulated history.",
   "worldSeed": 1989,
   "street": {

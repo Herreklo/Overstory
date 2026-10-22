@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 2,
+  "part": "shopfront/shop-1930",
+  "version": 1,
+  "describes": "A functionalist shopfront: a fascia, a wide display window and a recessed door, fitted to the shop opening.",
+  "madeAs": "fitted",
+  "era": { "first": 1930, "last": 1950 },
+  "sizes": { "w": [2000, 8000], "h": [1500, 3000], "d": [100, 400] },
+  "fits": ["fitted"],
+  "pivot": "opening-bottom-left",
+  "sockets": [
+    { "name": "fascia", "accepts": ["sign"] },
+    { "name": "awning", "accepts": ["dressing"] }
+  ],
+  "removalMark": "mark/shopfront-line",
+  "motion": [
+    { "element": "body", "class": "still", "deform": "none" },
+    { "element": "door-leaf", "class": "hinged", "deform": "none" }
+  ],
+  "intrinsicChannels": ["face-kind", "edge-distance", "own-occlusion"],
+  "marks": [{ "name": "paint-edge-wear", "smallestFeatureMm": 4 }],
+  "shaderFamily": "street",
+  "materials": ["pine-board", "plate-glass"],
+  "function": { "python": null, "csharp": null },
+  "lifecycle": { "state": "draft" }
+}

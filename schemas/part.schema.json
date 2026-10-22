@@ -1,0 +1,133 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://overstory.invalid/schemas/part.schema.json",
+  "title": "Part",
+  "description": "A part's definition (packs/<pack>/parts/<path>.json): one part path and its variants, the narrowest family. It says how the part is made, the years it belongs to, the sizes and fits it takes, where it is held and what it holds, what its removal leaves, its levels, how it moves, the channels it carries in its mesh, its procedural marks, its shader family and where it stands in its life. Sizes are integer millimetres.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "part", "version", "describes", "madeAs", "era", "fits", "pivot", "sockets", "removalMark", "motion", "intrinsicChannels", "marks", "shaderFamily", "lifecycle"],
+  "properties": {
+    "schemaVersion": { "$ref": "record.schema.json#/$defs/schemaVersion" },
+    "part": { "$ref": "record.schema.json#/$defs/partPath" },
+    "version": { "type": "integer", "minimum": 1, "description": "Raised with every change to its mesh or function. Feeds the rulesetVersion of the hash chain." },
+    "describes": { "type": "string", "minLength": 1 },
+    "madeAs": { "description": "fixed: a judged mesh. fitted: a judged function whose inputs are facts. layer: a coat with no geometry of its own (paint, render, limewash), drawn in its host's surface.", "enum": ["fixed", "fitted", "layer"] },
+    "era": { "$ref": "#/$defs/era", "description": "The years it was made in. A fill's from must fall within it, or within its copied fill's." },
+    "variants": {
+      "description": "Its variants, each with its own years when narrower. Absent when the part has one form. A fill of a part with variants names one.",
+      "type": "array", "minItems": 1,
+      "items": {
+        "type": "object", "additionalProperties": false, "required": ["name"],
+        "properties": { "name": { "$ref": "record.schema.json#/$defs/word" }, "era": { "$ref": "#/$defs/era" } }
+      }
+    },
+    "sizes": {
+      "description": "The sizes it is made in: width, height and depth, each as [least, most] in millimetres. Required for fixed and fitted parts.",
+      "type": "object", "additionalProperties": false, "required": ["w", "h", "d"],
+      "properties": { "w": { "$ref": "#/$defs/range" }, "h": { "$ref": "#/$defs/range" }, "d": { "$ref": "#/$defs/range" } }
+    },
+    "fits": {
+      "description": "The fit modes it accepts, in the order the plan tries them (slot.schema.json's fill.fit.mode).",
+      "type": "array", "minItems": 1, "uniqueItems": true,
+      "items": { "$ref": "slot.schema.json#/$defs/fill/properties/fit/properties/mode" }
+    },
+    "stretch": {
+      "description": "How far stretch may scale it, per mille of its made size, along each axis.",
+      "type": "object", "additionalProperties": false,
+      "properties": { "w": { "$ref": "record.schema.json#/$defs/perMille" }, "h": { "$ref": "record.schema.json#/$defs/perMille" }, "d": { "$ref": "record.schema.json#/$defs/perMille" } }
+    },
+    "pivot": { "$ref": "record.schema.json#/$defs/word", "description": "Where its origin sits, as a named point of its slot (opening-bottom-left, socket-centre, surface-origin)." },
+    "sockets": {
+      "description": "The places it holds other parts, each with the families it accepts.",
+      "type": "array",
+      "items": {
+        "type": "object", "additionalProperties": false, "required": ["name", "accepts"],
+        "properties": {
+          "name": { "$ref": "record.schema.json#/$defs/word" },
+          "accepts": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "$ref": "kind.schema.json#/$defs/family" } }
+        }
+      }
+    },
+    "removalMark": {
+      "description": "The mark its removal leaves on its host when nothing says otherwise (a shopfront's line, a casing's ghost), or null.",
+      "anyOf": [{ "type": "null" }, { "$ref": "record.schema.json#/$defs/partPath" }]
+    },
+    "levels": {
+      "description": "Its five levels, each with its error, triangles, shadow role and collision role. Required once the part is judged.",
+      "type": "object", "additionalProperties": false, "required": ["l0", "l1", "l2", "l3", "l4"],
+      "properties": { "l0": { "$ref": "#/$defs/level" }, "l1": { "$ref": "#/$defs/level" }, "l2": { "$ref": "#/$defs/level" }, "l3": { "$ref": "#/$defs/level" }, "l4": { "$ref": "#/$defs/level" } }
+    },
+    "motion": { "$ref": "kind.schema.json#/properties/motion", "description": "Its elements' motion classes (a sash is hinged, the frame still)." },
+    "intrinsicChannels": {
+      "description": "What its mesh carries for itself (decisions D5.5). Everything else is extrinsic: per instance, field tile or map.",
+      "type": "array", "uniqueItems": true,
+      "items": { "enum": ["face-kind", "edge-distance", "own-occlusion", "hollow-rate", "flutter-weight", "element-depth", "rest-position", "element-index"] }
+    },
+    "marks": {
+      "description": "Its procedural marks, each with its smallest feature in millimetres. The texel of a surface it stands in is the coarser of its face class's and half its marks' smallest feature (schemas/maps.json).",
+      "type": "array",
+      "items": {
+        "type": "object", "additionalProperties": false, "required": ["name", "smallestFeatureMm"],
+        "properties": { "name": { "$ref": "record.schema.json#/$defs/word" }, "smallestFeatureMm": { "type": "integer", "minimum": 1 } }
+      }
+    },
+    "shaderFamily": { "$ref": "record.schema.json#/$defs/word", "description": "The shader family that draws it (street, stone, tree). Its shading over flat is budgeted per family in the kind files." },
+    "materials": { "type": "array", "uniqueItems": true, "items": { "$ref": "record.schema.json#/$defs/word" }, "description": "The pack materials it may be made of." },
+    "function": {
+      "description": "A fitted part's judged function: its entry point. Required when madeAs is fitted.",
+      "type": "object", "additionalProperties": false, "required": ["python", "csharp"],
+      "properties": {
+        "python": { "$ref": "kind.schema.json#/$defs/stageCommon/properties/python" },
+        "csharp": { "$ref": "kind.schema.json#/$defs/stageCommon/properties/csharp" }
+      }
+    },
+    "mesh": {
+      "description": "A fixed part's judged mesh: its source under blender/parts/ and the hash of its exported mesh. Required once a fixed part is judged.",
+      "type": "object", "additionalProperties": false, "required": ["source", "hash"],
+      "properties": {
+        "source": { "type": "string", "pattern": "^blender/parts/[a-z0-9_/.-]+$" },
+        "hash": { "$ref": "#/$defs/hash64" }
+      }
+    },
+    "lifecycle": {
+      "description": "draft: being made. judged: passed its review. library: in use in the town. deprecated: no new fills take it. removed: kept as a tombstone, its last judged mesh and function, so old records still draw.",
+      "type": "object", "additionalProperties": false, "required": ["state"],
+      "properties": {
+        "state": { "enum": ["draft", "judged", "library", "deprecated", "removed"] },
+        "since": { "$ref": "record.schema.json#/$defs/date" },
+        "tombstone": {
+          "type": "object", "additionalProperties": false, "required": ["version", "hash"],
+          "properties": { "version": { "type": "integer", "minimum": 1 }, "hash": { "$ref": "#/$defs/hash64" } }
+        }
+      },
+      "allOf": [{ "if": { "properties": { "state": { "const": "removed" } } }, "then": { "required": ["tombstone"] } }]
+    },
+    "note": { "type": "string" }
+  },
+  "allOf": [
+    { "if": { "properties": { "madeAs": { "enum": ["fixed", "fitted"] } } }, "then": { "required": ["sizes"] } },
+    { "if": { "properties": { "madeAs": { "const": "fitted" } } }, "then": { "required": ["function"] } },
+    { "if": { "properties": { "lifecycle": { "properties": { "state": { "enum": ["judged", "library", "deprecated", "removed"] } } }, "madeAs": { "enum": ["fixed", "fitted"] } } }, "then": { "required": ["levels"] } },
+    { "if": { "properties": { "lifecycle": { "properties": { "state": { "enum": ["judged", "library", "deprecated", "removed"] } } }, "madeAs": { "const": "fixed" } } }, "then": { "required": ["mesh"] } }
+  ],
+  "$defs": {
+    "era": {
+      "type": "object", "additionalProperties": false, "required": ["first", "last"],
+      "properties": {
+        "first": { "type": "integer", "minimum": 1000, "maximum": 9999 },
+        "last": { "anyOf": [{ "type": "integer", "minimum": 1000, "maximum": 9999 }, { "type": "null" }], "description": "Null while it is still made." }
+      }
+    },
+    "range": { "type": "array", "items": { "type": "integer", "minimum": 0 }, "minItems": 2, "maxItems": 2 },
+    "hash64": { "type": "string", "pattern": "^[0-9a-f]{16}$", "description": "A 64-bit hash as 16 hex digits." },
+    "level": {
+      "type": "object", "additionalProperties": false, "required": ["errorMm", "triangles", "shadow", "collision"],
+      "properties": {
+        "errorMm": { "type": "integer", "minimum": 0 },
+        "triangles": { "type": "integer", "minimum": 0 },
+        "shadow": { "description": "none: never casts. self: casts from this level's mesh. proxy: casts through its chunk's or cell's caster proxy (decisions D6.8).", "enum": ["none", "self", "proxy"] },
+        "collision": { "description": "none, proxy (joins its chunk's merged proxy) or full (its own mesh collides).", "enum": ["none", "proxy", "full"] }
+      }
+    }
+  }
+}

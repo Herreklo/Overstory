@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 2,
+  "part": "coat/paint",
+  "version": 1,
+  "describes": "A coat of oil paint on a timber front: its year and colour, drawn in its host's surface; older coats stay under it.",
+  "madeAs": "layer",
+  "era": { "first": 1800, "last": null },
+  "fits": ["exact"],
+  "pivot": "surface-origin",
+  "sockets": [],
+  "removalMark": null,
+  "motion": [{ "element": "body", "class": "still", "deform": "none" }],
+  "intrinsicChannels": [],
+  "marks": [{ "name": "brush", "smallestFeatureMm": 2 }],
+  "shaderFamily": "street",
+  "materials": ["oil-paint"],
+  "lifecycle": { "state": "draft" }
+}

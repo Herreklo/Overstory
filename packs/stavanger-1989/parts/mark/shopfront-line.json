@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 2,
+  "part": "mark/shopfront-line",
+  "version": 1,
+  "describes": "What a removed shopfront leaves on the front: the line of its fascia and frame, filled fixings and a patch of newer boards, as a dated mesh decal fitted to the removed part's outline.",
+  "madeAs": "fitted",
+  "era": { "first": 1800, "last": null },
+  "sizes": { "w": [500, 10000], "h": [500, 4000], "d": [0, 20] },
+  "fits": ["fitted"],
+  "pivot": "opening-bottom-left",
+  "sockets": [],
+  "removalMark": null,
+  "motion": [{ "element": "body", "class": "still", "deform": "none" }],
+  "intrinsicChannels": ["face-kind"],
+  "marks": [{ "name": "fixing-holes", "smallestFeatureMm": 6 }],
+  "shaderFamily": "street",
+  "function": { "python": null, "csharp": null },
+  "lifecycle": { "state": "draft" }
+}

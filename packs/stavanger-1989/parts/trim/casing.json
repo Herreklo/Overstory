@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 2,
+  "part": "trim/casing",
+  "version": 1,
+  "describes": "The boards that frame an opening on a timber front, fitted to it.",
+  "madeAs": "fitted",
+  "era": { "first": 1850, "last": null },
+  "variants": [
+    { "name": "straight" },
+    { "name": "arch", "era": { "first": 1905, "last": 1925 } }
+  ],
+  "sizes": { "w": [500, 6000], "h": [500, 3000], "d": [100, 300] },
+  "fits": ["fitted"],
+  "pivot": "opening-bottom-left",
+  "sockets": [],
+  "removalMark": null,
+  "motion": [{ "element": "body", "class": "still", "deform": "none" }],
+  "intrinsicChannels": ["face-kind", "edge-distance", "own-occlusion"],
+  "marks": [{ "name": "paint-edge-wear", "smallestFeatureMm": 4 }],
+  "shaderFamily": "street",
+  "materials": ["pine-board"],
+  "function": { "python": null, "csharp": null },
+  "lifecycle": { "state": "draft" }
+}

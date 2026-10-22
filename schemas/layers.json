@@ -1,0 +1,24 @@
+{
+ "schemaVersion": 2,
+ "describes": "The history layer registry (decisions §5 D5.6). Each layer names its page and channel, its inputs, the owner of its curve and what resets it. A layer's value at a date is its material's curve at rate x (date - reset + age offset): the page holds the rate, the piece table or facts buffer the reset year, h1.a the age offset (schemas/interval.schema.json). Every shader reads a layer through OS_History(address, layer) in one include, so a new layer takes a reserved channel or a new page and touches that include, never a kind. shared: baked on every page group. story: allocated per page group by the change query's weight, up to a cap; a group without it reads the material's quiet mean.",
+ "layers": [
+  { "id": "polish", "map": "h1", "channel": "r", "inputs": ["feet", "contact"], "curve": "material", "reset": "a new fill (the stone laid, a face re-dressed)", "budget": "shared", "status": "planned" },
+  { "id": "lichen", "map": "h1", "channel": "g", "inputs": ["sky-seen", "weather-exposure", "wind-salt", "sun-dose"], "curve": "material", "reset": "a new fill or coat; a works campaign that cleans", "budget": "shared", "status": "planned" },
+  { "id": "moss", "map": "h1", "channel": "b", "inputs": ["water-held", "sky-seen", "sun-dose", "feet"], "curve": "material", "reset": "a new fill or coat; a works campaign that cleans", "budget": "shared", "status": "planned" },
+  { "id": "wash", "map": "h2", "channel": "r", "inputs": ["flow", "weather-exposure"], "curve": "material", "reset": "a new coat; a works campaign that cleans", "budget": "story", "status": "planned" },
+  { "id": "deposit", "map": "h2", "channel": "g", "inputs": ["flow", "wetness", "sky-seen"], "curve": "material", "reset": "a new coat; a works campaign that cleans", "budget": "story", "status": "planned" },
+  { "id": "splash", "map": "h2", "channel": "b", "inputs": ["ground", "weather-exposure", "water-held"], "curve": "material", "reset": "a new coat or plinth", "budget": "story", "status": "planned" },
+  { "id": "contact", "map": "h2", "channel": "a", "inputs": ["feet", "affordances"], "curve": "material", "reset": "a new coat or fill", "budget": "story", "status": "planned" },
+  { "id": "carrier", "map": "h3", "channel": "r", "inputs": ["the water bake", "carrier sources (iron, copper)"], "curve": "material", "reset": "a new coat; the source removed and the face cleaned", "budget": "story", "status": "reserved" },
+  { "id": "soot", "map": "h3", "channel": "g", "inputs": ["chimneys", "traffic", "sky-seen"], "curve": "material", "reset": "a new coat; a works campaign that cleans", "budget": "story", "status": "reserved" },
+  { "id": "salt", "map": "h3", "channel": "b", "inputs": ["wind-salt", "water-held"], "curve": "material", "reset": "a new fill or coat", "budget": "story", "status": "reserved" }
+ ],
+ "notLayers": [
+  { "map": "h1", "channel": "a", "is": "the age offset, in the units of the interval's ageOffsetMonths, for every h1 to h3 layer at the texel" }
+ ],
+ "reserved": [
+  { "map": "h3", "channel": "a" },
+  { "map": "p1", "channel": "b" },
+  { "map": "p1", "channel": "a" }
+ ]
+}
