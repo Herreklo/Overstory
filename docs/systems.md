@@ -85,6 +85,7 @@ Every system, material and kind is studied twice before it is built (`CLAUDE.md`
 | Light and colour | `colour-and-shading.md`, `masters-of-colour.md` (thin) | `lighting-and-colour.md` |
 | Water, wear, growth, repairs | `repairs.md`, `stone.md`, `nature.md` | `materials-at-scale.md`, `history-in-things.md` |
 | History in things | `world-that-remembers.md`, `house-changes.md`, `repairs.md` | `history-in-things.md` |
+| History pages: binding, block compression, time inputs per texel, charts | `history-in-things.md` (Gu's factorisation), `wear.py` and `growth.py` (the laws) | `history-pages.md` (step 3's R0; bc7e's real error and the binding's cost learned at R2, chart waste at R3, border shimmer at R6) |
 | Tiers, instancing, quality control | `tools-and-performance.md` (thin) | `performance-at-scale.md` |
 | Kits and generators | `generating-the-past.md` (thin) | `kits-and-generation.md`, `where-generation-runs.md` |
 | Towns and cities | `urban-design.md`, `city-forces.md`, `city-types.md`, `town-change.md`, `stavanger-centre.md` | `kits-and-generation.md`, `urban-design.md` |
