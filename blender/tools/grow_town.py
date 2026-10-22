@@ -407,7 +407,7 @@ def mm(v):
 
 
 def to_fixture(town, seed):
-    out = dict(schemaVersion=1, note="The town above Harbour Row, grown by blender/tools/grow_town.py from the site facts below: a stand-in for the engine's fabric pass. Lengths in millimetres.",
+    out = dict(schemaVersion=2, note="The town above Harbour Row, grown by blender/tools/grow_town.py from the site facts below: a stand-in for the engine's fabric pass. Lengths in millimetres.",
                worldSeed=seed, site={k: (mm(v) if isinstance(v, float) else v) for k, v in SITE.items()}, provenance="generated-past")
     out["lanes"] = [dict(id=l["id"], name=l["name"], z=mm(l["z"]), width=mm(l["width"]), surface=l["surface"], laid=l["laid"], points=[[mm(x), mm(y)] for x, y in l["points"]]) for l in town["lanes"]]
     out["stairs"] = [dict(id=s["id"], name=s["name"], width=mm(s["width"]), points=[[mm(x), mm(y), mm(z)] for x, y, z in s["points"]]) for s in town["stairs"]]
