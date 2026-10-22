@@ -61,7 +61,7 @@ Nothing changes a vertex after the part has made it. Joint soil and moss may fol
 - The 1952 reset run stays a fact: bedded in cement, joints struck.
 
 **SN4 Form.** A stone is drawn as a mason leaves it, with few, large, planar marks.
-- **The face outline:** four to seven straight edges; zero to two knocked corners, each a planar chip; no per-vertex noise anywhere.
+- **The face outline:** four to seven straight edges; no per-vertex noise anywhere. Most stones have no knocked corner. Chips, each a planar cut, go on the corners of the mass (heads, kneelers, coping ends, the open ends of steps) and where a fact puts them, as on The Witness's final wall (`research-studios-stylised.md`).
 - **Beds and arrises:** beds flat, arrises square.
 - **Chamfers:** every exposed arris has a chamfer of 10 to 12 mm, at least 2 px at 8 m through the 28 mm lens, where L0 hands over to L1 (SN8). The nosing's rounding is wear, from the facts.
 - **A split face:** at most three planar facets, stepped at least 15 mm where laminae broke. Finer relief lives in the grain map.
@@ -72,7 +72,7 @@ Nothing changes a vertex after the part has made it. Joint soil and moss may fol
 - soil and moss in dry work;
 - mortar in the 1952 run and the 1961 panel.
 
-Widths are 4 to 12 mm in the walls and 4 to 10 mm between tread stones. A fill's value stays above the darkest cast shadow on open ground. No open gap under 2 px at the nearest view (fault: black slots).
+Widths are 4 to 12 mm in the walls and 4 to 10 mm between tread stones. A joint reads as a step in value, never a dark outline. In grey light its fill is within about 6 L* of the faces beside it, and no light rim rings a stone: the two faults The Witness removed from its own wall (its slides 30 and 31; numbers measured on the slides, so they are starting values that R2a and R3 calibrate). No open gap under 2 px at the nearest view (fault: black slots).
 - **A wall's fill is one surface per panel**, a plane behind the faces at the joint depth, inclined at the batter: a few large triangles, not a strip per joint. The stones stand proud of it and the joints show it. Joints between tread stones fill to the bed below.
 
 **SN6 Detail from shared sculpted faces** (the craft study's In short 6). Each working (the split face, the dressed top, the coping's top) has a texture array of face patches made once: four split-face patches and two tops to start. Each patch is about 0.5 m at 1 mm a texel, with height, normal and one value channel. Each stone picks a patch, an offset and a turn by its seed, in metric UVs. The tiled grain map leaves the stone's faces.
@@ -80,7 +80,7 @@ Widths are 4 to 12 mm in the walls and 4 to 10 mm between tread stones. A fill's
 - **Faded by footprint** (`OS_Near`): relief and value are true up close and merge to the face's one value before they fall under 2 px.
 - **Specular filtering:** Stone.shader calls Unity's `GeometricNormalFiltering` (Tokuyoshi and Kaplanyan) on the patch normal, against the one-pixel lines and specks.
 
-**SN7 Restraint.** One value per stone face, its hue within the stone's range, and at most one accent where a fact puts it. The walking surface is the calmest part. Three marks are drawn in 2b, and every other mark the shader and the bake make is cut, its fact kept:
+**SN7 Restraint.** One value per stone face, its hue within the stone's range, and at most one accent where a fact puts it. The walking surface is the calmest part. Starting numbers, from The Witness's final wall (unverified, calibrated at R2a and R3): in grey light a face holds within about 2 L*, and neighbouring stones are 1 to 6 L* apart. Detail is medium frequency; edges are drawn by light on the lit arris, never by a dark line beneath it. Three marks are drawn in 2b, and every other mark the shader and the bake make is cut, its fact kept:
 
 | Mark | In 2b | Where it returns |
 | --- | --- | --- |
@@ -162,7 +162,7 @@ The redraw is done when all of these hold, the numbers first and the eyes last:
 4. **Clean:** SN9's checks pass. On the golden frames, at native size:
    - one-pixel lines (a white top-hat, long pieces over 10 px) fall by at least 90% from the baseline and are none on nosings;
    - specks are none;
-   - the joints' 5th percentile of L* sits above the darkest cast shadow on open ground.
+   - the joints' 5th percentile of L* sits above the darkest cast shadow on open ground, and their median is within 6 L* of the faces beside them in grey light (SN5).
 5. **Restrained:**
    - at one-eighth size, the stone's busyness (edge density and high-frequency share of L*) at the street view is within 25% of the target frame's, in the same mask;
    - at eye-foot and eye-on, within 25% of the eye-level target's (R3);
@@ -191,7 +191,7 @@ The redraw is done when all of these hold, the numbers first and the eyes last:
 | R0 | Today's gully A/B, at the five views in drizzle and the blue hour; busyness measured on today's gully, the clay and the street target | the frame budget's base; Done 5's calibration | yes, when the lock is free |
 | R0b | Shading only, on today's mesh, one change at a time: the stone's own (`GeometricNormalFiltering`, the joint value floor, the cut marks off) and the pipeline's (bloom with a Karis average, shadow normal bias 0.5 against 0.2, SSAO off), the pipeline's as overrides at render time, never saved; one-pixel lines and specks counted at native size | how much of the lines and specks the redraw owns | yes, in R0's run |
 | R1 | Elevations in integer mm: every wall unrolled, by panel, its features first (heads, kneelers, knees, the step ends as occupied cells, the 1961 panel's edges, fallen stones), courses filled by choosing; the steps' stones and joints; SN10's tests; a 2D sheet | the layout is a mason's, before any mesh | no |
-| R2a | Look-dev: the six face patches, then a wall stone, a step and a coping at L0 and L1, grey first and then in material, in the target's light, at 1, 5 and 12 m; the L0 to L1 switch A/B'd at 8, 10 and 12 m | the surface model and the levels, on three stones before thousands | yes, to judge |
+| R2a | Look-dev: the six face patches, then a wall stone, a step and a coping at L0 and L1, grey first and then in material, in the target's light, at 1, 5 and 12 m; the L0 to L1 switch A/B'd at 8, 10 and 12 m, with the town's fog on | the surface model and the levels, on three stones before thousands | yes, to judge |
 | R2b | Grey form in Blender: the parts and the laying through the stages, every piece one grey; SN1, SN8 and SN9's checks; a quick sheet at the judging cameras in neutral light | the form and the counts, cheaply | no |
 | R3 | Grey form in Unity: the golden views in grey light, native crops, the frame-time A/B; then the eye-level target, painted over the eye-foot and eye-on grey renders with `blender/tools/paintover.py` as the street target was, the clay beside it as it is planned | form at the views, the cost, and the eye level's bar | yes |
 | R4 | Materials: the patches, the three marks, the bake's fields made calm, specular filtering; three lights; Done 4 and 5's frame checks | restraint and clean making | yes |
