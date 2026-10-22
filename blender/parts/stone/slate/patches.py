@@ -50,6 +50,9 @@ leave their spread to chance.
     python patches.py build [--out DIR]      write the maps and the manifest
     python patches.py check [--out DIR]      rebuild in memory and compare the pixel hashes with the manifest (exit 1)
 
+R2a's A/B arms (ARMS) are built and checked beside the patches, on the four split faces only: `slate-split-N-facets2-*`
+(facet_gain 2.0) and `slate-split-N-nominor-*` (minor=False, the major ledge alone), under "arms" in the manifest.
+
 Run with Blender's Python (numpy): /Applications/Blender.app/Contents/Resources/5.2/python/bin/python3.13
 """
 
@@ -76,6 +79,9 @@ V_LO, V_HI = 0.75, 1.25       # the value map's range, as a multiplier on the fa
 OUT = os.path.join(ROOT, "cache", "stone", "patches")
 MANIFEST = os.path.join(HERE, "patches.manifest.json")
 PATCHES = ("split-0", "split-1", "split-2", "split-3", "bed-0", "bed-1")
+# R2a's A/B arms on the split faces (reviews/lt1/port/2b/r2a/stones/plan.md, The patch array): slices 6 to 9 are facets
+# x2 on split-0..3, slices 10 to 13 the minor ledges off, as (suffix, make's keyword arguments).
+ARMS = (("facets2", {"facet_gain": 2.0}), ("nominor", {"minor": False}))
 
 # -- the rules' constants (mm unless said) -----------------------------------------------------------------------------
 
@@ -467,10 +473,11 @@ def _ledge_gaps(sp, L):
     raise AssertionError("no uneven spacing drawn in 64 tries")
 
 
-def split_patch(seed, name, layers=None, facet_gain=1.0):
+def split_patch(seed, name, layers=None, facet_gain=1.0, minor=True):
     """A split face's height (mm) and value multiplier, N x N, and its drawn parameters. With layers (a dict), also its
     facets alone and each boundary's trace and depth along u, for the sheet's measures. facet_gain scales the facets'
-    amplitude only (the sheet's A/B on the spread limit; 1 for the patches themselves)."""
+    amplitude only (the sheet's A/B on the spread limit; 1 for the patches themselves). minor=False builds only the
+    major ledge (R2a's arm, minor ledges off): every draw is made as before, so the rest of the face is the same."""
     pid = f"stone/slate/patch/{name}"
     params = {}
     rows = np.arange(N, dtype=np.float64)[:, None]
@@ -589,6 +596,8 @@ def split_patch(seed, name, layers=None, facet_gain=1.0):
         sw = (0.5 + 0.5 * wander(sf, swells, 0.5)) ** SWELL_POW
         drawn.append((kb, ka, big, most, share, lean, bev, ark, f, swells, e, widen, sw))
     for kb, ka, big, most, share, lean, bev, ark, f, swells, e, widen, sw in drawn:
+        if not (big or minor):
+            continue                                                    # the arm with the minor ledges off
         d_hi = most / 10.0
         d_lo = max(STEP_FLOOR_MAJOR if big else STEP_FLOOR_MIN, most * share // 100) / 10.0
         D1 = d_lo + (d_hi - d_lo) * sw                                  # its depth along u
@@ -610,6 +619,8 @@ def split_patch(seed, name, layers=None, facet_gain=1.0):
         raise_ = raise_ + D * brk * lip
     height = height + raise_
     params["step_list"] = slist
+    if not minor:
+        params["minor"] = False
 
     # 7. The fine planar tooth, coarser or finer by band, blended across the boundaries; faint, since detail finer than
     # a few mm fades first (its creases were short lines floating mid-face at 1 m).
@@ -778,10 +789,11 @@ def world_seed():
     return json.load(open(os.path.join(ROOT, "packs", PACK, "pack.json")))["worldSeed"]
 
 
-def make(name, seed, layers=None, facet_gain=1.0):
-    """A patch's maps and drawn parameters. facet_gain (split faces only) is the sheet's A/B on the spread limit."""
+def make(name, seed, layers=None, facet_gain=1.0, minor=True):
+    """A patch's maps and drawn parameters. facet_gain and minor (split faces only) are the A/B arms: the facets'
+    amplitude scaled, and the minor ledges off."""
     if name.startswith("split"):
-        height, mult, params = split_patch(seed, name, layers, facet_gain)
+        height, mult, params = split_patch(seed, name, layers, facet_gain, minor)
     else:
         height, mult, params = bed_patch(seed, name, layers)
     return encode(height, mult), params
@@ -823,6 +835,28 @@ def build(out=OUT, check=False):
                 if old["patches"].get(name, {}).get("files", {}).get(kind, {}).get("pixels") != entry["files"][kind]["pixels"]:
                     bad.append(f"{name} {kind}")
         print(name, "done", flush=True)
+    doc["arms"] = {}
+    for suffix, kw in ARMS:
+        for name in PATCHES:
+            if not name.startswith("split"):
+                continue
+            arm = f"{name}-{suffix}"
+            maps, params = make(name, seed, **kw)
+            entry = {"id": f"stone/slate/patch/{name}", "arm": suffix, "working": "split",
+                     "made": {k: v for k, v in kw.items()}, "files": {}, "drawn": params}
+            for kind, a in maps.items():
+                fn = f"slate-{arm}-{kind}.png"
+                entry["files"][kind] = {"file": os.path.relpath(os.path.join(out, fn), ROOT), "pixels": pixel_hash(a)}
+                if not check:
+                    png16(os.path.join(out, fn), a)
+                    assert pixel_hash(read16(os.path.join(out, fn))) == entry["files"][kind]["pixels"]
+            doc["arms"][arm] = entry
+            if old is not None:
+                for kind in maps:
+                    if old.get("arms", {}).get(arm, {}).get("files", {}).get(kind, {}).get("pixels") != \
+                            entry["files"][kind]["pixels"]:
+                        bad.append(f"{arm} {kind}")
+            print(arm, "done", flush=True)
     if check:
         if old is None:
             print("no manifest to check against")
