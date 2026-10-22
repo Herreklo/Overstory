@@ -4,7 +4,7 @@ The tools every later change to the world is judged with: mesh hashes, the golde
 
 Numbers do the first pass, eyes the second (`CLAUDE.md`, Using tokens well). A change that alters a hash, a golden frame, a frame time or a shimmer score is found by the tools; a reviewer then looks where they point.
 
-Everything runs on the reference machine (`docs/foundations.md`): the Mac mini with the M4, Unity 6000.6.6f1 in batch mode on `unity/` (the editor must not be open on it), Blender 5.2.2 in the background. Nothing here needs anything installed; what would make the tools better is at the end.
+Everything runs on the reference machine (`docs/foundations.md`): the Mac mini with the M4, Unity 6000.6.6f1 in batch mode on `unity/`, one job at a time through the Unity lock (`tools/unity_lock.py`; the unity-conventions skill, Using Unity), which waits while the editor or another job has it open, Blender 5.2.2 in the background. Nothing here needs anything installed; what would make the tools better is at the end.
 
 ## Mesh hashes
 
@@ -63,7 +63,7 @@ in the three lights (`1300-drizzle`, `1600-low-sun`, `1750-blue-hour`). Every fr
 
     tools/golden.sh [-moments 1600 -views street,high]
 
-renders into `reviews/golden/current/` (about 15 s for all fifteen frames) and compares into `reviews/golden/compare/` (about 10 s), both kept out of git, and exits 1 if a frame fails. A partial render compares only the frames it made. To accept a new baseline (only Øystein accepts one; the AI proposes it with its sheet):
+renders into `reviews/golden/current/` (about 15 s for all fifteen frames) and compares into `reviews/golden/compare/` (about 10 s), both kept out of git, and exits 1 if a frame fails. It runs under the Unity lock in timing mode, as the harness does (below), and writes `reviews/golden/compare/machine.json`. A partial render compares only the frames it made. To accept a new baseline (only Øystein accepts one; the AI proposes it with its sheet):
 
     blender -b --factory-startup --python blender/tools/golden_compare.py -- accept reviews/golden/current reviews/golden/baseline
 
@@ -142,7 +142,7 @@ Until then, the 22 October baseline stays the reference.
 
     tools/perf.sh [-runs 2] [-perf-only street,high] [-perf-frames 150] [-perf-rounds 2]
 
-composes, builds (about 6 minutes the first time, seconds after) and runs the player full screen at 2560 by 1440, about 11 minutes a run. Each run writes `reviews/perf/<date>/run-<n>/summary.json` and `summary.md`, with every frame in `frames.csv`, the screenshots and the player's log beside them (out of git); `runs.md` says how far the day's complete runs agree. The player takes the screen: leave the machine alone while it runs. The first attempt stopped part way (why is not known: a key, or another app taking the screen); a run that stops writes no summary and is left out of the comparison. A build rewrites some settings as housekeeping (URP's stripping prefilters, the default volume profile's list of overrides, the graphics settings' warm-up fields); `tools/perf.sh` puts back those that were clean before, so a run leaves git as it found it, and the golden views render bit-identical after it.
+composes, builds (about 6 minutes the first time, seconds after) and runs the player full screen at 2560 by 1440, about 11 minutes a run. Each run writes `reviews/perf/<date>/run-<n>/summary.json` and `summary.md`, with every frame in `frames.csv`, the screenshots and the player's log beside them (out of git); `runs.md` says how far the day's complete runs agree. The player takes the screen: leave the machine alone while it runs. A run never waits for a quiet machine, which never comes (Spotlight's `mds_stores` takes 30 to 40% of a core all the time, `mediaanalysisd` 50 to 86% since 19 October): `tools/perf.sh` runs under the Unity lock in timing mode, which waits only until no other Unity, Blender batch process or player of ours is running, and writes the machine's background load into each run's folder as `machine.json` (the busiest processes before the run and every 30 s during it, Spotlight's among them, and the load average). The first attempt stopped part way (why is not known: a key, or another app taking the screen); a run that stops writes no summary and is left out of the comparison. A build rewrites some settings as housekeeping (URP's stripping prefilters, the default volume profile's list of overrides, the graphics settings' warm-up fields); `tools/perf.sh` puts back those that were clean before, so a run leaves git as it found it, and the golden views render bit-identical after it.
 
 Two arms leave every pass on and set a shader keyword everywhere (step 3; `reviews/lt1/history/r2.md`): `-perf-passes history-off` (`OS_HISTORY_OFF`: every history layer at its material's quiet mean, no page or piece read) and `haze-off` (`OS_HAZE_OFF`: `OS_Atmosphere` skipped in the stone, street, tree and motes shaders); `LT1Golden.Views -history-off` or `-haze-off` renders the same arm. `-perf-scenes quad-rgba8,quad-bc7` adds the history quad (`LT1History`: 4,096 pieces reading three synthetic pages through `Shaders/History.hlsl`), measured in `all` and `history-off` from the empty scene's views; `summary.json` gives each segment's per-round offscreen medians (`round_offscreen_ms`).
 
@@ -154,7 +154,7 @@ A quad scene takes options after its format (`half`, `two`, `tile<k>` and R2c's 
 - offscreen agrees within 3% in 22 of 24; the other two (at the foot of the steps in drizzle and the blue hour) by 4.0 and 6.9%;
 - in low sun, the heaviest load, all three agree within 1.5% in every segment. The lighter the load, the more the M4's clocks wander, so the light views vary most.
 
-Earlier runs, measuring each segment once and then in rounds without the offscreen batches, disagreed by up to 8 to 10% on the frame and 7.5% on GPU time. With the offscreen batches in every segment, which keep the GPU busy, they agree as above; how much of that is the method and how much a quieter machine is not yet known, and more runs will tell. Other apps open on the machine (the Unity editor on another project, Blender, the Claude app) are part of the noise. The player draws what the golden views show: its street stop in low sun without the birch is within three 8-bit levels of the golden still in 92% of pixels (about a level darker on average), the rest at edges.
+Earlier runs, measuring each segment once and then in rounds without the offscreen batches, disagreed by up to 8 to 10% on the frame and 7.5% on GPU time. With the offscreen batches in every segment, which keep the GPU busy, they agree as above; how much of that is the method and how much a quieter machine is not yet known, and more runs will tell. Other apps open on the machine (the Unity editor on another project, Blender, the Claude app) are part of the noise; each run's `machine.json` names them. The player draws what the golden views show: its street stop in low sun without the birch is within three 8-bit levels of the golden still in 92% of pixels (about a level darker on average), the rest at edges.
 
 **Baseline** (21 October, run 1; run 2 within the spreads above):
 

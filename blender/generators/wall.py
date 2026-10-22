@@ -701,17 +701,18 @@ def build(which, unity=None, seed=1):
         for ob in obs:
             ob.select_set(True)
         bpy.context.view_layer.objects.active = obs[0]
-        bpy.ops.export_scene.fbx(filepath=path, use_selection=True, object_types={"MESH"}, axis_forward="Z",
-                                 axis_up="Y", bake_space_transform=True, apply_unit_scale=True,
-                                 apply_scale_options="FBX_SCALE_ALL", mesh_smooth_type="OFF", colors_type="LINEAR",
-                                 use_mesh_modifiers=False, add_leaf_bones=False, bake_anim=False, path_mode="STRIP",
-                                 embed_textures=False)
-        with open(path[:-4] + ".json", "w") as fh:
-            json.dump(info, fh, indent=1)
-        print("FBX", path)
         sys.path.append(os.path.join(HERE, "..", "tools"))
         import mesh_hash  # noqa: E402
-        mesh_hash.write_manifest(path)     # the mesh hashes beside the export (blender/tools/mesh_hash.py)
+        with ST.install_lock(path):        # the install step, under the Unity lock (tools/unity_lock.py)
+            bpy.ops.export_scene.fbx(filepath=path, use_selection=True, object_types={"MESH"}, axis_forward="Z",
+                                     axis_up="Y", bake_space_transform=True, apply_unit_scale=True,
+                                     apply_scale_options="FBX_SCALE_ALL", mesh_smooth_type="OFF", colors_type="LINEAR",
+                                     use_mesh_modifiers=False, add_leaf_bones=False, bake_anim=False, path_mode="STRIP",
+                                     embed_textures=False)
+            with open(path[:-4] + ".json", "w") as fh:
+                json.dump(info, fh, indent=1)
+            print("FBX", path)
+            mesh_hash.write_manifest(path)     # the mesh hashes beside the export (blender/tools/mesh_hash.py)
     return info
 
 

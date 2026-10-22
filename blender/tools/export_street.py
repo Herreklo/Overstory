@@ -47,10 +47,24 @@ MIN_GAP = 1.0  # metres between neighbouring buildings, eaves included
 GROUND_LINE = 1.0  # what stands below this height (steps, porches, bays) keeps behind the building line
 
 
+def install_lock(path):
+    """The Unity lock (tools/unity_lock.py) for one install into unity/Assets."""
+    tools = os.path.normpath(os.path.join(HERE, "..", "..", "tools"))
+    if tools not in sys.path:
+        sys.path.append(tools)
+    import unity_lock  # noqa: E402
+    return unity_lock.installing(path)
+
+
 def export_fbx(obj, path):
     bpy.ops.object.select_all(action="DESELECT")
     obj.select_set(True)
     bpy.context.view_layer.objects.active = obj
+    with install_lock(path):
+        _export_fbx(path)
+
+
+def _export_fbx(path):
     os.makedirs(os.path.dirname(path), exist_ok=True)
     bpy.ops.export_scene.fbx(
         filepath=path,
@@ -416,7 +430,7 @@ def main(argv):
         town=town_out(town, ground) if town else None,
     )
     os.makedirs(out_bld, exist_ok=True)
-    with open(os.path.join(out_bld, "street.json"), "w") as f:
+    with install_lock(os.path.join(out_bld, "street.json")), open(os.path.join(out_bld, "street.json"), "w") as f:
         json.dump(street, f, indent=2)
         f.write("\n")
     total = sum(b["tris"] for b in buildings)

@@ -34,7 +34,7 @@ import building  # noqa: E402
 import validate  # noqa: E402
 import bake  # noqa: E402
 from resolve import resolve  # noqa: E402
-from export_street import export_fbx, xyz  # noqa: E402
+from export_street import export_fbx, install_lock, xyz  # noqa: E402
 
 FOUNDATION = 8.0  # metres of foundation under the body, buried where the ground stands higher
 
@@ -113,7 +113,7 @@ def main(argv):
         export_fbx(b["obj"], os.path.join(unity, rel))
         rows.append(dict(arm=b["arm"], year=b["year"], letter=b["letter"], id=b["id"], file=rel,
                          position=xyz(*b["origin"]), yaw=round(b["yaw"], 4), middle=xyz(*b["mid"]), tris=b["tris"]))
-    with open(os.path.join(out, "time.json"), "w") as f:
+    with install_lock(os.path.join(out, "time.json")), open(os.path.join(out, "time.json"), "w") as f:
         json.dump(dict(style=style, worldSeed=ws, years=years, houses=[dict(letter=h["letter"], id=h["id"], heart=h["heart"]) for h in houses],
                        buildings=rows), f, indent=1)
         f.write("\n")

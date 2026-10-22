@@ -666,6 +666,16 @@ def _write_if_changed(path, text):
     return True
 
 
+def install_lock(path):
+    """The Unity lock (tools/unity_lock.py) for an install step into unity/Assets only: it waits while a Unity run, a
+    timing run or the editor has the project, so none of them sees an installed file rewritten under it."""
+    tools = os.path.normpath(os.path.join(HERE, "..", "..", "tools"))
+    if tools not in sys.path:
+        sys.path.append(tools)
+    import unity_lock  # noqa: E402
+    return unity_lock.installing(path)
+
+
 def write_export(path, meshes, info, obs=None):
     """The meshes (made now unless obs are given) written to path as FBX, the sidecar beside it as <name>.json, and
     the mesh hashes into the manifest beside them (blender/tools/mesh_hash.py). Returns the file's manifest entry.
@@ -689,22 +699,24 @@ def write_export(path, meshes, info, obs=None):
         new = mesh_hash.entry(trial)
     finally:
         shutil.rmtree(scratch, ignore_errors=True)
-    old = mesh_hash.entry(path) if os.path.exists(path) else None
-    if old == new:
-        print("FBX", path, "unchanged: left as it is")
-    else:
-        _export_fbx(path, obs)
-        print("FBX", path)
-    _write_if_changed(path[:-4] + ".json", json.dumps(info, indent=1))
-    manifest = mesh_hash.manifest_path(path)
-    held = {}
-    if os.path.exists(manifest):
-        with open(manifest) as fh:
-            held = json.load(fh)
-    if old == new and held.get(os.path.basename(path)) == new:
-        print("HASH", os.path.basename(path), new["hash"], f"{new['triangles']} triangles", "(unchanged) ->", manifest)
-        return new
-    return mesh_hash.write_manifest(path)     # the mesh hashes beside the export
+    with install_lock(path):                  # the install step, under the Unity lock
+        old = mesh_hash.entry(path) if os.path.exists(path) else None
+        if old == new:
+            print("FBX", path, "unchanged: left as it is")
+        else:
+            _export_fbx(path, obs)
+            print("FBX", path)
+        _write_if_changed(path[:-4] + ".json", json.dumps(info, indent=1))
+        manifest = mesh_hash.manifest_path(path)
+        held = {}
+        if os.path.exists(manifest):
+            with open(manifest) as fh:
+                held = json.load(fh)
+        if old == new and held.get(os.path.basename(path)) == new:
+            print("HASH", os.path.basename(path), new["hash"], f"{new['triangles']} triangles", "(unchanged) ->",
+                  manifest)
+            return new
+        return mesh_hash.write_manifest(path)     # the mesh hashes beside the export
 
 
 def build(which, unity=None, seed=1, spec=None, folder=""):
@@ -751,7 +763,8 @@ if __name__ == "__main__":
                          finish=sp.get("finish", "split"),
                          footfall=sp["footfall"], keepers=[[u["by"], u["since"], u["care"]] for u in sp["upkeep"]],
                          works=[[w["kind"], w["year"]] for w in sp["works"]])
-            with open(os.path.join(unity, "Assets", "Art", "Stone", "Variety", f"stone_{slug(nm)}.facts.json"), "w") as fh:
+            facts_path = os.path.join(unity, "Assets", "Art", "Stone", "Variety", f"stone_{slug(nm)}.facts.json")
+            with install_lock(facts_path), open(facts_path, "w") as fh:
                 json.dump(facts, fh, indent=1)
     else:
         build(which, unity)

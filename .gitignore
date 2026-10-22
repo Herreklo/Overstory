@@ -37,5 +37,8 @@ reviews/perf/**/*.png
 reviews/perf/**/player.log
 reviews/motion/current/
 
+# The Unity lock and its holder's record (tools/unity_lock.py)
+/.locks/
+
 # Local Python tools (FLIP, ffmpeg via imageio-ffmpeg)
 .venv/

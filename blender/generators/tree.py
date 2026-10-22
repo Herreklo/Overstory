@@ -1736,17 +1736,22 @@ def build(species, seed, age, quality=1.0, unity=None, events=(), exposure=0.0, 
     print("TREE", info)
     if unity:
         path = os.path.join(unity, "Assets", "Art", "Trees", species, name + ".fbx")
-        os.makedirs(os.path.dirname(path), exist_ok=True)
         bpy.ops.object.select_all(action="DESELECT")
         for ob in obs:
             ob.select_set(True)
         bpy.context.view_layer.objects.active = obs[0]
-        bpy.ops.export_scene.fbx(filepath=path, use_selection=True, object_types={"MESH"}, axis_forward="Z",
-                                 axis_up="Y", bake_space_transform=True, apply_unit_scale=True,
-                                 apply_scale_options="FBX_SCALE_ALL", mesh_smooth_type="OFF", colors_type="LINEAR",
-                                 use_mesh_modifiers=False, add_leaf_bones=False, bake_anim=False, path_mode="STRIP",
-                                 embed_textures=False)
-        print("FBX", path)
+        tools = os.path.normpath(os.path.join(HERE, "..", "..", "tools"))
+        if tools not in sys.path:
+            sys.path.append(tools)
+        import unity_lock  # noqa: E402
+        with unity_lock.installing(path):  # the install step, under the Unity lock (tools/unity_lock.py)
+            os.makedirs(os.path.dirname(path), exist_ok=True)
+            bpy.ops.export_scene.fbx(filepath=path, use_selection=True, object_types={"MESH"}, axis_forward="Z",
+                                     axis_up="Y", bake_space_transform=True, apply_unit_scale=True,
+                                     apply_scale_options="FBX_SCALE_ALL", mesh_smooth_type="OFF", colors_type="LINEAR",
+                                     use_mesh_modifiers=False, add_leaf_bones=False, bake_anim=False, path_mode="STRIP",
+                                     embed_textures=False)
+            print("FBX", path)
     return info
 
 
