@@ -56,22 +56,24 @@
      "cause": "the ironmonger retires"
     },
     {
+     "id": 7,
+     "year": 1996,
+     "kind": "repainted",
+     "params": {},
+     "cause": "new owners buy the house and paint it, the first coat since 1949",
+     "rule": "upkeep",
+     "provenance": "authored"
+    },
+    {
      "id": 6,
-     "year": 1988,
+     "year": 2000,
      "kind": "business_opened",
      "params": {
       "kind": "cafe",
       "name": "Kaffebrenneriet"
      },
-     "cause": "a young couple open a café in the empty shop; the rent is low after the crash"
-    },
-    {
-     "id": 7,
-     "year": 1996,
-     "kind": "repainted",
-     "params": {},
-     "cause": "the café's owners buy the house and paint it, the first coat since 1949",
-     "rule": "upkeep",
+     "cause": "a young couple open a café in the shop, empty since the ironmonger closed",
+     "rule": "trade",
      "provenance": "authored"
     },
     {
@@ -105,7 +107,7 @@
     }
    ],
    "provenance": "authored",
-   "note": "The corner's A: a faded jugend house over a café in its 1931 shop (1989); repainted; the café gone (2009); the shop taken out and its windows put back (2016)."
+   "note": "The corner's A: a faded jugend house over the ironmonger's empty 1931 shop (1989); new owners paint it (1996); a café in the shop (2000 to 2009); the shop taken out and its windows put back (2016)."
   },
   "B": {
    "id": 105,
@@ -160,7 +162,7 @@
     },
     {
      "id": 5,
-     "year": 1997,
+     "year": 2000,
      "kind": "shop_fitted",
      "params": {
       "cols": 2
@@ -171,7 +173,7 @@
     },
     {
      "id": 6,
-     "year": 1997,
+     "year": 2000,
      "kind": "business_opened",
      "params": {
       "kind": "bakery",
@@ -213,7 +215,7 @@
     }
    ],
    "provenance": "authored",
-   "note": "The corner's B: functionalist, rebuilt in 1936 after the 1884 house burned; crisp (1987); a bakery in its ground floor (1997); a balcony over the lane (2003)."
+   "note": "The corner's B: functionalist, rebuilt in 1936 after the 1884 house burned; crisp (1987); a bakery in its ground floor (2000); a balcony over the lane (2003)."
   },
   "C": {
    "id": 1203,
@@ -336,7 +338,7 @@
      "params": {
       "scope": "all"
      },
-     "cause": "the owner dies; the heirs live in Oslo"
+     "cause": "the owner died at the end of 1985; the house is shut up and boarded"
     },
     {
      "id": 5,
@@ -354,7 +356,7 @@
      "params": {
       "amount": 200
      },
-     "cause": "still empty; the heirs cannot agree to sell, and the roof lets in water",
+     "cause": "still empty, and the roof lets in water",
      "rule": "let_go",
      "provenance": "authored"
     },
@@ -397,7 +399,7 @@
     "w": 7000,
     "d": 7000
    },
-   "note": "The corner's D: a fisherman's house of 1828, empty and boarded since 1986; let go further (1995); bought and restored (2007)."
+   "note": "The corner's D: a fisherman's house of 1828, empty since its owner died (1985) and boarded (1986); let go further (1995); bought and restored (2007)."
   },
   "E": {
    "id": 304,
@@ -431,7 +433,7 @@
      "params": {
       "amount": 600
      },
-     "cause": "the last owner dies; the heirs live away and leave the house empty",
+     "cause": "empty since its last owner died in December 1989; nobody takes it on, and it is let go",
      "rule": "let_go",
      "provenance": "authored"
     },
@@ -464,7 +466,7 @@
     "w": 7000,
     "d": 7000
    },
-   "note": "The corner's E: the oldest and smallest (1826), kept in 1989; empty when its last owner dies (1993), boarded after a break-in (2008)."
+   "note": "The corner's E: the oldest and smallest (1826), kept in 1989; empty from its last owner's death (December 1989) and let go by 1993; boarded after a break-in (2008)."
   }
  },
  "shuffled": {
