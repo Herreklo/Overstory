@@ -71,6 +71,7 @@ Then, on Opus:
 **What goes to Øystein** (scope, play and permissions only, each with a recommendation; everything else is decided, recorded with its reasons, and shown to him as finished work he can overturn):
 - the walk mode at eye level, and whether people react to the camera, are tested in the greybox too (`docs/plan.md`, 1g).
 - the camera's play is settled by testing in the greybox, not by opinion (Øystein: "we have to test this"). See `docs/plan.md`, 1g.
+- after the port: installing Unity's IL2CPP module, to compare the player's rebuild times with Mono (scale test; `docs/research/building-blocks-decisions.md` §15). Recommended: yes, when step 5 needs it.
 - the reference downloads: approved (21 October). Each file is listed for him with its source and size before it is downloaded: Stavanger's rock, water, city-archive photos for houses and dress, and the large GDC decks.
 - which game comes first. Nothing is decided. The interface study designed for an observer (one of the three examples in `docs/living-world.md`, the three dials) as a test case; its play choices are defaults kept for when a game is designed (`docs/research/interface-and-inspection.md`, For Øystein).
 
