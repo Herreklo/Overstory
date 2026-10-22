@@ -14,6 +14,30 @@ Results that surprised us or might be new, newest first. Each says what the evid
 
 ---
 
+## LT1, port step 2b: the gully's stone redrawn (22 October)
+
+**Status:** craft studied, design and "done" written, pre-mortem next (`reviews/lt1/port/2b/design.md`).
+- **The question:** can the gully's stairs and cheek walls, redrawn as rigid stones laid by a mason's rules, hold up beside the target frame at every judging view? The test also asks whether they read as calm as the clay around them, show no fault of making, and cost a sixth of today's triangles within a frame-time budget.
+- **Why start again:** all four of Q14's conditions hold:
+  - the faults are in how the stone is made (sheared stones, wobbly outlines, open joints);
+  - it is far over budget (962,000 triangles);
+  - eight rounds of fixes did not converge;
+  - a basic rule is broken (rocks bend).
+
+  Øystein judged it up close on 22 October: "very buggy and not nice", "a bit much", "poorly made. loose lines etc".
+- **Kept:** the kind's stages, the record and facts, the set-out, upkeep, the laws, seeds, sidecar, hashes and tools.
+- **How it is judged:** the design's nine tests, at eye-foot, eye-on, street, into12 and high in drizzle, low sun and the blue hour, beside the target frame:
+  - rigid;
+  - laid true;
+  - in budget;
+  - clean;
+  - restrained;
+  - the old faults gone;
+  - facts kept;
+  - a strict review on Fable;
+  - new golden frames proposed to Øystein, who accepts a baseline.
+- **What it does not test:** distance levels (port step 5), history pages (step 3), and the setts, kerbs and plinths of the lane.
+
 ## LT1g: the playable corner, a clay town, a walk and a first case (22 October)
 
 **Status:** Phase 0 (design) done, 22 October. The record is in `reviews/lt1/playable/`:
