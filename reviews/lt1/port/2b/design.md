@@ -61,6 +61,7 @@ Nothing changes a vertex after the part has made it. Joint soil and moss may fol
 - The 1952 reset run stays a fact: bedded in cement, joints struck.
 
 **SN4 Form.** A stone is drawn as a mason leaves it, with few, large, planar marks.
+- **Every line is an edge of the form** (Øystein, 22 October: the loose lines were also "floating lines, disconnected from the shape"). A line on screen is an arris, a joint between two stones, or the boundary of a mark a fact puts there. It starts and ends at another edge, never in the middle of a face. No texture, shader term or strip piece draws a line of its own.
 - **The face outline:** four to seven straight edges; no per-vertex noise anywhere. Most stones have no knocked corner. Chips, each a planar cut, go on the corners of the mass (heads, kneelers, coping ends, the open ends of steps) and where a fact puts them, as on The Witness's final wall (`research-studios-stylised.md`).
 - **Beds and arrises:** beds flat, arrises square.
 - **Chamfers:** every exposed arris has a chamfer of 10 to 12 mm, at least 2 px at 8 m through the 28 mm lens, where L0 hands over to L1 (SN8). The nosing's rounding is wear, from the facts.
@@ -140,7 +141,8 @@ Low sun is measured and reported. Until 1c's beams it is not gated.
 - **slivers:** a face under 50 mm or 25°;
 - **joint depth** greater than width;
 - **open ends:** every wall end is a head; every run of coping ends at a head, a kneeler or a knee;
-- **chamfer width** under 2 px at 8 m through the 28 mm lens.
+- **chamfer width** under 2 px at 8 m through the 28 mm lens;
+- **floating lines** (SN4), on the golden frames at native size. Lines found by a top-hat in both polarities, over 10 px long, are compared with the mesh's own edges, from a render of piece ids and normals. Any line more than 2 px from an edge fails; none is allowed.
 
 **SN10 Bond is a number.**
 - No vertical joint within a lap of 0.4 of the course height (at least 40 mm) of one in the course below.
@@ -162,6 +164,7 @@ The redraw is done when all of these hold, the numbers first and the eyes last:
 4. **Clean:** SN9's checks pass. On the golden frames, at native size:
    - one-pixel lines (a white top-hat, long pieces over 10 px) fall by at least 90% from the baseline and are none on nosings;
    - specks are none;
+   - floating lines (SN9) are none;
    - the joints' 5th percentile of L* sits above the darkest cast shadow on open ground, and their median is within 6 L* of the faces beside them in grey light (SN5).
 5. **Restrained:**
    - at one-eighth size, the stone's busyness (edge density and high-frequency share of L*) at the street view is within 25% of the target frame's, in the same mask;
@@ -170,7 +173,8 @@ The redraw is done when all of these hold, the numbers first and the eyes last:
    - the reviewer reads the eighth-size frames.
 6. **The old faults gone,** each confirmed by a check or a native crop:
    - the four open faults: bent courses, the notch at the rest, pillows, the loose fan;
-   - the three shared ones: mottled treads, black slots, one-pixel lines.
+   - the three shared ones: mottled treads, black slots, one-pixel lines;
+   - floating lines, disconnected from the shape (Øystein, 22 October).
 7. **Facts kept:** every mark that reads as history traces to a record event; two builds hash the same.
 8. **Holds at every view:** a strict review on Fable, from native crops at eye-foot, eye-on, street, into12 and high in three lights, beside the street target and the eye-level target, says it holds, and says whether more than the stones must go (Q15).
 9. **Proposed, not accepted:** the new golden frames and their sheet go to Øystein, who alone accepts a baseline.
