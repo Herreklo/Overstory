@@ -16,7 +16,7 @@ Results that surprised us or might be new, newest first. Each says what the evid
 
 ## LT1, port step 2b: the gully's stone redrawn (22 October)
 
-**Status:** craft studied, design and "done" written, pre-mortem next (`reviews/lt1/port/2b/design.md`).
+**Status:** craft studied, design and "done" written, pre-mortem held and answered; building from R0 and R1 (`reviews/lt1/port/2b/design.md`, `premortem.md`). The pre-mortem changed the surface model to shared face patches, added a shading A/B on today's mesh (R0b), a look-dev rung on three stones (R2a), an eye-level target and an L1 that casts the shadows, cut the drawn marks to three, fixed the batter, and re-sized the build from 2.5 to 4 Opus-days.
 - **The question:** can the gully's stairs and cheek walls, redrawn as rigid stones laid by a mason's rules, hold up beside the target frame at every judging view? The test also asks whether they read as calm as the clay around them, show no fault of making, and cost a sixth of today's triangles within a frame-time budget.
 - **Why start again:** all four of Q14's conditions hold:
   - the faults are in how the stone is made (sheared stones, wobbly outlines, open joints);
