@@ -1,0 +1,334 @@
+Test 1, the tie script. case-spec.md's frozen block: sha256 876b3185a318b02b396eba56d509412bf17a452fd32c8f07a3c5da2e549d27e4
+
+=== Seed A: Agnes Fielding (e-6557), the Friday 15 December 1989 ===
+
+Tie counts at 1989-12 (kin and partners simulated or derived as labelled; coworkers and liking derived):
+  Hannah Tanner    kin 1  partner 0  coworkers 0  liked 1  disliked 0  (people tied: 2)
+  Olive Shaw       kin 2  partner 0  coworkers 3  liked 2  disliked 1  (people tied: 8)
+  Sean Hale        kin 1  partner 0  coworkers 3  liked 0  disliked 0  (people tied: 4)
+  Peter Lane       kin 2  partner 0  coworkers 2  liked 0  disliked 0  (people tied: 4)
+  the town: 69 living people, 138 tied pairs
+
+The visitors' ties (closeness by the spec's weights):
+  Hannah Tanner — Sid Tanner: kin = 3  [export: parents/kids (simulated)]
+  Hannah Tanner — Ben Reed: like +1 = 1  [e-6400 confide (derived)]
+  Olive Shaw — Eric Lane: kin = 3  [export: parents/kids (simulated)]
+  Olive Shaw — Peter Lane: kin = 3  [export: parents/kids (simulated)]
+  Olive Shaw — Sean Hale: cowork = 1  [pl-bar (derived)]
+  Olive Shaw — Evan Newman: cowork = 1  [pl-bar (derived)]
+  Olive Shaw — Peter Scott: cowork = 1  [pl-bar (derived)]
+  Olive Shaw — Ben Reed: like +1 = 1  [e-6414 friends (derived)]
+  Olive Shaw — Sam Brook: like +1 = 1  [e-6495 friends (derived)]
+  Olive Shaw — Karen Holmes: like -1 = -1  [e-6523 cold (derived)]
+
+Where the case's people are on the Friday (authored hours):
+  Hannah Tanner    home ltu18                  free, the Anchor from 18:00
+  Sid Tanner       home elsewhere              work pl-mill 09:00–17:00
+  Sean Hale        home elsewhere              work pl-bar 11:00–24:00
+  Olive Shaw       home row23                  work pl-bar 12:00–24:00, the Anchor from 18:00
+  Eric Lane        home elsewhere              work pl-harbour 09:00–17:00
+  Peter Lane       home C                      work pl-cafe13 10:00–18:00, the Anchor from 18:00
+  Sam Brook        home elsewhere              free, the Anchor from 18:00
+  Ben Reed         home elsewhere              free, the Anchor from 18:00
+  Evan Newman      home elsewhere              work pl-bar 12:00–24:00, the Anchor from 18:00
+  Peter Scott      home elsewhere              work pl-bar 12:00–24:00
+
+Walking minutes from the player's home (A):  B 0.3  C 1.1  E 2.0  cafe 5.2  htu21 1.1  ltd9 0.8  ltu18 0.8  row22 0.7  row23 0.6
+
+5861 lines tried (every order of up to 4 tellings from 10 candidates, from 10:00).
+Best line: Peter Lane → Hannah Tanner → Sean Hale → Olive Shaw = 35
+  Hannah 10:40 player; Olive 11:30 player; 11 heard before 18:00
+
+Best by first telling:
+  Peter Lane         35.0  Peter Lane → Hannah Tanner → Sean Hale → Olive Shaw
+  Hannah Tanner      20.0  Hannah Tanner → Olive Shaw
+  Sean Hale          20.0  Sean Hale → Olive Shaw → Hannah Tanner
+  Olive Shaw         20.0  Olive Shaw → Hannah Tanner
+  Sam Brook          20.0  Sam Brook → Hannah Tanner → Olive Shaw
+  Evan Newman        20.0  Evan Newman → Hannah Tanner → Olive Shaw
+  Peter Scott        20.0  Peter Scott → Hannah Tanner → Olive Shaw
+  (nobody)            0.0  (tell nobody)
+  Ben Reed            0.0  Ben Reed → Hannah Tanner
+  Sid Tanner        -10.0  Sid Tanner → Hannah Tanner → Sean Hale → Olive Shaw
+  Eric Lane         -30.0  Eric Lane → Hannah Tanner → Sean Hale → Olive Shaw
+
+The named lines:
+  Hannah then Olive, back to back            20.0  Hannah 10:15 player; Olive 10:32 player; 14 heard before 18:00
+  Olive then Hannah, back to back            20.0  Hannah 10:31 player; Olive 10:15 player; 14 heard before 18:00
+  Peter first                               -15.0  Hannah 18:00 bar; Olive 18:00 bar; 3 heard before 18:00
+  the page's line (Sean Hale first)         -20.0  Hannah 12:25 spread from Ben; Olive 10:55 spread from Sean; 14 heard before 18:00
+
+Pass lines:
+  branches at the first telling differ by ≥16          0.0  no
+  (kill line) branches within 8                        0.0  yes
+  best beats the page's line by ≥16                   55.0  yes
+  best beats Peter first by ≥16                       50.0  yes
+  the two back to back is not the best line           20.0  yes
+  the page's line reaches ≥6 by 18:00                 14.0  yes
+
+The same lines started later (the spec's check on waiting; not a pass line):
+  from 10:00: best of up to 2 tellings   20.0  Hannah Tanner → Olive Shaw         first-telling branches Hannah 20  Olive 20
+  from 11:00: best of up to 2 tellings   50.0  Hannah Tanner → Olive Shaw         first-telling branches Hannah 50  Olive 20
+  from 12:00: best of up to 2 tellings   50.0  Hannah Tanner → Olive Shaw         first-telling branches Hannah 50  Olive 50
+  from 13:00: best of up to 2 tellings   50.0  Hannah Tanner → Olive Shaw         first-telling branches Hannah 50  Olive 50
+  from 14:00: best of up to 2 tellings   50.0  Hannah Tanner → Olive Shaw         first-telling branches Hannah 50  Olive 50
+  from 15:00: best of up to 2 tellings   50.0  Hannah Tanner → Olive Shaw         first-telling branches Hannah 50  Olive 50
+  from 16:00: best of up to 2 tellings   50.0  Hannah Tanner → Olive Shaw         first-telling branches Hannah 50  Olive 50
+  from 17:00: best of up to 2 tellings   65.0  Olive Shaw → Hannah Tanner         first-telling branches Hannah 60  Olive 65
+
+The 27 vantage plans: best informed score min 0, median 35, max 35
+  seen Hannah Tanner, Olive Shaw    18 plans, best   35.0: Peter Lane → Hannah Tanner → Sean Hale → Olive Shaw
+  seen Olive Shaw                    6 plans, best   15.0: Peter Lane → Sean Hale → Ben Reed → Olive Shaw
+  seen Hannah Tanner                 1 plans, best   15.0: Peter Lane → Hannah Tanner
+  seen nobody                        2 plans, best    0.0: (tell nobody)
+
+The sweep: each spread parameter at ½ and 1½ times, each authored hour an hour either side.
+  tau ×0.5 (15)                best    0.0 (tell nobody)                                ranking flips  fails: branches at the first telling differ by ≥16; best beats Peter first by ≥16
+      flips: Hannah then Olive, back to back / Peter first
+      flips: Olive then Hannah, back to back / Peter first
+  tau ×1.5 (45)                best   55.0 Sean Hale → Hannah Tanner → Ben Reed → Olive ranking holds  fails: branches at the first telling differ by ≥16; the page's line reaches ≥6 by 18:00
+  tell ×0.5 (7.5)              best   20.0 Hannah Tanner → Olive Shaw                   ranking holds  fails: branches at the first telling differ by ≥16; the two back to back is not the best line
+  tell ×1.5 (22.5)             best   35.0 Sean Hale → Peter Lane → Hannah Tanner → Oli ranking holds  fails: branches at the first telling differ by ≥16; the page's line reaches ≥6 by 18:00
+  elsewhere ×0.5 (5)           best   20.0 Hannah Tanner → Olive Shaw                   ranking holds  fails: branches at the first telling differ by ≥16; the two back to back is not the best line
+  elsewhere ×1.5 (15)          best   50.0 Sean Hale → Hannah Tanner → Ben Reed → Olive ranking holds  fails: branches at the first telling differ by ≥16; the page's line reaches ≥6 by 18:00
+  w_kin ×0.5 (1.5)             best   35.0 Peter Lane → Hannah Tanner → Sean Hale → Oli ranking holds  fails: branches at the first telling differ by ≥16
+  w_kin ×1.5 (4.5)             best   35.0 Peter Lane → Hannah Tanner → Sean Hale → Oli ranking holds  fails: branches at the first telling differ by ≥16
+  w_partner ×0.5 (1.5)         best   35.0 Peter Lane → Hannah Tanner → Sean Hale → Oli ranking holds  fails: branches at the first telling differ by ≥16
+  w_partner ×1.5 (4.5)         best   35.0 Peter Lane → Hannah Tanner → Sean Hale → Oli ranking holds  fails: branches at the first telling differ by ≥16
+  w_cowork ×0.5 (0.5)          best   35.0 Peter Lane → Hannah Tanner → Sean Hale → Oli ranking holds  fails: branches at the first telling differ by ≥16
+  w_cowork ×1.5 (1.5)          best   50.0 Hannah Tanner → Sean Hale → Olive Shaw       ranking holds  all pass lines hold
+  w_like ×0.5 (0.5)            best   50.0 Hannah Tanner → Sean Hale → Olive Shaw       ranking holds  all pass lines hold
+  w_like ×1.5 (1.5)            best   35.0 Peter Lane → Hannah Tanner → Sean Hale → Oli ranking holds  fails: branches at the first telling differ by ≥16
+  work -1 h                    best   10.0 Peter Lane → Hannah Tanner → Sean Hale → Oli ranking flips  fails: branches at the first telling differ by ≥16
+      flips: Hannah then Olive, back to back / Peter first
+      flips: Olive then Hannah, back to back / Peter first
+  work +1 h                    best   50.0 Hannah Tanner → Olive Shaw                   ranking flips  fails: branches at the first telling differ by ≥16; the two back to back is not the best line
+      flips: Peter first / the page's line (Sean Hale first)
+  place_hours -1 h             best   20.0 Hannah Tanner → Olive Shaw                   ranking flips  fails: branches at the first telling differ by ≥16; the two back to back is not the best line
+      flips: Peter first / the page's line (Sean Hale first)
+  place_hours +1 h             best   20.0 Hannah Tanner → Olive Shaw                   ranking flips  fails: branches at the first telling differ by ≥16; the two back to back is not the best line
+      flips: Peter first / the page's line (Sean Hale first)
+  bar_lead -1 h                best   35.0 Peter Lane → Hannah Tanner → Ben Reed → Oliv ranking holds  fails: branches at the first telling differ by ≥16; the page's line reaches ≥6 by 18:00
+  bar_lead +1 h                best   50.0 Hannah Tanner → Ben Reed → Olive Shaw        ranking holds  all pass lines hold
+  bar_staff -1 h               best   50.0 Hannah Tanner → Olive Shaw                   ranking flips  fails: branches at the first telling differ by ≥16; the two back to back is not the best line; the page's line reaches ≥6 by 18:00
+      flips: Peter first / the page's line (Sean Hale first)
+  bar_staff +1 h               best   20.0 Hannah Tanner → Olive Shaw                   ranking holds  fails: branches at the first telling differ by ≥16; the two back to back is not the best line
+  regulars -1 h                best    0.0 (tell nobody)                                ranking flips  fails: branches at the first telling differ by ≥16
+      flips: Peter first / the page's line (Sean Hale first)
+  regulars +1 h                best   35.0 Peter Lane → Hannah Tanner → Sean Hale → Oli ranking holds  fails: branches at the first telling differ by ≥16
+
+=== Seed B: Andy Shaw (e-8899), the Friday 16 October 1998 ===
+
+Tie counts at 1998-10 (kin and partners simulated or derived as labelled; coworkers and liking derived):
+  Trevor Lane      kin 1  partner 0  coworkers 0  liked 3  disliked 0  (people tied: 4)
+  Ben Reed         kin 0  partner 1  coworkers 0  liked 5  disliked 0  (people tied: 5)
+  Oliver Brook     kin 2  partner 1  coworkers 5  liked 6  disliked 1  (people tied: 12)
+  Evan Newman      kin 0  partner 0  coworkers 3  liked 2  disliked 2  (people tied: 6)
+  the town: 76 living people, 243 tied pairs
+
+The visitors' ties (closeness by the spec's weights):
+  Trevor Lane — Eric Lane: kin = 3  [export: parents/kids (simulated)]
+  Trevor Lane — Audrey Scott: like +1 = 1  [e-6371 keep (derived)]
+  Trevor Lane — Kate Holmes: like +1 = 1  [e-7238 keep (derived)]
+  Trevor Lane — John Holmes: like +1 = 1  [e-8310 keep (derived)]
+  Ben Reed — Olive Shaw: partner, like +2 = 5  [e-6414 friends (derived); e-8002 confide (derived); partner partner.since (simulated)]
+  Ben Reed — Hannah Tanner: like +4 = 4  [e-6400 confide (derived); e-6592 keep (derived); e-7484 confide (derived); e-8141 confide (derived)]
+  Ben Reed — Tess Lane: like +1 = 1  [e-6839 friends (derived)]
+  Ben Reed — Neil Lyons: like +1 = 1  [e-6973 friends (derived)]
+  Ben Reed — Sam Brook: like +1 = 1  [e-7263 friends (derived)]
+  Oliver Brook — Eric Lane: cowork, like +3 = 4  [e-7638 confide (derived); e-7778 confide (derived); e-8600 keep (derived); pl-harbour (derived)]
+  Oliver Brook — Greta Brook: kin = 3  [export: parents/kids (simulated)]
+  Oliver Brook — Sam Brook: kin = 3  [export: parents/kids (simulated)]
+  Oliver Brook — Agnes Tanner: partner = 3  [partner partner.since (simulated)]
+  Oliver Brook — Oscar Ash: cowork, like +1 = 2  [e-8400 friends (derived); pl-harbour (derived)]
+  Oliver Brook — Bert Kemp: cowork, like +1 = 2  [e-6870 keep (derived); pl-harbour (derived)]
+  Oliver Brook — Sylvia Waller: like +2 = 2  [e-6810 friends (derived); e-8529 keep (derived)]
+  Oliver Brook — John Holmes: like +2 = 2  [e-6844 confide (derived); e-8175 confide (derived)]
+  Oliver Brook — Maisie Baker: cowork = 1  [pl-harbour (derived)]
+  Oliver Brook — Libby Fielding: cowork = 1  [pl-harbour (derived)]
+  Oliver Brook — Neil Lyons: like +1 = 1  [e-7853 friends (derived)]
+  Oliver Brook — Una Waller: like -1 = -1  [e-8363 dislike (derived)]
+
+Where the case's people are on the Friday (authored hours):
+  Hannah Tanner    home ltu18                  free, the Anchor from 18:00
+  Audrey Scott     home elsewhere              free
+  John Holmes      home elsewhere              work pl-mill 09:00–17:00, the Anchor from 18:00
+  Kate Holmes      home elsewhere              free
+  Olive Shaw       home row23                  free, the Anchor from 18:00
+  Trevor Lane      home elsewhere              free
+  Eric Lane        home elsewhere              work pl-harbour 09:00–17:00
+  Greta Brook      home elsewhere              free
+  Sam Brook        home elsewhere              free, the Anchor from 18:00
+  Oliver Brook     home B                      work pl-harbour 09:00–17:00, the Anchor from 18:00
+  Neil Lyons       home elsewhere              work pl-mill 09:00–17:00, the Anchor from 18:00
+  Sylvia Waller    home elsewhere              work pl-council 09:00–17:00, the Anchor from 18:00
+  Ben Reed         home row23                  free, the Anchor from 18:00
+  Tess Lane        home elsewhere              work pl-school 09:00–17:00, the Anchor from 18:00
+  Evan Newman      home elsewhere              work pl-bar 11:00–24:00, the Anchor from 18:00
+  Bert Kemp        home elsewhere              work pl-harbour 09:00–17:00
+  Agnes Tanner     home elsewhere              work pl-bar 12:00–24:00, the Anchor from 18:00
+  Oscar Ash        home elsewhere              work pl-harbour 09:00–17:00
+  Maisie Baker     home elsewhere              work pl-harbour 09:00–17:00
+  Libby Fielding   home elsewhere              work pl-harbour 09:00–17:00
+
+Walking minutes from the player's home (A):  B 0.3  C 1.1  E 2.0  cafe 5.2  htu21 1.1  ltd9 0.8  ltu18 0.8  row22 0.7  row23 0.6
+
+123521 lines tried (every order of up to 4 tellings from 20 candidates, from 10:00).
+Best line: Greta Brook = 3.33333
+  Trevor never; Ben 18:00 bar; Oliver 17:25 spread from Greta; 3 heard before 18:00
+
+Best by first telling:
+  Greta Brook         3.3  Greta Brook
+  (nobody)            0.0  (tell nobody)
+  Eric Lane          -6.7  Eric Lane → Oliver Brook
+  Oliver Brook       -6.7  Oliver Brook
+  Libby Fielding     -6.7  Libby Fielding → Oliver Brook
+  Bert Kemp          -6.7  Bert Kemp → Oliver Brook
+  Oscar Ash          -6.7  Oscar Ash → Oliver Brook
+  Maisie Baker       -6.7  Maisie Baker → Oliver Brook
+  Evan Newman       -31.7  Evan Newman → Greta Brook
+  John Holmes       -63.3  John Holmes
+  Neil Lyons        -63.3  Neil Lyons
+  Sylvia Waller     -71.7  Sylvia Waller → Greta Brook
+
+The named lines:
+  the page's line (Evan Newman first)       -35.0  Trevor never; Ben 18:00 bar; Oliver 18:00 bar; 7 heard before 18:00
+  Trevor then Ben, back to back            -158.3  Trevor 10:25 player; Ben 10:50 player; Oliver 17:20 spread from Sam; 48 heard before 18:00
+  Ben then Trevor, back to back            -158.3  Trevor 10:40 player; Ben 10:15 player; Oliver 17:15 spread from Sam; 48 heard before 18:00
+  Trevor, Ben, Oliver, back to back        -170.0  Trevor 10:25 player; Ben 10:50 player; Oliver 11:15 player; 53 heard before 18:00
+  Trevor, Oliver, Ben, back to back        -170.0  Trevor 10:25 player; Ben 11:15 player; Oliver 10:50 player; 53 heard before 18:00
+  Ben, Trevor, Oliver, back to back        -170.0  Trevor 10:40 player; Ben 10:15 player; Oliver 11:05 player; 53 heard before 18:00
+  Oliver, Ben, Trevor, back to back        -170.0  Trevor 11:15 player; Ben 10:50 player; Oliver 10:25 player; 53 heard before 18:00
+  Oliver, Trevor, Ben, back to back        -175.0  Trevor 10:50 player; Ben 11:15 player; Oliver 10:25 player; 54 heard before 18:00
+  Ben, Oliver, Trevor, back to back        -180.0  Trevor 11:05 player; Ben 10:15 player; Oliver 10:40 player; 55 heard before 18:00
+
+Pass lines:
+  branches at the first telling differ by ≥16        146.7  yes
+  (kill line) branches within 8                      146.7  no
+  best beats the page's line by ≥16                   38.3  yes
+  the two back to back is not the best line         -158.3  yes
+  the page's line reaches ≥6 by 18:00                  7.0  yes
+
+The same lines started later (the spec's check on waiting; not a pass line):
+  from 10:00: best of up to 2 tellings    3.3  Greta Brook                        first-telling branches Trevor -158.333  Ben -158.333  Oliver -6.66667
+  from 11:00: best of up to 2 tellings    3.3  Greta Brook                        first-telling branches Trevor -158.333  Ben -158.333  Oliver -6.66667
+  from 12:00: best of up to 2 tellings    3.3  Greta Brook                        first-telling branches Trevor -158.333  Ben -158.333  Oliver -6.66667
+  from 13:00: best of up to 2 tellings    3.3  Greta Brook                        first-telling branches Trevor -146.667  Ben -146.667  Oliver -6.66667
+  from 14:00: best of up to 2 tellings    3.3  Greta Brook                        first-telling branches Trevor -120  Ben -106.667  Oliver -6.66667
+  from 15:00: best of up to 2 tellings    3.3  Greta Brook                        first-telling branches Trevor -65  Ben -41.6667  Oliver -6.66667
+  from 16:00: best of up to 2 tellings   33.3  Oliver Brook                       first-telling branches Trevor 21.6667  Ben 21.6667  Oliver 33.3333
+  from 17:00: best of up to 2 tellings   48.3  Trevor Lane → Oliver Brook         first-telling branches Trevor 48.3333  Ben 48.3333  Oliver 48.3333
+
+The 27 vantage plans: best informed score min 3.33333, median 3.33333, max 3.33333
+  seen Trevor Lane, Oliver Brook, Ben Reed 18 plans, best    3.3: Greta Brook
+  seen Oliver Brook, Ben Reed        6 plans, best    3.3: Greta Brook
+  seen Trevor Lane, Ben Reed         1 plans, best    3.3: Greta Brook
+  seen Ben Reed                      1 plans, best    3.3: Greta Brook
+  seen nobody                        1 plans, best    3.3: Greta Brook
+
+The sweep: each spread parameter at ½ and 1½ times, each authored hour an hour either side.
+  tau ×0.5 (15)                best   10.0 Greta Brook                                  ranking flips  all pass lines hold
+      flips: Ben then Trevor, back to back / Ben, Oliver, Trevor, back to back
+      flips: Ben then Trevor, back to back / Ben, Trevor, Oliver, back to back
+      flips: Ben then Trevor, back to back / Oliver, Ben, Trevor, back to back
+      flips: Ben then Trevor, back to back / Oliver, Trevor, Ben, back to back
+      flips: Ben then Trevor, back to back / Trevor, Ben, Oliver, back to back
+      flips: Ben then Trevor, back to back / Trevor, Oliver, Ben, back to back
+      flips: Ben then Trevor, back to back / the page's line (Evan Newman first)
+      flips: Ben, Oliver, Trevor, back to back / Trevor then Ben, back to back
+      flips: Ben, Oliver, Trevor, back to back / the page's line (Evan Newman first)
+      flips: Ben, Trevor, Oliver, back to back / Oliver, Trevor, Ben, back to back
+      flips: Ben, Trevor, Oliver, back to back / Trevor then Ben, back to back
+      flips: Ben, Trevor, Oliver, back to back / the page's line (Evan Newman first)
+      flips: Oliver, Ben, Trevor, back to back / Oliver, Trevor, Ben, back to back
+      flips: Oliver, Ben, Trevor, back to back / Trevor then Ben, back to back
+      flips: Oliver, Ben, Trevor, back to back / the page's line (Evan Newman first)
+      flips: Oliver, Trevor, Ben, back to back / Trevor then Ben, back to back
+      flips: Oliver, Trevor, Ben, back to back / Trevor, Ben, Oliver, back to back
+      flips: Oliver, Trevor, Ben, back to back / the page's line (Evan Newman first)
+      flips: Trevor then Ben, back to back / Trevor, Ben, Oliver, back to back
+      flips: Trevor then Ben, back to back / Trevor, Oliver, Ben, back to back
+      flips: Trevor then Ben, back to back / the page's line (Evan Newman first)
+      flips: Trevor, Ben, Oliver, back to back / the page's line (Evan Newman first)
+      flips: Trevor, Oliver, Ben, back to back / the page's line (Evan Newman first)
+  tau ×1.5 (45)                best    8.3 Maisie Baker → Oscar Ash → Oliver Brook      ranking flips  fails: the page's line reaches ≥6 by 18:00
+      flips: Ben then Trevor, back to back / Oliver, Ben, Trevor, back to back
+      flips: Ben then Trevor, back to back / Oliver, Trevor, Ben, back to back
+      flips: Ben, Trevor, Oliver, back to back / Oliver, Trevor, Ben, back to back
+      flips: Oliver, Ben, Trevor, back to back / Trevor then Ben, back to back
+      flips: Oliver, Trevor, Ben, back to back / Trevor, Ben, Oliver, back to back
+      flips: Oliver, Trevor, Ben, back to back / Trevor, Oliver, Ben, back to back
+  tell ×0.5 (7.5)              best    3.3 Greta Brook                                  ranking holds  all pass lines hold
+  tell ×1.5 (22.5)             best    3.3 Greta Brook                                  ranking flips  fails: the page's line reaches ≥6 by 18:00
+      flips: Ben, Trevor, Oliver, back to back / Oliver, Trevor, Ben, back to back
+      flips: Oliver, Trevor, Ben, back to back / Trevor, Oliver, Ben, back to back
+  elsewhere ×0.5 (5)           best    3.3 Greta Brook                                  ranking flips  all pass lines hold
+      flips: Ben, Oliver, Trevor, back to back / Oliver, Trevor, Ben, back to back
+  elsewhere ×1.5 (15)          best    3.3 Greta Brook                                  ranking holds  fails: the page's line reaches ≥6 by 18:00
+  w_kin ×0.5 (1.5)             best    3.3 Greta Brook                                  ranking holds  all pass lines hold
+  w_kin ×1.5 (4.5)             best    3.3 Greta Brook                                  ranking holds  all pass lines hold
+  w_partner ×0.5 (1.5)         best    3.3 Greta Brook                                  ranking holds  all pass lines hold
+  w_partner ×1.5 (4.5)         best    3.3 Greta Brook                                  ranking holds  all pass lines hold
+  w_cowork ×0.5 (0.5)          best    3.3 Greta Brook                                  ranking holds  all pass lines hold
+  w_cowork ×1.5 (1.5)          best    3.3 Greta Brook                                  ranking flips  all pass lines hold
+      flips: Oliver, Trevor, Ben, back to back / Trevor, Ben, Oliver, back to back
+  w_like ×0.5 (0.5)            best    3.3 Greta Brook                                  ranking flips  all pass lines hold
+      flips: Oliver, Trevor, Ben, back to back / Trevor, Ben, Oliver, back to back
+  w_like ×1.5 (1.5)            best    3.3 Greta Brook                                  ranking holds  all pass lines hold
+  work -1 h                    best   10.0 Greta Brook                                  ranking flips  all pass lines hold
+      flips: Ben then Trevor, back to back / Ben, Oliver, Trevor, back to back
+      flips: Ben then Trevor, back to back / Ben, Trevor, Oliver, back to back
+      flips: Ben then Trevor, back to back / Oliver, Ben, Trevor, back to back
+      flips: Ben then Trevor, back to back / Oliver, Trevor, Ben, back to back
+      flips: Ben then Trevor, back to back / Trevor, Ben, Oliver, back to back
+      flips: Ben then Trevor, back to back / Trevor, Oliver, Ben, back to back
+      flips: Ben, Oliver, Trevor, back to back / Trevor then Ben, back to back
+      flips: Ben, Trevor, Oliver, back to back / Trevor then Ben, back to back
+      flips: Oliver, Ben, Trevor, back to back / Trevor then Ben, back to back
+      flips: Oliver, Trevor, Ben, back to back / Trevor then Ben, back to back
+      flips: Trevor then Ben, back to back / Trevor, Ben, Oliver, back to back
+      flips: Trevor then Ben, back to back / Trevor, Oliver, Ben, back to back
+  work +1 h                    best    1.7 Oliver Brook                                 ranking flips  fails: the page's line reaches ≥6 by 18:00
+      flips: Ben then Trevor, back to back / Ben, Oliver, Trevor, back to back
+      flips: Ben then Trevor, back to back / Ben, Trevor, Oliver, back to back
+      flips: Ben then Trevor, back to back / Oliver, Ben, Trevor, back to back
+      flips: Ben then Trevor, back to back / Oliver, Trevor, Ben, back to back
+      flips: Ben then Trevor, back to back / Trevor, Ben, Oliver, back to back
+      flips: Ben then Trevor, back to back / Trevor, Oliver, Ben, back to back
+      flips: Ben, Oliver, Trevor, back to back / Trevor then Ben, back to back
+      flips: Ben, Trevor, Oliver, back to back / Trevor then Ben, back to back
+      flips: Oliver, Ben, Trevor, back to back / Trevor then Ben, back to back
+      flips: Oliver, Trevor, Ben, back to back / Trevor then Ben, back to back
+      flips: Trevor then Ben, back to back / Trevor, Ben, Oliver, back to back
+      flips: Trevor then Ben, back to back / Trevor, Oliver, Ben, back to back
+  place_hours -1 h             best    3.3 Greta Brook                                  ranking holds  all pass lines hold
+  place_hours +1 h             best    3.3 Greta Brook                                  ranking holds  all pass lines hold
+  bar_lead -1 h                best    3.3 Greta Brook                                  ranking holds  fails: the page's line reaches ≥6 by 18:00
+  bar_lead +1 h                best    3.3 Greta Brook                                  ranking flips  all pass lines hold
+      flips: Ben then Trevor, back to back / the page's line (Evan Newman first)
+      flips: Ben, Oliver, Trevor, back to back / the page's line (Evan Newman first)
+      flips: Ben, Trevor, Oliver, back to back / the page's line (Evan Newman first)
+      flips: Oliver, Ben, Trevor, back to back / the page's line (Evan Newman first)
+      flips: Oliver, Trevor, Ben, back to back / the page's line (Evan Newman first)
+      flips: Trevor then Ben, back to back / the page's line (Evan Newman first)
+      flips: Trevor, Ben, Oliver, back to back / the page's line (Evan Newman first)
+      flips: Trevor, Oliver, Ben, back to back / the page's line (Evan Newman first)
+  bar_staff -1 h               best    3.3 Greta Brook                                  ranking holds  fails: the page's line reaches ≥6 by 18:00
+  bar_staff +1 h               best    3.3 Greta Brook                                  ranking flips  all pass lines hold
+      flips: Ben then Trevor, back to back / Oliver, Trevor, Ben, back to back
+      flips: Ben then Trevor, back to back / Trevor, Oliver, Ben, back to back
+      flips: Ben then Trevor, back to back / the page's line (Evan Newman first)
+      flips: Ben, Oliver, Trevor, back to back / the page's line (Evan Newman first)
+      flips: Ben, Trevor, Oliver, back to back / Oliver, Trevor, Ben, back to back
+      flips: Ben, Trevor, Oliver, back to back / the page's line (Evan Newman first)
+      flips: Oliver, Ben, Trevor, back to back / Oliver, Trevor, Ben, back to back
+      flips: Oliver, Ben, Trevor, back to back / the page's line (Evan Newman first)
+      flips: Oliver, Trevor, Ben, back to back / Trevor then Ben, back to back
+      flips: Oliver, Trevor, Ben, back to back / Trevor, Ben, Oliver, back to back
+      flips: Oliver, Trevor, Ben, back to back / the page's line (Evan Newman first)
+      flips: Trevor then Ben, back to back / Trevor, Oliver, Ben, back to back
+      flips: Trevor then Ben, back to back / the page's line (Evan Newman first)
+      flips: Trevor, Ben, Oliver, back to back / the page's line (Evan Newman first)
+      flips: Trevor, Oliver, Ben, back to back / the page's line (Evan Newman first)
+  regulars -1 h                best    0.0 (tell nobody)                                ranking holds  all pass lines hold
+  regulars +1 h                best    3.3 Greta Brook                                  ranking holds  all pass lines hold

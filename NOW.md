@@ -49,7 +49,6 @@ What goes to him is in `CLAUDE.md` (How work runs). His decisions stand in their
 - after the port: installing Unity's IL2CPP module to compare the player's rebuild times with Mono (`docs/research/building-blocks-decisions.md` §15). Recommended: yes, when step 5 needs it;
 - the reference downloads, approved on 21 October: each file is still listed for him with its source and size first;
 - which game comes first: nothing is decided. The interface study's observer case keeps its play choices as defaults (`docs/research/interface-and-inspection.md`, For Øystein);
-- the player's place at A (`outline.md` §6): work at Peter's café, or live at A with no trade. Recommended: live at A. Before test 1 freezes;
 - the exit criteria in `CLAUDE.md` (What it is for), a draft to agree with him, and the band, proposed as a shared milestone with the engine (`docs/engine-requests.md`).
 
 ## Engine

@@ -319,7 +319,7 @@ Together, Phase 1 is 16.4 to 24 days, about 1.3 to 1.9 weeks of the weekly limit
 
 **Øystein's (scope and permissions only):**
 1. **Golden frames:** may each light stage's frames serve as the working regression reference until you accept them at your first light walk (L5) and at LR? Recommended: yes. Only you accept a baseline.
-2. **The player's place at A** (a play question, from test 5): the town's one café in 1989 is Peter Lane's, so the player cannot run a café of their own at A. Should the player work at Peter's café, which makes him the employer you would tell first, or live at A with no trade? Test 5 lays out both; you choose before test 1 freezes.
+2. **The player's place at A: decided.** Øystein chose on 22 October that the player lives at A with no trade (test 5's option H). The town's one café in 1989 is Peter Lane's, so the player runs no café; A's shop stands empty and the player watches from its windows. `case-spec.md` carries it.
 
 ## 7. Changes after the pre-mortem
 
