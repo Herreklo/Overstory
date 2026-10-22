@@ -16,11 +16,13 @@ namespace Overstory.EditorTools
     /// (blender/tools/golden_compare.py).
     ///
     ///     Unity -batchmode -quit -projectPath unity -executeMethod Overstory.EditorTools.LT1Golden.Views
-    ///         [-out reviews/golden/current] [-moments 1300,...] [-views eye-foot,...] [-tweak]
+    ///         [-out reviews/golden/current] [-moments 1300,...] [-views eye-foot,...] [-tweak] [-history-off] [-haze-off]
     ///
     /// Frames go to &lt;out&gt;/gully/&lt;moment&gt;/&lt;view&gt;.png with a frames.json beside them. -tweak is the
     /// comparison's own test: the slate's weathered colour a shade warmer, in memory only (never saved), so a known
-    /// small change must show in the heat map.
+    /// small change must show in the heat map. -history-off and -haze-off render the harness's arms of the same names
+    /// (OS_HISTORY_OFF, every history layer its material's quiet mean; OS_HAZE_OFF, the air's OS_Atmosphere skipped),
+    /// recorded in frames.json; with neither, the frames are today's.
     /// </summary>
     public static class LT1Golden
     {
@@ -49,6 +51,9 @@ namespace Overstory.EditorTools
                 }
             var frames = new List<string>();
             int msaa = 0;
+            bool historyOff = Cli.Flag("-history-off"), hazeOff = Cli.Flag("-haze-off");
+            Shader.SetKeyword(GlobalKeyword.Create("OS_HISTORY_OFF"), historyOff);
+            Shader.SetKeyword(GlobalKeyword.Create("OS_HAZE_OFF"), hazeOff);
             try
             {
                 foreach (var moment in LT1Stone.Moments)
@@ -76,13 +81,15 @@ namespace Overstory.EditorTools
                 {
                     what = "the gully's golden views (LT1Golden.Views)",
                     width = PlayerFrame.Width, height = PlayerFrame.Height, msaa = msaa, warmUp = WarmUp,
-                    tweak = Cli.Flag("-tweak"), unity = Application.unityVersion,
+                    tweak = Cli.Flag("-tweak"), historyOff = historyOff, hazeOff = hazeOff, unity = Application.unityVersion,
                     gpu = SystemInfo.graphicsDeviceName, api = SystemInfo.graphicsDeviceType.ToString(),
                     frames = frames.ToArray(),
                 }, true));
             }
             finally
             {
+                Shader.SetKeyword(GlobalKeyword.Create("OS_HISTORY_OFF"), false);
+                Shader.SetKeyword(GlobalKeyword.Create("OS_HAZE_OFF"), false);
                 urp.shadowDistance = reach;
                 foreach (var m in tweaked)
                     Object.DestroyImmediate(m);
@@ -96,7 +103,7 @@ namespace Overstory.EditorTools
         {
             public string what;
             public int width, height, msaa, warmUp;
-            public bool tweak;
+            public bool tweak, historyOff, hazeOff;
             public string unity, gpu, api;
             public string[] frames;
         }

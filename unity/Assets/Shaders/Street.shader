@@ -53,6 +53,7 @@ Shader "Overstory/Street"
 
             #pragma shader_feature_local _OS_WATER
             #pragma multi_compile_fragment _ _OS_LOOK_B _OS_LOOK_D _OS_LOOK_P
+            #pragma multi_compile_fragment _ OS_HAZE_OFF     // the harness's haze-off (OS_Atmosphere)
 
             // the same pipeline keywords as URP Lit, less lightmaps, decals and debug views
             #pragma multi_compile _ _MAIN_LIGHT_SHADOWS _MAIN_LIGHT_SHADOWS_CASCADE

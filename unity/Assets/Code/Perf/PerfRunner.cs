@@ -39,6 +39,12 @@ namespace Overstory.Perf
     /// in an unlit material. -perf-offscreen-scale 0.5 draws the offscreen
     /// frames at half the width and height, to tell the pixels' cost from the vertices'.
     ///
+    /// Two arms leave every pass on and set a shader keyword everywhere (step 3, history pages): 'history-off'
+    /// (OS_HISTORY_OFF, every history layer its material's quiet mean, no page read) and 'haze-off' (OS_HAZE_OFF, the
+    /// air's OS_Atmosphere skipped). -perf-scenes quad-rgba8,quad-bc7 adds the history quad (LT1History): every renderer
+    /// hidden but the motes and a full-screen grid of 4,096 pieces reading three synthetic pages through
+    /// Shaders/History.hlsl, RGBA8 or BC7, measured from the empty scene's views in 'all' and 'history-off' only.
+    ///
     /// The scale test (docs/research/scale-test.md): -district &lt;dir&gt; loads the district's chunk cache (DistrictLoader),
     /// times it and the rebuild benchmarks (DistrictBench) into the summary, and -perf-scenes district-near,district-l0,
     /// district-shells measures it from its own views (district.json; -perf-district-views keeps some) in each arm, with
@@ -95,6 +101,12 @@ namespace Overstory.Perf
         [Tooltip("The views the empty scene is measured from: nothing is in it but the sky, so one or two will do.")]
         public string[] emptyViews = { "street", "high" };
 
+        [Header("The history quad (step 3)")]
+        [Tooltip("The full-screen grid of pieces reading the history pages (LT1History.AddQuad): drawn only in the quad scenes.")]
+        public MeshRenderer historyQuad;
+        [Tooltip("The quad's pages, RGBA8 and BC7: the quad scene binds its own.")]
+        public HistoryPages pagesRGBA8, pagesBC7;
+
         [Header("The scale test")]
         [Tooltip("The district's loader: given -district <dir>, it loads the chunk cache there before anything is measured.")]
         public DistrictLoader district;
@@ -115,6 +127,10 @@ namespace Overstory.Perf
         /// <summary>Whether a configuration turns a pass off.</summary>
         static bool Off(string config, string pass) =>
             config == "bare" || config == "flat" || config == "-" + pass || (config == "-fullscreen" && System.Array.IndexOf(FullScreen, pass) >= 0);
+
+        // the arms that set a keyword for every shader (Shaders/History.hlsl; StreetSurface.hlsl's OS_Atmosphere)
+        static readonly GlobalKeyword HistoryOff = GlobalKeyword.Create("OS_HISTORY_OFF");
+        static readonly GlobalKeyword HazeOff = GlobalKeyword.Create("OS_HAZE_OFF");
 
         struct Seg
         {
@@ -206,9 +222,12 @@ namespace Overstory.Perf
                         string prefix = scene == "corner" ? "" : scene + "-";
                         string suffix = config == "all" ? "" : "/" + config;
                         bool inDistrict = scene.StartsWith("district");
+                        bool quad = scene.StartsWith("quad-");
+                        if (quad && config != "all" && config != "history-off")
+                            continue;
                         foreach (var v in inDistrict ? districtViews : views)
                         {
-                            if (scene == "empty" ? System.Array.IndexOf(emptyAt, v.name) < 0
+                            if (scene == "empty" || quad ? System.Array.IndexOf(emptyAt, v.name) < 0
                                 : inDistrict ? districtAt != null && System.Array.IndexOf(districtAt, v.name) < 0
                                 : keepViews != null && System.Array.IndexOf(keepViews, v.name) < 0)
                                 continue;
@@ -240,7 +259,8 @@ namespace Overstory.Perf
             // every renderer the corner draws but the motes, with whether it is drawn (the empty scene and the district
             // hide them all)
             var districts = district != null ? district.Renderers() : new HashSet<Renderer>();
-            var drawn = FindObjectsByType<Renderer>(FindObjectsInactive.Include, FindObjectsSortMode.None).Where(r => r != motes && !districts.Contains(r)).ToArray();
+            var drawn = FindObjectsByType<Renderer>(FindObjectsInactive.Include, FindObjectsSortMode.None)
+                .Where(r => r != motes && r != historyQuad && !districts.Contains(r)).ToArray();
             var drawnOn = drawn.Select(r => r.enabled).ToArray();
             var drawnWith = drawn.Select(r => r.sharedMaterials).ToArray();
             var targets = new Dictionary<int, RenderTexture>();
@@ -273,6 +293,8 @@ namespace Overstory.Perf
                     motes.enabled = false;                       // (the stage's motes set it from the rig on Apply)
                 camData.requiresColorOption = Off(config, "opaquetex") ? CameraOverrideOption.Off : colour0;
                 camData.requiresDepthOption = Off(config, "depthtex") ? CameraOverrideOption.Off : depth0;
+                Shader.SetKeyword(HistoryOff, config == "history-off");
+                Shader.SetKeyword(HazeOff, config == "haze-off");
             }
 
             var recorders = Counters.Select(c => ProfilerRecorder.StartNew(c.category, c.counter, 1)).ToArray();
@@ -307,6 +329,13 @@ namespace Overstory.Perf
                     district.Show(seg.scene.StartsWith("district-") ? seg.scene.Substring("district-".Length) : "", StreetSpace.ToUnity(seg.view.position));
                 if (seg.scene.StartsWith("district"))
                     Shader.SetGlobalFloat("_OS_Clay", 0f);      // (the district in its colours; the stage sets clay on Apply)
+                if (historyQuad != null)
+                {
+                    historyQuad.enabled = seg.scene.StartsWith("quad-");
+                    var pages = seg.scene == "quad-bc7" ? pagesBC7 : pagesRGBA8;
+                    if (historyQuad.enabled && pages != null)
+                        pages.Bind();
+                }
                 SetPasses(seg.passes);
             }
 
@@ -330,6 +359,7 @@ namespace Overstory.Perf
             var counts = segments.ToDictionary(s => s.name, _ => Counters.Select(__ => new List<long>()).ToArray());
             var roundMedians = segments.ToDictionary(s => s.name, _ => new List<double>());
             var offscreen = segments.ToDictionary(s => s.name, _ => new List<double>());
+            var roundOffscreen = segments.ToDictionary(s => s.name, _ => new List<double>());
             var probe = new RenderTexture(1, 1, 0, RenderTextureFormat.ARGB32);
             probe.Create();
             for (int round = 1; round <= nRounds; round++)
@@ -369,6 +399,7 @@ namespace Overstory.Perf
                     // presented frame's period comes in whole refresh ticks, 6.9 ms at 144 Hz); the target has the
                     // samples the pipeline draws with
                     var target = Target(stage.view.allowMSAA ? Mathf.Max(1, urp.msaaSampleCount) : 1);
+                    var thisRound = new List<double>(offscreenBatches);
                     for (int b = 0; b <= offscreenBatches; b++)
                     {
                         var clock = System.Diagnostics.Stopwatch.StartNew();
@@ -387,9 +418,13 @@ namespace Overstory.Perf
                         Graphics.Blit(target, probe);
                         AsyncGPUReadback.Request(probe).WaitForCompletion();
                         if (b > 0)     // (the first batch only primes)
+                        {
                             offscreen[seg.name].Add(clock.Elapsed.TotalMilliseconds / offscreenPerBatch);
+                            thisRound.Add(clock.Elapsed.TotalMilliseconds / offscreenPerBatch);
+                        }
                         yield return null;
                     }
+                    roundOffscreen[seg.name].Add(Stats(thisRound).median);
                     Debug.Log($"[PerfRunner] round {round} {seg.name}: frame {Stats(mine).median:F2} ms");
                 }
 
@@ -402,7 +437,7 @@ namespace Overstory.Perf
                     birches = seg.birchesOn, frames = cpu[seg.name].Count,
                     cpu_ms = Stats(cpu[seg.name]), cpu_main_ms = Stats(main[seg.name]), cpu_render_ms = Stats(render[seg.name]),
                     gpu_ms = Stats(gpu[seg.name]), round_medians_ms = roundMedians[seg.name].ToArray(),
-                    offscreen_ms = Stats(offscreen[seg.name]),
+                    offscreen_ms = Stats(offscreen[seg.name]), round_offscreen_ms = roundOffscreen[seg.name].ToArray(),
                 };
                 s.counters = Counters.Select((c, i) => new Counter
                 {
@@ -438,6 +473,8 @@ namespace Overstory.Perf
                     b.SetActive(true);
             // the pipeline as it was (the renderer's features are an asset, shared with any later run in this process)
             SetPasses("all");
+            if (historyQuad != null)
+                historyQuad.enabled = false;
             for (int i = 0; i < drawn.Length; i++)
                 if (drawn[i] != null)
                     drawn[i].enabled = drawnOn[i];
@@ -544,6 +581,8 @@ namespace Overstory.Perf
             public Stat cpu_ms, cpu_main_ms, cpu_render_ms, gpu_ms;
             public double[] round_medians_ms;
             public Stat offscreen_ms;
+            [Tooltip("Each round's median offscreen time (its batches'), for the spread between rounds.")]
+            public double[] round_offscreen_ms;
             public Counter[] counters;
 
             public long Count(string counter)

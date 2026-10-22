@@ -29,6 +29,8 @@ Shader "Overstory/Stone"
         _Streak ("The film water leaves where it runs down a face: algae and grime", Color) = (0.20, 0.22, 0.18, 1)
         [Toggle] _Grey ("Grey light: every layer's pigment one grey (to judge form)", Float) = 0
         _History ("Debug: show the history as colour (r polish, g lichen years, b moss)", Float) = 0
+        _Quiet ("History off: the quiet means (x polish, y lichen years / 200, z moss, w water held)", Vector) = (0, 0, 0, 0)
+        _QuietAge ("History off: the quiet means (x years since bare / 200, y the water layer)", Vector) = (0, 0, 0, 0)
     }
 
     HLSLINCLUDE
@@ -50,6 +52,8 @@ Shader "Overstory/Stone"
         half4 _Streak;
         half _Grey;
         half _History;
+        half4 _Quiet;
+        float4 _QuietAge;
     CBUFFER_END
 
     #include "StreetSurface.hlsl"
@@ -191,6 +195,11 @@ Shader "Overstory/Stone"
             #pragma vertex Vert
             #pragma fragment Frag
             #pragma multi_compile_fragment _ _OS_LOOK_B _OS_LOOK_D _OS_LOOK_P
+            // the harness's arms (docs/measuring.md): history off, every quantity the pages and the piece table will
+            // carry (R1: polish, lichen, moss, water held, the water layer, years since bare) held at the material's
+            // quiet mean, and the history interpolator gone; haze off, OS_Atmosphere skipped
+            #pragma multi_compile _ OS_HISTORY_OFF
+            #pragma multi_compile_fragment _ OS_HAZE_OFF
             #pragma multi_compile _ _MAIN_LIGHT_SHADOWS _MAIN_LIGHT_SHADOWS_CASCADE
             #pragma multi_compile _ _ADDITIONAL_LIGHTS
             #pragma multi_compile_fragment _ _ADDITIONAL_LIGHT_SHADOWS
@@ -229,7 +238,9 @@ Shader "Overstory/Stone"
                 float2 uv : TEXCOORD0;
                 float3 positionWS : TEXCOORD1;
                 half3 normalWS : TEXCOORD2;
+            #if !defined(OS_HISTORY_OFF)
                 half4 history : TEXCOORD3;
+            #endif
                 float4 piece : TEXCOORD4;    // x years / 200, y seed, z face, w variation
                 float2 bake : TEXCOORD5;
                 UNITY_VERTEX_INPUT_INSTANCE_ID
@@ -247,7 +258,9 @@ Shader "Overstory/Stone"
                 o.positionWS = p.positionWS;
                 o.normalWS = TransformObjectToWorldNormal(input.normalOS);
                 o.uv = input.uv;
+            #if !defined(OS_HISTORY_OFF)
                 o.history = half4(input.uv4, input.uv5);
+            #endif
                 o.piece = float4(input.uv1, input.uv2);
                 o.bake = input.uv3;
                 return o;
@@ -262,10 +275,17 @@ Shader "Overstory/Stone"
                 UNITY_SETUP_INSTANCE_ID(input);
                 UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(input);
                 half3 n = normalize(input.normalWS);
-                half years = (half)input.piece.x * 200.0h;
+            #if defined(OS_HISTORY_OFF)
+                half4 history = _Quiet;
+                float4 piece = float4(_QuietAge.x, input.piece.y, input.piece.z, _QuietAge.y);
+            #else
+                half4 history = input.history;
+                float4 piece = input.piece;
+            #endif
+                half years = (half)piece.x * 200.0h;
                 half town = OS_TownSky(input.positionWS, n);
-                half water = (half)input.piece.w;
-                StoneOut so = OS_StoneSurface(input.uv, input.history, (half)input.piece.z, years, (half)input.piece.y,
+                half water = (half)piece.w;
+                StoneOut so = OS_StoneSurface(input.uv, history, (half)piece.z, years, (half)piece.y,
                                               input.positionWS, town, water, n.y);
                 n = OS_BumpStone(input.positionWS, n, so.height * (half)_Relief.x);
 
@@ -280,7 +300,7 @@ Shader "Overstory/Stone"
                 // standing in the hollows
                 half up = n.y;
                 half wet = OS_WetNow(water, up, so.water.z);
-                OS_Wet(s.albedo, s.smoothness, s.normalWS, wet, so.water, input.history.r, input.history.a, up);
+                OS_Wet(s.albedo, s.smoothness, s.normalWS, wet, so.water, history.r, history.a, up);
 
                 InputData id = (InputData)0;
                 id.positionWS = input.positionWS;
@@ -309,8 +329,8 @@ Shader "Overstory/Stone"
                 else if (_History > 1.5)
                     colour = so.albedo * 0.6h;
                 else if (_History > 0.5)
-                    colour = input.piece.z > 3.5 ? half3(0.9h, 0.45h, 0.0h)
-                                                 : half3(input.history.r, input.history.g * 2.0h, input.history.b) * 0.5h;
+                    colour = piece.z > 3.5 ? half3(0.9h, 0.45h, 0.0h)
+                                           : half3(history.r, history.g * 2.0h, history.b) * 0.5h;
                 outColor = half4(colour, 1);
             #ifdef _WRITE_RENDERING_LAYERS
                 outRenderingLayers = EncodeMeshRenderingLayer();

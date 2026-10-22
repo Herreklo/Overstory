@@ -27,7 +27,8 @@ namespace Overstory.EditorTools
     ///
     ///     Unity -batchmode -quit -projectPath unity -executeMethod Overstory.EditorTools.LT1Perf.Build
     ///         [-runs 2] [-norun] [-out reviews/perf/2026-10-26] [-perf-frames 150] [-perf-warmup 30] [-perf-rounds 2]
-    ///         [-perf-settle 600] [-perf-only street,high] [-perf-passes all,-sky,...,bare] [-perf-scenes empty,corner]
+    ///         [-perf-settle 600] [-perf-only street,high] [-perf-passes all,-sky,...,bare,history-off,haze-off]
+    ///         [-perf-scenes empty,corner,quad-rgba8,quad-bc7]
     ///         [-perf-views street,high] [-perf-empty-views street] [-perf-shots all|some]
     ///         [-district /abs/path/to/district] [-perf-district-views street,city]
     ///
@@ -111,6 +112,9 @@ namespace Overstory.EditorTools
             // the scale test's district (loaded only when the player is given -district <dir>), drawn with the street's material
             runner.district = new GameObject("District (the scale test)").AddComponent<DistrictLoader>();
             runner.district.material = AssetDatabase.LoadAssetAtPath<Material>("Assets/Art/Materials/M_Street.mat");
+            // the history quad (step 3: LT1History), drawn only in the quad scenes, each binding its own pages
+            (runner.historyQuad, runner.pagesRGBA8, runner.pagesBC7) = LT1History.AddQuad(stage.view);
+            runner.historyQuad.enabled = false;
 
             Directory.CreateDirectory(Path.Combine(Application.dataPath, "..", Generated));
             AssetDatabase.Refresh();

@@ -29,6 +29,9 @@ reviews/golden/current/
 reviews/golden/compare/
 unity/Assets/Experiments/LT1/Perf/
 unity/Assets/Experiments/LT1/Perf.meta
+# the history quad's synthetic pages and scene (step 3, LT1History: rebuilt, their hashes in reviews/lt1/history/r2-pages.json)
+unity/Assets/Experiments/LT1/History/Generated/
+unity/Assets/Experiments/LT1/History/Generated.meta
 reviews/perf/**/frames.csv
 reviews/perf/**/*.png
 reviews/perf/**/player.log

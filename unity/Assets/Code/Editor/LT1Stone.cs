@@ -88,6 +88,10 @@ namespace Overstory.EditorTools
             m.SetColor("_CementFilm", new Color(0.25f, 0.28f, 0.22f));
             m.SetColor("_Soil", new Color(0.32f, 0.30f, 0.26f));     // (a joint at Dale is dark, 7 to 12% of white, never black)
             m.SetColor("_Streak", new Color(0.24f, 0.26f, 0.21f));   // (water's film on a face: algae and grime, dark green-grey)
+            // history off (the harness's arm, Shaders/History.hlsl): the quiet means, the gully's slate vertices'
+            // means (LT1History.QuietMeans; granite takes these until a granite stair is measured)
+            m.SetVector("_Quiet", new Vector4(0.099f, 0.237f, 0.171f, 0.010f));
+            m.SetVector("_QuietAge", new Vector4(0.569f, 0.375f, 0f, 0f));
             m.SetFloat("_Grey", grey ? 1f : 0f);
             m.SetFloat("_History", Flag("-history") ? 1f : Flag("-albedo") ? 2f : Flag("-normals") ? 3f : 0f);
             m.enableInstancing = true;
@@ -118,6 +122,9 @@ namespace Overstory.EditorTools
             m.SetVector("_Polish", new Vector4(0.08f, 0.45f, 0f, 0f));    // (hand-worn: a coping's inner edge, darker and smoother)
             // (rubble: mixed, more porous; darkens unevenly, takes less glaze, dries slower, streaks more)
             m.SetVector("_Water", new Vector4(0.75f, 0.6f, 0.5f, 0.9f));
+            // history off: the cheek walls' own quiet means (LT1History.QuietMeans)
+            m.SetVector("_Quiet", new Vector4(0.023f, 0.385f, 0.108f, 0f));
+            m.SetVector("_QuietAge", new Vector4(0.555f, 0.269f, 0f, 0f));
             EditorUtility.SetDirty(m);
             return m;
         }
@@ -366,6 +373,11 @@ namespace Overstory.EditorTools
             // the pack's growth (lichen, moss), set once for the whole town
             GrowthPack.Apply();
             WaterPack.Apply();
+            // the fabric's date (Shaders/History.hlsl): the gully as it stands in 1989
+            var date = stage.GetComponent<FabricDate>();
+            if (date == null)
+                date = stage.gameObject.AddComponent<FabricDate>();
+            date.Set(1989);
             // -detail painted|real: one end of "true up close, painted from afar" everywhere, to compare
             string detail = Arg("-detail", "");
             Shader.SetGlobalFloat("_OS_NearForce", detail == "painted" ? 1f : detail == "real" ? 2f : 0f);

@@ -263,9 +263,13 @@ float OS_MeanDensity(float3 v, float k, float base)
 
 // Aerial perspective and height fog: the air thickens with distance and thins with height, and glows
 // towards the sun; a low haze lies on the water and thins quickly up the hill. Applied the same way to
-// every look, to water and to emissive light.
+// every look, to water and to emissive light. OS_HAZE_OFF (the harness's haze-off, docs/measuring.md, declared by
+// each caller's pass) skips it: the surface as lit.
 half3 OS_Atmosphere(half3 colour, float3 positionWS)
 {
+#if defined(OS_HAZE_OFF)
+    return colour;
+#else
     float3 v = positionWS - _WorldSpaceCameraPos;
     float d = length(v);
     float tauAir = _OS_FogParams.x * d * OS_MeanDensity(v, max(_OS_FogParams.y, 1e-4), _OS_FogParams.z);
@@ -290,6 +294,7 @@ half3 OS_Atmosphere(half3 colour, float3 positionWS)
     air = lerp(air, _OS_FogFar.rgb, smoothstep(_OS_FogMid.a, max(_OS_FogFar.a, _OS_FogMid.a + 1.0), d));
     air = lerp(air, _OS_HazeColor.rgb, tauHaze / max(tauAir + tauHaze, 1e-5)) + _OS_FogSun.rgb * sun;
     return lerp(colour, air, hidden) + glow;
+#endif
 }
 
 #endif
