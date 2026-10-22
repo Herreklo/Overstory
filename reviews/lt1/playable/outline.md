@@ -95,7 +95,7 @@ Each light stage ends in the rebuilt walk, so Øystein's walk is where it is jud
 
 **L2. Target frames.** 1 d. Drizzle and blue hour at eye-on and street, painted with `blender/tools/paintover.py` over L1's renders at judged size, beside `reviews/lt1/heart/target/3-street-gully-steps-target.png`. Fable judges them before Øystein sees them.
 
-**L3. The colour pipeline in order.** 1.5 to 2.5 d. The style baked into Color Lookup. Dither at the last write, taking the still-camera shimmer from 0.47 levels to under 0.1 on `motion.sh`. Neutral against a hue-preserving table on the night frames (the tonemapper is ours to decide). MSAA's cost weighed here if W3 names it.
+**L3. The colour pipeline in order.** 1.5 to 2.5 d. The style baked into Color Lookup. Dither at the last write, taking the still-camera shimmer from 0.47 levels to under 0.1 on `motion.sh`. Neutral against a hue-preserving table on the night frames (the tonemapper is ours to decide). MSAA's cost weighed here if W3 names it. Unity's `urp-postprocessing` skill is the reference for the Volume and lookup settings.
 
 **L4. Exposure from illuminance.** 1 d. A grey and white chart in every sheet, so white staying white is measured.
 
@@ -105,11 +105,13 @@ Each light stage ends in the rebuilt walk, so Øystein's walk is where it is jud
 
 **L7. The rig in layers.** 3 to 4 d. World state, derived light, art keys (OKLCH pushes by hour, blended by weather, sparse overrides per place), then style, mood and lens; about 65 typed settings become a dozen pushes. *Ends in* today's five rigs re-expressed as keys and matched to today's judged frames before anything moves; then any hour from one record, a December day and its dusk included.
 
-**L8. Bounce by looking (debts 2 and 4).** 1 to 2 d. The seen ground (the sun's shadow at the ground in front of a face; ground albedo by season and wet) and the seen town in `OS_TownSky`. Judged in low sun at the gully and on the Row.
+**L8. Bounce by looking (debts 2 and 4).** 1 to 2 d. The seen ground (the sun's shadow at the ground in front of a face; ground albedo by season and wet) and the seen town in `OS_TownSky`. Judged in low sun at the gully and on the Row. Any new render pass is checked with Unity's `validate-urp-render-graph-renderer-feature` skill before it is timed.
 
 **L9. Occlusion done right (debt 3).** 0.5 to 1 d. GTAO, no occlusion on the sun (`DirectLightingStrength` 0.25 to 0), `GTAOMultiBounce`, specular occlusion from bake × town × AO.
 
 **LR. Self-check, strict review, Øystein's second walk.** 0.5 d.
+
+**Committed first:** LA, L1 and L2, 3 to 4 d. The rest is re-sized from the gap they show (the plan review's P3) before L3 starts.
 
 **Total for 1b:** 13.75 to 20.25 d, 110 to 162%, with LA. Cut first: the seen-town half of L8; specular occlusion; the hue-preserving comparison; last, L6's clear sky (low sun keeps today's typed sky).
 
