@@ -175,6 +175,10 @@ The redraw is done when all of these hold, the numbers first and the eyes last:
    - the three shared ones: mottled treads, black slots, one-pixel lines;
    - floating lines, disconnected from the shape (Øystein, 22 October).
 7. **Facts kept:** every mark that reads as history traces to a record event; two builds hash the same.
+7b. **Changed by data alone** (Øystein, 23 October: changing style, era or world must be as easy as possible, "should apply to everything we make").
+   - Every value that depends on the stone, its working, its era or the style lives in data: the pack's material records, `kinds/wall.json`, `kinds/stair.json` and the parts' definitions. Code holds only universal rules: level beds, bond tests, rigidity.
+   - Checked by a variant built from data alone: the same functions lay a mortared granite wall of the 1930s from a test record, with no code edit, and it passes SN1, SN2, SN9 and SN10's checks.
+   - Each report lists what lives in data and what stays in code, and why.
 8. **Holds at every view:** a strict review on Fable, from native crops at eye-foot, eye-on, street, into12 and high in three lights, beside the street target and the eye-level target, says it holds, and says whether more than the stones must go (Q15).
 9. **Proposed, not accepted:** the new golden frames and their sheet go to Øystein, who alone accepts a baseline.
 
