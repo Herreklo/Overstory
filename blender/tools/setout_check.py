@@ -26,8 +26,8 @@ sys.path.insert(0, os.path.join(HERE, "..", "blockouts"))
 sys.path.insert(0, os.path.join(HERE, "..", "resolver"))
 import hashing as HS  # noqa: E402
 import stone as ST  # noqa: E402
-import stair_facts as SF  # noqa: E402
-import heart_layout as H  # noqa: E402
+# (stair_facts and the town plan, heart_layout, are imported in main(): the plan takes a minute to import, and the
+# stair kind's checks stage calls check_flight without it)
 
 BLONDEL = (0.59, 0.70)
 TOL = 1e-6
@@ -75,7 +75,7 @@ def check_flight(f, spec, fi, seed):
     rng = HS.Stream(seed, ST.flight_id(spec, fi), "setout")
     if hi > lo:
         rng.random()
-    if rng.randint(*{"town": (11, 16), "society": (10, 14)}.get(spec["upkeep"][0]["by"], (8, 20))) != feas["patience"]:
+    if rng.randint(*ST.PATIENCE.get(spec["upkeep"][0]["by"], ST.OWN_PATIENCE)) != feas["patience"]:
         bad.append("the patience is not the flight's second draw")
     edges = [0] + [i + 1 for i, _ in land] + [n]
     runs = [y - x for x, y in zip(edges, edges[1:])]
@@ -90,6 +90,8 @@ def check_flight(f, spec, fi, seed):
 
 
 def main():
+    import stair_facts as SF
+    import heart_layout as H
     argv = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else []
     seeds = range(1, int(argv[0]) + 1) if argv else range(1, 501)
     failures, flights = [], 0

@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://overstory.invalid/schemas/material.schema.json",
+  "title": "A pack's material",
+  "description": "A material a pack brings (packs/<pack>/materials/<material>.json), read by the stages as the table `materials`. Minimal since the gully port's step 2a: how fast the stone wears under feet and how readily it cracks. Where it came from, how it was worked and how it weathers join it as the materials are built (docs/systems.md). Integers only, as every fact.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "material", "describes", "wearUmPerCentury", "cracksPerMille", "provenance"],
+  "properties": {
+    "schemaVersion": { "$ref": "record.schema.json#/$defs/schemaVersion" },
+    "material": {
+      "$ref": "record.schema.json#/$defs/word",
+      "description": "Its name, the file's own (slate for materials/slate.json): what a record's params name it by."
+    },
+    "describes": { "type": "string", "minLength": 1 },
+    "wearUmPerCentury": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "How deep feet wear it: micrometres a century at 100,000 footfalls a year on a flight 3.2 m wide (blender/generators/wear.py, depth)."
+    },
+    "cracksPerMille": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "How readily a piece of it cracks, against slate's 1000: the factor upkeep.py's crack draws are scaled by."
+    },
+    "provenance": { "$ref": "record.schema.json#/$defs/provenance" },
+    "notes": {
+      "type": "object",
+      "additionalProperties": { "type": "string" }
+    }
+  }
+}

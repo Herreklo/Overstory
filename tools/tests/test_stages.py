@@ -344,6 +344,101 @@ def ids_and_diff_cli():
     check(differ == 1, "diff_stage on two dates' life: exit %d" % differ)
     check(missing == 2, "diff_stage on a missing folder: exit %d" % missing)
 
+
+# ---------------------------------------------------------------- the stair (the gully port's step 2a)
+
+GULLY = os.path.join(ROOT, "fixtures", "records", "st-gully.json")
+STAIR_GOLDEN = os.path.join(ROOT, "fixtures", "golden", "stair")
+STAIR_SIDECAR = os.path.join(ROOT, "unity", "Assets", "Art", "Stone", "stone_gully.json")
+GENERATORS = os.path.join(ROOT, "blender", "generators")
+TO_BAKE = ["facts", "plan", "life", "geometry", "bake"]
+
+
+def golden_output(stage):
+    with open(os.path.join(STAIR_GOLDEN, stage + ".json")) as fh:
+        return json.load(fh)["output"]
+
+
+@contextlib.contextmanager
+def gully_lane():
+    """The facts stage reads the gully's way from blender/blockouts/heart_layout.py, a 70-second import (a 2a
+    exception); here it reads the path the golden facts hold, so the rest of the chain is tested against its goldens."""
+    if GENERATORS not in sys.path:
+        sys.path.insert(0, GENERATORS)
+    import stone as ST
+    town = golden_output("facts")["townPlan"]
+
+    def lane_of(spec):
+        check(spec.get("way") == town["way"], "the gully's way is %s, not %s" % (spec.get("way"), town["way"]))
+        return dict(name=town["name"], width=town["width"], pts=town["pts"])
+    real = ST.lane_of
+    ST.lane_of = lane_of
+    try:
+        yield
+    finally:
+        ST.lane_of = real
+
+
+@test
+def stair_kind_and_record():
+    path = os.path.join(ROOT, "kinds", "stair.json")
+    kind = json.load(open(path))
+    problems = RK.kind_problems(path, kind)
+    check(not problems, "kinds/stair.json: %s" % problems[:3])
+    for stage in HX.STAGES:
+        spec = kind["stages"][stage]
+        check(spec["status"] == "live" and spec["python"].startswith("blender/generators/stair_stages.py:"),
+              "stair stage %s is not live in stair_stages.py" % stage)
+    rec = json.load(open(GULLY))
+    check(rec["kind"] == "stair" and len(rec["use"]) == 1, "st-gully: its kind and its one period of use")
+    check(golden_output("checks")["pass"], "the stair's golden checks did not pass")
+
+
+@test
+def stair_runs_to_its_goldens():
+    if np is None:
+        return
+    cache = tmp("s1")
+    with gully_lane():
+        s = RK.run(GULLY, until="bake", cache_dir=cache, out=os.path.join(cache, "out"), say=quiet)
+        check(s["ok"] and ran(s) == TO_BAKE, "the gully to its bake: %s, ran %s" % (s["stopped"], ran(s)))
+        report = diff_stage.diff_runs(STAIR_GOLDEN, s["out"], stages=TO_BAKE)
+        if report["differ"]:
+            diff_stage.show(report, "golden", "run")
+        check(not report["differ"], "the gully's stages differ from fixtures/golden/stair (first: %s)" %
+              report["first"])
+        again = RK.run(GULLY, until="bake", cache_dir=cache, out=os.path.join(cache, "out"), say=quiet)
+        check(ran(again) == [], "a second run of the gully reran %s" % ran(again))
+        later = RK.run(GULLY, until="bake", date=1990, cache_dir=cache, out=os.path.join(cache, "1990"), say=quiet)
+        check(ran(later) == ["life", "geometry", "bake"], "another date reran %s, not from life" % ran(later))
+        check(diff_stage.diff_runs(STAIR_GOLDEN, later["out"], stages=TO_BAKE)["first"] == "life",
+              "another date's first difference is not its life")
+
+
+@test
+def stair_ids():
+    import naming
+    import record as REC
+    g = naming.Grammar.load()
+    plan, life, geo = golden_output("plan"), golden_output("life"), golden_output("geometry")
+    want = [(fid, "slot") for fid in plan["flightIds"]] + [(tid, "slot") for tid in plan["steps"]]
+    want += [(s, "slot") for T in plan["steps"].values() for s in T["slabs"]]
+    want += [(key, "fill") for key in life["fills"]] + [(pid, "piece") for pid in geo["pieces"]]
+    want += [(p["fill"], "fill") for p in geo["pieces"].values()]
+    with open(STAIR_SIDECAR) as fh:
+        side = json.load(fh)
+    for j in side["joints"]:
+        want += [(j["id"], "slot")] + [(p, "piece") for p in j["growth"]]
+    want += [(a["id"], "slot") for a in side["affordances"]] + [(w, "slot") for w in side["collision"]["walkable"]]
+    want += [(b["flight"], "slot") for b in side["breaklines"]["walking"]]
+    want += [(b["step"], "slot") for b in side["breaklines"]["feet"]]
+    bad = [(text, level, REC.classify(g, text)) for text, level in want if REC.classify(g, text) != level]
+    check(not bad, "%d of %d stair ids are not of their level, e.g. %s" % (len(bad), len(want), bad[:3]))
+    check(side["motion"] == "still" and side["collision"]["proxy"] == "affordances", "the sidecar's motion and proxy")
+    walk = [a for a in side["affordances"] if a["name"] == "walk"]
+    check(len(walk) == 1 and g.match("stair-affordance", walk[0]["id"].split("/", 1)[1]),
+          "the walking line's affordance is not a stair-affordance by naming.md")
+
 def main():
     try:
         for ok, name, why in RESULTS:

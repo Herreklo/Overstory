@@ -1,0 +1,33 @@
+{
+ "chain": {
+  "after": "df29e4acc147e5ec",
+  "inputs": {
+   "table:stairs": "1db17491cd1ed108"
+  },
+  "link": "07608cace06b8345",
+  "output": "3314f6d73faa7ab6"
+ },
+ "kind": "stair",
+ "output": {
+  "floats": {
+   "facts": 25,
+   "life": 675,
+   "plan": 1134
+  },
+  "ids": 5271,
+  "pass": true,
+  "problemCount": 0,
+  "problems": [],
+  "stair": {
+   "fills": 163,
+   "flights": 2,
+   "pieces": 772,
+   "steps": 78,
+   "triangles": 354126
+  }
+ },
+ "record": "st-gully",
+ "schemaVersion": 2,
+ "stage": "checks",
+ "what": "the checks stage's output for st-gully, kind stair (tools/run_kind.py; schemas/stages.md)"
+}

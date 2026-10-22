@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 2,
+  "material": "granite",
+  "describes": "Dressed granite, brought in for money from about 1870 (docs/research/stone.md): kerbs, setts and the better flights. Hard, it scarcely hollows, and it seldom cracks.",
+  "wearUmPerCentury": 2000,
+  "cracksPerMille": 250,
+  "provenance": "authored",
+  "notes": {
+    "wearUmPerCentury": "As slate.json: micrometres a century at 100,000 footfalls a year on a flight 3.2 m wide.",
+    "cracksPerMille": "Against slate's 1000."
+  }
+}

@@ -27,6 +27,10 @@
       "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/care" }
     },
     "lifespan": { "$ref": "#/$defs/lifespan" },
+    "use": {
+      "description": "How much it is used, in date order, each period running to the next one's from (the first from the making). Optional: a thing whose kind reads no use leaves it out. Since the gully port's step 2a, for a stair's footfall; the engine's habits replace authored use when they exist (docs/engine-requests.md, 16).",
+      "type": "array", "items": { "$ref": "#/$defs/use" }
+    },
     "events": {
       "description": "What happened to the thing, in date order, numbered from 1 and never renumbered or deleted. A fact the engine replaces stays, marked supersededBy.",
       "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/event" }
@@ -136,6 +140,19 @@
           "type": "array", "minItems": 1, "uniqueItems": true, "items": { "enum": ["money", "presence", "age", "events"] }
         },
         "provenance": { "$ref": "#/$defs/provenance" },
+        "rule": { "$ref": "#/$defs/ruleName" },
+        "event": { "$ref": "#/$defs/eventId" },
+        "cause": { "type": "string" }
+      }
+    },
+    "use": {
+      "description": "A period of use: from its year to the next period's, how many feet a year pass over it.",
+      "type": "object", "additionalProperties": false, "required": ["from", "footfall", "provenance"],
+      "properties": {
+        "from": { "$ref": "#/$defs/date" },
+        "footfall": { "type": "integer", "minimum": 0, "description": "Footfalls a year (one person passing once is one)." },
+        "provenance": { "$ref": "#/$defs/provenance" },
+        "precision": { "$ref": "#/$defs/precision" },
         "rule": { "$ref": "#/$defs/ruleName" },
         "event": { "$ref": "#/$defs/eventId" },
         "cause": { "type": "string" }

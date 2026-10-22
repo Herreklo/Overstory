@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 2,
+  "describes": "How this pack's builders set out a stair (blender/generators/stone.py, the landing rule; the stair kind's plan stage reads it): the risers each keeper lets run unbroken before a landing, and the limits of real practice its codes set. The rules of a stair anywhere (the stride, the going, the rise) are the kind's (kinds/stair.json).",
+  "patience": {
+    "town": [11, 16],
+    "society": [10, 14]
+  },
+  "ownPatience": [8, 20],
+  "runRisersMax": 18,
+  "runRiseMaxMm": 3300,
+  "provenance": "authored",
+  "notes": {
+    "patience": "The risers a builder lets run unbroken, a range the flight's set-out draws from, by the keeper's word (upkeep.py's: town, society). Any other keeper is an owner, who builds as they please: ownPatience.",
+    "runRisersMax": "The limit of real practice: no more than 18 risers between landings (DIN 18065).",
+    "runRiseMaxMm": "No unbroken run over 3.3 m of rise (Norway's TEK17, section 12-14)."
+  }
+}

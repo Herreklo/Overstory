@@ -8,11 +8,13 @@ Exit 0 when everything passes; 1 on any failure, each line naming the record and
 
 The checks, beyond the JSON Schema (draft 2020-12, the files' $refs resolved through `referencing`):
 - the contracts themselves: each schema is valid; every grammar pattern equals schemas/naming.md's (tools/naming.py);
-  the vertex layouts add up; every layer sits on a map channel of its own name; every kind and part validates;
+  the vertex layouts add up; every layer sits on a map channel of its own name; every kind and part validates, and
+  every pack's materials, each named as its file;
 - ids: well formed by naming.md, unique, under their record; events numbered 1.. and fills 0.. in date order, fills of
   one event in the kind's role order; every slot path matches one of the kind's slot rules, of the rule's type, and the
   slots and fills it is held by exist and outlive it;
-- dates: slots, fills, keepers, care and the lifespan in order and tied to the events that made and ended them; fills
+- dates: slots, fills, keepers, care, use and the lifespan in order and tied to the events that made and ended them
+  (use from the lifespan's start, its periods in order); fills
   within their slot's dates and size and their host inside its host; no two fills of one role in a slot at once; a
   slot that takes others' places (spans) lies over them and none of their fills stands while it is open; two open
   openings on one host never overlap unless one spans the other;
@@ -151,6 +153,7 @@ class Contracts(object):
         for pack in sorted(os.listdir(packs)):
             if os.path.isdir(os.path.join(packs, pack)):
                 self.pack(pack)
+                self.materials(pack)
                 parts = os.path.join(packs, pack, "parts")
                 for dirpath, _, files in os.walk(parts):
                     for f in sorted(files):
@@ -252,6 +255,22 @@ class Contracts(object):
                     self.fail(where, "firstYear, peopleStart and showYear must rise")
                 self._packs[pack] = p
         return self._packs[pack]
+
+    def materials(self, pack):
+        """The pack's materials (packs/<pack>/materials/<material>.json), each against material.schema.json."""
+        folder = os.path.join(ROOT, "packs", pack, "materials")
+        if not os.path.isdir(folder):
+            return
+        for f in sorted(os.listdir(folder)):
+            if not f.endswith(".json"):
+                continue
+            path = os.path.join(folder, f)
+            m = read_json(path)
+            where = rel(path)
+            for e in self.schema_errors("material.schema.json", m):
+                self.fail(where, "%s: %s" % ("/".join(str(p) for p in e.absolute_path) or "(top)", e.message))
+            if m.get("material") != f[:-5]:
+                self.fail(where, "names material %r, its file is %s" % (m.get("material"), f))
 
     def kind(self, kind):
         if kind not in self._kinds:
@@ -460,6 +479,19 @@ def check_record(contracts, record, previous=None, label=None):
                 event_at(r["event"], "%s from %s" % (name, show(r["from"])), r["from"], "after")
             if r["provenance"] == "derived" and "rule" not in r:
                 fail("%s from %s" % (name, show(r["from"])), "derived, so it names its rule")
+
+    # ---- use: periods one after another, the first from the making (optional)
+    use = record.get("use", [])
+    if use and not same_date(use[0]["from"], life["from"]):
+        fail("use", "the first period runs from %s, the thing from %s" % (show(use[0]["from"]), show(life["from"])))
+    for a, b in zip(use, use[1:]):
+        if dkey(b["from"]) <= dkey(a["from"]):
+            fail("use", "%s does not follow %s: each period runs to the next one's from" % (show(b["from"]), show(a["from"])))
+    for r in use:
+        if "event" in r:
+            event_at(r["event"], "use from %s" % show(r["from"]), r["from"], "after")
+        if r["provenance"] == "derived" and "rule" not in r:
+            fail("use from %s" % show(r["from"]), "derived, so it names its rule")
 
     # ---- slots
     rules = kind["slots"]

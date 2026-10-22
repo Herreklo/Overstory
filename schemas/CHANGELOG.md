@@ -2,6 +2,18 @@
 
 Every change to the files in `schemas/` with its migration. The contracts' version is `schemaVersion`, carried by every record, kind, pack file and fixture. `tools/migrate.py` runs `migrations/NNN_<name>.py` in order on every file behind; `tools/migrate.py --check` fails while any is behind. `tools/validate_record.py` checks records, kinds, parts and the registries against the current version.
 
+## 2, unchanged: the stair as a kind (22 October, the gully port's step 2a)
+
+No migration: every addition is optional, and no record, kind or part needs rewriting.
+
+New:
+- `material.schema.json`: a pack's material (`packs/<pack>/materials/<material>.json`, the stages' table `materials`), minimal for now: how deep feet wear it (`wearUmPerCentury`) and how readily it cracks (`cracksPerMille`). `packs/stavanger-1989/materials/slate.json` and `granite.json` hold the values `stone.py` held.
+- `record.schema.json`: an optional `use`, a record's periods of use, each from a date with its `footfall` a year (the stair's footfall, which `stone.py` held as a constant). `tools/validate_record.py` checks that the first period starts with the lifespan, the periods run in order, a period's event is at its date and a derived period names its rule. It also validates every pack's materials against `material.schema.json` and checks each file's name is its material.
+- `kinds/stair.json`, the stair kind, live through `blender/generators/stair_stages.py`. Its plan rules are in its params, in millimetres and per mille.
+- `fixtures/records/st-gully.json`, the gully steps as a record.
+- `packs/stavanger-1989/stairs.json`, the builders' patience and the codes' limits. It is read as the table `stairs`; no schema validates it yet.
+- `packs/stavanger-1989/pack.json`: `worldSeed` 1989, the run's seed when no `--world-seed` is given. The stair's stages key their draws on `legacySeed` 1 until step 2b's re-baseline.
+
 ## 2, unchanged: the grammar holds step 0b's seed keys (22 October)
 
 No migration: no key in code changed, so step 0b's proposed baseline stands. `naming.md` gains `stair-flaw-part` (a crack's pointing and front, `<slab fill>/ck/pt`, `/ck/front`) and `wall-hearting` (`<place>/ht-<m>`), and says how a seed key is made: an id, then purpose words and integers. The setts as pieces of their row's fill and the wall's `sp-` places, pending below, landed in step 0b. Left for step 2b's re-baseline: the wall's heads, keyed on their course with `"head"`, take slots; the eight stair ids that slug a lane's name to `--` are minted afresh.

@@ -1,0 +1,168 @@
+{
+ "schemaVersion": 2,
+ "id": "st-gully",
+ "kind": "stair",
+ "pack": "stavanger-1989",
+ "note": "The gully steps (docs/experiments.md, LT1): split slate blocks up the stream's gully from Harbour Row, laid by the town in 1874 and kept by it since, as stone.py's FLIGHTS held them until the gully port's step 2a. Authored until the engine's fabric pass has them (docs/engine-requests.md, 6). Its flights, steps and slabs are minted by the plan stage from its way's path in the town plan, so the record holds no slots yet (step 2b). The keeper's role, town, is upkeep.py's keeper word.",
+ "screen": "fact",
+ "provenance": "authored",
+ "precision": "year",
+ "actor": {
+  "role": "town"
+ },
+ "weight": 500,
+ "where": {
+  "at": [
+   49100,
+   25652,
+   3000
+  ],
+  "heading": 0
+ },
+ "keepers": [
+  {
+   "from": {
+    "year": 1874
+   },
+   "keeper": {
+    "role": "town"
+   },
+   "provenance": "authored",
+   "event": "st-gully/1",
+   "cause": "a public stair, kept by the town's works department"
+  }
+ ],
+ "care": [
+  {
+   "from": {
+    "year": 1874
+   },
+   "care": 500,
+   "basis": [
+    "money"
+   ],
+   "provenance": "authored",
+   "event": "st-gully/1",
+   "cause": "a new stair on the town's budget"
+  },
+  {
+   "from": {
+    "year": 1930
+   },
+   "care": 300,
+   "basis": [
+    "money"
+   ],
+   "provenance": "authored",
+   "cause": "the works budget cut in the thirties"
+  },
+  {
+   "from": {
+    "year": 1946
+   },
+   "care": 450,
+   "basis": [
+    "money"
+   ],
+   "provenance": "authored",
+   "cause": "the post-war effort"
+  },
+  {
+   "from": {
+    "year": 1965
+   },
+   "care": 250,
+   "basis": [
+    "money"
+   ],
+   "provenance": "authored",
+   "cause": "let slide from the sixties, as the town drove more and climbed less"
+  }
+ ],
+ "lifespan": {
+  "from": {
+   "year": 1874
+  },
+  "madeBy": "st-gully/1",
+  "to": null,
+  "removedBy": null
+ },
+ "use": [
+  {
+   "from": {
+    "year": 1874
+   },
+   "footfall": 50000,
+   "provenance": "authored",
+   "cause": "the way up from Harbour Row to the terraces: about 140 passes a day, as stone.py held it; the engine's habits replace it (docs/engine-requests.md, 16)"
+  }
+ ],
+ "events": [
+  {
+   "id": "st-gully/1",
+   "at": {
+    "year": 1874
+   },
+   "precision": "year",
+   "kind": "built",
+   "params": {
+    "stone": "slate",
+    "builtAs": "block",
+    "finish": "split"
+   },
+   "cause": "the town lays a stair of split slate blocks up the gully, one block a step",
+   "actor": {
+    "role": "town"
+   },
+   "weight": 500,
+   "screen": "fact",
+   "provenance": "authored"
+  },
+  {
+   "id": "st-gully/2",
+   "at": {
+    "year": 1911
+   },
+   "precision": "year",
+   "kind": "campaign",
+   "params": {
+    "sharePerMille": 250
+   },
+   "cause": "the works department lifts and rebeds the run of steps that moved most",
+   "actor": {
+    "role": "town"
+   },
+   "weight": 300,
+   "screen": "fact",
+   "provenance": "authored"
+  },
+  {
+   "id": "st-gully/3",
+   "at": {
+    "year": 1952
+   },
+   "precision": "year",
+   "kind": "campaign",
+   "params": {
+    "sharePerMille": 400,
+    "mortar": "cement",
+    "stock": "reclaimed"
+   },
+   "cause": "the post-war campaign rebeds the worst run in cement and swaps broken slabs for reclaimed ones from the town's stock",
+   "actor": {
+    "role": "town"
+   },
+   "weight": 300,
+   "screen": "fact",
+   "provenance": "authored"
+  }
+ ],
+ "links": [
+  {
+   "rel": "on",
+   "id": "way-gully-steps"
+  }
+ ],
+ "pins": [],
+ "slots": []
+}

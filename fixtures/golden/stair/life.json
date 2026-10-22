@@ -1,0 +1,4108 @@
+{
+ "chain": {
+  "after": "8aa38812dc7c8123",
+  "inputs": {
+   "date": 1989,
+   "table:materials": "17402143a94bf7ad"
+  },
+  "link": "97e45514c4053e61",
+  "output": "f19a40cb3ad06dd2"
+ },
+ "kind": "stair",
+ "output": {
+  "campaigns": [
+   {
+    "event": "st-gully/2",
+    "flight": "st-gully/fl-1",
+    "year": 1911
+   },
+   {
+    "event": "st-gully/3",
+    "flight": "st-gully/fl-0",
+    "year": 1952
+   }
+  ],
+  "care": 0.25,
+  "date": 1989,
+  "fills": {
+   "st-gully/fl-0/tr-0/sl-0/0": {
+    "at": [
+     0.0,
+     1.9451254024148377
+    ],
+    "bare": 1874,
+    "corner": null,
+    "cracked": null,
+    "fill": 0,
+    "lifted": 1952,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-0/tr-0/sl-0",
+    "step": "st-gully/fl-0/tr-0",
+    "width": 1.9451254024148377
+   },
+   "st-gully/fl-0/tr-0/sl-1/0": {
+    "at": [
+     1.9451254024148377,
+     3.2
+    ],
+    "bare": 1874,
+    "corner": {
+     "filled": null,
+     "side": "l",
+     "size": 0.08996481038605803,
+     "year": 1937
+    },
+    "cracked": null,
+    "fill": 0,
+    "lifted": 1952,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-0/tr-0/sl-1",
+    "step": "st-gully/fl-0/tr-0",
+    "width": 1.2548745975851625
+   },
+   "st-gully/fl-0/tr-1/sl-0/0": {
+    "at": [
+     0.0,
+     0.953147659437739
+    ],
+    "bare": 1874,
+    "corner": null,
+    "cracked": null,
+    "fill": 0,
+    "lifted": 1952,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-0/tr-1/sl-0",
+    "step": "st-gully/fl-0/tr-1",
+    "width": 0.953147659437739
+   },
+   "st-gully/fl-0/tr-1/sl-1/0": {
+    "at": [
+     0.953147659437739,
+     3.2
+    ],
+    "bare": 1874,
+    "corner": null,
+    "cracked": null,
+    "fill": 0,
+    "lifted": 1952,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-0/tr-1/sl-1",
+    "step": "st-gully/fl-0/tr-1",
+    "width": 2.246852340562261
+   },
+   "st-gully/fl-0/tr-10/sl-0/0": {
+    "at": [
+     0.0,
+     2.233543081891028
+    ],
+    "bare": 1874,
+    "corner": null,
+    "cracked": null,
+    "fill": 0,
+    "lifted": 1952,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-0/tr-10/sl-0",
+    "step": "st-gully/fl-0/tr-10",
+    "width": 2.233543081891028
+   },
+   "st-gully/fl-0/tr-10/sl-1/0": {
+    "at": [
+     2.233543081891028,
+     3.2
+    ],
+    "bare": 1874,
+    "corner": null,
+    "cracked": null,
+    "fill": 0,
+    "lifted": 1952,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-0/tr-10/sl-1",
+    "step": "st-gully/fl-0/tr-10",
+    "width": 0.9664569181089724
+   },
+   "st-gully/fl-0/tr-11/sl-0/0": {
+    "at": [
+     0.0,
+     0.9509148388376416
+    ],
+    "bare": 1874,
+    "corner": null,
+    "cracked": {
+     "at": 0.6347769197957298,
+     "filled": [
+      "cement",
+      1952
+     ],
+     "year": 1940
+    },
+    "fill": 0,
+    "lifted": 1952,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-0/tr-11/sl-0",
+    "step": "st-gully/fl-0/tr-11",
+    "width": 0.9509148388376416
+   },
+   "st-gully/fl-0/tr-11/sl-1/0": {
+    "at": [
+     0.9509148388376416,
+     3.2
+    ],
+    "bare": 1874,
+    "corner": null,
+    "cracked": null,
+    "fill": 0,
+    "lifted": 1952,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-0/tr-11/sl-1",
+    "step": "st-gully/fl-0/tr-11",
+    "width": 2.2490851611623586
+   },
+   "st-gully/fl-0/tr-12/sl-0/0": {
+    "at": [
+     0.0,
+     2.219927818693006
+    ],
+    "bare": 1874,
+    "corner": {
+     "filled": null,
+     "side": "r",
+     "size": 0.08244049405795888,
+     "year": 1950
+    },
+    "cracked": null,
+    "fill": 0,
+    "lifted": 1874,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-0/tr-12/sl-0",
+    "step": "st-gully/fl-0/tr-12",
+    "width": 2.219927818693006
+   },
+   "st-gully/fl-0/tr-12/sl-1/0": {
+    "at": [
+     2.219927818693006,
+     3.2
+    ],
+    "bare": 1874,
+    "corner": null,
+    "cracked": null,
+    "fill": 0,
+    "lifted": 1874,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-0/tr-12/sl-1",
+    "step": "st-gully/fl-0/tr-12",
+    "width": 0.9800721813069941
+   },
+   "st-gully/fl-0/tr-13/sl-0/0": {
+    "at": [
+     0.0,
+     1.6691181790616902
+    ],
+    "bare": 1874,
+    "corner": null,
+    "cracked": {
+     "at": 0.3745493388749,
+     "filled": null,
+     "year": 1974
+    },
+    "fill": 0,
+    "lifted": 1874,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-0/tr-13/sl-0",
+    "step": "st-gully/fl-0/tr-13",
+    "width": 1.6691181790616902
+   },
+   "st-gully/fl-0/tr-13/sl-1/0": {
+    "at": [
+     1.6691181790616902,
+     3.2
+    ],
+    "bare": 1874,
+    "corner": {
+     "filled": [
+      "cement",
+      1928
+     ],
+     "side": "l",
+     "size": 0.043283971959535754,
+     "year": 1927
+    },
+    "cracked": null,
+    "fill": 0,
+    "lifted": 1874,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-0/tr-13/sl-1",
+    "step": "st-gully/fl-0/tr-13",
+    "width": 1.53088182093831
+   },
+   "st-gully/fl-0/tr-14/sl-0/0": {
+    "at": [
+     0.0,
+     2.0747149878537976
+    ],
+    "bare": 1874,
+    "corner": null,
+    "cracked": null,
+    "fill": 0,
+    "lifted": 1874,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-0/tr-14/sl-0",
+    "step": "st-gully/fl-0/tr-14",
+    "width": 2.0747149878537976
+   },
+   "st-gully/fl-0/tr-14/sl-1/0": {
+    "at": [
+     2.0747149878537976,
+     3.2
+    ],
+    "bare": 1874,
+    "corner": null,
+    "cracked": {
+     "at": 0.6439350846746607,
+     "filled": null,
+     "year": 1905
+    },
+    "fill": 0,
+    "lifted": 1874,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-0/tr-14/sl-1",
+    "step": "st-gully/fl-0/tr-14",
+    "width": 1.1252850121462026
+   },
+   "st-gully/fl-0/tr-15/sl-0/0": {
+    "at": [
+     0.0,
+     0.8112179681590117
+    ],
+    "bare": 1874,
+    "corner": null,
+    "cracked": null,
+    "fill": 0,
+    "lifted": 1874,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-0/tr-15/sl-0",
+    "step": "st-gully/fl-0/tr-15",
+    "width": 0.8112179681590117
+   },
+   "st-gully/fl-0/tr-15/sl-1/0": {
+    "at": [
+     0.8112179681590117,
+     1.6308555950289767
+    ],
+    "bare": 1874,
+    "corner": {
+     "filled": null,
+     "side": "r",
+     "size": 0.040256067145265785,
+     "year": 1923
+    },
+    "cracked": {
+     "at": 0.5393081560986972,
+     "filled": null,
+     "year": 1930
+    },
+    "fill": 0,
+    "lifted": 1874,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-0/tr-15/sl-1",
+    "step": "st-gully/fl-0/tr-15",
+    "width": 0.819637626869965
+   },
+   "st-gully/fl-0/tr-15/sl-2/0": {
+    "at": [
+     1.6308555950289767,
+     3.2
+    ],
+    "bare": 1874,
+    "corner": null,
+    "cracked": {
+     "at": 0.530702275050656,
+     "filled": null,
+     "year": 1959
+    },
+    "fill": 0,
+    "lifted": 1874,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-0/tr-15/sl-2",
+    "step": "st-gully/fl-0/tr-15",
+    "width": 1.5691444049710235
+   },
+   "st-gully/fl-0/tr-16/sl-0/0": {
+    "at": [
+     0.0,
+     1.983530959841961
+    ],
+    "bare": 1874,
+    "corner": null,
+    "cracked": null,
+    "fill": 0,
+    "lifted": 1874,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-0/tr-16/sl-0",
+    "step": "st-gully/fl-0/tr-16",
+    "width": 1.983530959841961
+   },
+   "st-gully/fl-0/tr-16/sl-1/0": {
+    "at": [
+     1.983530959841961,
+     3.2
+    ],
+    "bare": 1874,
+    "corner": null,
+    "cracked": null,
+    "fill": 0,
+    "lifted": 1874,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-0/tr-16/sl-1",
+    "step": "st-gully/fl-0/tr-16",
+    "width": 1.2164690401580391
+   },
+   "st-gully/fl-0/tr-17/sl-0/0": {
+    "at": [
+     0.0,
+     0.9241450410728818
+    ],
+    "bare": 1874,
+    "corner": null,
+    "cracked": {
+     "at": 0.6267556895618858,
+     "filled": null,
+     "year": 1892
+    },
+    "fill": 0,
+    "lifted": 1874,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-0/tr-17/sl-0",
+    "step": "st-gully/fl-0/tr-17",
+    "width": 0.9241450410728818
+   },
+   "st-gully/fl-0/tr-17/sl-1/0": {
+    "at": [
+     0.9241450410728818,
+     3.2
+    ],
+    "bare": 1874,
+    "corner": null,
+    "cracked": null,
+    "fill": 0,
+    "lifted": 1874,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-0/tr-17/sl-1",
+    "step": "st-gully/fl-0/tr-17",
+    "width": 2.2758549589271184
+   },
+   "st-gully/fl-0/tr-18/sl-0/0": {
+    "at": [
+     0.0,
+     1.58019900107498
+    ],
+    "bare": 1874,
+    "corner": {
+     "filled": [
+      "cement",
+      1945
+     ],
+     "side": "r",
+     "size": 0.07515884621976185,
+     "year": 1875
+    },
+    "cracked": {
+     "at": 0.3793511974263274,
+     "filled": null,
+     "year": 1917
+    },
+    "fill": 0,
+    "lifted": 1874,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-0/tr-18/sl-0",
+    "step": "st-gully/fl-0/tr-18",
+    "width": 1.58019900107498
+   },
+   "st-gully/fl-0/tr-18/sl-1/0": {
+    "at": [
+     1.58019900107498,
+     3.2
+    ],
+    "bare": 1874,
+    "corner": null,
+    "cracked": null,
+    "fill": 0,
+    "lifted": 1874,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-0/tr-18/sl-1",
+    "step": "st-gully/fl-0/tr-18",
+    "width": 1.6198009989250202
+   },
+   "st-gully/fl-0/tr-19/sl-0/0": {
+    "at": [
+     0.0,
+     1.0224852799670672
+    ],
+    "bare": 1874,
+    "corner": {
+     "filled": null,
+     "side": "r",
+     "size": 0.06981402835923926,
+     "year": 1969
+    },
+    "cracked": null,
+    "fill": 0,
+    "lifted": 1874,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-0/tr-19/sl-0",
+    "step": "st-gully/fl-0/tr-19",
+    "width": 1.0224852799670672
+   },
+   "st-gully/fl-0/tr-19/sl-1/0": {
+    "at": [
+     1.0224852799670672,
+     3.2
+    ],
+    "bare": 1874,
+    "corner": {
+     "filled": null,
+     "side": "l",
+     "size": 0.05299646605463068,
+     "year": 1921
+    },
+    "cracked": null,
+    "fill": 0,
+    "lifted": 1874,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-0/tr-19/sl-1",
+    "step": "st-gully/fl-0/tr-19",
+    "width": 2.1775147200329332
+   },
+   "st-gully/fl-0/tr-2/sl-0/0": {
+    "at": [
+     0.0,
+     2.1600395224505
+    ],
+    "bare": 1874,
+    "corner": null,
+    "cracked": null,
+    "fill": 0,
+    "lifted": 1952,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-0/tr-2/sl-0",
+    "step": "st-gully/fl-0/tr-2",
+    "width": 2.1600395224505
+   },
+   "st-gully/fl-0/tr-2/sl-1/0": {
+    "at": [
+     2.1600395224505,
+     3.2
+    ],
+    "bare": 1874,
+    "corner": null,
+    "cracked": null,
+    "fill": 0,
+    "lifted": 1952,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-0/tr-2/sl-1",
+    "step": "st-gully/fl-0/tr-2",
+    "width": 1.0399604775495002
+   },
+   "st-gully/fl-0/tr-20/sl-0/0": {
+    "at": [
+     0.0,
+     1.7391461977904044
+    ],
+    "bare": 1874,
+    "corner": {
+     "filled": null,
+     "side": "r",
+     "size": 0.0799952449339495,
+     "year": 1926
+    },
+    "cracked": null,
+    "fill": 0,
+    "lifted": 1874,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-0/tr-20/sl-0",
+    "step": "st-gully/fl-0/tr-20",
+    "width": 1.7391461977904044
+   },
+   "st-gully/fl-0/tr-20/sl-1/0": {
+    "at": [
+     1.7391461977904044,
+     3.2
+    ],
+    "bare": 1874,
+    "corner": null,
+    "cracked": {
+     "at": 0.5917285325941735,
+     "filled": null,
+     "year": 1924
+    },
+    "fill": 0,
+    "lifted": 1874,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-0/tr-20/sl-1",
+    "step": "st-gully/fl-0/tr-20",
+    "width": 1.4608538022095958
+   },
+   "st-gully/fl-0/tr-21/sl-0/0": {
+    "at": [
+     0.0,
+     1.195464089693918
+    ],
+    "bare": 1874,
+    "corner": null,
+    "cracked": {
+     "at": 0.6093732656290409,
+     "filled": null,
+     "year": 1939
+    },
+    "fill": 0,
+    "lifted": 1874,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-0/tr-21/sl-0",
+    "step": "st-gully/fl-0/tr-21",
+    "width": 1.195464089693918
+   },
+   "st-gully/fl-0/tr-21/sl-1/0": {
+    "at": [
+     1.195464089693918,
+     2.3137539064174364
+    ],
+    "bare": 1874,
+    "corner": null,
+    "cracked": null,
+    "fill": 0,
+    "lifted": 1874,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-0/tr-21/sl-1",
+    "step": "st-gully/fl-0/tr-21",
+    "width": 1.1182898167235185
+   },
+   "st-gully/fl-0/tr-21/sl-2/0": {
+    "at": [
+     2.3137539064174364,
+     3.2
+    ],
+    "bare": 1874,
+    "corner": null,
+    "cracked": null,
+    "fill": 0,
+    "lifted": 1874,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-0/tr-21/sl-2",
+    "step": "st-gully/fl-0/tr-21",
+    "width": 0.8862460935825638
+   },
+   "st-gully/fl-0/tr-22/sl-0/0": {
+    "at": [
+     0.0,
+     1.6071549399979113
+    ],
+    "bare": 1874,
+    "corner": null,
+    "cracked": {
+     "at": 0.5631324886429772,
+     "filled": null,
+     "year": 1982
+    },
+    "fill": 0,
+    "lifted": 1874,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-0/tr-22/sl-0",
+    "step": "st-gully/fl-0/tr-22",
+    "width": 1.6071549399979113
+   },
+   "st-gully/fl-0/tr-22/sl-1/0": {
+    "at": [
+     1.6071549399979113,
+     3.2
+    ],
+    "bare": 1874,
+    "corner": {
+     "filled": [
+      "cement",
+      1987
+     ],
+     "side": "l",
+     "size": 0.05501333786717887,
+     "year": 1945
+    },
+    "cracked": {
+     "at": 0.46909457916290076,
+     "filled": null,
+     "year": 1941
+    },
+    "fill": 0,
+    "lifted": 1874,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-0/tr-22/sl-1",
+    "step": "st-gully/fl-0/tr-22",
+    "width": 1.592845060002089
+   },
+   "st-gully/fl-0/tr-23/sl-0/0": {
+    "at": [
+     0.0,
+     2.2416138456742623
+    ],
+    "bare": 1874,
+    "corner": null,
+    "cracked": null,
+    "fill": 0,
+    "lifted": 1874,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-0/tr-23/sl-0",
+    "step": "st-gully/fl-0/tr-23",
+    "width": 2.2416138456742623
+   },
+   "st-gully/fl-0/tr-23/sl-1/0": {
+    "at": [
+     2.2416138456742623,
+     3.2
+    ],
+    "bare": 1874,
+    "corner": null,
+    "cracked": {
+     "at": 0.6348909956756026,
+     "filled": null,
+     "year": 1945
+    },
+    "fill": 0,
+    "lifted": 1874,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-0/tr-23/sl-1",
+    "step": "st-gully/fl-0/tr-23",
+    "width": 0.9583861543257379
+   },
+   "st-gully/fl-0/tr-24/sl-0/0": {
+    "at": [
+     0.0,
+     1.7627642290576582
+    ],
+    "bare": 1874,
+    "corner": null,
+    "cracked": null,
+    "fill": 0,
+    "lifted": 1874,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-0/tr-24/sl-0",
+    "step": "st-gully/fl-0/tr-24",
+    "width": 1.7627642290576582
+   },
+   "st-gully/fl-0/tr-24/sl-1/0": {
+    "at": [
+     1.7627642290576582,
+     3.2
+    ],
+    "bare": 1874,
+    "corner": {
+     "filled": [
+      "cement",
+      1922
+     ],
+     "side": "l",
+     "size": 0.056374378820343476,
+     "year": 1904
+    },
+    "cracked": {
+     "at": 0.4792804795092971,
+     "filled": null,
+     "year": 1973
+    },
+    "fill": 0,
+    "lifted": 1874,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-0/tr-24/sl-1",
+    "step": "st-gully/fl-0/tr-24",
+    "width": 1.437235770942342
+   },
+   "st-gully/fl-0/tr-25/sl-0/0": {
+    "at": [
+     0.0,
+     2.2669341332113766
+    ],
+    "bare": 1874,
+    "corner": null,
+    "cracked": null,
+    "fill": 0,
+    "lifted": 1874,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-0/tr-25/sl-0",
+    "step": "st-gully/fl-0/tr-25",
+    "width": 2.2669341332113766
+   },
+   "st-gully/fl-0/tr-25/sl-1/0": {
+    "at": [
+     2.2669341332113766,
+     3.2
+    ],
+    "bare": 1874,
+    "corner": null,
+    "cracked": null,
+    "fill": 0,
+    "lifted": 1874,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-0/tr-25/sl-1",
+    "step": "st-gully/fl-0/tr-25",
+    "width": 0.9330658667886236
+   },
+   "st-gully/fl-0/tr-26/sl-0/0": {
+    "at": [
+     0.0,
+     1.7877242249640695
+    ],
+    "bare": 1874,
+    "corner": null,
+    "cracked": null,
+    "fill": 0,
+    "lifted": 1874,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-0/tr-26/sl-0",
+    "step": "st-gully/fl-0/tr-26",
+    "width": 1.7877242249640695
+   },
+   "st-gully/fl-0/tr-26/sl-1/0": {
+    "at": [
+     1.7877242249640695,
+     3.2
+    ],
+    "bare": 1874,
+    "corner": null,
+    "cracked": null,
+    "fill": 0,
+    "lifted": 1874,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-0/tr-26/sl-1",
+    "step": "st-gully/fl-0/tr-26",
+    "width": 1.4122757750359307
+   },
+   "st-gully/fl-0/tr-27/sl-0/0": {
+    "at": [
+     0.0,
+     2.2878050946418385
+    ],
+    "bare": 1874,
+    "corner": null,
+    "cracked": {
+     "at": 0.4867064251035757,
+     "filled": null,
+     "year": 1951
+    },
+    "fill": 0,
+    "lifted": 1874,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-0/tr-27/sl-0",
+    "step": "st-gully/fl-0/tr-27",
+    "width": 2.2878050946418385
+   },
+   "st-gully/fl-0/tr-27/sl-1/0": {
+    "at": [
+     2.2878050946418385,
+     3.2
+    ],
+    "bare": 1874,
+    "corner": null,
+    "cracked": {
+     "at": 0.3629060926417224,
+     "filled": null,
+     "year": 1944
+    },
+    "fill": 0,
+    "lifted": 1874,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-0/tr-27/sl-1",
+    "step": "st-gully/fl-0/tr-27",
+    "width": 0.9121949053581617
+   },
+   "st-gully/fl-0/tr-28/sl-0/0": {
+    "at": [
+     0.0,
+     0.9165879639515453
+    ],
+    "bare": 1874,
+    "corner": {
+     "filled": null,
+     "side": "r",
+     "size": 0.08502767251557761,
+     "year": 1943
+    },
+    "cracked": null,
+    "fill": 0,
+    "lifted": 1874,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-0/tr-28/sl-0",
+    "step": "st-gully/fl-0/tr-28",
+    "width": 0.9165879639515453
+   },
+   "st-gully/fl-0/tr-28/sl-1/0": {
+    "at": [
+     0.9165879639515453,
+     3.2
+    ],
+    "bare": 1874,
+    "corner": {
+     "filled": null,
+     "side": "l",
+     "size": 0.08642490018881273,
+     "year": 1890
+    },
+    "cracked": null,
+    "fill": 0,
+    "lifted": 1874,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-0/tr-28/sl-1",
+    "step": "st-gully/fl-0/tr-28",
+    "width": 2.283412036048455
+   },
+   "st-gully/fl-0/tr-29/sl-0/0": {
+    "at": [
+     0.0,
+     2.29979506337395
+    ],
+    "bare": 1874,
+    "corner": null,
+    "cracked": null,
+    "fill": 0,
+    "lifted": 1874,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-0/tr-29/sl-0",
+    "step": "st-gully/fl-0/tr-29",
+    "width": 2.29979506337395
+   },
+   "st-gully/fl-0/tr-29/sl-1/0": {
+    "at": [
+     2.29979506337395,
+     3.2
+    ],
+    "bare": 1874,
+    "corner": null,
+    "cracked": {
+     "at": 0.4869914603850999,
+     "filled": null,
+     "year": 1877
+    },
+    "fill": 0,
+    "lifted": 1874,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-0/tr-29/sl-1",
+    "step": "st-gully/fl-0/tr-29",
+    "width": 0.9002049366260501
+   },
+   "st-gully/fl-0/tr-3/sl-0/0": {
+    "at": [
+     0.0,
+     0.9450746646937613
+    ],
+    "bare": 1874,
+    "corner": null,
+    "cracked": null,
+    "fill": 0,
+    "lifted": 1952,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-0/tr-3/sl-0",
+    "step": "st-gully/fl-0/tr-3",
+    "width": 0.9450746646937613
+   },
+   "st-gully/fl-0/tr-3/sl-1/0": {
+    "at": [
+     0.9450746646937613,
+     3.2
+    ],
+    "bare": 1874,
+    "corner": null,
+    "cracked": null,
+    "fill": 0,
+    "lifted": 1952,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-0/tr-3/sl-1",
+    "step": "st-gully/fl-0/tr-3",
+    "width": 2.254925335306239
+   },
+   "st-gully/fl-0/tr-4/sl-0/0": {
+    "at": [
+     0.0,
+     2.102963169397866
+    ],
+    "bare": 1874,
+    "corner": null,
+    "cracked": null,
+    "fill": 0,
+    "lifted": 1952,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-0/tr-4/sl-0",
+    "step": "st-gully/fl-0/tr-4",
+    "width": 2.102963169397866
+   },
+   "st-gully/fl-0/tr-4/sl-1/0": {
+    "at": [
+     2.102963169397866,
+     3.2
+    ],
+    "bare": 1874,
+    "corner": {
+     "filled": null,
+     "side": "l",
+     "size": 0.08156156893778443,
+     "year": 1893
+    },
+    "cracked": null,
+    "fill": 0,
+    "lifted": 1952,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-0/tr-4/sl-1",
+    "step": "st-gully/fl-0/tr-4",
+    "width": 1.0970368306021343
+   },
+   "st-gully/fl-0/tr-5/sl-0/0": {
+    "at": [
+     0.0,
+     1.3906598519665252
+    ],
+    "bare": 1874,
+    "corner": null,
+    "cracked": null,
+    "fill": 0,
+    "lifted": 1952,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-0/tr-5/sl-0",
+    "step": "st-gully/fl-0/tr-5",
+    "width": 1.3906598519665252
+   },
+   "st-gully/fl-0/tr-5/sl-1/0": {
+    "at": [
+     1.3906598519665252,
+     3.2
+    ],
+    "bare": 1874,
+    "corner": null,
+    "cracked": null,
+    "fill": 0,
+    "lifted": 1952,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-0/tr-5/sl-1",
+    "step": "st-gully/fl-0/tr-5",
+    "width": 1.809340148033475
+   },
+   "st-gully/fl-0/tr-6/sl-0/0": {
+    "at": [
+     0.0,
+     2.240588713980283
+    ],
+    "bare": 1874,
+    "corner": null,
+    "cracked": {
+     "at": 0.3504443433087227,
+     "filled": null,
+     "year": 1975
+    },
+    "fill": 0,
+    "lifted": 1952,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-0/tr-6/sl-0",
+    "step": "st-gully/fl-0/tr-6",
+    "width": 2.240588713980283
+   },
+   "st-gully/fl-0/tr-6/sl-1/0": {
+    "at": [
+     2.240588713980283,
+     3.2
+    ],
+    "bare": 1874,
+    "corner": null,
+    "cracked": null,
+    "fill": 0,
+    "lifted": 1952,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-0/tr-6/sl-1",
+    "step": "st-gully/fl-0/tr-6",
+    "width": 0.959411286019717
+   },
+   "st-gully/fl-0/tr-7/sl-0/0": {
+    "at": [
+     0.0,
+     0.983991001179059
+    ],
+    "bare": 1874,
+    "corner": null,
+    "cracked": null,
+    "fill": 0,
+    "lifted": 1952,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-0/tr-7/sl-0",
+    "step": "st-gully/fl-0/tr-7",
+    "width": 0.983991001179059
+   },
+   "st-gully/fl-0/tr-7/sl-1/0": {
+    "at": [
+     0.983991001179059,
+     3.2
+    ],
+    "bare": 1874,
+    "corner": null,
+    "cracked": {
+     "at": 0.6037106256736564,
+     "filled": [
+      "cement",
+      1952
+     ],
+     "year": 1925
+    },
+    "fill": 0,
+    "lifted": 1952,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-0/tr-7/sl-1",
+    "step": "st-gully/fl-0/tr-7",
+    "width": 2.216008998820941
+   },
+   "st-gully/fl-0/tr-8/sl-0/0": {
+    "at": [
+     0.0,
+     1.7234774990310555
+    ],
+    "bare": 1874,
+    "corner": {
+     "filled": [
+      "cement",
+      1959
+     ],
+     "side": "r",
+     "size": 0.04820127865419464,
+     "year": 1958
+    },
+    "cracked": null,
+    "fill": 0,
+    "lifted": 1952,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-0/tr-8/sl-0",
+    "step": "st-gully/fl-0/tr-8",
+    "width": 1.7234774990310555
+   },
+   "st-gully/fl-0/tr-8/sl-1/0": {
+    "at": [
+     1.7234774990310555,
+     3.2
+    ],
+    "bare": 1874,
+    "corner": null,
+    "cracked": null,
+    "fill": 0,
+    "lifted": 1952,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-0/tr-8/sl-1",
+    "step": "st-gully/fl-0/tr-8",
+    "width": 1.4765225009689447
+   },
+   "st-gully/fl-0/tr-9/sl-0/0": {
+    "at": [
+     0.0,
+     1.3254994158464475
+    ],
+    "bare": 1874,
+    "corner": null,
+    "cracked": null,
+    "fill": 0,
+    "lifted": 1952,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-0/tr-9/sl-0",
+    "step": "st-gully/fl-0/tr-9",
+    "width": 1.3254994158464475
+   },
+   "st-gully/fl-0/tr-9/sl-1/0": {
+    "at": [
+     1.3254994158464475,
+     3.2
+    ],
+    "bare": 1874,
+    "corner": {
+     "filled": [
+      "cement",
+      1986
+     ],
+     "side": "l",
+     "size": 0.055536375696398466,
+     "year": 1897
+    },
+    "cracked": null,
+    "fill": 0,
+    "lifted": 1952,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-0/tr-9/sl-1",
+    "step": "st-gully/fl-0/tr-9",
+    "width": 1.8745005841535527
+   },
+   "st-gully/fl-1/tr-0/sl-0/0": {
+    "at": [
+     0.0,
+     1.642310962391445
+    ],
+    "bare": 1874,
+    "corner": null,
+    "cracked": {
+     "at": 0.5120870592907674,
+     "filled": null,
+     "year": 1931
+    },
+    "fill": 0,
+    "lifted": 1911,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-1/tr-0/sl-0",
+    "step": "st-gully/fl-1/tr-0",
+    "width": 1.642310962391445
+   },
+   "st-gully/fl-1/tr-0/sl-1/0": {
+    "at": [
+     1.642310962391445,
+     3.2
+    ],
+    "bare": 1874,
+    "corner": {
+     "filled": [
+      "cement",
+      1931
+     ],
+     "side": "l",
+     "size": 0.04485065758152265,
+     "year": 1919
+    },
+    "cracked": {
+     "at": 0.39346295693585775,
+     "filled": null,
+     "year": 1962
+    },
+    "fill": 0,
+    "lifted": 1911,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-1/tr-0/sl-1",
+    "step": "st-gully/fl-1/tr-0",
+    "width": 1.5576890376085553
+   },
+   "st-gully/fl-1/tr-1/sl-0/0": {
+    "at": [
+     0.0,
+     2.2139714733130207
+    ],
+    "bare": 1874,
+    "corner": {
+     "filled": null,
+     "side": "r",
+     "size": 0.04789749362093133,
+     "year": 1875
+    },
+    "cracked": {
+     "at": 0.48347663096830856,
+     "filled": [
+      "lime",
+      1911
+     ],
+     "year": 1881
+    },
+    "fill": 0,
+    "lifted": 1911,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-1/tr-1/sl-0",
+    "step": "st-gully/fl-1/tr-1",
+    "width": 2.2139714733130207
+   },
+   "st-gully/fl-1/tr-1/sl-1/0": {
+    "at": [
+     2.2139714733130207,
+     3.2
+    ],
+    "bare": 1874,
+    "corner": null,
+    "cracked": {
+     "at": 0.6418637720301469,
+     "filled": null,
+     "year": 1957
+    },
+    "fill": 0,
+    "lifted": 1911,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-1/tr-1/sl-1",
+    "step": "st-gully/fl-1/tr-1",
+    "width": 0.9860285266869795
+   },
+   "st-gully/fl-1/tr-10/sl-0/0": {
+    "at": [
+     0.0,
+     0.9637783851558389
+    ],
+    "bare": 1874,
+    "corner": null,
+    "cracked": null,
+    "fill": 0,
+    "lifted": 1911,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-1/tr-10/sl-0",
+    "step": "st-gully/fl-1/tr-10",
+    "width": 0.9637783851558389
+   },
+   "st-gully/fl-1/tr-10/sl-1/0": {
+    "at": [
+     0.9637783851558389,
+     3.2
+    ],
+    "bare": 1874,
+    "corner": null,
+    "cracked": null,
+    "fill": 0,
+    "lifted": 1911,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-1/tr-10/sl-1",
+    "step": "st-gully/fl-1/tr-10",
+    "width": 2.2362216148441614
+   },
+   "st-gully/fl-1/tr-11/sl-0/0": {
+    "at": [
+     0.0,
+     1.5745201242901765
+    ],
+    "bare": 1874,
+    "corner": null,
+    "cracked": {
+     "at": 0.5646570446703063,
+     "filled": null,
+     "year": 1939
+    },
+    "fill": 0,
+    "lifted": 1911,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-1/tr-11/sl-0",
+    "step": "st-gully/fl-1/tr-11",
+    "width": 1.5745201242901765
+   },
+   "st-gully/fl-1/tr-11/sl-1/0": {
+    "at": [
+     1.5745201242901765,
+     2.4785642692191794
+    ],
+    "bare": 1874,
+    "corner": null,
+    "cracked": {
+     "at": 0.6497846712329555,
+     "filled": null,
+     "year": 1942
+    },
+    "fill": 0,
+    "lifted": 1911,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-1/tr-11/sl-1",
+    "step": "st-gully/fl-1/tr-11",
+    "width": 0.9040441449290029
+   },
+   "st-gully/fl-1/tr-11/sl-2/0": {
+    "at": [
+     2.4785642692191794,
+     3.2
+    ],
+    "bare": 1874,
+    "corner": null,
+    "cracked": null,
+    "fill": 0,
+    "lifted": 1911,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-1/tr-11/sl-2",
+    "step": "st-gully/fl-1/tr-11",
+    "width": 0.7214357307808208
+   },
+   "st-gully/fl-1/tr-12/sl-0/0": {
+    "at": [
+     0.0,
+     2.100648550901125
+    ],
+    "bare": 1874,
+    "corner": null,
+    "cracked": {
+     "at": 0.4122512721615039,
+     "filled": null,
+     "year": 1977
+    },
+    "fill": 0,
+    "lifted": 1874,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-1/tr-12/sl-0",
+    "step": "st-gully/fl-1/tr-12",
+    "width": 2.100648550901125
+   },
+   "st-gully/fl-1/tr-12/sl-1/0": {
+    "at": [
+     2.100648550901125,
+     3.2
+    ],
+    "bare": 1874,
+    "corner": {
+     "filled": null,
+     "side": "l",
+     "size": 0.0862936033158233,
+     "year": 1907
+    },
+    "cracked": {
+     "at": 0.36499167615291095,
+     "filled": null,
+     "year": 1932
+    },
+    "fill": 0,
+    "lifted": 1874,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-1/tr-12/sl-1",
+    "step": "st-gully/fl-1/tr-12",
+    "width": 1.0993514490988754
+   },
+   "st-gully/fl-1/tr-13/sl-0/0": {
+    "at": [
+     0.0,
+     1.2703506274921856
+    ],
+    "bare": 1874,
+    "corner": null,
+    "cracked": {
+     "at": 0.4631719498778235,
+     "filled": null,
+     "year": 1937
+    },
+    "fill": 0,
+    "lifted": 1874,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-1/tr-13/sl-0",
+    "step": "st-gully/fl-1/tr-13",
+    "width": 1.2703506274921856
+   },
+   "st-gully/fl-1/tr-13/sl-1/0": {
+    "at": [
+     1.2703506274921856,
+     3.2
+    ],
+    "bare": 1874,
+    "corner": {
+     "filled": [
+      "cement",
+      1975
+     ],
+     "side": "l",
+     "size": 0.07930294534656598,
+     "year": 1938
+    },
+    "cracked": {
+     "at": 0.4671074240485649,
+     "filled": null,
+     "year": 1959
+    },
+    "fill": 0,
+    "lifted": 1874,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-1/tr-13/sl-1",
+    "step": "st-gully/fl-1/tr-13",
+    "width": 1.9296493725078145
+   },
+   "st-gully/fl-1/tr-14/sl-0/0": {
+    "at": [
+     0.0,
+     1.637659764293205
+    ],
+    "bare": 1874,
+    "corner": null,
+    "cracked": null,
+    "fill": 0,
+    "lifted": 1874,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-1/tr-14/sl-0",
+    "step": "st-gully/fl-1/tr-14",
+    "width": 1.637659764293205
+   },
+   "st-gully/fl-1/tr-14/sl-1/0": {
+    "at": [
+     1.637659764293205,
+     3.2
+    ],
+    "bare": 1874,
+    "corner": null,
+    "cracked": {
+     "at": 0.4709896798142898,
+     "filled": null,
+     "year": 1883
+    },
+    "fill": 0,
+    "lifted": 1874,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-1/tr-14/sl-1",
+    "step": "st-gully/fl-1/tr-14",
+    "width": 1.5623402357067953
+   },
+   "st-gully/fl-1/tr-15/sl-0/0": {
+    "at": [
+     0.0,
+     1.2072494043336008
+    ],
+    "bare": 1874,
+    "corner": {
+     "filled": null,
+     "side": "r",
+     "size": 0.042459440061805916,
+     "year": 1944
+    },
+    "cracked": {
+     "at": 0.3837813556893697,
+     "filled": null,
+     "year": 1879
+    },
+    "fill": 0,
+    "lifted": 1874,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-1/tr-15/sl-0",
+    "step": "st-gully/fl-1/tr-15",
+    "width": 1.2072494043336008
+   },
+   "st-gully/fl-1/tr-15/sl-1/0": {
+    "at": [
+     1.2072494043336008,
+     3.2
+    ],
+    "bare": 1874,
+    "corner": {
+     "filled": null,
+     "side": "l",
+     "size": 0.05462058684380197,
+     "year": 1891
+    },
+    "cracked": {
+     "at": 0.5399074453959297,
+     "filled": null,
+     "year": 1908
+    },
+    "fill": 0,
+    "lifted": 1874,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-1/tr-15/sl-1",
+    "step": "st-gully/fl-1/tr-15",
+    "width": 1.9927505956663993
+   },
+   "st-gully/fl-1/tr-16/sl-0/0": {
+    "at": [
+     0.0,
+     1.8301178642679163
+    ],
+    "bare": 1874,
+    "corner": null,
+    "cracked": null,
+    "fill": 0,
+    "lifted": 1874,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-1/tr-16/sl-0",
+    "step": "st-gully/fl-1/tr-16",
+    "width": 1.8301178642679163
+   },
+   "st-gully/fl-1/tr-16/sl-1/0": {
+    "at": [
+     1.8301178642679163,
+     3.2
+    ],
+    "bare": 1874,
+    "corner": null,
+    "cracked": {
+     "at": 0.43882757967030595,
+     "filled": null,
+     "year": 1943
+    },
+    "fill": 0,
+    "lifted": 1874,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-1/tr-16/sl-1",
+    "step": "st-gully/fl-1/tr-16",
+    "width": 1.3698821357320838
+   },
+   "st-gully/fl-1/tr-17/sl-0/0": {
+    "at": [
+     0.0,
+     1.3053513922565263
+    ],
+    "bare": 1874,
+    "corner": null,
+    "cracked": {
+     "at": 0.3629221501609233,
+     "filled": null,
+     "year": 1910
+    },
+    "fill": 0,
+    "lifted": 1874,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-1/tr-17/sl-0",
+    "step": "st-gully/fl-1/tr-17",
+    "width": 1.3053513922565263
+   },
+   "st-gully/fl-1/tr-17/sl-1/0": {
+    "at": [
+     1.3053513922565263,
+     3.2
+    ],
+    "bare": 1874,
+    "corner": null,
+    "cracked": {
+     "at": 0.6417856395866364,
+     "filled": null,
+     "year": 1983
+    },
+    "fill": 0,
+    "lifted": 1874,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-1/tr-17/sl-1",
+    "step": "st-gully/fl-1/tr-17",
+    "width": 1.8946486077434739
+   },
+   "st-gully/fl-1/tr-18/sl-0/0": {
+    "at": [
+     0.0,
+     1.9068032535220674
+    ],
+    "bare": 1874,
+    "corner": null,
+    "cracked": {
+     "at": 0.49904528989246444,
+     "filled": null,
+     "year": 1954
+    },
+    "fill": 0,
+    "lifted": 1874,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-1/tr-18/sl-0",
+    "step": "st-gully/fl-1/tr-18",
+    "width": 1.9068032535220674
+   },
+   "st-gully/fl-1/tr-18/sl-1/0": {
+    "at": [
+     1.9068032535220674,
+     3.2
+    ],
+    "bare": 1874,
+    "corner": null,
+    "cracked": null,
+    "fill": 0,
+    "lifted": 1874,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-1/tr-18/sl-1",
+    "step": "st-gully/fl-1/tr-18",
+    "width": 1.2931967464779328
+   },
+   "st-gully/fl-1/tr-19/sl-0/0": {
+    "at": [
+     0.0,
+     1.19350569968434
+    ],
+    "bare": 1874,
+    "corner": null,
+    "cracked": null,
+    "fill": 0,
+    "lifted": 1874,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-1/tr-19/sl-0",
+    "step": "st-gully/fl-1/tr-19",
+    "width": 1.19350569968434
+   },
+   "st-gully/fl-1/tr-19/sl-1/0": {
+    "at": [
+     1.19350569968434,
+     3.2
+    ],
+    "bare": 1874,
+    "corner": null,
+    "cracked": {
+     "at": 0.505471799815165,
+     "filled": null,
+     "year": 1935
+    },
+    "fill": 0,
+    "lifted": 1874,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-1/tr-19/sl-1",
+    "step": "st-gully/fl-1/tr-19",
+    "width": 2.0064943003156603
+   },
+   "st-gully/fl-1/tr-2/sl-0/0": {
+    "at": [
+     0.0,
+     0.901700029896157
+    ],
+    "bare": 1874,
+    "corner": null,
+    "cracked": {
+     "at": 0.6249229337025994,
+     "filled": null,
+     "year": 1952
+    },
+    "fill": 0,
+    "lifted": 1911,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-1/tr-2/sl-0",
+    "step": "st-gully/fl-1/tr-2",
+    "width": 0.901700029896157
+   },
+   "st-gully/fl-1/tr-2/sl-1/0": {
+    "at": [
+     0.901700029896157,
+     3.2
+    ],
+    "bare": 1874,
+    "corner": null,
+    "cracked": null,
+    "fill": 0,
+    "lifted": 1911,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-1/tr-2/sl-1",
+    "step": "st-gully/fl-1/tr-2",
+    "width": 2.298299970103843
+   },
+   "st-gully/fl-1/tr-20/sl-0/0": {
+    "at": [
+     0.0,
+     2.007469344120616
+    ],
+    "bare": 1874,
+    "corner": null,
+    "cracked": {
+     "at": 0.5944719502855877,
+     "filled": null,
+     "year": 1963
+    },
+    "fill": 0,
+    "lifted": 1874,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-1/tr-20/sl-0",
+    "step": "st-gully/fl-1/tr-20",
+    "width": 2.007469344120616
+   },
+   "st-gully/fl-1/tr-20/sl-1/0": {
+    "at": [
+     2.007469344120616,
+     3.2
+    ],
+    "bare": 1874,
+    "corner": null,
+    "cracked": null,
+    "fill": 0,
+    "lifted": 1874,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-1/tr-20/sl-1",
+    "step": "st-gully/fl-1/tr-20",
+    "width": 1.1925306558793842
+   },
+   "st-gully/fl-1/tr-21/sl-0/0": {
+    "at": [
+     0.0,
+     1.0827313421178526
+    ],
+    "bare": 1874,
+    "corner": {
+     "filled": null,
+     "side": "l",
+     "size": 0.0655978474346042,
+     "year": 1935
+    },
+    "cracked": null,
+    "fill": 0,
+    "lifted": 1874,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-1/tr-21/sl-0",
+    "step": "st-gully/fl-1/tr-21",
+    "width": 1.0827313421178526
+   },
+   "st-gully/fl-1/tr-21/sl-1/0": {
+    "at": [
+     1.0827313421178526,
+     3.2
+    ],
+    "bare": 1874,
+    "corner": null,
+    "cracked": null,
+    "fill": 0,
+    "lifted": 1874,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-1/tr-21/sl-1",
+    "step": "st-gully/fl-1/tr-21",
+    "width": 2.1172686578821476
+   },
+   "st-gully/fl-1/tr-22/sl-0/0": {
+    "at": [
+     0.0,
+     1.439713194947694
+    ],
+    "bare": 1874,
+    "corner": null,
+    "cracked": null,
+    "fill": 0,
+    "lifted": 1874,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-1/tr-22/sl-0",
+    "step": "st-gully/fl-1/tr-22",
+    "width": 1.439713194947694
+   },
+   "st-gully/fl-1/tr-22/sl-1/0": {
+    "at": [
+     1.439713194947694,
+     3.2
+    ],
+    "bare": 1874,
+    "corner": null,
+    "cracked": {
+     "at": 0.4550221149834902,
+     "filled": null,
+     "year": 1959
+    },
+    "fill": 0,
+    "lifted": 1874,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-1/tr-22/sl-1",
+    "step": "st-gully/fl-1/tr-22",
+    "width": 1.7602868050523062
+   },
+   "st-gully/fl-1/tr-23/sl-0/0": {
+    "at": [
+     0.0,
+     0.9262488418994398
+    ],
+    "bare": 1874,
+    "corner": null,
+    "cracked": {
+     "at": 0.6180474313611686,
+     "filled": null,
+     "year": 1906
+    },
+    "fill": 0,
+    "lifted": 1874,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-1/tr-23/sl-0",
+    "step": "st-gully/fl-1/tr-23",
+    "width": 0.9262488418994398
+   },
+   "st-gully/fl-1/tr-23/sl-1/0": {
+    "at": [
+     0.9262488418994398,
+     3.2
+    ],
+    "bare": 1874,
+    "corner": null,
+    "cracked": null,
+    "fill": 0,
+    "lifted": 1874,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-1/tr-23/sl-1",
+    "step": "st-gully/fl-1/tr-23",
+    "width": 2.2737511581005605
+   },
+   "st-gully/fl-1/tr-24/sl-0/0": {
+    "at": [
+     0.0,
+     1.5956883822603725
+    ],
+    "bare": 1874,
+    "corner": null,
+    "cracked": null,
+    "fill": 0,
+    "lifted": 1874,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-1/tr-24/sl-0",
+    "step": "st-gully/fl-1/tr-24",
+    "width": 1.5956883822603725
+   },
+   "st-gully/fl-1/tr-24/sl-1/0": {
+    "at": [
+     1.5956883822603725,
+     3.2
+    ],
+    "bare": 1874,
+    "corner": null,
+    "cracked": {
+     "at": 0.4237296118418056,
+     "filled": null,
+     "year": 1955
+    },
+    "fill": 0,
+    "lifted": 1874,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-1/tr-24/sl-1",
+    "step": "st-gully/fl-1/tr-24",
+    "width": 1.6043116177396277
+   },
+   "st-gully/fl-1/tr-25/sl-0/0": {
+    "at": [
+     0.0,
+     1.2582044121447862
+    ],
+    "bare": 1874,
+    "corner": null,
+    "cracked": null,
+    "fill": 0,
+    "lifted": 1874,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-1/tr-25/sl-0",
+    "step": "st-gully/fl-1/tr-25",
+    "width": 1.2582044121447862
+   },
+   "st-gully/fl-1/tr-25/sl-1/0": {
+    "at": [
+     1.2582044121447862,
+     3.2
+    ],
+    "bare": 1874,
+    "corner": null,
+    "cracked": {
+     "at": 0.6115698408727106,
+     "filled": null,
+     "year": 1952
+    },
+    "fill": 0,
+    "lifted": 1874,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-1/tr-25/sl-1",
+    "step": "st-gully/fl-1/tr-25",
+    "width": 1.941795587855214
+   },
+   "st-gully/fl-1/tr-26/sl-0/0": {
+    "at": [
+     0.0,
+     2.225682573540601
+    ],
+    "bare": 1874,
+    "corner": {
+     "filled": null,
+     "side": "r",
+     "size": 0.08237129109751473,
+     "year": 1931
+    },
+    "cracked": {
+     "at": 0.3966690318399141,
+     "filled": null,
+     "year": 1975
+    },
+    "fill": 0,
+    "lifted": 1874,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-1/tr-26/sl-0",
+    "step": "st-gully/fl-1/tr-26",
+    "width": 2.225682573540601
+   },
+   "st-gully/fl-1/tr-26/sl-1/0": {
+    "at": [
+     2.225682573540601,
+     3.2
+    ],
+    "bare": 1874,
+    "corner": null,
+    "cracked": {
+     "at": 0.6287106619429446,
+     "filled": null,
+     "year": 1925
+    },
+    "fill": 0,
+    "lifted": 1874,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-1/tr-26/sl-1",
+    "step": "st-gully/fl-1/tr-26",
+    "width": 0.974317426459399
+   },
+   "st-gully/fl-1/tr-27/sl-0/0": {
+    "at": [
+     0.0,
+     1.2938183512141375
+    ],
+    "bare": 1874,
+    "corner": null,
+    "cracked": {
+     "at": 0.5468295293600002,
+     "filled": null,
+     "year": 1975
+    },
+    "fill": 0,
+    "lifted": 1874,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-1/tr-27/sl-0",
+    "step": "st-gully/fl-1/tr-27",
+    "width": 1.2938183512141375
+   },
+   "st-gully/fl-1/tr-27/sl-1/0": {
+    "at": [
+     1.2938183512141375,
+     3.2
+    ],
+    "bare": 1874,
+    "corner": {
+     "filled": null,
+     "side": "l",
+     "size": 0.04614364258383425,
+     "year": 1937
+    },
+    "cracked": null,
+    "fill": 0,
+    "lifted": 1874,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-1/tr-27/sl-1",
+    "step": "st-gully/fl-1/tr-27",
+    "width": 1.9061816487858627
+   },
+   "st-gully/fl-1/tr-28/sl-0/0": {
+    "at": [
+     0.0,
+     0.9172109472604961
+    ],
+    "bare": 1874,
+    "corner": {
+     "filled": null,
+     "side": "r",
+     "size": 0.06701282219548418,
+     "year": 1926
+    },
+    "cracked": null,
+    "fill": 0,
+    "lifted": 1874,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-1/tr-28/sl-0",
+    "step": "st-gully/fl-1/tr-28",
+    "width": 0.9172109472604961
+   },
+   "st-gully/fl-1/tr-28/sl-1/0": {
+    "at": [
+     0.9172109472604961,
+     2.330297548891931
+    ],
+    "bare": 1874,
+    "corner": null,
+    "cracked": null,
+    "fill": 0,
+    "lifted": 1874,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-1/tr-28/sl-1",
+    "step": "st-gully/fl-1/tr-28",
+    "width": 1.4130866016314347
+   },
+   "st-gully/fl-1/tr-28/sl-2/0": {
+    "at": [
+     2.330297548891931,
+     3.2
+    ],
+    "bare": 1874,
+    "corner": {
+     "filled": null,
+     "side": "l",
+     "size": 0.050286429509302816,
+     "year": 1945
+    },
+    "cracked": {
+     "at": 0.3974072073761789,
+     "filled": null,
+     "year": 1944
+    },
+    "fill": 0,
+    "lifted": 1874,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-1/tr-28/sl-2",
+    "step": "st-gully/fl-1/tr-28",
+    "width": 0.8697024511080693
+   },
+   "st-gully/fl-1/tr-29/sl-0/0": {
+    "at": [
+     0.0,
+     1.864634772911934
+    ],
+    "bare": 1874,
+    "corner": null,
+    "cracked": null,
+    "fill": 0,
+    "lifted": 1874,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-1/tr-29/sl-0",
+    "step": "st-gully/fl-1/tr-29",
+    "width": 1.864634772911934
+   },
+   "st-gully/fl-1/tr-29/sl-1/0": {
+    "at": [
+     1.864634772911934,
+     3.2
+    ],
+    "bare": 1874,
+    "corner": null,
+    "cracked": null,
+    "fill": 0,
+    "lifted": 1874,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-1/tr-29/sl-1",
+    "step": "st-gully/fl-1/tr-29",
+    "width": 1.3353652270880663
+   },
+   "st-gully/fl-1/tr-3/sl-0/0": {
+    "at": [
+     0.0,
+     1.8790791428250977
+    ],
+    "bare": 1874,
+    "corner": null,
+    "cracked": null,
+    "fill": 0,
+    "lifted": 1911,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-1/tr-3/sl-0",
+    "step": "st-gully/fl-1/tr-3",
+    "width": 1.8790791428250977
+   },
+   "st-gully/fl-1/tr-3/sl-1/0": {
+    "at": [
+     1.8790791428250977,
+     3.2
+    ],
+    "bare": 1874,
+    "corner": null,
+    "cracked": {
+     "at": 0.5753777921003032,
+     "filled": null,
+     "year": 1985
+    },
+    "fill": 0,
+    "lifted": 1911,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-1/tr-3/sl-1",
+    "step": "st-gully/fl-1/tr-3",
+    "width": 1.3209208571749025
+   },
+   "st-gully/fl-1/tr-30/sl-0/0": {
+    "at": [
+     0.0,
+     0.7890618002202905
+    ],
+    "bare": 1874,
+    "corner": null,
+    "cracked": null,
+    "fill": 0,
+    "lifted": 1874,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-1/tr-30/sl-0",
+    "step": "st-gully/fl-1/tr-30",
+    "width": 0.7890618002202905
+   },
+   "st-gully/fl-1/tr-30/sl-1/0": {
+    "at": [
+     0.7890618002202905,
+     2.3504575400180103
+    ],
+    "bare": 1874,
+    "corner": null,
+    "cracked": null,
+    "fill": 0,
+    "lifted": 1874,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-1/tr-30/sl-1",
+    "step": "st-gully/fl-1/tr-30",
+    "width": 1.5613957397977198
+   },
+   "st-gully/fl-1/tr-30/sl-2/0": {
+    "at": [
+     2.3504575400180103,
+     3.2
+    ],
+    "bare": 1874,
+    "corner": null,
+    "cracked": null,
+    "fill": 0,
+    "lifted": 1874,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-1/tr-30/sl-2",
+    "step": "st-gully/fl-1/tr-30",
+    "width": 0.8495424599819899
+   },
+   "st-gully/fl-1/tr-31/sl-0/0": {
+    "at": [
+     0.0,
+     1.378930960557149
+    ],
+    "bare": 1874,
+    "corner": null,
+    "cracked": null,
+    "fill": 0,
+    "lifted": 1874,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-1/tr-31/sl-0",
+    "step": "st-gully/fl-1/tr-31",
+    "width": 1.378930960557149
+   },
+   "st-gully/fl-1/tr-31/sl-1/0": {
+    "at": [
+     1.378930960557149,
+     3.2
+    ],
+    "bare": 1874,
+    "corner": {
+     "filled": [
+      "cement",
+      1919
+     ],
+     "side": "l",
+     "size": 0.06040644380549098,
+     "year": 1904
+    },
+    "cracked": {
+     "at": 0.5373598377578803,
+     "filled": null,
+     "year": 1930
+    },
+    "fill": 0,
+    "lifted": 1874,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-1/tr-31/sl-1",
+    "step": "st-gully/fl-1/tr-31",
+    "width": 1.8210690394428513
+   },
+   "st-gully/fl-1/tr-32/sl-0/0": {
+    "at": [
+     0.0,
+     0.9264719259866244
+    ],
+    "bare": 1874,
+    "corner": null,
+    "cracked": {
+     "at": 0.466583108871526,
+     "filled": null,
+     "year": 1951
+    },
+    "fill": 0,
+    "lifted": 1874,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-1/tr-32/sl-0",
+    "step": "st-gully/fl-1/tr-32",
+    "width": 0.9264719259866244
+   },
+   "st-gully/fl-1/tr-32/sl-1/0": {
+    "at": [
+     0.9264719259866244,
+     3.2
+    ],
+    "bare": 1874,
+    "corner": null,
+    "cracked": {
+     "at": 0.38683966774501405,
+     "filled": null,
+     "year": 1943
+    },
+    "fill": 0,
+    "lifted": 1874,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-1/tr-32/sl-1",
+    "step": "st-gully/fl-1/tr-32",
+    "width": 2.2735280740133756
+   },
+   "st-gully/fl-1/tr-33/sl-0/0": {
+    "at": [
+     0.0,
+     1.6892781937597001
+    ],
+    "bare": 1874,
+    "corner": null,
+    "cracked": null,
+    "fill": 0,
+    "lifted": 1874,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-1/tr-33/sl-0",
+    "step": "st-gully/fl-1/tr-33",
+    "width": 1.6892781937597001
+   },
+   "st-gully/fl-1/tr-33/sl-1/0": {
+    "at": [
+     1.6892781937597001,
+     2.477876918556859
+    ],
+    "bare": 1874,
+    "corner": null,
+    "cracked": null,
+    "fill": 0,
+    "lifted": 1874,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-1/tr-33/sl-1",
+    "step": "st-gully/fl-1/tr-33",
+    "width": 0.7885987247971591
+   },
+   "st-gully/fl-1/tr-33/sl-2/0": {
+    "at": [
+     2.477876918556859,
+     3.2
+    ],
+    "bare": 1874,
+    "corner": null,
+    "cracked": null,
+    "fill": 0,
+    "lifted": 1874,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-1/tr-33/sl-2",
+    "step": "st-gully/fl-1/tr-33",
+    "width": 0.722123081443141
+   },
+   "st-gully/fl-1/tr-34/sl-0/0": {
+    "at": [
+     0.0,
+     2.1114852004130165
+    ],
+    "bare": 1874,
+    "corner": {
+     "filled": null,
+     "side": "r",
+     "size": 0.0701488520945476,
+     "year": 1942
+    },
+    "cracked": {
+     "at": 0.5010287600131252,
+     "filled": null,
+     "year": 1987
+    },
+    "fill": 0,
+    "lifted": 1874,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-1/tr-34/sl-0",
+    "step": "st-gully/fl-1/tr-34",
+    "width": 2.1114852004130165
+   },
+   "st-gully/fl-1/tr-34/sl-1/0": {
+    "at": [
+     2.1114852004130165,
+     3.2
+    ],
+    "bare": 1874,
+    "corner": null,
+    "cracked": {
+     "at": 0.38509191268934684,
+     "filled": null,
+     "year": 1936
+    },
+    "fill": 0,
+    "lifted": 1874,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-1/tr-34/sl-1",
+    "step": "st-gully/fl-1/tr-34",
+    "width": 1.0885147995869837
+   },
+   "st-gully/fl-1/tr-35/sl-0/0": {
+    "at": [
+     0.0,
+     1.0841065176161955
+    ],
+    "bare": 1874,
+    "corner": {
+     "filled": null,
+     "side": "r",
+     "size": 0.05200219707029517,
+     "year": 1953
+    },
+    "cracked": {
+     "at": 0.4325299105935209,
+     "filled": null,
+     "year": 1951
+    },
+    "fill": 0,
+    "lifted": 1874,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-1/tr-35/sl-0",
+    "step": "st-gully/fl-1/tr-35",
+    "width": 1.0841065176161955
+   },
+   "st-gully/fl-1/tr-35/sl-1/0": {
+    "at": [
+     1.0841065176161955,
+     3.2
+    ],
+    "bare": 1874,
+    "corner": null,
+    "cracked": null,
+    "fill": 0,
+    "lifted": 1874,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-1/tr-35/sl-1",
+    "step": "st-gully/fl-1/tr-35",
+    "width": 2.1158934823838047
+   },
+   "st-gully/fl-1/tr-36/sl-0/0": {
+    "at": [
+     0.0,
+     2.007235976234259
+    ],
+    "bare": 1874,
+    "corner": null,
+    "cracked": {
+     "at": 0.36213461927772056,
+     "filled": null,
+     "year": 1973
+    },
+    "fill": 0,
+    "lifted": 1874,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-1/tr-36/sl-0",
+    "step": "st-gully/fl-1/tr-36",
+    "width": 2.007235976234259
+   },
+   "st-gully/fl-1/tr-36/sl-1/0": {
+    "at": [
+     2.007235976234259,
+     3.2
+    ],
+    "bare": 1874,
+    "corner": null,
+    "cracked": null,
+    "fill": 0,
+    "lifted": 1874,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-1/tr-36/sl-1",
+    "step": "st-gully/fl-1/tr-36",
+    "width": 1.1927640237657413
+   },
+   "st-gully/fl-1/tr-37/sl-0/0": {
+    "at": [
+     0.0,
+     1.6646416585892088
+    ],
+    "bare": 1874,
+    "corner": {
+     "filled": [
+      "cement",
+      1965
+     ],
+     "side": "r",
+     "size": 0.05664144505687724,
+     "year": 1877
+    },
+    "cracked": {
+     "at": 0.4253975869137128,
+     "filled": null,
+     "year": 1931
+    },
+    "fill": 0,
+    "lifted": 1874,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-1/tr-37/sl-0",
+    "step": "st-gully/fl-1/tr-37",
+    "width": 1.6646416585892088
+   },
+   "st-gully/fl-1/tr-37/sl-1/0": {
+    "at": [
+     1.6646416585892088,
+     3.2
+    ],
+    "bare": 1874,
+    "corner": null,
+    "cracked": null,
+    "fill": 0,
+    "lifted": 1874,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-1/tr-37/sl-1",
+    "step": "st-gully/fl-1/tr-37",
+    "width": 1.5353583414107914
+   },
+   "st-gully/fl-1/tr-38/sl-0/0": {
+    "at": [
+     0.0,
+     2.0080280019988823
+    ],
+    "bare": 1874,
+    "corner": null,
+    "cracked": null,
+    "fill": 0,
+    "lifted": 1874,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-1/tr-38/sl-0",
+    "step": "st-gully/fl-1/tr-38",
+    "width": 2.0080280019988823
+   },
+   "st-gully/fl-1/tr-38/sl-1/0": {
+    "at": [
+     2.0080280019988823,
+     3.2
+    ],
+    "bare": 1874,
+    "corner": null,
+    "cracked": null,
+    "fill": 0,
+    "lifted": 1874,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-1/tr-38/sl-1",
+    "step": "st-gully/fl-1/tr-38",
+    "width": 1.1919719980011179
+   },
+   "st-gully/fl-1/tr-39/sl-0/0": {
+    "at": [
+     0.0,
+     1.604209284525898
+    ],
+    "bare": 1874,
+    "corner": null,
+    "cracked": null,
+    "fill": 0,
+    "lifted": 1874,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-1/tr-39/sl-0",
+    "step": "st-gully/fl-1/tr-39",
+    "width": 1.604209284525898
+   },
+   "st-gully/fl-1/tr-39/sl-1/0": {
+    "at": [
+     1.604209284525898,
+     3.2
+    ],
+    "bare": 1874,
+    "corner": null,
+    "cracked": {
+     "at": 0.5931289953081751,
+     "filled": null,
+     "year": 1930
+    },
+    "fill": 0,
+    "lifted": 1874,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-1/tr-39/sl-1",
+    "step": "st-gully/fl-1/tr-39",
+    "width": 1.5957907154741022
+   },
+   "st-gully/fl-1/tr-4/sl-0/0": {
+    "at": [
+     0.0,
+     1.4870439741275916
+    ],
+    "bare": 1874,
+    "corner": null,
+    "cracked": null,
+    "fill": 0,
+    "lifted": 1911,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-1/tr-4/sl-0",
+    "step": "st-gully/fl-1/tr-4",
+    "width": 1.4870439741275916
+   },
+   "st-gully/fl-1/tr-4/sl-1/0": {
+    "at": [
+     1.4870439741275916,
+     2.4086817298490892
+    ],
+    "bare": 1874,
+    "corner": null,
+    "cracked": {
+     "at": 0.6388715471746367,
+     "filled": null,
+     "year": 1951
+    },
+    "fill": 0,
+    "lifted": 1911,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-1/tr-4/sl-1",
+    "step": "st-gully/fl-1/tr-4",
+    "width": 0.9216377557214976
+   },
+   "st-gully/fl-1/tr-4/sl-2/0": {
+    "at": [
+     2.4086817298490892,
+     3.2
+    ],
+    "bare": 1874,
+    "corner": null,
+    "cracked": null,
+    "fill": 0,
+    "lifted": 1911,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-1/tr-4/sl-2",
+    "step": "st-gully/fl-1/tr-4",
+    "width": 0.7913182701509109
+   },
+   "st-gully/fl-1/tr-40/sl-0/0": {
+    "at": [
+     0.0,
+     2.120701388411421
+    ],
+    "bare": 1874,
+    "corner": null,
+    "cracked": {
+     "at": 0.4474275117512956,
+     "filled": null,
+     "year": 1938
+    },
+    "fill": 0,
+    "lifted": 1874,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-1/tr-40/sl-0",
+    "step": "st-gully/fl-1/tr-40",
+    "width": 2.120701388411421
+   },
+   "st-gully/fl-1/tr-40/sl-1/0": {
+    "at": [
+     2.120701388411421,
+     3.2
+    ],
+    "bare": 1874,
+    "corner": {
+     "filled": null,
+     "side": "l",
+     "size": 0.07154178634062161,
+     "year": 1892
+    },
+    "cracked": null,
+    "fill": 0,
+    "lifted": 1874,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-1/tr-40/sl-1",
+    "step": "st-gully/fl-1/tr-40",
+    "width": 1.079298611588579
+   },
+   "st-gully/fl-1/tr-41/sl-0/0": {
+    "at": [
+     0.0,
+     1.6700033527266005
+    ],
+    "bare": 1874,
+    "corner": null,
+    "cracked": {
+     "at": 0.5915153496622455,
+     "filled": null,
+     "year": 1931
+    },
+    "fill": 0,
+    "lifted": 1874,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-1/tr-41/sl-0",
+    "step": "st-gully/fl-1/tr-41",
+    "width": 1.6700033527266005
+   },
+   "st-gully/fl-1/tr-41/sl-1/0": {
+    "at": [
+     1.6700033527266005,
+     3.2
+    ],
+    "bare": 1874,
+    "corner": null,
+    "cracked": {
+     "at": 0.46343930221579915,
+     "filled": null,
+     "year": 1958
+    },
+    "fill": 0,
+    "lifted": 1874,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-1/tr-41/sl-1",
+    "step": "st-gully/fl-1/tr-41",
+    "width": 1.5299966472733997
+   },
+   "st-gully/fl-1/tr-42/sl-0/0": {
+    "at": [
+     0.0,
+     1.9735384269386813
+    ],
+    "bare": 1874,
+    "corner": null,
+    "cracked": {
+     "at": 0.36692196386167963,
+     "filled": null,
+     "year": 1978
+    },
+    "fill": 0,
+    "lifted": 1874,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-1/tr-42/sl-0",
+    "step": "st-gully/fl-1/tr-42",
+    "width": 1.9735384269386813
+   },
+   "st-gully/fl-1/tr-42/sl-1/0": {
+    "at": [
+     1.9735384269386813,
+     3.2
+    ],
+    "bare": 1874,
+    "corner": null,
+    "cracked": {
+     "at": 0.4461355301799752,
+     "filled": null,
+     "year": 1983
+    },
+    "fill": 0,
+    "lifted": 1874,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-1/tr-42/sl-1",
+    "step": "st-gully/fl-1/tr-42",
+    "width": 1.2264615730613189
+   },
+   "st-gully/fl-1/tr-43/sl-0/0": {
+    "at": [
+     0.0,
+     1.5397830063322493
+    ],
+    "bare": 1874,
+    "corner": null,
+    "cracked": null,
+    "fill": 0,
+    "lifted": 1874,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-1/tr-43/sl-0",
+    "step": "st-gully/fl-1/tr-43",
+    "width": 1.5397830063322493
+   },
+   "st-gully/fl-1/tr-43/sl-1/0": {
+    "at": [
+     1.5397830063322493,
+     3.2
+    ],
+    "bare": 1874,
+    "corner": {
+     "filled": null,
+     "side": "l",
+     "size": 0.08916416812903019,
+     "year": 1953
+    },
+    "cracked": {
+     "at": 0.6148468063934167,
+     "filled": null,
+     "year": 1904
+    },
+    "fill": 0,
+    "lifted": 1874,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-1/tr-43/sl-1",
+    "step": "st-gully/fl-1/tr-43",
+    "width": 1.6602169936677509
+   },
+   "st-gully/fl-1/tr-44/sl-0/0": {
+    "at": [
+     0.0,
+     1.8467582329475107
+    ],
+    "bare": 1874,
+    "corner": null,
+    "cracked": {
+     "at": 0.5059240779659024,
+     "filled": null,
+     "year": 1932
+    },
+    "fill": 0,
+    "lifted": 1874,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-1/tr-44/sl-0",
+    "step": "st-gully/fl-1/tr-44",
+    "width": 1.8467582329475107
+   },
+   "st-gully/fl-1/tr-44/sl-1/0": {
+    "at": [
+     1.8467582329475107,
+     3.2
+    ],
+    "bare": 1874,
+    "corner": {
+     "filled": null,
+     "side": "l",
+     "size": 0.06689511625462663,
+     "year": 1969
+    },
+    "cracked": {
+     "at": 0.5282871485181049,
+     "filled": null,
+     "year": 1979
+    },
+    "fill": 0,
+    "lifted": 1874,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-1/tr-44/sl-1",
+    "step": "st-gully/fl-1/tr-44",
+    "width": 1.3532417670524894
+   },
+   "st-gully/fl-1/tr-45/sl-0/0": {
+    "at": [
+     0.0,
+     1.5194184844248053
+    ],
+    "bare": 1874,
+    "corner": {
+     "filled": [
+      "cement",
+      1920
+     ],
+     "side": "r",
+     "size": 0.07855829651360599,
+     "year": 1875
+    },
+    "cracked": null,
+    "fill": 0,
+    "lifted": 1874,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-1/tr-45/sl-0",
+    "step": "st-gully/fl-1/tr-45",
+    "width": 1.5194184844248053
+   },
+   "st-gully/fl-1/tr-45/sl-1/0": {
+    "at": [
+     1.5194184844248053,
+     3.2
+    ],
+    "bare": 1874,
+    "corner": {
+     "filled": [
+      "cement",
+      1960
+     ],
+     "side": "l",
+     "size": 0.08078276238192128,
+     "year": 1903
+    },
+    "cracked": {
+     "at": 0.5634851096470481,
+     "filled": null,
+     "year": 1971
+    },
+    "fill": 0,
+    "lifted": 1874,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-1/tr-45/sl-1",
+    "step": "st-gully/fl-1/tr-45",
+    "width": 1.6805815155751949
+   },
+   "st-gully/fl-1/tr-46/sl-0/0": {
+    "at": [
+     0.0,
+     2.1673563121677275
+    ],
+    "bare": 1874,
+    "corner": null,
+    "cracked": null,
+    "fill": 0,
+    "lifted": 1874,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-1/tr-46/sl-0",
+    "step": "st-gully/fl-1/tr-46",
+    "width": 2.1673563121677275
+   },
+   "st-gully/fl-1/tr-46/sl-1/0": {
+    "at": [
+     2.1673563121677275,
+     3.2
+    ],
+    "bare": 1874,
+    "corner": null,
+    "cracked": {
+     "at": 0.43544178921208543,
+     "filled": null,
+     "year": 1931
+    },
+    "fill": 0,
+    "lifted": 1874,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-1/tr-46/sl-1",
+    "step": "st-gully/fl-1/tr-46",
+    "width": 1.0326436878322727
+   },
+   "st-gully/fl-1/tr-47/sl-0/0": {
+    "at": [
+     0.0,
+     1.3197475255533988
+    ],
+    "bare": 1874,
+    "corner": null,
+    "cracked": null,
+    "fill": 0,
+    "lifted": 1874,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-1/tr-47/sl-0",
+    "step": "st-gully/fl-1/tr-47",
+    "width": 1.3197475255533988
+   },
+   "st-gully/fl-1/tr-47/sl-1/0": {
+    "at": [
+     1.3197475255533988,
+     3.2
+    ],
+    "bare": 1874,
+    "corner": null,
+    "cracked": null,
+    "fill": 0,
+    "lifted": 1874,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-1/tr-47/sl-1",
+    "step": "st-gully/fl-1/tr-47",
+    "width": 1.8802524744466014
+   },
+   "st-gully/fl-1/tr-5/sl-0/0": {
+    "at": [
+     0.0,
+     1.93231427424774
+    ],
+    "bare": 1874,
+    "corner": {
+     "filled": null,
+     "side": "r",
+     "size": 0.05149690930645967,
+     "year": 1911
+    },
+    "cracked": null,
+    "fill": 0,
+    "lifted": 1911,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-1/tr-5/sl-0",
+    "step": "st-gully/fl-1/tr-5",
+    "width": 1.93231427424774
+   },
+   "st-gully/fl-1/tr-5/sl-1/0": {
+    "at": [
+     1.93231427424774,
+     3.2
+    ],
+    "bare": 1874,
+    "corner": null,
+    "cracked": null,
+    "fill": 0,
+    "lifted": 1911,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-1/tr-5/sl-1",
+    "step": "st-gully/fl-1/tr-5",
+    "width": 1.2676857257522602
+   },
+   "st-gully/fl-1/tr-6/sl-0/0": {
+    "at": [
+     0.0,
+     1.2345408981386197
+    ],
+    "bare": 1874,
+    "corner": {
+     "filled": [
+      "cement",
+      1973
+     ],
+     "side": "r",
+     "size": 0.07098542557064728,
+     "year": 1947
+    },
+    "cracked": null,
+    "fill": 0,
+    "lifted": 1911,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-1/tr-6/sl-0",
+    "step": "st-gully/fl-1/tr-6",
+    "width": 1.2345408981386197
+   },
+   "st-gully/fl-1/tr-6/sl-1/0": {
+    "at": [
+     1.2345408981386197,
+     3.2
+    ],
+    "bare": 1874,
+    "corner": null,
+    "cracked": {
+     "at": 0.4126892752207676,
+     "filled": null,
+     "year": 1974
+    },
+    "fill": 0,
+    "lifted": 1911,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-1/tr-6/sl-1",
+    "step": "st-gully/fl-1/tr-6",
+    "width": 1.9654591018613805
+   },
+   "st-gully/fl-1/tr-7/sl-0/0": {
+    "at": [
+     0.0,
+     1.8057761937742982
+    ],
+    "bare": 1874,
+    "corner": {
+     "filled": [
+      "cement",
+      1915
+     ],
+     "side": "r",
+     "size": 0.07139973678016268,
+     "year": 1890
+    },
+    "cracked": null,
+    "fill": 0,
+    "lifted": 1911,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-1/tr-7/sl-0",
+    "step": "st-gully/fl-1/tr-7",
+    "width": 1.8057761937742982
+   },
+   "st-gully/fl-1/tr-7/sl-1/0": {
+    "at": [
+     1.8057761937742982,
+     3.2
+    ],
+    "bare": 1874,
+    "corner": null,
+    "cracked": {
+     "at": 0.469805173492923,
+     "filled": [
+      "lime",
+      1911
+     ],
+     "year": 1901
+    },
+    "fill": 0,
+    "lifted": 1911,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-1/tr-7/sl-1",
+    "step": "st-gully/fl-1/tr-7",
+    "width": 1.394223806225702
+   },
+   "st-gully/fl-1/tr-8/sl-0/0": {
+    "at": [
+     0.0,
+     1.2981830747969267
+    ],
+    "bare": 1874,
+    "corner": null,
+    "cracked": null,
+    "fill": 0,
+    "lifted": 1911,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-1/tr-8/sl-0",
+    "step": "st-gully/fl-1/tr-8",
+    "width": 1.2981830747969267
+   },
+   "st-gully/fl-1/tr-8/sl-1/0": {
+    "at": [
+     1.2981830747969267,
+     3.2
+    ],
+    "bare": 1874,
+    "corner": null,
+    "cracked": null,
+    "fill": 0,
+    "lifted": 1911,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-1/tr-8/sl-1",
+    "step": "st-gully/fl-1/tr-8",
+    "width": 1.9018169252030734
+   },
+   "st-gully/fl-1/tr-9/sl-0/0": {
+    "at": [
+     0.0,
+     1.6009385066212385
+    ],
+    "bare": 1874,
+    "corner": null,
+    "cracked": null,
+    "fill": 0,
+    "lifted": 1911,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-1/tr-9/sl-0",
+    "step": "st-gully/fl-1/tr-9",
+    "width": 1.6009385066212385
+   },
+   "st-gully/fl-1/tr-9/sl-1/0": {
+    "at": [
+     1.6009385066212385,
+     3.2
+    ],
+    "bare": 1874,
+    "corner": null,
+    "cracked": null,
+    "fill": 0,
+    "lifted": 1911,
+    "origin": "laid",
+    "placed": 1874,
+    "shim": null,
+    "slot": "st-gully/fl-1/tr-9/sl-1",
+    "step": "st-gully/fl-1/tr-9",
+    "width": 1.5990614933787617
+   }
+  },
+  "steps": {
+   "st-gully/fl-0/tr-0": {
+    "mortar": [
+     "cement",
+     1952
+    ],
+    "reset": 1952,
+    "settled": 0.004663300833335802,
+    "slabs": [
+     "st-gully/fl-0/tr-0/sl-0/0",
+     "st-gully/fl-0/tr-0/sl-1/0"
+    ]
+   },
+   "st-gully/fl-0/tr-1": {
+    "mortar": [
+     "cement",
+     1952
+    ],
+    "reset": 1952,
+    "settled": 0.007545809279054456,
+    "slabs": [
+     "st-gully/fl-0/tr-1/sl-0/0",
+     "st-gully/fl-0/tr-1/sl-1/0"
+    ]
+   },
+   "st-gully/fl-0/tr-10": {
+    "mortar": [
+     "cement",
+     1952
+    ],
+    "reset": 1952,
+    "settled": 0.005613496006223838,
+    "slabs": [
+     "st-gully/fl-0/tr-10/sl-0/0",
+     "st-gully/fl-0/tr-10/sl-1/0"
+    ]
+   },
+   "st-gully/fl-0/tr-11": {
+    "mortar": [
+     "cement",
+     1952
+    ],
+    "reset": 1952,
+    "settled": 0.004980717627721295,
+    "slabs": [
+     "st-gully/fl-0/tr-11/sl-0/0",
+     "st-gully/fl-0/tr-11/sl-1/0"
+    ]
+   },
+   "st-gully/fl-0/tr-12": {
+    "mortar": null,
+    "reset": 1874,
+    "settled": 0.0057289450191128025,
+    "slabs": [
+     "st-gully/fl-0/tr-12/sl-0/0",
+     "st-gully/fl-0/tr-12/sl-1/0"
+    ]
+   },
+   "st-gully/fl-0/tr-13": {
+    "mortar": null,
+    "reset": 1874,
+    "settled": 0.03436115399316911,
+    "slabs": [
+     "st-gully/fl-0/tr-13/sl-0/0",
+     "st-gully/fl-0/tr-13/sl-1/0"
+    ]
+   },
+   "st-gully/fl-0/tr-14": {
+    "mortar": null,
+    "reset": 1874,
+    "settled": 0.015607411636565812,
+    "slabs": [
+     "st-gully/fl-0/tr-14/sl-0/0",
+     "st-gully/fl-0/tr-14/sl-1/0"
+    ]
+   },
+   "st-gully/fl-0/tr-15": {
+    "mortar": null,
+    "reset": 1874,
+    "settled": 0.010433842735334178,
+    "slabs": [
+     "st-gully/fl-0/tr-15/sl-0/0",
+     "st-gully/fl-0/tr-15/sl-1/0",
+     "st-gully/fl-0/tr-15/sl-2/0"
+    ]
+   },
+   "st-gully/fl-0/tr-16": {
+    "mortar": null,
+    "reset": 1874,
+    "settled": 0.008636762662772213,
+    "slabs": [
+     "st-gully/fl-0/tr-16/sl-0/0",
+     "st-gully/fl-0/tr-16/sl-1/0"
+    ]
+   },
+   "st-gully/fl-0/tr-17": {
+    "mortar": null,
+    "reset": 1874,
+    "settled": 0.010077683836032919,
+    "slabs": [
+     "st-gully/fl-0/tr-17/sl-0/0",
+     "st-gully/fl-0/tr-17/sl-1/0"
+    ]
+   },
+   "st-gully/fl-0/tr-18": {
+    "mortar": null,
+    "reset": 1874,
+    "settled": 0.011005579140374172,
+    "slabs": [
+     "st-gully/fl-0/tr-18/sl-0/0",
+     "st-gully/fl-0/tr-18/sl-1/0"
+    ]
+   },
+   "st-gully/fl-0/tr-19": {
+    "mortar": null,
+    "reset": 1874,
+    "settled": 0.0058494579597698545,
+    "slabs": [
+     "st-gully/fl-0/tr-19/sl-0/0",
+     "st-gully/fl-0/tr-19/sl-1/0"
+    ]
+   },
+   "st-gully/fl-0/tr-2": {
+    "mortar": [
+     "cement",
+     1952
+    ],
+    "reset": 1952,
+    "settled": 0.004431798680722437,
+    "slabs": [
+     "st-gully/fl-0/tr-2/sl-0/0",
+     "st-gully/fl-0/tr-2/sl-1/0"
+    ]
+   },
+   "st-gully/fl-0/tr-20": {
+    "mortar": null,
+    "reset": 1874,
+    "settled": 0.016834791155577917,
+    "slabs": [
+     "st-gully/fl-0/tr-20/sl-0/0",
+     "st-gully/fl-0/tr-20/sl-1/0"
+    ]
+   },
+   "st-gully/fl-0/tr-21": {
+    "mortar": null,
+    "reset": 1874,
+    "settled": 0.015137360201237356,
+    "slabs": [
+     "st-gully/fl-0/tr-21/sl-0/0",
+     "st-gully/fl-0/tr-21/sl-1/0",
+     "st-gully/fl-0/tr-21/sl-2/0"
+    ]
+   },
+   "st-gully/fl-0/tr-22": {
+    "mortar": null,
+    "reset": 1874,
+    "settled": 0.02111739811332636,
+    "slabs": [
+     "st-gully/fl-0/tr-22/sl-0/0",
+     "st-gully/fl-0/tr-22/sl-1/0"
+    ]
+   },
+   "st-gully/fl-0/tr-23": {
+    "mortar": null,
+    "reset": 1874,
+    "settled": 0.03672853040254472,
+    "slabs": [
+     "st-gully/fl-0/tr-23/sl-0/0",
+     "st-gully/fl-0/tr-23/sl-1/0"
+    ]
+   },
+   "st-gully/fl-0/tr-24": {
+    "mortar": null,
+    "reset": 1874,
+    "settled": 0.010815320121878419,
+    "slabs": [
+     "st-gully/fl-0/tr-24/sl-0/0",
+     "st-gully/fl-0/tr-24/sl-1/0"
+    ]
+   },
+   "st-gully/fl-0/tr-25": {
+    "mortar": null,
+    "reset": 1874,
+    "settled": 0.014655196287655362,
+    "slabs": [
+     "st-gully/fl-0/tr-25/sl-0/0",
+     "st-gully/fl-0/tr-25/sl-1/0"
+    ]
+   },
+   "st-gully/fl-0/tr-26": {
+    "mortar": null,
+    "reset": 1874,
+    "settled": 0.017490050453867687,
+    "slabs": [
+     "st-gully/fl-0/tr-26/sl-0/0",
+     "st-gully/fl-0/tr-26/sl-1/0"
+    ]
+   },
+   "st-gully/fl-0/tr-27": {
+    "mortar": null,
+    "reset": 1874,
+    "settled": 0.022952943061943017,
+    "slabs": [
+     "st-gully/fl-0/tr-27/sl-0/0",
+     "st-gully/fl-0/tr-27/sl-1/0"
+    ]
+   },
+   "st-gully/fl-0/tr-28": {
+    "mortar": null,
+    "reset": 1874,
+    "settled": 0.030387073217367902,
+    "slabs": [
+     "st-gully/fl-0/tr-28/sl-0/0",
+     "st-gully/fl-0/tr-28/sl-1/0"
+    ]
+   },
+   "st-gully/fl-0/tr-29": {
+    "mortar": null,
+    "reset": 1874,
+    "settled": 0.018050234243808853,
+    "slabs": [
+     "st-gully/fl-0/tr-29/sl-0/0",
+     "st-gully/fl-0/tr-29/sl-1/0"
+    ]
+   },
+   "st-gully/fl-0/tr-3": {
+    "mortar": [
+     "cement",
+     1952
+    ],
+    "reset": 1952,
+    "settled": 0.005639757522773658,
+    "slabs": [
+     "st-gully/fl-0/tr-3/sl-0/0",
+     "st-gully/fl-0/tr-3/sl-1/0"
+    ]
+   },
+   "st-gully/fl-0/tr-4": {
+    "mortar": [
+     "cement",
+     1952
+    ],
+    "reset": 1952,
+    "settled": 0.0028754185126092274,
+    "slabs": [
+     "st-gully/fl-0/tr-4/sl-0/0",
+     "st-gully/fl-0/tr-4/sl-1/0"
+    ]
+   },
+   "st-gully/fl-0/tr-5": {
+    "mortar": [
+     "cement",
+     1952
+    ],
+    "reset": 1952,
+    "settled": 0.006469539255545723,
+    "slabs": [
+     "st-gully/fl-0/tr-5/sl-0/0",
+     "st-gully/fl-0/tr-5/sl-1/0"
+    ]
+   },
+   "st-gully/fl-0/tr-6": {
+    "mortar": [
+     "cement",
+     1952
+    ],
+    "reset": 1952,
+    "settled": 0.00675974822264198,
+    "slabs": [
+     "st-gully/fl-0/tr-6/sl-0/0",
+     "st-gully/fl-0/tr-6/sl-1/0"
+    ]
+   },
+   "st-gully/fl-0/tr-7": {
+    "mortar": [
+     "cement",
+     1952
+    ],
+    "reset": 1952,
+    "settled": 0.0038813390863557955,
+    "slabs": [
+     "st-gully/fl-0/tr-7/sl-0/0",
+     "st-gully/fl-0/tr-7/sl-1/0"
+    ]
+   },
+   "st-gully/fl-0/tr-8": {
+    "mortar": [
+     "cement",
+     1952
+    ],
+    "reset": 1952,
+    "settled": 0.003317979201193592,
+    "slabs": [
+     "st-gully/fl-0/tr-8/sl-0/0",
+     "st-gully/fl-0/tr-8/sl-1/0"
+    ]
+   },
+   "st-gully/fl-0/tr-9": {
+    "mortar": [
+     "cement",
+     1952
+    ],
+    "reset": 1952,
+    "settled": 0.006203458740525737,
+    "slabs": [
+     "st-gully/fl-0/tr-9/sl-0/0",
+     "st-gully/fl-0/tr-9/sl-1/0"
+    ]
+   },
+   "st-gully/fl-1/tr-0": {
+    "mortar": [
+     "lime",
+     1911
+    ],
+    "reset": 1911,
+    "settled": 0.012083298207885711,
+    "slabs": [
+     "st-gully/fl-1/tr-0/sl-0/0",
+     "st-gully/fl-1/tr-0/sl-1/0"
+    ]
+   },
+   "st-gully/fl-1/tr-1": {
+    "mortar": [
+     "lime",
+     1911
+    ],
+    "reset": 1911,
+    "settled": 0.014729901254538536,
+    "slabs": [
+     "st-gully/fl-1/tr-1/sl-0/0",
+     "st-gully/fl-1/tr-1/sl-1/0"
+    ]
+   },
+   "st-gully/fl-1/tr-10": {
+    "mortar": [
+     "lime",
+     1911
+    ],
+    "reset": 1911,
+    "settled": 0.01361278929899759,
+    "slabs": [
+     "st-gully/fl-1/tr-10/sl-0/0",
+     "st-gully/fl-1/tr-10/sl-1/0"
+    ]
+   },
+   "st-gully/fl-1/tr-11": {
+    "mortar": [
+     "lime",
+     1911
+    ],
+    "reset": 1911,
+    "settled": 0.019329649773603116,
+    "slabs": [
+     "st-gully/fl-1/tr-11/sl-0/0",
+     "st-gully/fl-1/tr-11/sl-1/0",
+     "st-gully/fl-1/tr-11/sl-2/0"
+    ]
+   },
+   "st-gully/fl-1/tr-12": {
+    "mortar": null,
+    "reset": 1874,
+    "settled": 0.01067465629523305,
+    "slabs": [
+     "st-gully/fl-1/tr-12/sl-0/0",
+     "st-gully/fl-1/tr-12/sl-1/0"
+    ]
+   },
+   "st-gully/fl-1/tr-13": {
+    "mortar": null,
+    "reset": 1874,
+    "settled": 0.011623400462854129,
+    "slabs": [
+     "st-gully/fl-1/tr-13/sl-0/0",
+     "st-gully/fl-1/tr-13/sl-1/0"
+    ]
+   },
+   "st-gully/fl-1/tr-14": {
+    "mortar": null,
+    "reset": 1874,
+    "settled": 0.006784652946619581,
+    "slabs": [
+     "st-gully/fl-1/tr-14/sl-0/0",
+     "st-gully/fl-1/tr-14/sl-1/0"
+    ]
+   },
+   "st-gully/fl-1/tr-15": {
+    "mortar": null,
+    "reset": 1874,
+    "settled": 0.026331597871077802,
+    "slabs": [
+     "st-gully/fl-1/tr-15/sl-0/0",
+     "st-gully/fl-1/tr-15/sl-1/0"
+    ]
+   },
+   "st-gully/fl-1/tr-16": {
+    "mortar": null,
+    "reset": 1874,
+    "settled": 0.007807842403177534,
+    "slabs": [
+     "st-gully/fl-1/tr-16/sl-0/0",
+     "st-gully/fl-1/tr-16/sl-1/0"
+    ]
+   },
+   "st-gully/fl-1/tr-17": {
+    "mortar": null,
+    "reset": 1874,
+    "settled": 0.004358145966890127,
+    "slabs": [
+     "st-gully/fl-1/tr-17/sl-0/0",
+     "st-gully/fl-1/tr-17/sl-1/0"
+    ]
+   },
+   "st-gully/fl-1/tr-18": {
+    "mortar": null,
+    "reset": 1874,
+    "settled": 0.020175952368524614,
+    "slabs": [
+     "st-gully/fl-1/tr-18/sl-0/0",
+     "st-gully/fl-1/tr-18/sl-1/0"
+    ]
+   },
+   "st-gully/fl-1/tr-19": {
+    "mortar": null,
+    "reset": 1874,
+    "settled": 0.013194901163892,
+    "slabs": [
+     "st-gully/fl-1/tr-19/sl-0/0",
+     "st-gully/fl-1/tr-19/sl-1/0"
+    ]
+   },
+   "st-gully/fl-1/tr-2": {
+    "mortar": [
+     "lime",
+     1911
+    ],
+    "reset": 1911,
+    "settled": 0.013868178117322603,
+    "slabs": [
+     "st-gully/fl-1/tr-2/sl-0/0",
+     "st-gully/fl-1/tr-2/sl-1/0"
+    ]
+   },
+   "st-gully/fl-1/tr-20": {
+    "mortar": null,
+    "reset": 1874,
+    "settled": 0.006699326445097454,
+    "slabs": [
+     "st-gully/fl-1/tr-20/sl-0/0",
+     "st-gully/fl-1/tr-20/sl-1/0"
+    ]
+   },
+   "st-gully/fl-1/tr-21": {
+    "mortar": null,
+    "reset": 1874,
+    "settled": 0.027048316428252468,
+    "slabs": [
+     "st-gully/fl-1/tr-21/sl-0/0",
+     "st-gully/fl-1/tr-21/sl-1/0"
+    ]
+   },
+   "st-gully/fl-1/tr-22": {
+    "mortar": null,
+    "reset": 1874,
+    "settled": 0.013455656927222328,
+    "slabs": [
+     "st-gully/fl-1/tr-22/sl-0/0",
+     "st-gully/fl-1/tr-22/sl-1/0"
+    ]
+   },
+   "st-gully/fl-1/tr-23": {
+    "mortar": null,
+    "reset": 1874,
+    "settled": 0.013981261769516234,
+    "slabs": [
+     "st-gully/fl-1/tr-23/sl-0/0",
+     "st-gully/fl-1/tr-23/sl-1/0"
+    ]
+   },
+   "st-gully/fl-1/tr-24": {
+    "mortar": null,
+    "reset": 1874,
+    "settled": 0.01190541038698746,
+    "slabs": [
+     "st-gully/fl-1/tr-24/sl-0/0",
+     "st-gully/fl-1/tr-24/sl-1/0"
+    ]
+   },
+   "st-gully/fl-1/tr-25": {
+    "mortar": null,
+    "reset": 1874,
+    "settled": 0.007493775822603118,
+    "slabs": [
+     "st-gully/fl-1/tr-25/sl-0/0",
+     "st-gully/fl-1/tr-25/sl-1/0"
+    ]
+   },
+   "st-gully/fl-1/tr-26": {
+    "mortar": null,
+    "reset": 1874,
+    "settled": 0.02215827532729306,
+    "slabs": [
+     "st-gully/fl-1/tr-26/sl-0/0",
+     "st-gully/fl-1/tr-26/sl-1/0"
+    ]
+   },
+   "st-gully/fl-1/tr-27": {
+    "mortar": null,
+    "reset": 1874,
+    "settled": 0.013610342315117395,
+    "slabs": [
+     "st-gully/fl-1/tr-27/sl-0/0",
+     "st-gully/fl-1/tr-27/sl-1/0"
+    ]
+   },
+   "st-gully/fl-1/tr-28": {
+    "mortar": null,
+    "reset": 1874,
+    "settled": 0.023797265190991578,
+    "slabs": [
+     "st-gully/fl-1/tr-28/sl-0/0",
+     "st-gully/fl-1/tr-28/sl-1/0",
+     "st-gully/fl-1/tr-28/sl-2/0"
+    ]
+   },
+   "st-gully/fl-1/tr-29": {
+    "mortar": null,
+    "reset": 1874,
+    "settled": 0.01218762193919075,
+    "slabs": [
+     "st-gully/fl-1/tr-29/sl-0/0",
+     "st-gully/fl-1/tr-29/sl-1/0"
+    ]
+   },
+   "st-gully/fl-1/tr-3": {
+    "mortar": [
+     "lime",
+     1911
+    ],
+    "reset": 1911,
+    "settled": 0.018619817140073464,
+    "slabs": [
+     "st-gully/fl-1/tr-3/sl-0/0",
+     "st-gully/fl-1/tr-3/sl-1/0"
+    ]
+   },
+   "st-gully/fl-1/tr-30": {
+    "mortar": null,
+    "reset": 1874,
+    "settled": 0.00874738750888182,
+    "slabs": [
+     "st-gully/fl-1/tr-30/sl-0/0",
+     "st-gully/fl-1/tr-30/sl-1/0",
+     "st-gully/fl-1/tr-30/sl-2/0"
+    ]
+   },
+   "st-gully/fl-1/tr-31": {
+    "mortar": null,
+    "reset": 1874,
+    "settled": 0.022177022290928973,
+    "slabs": [
+     "st-gully/fl-1/tr-31/sl-0/0",
+     "st-gully/fl-1/tr-31/sl-1/0"
+    ]
+   },
+   "st-gully/fl-1/tr-32": {
+    "mortar": null,
+    "reset": 1874,
+    "settled": 0.018484074035245084,
+    "slabs": [
+     "st-gully/fl-1/tr-32/sl-0/0",
+     "st-gully/fl-1/tr-32/sl-1/0"
+    ]
+   },
+   "st-gully/fl-1/tr-33": {
+    "mortar": null,
+    "reset": 1874,
+    "settled": 0.0042979180550303375,
+    "slabs": [
+     "st-gully/fl-1/tr-33/sl-0/0",
+     "st-gully/fl-1/tr-33/sl-1/0",
+     "st-gully/fl-1/tr-33/sl-2/0"
+    ]
+   },
+   "st-gully/fl-1/tr-34": {
+    "mortar": null,
+    "reset": 1874,
+    "settled": 0.014524421822782237,
+    "slabs": [
+     "st-gully/fl-1/tr-34/sl-0/0",
+     "st-gully/fl-1/tr-34/sl-1/0"
+    ]
+   },
+   "st-gully/fl-1/tr-35": {
+    "mortar": null,
+    "reset": 1874,
+    "settled": 0.013776633992522113,
+    "slabs": [
+     "st-gully/fl-1/tr-35/sl-0/0",
+     "st-gully/fl-1/tr-35/sl-1/0"
+    ]
+   },
+   "st-gully/fl-1/tr-36": {
+    "mortar": null,
+    "reset": 1874,
+    "settled": 0.010832439462450475,
+    "slabs": [
+     "st-gully/fl-1/tr-36/sl-0/0",
+     "st-gully/fl-1/tr-36/sl-1/0"
+    ]
+   },
+   "st-gully/fl-1/tr-37": {
+    "mortar": null,
+    "reset": 1874,
+    "settled": 0.011912313879216891,
+    "slabs": [
+     "st-gully/fl-1/tr-37/sl-0/0",
+     "st-gully/fl-1/tr-37/sl-1/0"
+    ]
+   },
+   "st-gully/fl-1/tr-38": {
+    "mortar": null,
+    "reset": 1874,
+    "settled": 0.008206438781225274,
+    "slabs": [
+     "st-gully/fl-1/tr-38/sl-0/0",
+     "st-gully/fl-1/tr-38/sl-1/0"
+    ]
+   },
+   "st-gully/fl-1/tr-39": {
+    "mortar": null,
+    "reset": 1874,
+    "settled": 0.007126734167327364,
+    "slabs": [
+     "st-gully/fl-1/tr-39/sl-0/0",
+     "st-gully/fl-1/tr-39/sl-1/0"
+    ]
+   },
+   "st-gully/fl-1/tr-4": {
+    "mortar": [
+     "lime",
+     1911
+    ],
+    "reset": 1911,
+    "settled": 0.014409276104531172,
+    "slabs": [
+     "st-gully/fl-1/tr-4/sl-0/0",
+     "st-gully/fl-1/tr-4/sl-1/0",
+     "st-gully/fl-1/tr-4/sl-2/0"
+    ]
+   },
+   "st-gully/fl-1/tr-40": {
+    "mortar": null,
+    "reset": 1874,
+    "settled": 0.020678673845128635,
+    "slabs": [
+     "st-gully/fl-1/tr-40/sl-0/0",
+     "st-gully/fl-1/tr-40/sl-1/0"
+    ]
+   },
+   "st-gully/fl-1/tr-41": {
+    "mortar": null,
+    "reset": 1874,
+    "settled": 0.013397511374376567,
+    "slabs": [
+     "st-gully/fl-1/tr-41/sl-0/0",
+     "st-gully/fl-1/tr-41/sl-1/0"
+    ]
+   },
+   "st-gully/fl-1/tr-42": {
+    "mortar": null,
+    "reset": 1874,
+    "settled": 0.009285152459049826,
+    "slabs": [
+     "st-gully/fl-1/tr-42/sl-0/0",
+     "st-gully/fl-1/tr-42/sl-1/0"
+    ]
+   },
+   "st-gully/fl-1/tr-43": {
+    "mortar": null,
+    "reset": 1874,
+    "settled": 0.016251164243343486,
+    "slabs": [
+     "st-gully/fl-1/tr-43/sl-0/0",
+     "st-gully/fl-1/tr-43/sl-1/0"
+    ]
+   },
+   "st-gully/fl-1/tr-44": {
+    "mortar": null,
+    "reset": 1874,
+    "settled": 0.01005834502711842,
+    "slabs": [
+     "st-gully/fl-1/tr-44/sl-0/0",
+     "st-gully/fl-1/tr-44/sl-1/0"
+    ]
+   },
+   "st-gully/fl-1/tr-45": {
+    "mortar": null,
+    "reset": 1874,
+    "settled": 0.0067683910894010945,
+    "slabs": [
+     "st-gully/fl-1/tr-45/sl-0/0",
+     "st-gully/fl-1/tr-45/sl-1/0"
+    ]
+   },
+   "st-gully/fl-1/tr-46": {
+    "mortar": null,
+    "reset": 1874,
+    "settled": 0.003910294342199125,
+    "slabs": [
+     "st-gully/fl-1/tr-46/sl-0/0",
+     "st-gully/fl-1/tr-46/sl-1/0"
+    ]
+   },
+   "st-gully/fl-1/tr-47": {
+    "mortar": null,
+    "reset": 1874,
+    "settled": 0.005618193869381286,
+    "slabs": [
+     "st-gully/fl-1/tr-47/sl-0/0",
+     "st-gully/fl-1/tr-47/sl-1/0"
+    ]
+   },
+   "st-gully/fl-1/tr-5": {
+    "mortar": [
+     "lime",
+     1911
+    ],
+    "reset": 1911,
+    "settled": 0.018100882781247413,
+    "slabs": [
+     "st-gully/fl-1/tr-5/sl-0/0",
+     "st-gully/fl-1/tr-5/sl-1/0"
+    ]
+   },
+   "st-gully/fl-1/tr-6": {
+    "mortar": [
+     "lime",
+     1911
+    ],
+    "reset": 1911,
+    "settled": 0.012373033951458706,
+    "slabs": [
+     "st-gully/fl-1/tr-6/sl-0/0",
+     "st-gully/fl-1/tr-6/sl-1/0"
+    ]
+   },
+   "st-gully/fl-1/tr-7": {
+    "mortar": [
+     "lime",
+     1911
+    ],
+    "reset": 1911,
+    "settled": 0.0058663956344608605,
+    "slabs": [
+     "st-gully/fl-1/tr-7/sl-0/0",
+     "st-gully/fl-1/tr-7/sl-1/0"
+    ]
+   },
+   "st-gully/fl-1/tr-8": {
+    "mortar": [
+     "lime",
+     1911
+    ],
+    "reset": 1911,
+    "settled": 0.00666501058228209,
+    "slabs": [
+     "st-gully/fl-1/tr-8/sl-0/0",
+     "st-gully/fl-1/tr-8/sl-1/0"
+    ]
+   },
+   "st-gully/fl-1/tr-9": {
+    "mortar": [
+     "lime",
+     1911
+    ],
+    "reset": 1911,
+    "settled": 0.006487887849402289,
+    "slabs": [
+     "st-gully/fl-1/tr-9/sl-0/0",
+     "st-gully/fl-1/tr-9/sl-1/0"
+    ]
+   }
+  }
+ },
+ "record": "st-gully",
+ "schemaVersion": 2,
+ "stage": "life",
+ "what": "the life stage's output for st-gully, kind stair (tools/run_kind.py; schemas/stages.md)"
+}

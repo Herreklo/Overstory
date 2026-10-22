@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 2,
+  "material": "slate",
+  "describes": "The town's own slaty rock (phyllite), split along its beds: steps, slabs and wall stones from the gully's quarries and the site's own rock. It hollows under feet and parts along its beds.",
+  "wearUmPerCentury": 8000,
+  "cracksPerMille": 1000,
+  "provenance": "authored",
+  "notes": {
+    "wearUmPerCentury": "How deep feet wear it, in micrometres a century at 100,000 footfalls a year on a flight 3.2 m wide (blender/generators/wear.py, depth): granite about 1,500 to 3,000, soft stone about 15,000; the slaty rock between, unverified (docs/research/stone.md).",
+    "cracksPerMille": "How readily a slab cracks, against this stone (1000): the rate upkeep.py's crack draws are scaled by. Slate parts along its beds."
+  }
+}

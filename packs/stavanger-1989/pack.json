@@ -5,10 +5,12 @@
   "peopleStart": 1959,
   "showYear": 1989,
   "firstYear": 1800,
+  "worldSeed": 1989,
   "frame": "x east, y north, z up, in millimetres from the pack's origin",
   "notes": {
     "peopleStart": "S in docs/facts-contract.md: before it actors are roles and the past is the pack's; from it the engine decides people, owners, care and works.",
     "showYear": "From here only the engine's events change a record; hand-written events after it are test stand-ins.",
-    "firstYear": "The earliest reset year; the shell index counts years from it in one byte, so it holds to 2055."
+    "firstYear": "The earliest reset year; the shell index counts years from it in one byte, so it holds to 2055.",
+    "worldSeed": "The seed every record's draws are keyed on (blender/resolver/hashing.py), with the record's ids and each draw's purpose. 1989 since the gully port's step 2a. The stair keeps the seed it was baselined with (its stages' legacySeed, 1) until step 2b's re-baseline; the town plan (blender/blockouts/heart_layout.py) keeps its own until the town is a kind."
   }
 }

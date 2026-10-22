@@ -1,0 +1,86 @@
+{
+  "schemaVersion": 2,
+  "kind": "stair",
+  "version": 1,
+  "describes": "A stair of stone: its flights, steps and slabs, set out from its way's path by the landing rule, laid in its era's way and aged by its life (blender/generators/stone.py, the library; blender/generators/stair_stages.py, the stages). Live since the gully port's step 2a, which split stone.py into the seven stages with the gully's FBX hashing exactly what it did before. Two 2a exceptions end at step 2b's re-baseline: every draw is keyed on the stages' legacySeed (1, the seed the baseline was built with), not the pack's world seed; and the facts stage reads its way's path from the town plan (blender/blockouts/heart_layout.py) in metres, so the plan is in floats, not integer millimetres. The plan's rules are below in millimetres and per mille; the builders' habits and codes are the pack's (stairs.json), the stones' wear and cracking its materials. The levels and the budget are provisional: the stair has one level until step 5.",
+  "recordPrefixes": ["st"],
+  "frame": "Origin at the foot of the first flight, on its centre line, at the level of its foot. The axes are the pack's (x east, y north, z up), unturned: the export is laid from this origin (its sidecar's origin, in metres), and each flight carries its own direction up its slope. Across a step is from the left, looking up the stair.",
+  "eventKinds": ["built", "campaign", "renewed"],
+  "roles": ["body", "pointing", "repair"],
+  "stages": {
+    "facts": { "status": "live", "python": "blender/generators/stair_stages.py:facts", "csharp": null, "reads": [], "params": {} },
+    "plan": {
+      "status": "live", "python": "blender/generators/stair_stages.py:plan", "csharp": null, "reads": ["stairs"],
+      "params": {
+        "legacySeed": 1,
+        "strideMm": 630,
+        "goingMinMm": 260,
+        "goingRangeMm": [270, 400],
+        "riseMaxMm": 200,
+        "strideMaxMm": 700,
+        "rampMinPerMille": 100,
+        "stepRampPerMille": 180,
+        "stoneRisesMm": { "blockDressed": [150, 150], "block": [150, 180], "treadOnRiser": [150, 170] },
+        "builtMm": { "treadOnRiser": { "tread": [60, 80], "overhang": [20, 30] }, "block": { "bed": 60 } },
+        "riseErrorMm": { "dressed": 4, "rough": 20, "other": 12 },
+        "slabWidthsMm": {
+          "dressed": { "lo": 700, "hi": 3400, "ks": [1, 1, 2] },
+          "rough": { "lo": 350, "hi": 1100, "ks": [2, 3, 3, 4] },
+          "other": { "lo": 700, "hi": 2300, "ks": null }
+        },
+        "leanPerMille": [-800, 800],
+        "wetPerMille": { "base": 250, "foot": 300, "sink": 550, "sinkSpread": 150, "luck": 200 },
+        "wetSinks": [1, 2]
+      }
+    },
+    "life": { "status": "live", "python": "blender/generators/stair_stages.py:life", "csharp": null, "reads": ["date", "materials"], "params": { "legacySeed": 1 } },
+    "geometry": {
+      "status": "live", "python": "blender/generators/stair_stages.py:geometry", "csharp": null, "reads": ["materials"],
+      "params": { "legacySeed": 1, "lapMm": 100, "jointMm": [4, 12], "riserDepthMm": [160, 240] }
+    },
+    "bake": { "status": "live", "python": "blender/generators/stair_stages.py:bake", "csharp": null, "reads": [], "params": {} },
+    "export": { "status": "live", "python": "blender/generators/stair_stages.py:export", "csharp": null, "reads": [], "params": { "installDir": "unity/Assets/Art/Stone" } },
+    "checks": { "status": "live", "python": "blender/generators/stair_stages.py:checks", "csharp": null, "reads": ["stairs"], "params": {} }
+  },
+  "slots": [
+    { "rule": "stair-flight", "type": "group", "roles": {} },
+    { "rule": "stair-turn", "type": "group", "roles": {} },
+    { "rule": "stair-step", "type": "group", "roles": {} },
+    { "rule": "stair-landing", "type": "group", "roles": {} },
+    { "rule": "stair-row", "type": "group", "roles": {} },
+    { "rule": "stair-setts", "type": "group", "roles": {} },
+    { "rule": "stair-slab", "type": "socket", "roles": { "body": ["stone"] } },
+    { "rule": "stair-riser", "type": "socket", "roles": { "body": ["stone"] } },
+    { "rule": "stair-kerb", "type": "socket", "roles": { "body": ["stone"] } },
+    { "rule": "stair-sett-row", "type": "socket", "roles": { "body": ["stone"] } },
+    { "rule": "stair-joint", "type": "socket", "roles": { "body": ["ground"] } },
+    { "rule": "stair-joint-part", "type": "socket", "roles": { "body": ["ground"], "pointing": ["repair"] } },
+    { "rule": "stair-bed", "type": "socket", "roles": { "body": ["ground"], "pointing": ["repair"] } },
+    { "rule": "stair-flaw", "type": "socket", "roles": { "body": ["ground"], "repair": ["repair"] } },
+    { "rule": "stair-flaw-part", "type": "socket", "roles": { "body": ["ground"], "pointing": ["repair"] } },
+    { "rule": "stair-affordance", "type": "affordance", "roles": {} }
+  ],
+  "levels": {
+    "l0": { "errorMm": 1, "triangles": 400000, "mergeUnit": "ch" },
+    "l1": { "errorMm": 4, "triangles": 100000, "mergeUnit": "ch" },
+    "l2": { "errorMm": 10, "triangles": 20000, "mergeUnit": "ce" },
+    "l3": { "errorMm": 25, "triangles": 4000, "mergeUnit": "ce" },
+    "l4": { "errorMm": 100, "triangles": 400, "mergeUnit": "bk" }
+  },
+  "budgets": {
+    "view": "street-stop",
+    "shadingOverFlatUs": { "stone": 600 },
+    "provisional": true
+  },
+  "motion": [{ "element": "body", "class": "still", "deform": "none" }],
+  "affordances": [
+    { "name": "tread", "walkable": true, "rule": "stair-step" },
+    { "name": "landing", "walkable": true, "rule": "stair-landing" },
+    { "name": "turn", "walkable": true, "rule": "stair-turn" },
+    { "name": "walk", "walkable": true, "rule": "stair-affordance" },
+    { "name": "handrail", "walkable": false, "rule": "stair-affordance" }
+  ],
+  "collision": { "roles": ["full", "proxy", "none"], "proxyLevel": "l1" },
+  "fields": { "reads": [], "writes": [] },
+  "layers": ["polish", "lichen", "moss"]
+}
