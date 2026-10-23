@@ -80,3 +80,26 @@
   the same Harbour Row light, a different patch of ground.
 - The foot stand holds the stones as it is: its ground falls 6 mm under 2.3 x 0.5 m and 3 mm under 2.3 x 0.36 m (the
   step), and it stays in shade.
+
+## 2026-10-23, the step's readback and the import's merge
+- Stone.Load reads a stone as the Blender builder exports it: the FBX and sidecar in Generated/, L0 and L1 found by the
+  sidecar's object names, the bounds checked against the sidecar's (to 0.1 mm; the skirts run 30 mm under the bed),
+  and the bed (y = 0 for a bed-* pivot) set on the ground by Kit.Place, not the mesh's lowest point.
+- Readback -parts step on the installed step.fbx (md5 7bfb5b4af394) fails 4 checks (logs/readback-step.txt). Unity's
+  FBX import merges the corners of one FBX control point when their UVs lie within about 1e-3 and their normals
+  within about 1.3 degrees. With weld on or off, and with mesh optimisation on or off, L0 gives 411 vertices from 432
+  corners and L1 193 from 207. A merged corner takes a neighbour's channels:
+  - L0's edge distances are up to 0.665 mm off in 3 triangles, and 1 normal is 0.54 degrees off;
+  - L1 has 2 normals up to 1.29 degrees off, and 6 triangles have a slot that is neither their own edge nor an arris's
+    distance.
+- The proof of the fix: the same file re-exported in a Blender batch, every triangle on its own three control points,
+  through stone.py's export settings (scratchpad; nothing in the repo touched). With weld off it reads back with every
+  check passing (logs/readback-step-test.txt): L0 432 vertices, its normals 0.000 degrees off and its edges within
+  0.00012 mm; L1 207 vertices, its normals exact and its arris slots within 0.023 mm. Asked of the coordinator for
+  stones.py's make_object. The harness sets weld off on the generated file's .meta, which is git-ignored.
+- L1's slot check follows the widened contract. A slot is either its triangle's own edge, held at exactly one corner
+  at that corner's height (the import may reorder the corners, so the slot travels with its corner), or the distance
+  in the plane to one of L1's turned edges (1 degree or more), to 0.05 mm. A masked slot must be an arris's. The
+  export projects into the face's plane, a hair off the triangle's own: the step's worst is 0.023 mm, where L1's
+  pixel is 5 mm or more.
+- L1's chamfer codes run 7 to 12 mm (the mean of the kept legs per triangle); L0's are 12 mm throughout.

@@ -1,0 +1,28 @@
+LT1R2a.Readback, 2026-10-23 05:07: step
+stone step: Assets/Experiments/LT1/R2a/Generated/step.fbx (md5 7bfb5b4af394), its sidecar (md5 1a43436760cd), the definition packs/stavanger-1989/parts/stone/step.json (md5 1dd9b5ee6536)
+  importer: compression Off, normals Import, tangents CalculateMikk, weld False, optimise polygons True vertices True, readable False, axis conversion baked False, scale 1 (file scale True, 1), lightmap UVs False, swap UVs False, keep quads False
+  object step_L0: mesh step_L0, local position (0.00, 0.00, 0.00), rotation (0.00, 180.00, 0.00), scale (1.00, 1.00, 1.00) (the rotation and position taken off: the mesh is in Unity's order)
+  object step_L1: mesh step_L1, local position (0.00, 0.00, 0.00), rotation (0.00, 180.00, 0.00), scale (1.00, 1.00, 1.00) (the rotation and position taken off: the mesh is in Unity's order)
+  the levels by the sidecar's objects: L0 step_L0 (step_L0), L1 step_L1 (step_L1)
+  L0 (step_L0): 144 triangles, 411 vertices, UV dimensions 2 2 2 2 2 2 2 2, normals yes
+    edges: 232; open 32 (the undrawn faces' borders); non-manifold 0; creases (turn of 20 degrees or more) 39, their turns in degrees to 5: 30: 2, 35: 1, 40: 4, 45: 17, 50: 1, 55: 2, 65: 1, 75: 9, 80: 2
+    kinds: top 77 (0.7341 m2), chamfer 19 (0.0258 m2), split 48 (0.4294 m2)
+    slices by kind: chamfer 7: 19, split 2: 7, split 3: 41, top 4: 77; chamfer codes 12 mm: 144; 0 triangles masked
+    history: years/200 0.575, seed 0.7921811, one for the stone; normals: the worst 0.543 degrees off the face; sky (UV3) the worst 8.8E-007 off 0.5 + 0.5 n_up; edge distances the worst 0.66492 mm off the corners' heights
+  FAIL L0: 1 triangles with normals off their face by over half a degree
+  FAIL L0: 3 triangles whose edge distances are not the corners' heights
+    triangles 144 against the sidecar's 144
+    the stone's chamfer 12 mm (L0's code), the sidecar's 12
+  L1 (step_L1): 69 triangles, 193 vertices, UV dimensions 2 2 2 2 2 2 2 2, normals yes
+    edges: 113; open 19 (the undrawn faces' borders); non-manifold 0; creases (turn of 20 degrees or more) 17, their turns in degrees to 5: 40: 1, 60: 1, 65: 1, 80: 4, 85: 2, 90: 8
+    kinds: top 38 (0.7501 m2), split 31 (0.4492 m2)
+    slices by kind: split 2: 9, split 3: 22, top 4: 38; chamfer codes 7 mm: 2, 8 mm: 5, 9 mm: 8, 10 mm: 6, 11 mm: 4, 12 mm: 44; 33 triangles masked
+    history: years/200 0.575, seed 0.7921811, one for the stone; normals: the worst 1.293 degrees off the face; sky (UV3) the worst 6.0E-008 off 0.5 + 0.5 n_up; edge distances the worst 0.00000 mm off the corners' heights; the slots that hold an arris: the worst 0.0233 mm off its distance
+  FAIL L1: 2 triangles with normals off their face by over half a degree
+  FAIL L1: 6 triangles with a slot that is neither its own edge nor an arris's distance (or masked and not an arris's)
+    triangles 69 against the sidecar's 69
+  bounds: L1 (0.0000, -0.0300, 0.0000) to (2.2950, 0.1660, 0.3270), L0 (0.0000, -0.0300, 0.0000) to (2.2950, 0.1660, 0.3270) (pivot 'bed-front-left')
+  L0's bounds against the sidecar's (0.0000, -0.0300, 0.0000) to (2.2950, 0.1660, 0.3270): 0.000 mm off
+  L1's bounds against the sidecar's (0.0000, -0.0300, 0.0000) to (2.2950, 0.1660, 0.3270): 0.000 mm off
+  the faces' mean normals: the top (-0.002, 1.000, -0.019), the split faces (-0.025, -0.134, -0.991)
+  readback step: 4 FAIL

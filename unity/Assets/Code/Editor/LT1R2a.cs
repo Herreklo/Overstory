@@ -617,18 +617,71 @@ namespace Overstory.EditorTools
         public static void Readback()
         {
             int failed = 0;
+            // (-fbx file: that FBX read back in the part's place against its sidecar, copied into Generated/test/ for the
+            // import and deleted after: a diagnosis of the export route, its log readback-<part>-test.txt)
+            string trial = Cli.Arg("-fbx", "");
             foreach (var part in Cli.Arg("-parts", "step").Split(','))
             {
                 var log = new StringBuilder();
-                log.AppendLine($"LT1R2a.Readback, {System.DateTime.Now:yyyy-MM-dd HH:mm}: {part}");
-                var stone = Stone.Load(part, log);
+                log.AppendLine($"LT1R2a.Readback, {System.DateTime.Now:yyyy-MM-dd HH:mm}: {part}" + (trial != "" ? $", the trial file {trial}" : ""));
+                string at = null;
+                if (trial != "")
+                {
+                    at = $"{Generated}/test/{part}.fbx";
+                    Directory.CreateDirectory(Path.Combine(Repo, "unity", Generated, "test"));
+                    File.Copy(trial, Path.Combine(Repo, "unity", at), true);
+                    AssetDatabase.ImportAsset(at, ImportAssetOptions.ForceSynchronousImport);
+                }
+                Stone stone;
+                try
+                {
+                    stone = Stone.Load(part, log, at);
+                    // (-dump dir: each level's mesh as Unity holds it, as JSON, for a look outside Unity)
+                    if (Cli.Arg("-dump", "") != "")
+                        foreach (var (L, m) in new[] { ("L0", stone.l0), ("L1", stone.l1) })
+                            File.WriteAllText(Path.Combine(Cli.Arg("-dump", ""), $"{part}-{L}.json"), MeshJson(m));
+                }
+                finally
+                {
+                    if (at != null)
+                        AssetDatabase.DeleteAsset($"{Generated}/test");
+                }
                 failed += stone.fails.Count;
                 Directory.CreateDirectory(LogDir);
-                File.WriteAllText(Path.Combine(LogDir, $"readback-{part}.txt"), log.ToString());
+                File.WriteAllText(Path.Combine(LogDir, $"readback-{part}{(trial != "" ? "-test" : "")}.txt"), log.ToString());
                 Debug.Log("[LT1R2a] " + log.ToString().Replace("\n", "\n[LT1R2a] "));
             }
             if (failed > 0)
                 throw new System.InvalidOperationException($"[LT1R2a] readback: {failed} failures (logs/readback-*.txt)");
+        }
+
+        static string MeshJson(Mesh m)
+        {
+            var ci = System.Globalization.CultureInfo.InvariantCulture;
+            var sb = new StringBuilder("{");
+            void Arr(string name, IEnumerable<float> xs, bool last = false)
+            {
+                sb.Append($"\"{name}\": [");
+                bool first = true;
+                foreach (var x in xs)
+                {
+                    sb.Append(first ? "" : ",").Append(x.ToString("R", ci));
+                    first = false;
+                }
+                sb.Append(last ? "]" : "], ");
+            }
+            IEnumerable<float> V3(Vector3[] a) { foreach (var p in a) { yield return p.x; yield return p.y; yield return p.z; } }
+            Arr("vertices", V3(m.vertices));
+            Arr("normals", V3(m.normals));
+            sb.Append("\"triangles\": [").Append(string.Join(",", m.triangles)).Append("], ");
+            for (int c = 0; c < 8; c++)
+            {
+                var uv = new List<Vector2>();
+                m.GetUVs(c, uv);
+                IEnumerable<float> U() { foreach (var p in uv) { yield return p.x; yield return p.y; } }
+                Arr("uv" + c, U(), c == 7);
+            }
+            return sb.Append("}").ToString();
         }
 
         /// <summary>
@@ -658,7 +711,7 @@ namespace Overstory.EditorTools
                             throw new System.InvalidOperationException($"{part}: the readback fails ({stone.fails.Count}): " +
                                                                        string.Join("; ", stone.fails));
                         kit.Chamfer(stone.legPerMm, stone.chamferDeg, stone.chamferSource, log);
-                        var piece = kit.Place(part, stand.at, stone.l0, stone.l1, log);
+                        var piece = kit.Place(part, stand.at, stone.l0, stone.l1, log, stone.bedY);
                         string root = Path.Combine(OutDir, part, stand.name);
                         Judge(stage, shot, kit, piece, moment, looks, configs, viewNames, root, log);
                         if (Cli.Flag("-dolly"))
@@ -686,6 +739,7 @@ namespace Overstory.EditorTools
             public string part, fbx;
             public Mesh l0, l1;
             public float legPerMm = 1f, chamferDeg = 45f;
+            public float? bedY;          // the bed's height in the mesh, from the pivot (bed-*: 0)
             public string chamferSource = "";
             public Dictionary<string, object> sidecar, definition;
             public readonly List<string> fails = new List<string>();
@@ -696,15 +750,15 @@ namespace Overstory.EditorTools
                 log.AppendLine("  FAIL " + what);
             }
 
-            public static Stone Load(string part, StringBuilder log)
+            public static Stone Load(string part, StringBuilder log, string fbxAt = null)
             {
                 var s = new Stone { part = part };
                 string defPath = Path.Combine(Repo, PackParts, part + ".json");
                 if (!File.Exists(defPath))
                     throw new FileNotFoundException($"no part definition {defPath}");
                 s.definition = (Dictionary<string, object>)R2aPatches.Json.Parse(File.ReadAllText(defPath));
-                s.fbx = $"{Generated}/{part}.fbx";
-                string side = Path.Combine(Repo, "unity", s.fbx[..^4] + ".json");
+                s.fbx = fbxAt ?? $"{Generated}/{part}.fbx";
+                string side = Path.Combine(Repo, "unity", Generated, part + ".json");
                 if (!File.Exists(Path.Combine(Repo, "unity", s.fbx)) || !File.Exists(side))
                     throw new FileNotFoundException($"no {s.fbx} with its sidecar: the Blender export installs it");
                 s.sidecar = (Dictionary<string, object>)R2aPatches.Json.Parse(File.ReadAllText(side));
@@ -726,6 +780,18 @@ namespace Overstory.EditorTools
                     s.Fail(log, "importer: UV2 generated or the UVs swapped (UV1 and UV2 are contract channels)");
                 if (imp.importNormals != ModelImporterNormals.Import)
                     s.Fail(log, $"importer: normals {imp.importNormals}, not the file's");
+                // Unity's weld merges corners at one place whose channels differ by under about a millimetre or a degree
+                // (the step's first import: three L0 triangles took a neighbour's edge distance, 0.66 mm off, and three
+                // a neighbour's normal, up to 1.29 degrees off), so the contract's channels would not come through exact.
+                // The generated stone's own importer is set to weld nothing and the file imported again: its .meta is
+                // git-ignored with it, and no tracked asset changes. (A postprocessor would re-import every model in the
+                // project.)
+                if (imp.weldVertices)
+                {
+                    imp.weldVertices = false;
+                    imp.SaveAndReimport();
+                    log.AppendLine("  importer: weld set off on this generated file and the file imported again (its .meta is git-ignored)");
+                }
 
                 // the meshes, by the sidecar's object names when it gives them, else by L0 / L1 in their names
                 var meshes = new List<Mesh>();
@@ -742,7 +808,17 @@ namespace Overstory.EditorTools
                     if ((t.localScale - Vector3.one).sqrMagnitude > 1e-10f)
                         s.Fail(log, $"object {t.name}: scale {t.localScale}, not 1");
                 }
-                foreach (var m in meshes)
+                // (by the sidecar's names: the objects as Blender named them, whose meshes the import names after them)
+                var byName = new Dictionary<string, Mesh>();
+                foreach (var mf in model.GetComponentsInChildren<MeshFilter>())
+                    byName[mf.name] = mf.sharedMesh;
+                if (s.Find("objects", "L0") is string o0 && s.Find("objects", "L1") is string o1)
+                {
+                    byName.TryGetValue(o0, out s.l0);
+                    byName.TryGetValue(o1, out s.l1);
+                    log.AppendLine($"  the levels by the sidecar's objects: L0 {o0} ({(s.l0 != null ? s.l0.name : "MISSING")}), L1 {o1} ({(s.l1 != null ? s.l1.name : "MISSING")})");
+                }
+                foreach (var m in s.l0 != null && s.l1 != null ? new List<Mesh>() : meshes)
                 {
                     string n = m.name.ToLowerInvariant();
                     if (n.EndsWith("l0") || n.Contains("_l0") || n.Contains(" l0") || n.Contains("-l0"))
@@ -867,6 +943,11 @@ namespace Overstory.EditorTools
                 var tb = new List<string>();
                 foreach (var kv in turns)
                     tb.Add($"{kv.Key}: {kv.Value}");
+                // (every edge turned by a degree or more, the arrises among them: L1's slots are matched against these)
+                var turned = new List<(Vector3 a, Vector3 b)>();
+                foreach (var kv in edges)
+                    if (kv.Value.Count == 2 && Vector3.Angle(faceN[kv.Value[0]], faceN[kv.Value[1]]) >= 1f)
+                        turned.Add((new Vector3(kv.Key.Item1, kv.Key.Item2, kv.Key.Item3) * 1e-5f, new Vector3(kv.Key.Item4, kv.Key.Item5, kv.Key.Item6) * 1e-5f));
                 log.AppendLine($"    edges: {edges.Count}; open {open} (the undrawn faces' borders); non-manifold {nonManifold}; creases (turn of 20 " +
                                $"degrees or more) {creases.Count}, their turns in degrees to 5: {string.Join(", ", tb)}");
                 if (nonManifold > 0)
@@ -875,7 +956,7 @@ namespace Overstory.EditorTools
                 // per triangle
                 int badCode = 0, badKind = 0, badMask = 0, badChamfer = 0, badSlice = 0, badWinding = 0, badSky = 0, badEdges = 0,
                     badLine = 0, badNormal = 0;
-                float worstNormal = 0f, worstSky = 0f, worstEdge = 0f, worstLine = 0f, worstGrad = 0f;
+                float worstNormal = 0f, worstSky = 0f, worstEdge = 0f, worstLine = 0f;
                 var kinds = new SortedDictionary<int, (int n, float area)>();
                 var slices = new SortedDictionary<string, int>();
                 var chamfers = new SortedDictionary<int, int>();
@@ -970,37 +1051,58 @@ namespace Overstory.EditorTools
                         if (!ok)
                             badEdges++;
                     }
-                    if (level == 1 && mask != 0)
+                    if (level == 1)
                     {
-                        masked++;
-                        // a masked slot holds the distance to an arris line in the triangle's plane: affine across the
-                        // triangle with a gradient of one, zero on one of L1's creases
+                        if (mask != 0)
+                            masked++;
+                        // L1's slots (stones.py edge_channels, the contract widened compatibly): a slot holds either the
+                        // triangle's own edge as L0 does (its corner's height over it, 0 at the others), or the distance in
+                        // the triangle's plane to an arris of L1's (an edge where two faces meet that L0 chamfers, projected
+                        // into the plane), floored at 0, its mask bit set where L0's chamfer stands there. A masked slot
+                        // must be an arris's; each is matched against every turned edge of L1, to 0.05 mm (the export
+                        // projects into the face's plane, a hair off the triangle's own: the step's worst is 0.023 mm,
+                        // where L1's pixel is 5 mm or more). An own edge's slot travels with its corner, whatever order
+                        // the import gives the corners (as L0's)
+                        bool slotBad = false;
                         for (int k = 0; k < 3; k++)
                         {
-                            if (((mask >> k) & 1) == 0)
+                            bool isMasked = ((mask >> k) & 1) != 0;
+                            int nz = -1, nonzero = 0;
+                            for (int c = 0; c < 3; c++)
+                                if (Mathf.Abs(D[c, k]) > 1e-7f) { nz = c; nonzero++; }
+                            bool own = false;
+                            if (nonzero == 1)
+                            {
+                                Vector3 q = P[(nz + 1) % 3], r = P[(nz + 2) % 3];
+                                float h = Vector3.Cross(r - q, P[nz] - q).magnitude / Mathf.Max((r - q).magnitude, 1e-12f);
+                                own = Mathf.Abs(D[nz, k] - h) <= 1e-5f;
+                            }
+                            if (own && !isMasked)
                                 continue;
-                            // the gradient in the plane from the three corners' values
-                            Vector3 e1 = P1 - P0, e2 = P2 - P0;
-                            float d0 = D[0, k], d1 = D[1, k] - d0, d2 = D[2, k] - d0;
-                            float a11 = Vector3.Dot(e1, e1), a12 = Vector3.Dot(e1, e2), a22 = Vector3.Dot(e2, e2);
-                            float det = a11 * a22 - a12 * a12;
-                            float x1 = (a22 * d1 - a12 * d2) / det, x2 = (a11 * d2 - a12 * d1) / det;
-                            var grad = x1 * e1 + x2 * e2;
-                            float gl = grad.magnitude;
-                            worstGrad = Mathf.Max(worstGrad, Mathf.Abs(gl - 1f));
-                            if (Mathf.Abs(gl - 1f) > 1e-3f) { badLine++; continue; }
-                            // two points on the zero line, near the triangle
-                            var foot = P0 - grad * (d0 / (gl * gl));
-                            var along = Vector3.Cross(faceN[t], grad).normalized;
-                            float span = Mathf.Max((P1 - P0).magnitude, (P2 - P0).magnitude);
-                            var qa = foot - along * span;
-                            var qb = foot + along * span;
                             float best = float.MaxValue;
-                            foreach (var cr in creases)
-                                best = Mathf.Min(best, Mathf.Max(LineDist(qa, cr.a, cr.b), LineDist(qb, cr.a, cr.b)));
-                            worstLine = Mathf.Max(worstLine, best);
-                            if (best > 2e-4f) badLine++;
+                            var n = faceN[t];
+                            var mid = (P0 + P1 + P2) / 3f;
+                            foreach (var ar in turned)
+                            {
+                                var A2 = ar.a - Vector3.Dot(ar.a - P0, n) * n;
+                                var B2 = ar.b - Vector3.Dot(ar.b - P0, n) * n;
+                                if ((B2 - A2).sqrMagnitude < 1e-12f)
+                                    continue;
+                                var mv = Vector3.Cross(n, (B2 - A2).normalized);
+                                if (Vector3.Dot(mid - A2, mv) < 0f)
+                                    mv = -mv;
+                                float e = 0f;
+                                for (int c = 0; c < 3; c++)
+                                    e = Mathf.Max(e, Mathf.Abs(Mathf.Max(0f, Vector3.Dot(P[c] - A2, mv)) - D[c, k]));
+                                best = Mathf.Min(best, e);
+                            }
+                            if (isMasked || best <= 5e-5f)
+                                worstLine = Mathf.Max(worstLine, best);
+                            if (best > 5e-5f)
+                                slotBad = true;
                         }
+                        if (slotBad)
+                            badLine++;
                     }
                 }
                 var kl = new List<string>();
@@ -1017,8 +1119,7 @@ namespace Overstory.EditorTools
                 log.AppendLine($"    history: years/200 {years}, seed {seed}, {(oneHistory ? "one for the stone" : "NOT ONE")}; normals: the worst " +
                                $"{worstNormal:F3} degrees off the face; sky (UV3) the worst {worstSky:E1} off 0.5 + 0.5 n_up; edge distances the worst " +
                                $"{worstEdge * 1000f:F5} mm off the corners' heights" +
-                               (level == 1 ? $"; arris lines: gradient the worst {worstGrad:E1} off one, the zero line the worst {worstLine * 1000f:F3} mm " +
-                                             "from a crease" : ""));
+                               (level == 1 ? $"; the slots that hold an arris: the worst {worstLine * 1000f:F4} mm off its distance" : ""));
                 void Count(int n, string what)
                 {
                     if (n > 0)
@@ -1033,7 +1134,7 @@ namespace Overstory.EditorTools
                 Count(badNormal, "with normals off their face by over half a degree");
                 Count(badSky, "with a sky (UV3.x) not their normal's");
                 Count(badEdges, "whose edge distances are not the corners' heights");
-                Count(badLine, "with an arris line off L1's creases or not a distance");
+                Count(badLine, "with a slot that is neither its own edge nor an arris's distance (or masked and not an arris's)");
                 if (!oneHistory)
                     Fail(log, $"{L}: more than one age or seed (UV1)");
 
@@ -1065,7 +1166,26 @@ namespace Overstory.EditorTools
                 var b0 = l0.bounds;
                 log.AppendLine($"  bounds: L1 {b.min.ToString("F4")} to {b.max.ToString("F4")}, L0 {b0.min.ToString("F4")} to {b0.max.ToString("F4")} " +
                                $"(pivot '{Find("pivot")}')");
-                if (Find("pivot") as string == "bed-front-left")
+                var pivot = Find("pivot") as string;
+                if (pivot != null && pivot.StartsWith("bed-"))
+                    bedY = 0f;
+                // the bounds against the sidecar's (in mm, Unity's axes, the pivot at 0), level by level; without them, the
+                // bed-front-left pivot at L1's lowest corner
+                bool any = false;
+                foreach (var (L, m) in new[] { ("L0", l0), ("L1", l1) })
+                {
+                    if (!(Find("bounds", L, "minMm") is List<object> mn) || !(Find("bounds", L, "maxMm") is List<object> mx))
+                        continue;
+                    any = true;
+                    var want0 = new Vector3((float)(double)mn[0], (float)(double)mn[1], (float)(double)mn[2]) / 1000f;
+                    var want1 = new Vector3((float)(double)mx[0], (float)(double)mx[1], (float)(double)mx[2]) / 1000f;
+                    var mb = m.bounds;
+                    float off = Mathf.Max((mb.min - want0).magnitude, (mb.max - want1).magnitude);
+                    log.AppendLine($"  {L}'s bounds against the sidecar's {want0.ToString("F4")} to {want1.ToString("F4")}: {1000f * off:F3} mm off");
+                    if (off > 1e-4f)
+                        Fail(log, $"pivot: {L}'s bounds {mb.min.ToString("F4")} to {mb.max.ToString("F4")}, the sidecar's {want0.ToString("F4")} to {want1.ToString("F4")}");
+                }
+                if (!any && pivot == "bed-front-left")
                 {
                     if (Mathf.Abs(b.min.x) > 1e-4f || Mathf.Abs(b.min.y) > 1e-4f || Mathf.Abs(b.min.z) > 1e-4f)
                         Fail(log, $"pivot: L1's bounds start at {b.min.ToString("F4")}, not at the bed's front left (0, 0, 0)");
@@ -1268,9 +1388,12 @@ namespace Overstory.EditorTools
             /// ground at the lowest corner (the ground's slope sinks the rest a little, as a stone lies bedded), and
             /// L1's shadow-only copy. Its face's middle is where the views look: the bounds' front, half its height up.
             /// </summary>
-            public Piece Place(string name, Vector2 stand, Mesh l0, Mesh l1, StringBuilder log)
+            public Piece Place(string name, Vector2 stand, Mesh l0, Mesh l1, StringBuilder log, float? bed = null)
             {
                 var b = l1.bounds;
+                // (the bed's height in the mesh: L1's lowest point for the block; 0 for a stone whose pivot is on its bed,
+                // as its drawn faces run on below the bed where they meet a hidden face: the skirts, buried here)
+                float bedY = bed ?? b.min.y;
                 float halfL = b.extents.x, halfD = b.extents.z;
                 float lowest = float.MaxValue, highest = float.MinValue;
                 var under = new HashSet<string>();
@@ -1283,15 +1406,17 @@ namespace Overstory.EditorTools
                         highest = Mathf.Max(highest, g);
                     }
                 // (the mesh's own origin, its pivot, moved so the bounds sit centred on the stand, the bed on the ground)
-                var at = StreetSpace.ToUnity(stand.x, stand.y, lowest) - new Vector3(b.center.x, b.min.y, b.center.z);
-                var piece = new Piece { name = name, baseZ = lowest, height = b.size.y };
+                var at = StreetSpace.ToUnity(stand.x, stand.y, lowest) - new Vector3(b.center.x, bedY, b.center.z);
+                float tall = b.max.y - bedY;
+                var piece = new Piece { name = name, baseZ = lowest, height = tall };
                 piece.l0 = Make(name + " L0", l0, at, piece);
                 piece.l1 = Make(name + " L1", l1, at, piece);
                 piece.shadow = Make(name + " L1 shadow", l1, at, piece);
-                piece.front = new Vector3(stand.x, stand.y - halfD, lowest + b.size.y / 2f);
+                piece.front = new Vector3(stand.x, stand.y - halfD, lowest + tall / 2f);
                 pieces.Add(piece);
-                log.AppendLine($"{name} on the stand ({stand.x}, {stand.y}): {b.size.x:F3} x {b.size.z:F3} m in plan, {b.size.y:F3} high " +
-                               $"(L1's bounds); the ground ({string.Join(", ", under)}) {lowest:F3} to {highest:F3} m under its " +
+                log.AppendLine($"{name} on the stand ({stand.x}, {stand.y}): {b.size.x:F3} x {b.size.z:F3} m in plan, {tall:F3} high over " +
+                               $"its bed" + (b.min.y < bedY - 1e-5f ? $" ({bedY - b.min.y:F3} m of skirt below it, in the ground)" : "") +
+                               $" (L1's bounds); the ground ({string.Join(", ", under)}) {lowest:F3} to {highest:F3} m under its " +
                                $"corners, its bed at {lowest:F3} (sunk {highest - lowest:F3} m at the highest); its face's middle " +
                                $"({piece.front.x:F2}, {piece.front.y:F2}, {piece.front.z:F2}); L0 {l0.triangles.Length / 3} triangles, " +
                                $"L1 {l1.triangles.Length / 3}");
