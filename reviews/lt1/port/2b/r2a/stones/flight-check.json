@@ -1,0 +1,7500 @@
+{
+ "rule": "SN8's share over a level: every stone of every flight's ordinary steps, as R1 laid them (masonry.lay at the pinned commit), each at its level's far edge (L0 8 m, L1 20 m) in the judging view (face-on, 20 degrees of top), its front-facing triangles pooled; every other check on each stone",
+ "commit": "1f74166a92c48ce7ec2bb36f972554f865be42e9",
+ "pinned": {
+  "blender/generators/masonry.py": "63b068cac977",
+  "kinds/wall.json": "d45dfcfbcf1b",
+  "packs/stavanger-1989/walling.json": "f5aea3aca0e6",
+  "reviews/lt1/port/2b/r1/facts.json": "7a9f01049e35"
+ },
+ "code": {
+  "blender/parts/stone/slate/stones.py": "e4f63214f573",
+  "blender/parts/stone/slate/block.py": "88dca59d5be1",
+  "blender/generators/wear.py": "7885ed2f649e",
+  "blender/resolver/hashing.py": "3fe924f914f7",
+  "packs/stavanger-1989/parts/stone/step.json": "ce4df368c509",
+  "packs/stavanger-1989/pack.json": "7ec9618d61d6",
+  "packs/stavanger-1989/materials/slate.json": "6022ad971f75",
+  "kinds/stair.json": "e80ea777816c",
+  "fixtures/records/st-gully.json": "062659f3791f",
+  "fixtures/golden/stair/plan.json": "256964443b42",
+  "fixtures/golden/stair/life.json": "b931fdb69db0",
+  "blender/parts/stone/slate/patches.manifest.json": "166ad677e574"
+ },
+ "view": "face-on 20",
+ "gate": {
+  "thinPx": 2.0,
+  "thinShare": 0.1,
+  "medianAreaPx": 10.0,
+  "l0Distance": 8.0,
+  "l1Distance": 20.0
+ },
+ "pooled": {
+  "L0": {
+   "stones": 134,
+   "front": 12298,
+   "thin": 1689,
+   "thinShare": 0.1373,
+   "medianAreaPx": 63.1,
+   "medianAltitudePx": 5.7,
+   "perStone": {
+    "min": 0.0656,
+    "median": 0.166,
+    "max": 0.3014,
+    "over": 81
+   },
+   "worst": [
+    {
+     "id": "st-gully/fl-1/tr-1/sl-0",
+     "share": 0.3014,
+     "thin": 22,
+     "front": 73,
+     "faces": [
+      "ch:chip:r|end-r",
+      "ch:chip:r|riser",
+      "ch:chip:r|top",
+      "ch:end-r|riser",
+      "ch:end-r|top",
+      "ch:riser|top",
+      "top"
+     ]
+    },
+    {
+     "id": "st-gully/fl-1/tr-15/sl-0",
+     "share": 0.2958,
+     "thin": 21,
+     "front": 71,
+     "faces": [
+      "ch:chip:r|end-r",
+      "ch:chip:r|riser",
+      "ch:chip:r|top",
+      "ch:end-r|riser",
+      "ch:end-r|top",
+      "ch:riser|top",
+      "top"
+     ]
+    },
+    {
+     "id": "st-gully/fl-1/tr-44/sl-1",
+     "share": 0.2632,
+     "thin": 20,
+     "front": 76,
+     "faces": [
+      "ch:chip:l|end-l",
+      "ch:chip:l|riser",
+      "ch:chip:l|top",
+      "ch:end-l|riser:end-l|riser/facet-2",
+      "ch:end-l|top",
+      "ch:riser|top",
+      "riser",
+      "top"
+     ]
+    },
+    {
+     "id": "st-gully/fl-0/tr-19/sl-1",
+     "share": 0.2603,
+     "thin": 19,
+     "front": 73,
+     "faces": [
+      "ch:chip:l|end-l",
+      "ch:chip:l|riser",
+      "ch:chip:l|top",
+      "ch:end-l|riser",
+      "ch:end-l|top",
+      "ch:riser|top",
+      "top"
+     ]
+    },
+    {
+     "id": "st-gully/fl-1/tr-5/sl-0",
+     "share": 0.2603,
+     "thin": 19,
+     "front": 73,
+     "faces": [
+      "ch:chip:r|end-r",
+      "ch:chip:r|riser",
+      "ch:chip:r|top",
+      "ch:end-r|riser",
+      "ch:end-r|top",
+      "ch:riser|top",
+      "top"
+     ]
+    }
+   ],
+   "ok": false
+  },
+  "L1": {
+   "stones": 134,
+   "front": 4916,
+   "thin": 240,
+   "thinShare": 0.0488,
+   "medianAreaPx": 55.9,
+   "medianAltitudePx": 6.16,
+   "perStone": {
+    "min": 0.0,
+    "median": 0.0692,
+    "max": 0.1818,
+    "over": 29
+   },
+   "worst": [
+    {
+     "id": "st-gully/fl-0/tr-19/sl-1",
+     "share": 0.1818,
+     "thin": 4,
+     "front": 22,
+     "faces": [
+      "top"
+     ]
+    },
+    {
+     "id": "st-gully/fl-0/tr-4/sl-1",
+     "share": 0.1818,
+     "thin": 4,
+     "front": 22,
+     "faces": [
+      "top"
+     ]
+    },
+    {
+     "id": "st-gully/fl-1/tr-15/sl-0",
+     "share": 0.1538,
+     "thin": 4,
+     "front": 26,
+     "faces": [
+      "top"
+     ]
+    },
+    {
+     "id": "st-gully/fl-1/tr-13/sl-1",
+     "share": 0.1481,
+     "thin": 4,
+     "front": 27,
+     "faces": [
+      "top"
+     ]
+    },
+    {
+     "id": "st-gully/fl-1/tr-44/sl-1",
+     "share": 0.1304,
+     "thin": 3,
+     "front": 23,
+     "faces": [
+      "top"
+     ]
+    }
+   ],
+   "ok": true
+  }
+ },
+ "triangles": {
+  "L0": {
+   "min": 61,
+   "median": 103.0,
+   "max": 152
+  },
+  "L1": {
+   "min": 23,
+   "median": 44.0,
+   "max": 69
+  }
+ },
+ "smallestAltitudeMm": [
+  0.2643,
+  2.4642
+ ],
+ "fails": [],
+ "ok": true,
+ "shareFails": [
+  "pool L0: 1689 of 12298 under 2 px (13.7%), median 63.1 px"
+ ],
+ "shareOk": false,
+ "shareRule": "SN8 sets its 10% over a level's front-facing triangles at its far edge, the fills included: the gully's whole level (walls, copings, fills and steps), which R2b lays and R3 measures. The steps alone are reported here against it, and the export is not held on it; every stone's other checks hold it (ok)",
+ "unbuilt": [],
+ "stones": [
+  {
+   "id": "st-gully/fl-0/tr-1/sl-0",
+   "flight": "st-gully/fl-0",
+   "step": "st-gully/fl-0/tr-1",
+   "index": 1,
+   "lengthMm": 1203,
+   "riseMm": 174,
+   "lapMm": 52,
+   "jointsMm": [
+    9
+   ],
+   "leftMm": -1756,
+   "ends": [
+    "walled",
+    "joint"
+   ],
+   "corner": false,
+   "riserFacets": 2,
+   "triangles": [
+    69,
+    34
+   ],
+   "smallestAltitudeMm": [
+    1.7708,
+    10.1324
+   ],
+   "l1VsL0Mm": 7.8,
+   "wearErrorMm": [
+    0.576,
+    1.282
+   ],
+   "fails": [],
+   "L0": {
+    "front": 63,
+    "thin": 13,
+    "thinShare": 0.2063,
+    "medianAreaPx": 32.6,
+    "thinFaces": [
+     "ch:end-r|riser",
+     "ch:end-r|top",
+     "ch:riser|top",
+     "top"
+    ]
+   },
+   "L1": {
+    "front": 25,
+    "thin": 2,
+    "thinShare": 0.08,
+    "medianAreaPx": 44.4,
+    "thinFaces": [
+     "top"
+    ]
+   }
+  },
+  {
+   "id": "st-gully/fl-0/tr-1/sl-1",
+   "flight": "st-gully/fl-0",
+   "step": "st-gully/fl-0/tr-1",
+   "index": 1,
+   "lengthMm": 2300,
+   "riseMm": 174,
+   "lapMm": 52,
+   "jointsMm": [
+    9
+   ],
+   "leftMm": -544,
+   "ends": [
+    "joint",
+    "walled"
+   ],
+   "corner": false,
+   "riserFacets": 1,
+   "triangles": [
+    121,
+    57
+   ],
+   "smallestAltitudeMm": [
+    2.1155,
+    7.0792
+   ],
+   "l1VsL0Mm": 8.49,
+   "wearErrorMm": [
+    0.807,
+    5.434
+   ],
+   "fails": [],
+   "L0": {
+    "front": 117,
+    "thin": 9,
+    "thinShare": 0.0769,
+    "medianAreaPx": 192.1,
+    "thinFaces": [
+     "ch:end-l|riser",
+     "ch:end-l|top",
+     "ch:riser|top",
+     "top"
+    ]
+   },
+   "L1": {
+    "front": 50,
+    "thin": 2,
+    "thinShare": 0.04,
+    "medianAreaPx": 55.9,
+    "thinFaces": [
+     "top"
+    ]
+   }
+  },
+  {
+   "id": "st-gully/fl-0/tr-2/sl-0",
+   "flight": "st-gully/fl-0",
+   "step": "st-gully/fl-0/tr-2",
+   "index": 2,
+   "lengthMm": 2300,
+   "riseMm": 169,
+   "lapMm": 60,
+   "jointsMm": [
+    10
+   ],
+   "leftMm": -1756,
+   "ends": [
+    "walled",
+    "joint"
+   ],
+   "corner": false,
+   "riserFacets": 1,
+   "triangles": [
+    121,
+    53
+   ],
+   "smallestAltitudeMm": [
+    2.0916,
+    15.1959
+   ],
+   "l1VsL0Mm": 8.49,
+   "wearErrorMm": [
+    0.807,
+    5.437
+   ],
+   "fails": [],
+   "L0": {
+    "front": 117,
+    "thin": 10,
+    "thinShare": 0.0855,
+    "medianAreaPx": 192.9,
+    "thinFaces": [
+     "ch:end-r|riser",
+     "ch:end-r|top",
+     "ch:riser|top",
+     "top"
+    ]
+   },
+   "L1": {
+    "front": 48,
+    "thin": 0,
+    "thinShare": 0.0,
+    "medianAreaPx": 56.5,
+    "thinFaces": []
+   }
+  },
+  {
+   "id": "st-gully/fl-0/tr-2/sl-1",
+   "flight": "st-gully/fl-0",
+   "step": "st-gully/fl-0/tr-2",
+   "index": 2,
+   "lengthMm": 1202,
+   "riseMm": 169,
+   "lapMm": 60,
+   "jointsMm": [
+    10
+   ],
+   "leftMm": 554,
+   "ends": [
+    "joint",
+    "walled"
+   ],
+   "corner": false,
+   "riserFacets": 1,
+   "triangles": [
+    62,
+    25
+   ],
+   "smallestAltitudeMm": [
+    1.7306,
+    4.8655
+   ],
+   "l1VsL0Mm": 7.78,
+   "wearErrorMm": [
+    0.573,
+    2.535
+   ],
+   "fails": [],
+   "L0": {
+    "front": 58,
+    "thin": 12,
+    "thinShare": 0.2069,
+    "medianAreaPx": 35.0,
+    "thinFaces": [
+     "ch:end-l|riser",
+     "ch:end-l|top",
+     "ch:riser|top",
+     "top"
+    ]
+   },
+   "L1": {
+    "front": 18,
+    "thin": 2,
+    "thinShare": 0.1111,
+    "medianAreaPx": 55.3,
+    "thinFaces": [
+     "top"
+    ]
+   }
+  },
+  {
+   "id": "st-gully/fl-0/tr-3/sl-0",
+   "flight": "st-gully/fl-0",
+   "step": "st-gully/fl-0/tr-3",
+   "index": 3,
+   "lengthMm": 1209,
+   "riseMm": 166,
+   "lapMm": 42,
+   "jointsMm": [
+    4
+   ],
+   "leftMm": -1756,
+   "ends": [
+    "walled",
+    "joint"
+   ],
+   "corner": false,
+   "riserFacets": 1,
+   "triangles": [
+    61,
+    29
+   ],
+   "smallestAltitudeMm": [
+    1.8752,
+    10.4394
+   ],
+   "l1VsL0Mm": 7.78,
+   "wearErrorMm": [
+    0.576,
+    1.284
+   ],
+   "fails": [],
+   "L0": {
+    "front": 57,
+    "thin": 12,
+    "thinShare": 0.2105,
+    "medianAreaPx": 32.6,
+    "thinFaces": [
+     "ch:end-r|riser",
+     "ch:end-r|top",
+     "ch:riser|top",
+     "top"
+    ]
+   },
+   "L1": {
+    "front": 22,
+    "thin": 2,
+    "thinShare": 0.0909,
+    "medianAreaPx": 53.8,
+    "thinFaces": [
+     "top"
+    ]
+   }
+  },
+  {
+   "id": "st-gully/fl-0/tr-3/sl-1",
+   "flight": "st-gully/fl-0",
+   "step": "st-gully/fl-0/tr-3",
+   "index": 3,
+   "lengthMm": 2299,
+   "riseMm": 166,
+   "lapMm": 42,
+   "jointsMm": [
+    4
+   ],
+   "leftMm": -543,
+   "ends": [
+    "joint",
+    "walled"
+   ],
+   "corner": false,
+   "riserFacets": 1,
+   "triangles": [
+    120,
+    57
+   ],
+   "smallestAltitudeMm": [
+    2.2425,
+    7.1568
+   ],
+   "l1VsL0Mm": 7.78,
+   "wearErrorMm": [
+    0.809,
+    5.437
+   ],
+   "fails": [],
+   "L0": {
+    "front": 116,
+    "thin": 11,
+    "thinShare": 0.0948,
+    "medianAreaPx": 193.0,
+    "thinFaces": [
+     "ch:end-l|riser",
+     "ch:end-l|top",
+     "ch:riser|top",
+     "top"
+    ]
+   },
+   "L1": {
+    "front": 50,
+    "thin": 2,
+    "thinShare": 0.04,
+    "medianAreaPx": 56.1,
+    "thinFaces": [
+     "top"
+    ]
+   }
+  },
+  {
+   "id": "st-gully/fl-0/tr-4/sl-0",
+   "flight": "st-gully/fl-0",
+   "step": "st-gully/fl-0/tr-4",
+   "index": 4,
+   "lengthMm": 2298,
+   "riseMm": 172,
+   "lapMm": 58,
+   "jointsMm": [
+    7
+   ],
+   "leftMm": -1756,
+   "ends": [
+    "walled",
+    "joint"
+   ],
+   "corner": false,
+   "riserFacets": 2,
+   "triangles": [
+    138,
+    62
+   ],
+   "smallestAltitudeMm": [
+    2.1456,
+    15.128
+   ],
+   "l1VsL0Mm": 8.49,
+   "wearErrorMm": [
+    0.807,
+    5.434
+   ],
+   "fails": [],
+   "L0": {
+    "front": 132,
+    "thin": 10,
+    "thinShare": 0.0758,
+    "medianAreaPx": 77.8,
+    "thinFaces": [
+     "ch:end-r|riser",
+     "ch:end-r|top",
+     "ch:riser|top",
+     "top"
+    ]
+   },
+   "L1": {
+    "front": 55,
+    "thin": 0,
+    "thinShare": 0.0,
+    "medianAreaPx": 55.1,
+    "thinFaces": []
+   }
+  },
+  {
+   "id": "st-gully/fl-0/tr-4/sl-1",
+   "flight": "st-gully/fl-0",
+   "step": "st-gully/fl-0/tr-4",
+   "index": 4,
+   "lengthMm": 1207,
+   "riseMm": 172,
+   "lapMm": 58,
+   "jointsMm": [
+    7
+   ],
+   "leftMm": 549,
+   "ends": [
+    "joint",
+    "walled"
+   ],
+   "corner": true,
+   "riserFacets": 1,
+   "triangles": [
+    77,
+    30
+   ],
+   "smallestAltitudeMm": [
+    5.3313,
+    9.6332
+   ],
+   "l1VsL0Mm": 8.49,
+   "wearErrorMm": [
+    0.473,
+    2.532
+   ],
+   "fails": [],
+   "L0": {
+    "front": 71,
+    "thin": 14,
+    "thinShare": 0.1972,
+    "medianAreaPx": 31.3,
+    "thinFaces": [
+     "ch:chip:l|end-l",
+     "ch:chip:l|top",
+     "ch:end-l|riser",
+     "ch:end-l|top",
+     "ch:riser|top"
+    ]
+   },
+   "L1": {
+    "front": 22,
+    "thin": 4,
+    "thinShare": 0.1818,
+    "medianAreaPx": 51.9,
+    "thinFaces": [
+     "top"
+    ]
+   }
+  },
+  {
+   "id": "st-gully/fl-0/tr-5/sl-0",
+   "flight": "st-gully/fl-0",
+   "step": "st-gully/fl-0/tr-5",
+   "index": 5,
+   "lengthMm": 1215,
+   "riseMm": 149,
+   "lapMm": 57,
+   "jointsMm": [
+    4
+   ],
+   "leftMm": -1756,
+   "ends": [
+    "walled",
+    "joint"
+   ],
+   "corner": false,
+   "riserFacets": 2,
+   "triangles": [
+    69,
+    34
+   ],
+   "smallestAltitudeMm": [
+    1.4898,
+    11.3779
+   ],
+   "l1VsL0Mm": 7.87,
+   "wearErrorMm": [
+    0.576,
+    1.285
+   ],
+   "fails": [],
+   "L0": {
+    "front": 63,
+    "thin": 14,
+    "thinShare": 0.2222,
+    "medianAreaPx": 32.7,
+    "thinFaces": [
+     "ch:end-r|riser",
+     "ch:end-r|riser:end-r|riser/facet-2",
+     "ch:end-r|top",
+     "ch:riser|top",
+     "top"
+    ]
+   },
+   "L1": {
+    "front": 25,
+    "thin": 2,
+    "thinShare": 0.08,
+    "medianAreaPx": 55.9,
+    "thinFaces": [
+     "top"
+    ]
+   }
+  },
+  {
+   "id": "st-gully/fl-0/tr-5/sl-1",
+   "flight": "st-gully/fl-0",
+   "step": "st-gully/fl-0/tr-5",
+   "index": 5,
+   "lengthMm": 2293,
+   "riseMm": 149,
+   "lapMm": 57,
+   "jointsMm": [
+    4
+   ],
+   "leftMm": -537,
+   "ends": [
+    "joint",
+    "walled"
+   ],
+   "corner": false,
+   "riserFacets": 2,
+   "triangles": [
+    135,
+    65
+   ],
+   "smallestAltitudeMm": [
+    2.2839,
+    7.6196
+   ],
+   "l1VsL0Mm": 8.55,
+   "wearErrorMm": [
+    0.809,
+    5.437
+   ],
+   "fails": [],
+   "L0": {
+    "front": 129,
+    "thin": 11,
+    "thinShare": 0.0853,
+    "medianAreaPx": 151.4,
+    "thinFaces": [
+     "ch:end-l|riser",
+     "ch:end-l|riser:end-l|riser/facet-2",
+     "ch:end-l|top",
+     "ch:riser|top",
+     "top"
+    ]
+   },
+   "L1": {
+    "front": 56,
+    "thin": 2,
+    "thinShare": 0.0357,
+    "medianAreaPx": 55.6,
+    "thinFaces": [
+     "top"
+    ]
+   }
+  },
+  {
+   "id": "st-gully/fl-0/tr-6/sl-0",
+   "flight": "st-gully/fl-0",
+   "step": "st-gully/fl-0/tr-6",
+   "index": 6,
+   "lengthMm": 2298,
+   "riseMm": 169,
+   "lapMm": 54,
+   "jointsMm": [
+    6
+   ],
+   "leftMm": -1756,
+   "ends": [
+    "walled",
+    "joint"
+   ],
+   "corner": false,
+   "riserFacets": 1,
+   "triangles": [
+    121,
+    53
+   ],
+   "smallestAltitudeMm": [
+    2.1455,
+    15.1281
+   ],
+   "l1VsL0Mm": 8.49,
+   "wearErrorMm": [
+    0.807,
+    5.437
+   ],
+   "fails": [],
+   "L0": {
+    "front": 117,
+    "thin": 10,
+    "thinShare": 0.0855,
+    "medianAreaPx": 192.9,
+    "thinFaces": [
+     "ch:end-r|riser",
+     "ch:end-r|top",
+     "ch:riser|top",
+     "top"
+    ]
+   },
+   "L1": {
+    "front": 48,
+    "thin": 0,
+    "thinShare": 0.0,
+    "medianAreaPx": 56.5,
+    "thinFaces": []
+   }
+  },
+  {
+   "id": "st-gully/fl-0/tr-6/sl-1",
+   "flight": "st-gully/fl-0",
+   "step": "st-gully/fl-0/tr-6",
+   "index": 6,
+   "lengthMm": 1208,
+   "riseMm": 169,
+   "lapMm": 54,
+   "jointsMm": [
+    6
+   ],
+   "leftMm": 548,
+   "ends": [
+    "joint",
+    "walled"
+   ],
+   "corner": false,
+   "riserFacets": 1,
+   "triangles": [
+    62,
+    25
+   ],
+   "smallestAltitudeMm": [
+    1.73,
+    3.753
+   ],
+   "l1VsL0Mm": 7.07,
+   "wearErrorMm": [
+    0.582,
+    2.535
+   ],
+   "fails": [],
+   "L0": {
+    "front": 58,
+    "thin": 13,
+    "thinShare": 0.2241,
+    "medianAreaPx": 34.0,
+    "thinFaces": [
+     "ch:end-l|riser",
+     "ch:end-l|top",
+     "ch:riser|top",
+     "top"
+    ]
+   },
+   "L1": {
+    "front": 18,
+    "thin": 2,
+    "thinShare": 0.1111,
+    "medianAreaPx": 55.3,
+    "thinFaces": [
+     "top"
+    ]
+   }
+  },
+  {
+   "id": "st-gully/fl-0/tr-7/sl-0",
+   "flight": "st-gully/fl-0",
+   "step": "st-gully/fl-0/tr-7",
+   "index": 7,
+   "lengthMm": 1211,
+   "riseMm": 178,
+   "lapMm": 56,
+   "jointsMm": [
+    6
+   ],
+   "leftMm": -1756,
+   "ends": [
+    "walled",
+    "joint"
+   ],
+   "corner": false,
+   "riserFacets": 1,
+   "triangles": [
+    61,
+    29
+   ],
+   "smallestAltitudeMm": [
+    1.5786,
+    11.1773
+   ],
+   "l1VsL0Mm": 8.49,
+   "wearErrorMm": [
+    0.696,
+    1.283
+   ],
+   "fails": [],
+   "L0": {
+    "front": 57,
+    "thin": 11,
+    "thinShare": 0.193,
+    "medianAreaPx": 34.2,
+    "thinFaces": [
+     "ch:end-r|riser",
+     "ch:end-r|top",
+     "ch:riser|top",
+     "top"
+    ]
+   },
+   "L1": {
+    "front": 22,
+    "thin": 2,
+    "thinShare": 0.0909,
+    "medianAreaPx": 55.3,
+    "thinFaces": [
+     "top"
+    ]
+   }
+  },
+  {
+   "id": "st-gully/fl-0/tr-7/sl-1",
+   "flight": "st-gully/fl-0",
+   "step": "st-gully/fl-0/tr-7",
+   "index": 7,
+   "lengthMm": 2295,
+   "riseMm": 178,
+   "lapMm": 56,
+   "jointsMm": [
+    6
+   ],
+   "leftMm": -539,
+   "ends": [
+    "joint",
+    "walled"
+   ],
+   "corner": false,
+   "riserFacets": 1,
+   "triangles": [
+    120,
+    57
+   ],
+   "smallestAltitudeMm": [
+    2.0037,
+    7.4658
+   ],
+   "l1VsL0Mm": 7.07,
+   "wearErrorMm": [
+    0.81,
+    5.434
+   ],
+   "fails": [],
+   "L0": {
+    "front": 116,
+    "thin": 11,
+    "thinShare": 0.0948,
+    "medianAreaPx": 189.6,
+    "thinFaces": [
+     "ch:end-l|riser",
+     "ch:end-l|top",
+     "ch:riser|top",
+     "top"
+    ]
+   },
+   "L1": {
+    "front": 50,
+    "thin": 2,
+    "thinShare": 0.04,
+    "medianAreaPx": 55.8,
+    "thinFaces": [
+     "top"
+    ]
+   }
+  },
+  {
+   "id": "st-gully/fl-0/tr-8/sl-0",
+   "flight": "st-gully/fl-0",
+   "step": "st-gully/fl-0/tr-8",
+   "index": 8,
+   "lengthMm": 2299,
+   "riseMm": 157,
+   "lapMm": 43,
+   "jointsMm": [
+    10
+   ],
+   "leftMm": -1756,
+   "ends": [
+    "walled",
+    "joint"
+   ],
+   "corner": true,
+   "riserFacets": 1,
+   "triangles": [
+    126,
+    58
+   ],
+   "smallestAltitudeMm": [
+    2.8876,
+    16.8058
+   ],
+   "l1VsL0Mm": 8.49,
+   "wearErrorMm": [
+    0.807,
+    5.437
+   ],
+   "fails": [],
+   "L0": {
+    "front": 120,
+    "thin": 8,
+    "thinShare": 0.0667,
+    "medianAreaPx": 170.7,
+    "thinFaces": [
+     "ch:end-r|top",
+     "ch:riser|top",
+     "chip:r"
+    ]
+   },
+   "L1": {
+    "front": 51,
+    "thin": 1,
+    "thinShare": 0.0196,
+    "medianAreaPx": 56.4,
+    "thinFaces": [
+     "top"
+    ]
+   }
+  },
+  {
+   "id": "st-gully/fl-0/tr-8/sl-1",
+   "flight": "st-gully/fl-0",
+   "step": "st-gully/fl-0/tr-8",
+   "index": 8,
+   "lengthMm": 1203,
+   "riseMm": 157,
+   "lapMm": 43,
+   "jointsMm": [
+    10
+   ],
+   "leftMm": 553,
+   "ends": [
+    "joint",
+    "walled"
+   ],
+   "corner": false,
+   "riserFacets": 1,
+   "triangles": [
+    62,
+    25
+   ],
+   "smallestAltitudeMm": [
+    1.7514,
+    4.6916
+   ],
+   "l1VsL0Mm": 7.78,
+   "wearErrorMm": [
+    0.569,
+    2.533
+   ],
+   "fails": [],
+   "L0": {
+    "front": 58,
+    "thin": 12,
+    "thinShare": 0.2069,
+    "medianAreaPx": 35.0,
+    "thinFaces": [
+     "ch:end-l|riser",
+     "ch:end-l|top",
+     "ch:riser|top",
+     "top"
+    ]
+   },
+   "L1": {
+    "front": 18,
+    "thin": 2,
+    "thinShare": 0.1111,
+    "medianAreaPx": 55.3,
+    "thinFaces": [
+     "top"
+    ]
+   }
+  },
+  {
+   "id": "st-gully/fl-0/tr-9/sl-0",
+   "flight": "st-gully/fl-0",
+   "step": "st-gully/fl-0/tr-9",
+   "index": 9,
+   "lengthMm": 1209,
+   "riseMm": 166,
+   "lapMm": 49,
+   "jointsMm": [
+    8
+   ],
+   "leftMm": -1756,
+   "ends": [
+    "walled",
+    "joint"
+   ],
+   "corner": false,
+   "riserFacets": 1,
+   "triangles": [
+    61,
+    29
+   ],
+   "smallestAltitudeMm": [
+    1.5686,
+    11.1026
+   ],
+   "l1VsL0Mm": 8.49,
+   "wearErrorMm": [
+    0.56,
+    1.284
+   ],
+   "fails": [],
+   "L0": {
+    "front": 57,
+    "thin": 11,
+    "thinShare": 0.193,
+    "medianAreaPx": 35.6,
+    "thinFaces": [
+     "ch:end-r|riser",
+     "ch:end-r|top",
+     "ch:riser|top",
+     "top"
+    ]
+   },
+   "L1": {
+    "front": 22,
+    "thin": 2,
+    "thinShare": 0.0909,
+    "medianAreaPx": 53.8,
+    "thinFaces": [
+     "top"
+    ]
+   }
+  },
+  {
+   "id": "st-gully/fl-0/tr-9/sl-1",
+   "flight": "st-gully/fl-0",
+   "step": "st-gully/fl-0/tr-9",
+   "index": 9,
+   "lengthMm": 2295,
+   "riseMm": 166,
+   "lapMm": 49,
+   "jointsMm": [
+    8
+   ],
+   "leftMm": -539,
+   "ends": [
+    "joint",
+    "walled"
+   ],
+   "corner": true,
+   "riserFacets": 2,
+   "triangles": [
+    144,
+    69
+   ],
+   "smallestAltitudeMm": [
+    1.8672,
+    8.5996
+   ],
+   "l1VsL0Mm": 8.51,
+   "wearErrorMm": [
+    0.835,
+    5.437
+   ],
+   "fails": [],
+   "L0": {
+    "front": 137,
+    "thin": 10,
+    "thinShare": 0.073,
+    "medianAreaPx": 103.7,
+    "thinFaces": [
+     "ch:end-l|riser",
+     "ch:end-l|top",
+     "ch:riser|top",
+     "chip:l",
+     "top"
+    ]
+   },
+   "L1": {
+    "front": 60,
+    "thin": 3,
+    "thinShare": 0.05,
+    "medianAreaPx": 41.6,
+    "thinFaces": [
+     "top"
+    ]
+   }
+  },
+  {
+   "id": "st-gully/fl-0/tr-10/sl-0",
+   "flight": "st-gully/fl-0",
+   "step": "st-gully/fl-0/tr-10",
+   "index": 10,
+   "lengthMm": 2295,
+   "riseMm": 162,
+   "lapMm": 54,
+   "jointsMm": [
+    8
+   ],
+   "leftMm": -1756,
+   "ends": [
+    "walled",
+    "joint"
+   ],
+   "corner": false,
+   "riserFacets": 2,
+   "triangles": [
+    136,
+    63
+   ],
+   "smallestAltitudeMm": [
+    2.0105,
+    15.0259
+   ],
+   "l1VsL0Mm": 7.12,
+   "wearErrorMm": [
+    0.807,
+    5.434
+   ],
+   "fails": [],
+   "L0": {
+    "front": 130,
+    "thin": 13,
+    "thinShare": 0.1,
+    "medianAreaPx": 192.5,
+    "thinFaces": [
+     "ch:end-r|riser",
+     "ch:end-r|riser:end-r|riser/facet-2",
+     "ch:end-r|top",
+     "ch:riser|top",
+     "top"
+    ]
+   },
+   "L1": {
+    "front": 56,
+    "thin": 0,
+    "thinShare": 0.0,
+    "medianAreaPx": 56.7,
+    "thinFaces": []
+   }
+  },
+  {
+   "id": "st-gully/fl-0/tr-10/sl-1",
+   "flight": "st-gully/fl-0",
+   "step": "st-gully/fl-0/tr-10",
+   "index": 10,
+   "lengthMm": 1209,
+   "riseMm": 162,
+   "lapMm": 54,
+   "jointsMm": [
+    8
+   ],
+   "leftMm": 547,
+   "ends": [
+    "joint",
+    "walled"
+   ],
+   "corner": false,
+   "riserFacets": 1,
+   "triangles": [
+    62,
+    25
+   ],
+   "smallestAltitudeMm": [
+    1.6486,
+    3.538
+   ],
+   "l1VsL0Mm": 7.07,
+   "wearErrorMm": [
+    0.589,
+    2.532
+   ],
+   "fails": [],
+   "L0": {
+    "front": 58,
+    "thin": 13,
+    "thinShare": 0.2241,
+    "medianAreaPx": 33.5,
+    "thinFaces": [
+     "ch:end-l|riser",
+     "ch:end-l|top",
+     "ch:riser|top",
+     "top"
+    ]
+   },
+   "L1": {
+    "front": 18,
+    "thin": 2,
+    "thinShare": 0.1111,
+    "medianAreaPx": 55.1,
+    "thinFaces": [
+     "top"
+    ]
+   }
+  },
+  {
+   "id": "st-gully/fl-0/tr-11/sl-0",
+   "flight": "st-gully/fl-0",
+   "step": "st-gully/fl-0/tr-11",
+   "index": 11,
+   "lengthMm": 1202,
+   "riseMm": 170,
+   "lapMm": 41,
+   "jointsMm": [
+    10
+   ],
+   "leftMm": -1756,
+   "ends": [
+    "walled",
+    "joint"
+   ],
+   "corner": false,
+   "riserFacets": 1,
+   "triangles": [
+    61,
+    29
+   ],
+   "smallestAltitudeMm": [
+    1.8385,
+    10.101
+   ],
+   "l1VsL0Mm": 7.07,
+   "wearErrorMm": [
+    0.586,
+    1.283
+   ],
+   "fails": [],
+   "L0": {
+    "front": 57,
+    "thin": 13,
+    "thinShare": 0.2281,
+    "medianAreaPx": 33.4,
+    "thinFaces": [
+     "ch:end-r|riser",
+     "ch:end-r|top",
+     "ch:riser|top",
+     "top"
+    ]
+   },
+   "L1": {
+    "front": 22,
+    "thin": 2,
+    "thinShare": 0.0909,
+    "medianAreaPx": 52.2,
+    "thinFaces": [
+     "top"
+    ]
+   }
+  },
+  {
+   "id": "st-gully/fl-0/tr-11/sl-1",
+   "flight": "st-gully/fl-0",
+   "step": "st-gully/fl-0/tr-11",
+   "index": 11,
+   "lengthMm": 2300,
+   "riseMm": 170,
+   "lapMm": 41,
+   "jointsMm": [
+    10
+   ],
+   "leftMm": -544,
+   "ends": [
+    "joint",
+    "walled"
+   ],
+   "corner": false,
+   "riserFacets": 1,
+   "triangles": [
+    121,
+    57
+   ],
+   "smallestAltitudeMm": [
+    2.1154,
+    7.0792
+   ],
+   "l1VsL0Mm": 8.49,
+   "wearErrorMm": [
+    0.807,
+    5.437
+   ],
+   "fails": [],
+   "L0": {
+    "front": 117,
+    "thin": 9,
+    "thinShare": 0.0769,
+    "medianAreaPx": 192.9,
+    "thinFaces": [
+     "ch:end-l|riser",
+     "ch:end-l|top",
+     "ch:riser|top",
+     "top"
+    ]
+   },
+   "L1": {
+    "front": 50,
+    "thin": 2,
+    "thinShare": 0.04,
+    "medianAreaPx": 56.1,
+    "thinFaces": [
+     "top"
+    ]
+   }
+  },
+  {
+   "id": "st-gully/fl-0/tr-12/sl-0",
+   "flight": "st-gully/fl-0",
+   "step": "st-gully/fl-0/tr-12",
+   "index": 12,
+   "lengthMm": 2300,
+   "riseMm": 168,
+   "lapMm": 43,
+   "jointsMm": [
+    5
+   ],
+   "leftMm": -1756,
+   "ends": [
+    "walled",
+    "joint"
+   ],
+   "corner": true,
+   "riserFacets": 1,
+   "triangles": [
+    135,
+    58
+   ],
+   "smallestAltitudeMm": [
+    0.2754,
+    18.3142
+   ],
+   "l1VsL0Mm": 7.07,
+   "wearErrorMm": [
+    0.904,
+    5.437
+   ],
+   "fails": [],
+   "L0": {
+    "front": 129,
+    "thin": 20,
+    "thinShare": 0.155,
+    "medianAreaPx": 63.1,
+    "thinFaces": [
+     "ch:chip:r|end-r",
+     "ch:chip:r|riser",
+     "ch:chip:r|top",
+     "ch:end-r|riser",
+     "ch:end-r|top",
+     "ch:riser|top",
+     "chip:r",
+     "top"
+    ]
+   },
+   "L1": {
+    "front": 51,
+    "thin": 2,
+    "thinShare": 0.0392,
+    "medianAreaPx": 56.3,
+    "thinFaces": [
+     "top"
+    ]
+   }
+  },
+  {
+   "id": "st-gully/fl-0/tr-12/sl-1",
+   "flight": "st-gully/fl-0",
+   "step": "st-gully/fl-0/tr-12",
+   "index": 12,
+   "lengthMm": 1207,
+   "riseMm": 168,
+   "lapMm": 43,
+   "jointsMm": [
+    5
+   ],
+   "leftMm": 549,
+   "ends": [
+    "joint",
+    "walled"
+   ],
+   "corner": false,
+   "riserFacets": 1,
+   "triangles": [
+    62,
+    25
+   ],
+   "smallestAltitudeMm": [
+    1.4759,
+    4.2103
+   ],
+   "l1VsL0Mm": 8.49,
+   "wearErrorMm": [
+    0.561,
+    2.533
+   ],
+   "fails": [],
+   "L0": {
+    "front": 58,
+    "thin": 11,
+    "thinShare": 0.1897,
+    "medianAreaPx": 36.8,
+    "thinFaces": [
+     "ch:end-l|riser",
+     "ch:end-l|top",
+     "ch:riser|top",
+     "top"
+    ]
+   },
+   "L1": {
+    "front": 18,
+    "thin": 2,
+    "thinShare": 0.1111,
+    "medianAreaPx": 55.3,
+    "thinFaces": [
+     "top"
+    ]
+   }
+  },
+  {
+   "id": "st-gully/fl-0/tr-13/sl-0",
+   "flight": "st-gully/fl-0",
+   "step": "st-gully/fl-0/tr-13",
+   "index": 13,
+   "lengthMm": 1208,
+   "riseMm": 169,
+   "lapMm": 45,
+   "jointsMm": [
+    6
+   ],
+   "leftMm": -1756,
+   "ends": [
+    "walled",
+    "joint"
+   ],
+   "corner": false,
+   "riserFacets": 1,
+   "triangles": [
+    61,
+    29
+   ],
+   "smallestAltitudeMm": [
+    1.8597,
+    10.3742
+   ],
+   "l1VsL0Mm": 7.78,
+   "wearErrorMm": [
+    0.576,
+    1.282
+   ],
+   "fails": [],
+   "L0": {
+    "front": 57,
+    "thin": 12,
+    "thinShare": 0.2105,
+    "medianAreaPx": 32.6,
+    "thinFaces": [
+     "ch:end-r|riser",
+     "ch:end-r|top",
+     "ch:riser|top",
+     "top"
+    ]
+   },
+   "L1": {
+    "front": 22,
+    "thin": 2,
+    "thinShare": 0.0909,
+    "medianAreaPx": 53.8,
+    "thinFaces": [
+     "top"
+    ]
+   }
+  },
+  {
+   "id": "st-gully/fl-0/tr-13/sl-1",
+   "flight": "st-gully/fl-0",
+   "step": "st-gully/fl-0/tr-13",
+   "index": 13,
+   "lengthMm": 2298,
+   "riseMm": 169,
+   "lapMm": 45,
+   "jointsMm": [
+    6
+   ],
+   "leftMm": -542,
+   "ends": [
+    "joint",
+    "walled"
+   ],
+   "corner": true,
+   "riserFacets": 1,
+   "triangles": [
+    121,
+    63
+   ],
+   "smallestAltitudeMm": [
+    2.4142,
+    12.1379
+   ],
+   "l1VsL0Mm": 7.07,
+   "wearErrorMm": [
+    0.807,
+    5.434
+   ],
+   "fails": [],
+   "L0": {
+    "front": 115,
+    "thin": 8,
+    "thinShare": 0.0696,
+    "medianAreaPx": 192.2,
+    "thinFaces": [
+     "ch:end-l|riser",
+     "ch:end-l|top",
+     "ch:riser|top",
+     "chip:l"
+    ]
+   },
+   "L1": {
+    "front": 54,
+    "thin": 3,
+    "thinShare": 0.0556,
+    "medianAreaPx": 55.3,
+    "thinFaces": [
+     "top"
+    ]
+   }
+  },
+  {
+   "id": "st-gully/fl-0/tr-15/sl-0",
+   "flight": "st-gully/fl-0",
+   "step": "st-gully/fl-0/tr-15",
+   "index": 15,
+   "lengthMm": 2293,
+   "riseMm": 150,
+   "lapMm": 46,
+   "jointsMm": [
+    7
+   ],
+   "leftMm": -1756,
+   "ends": [
+    "walled",
+    "joint"
+   ],
+   "corner": false,
+   "riserFacets": 2,
+   "triangles": [
+    138,
+    62
+   ],
+   "smallestAltitudeMm": [
+    2.2653,
+    14.9576
+   ],
+   "l1VsL0Mm": 8.5,
+   "wearErrorMm": [
+    0.807,
+    5.437
+   ],
+   "fails": [],
+   "L0": {
+    "front": 132,
+    "thin": 10,
+    "thinShare": 0.0758,
+    "medianAreaPx": 71.5,
+    "thinFaces": [
+     "ch:end-r|riser",
+     "ch:end-r|top",
+     "ch:riser|top",
+     "top"
+    ]
+   },
+   "L1": {
+    "front": 55,
+    "thin": 0,
+    "thinShare": 0.0,
+    "medianAreaPx": 55.3,
+    "thinFaces": []
+   }
+  },
+  {
+   "id": "st-gully/fl-0/tr-15/sl-1",
+   "flight": "st-gully/fl-0",
+   "step": "st-gully/fl-0/tr-15",
+   "index": 15,
+   "lengthMm": 1212,
+   "riseMm": 150,
+   "lapMm": 46,
+   "jointsMm": [
+    7
+   ],
+   "leftMm": 544,
+   "ends": [
+    "joint",
+    "walled"
+   ],
+   "corner": true,
+   "riserFacets": 2,
+   "triangles": [
+    80,
+    32
+   ],
+   "smallestAltitudeMm": [
+    1.7819,
+    3.1003
+   ],
+   "l1VsL0Mm": 7.8,
+   "wearErrorMm": [
+    0.573,
+    2.535
+   ],
+   "fails": [],
+   "L0": {
+    "front": 74,
+    "thin": 14,
+    "thinShare": 0.1892,
+    "medianAreaPx": 30.9,
+    "thinFaces": [
+     "ch:chip:r|top",
+     "ch:end-l|riser",
+     "ch:end-l|top",
+     "ch:riser|top",
+     "top"
+    ]
+   },
+   "L1": {
+    "front": 23,
+    "thin": 2,
+    "thinShare": 0.087,
+    "medianAreaPx": 52.7,
+    "thinFaces": [
+     "top"
+    ]
+   }
+  },
+  {
+   "id": "st-gully/fl-0/tr-16/sl-0",
+   "flight": "st-gully/fl-0",
+   "step": "st-gully/fl-0/tr-16",
+   "index": 16,
+   "lengthMm": 1207,
+   "riseMm": 166,
+   "lapMm": 58,
+   "jointsMm": [
+    7
+   ],
+   "leftMm": -1756,
+   "ends": [
+    "walled",
+    "joint"
+   ],
+   "corner": false,
+   "riserFacets": 1,
+   "triangles": [
+    61,
+    29
+   ],
+   "smallestAltitudeMm": [
+    1.8435,
+    10.3469
+   ],
+   "l1VsL0Mm": 7.78,
+   "wearErrorMm": [
+    0.576,
+    1.284
+   ],
+   "fails": [],
+   "L0": {
+    "front": 57,
+    "thin": 12,
+    "thinShare": 0.2105,
+    "medianAreaPx": 32.6,
+    "thinFaces": [
+     "ch:end-r|riser",
+     "ch:end-r|top",
+     "ch:riser|top",
+     "top"
+    ]
+   },
+   "L1": {
+    "front": 22,
+    "thin": 2,
+    "thinShare": 0.0909,
+    "medianAreaPx": 53.2,
+    "thinFaces": [
+     "top"
+    ]
+   }
+  },
+  {
+   "id": "st-gully/fl-0/tr-16/sl-1",
+   "flight": "st-gully/fl-0",
+   "step": "st-gully/fl-0/tr-16",
+   "index": 16,
+   "lengthMm": 2298,
+   "riseMm": 166,
+   "lapMm": 58,
+   "jointsMm": [
+    7
+   ],
+   "leftMm": -542,
+   "ends": [
+    "joint",
+    "walled"
+   ],
+   "corner": false,
+   "riserFacets": 2,
+   "triangles": [
+    134,
+    68
+   ],
+   "smallestAltitudeMm": [
+    2.0253,
+    7.2342
+   ],
+   "l1VsL0Mm": 7.11,
+   "wearErrorMm": [
+    0.807,
+    5.437
+   ],
+   "fails": [],
+   "L0": {
+    "front": 128,
+    "thin": 13,
+    "thinShare": 0.1016,
+    "medianAreaPx": 193.1,
+    "thinFaces": [
+     "ch:end-l|riser",
+     "ch:end-l|riser:end-l|riser/facet-2",
+     "ch:end-l|top",
+     "ch:riser|top",
+     "top"
+    ]
+   },
+   "L1": {
+    "front": 59,
+    "thin": 2,
+    "thinShare": 0.0339,
+    "medianAreaPx": 56.5,
+    "thinFaces": [
+     "top"
+    ]
+   }
+  },
+  {
+   "id": "st-gully/fl-0/tr-17/sl-0",
+   "flight": "st-gully/fl-0",
+   "step": "st-gully/fl-0/tr-17",
+   "index": 17,
+   "lengthMm": 2295,
+   "riseMm": 166,
+   "lapMm": 58,
+   "jointsMm": [
+    10
+   ],
+   "leftMm": -1756,
+   "ends": [
+    "walled",
+    "joint"
+   ],
+   "corner": false,
+   "riserFacets": 1,
+   "triangles": [
+    120,
+    53
+   ],
+   "smallestAltitudeMm": [
+    2.2697,
+    15.0259
+   ],
+   "l1VsL0Mm": 7.78,
+   "wearErrorMm": [
+    0.807,
+    5.434
+   ],
+   "fails": [],
+   "L0": {
+    "front": 116,
+    "thin": 11,
+    "thinShare": 0.0948,
+    "medianAreaPx": 190.7,
+    "thinFaces": [
+     "ch:end-r|riser",
+     "ch:end-r|top",
+     "ch:riser|top",
+     "top"
+    ]
+   },
+   "L1": {
+    "front": 48,
+    "thin": 0,
+    "thinShare": 0.0,
+    "medianAreaPx": 56.3,
+    "thinFaces": []
+   }
+  },
+  {
+   "id": "st-gully/fl-0/tr-17/sl-1",
+   "flight": "st-gully/fl-0",
+   "step": "st-gully/fl-0/tr-17",
+   "index": 17,
+   "lengthMm": 1207,
+   "riseMm": 166,
+   "lapMm": 58,
+   "jointsMm": [
+    10
+   ],
+   "leftMm": 549,
+   "ends": [
+    "joint",
+    "walled"
+   ],
+   "corner": false,
+   "riserFacets": 1,
+   "triangles": [
+    62,
+    25
+   ],
+   "smallestAltitudeMm": [
+    1.4761,
+    4.1963
+   ],
+   "l1VsL0Mm": 8.49,
+   "wearErrorMm": [
+    0.561,
+    2.532
+   ],
+   "fails": [],
+   "L0": {
+    "front": 58,
+    "thin": 11,
+    "thinShare": 0.1897,
+    "medianAreaPx": 36.8,
+    "thinFaces": [
+     "ch:end-l|riser",
+     "ch:end-l|top",
+     "ch:riser|top",
+     "top"
+    ]
+   },
+   "L1": {
+    "front": 18,
+    "thin": 2,
+    "thinShare": 0.1111,
+    "medianAreaPx": 55.1,
+    "thinFaces": [
+     "top"
+    ]
+   }
+  },
+  {
+   "id": "st-gully/fl-0/tr-18/sl-0",
+   "flight": "st-gully/fl-0",
+   "step": "st-gully/fl-0/tr-18",
+   "index": 18,
+   "lengthMm": 1210,
+   "riseMm": 188,
+   "lapMm": 53,
+   "jointsMm": [
+    10
+   ],
+   "leftMm": -1756,
+   "ends": [
+    "walled",
+    "joint"
+   ],
+   "corner": true,
+   "riserFacets": 1,
+   "triangles": [
+    65,
+    32
+   ],
+   "smallestAltitudeMm": [
+    2.7807,
+    7.0074
+   ],
+   "l1VsL0Mm": 7.78,
+   "wearErrorMm": [
+    0.683,
+    1.283
+   ],
+   "fails": [],
+   "L0": {
+    "front": 59,
+    "thin": 9,
+    "thinShare": 0.1525,
+    "medianAreaPx": 37.4,
+    "thinFaces": [
+     "ch:end-r|top",
+     "ch:riser|top",
+     "chip:r",
+     "top"
+    ]
+   },
+   "L1": {
+    "front": 24,
+    "thin": 3,
+    "thinShare": 0.125,
+    "medianAreaPx": 41.5,
+    "thinFaces": [
+     "chip:r",
+     "top"
+    ]
+   }
+  },
+  {
+   "id": "st-gully/fl-0/tr-18/sl-1",
+   "flight": "st-gully/fl-0",
+   "step": "st-gully/fl-0/tr-18",
+   "index": 18,
+   "lengthMm": 2292,
+   "riseMm": 188,
+   "lapMm": 53,
+   "jointsMm": [
+    10
+   ],
+   "leftMm": -536,
+   "ends": [
+    "joint",
+    "walled"
+   ],
+   "corner": false,
+   "riserFacets": 1,
+   "triangles": [
+    120,
+    57
+   ],
+   "smallestAltitudeMm": [
+    2.2931,
+    7.6964
+   ],
+   "l1VsL0Mm": 7.78,
+   "wearErrorMm": [
+    0.807,
+    5.437
+   ],
+   "fails": [],
+   "L0": {
+    "front": 116,
+    "thin": 11,
+    "thinShare": 0.0948,
+    "medianAreaPx": 187.6,
+    "thinFaces": [
+     "ch:end-l|riser",
+     "ch:end-l|top",
+     "ch:riser|top",
+     "top"
+    ]
+   },
+   "L1": {
+    "front": 50,
+    "thin": 2,
+    "thinShare": 0.04,
+    "medianAreaPx": 56.0,
+    "thinFaces": [
+     "top"
+    ]
+   }
+  },
+  {
+   "id": "st-gully/fl-0/tr-19/sl-0",
+   "flight": "st-gully/fl-0",
+   "step": "st-gully/fl-0/tr-19",
+   "index": 19,
+   "lengthMm": 2292,
+   "riseMm": 146,
+   "lapMm": 40,
+   "jointsMm": [
+    8
+   ],
+   "leftMm": -1756,
+   "ends": [
+    "walled",
+    "joint"
+   ],
+   "corner": true,
+   "riserFacets": 1,
+   "triangles": [
+    135,
+    58
+   ],
+   "smallestAltitudeMm": [
+    2.3574,
+    17.3927
+   ],
+   "l1VsL0Mm": 7.07,
+   "wearErrorMm": [
+    0.807,
+    5.437
+   ],
+   "fails": [],
+   "L0": {
+    "front": 129,
+    "thin": 22,
+    "thinShare": 0.1705,
+    "medianAreaPx": 63.1,
+    "thinFaces": [
+     "ch:chip:r|end-r",
+     "ch:chip:r|riser",
+     "ch:chip:r|top",
+     "ch:end-r|riser",
+     "ch:end-r|top",
+     "ch:riser|top",
+     "chip:r",
+     "top"
+    ]
+   },
+   "L1": {
+    "front": 51,
+    "thin": 2,
+    "thinShare": 0.0392,
+    "medianAreaPx": 56.4,
+    "thinFaces": [
+     "top"
+    ]
+   }
+  },
+  {
+   "id": "st-gully/fl-0/tr-19/sl-1",
+   "flight": "st-gully/fl-0",
+   "step": "st-gully/fl-0/tr-19",
+   "index": 19,
+   "lengthMm": 1212,
+   "riseMm": 146,
+   "lapMm": 40,
+   "jointsMm": [
+    8
+   ],
+   "leftMm": 544,
+   "ends": [
+    "joint",
+    "walled"
+   ],
+   "corner": true,
+   "riserFacets": 1,
+   "triangles": [
+    79,
+    30
+   ],
+   "smallestAltitudeMm": [
+    1.8678,
+    5.0976
+   ],
+   "l1VsL0Mm": 8.49,
+   "wearErrorMm": [
+    0.693,
+    2.535
+   ],
+   "fails": [],
+   "L0": {
+    "front": 73,
+    "thin": 19,
+    "thinShare": 0.2603,
+    "medianAreaPx": 28.9,
+    "thinFaces": [
+     "ch:chip:l|end-l",
+     "ch:chip:l|riser",
+     "ch:chip:l|top",
+     "ch:end-l|riser",
+     "ch:end-l|top",
+     "ch:riser|top",
+     "top"
+    ]
+   },
+   "L1": {
+    "front": 22,
+    "thin": 4,
+    "thinShare": 0.1818,
+    "medianAreaPx": 53.7,
+    "thinFaces": [
+     "top"
+    ]
+   }
+  },
+  {
+   "id": "st-gully/fl-0/tr-20/sl-0",
+   "flight": "st-gully/fl-0",
+   "step": "st-gully/fl-0/tr-20",
+   "index": 20,
+   "lengthMm": 1212,
+   "riseMm": 181,
+   "lapMm": 49,
+   "jointsMm": [
+    4
+   ],
+   "leftMm": -1756,
+   "ends": [
+    "walled",
+    "joint"
+   ],
+   "corner": true,
+   "riserFacets": 2,
+   "triangles": [
+    86,
+    34
+   ],
+   "smallestAltitudeMm": [
+    5.2705,
+    9.1493
+   ],
+   "l1VsL0Mm": 8.49,
+   "wearErrorMm": [
+    0.477,
+    1.281
+   ],
+   "fails": [],
+   "L0": {
+    "front": 80,
+    "thin": 16,
+    "thinShare": 0.2,
+    "medianAreaPx": 32.6,
+    "thinFaces": [
+     "ch:chip:r|end-r",
+     "ch:chip:r|riser",
+     "ch:chip:r|top",
+     "ch:end-r|riser:end-r|riser/facet-2",
+     "ch:end-r|top",
+     "ch:riser|top",
+     "top"
+    ]
+   },
+   "L1": {
+    "front": 26,
+    "thin": 3,
+    "thinShare": 0.1154,
+    "medianAreaPx": 45.0,
+    "thinFaces": [
+     "chip:r",
+     "top"
+    ]
+   }
+  },
+  {
+   "id": "st-gully/fl-0/tr-20/sl-1",
+   "flight": "st-gully/fl-0",
+   "step": "st-gully/fl-0/tr-20",
+   "index": 20,
+   "lengthMm": 2296,
+   "riseMm": 181,
+   "lapMm": 49,
+   "jointsMm": [
+    4
+   ],
+   "leftMm": -540,
+   "ends": [
+    "joint",
+    "walled"
+   ],
+   "corner": false,
+   "riserFacets": 1,
+   "triangles": [
+    120,
+    57
+   ],
+   "smallestAltitudeMm": [
+    2.2687,
+    7.3887
+   ],
+   "l1VsL0Mm": 7.78,
+   "wearErrorMm": [
+    0.807,
+    5.434
+   ],
+   "fails": [],
+   "L0": {
+    "front": 116,
+    "thin": 11,
+    "thinShare": 0.0948,
+    "medianAreaPx": 191.3,
+    "thinFaces": [
+     "ch:end-l|riser",
+     "ch:end-l|top",
+     "ch:riser|top",
+     "top"
+    ]
+   },
+   "L1": {
+    "front": 50,
+    "thin": 2,
+    "thinShare": 0.04,
+    "medianAreaPx": 55.8,
+    "thinFaces": [
+     "top"
+    ]
+   }
+  },
+  {
+   "id": "st-gully/fl-0/tr-21/sl-0",
+   "flight": "st-gully/fl-0",
+   "step": "st-gully/fl-0/tr-21",
+   "index": 21,
+   "lengthMm": 2293,
+   "riseMm": 154,
+   "lapMm": 60,
+   "jointsMm": [
+    10
+   ],
+   "leftMm": -1756,
+   "ends": [
+    "walled",
+    "joint"
+   ],
+   "corner": false,
+   "riserFacets": 2,
+   "triangles": [
+    138,
+    62
+   ],
+   "smallestAltitudeMm": [
+    2.2653,
+    14.9576
+   ],
+   "l1VsL0Mm": 8.5,
+   "wearErrorMm": [
+    0.807,
+    5.437
+   ],
+   "fails": [],
+   "L0": {
+    "front": 132,
+    "thin": 10,
+    "thinShare": 0.0758,
+    "medianAreaPx": 79.8,
+    "thinFaces": [
+     "ch:end-r|riser",
+     "ch:end-r|top",
+     "ch:riser|top",
+     "top"
+    ]
+   },
+   "L1": {
+    "front": 55,
+    "thin": 0,
+    "thinShare": 0.0,
+    "medianAreaPx": 55.3,
+    "thinFaces": []
+   }
+  },
+  {
+   "id": "st-gully/fl-0/tr-21/sl-1",
+   "flight": "st-gully/fl-0",
+   "step": "st-gully/fl-0/tr-21",
+   "index": 21,
+   "lengthMm": 1209,
+   "riseMm": 154,
+   "lapMm": 60,
+   "jointsMm": [
+    10
+   ],
+   "leftMm": 547,
+   "ends": [
+    "joint",
+    "walled"
+   ],
+   "corner": false,
+   "riserFacets": 1,
+   "triangles": [
+    62,
+    25
+   ],
+   "smallestAltitudeMm": [
+    1.8597,
+    3.5502
+   ],
+   "l1VsL0Mm": 7.78,
+   "wearErrorMm": [
+    0.569,
+    2.533
+   ],
+   "fails": [],
+   "L0": {
+    "front": 58,
+    "thin": 12,
+    "thinShare": 0.2069,
+    "medianAreaPx": 33.7,
+    "thinFaces": [
+     "ch:end-l|riser",
+     "ch:end-l|top",
+     "ch:riser|top",
+     "top"
+    ]
+   },
+   "L1": {
+    "front": 18,
+    "thin": 2,
+    "thinShare": 0.1111,
+    "medianAreaPx": 55.3,
+    "thinFaces": [
+     "top"
+    ]
+   }
+  },
+  {
+   "id": "st-gully/fl-0/tr-22/sl-0",
+   "flight": "st-gully/fl-0",
+   "step": "st-gully/fl-0/tr-22",
+   "index": 22,
+   "lengthMm": 1214,
+   "riseMm": 179,
+   "lapMm": 52,
+   "jointsMm": [
+    4
+   ],
+   "leftMm": -1756,
+   "ends": [
+    "walled",
+    "joint"
+   ],
+   "corner": false,
+   "riserFacets": 1,
+   "triangles": [
+    61,
+    29
+   ],
+   "smallestAltitudeMm": [
+    1.5847,
+    11.3339
+   ],
+   "l1VsL0Mm": 7.78,
+   "wearErrorMm": [
+    0.576,
+    1.285
+   ],
+   "fails": [],
+   "L0": {
+    "front": 57,
+    "thin": 12,
+    "thinShare": 0.2105,
+    "medianAreaPx": 32.6,
+    "thinFaces": [
+     "ch:end-r|riser",
+     "ch:end-r|top",
+     "ch:riser|top",
+     "top"
+    ]
+   },
+   "L1": {
+    "front": 22,
+    "thin": 2,
+    "thinShare": 0.0909,
+    "medianAreaPx": 55.6,
+    "thinFaces": [
+     "top"
+    ]
+   }
+  },
+  {
+   "id": "st-gully/fl-0/tr-22/sl-1",
+   "flight": "st-gully/fl-0",
+   "step": "st-gully/fl-0/tr-22",
+   "index": 22,
+   "lengthMm": 2294,
+   "riseMm": 179,
+   "lapMm": 52,
+   "jointsMm": [
+    4
+   ],
+   "leftMm": -538,
+   "ends": [
+    "joint",
+    "walled"
+   ],
+   "corner": true,
+   "riserFacets": 1,
+   "triangles": [
+    126,
+    63
+   ],
+   "smallestAltitudeMm": [
+    2.4144,
+    2.4642
+   ],
+   "l1VsL0Mm": 7.07,
+   "wearErrorMm": [
+    0.887,
+    5.437
+   ],
+   "fails": [],
+   "L0": {
+    "front": 120,
+    "thin": 11,
+    "thinShare": 0.0917,
+    "medianAreaPx": 188.5,
+    "thinFaces": [
+     "ch:end-l|riser",
+     "ch:end-l|top",
+     "ch:riser|top",
+     "chip:l",
+     "top"
+    ]
+   },
+   "L1": {
+    "front": 54,
+    "thin": 2,
+    "thinShare": 0.037,
+    "medianAreaPx": 55.5,
+    "thinFaces": [
+     "top"
+    ]
+   }
+  },
+  {
+   "id": "st-gully/fl-0/tr-23/sl-0",
+   "flight": "st-gully/fl-0",
+   "step": "st-gully/fl-0/tr-23",
+   "index": 23,
+   "lengthMm": 2300,
+   "riseMm": 163,
+   "lapMm": 58,
+   "jointsMm": [
+    6
+   ],
+   "leftMm": -1756,
+   "ends": [
+    "walled",
+    "joint"
+   ],
+   "corner": false,
+   "riserFacets": 1,
+   "triangles": [
+    120,
+    53
+   ],
+   "smallestAltitudeMm": [
+    2.2224,
+    15.1959
+   ],
+   "l1VsL0Mm": 7.78,
+   "wearErrorMm": [
+    0.807,
+    5.434
+   ],
+   "fails": [],
+   "L0": {
+    "front": 116,
+    "thin": 11,
+    "thinShare": 0.0948,
+    "medianAreaPx": 192.4,
+    "thinFaces": [
+     "ch:end-r|riser",
+     "ch:end-r|top",
+     "ch:riser|top",
+     "top"
+    ]
+   },
+   "L1": {
+    "front": 48,
+    "thin": 0,
+    "thinShare": 0.0,
+    "medianAreaPx": 56.3,
+    "thinFaces": []
+   }
+  },
+  {
+   "id": "st-gully/fl-0/tr-23/sl-1",
+   "flight": "st-gully/fl-0",
+   "step": "st-gully/fl-0/tr-23",
+   "index": 23,
+   "lengthMm": 1206,
+   "riseMm": 163,
+   "lapMm": 58,
+   "jointsMm": [
+    6
+   ],
+   "leftMm": 550,
+   "ends": [
+    "joint",
+    "walled"
+   ],
+   "corner": false,
+   "riserFacets": 1,
+   "triangles": [
+    62,
+    25
+   ],
+   "smallestAltitudeMm": [
+    1.848,
+    4.1294
+   ],
+   "l1VsL0Mm": 7.07,
+   "wearErrorMm": [
+    0.583,
+    2.534
+   ],
+   "fails": [],
+   "L0": {
+    "front": 58,
+    "thin": 13,
+    "thinShare": 0.2241,
+    "medianAreaPx": 34.6,
+    "thinFaces": [
+     "ch:end-l|riser",
+     "ch:end-l|top",
+     "ch:riser|top",
+     "top"
+    ]
+   },
+   "L1": {
+    "front": 18,
+    "thin": 2,
+    "thinShare": 0.1111,
+    "medianAreaPx": 55.1,
+    "thinFaces": [
+     "top"
+    ]
+   }
+  },
+  {
+   "id": "st-gully/fl-0/tr-24/sl-0",
+   "flight": "st-gully/fl-0",
+   "step": "st-gully/fl-0/tr-24",
+   "index": 24,
+   "lengthMm": 1209,
+   "riseMm": 178,
+   "lapMm": 48,
+   "jointsMm": [
+    8
+   ],
+   "leftMm": -1756,
+   "ends": [
+    "walled",
+    "joint"
+   ],
+   "corner": false,
+   "riserFacets": 1,
+   "triangles": [
+    61,
+    29
+   ],
+   "smallestAltitudeMm": [
+    1.8752,
+    10.4394
+   ],
+   "l1VsL0Mm": 7.78,
+   "wearErrorMm": [
+    0.576,
+    1.284
+   ],
+   "fails": [],
+   "L0": {
+    "front": 57,
+    "thin": 12,
+    "thinShare": 0.2105,
+    "medianAreaPx": 32.6,
+    "thinFaces": [
+     "ch:end-r|riser",
+     "ch:end-r|top",
+     "ch:riser|top",
+     "top"
+    ]
+   },
+   "L1": {
+    "front": 22,
+    "thin": 2,
+    "thinShare": 0.0909,
+    "medianAreaPx": 55.5,
+    "thinFaces": [
+     "top"
+    ]
+   }
+  },
+  {
+   "id": "st-gully/fl-0/tr-24/sl-1",
+   "flight": "st-gully/fl-0",
+   "step": "st-gully/fl-0/tr-24",
+   "index": 24,
+   "lengthMm": 2295,
+   "riseMm": 178,
+   "lapMm": 48,
+   "jointsMm": [
+    8
+   ],
+   "leftMm": -539,
+   "ends": [
+    "joint",
+    "walled"
+   ],
+   "corner": true,
+   "riserFacets": 1,
+   "triangles": [
+    126,
+    63
+   ],
+   "smallestAltitudeMm": [
+    2.4144,
+    7.183
+   ],
+   "l1VsL0Mm": 7.07,
+   "wearErrorMm": [
+    0.886,
+    5.437
+   ],
+   "fails": [],
+   "L0": {
+    "front": 120,
+    "thin": 11,
+    "thinShare": 0.0917,
+    "medianAreaPx": 188.5,
+    "thinFaces": [
+     "ch:end-l|riser",
+     "ch:end-l|top",
+     "ch:riser|top",
+     "chip:l",
+     "top"
+    ]
+   },
+   "L1": {
+    "front": 54,
+    "thin": 3,
+    "thinShare": 0.0556,
+    "medianAreaPx": 55.5,
+    "thinFaces": [
+     "top"
+    ]
+   }
+  },
+  {
+   "id": "st-gully/fl-0/tr-25/sl-0",
+   "flight": "st-gully/fl-0",
+   "step": "st-gully/fl-0/tr-25",
+   "index": 25,
+   "lengthMm": 2299,
+   "riseMm": 146,
+   "lapMm": 59,
+   "jointsMm": [
+    9
+   ],
+   "leftMm": -1756,
+   "ends": [
+    "walled",
+    "joint"
+   ],
+   "corner": false,
+   "riserFacets": 1,
+   "triangles": [
+    120,
+    53
+   ],
+   "smallestAltitudeMm": [
+    2.2335,
+    15.162
+   ],
+   "l1VsL0Mm": 7.78,
+   "wearErrorMm": [
+    0.807,
+    5.437
+   ],
+   "fails": [],
+   "L0": {
+    "front": 116,
+    "thin": 11,
+    "thinShare": 0.0948,
+    "medianAreaPx": 193.5,
+    "thinFaces": [
+     "ch:end-r|riser",
+     "ch:end-r|top",
+     "ch:riser|top",
+     "top"
+    ]
+   },
+   "L1": {
+    "front": 48,
+    "thin": 0,
+    "thinShare": 0.0,
+    "medianAreaPx": 56.6,
+    "thinFaces": []
+   }
+  },
+  {
+   "id": "st-gully/fl-0/tr-25/sl-1",
+   "flight": "st-gully/fl-0",
+   "step": "st-gully/fl-0/tr-25",
+   "index": 25,
+   "lengthMm": 1204,
+   "riseMm": 146,
+   "lapMm": 59,
+   "jointsMm": [
+    9
+   ],
+   "leftMm": 552,
+   "ends": [
+    "joint",
+    "walled"
+   ],
+   "corner": false,
+   "riserFacets": 1,
+   "triangles": [
+    62,
+    25
+   ],
+   "smallestAltitudeMm": [
+    1.8418,
+    4.5133
+   ],
+   "l1VsL0Mm": 7.07,
+   "wearErrorMm": [
+    0.582,
+    2.535
+   ],
+   "fails": [],
+   "L0": {
+    "front": 58,
+    "thin": 13,
+    "thinShare": 0.2241,
+    "medianAreaPx": 33.4,
+    "thinFaces": [
+     "ch:end-l|riser",
+     "ch:end-l|top",
+     "ch:riser|top",
+     "top"
+    ]
+   },
+   "L1": {
+    "front": 18,
+    "thin": 2,
+    "thinShare": 0.1111,
+    "medianAreaPx": 55.3,
+    "thinFaces": [
+     "top"
+    ]
+   }
+  },
+  {
+   "id": "st-gully/fl-0/tr-26/sl-0",
+   "flight": "st-gully/fl-0",
+   "step": "st-gully/fl-0/tr-26",
+   "index": 26,
+   "lengthMm": 1206,
+   "riseMm": 185,
+   "lapMm": 42,
+   "jointsMm": [
+    9
+   ],
+   "leftMm": -1756,
+   "ends": [
+    "walled",
+    "joint"
+   ],
+   "corner": false,
+   "riserFacets": 1,
+   "triangles": [
+    61,
+    29
+   ],
+   "smallestAltitudeMm": [
+    1.8265,
+    10.28
+   ],
+   "l1VsL0Mm": 7.78,
+   "wearErrorMm": [
+    0.576,
+    1.282
+   ],
+   "fails": [],
+   "L0": {
+    "front": 57,
+    "thin": 12,
+    "thinShare": 0.2105,
+    "medianAreaPx": 32.5,
+    "thinFaces": [
+     "ch:end-r|riser",
+     "ch:end-r|top",
+     "ch:riser|top",
+     "top"
+    ]
+   },
+   "L1": {
+    "front": 22,
+    "thin": 2,
+    "thinShare": 0.0909,
+    "medianAreaPx": 55.3,
+    "thinFaces": [
+     "top"
+    ]
+   }
+  },
+  {
+   "id": "st-gully/fl-0/tr-26/sl-1",
+   "flight": "st-gully/fl-0",
+   "step": "st-gully/fl-0/tr-26",
+   "index": 26,
+   "lengthMm": 2297,
+   "riseMm": 185,
+   "lapMm": 42,
+   "jointsMm": [
+    9
+   ],
+   "leftMm": -541,
+   "ends": [
+    "joint",
+    "walled"
+   ],
+   "corner": false,
+   "riserFacets": 1,
+   "triangles": [
+    120,
+    57
+   ],
+   "smallestAltitudeMm": [
+    2.2607,
+    7.3115
+   ],
+   "l1VsL0Mm": 7.78,
+   "wearErrorMm": [
+    0.81,
+    5.434
+   ],
+   "fails": [],
+   "L0": {
+    "front": 116,
+    "thin": 11,
+    "thinShare": 0.0948,
+    "medianAreaPx": 191.9,
+    "thinFaces": [
+     "ch:end-l|riser",
+     "ch:end-l|top",
+     "ch:riser|top",
+     "top"
+    ]
+   },
+   "L1": {
+    "front": 50,
+    "thin": 2,
+    "thinShare": 0.04,
+    "medianAreaPx": 55.8,
+    "thinFaces": [
+     "top"
+    ]
+   }
+  },
+  {
+   "id": "st-gully/fl-0/tr-27/sl-0",
+   "flight": "st-gully/fl-0",
+   "step": "st-gully/fl-0/tr-27",
+   "index": 27,
+   "lengthMm": 2293,
+   "riseMm": 162,
+   "lapMm": 47,
+   "jointsMm": [
+    7
+   ],
+   "leftMm": -1756,
+   "ends": [
+    "walled",
+    "joint"
+   ],
+   "corner": false,
+   "riserFacets": 1,
+   "triangles": [
+    120,
+    53
+   ],
+   "smallestAltitudeMm": [
+    1.9928,
+    14.9576
+   ],
+   "l1VsL0Mm": 7.07,
+   "wearErrorMm": [
+    0.807,
+    5.437
+   ],
+   "fails": [],
+   "L0": {
+    "front": 116,
+    "thin": 11,
+    "thinShare": 0.0948,
+    "medianAreaPx": 188.4,
+    "thinFaces": [
+     "ch:end-r|riser",
+     "ch:end-r|top",
+     "ch:riser|top",
+     "top"
+    ]
+   },
+   "L1": {
+    "front": 48,
+    "thin": 0,
+    "thinShare": 0.0,
+    "medianAreaPx": 56.5,
+    "thinFaces": []
+   }
+  },
+  {
+   "id": "st-gully/fl-0/tr-27/sl-1",
+   "flight": "st-gully/fl-0",
+   "step": "st-gully/fl-0/tr-27",
+   "index": 27,
+   "lengthMm": 1212,
+   "riseMm": 162,
+   "lapMm": 47,
+   "jointsMm": [
+    7
+   ],
+   "leftMm": 544,
+   "ends": [
+    "joint",
+    "walled"
+   ],
+   "corner": false,
+   "riserFacets": 1,
+   "triangles": [
+    62,
+    25
+   ],
+   "smallestAltitudeMm": [
+    1.4071,
+    3.1003
+   ],
+   "l1VsL0Mm": 7.07,
+   "wearErrorMm": [
+    0.582,
+    2.535
+   ],
+   "fails": [],
+   "L0": {
+    "front": 58,
+    "thin": 13,
+    "thinShare": 0.2241,
+    "medianAreaPx": 33.3,
+    "thinFaces": [
+     "ch:end-l|riser",
+     "ch:end-l|top",
+     "ch:riser|top",
+     "top"
+    ]
+   },
+   "L1": {
+    "front": 18,
+    "thin": 2,
+    "thinShare": 0.1111,
+    "medianAreaPx": 55.3,
+    "thinFaces": [
+     "top"
+    ]
+   }
+  },
+  {
+   "id": "st-gully/fl-0/tr-28/sl-0",
+   "flight": "st-gully/fl-0",
+   "step": "st-gully/fl-0/tr-28",
+   "index": 28,
+   "lengthMm": 1205,
+   "riseMm": 155,
+   "lapMm": 60,
+   "jointsMm": [
+    7
+   ],
+   "leftMm": -1756,
+   "ends": [
+    "walled",
+    "joint"
+   ],
+   "corner": true,
+   "riserFacets": 1,
+   "triangles": [
+    79,
+    32
+   ],
+   "smallestAltitudeMm": [
+    3.3423,
+    16.0828
+   ],
+   "l1VsL0Mm": 7.78,
+   "wearErrorMm": [
+    0.476,
+    1.281
+   ],
+   "fails": [],
+   "L0": {
+    "front": 73,
+    "thin": 14,
+    "thinShare": 0.1918,
+    "medianAreaPx": 30.3,
+    "thinFaces": [
+     "ch:chip:r|end-r",
+     "ch:chip:r|top",
+     "ch:end-r|riser",
+     "ch:end-r|top",
+     "ch:riser|top"
+    ]
+   },
+   "L1": {
+    "front": 24,
+    "thin": 3,
+    "thinShare": 0.125,
+    "medianAreaPx": 43.8,
+    "thinFaces": [
+     "chip:r",
+     "top"
+    ]
+   }
+  },
+  {
+   "id": "st-gully/fl-0/tr-28/sl-1",
+   "flight": "st-gully/fl-0",
+   "step": "st-gully/fl-0/tr-28",
+   "index": 28,
+   "lengthMm": 2300,
+   "riseMm": 155,
+   "lapMm": 60,
+   "jointsMm": [
+    7
+   ],
+   "leftMm": -544,
+   "ends": [
+    "joint",
+    "walled"
+   ],
+   "corner": true,
+   "riserFacets": 1,
+   "triangles": [
+    135,
+    63
+   ],
+   "smallestAltitudeMm": [
+    0.2725,
+    3.9844
+   ],
+   "l1VsL0Mm": 8.49,
+   "wearErrorMm": [
+    0.826,
+    5.437
+   ],
+   "fails": [],
+   "L0": {
+    "front": 129,
+    "thin": 19,
+    "thinShare": 0.1473,
+    "medianAreaPx": 63.1,
+    "thinFaces": [
+     "ch:chip:l|end-l",
+     "ch:chip:l|riser",
+     "ch:chip:l|top",
+     "ch:end-l|riser",
+     "ch:end-l|top",
+     "ch:riser|top",
+     "top"
+    ]
+   },
+   "L1": {
+    "front": 55,
+    "thin": 4,
+    "thinShare": 0.0727,
+    "medianAreaPx": 55.9,
+    "thinFaces": [
+     "chip:l",
+     "riser",
+     "top"
+    ]
+   }
+  },
+  {
+   "id": "st-gully/fl-1/tr-1/sl-0",
+   "flight": "st-gully/fl-1",
+   "step": "st-gully/fl-1/tr-1",
+   "index": 1,
+   "lengthMm": 1206,
+   "riseMm": 167,
+   "lapMm": 54,
+   "jointsMm": [
+    7
+   ],
+   "leftMm": -1756,
+   "ends": [
+    "walled",
+    "joint"
+   ],
+   "corner": true,
+   "riserFacets": 1,
+   "triangles": [
+    79,
+    35
+   ],
+   "smallestAltitudeMm": [
+    2.0087,
+    12.3164
+   ],
+   "l1VsL0Mm": 7.78,
+   "wearErrorMm": [
+    0.709,
+    3.805
+   ],
+   "fails": [],
+   "L0": {
+    "front": 73,
+    "thin": 22,
+    "thinShare": 0.3014,
+    "medianAreaPx": 30.0,
+    "thinFaces": [
+     "ch:chip:r|end-r",
+     "ch:chip:r|riser",
+     "ch:chip:r|top",
+     "ch:end-r|riser",
+     "ch:end-r|top",
+     "ch:riser|top",
+     "top"
+    ]
+   },
+   "L1": {
+    "front": 26,
+    "thin": 3,
+    "thinShare": 0.1154,
+    "medianAreaPx": 30.6,
+    "thinFaces": [
+     "top"
+    ]
+   }
+  },
+  {
+   "id": "st-gully/fl-1/tr-1/sl-1",
+   "flight": "st-gully/fl-1",
+   "step": "st-gully/fl-1/tr-1",
+   "index": 1,
+   "lengthMm": 2299,
+   "riseMm": 167,
+   "lapMm": 54,
+   "jointsMm": [
+    7
+   ],
+   "leftMm": -543,
+   "ends": [
+    "joint",
+    "walled"
+   ],
+   "corner": false,
+   "riserFacets": 1,
+   "triangles": [
+    120,
+    57
+   ],
+   "smallestAltitudeMm": [
+    2.031,
+    7.1568
+   ],
+   "l1VsL0Mm": 7.07,
+   "wearErrorMm": [
+    0.81,
+    5.434
+   ],
+   "fails": [],
+   "L0": {
+    "front": 116,
+    "thin": 11,
+    "thinShare": 0.0948,
+    "medianAreaPx": 190.4,
+    "thinFaces": [
+     "ch:end-l|riser",
+     "ch:end-l|top",
+     "ch:riser|top",
+     "top"
+    ]
+   },
+   "L1": {
+    "front": 50,
+    "thin": 2,
+    "thinShare": 0.04,
+    "medianAreaPx": 55.9,
+    "thinFaces": [
+     "top"
+    ]
+   }
+  },
+  {
+   "id": "st-gully/fl-1/tr-2/sl-0",
+   "flight": "st-gully/fl-1",
+   "step": "st-gully/fl-1/tr-2",
+   "index": 2,
+   "lengthMm": 2298,
+   "riseMm": 155,
+   "lapMm": 44,
+   "jointsMm": [
+    7
+   ],
+   "leftMm": -1756,
+   "ends": [
+    "walled",
+    "joint"
+   ],
+   "corner": false,
+   "riserFacets": 1,
+   "triangles": [
+    120,
+    53
+   ],
+   "smallestAltitudeMm": [
+    2.2438,
+    15.1281
+   ],
+   "l1VsL0Mm": 7.78,
+   "wearErrorMm": [
+    0.807,
+    5.437
+   ],
+   "fails": [],
+   "L0": {
+    "front": 116,
+    "thin": 11,
+    "thinShare": 0.0948,
+    "medianAreaPx": 193.3,
+    "thinFaces": [
+     "ch:end-r|riser",
+     "ch:end-r|top",
+     "ch:riser|top",
+     "top"
+    ]
+   },
+   "L1": {
+    "front": 48,
+    "thin": 0,
+    "thinShare": 0.0,
+    "medianAreaPx": 56.5,
+    "thinFaces": []
+   }
+  },
+  {
+   "id": "st-gully/fl-1/tr-2/sl-1",
+   "flight": "st-gully/fl-1",
+   "step": "st-gully/fl-1/tr-2",
+   "index": 2,
+   "lengthMm": 1207,
+   "riseMm": 155,
+   "lapMm": 44,
+   "jointsMm": [
+    7
+   ],
+   "leftMm": 549,
+   "ends": [
+    "joint",
+    "walled"
+   ],
+   "corner": false,
+   "riserFacets": 2,
+   "triangles": [
+    69,
+    30
+   ],
+   "smallestAltitudeMm": [
+    1.8266,
+    3.9506
+   ],
+   "l1VsL0Mm": 7.86,
+   "wearErrorMm": [
+    0.569,
+    2.533
+   ],
+   "fails": [],
+   "L0": {
+    "front": 63,
+    "thin": 14,
+    "thinShare": 0.2222,
+    "medianAreaPx": 32.6,
+    "thinFaces": [
+     "ch:end-l|riser",
+     "ch:end-l|riser:end-l|riser/facet-2",
+     "ch:end-l|top",
+     "ch:riser|top",
+     "top"
+    ]
+   },
+   "L1": {
+    "front": 21,
+    "thin": 2,
+    "thinShare": 0.0952,
+    "medianAreaPx": 58.1,
+    "thinFaces": [
+     "top"
+    ]
+   }
+  },
+  {
+   "id": "st-gully/fl-1/tr-3/sl-0",
+   "flight": "st-gully/fl-1",
+   "step": "st-gully/fl-1/tr-3",
+   "index": 3,
+   "lengthMm": 1210,
+   "riseMm": 161,
+   "lapMm": 43,
+   "jointsMm": [
+    6
+   ],
+   "leftMm": -1756,
+   "ends": [
+    "walled",
+    "joint"
+   ],
+   "corner": false,
+   "riserFacets": 1,
+   "triangles": [
+    61,
+    29
+   ],
+   "smallestAltitudeMm": [
+    1.5608,
+    10.4844
+   ],
+   "l1VsL0Mm": 7.07,
+   "wearErrorMm": [
+    0.586,
+    1.285
+   ],
+   "fails": [],
+   "L0": {
+    "front": 57,
+    "thin": 13,
+    "thinShare": 0.2281,
+    "medianAreaPx": 33.3,
+    "thinFaces": [
+     "ch:end-r|riser",
+     "ch:end-r|top",
+     "ch:riser|top",
+     "top"
+    ]
+   },
+   "L1": {
+    "front": 22,
+    "thin": 2,
+    "thinShare": 0.0909,
+    "medianAreaPx": 53.4,
+    "thinFaces": [
+     "top"
+    ]
+   }
+  },
+  {
+   "id": "st-gully/fl-1/tr-3/sl-1",
+   "flight": "st-gully/fl-1",
+   "step": "st-gully/fl-1/tr-3",
+   "index": 3,
+   "lengthMm": 2296,
+   "riseMm": 161,
+   "lapMm": 43,
+   "jointsMm": [
+    6
+   ],
+   "leftMm": -540,
+   "ends": [
+    "joint",
+    "walled"
+   ],
+   "corner": false,
+   "riserFacets": 1,
+   "triangles": [
+    121,
+    57
+   ],
+   "smallestAltitudeMm": [
+    2.2168,
+    7.3887
+   ],
+   "l1VsL0Mm": 8.49,
+   "wearErrorMm": [
+    0.807,
+    5.437
+   ],
+   "fails": [],
+   "L0": {
+    "front": 117,
+    "thin": 9,
+    "thinShare": 0.0769,
+    "medianAreaPx": 189.8,
+    "thinFaces": [
+     "ch:end-l|riser",
+     "ch:end-l|top",
+     "ch:riser|top",
+     "top"
+    ]
+   },
+   "L1": {
+    "front": 50,
+    "thin": 2,
+    "thinShare": 0.04,
+    "medianAreaPx": 56.1,
+    "thinFaces": [
+     "top"
+    ]
+   }
+  },
+  {
+   "id": "st-gully/fl-1/tr-4/sl-0",
+   "flight": "st-gully/fl-1",
+   "step": "st-gully/fl-1/tr-4",
+   "index": 4,
+   "lengthMm": 2295,
+   "riseMm": 172,
+   "lapMm": 43,
+   "jointsMm": [
+    7
+   ],
+   "leftMm": -1756,
+   "ends": [
+    "walled",
+    "joint"
+   ],
+   "corner": false,
+   "riserFacets": 1,
+   "triangles": [
+    121,
+    53
+   ],
+   "smallestAltitudeMm": [
+    2.2199,
+    15.0259
+   ],
+   "l1VsL0Mm": 8.49,
+   "wearErrorMm": [
+    0.807,
+    5.434
+   ],
+   "fails": [],
+   "L0": {
+    "front": 117,
+    "thin": 10,
+    "thinShare": 0.0855,
+    "medianAreaPx": 188.0,
+    "thinFaces": [
+     "ch:end-r|riser",
+     "ch:end-r|top",
+     "ch:riser|top",
+     "top"
+    ]
+   },
+   "L1": {
+    "front": 48,
+    "thin": 0,
+    "thinShare": 0.0,
+    "medianAreaPx": 56.3,
+    "thinFaces": []
+   }
+  },
+  {
+   "id": "st-gully/fl-1/tr-4/sl-1",
+   "flight": "st-gully/fl-1",
+   "step": "st-gully/fl-1/tr-4",
+   "index": 4,
+   "lengthMm": 1210,
+   "riseMm": 172,
+   "lapMm": 43,
+   "jointsMm": [
+    7
+   ],
+   "leftMm": 546,
+   "ends": [
+    "joint",
+    "walled"
+   ],
+   "corner": false,
+   "riserFacets": 1,
+   "triangles": [
+    62,
+    25
+   ],
+   "smallestAltitudeMm": [
+    1.8751,
+    3.3302
+   ],
+   "l1VsL0Mm": 7.78,
+   "wearErrorMm": [
+    0.573,
+    2.534
+   ],
+   "fails": [],
+   "L0": {
+    "front": 58,
+    "thin": 12,
+    "thinShare": 0.2069,
+    "medianAreaPx": 33.1,
+    "thinFaces": [
+     "ch:end-l|riser",
+     "ch:end-l|top",
+     "ch:riser|top",
+     "top"
+    ]
+   },
+   "L1": {
+    "front": 18,
+    "thin": 2,
+    "thinShare": 0.1111,
+    "medianAreaPx": 55.0,
+    "thinFaces": [
+     "top"
+    ]
+   }
+  },
+  {
+   "id": "st-gully/fl-1/tr-5/sl-0",
+   "flight": "st-gully/fl-1",
+   "step": "st-gully/fl-1/tr-5",
+   "index": 5,
+   "lengthMm": 1210,
+   "riseMm": 182,
+   "lapMm": 51,
+   "jointsMm": [
+    6
+   ],
+   "leftMm": -1756,
+   "ends": [
+    "walled",
+    "joint"
+   ],
+   "corner": true,
+   "riserFacets": 1,
+   "triangles": [
+    79,
+    35
+   ],
+   "smallestAltitudeMm": [
+    1.6651,
+    10.3509
+   ],
+   "l1VsL0Mm": 8.49,
+   "wearErrorMm": [
+    0.696,
+    3.926
+   ],
+   "fails": [],
+   "L0": {
+    "front": 73,
+    "thin": 19,
+    "thinShare": 0.2603,
+    "medianAreaPx": 29.6,
+    "thinFaces": [
+     "ch:chip:r|end-r",
+     "ch:chip:r|riser",
+     "ch:chip:r|top",
+     "ch:end-r|riser",
+     "ch:end-r|top",
+     "ch:riser|top",
+     "top"
+    ]
+   },
+   "L1": {
+    "front": 26,
+    "thin": 3,
+    "thinShare": 0.1154,
+    "medianAreaPx": 33.9,
+    "thinFaces": [
+     "top"
+    ]
+   }
+  },
+  {
+   "id": "st-gully/fl-1/tr-5/sl-1",
+   "flight": "st-gully/fl-1",
+   "step": "st-gully/fl-1/tr-5",
+   "index": 5,
+   "lengthMm": 2296,
+   "riseMm": 182,
+   "lapMm": 51,
+   "jointsMm": [
+    6
+   ],
+   "leftMm": -540,
+   "ends": [
+    "joint",
+    "walled"
+   ],
+   "corner": false,
+   "riserFacets": 2,
+   "triangles": [
+    135,
+    65
+   ],
+   "smallestAltitudeMm": [
+    2.0117,
+    7.3887
+   ],
+   "l1VsL0Mm": 7.08,
+   "wearErrorMm": [
+    0.807,
+    5.437
+   ],
+   "fails": [],
+   "L0": {
+    "front": 129,
+    "thin": 13,
+    "thinShare": 0.1008,
+    "medianAreaPx": 128.8,
+    "thinFaces": [
+     "ch:end-l|riser",
+     "ch:end-l|riser:end-l|riser/facet-2",
+     "ch:end-l|top",
+     "ch:riser|top",
+     "top"
+    ]
+   },
+   "L1": {
+    "front": 56,
+    "thin": 2,
+    "thinShare": 0.0357,
+    "medianAreaPx": 52.1,
+    "thinFaces": [
+     "top"
+    ]
+   }
+  },
+  {
+   "id": "st-gully/fl-1/tr-6/sl-0",
+   "flight": "st-gully/fl-1",
+   "step": "st-gully/fl-1/tr-6",
+   "index": 6,
+   "lengthMm": 2299,
+   "riseMm": 146,
+   "lapMm": 42,
+   "jointsMm": [
+    9
+   ],
+   "leftMm": -1756,
+   "ends": [
+    "walled",
+    "joint"
+   ],
+   "corner": true,
+   "riserFacets": 1,
+   "triangles": [
+    125,
+    58
+   ],
+   "smallestAltitudeMm": [
+    2.3574,
+    17.799
+   ],
+   "l1VsL0Mm": 7.07,
+   "wearErrorMm": [
+    0.915,
+    5.437
+   ],
+   "fails": [],
+   "L0": {
+    "front": 119,
+    "thin": 10,
+    "thinShare": 0.084,
+    "medianAreaPx": 188.3,
+    "thinFaces": [
+     "ch:end-r|riser",
+     "ch:end-r|top",
+     "ch:riser|top",
+     "chip:r",
+     "top"
+    ]
+   },
+   "L1": {
+    "front": 51,
+    "thin": 2,
+    "thinShare": 0.0392,
+    "medianAreaPx": 56.4,
+    "thinFaces": [
+     "top"
+    ]
+   }
+  },
+  {
+   "id": "st-gully/fl-1/tr-6/sl-1",
+   "flight": "st-gully/fl-1",
+   "step": "st-gully/fl-1/tr-6",
+   "index": 6,
+   "lengthMm": 1204,
+   "riseMm": 146,
+   "lapMm": 42,
+   "jointsMm": [
+    9
+   ],
+   "leftMm": 552,
+   "ends": [
+    "joint",
+    "walled"
+   ],
+   "corner": false,
+   "riserFacets": 1,
+   "triangles": [
+    62,
+    25
+   ],
+   "smallestAltitudeMm": [
+    1.3753,
+    4.8086
+   ],
+   "l1VsL0Mm": 8.49,
+   "wearErrorMm": [
+    0.557,
+    2.535
+   ],
+   "fails": [],
+   "L0": {
+    "front": 58,
+    "thin": 11,
+    "thinShare": 0.1897,
+    "medianAreaPx": 36.5,
+    "thinFaces": [
+     "ch:end-l|riser",
+     "ch:end-l|top",
+     "ch:riser|top",
+     "top"
+    ]
+   },
+   "L1": {
+    "front": 18,
+    "thin": 2,
+    "thinShare": 0.1111,
+    "medianAreaPx": 55.3,
+    "thinFaces": [
+     "top"
+    ]
+   }
+  },
+  {
+   "id": "st-gully/fl-1/tr-8/sl-0",
+   "flight": "st-gully/fl-1",
+   "step": "st-gully/fl-1/tr-8",
+   "index": 8,
+   "lengthMm": 1209,
+   "riseMm": 146,
+   "lapMm": 53,
+   "jointsMm": [
+    6
+   ],
+   "leftMm": -1756,
+   "ends": [
+    "walled",
+    "joint"
+   ],
+   "corner": false,
+   "riserFacets": 1,
+   "triangles": [
+    61,
+    29
+   ],
+   "smallestAltitudeMm": [
+    1.5687,
+    11.0823
+   ],
+   "l1VsL0Mm": 8.49,
+   "wearErrorMm": [
+    0.56,
+    1.282
+   ],
+   "fails": [],
+   "L0": {
+    "front": 57,
+    "thin": 11,
+    "thinShare": 0.193,
+    "medianAreaPx": 35.6,
+    "thinFaces": [
+     "ch:end-r|riser",
+     "ch:end-r|top",
+     "ch:riser|top",
+     "top"
+    ]
+   },
+   "L1": {
+    "front": 22,
+    "thin": 2,
+    "thinShare": 0.0909,
+    "medianAreaPx": 51.0,
+    "thinFaces": [
+     "top"
+    ]
+   }
+  },
+  {
+   "id": "st-gully/fl-1/tr-8/sl-1",
+   "flight": "st-gully/fl-1",
+   "step": "st-gully/fl-1/tr-8",
+   "index": 8,
+   "lengthMm": 2297,
+   "riseMm": 146,
+   "lapMm": 53,
+   "jointsMm": [
+    6
+   ],
+   "leftMm": -541,
+   "ends": [
+    "joint",
+    "walled"
+   ],
+   "corner": false,
+   "riserFacets": 1,
+   "triangles": [
+    121,
+    57
+   ],
+   "smallestAltitudeMm": [
+    2.1928,
+    7.3115
+   ],
+   "l1VsL0Mm": 8.49,
+   "wearErrorMm": [
+    0.81,
+    5.434
+   ],
+   "fails": [],
+   "L0": {
+    "front": 117,
+    "thin": 9,
+    "thinShare": 0.0769,
+    "medianAreaPx": 191.5,
+    "thinFaces": [
+     "ch:end-l|riser",
+     "ch:end-l|top",
+     "ch:riser|top",
+     "top"
+    ]
+   },
+   "L1": {
+    "front": 50,
+    "thin": 2,
+    "thinShare": 0.04,
+    "medianAreaPx": 55.9,
+    "thinFaces": [
+     "top"
+    ]
+   }
+  },
+  {
+   "id": "st-gully/fl-1/tr-9/sl-0",
+   "flight": "st-gully/fl-1",
+   "step": "st-gully/fl-1/tr-9",
+   "index": 9,
+   "lengthMm": 2297,
+   "riseMm": 180,
+   "lapMm": 58,
+   "jointsMm": [
+    10
+   ],
+   "leftMm": -1756,
+   "ends": [
+    "walled",
+    "joint"
+   ],
+   "corner": false,
+   "riserFacets": 2,
+   "triangles": [
+    136,
+    63
+   ],
+   "smallestAltitudeMm": [
+    2.0245,
+    15.0941
+   ],
+   "l1VsL0Mm": 7.13,
+   "wearErrorMm": [
+    0.807,
+    5.437
+   ],
+   "fails": [],
+   "L0": {
+    "front": 130,
+    "thin": 13,
+    "thinShare": 0.1,
+    "medianAreaPx": 193.1,
+    "thinFaces": [
+     "ch:end-r|riser",
+     "ch:end-r|riser:end-r|riser/facet-2",
+     "ch:end-r|top",
+     "ch:riser|top",
+     "top"
+    ]
+   },
+   "L1": {
+    "front": 56,
+    "thin": 0,
+    "thinShare": 0.0,
+    "medianAreaPx": 56.8,
+    "thinFaces": []
+   }
+  },
+  {
+   "id": "st-gully/fl-1/tr-9/sl-1",
+   "flight": "st-gully/fl-1",
+   "step": "st-gully/fl-1/tr-9",
+   "index": 9,
+   "lengthMm": 1205,
+   "riseMm": 180,
+   "lapMm": 58,
+   "jointsMm": [
+    10
+   ],
+   "leftMm": 551,
+   "ends": [
+    "joint",
+    "walled"
+   ],
+   "corner": false,
+   "riserFacets": 1,
+   "triangles": [
+    62,
+    25
+   ],
+   "smallestAltitudeMm": [
+    1.8453,
+    4.3305
+   ],
+   "l1VsL0Mm": 7.07,
+   "wearErrorMm": [
+    0.589,
+    2.533
+   ],
+   "fails": [],
+   "L0": {
+    "front": 58,
+    "thin": 13,
+    "thinShare": 0.2241,
+    "medianAreaPx": 35.4,
+    "thinFaces": [
+     "ch:end-l|riser",
+     "ch:end-l|top",
+     "ch:riser|top",
+     "top"
+    ]
+   },
+   "L1": {
+    "front": 18,
+    "thin": 2,
+    "thinShare": 0.1111,
+    "medianAreaPx": 55.3,
+    "thinFaces": [
+     "top"
+    ]
+   }
+  },
+  {
+   "id": "st-gully/fl-1/tr-10/sl-0",
+   "flight": "st-gully/fl-1",
+   "step": "st-gully/fl-1/tr-10",
+   "index": 10,
+   "lengthMm": 1207,
+   "riseMm": 154,
+   "lapMm": 58,
+   "jointsMm": [
+    5
+   ],
+   "leftMm": -1756,
+   "ends": [
+    "walled",
+    "joint"
+   ],
+   "corner": false,
+   "riserFacets": 1,
+   "triangles": [
+    61,
+    29
+   ],
+   "smallestAltitudeMm": [
+    1.8031,
+    10.3469
+   ],
+   "l1VsL0Mm": 7.07,
+   "wearErrorMm": [
+    0.586,
+    1.284
+   ],
+   "fails": [],
+   "L0": {
+    "front": 57,
+    "thin": 13,
+    "thinShare": 0.2281,
+    "medianAreaPx": 33.5,
+    "thinFaces": [
+     "ch:end-r|riser",
+     "ch:end-r|top",
+     "ch:riser|top",
+     "top"
+    ]
+   },
+   "L1": {
+    "front": 22,
+    "thin": 2,
+    "thinShare": 0.0909,
+    "medianAreaPx": 51.6,
+    "thinFaces": [
+     "top"
+    ]
+   }
+  },
+  {
+   "id": "st-gully/fl-1/tr-10/sl-1",
+   "flight": "st-gully/fl-1",
+   "step": "st-gully/fl-1/tr-10",
+   "index": 10,
+   "lengthMm": 2300,
+   "riseMm": 154,
+   "lapMm": 58,
+   "jointsMm": [
+    5
+   ],
+   "leftMm": -544,
+   "ends": [
+    "joint",
+    "walled"
+   ],
+   "corner": false,
+   "riserFacets": 1,
+   "triangles": [
+    120,
+    57
+   ],
+   "smallestAltitudeMm": [
+    2.2321,
+    7.0792
+   ],
+   "l1VsL0Mm": 7.78,
+   "wearErrorMm": [
+    0.807,
+    5.437
+   ],
+   "fails": [],
+   "L0": {
+    "front": 116,
+    "thin": 11,
+    "thinShare": 0.0948,
+    "medianAreaPx": 193.3,
+    "thinFaces": [
+     "ch:end-l|riser",
+     "ch:end-l|top",
+     "ch:riser|top",
+     "top"
+    ]
+   },
+   "L1": {
+    "front": 50,
+    "thin": 2,
+    "thinShare": 0.04,
+    "medianAreaPx": 56.1,
+    "thinFaces": [
+     "top"
+    ]
+   }
+  },
+  {
+   "id": "st-gully/fl-1/tr-11/sl-0",
+   "flight": "st-gully/fl-1",
+   "step": "st-gully/fl-1/tr-11",
+   "index": 11,
+   "lengthMm": 2296,
+   "riseMm": 169,
+   "lapMm": 46,
+   "jointsMm": [
+    5
+   ],
+   "leftMm": -1756,
+   "ends": [
+    "walled",
+    "joint"
+   ],
+   "corner": false,
+   "riserFacets": 1,
+   "triangles": [
+    121,
+    53
+   ],
+   "smallestAltitudeMm": [
+    2.196,
+    15.06
+   ],
+   "l1VsL0Mm": 8.49,
+   "wearErrorMm": [
+    0.807,
+    5.434
+   ],
+   "fails": [],
+   "L0": {
+    "front": 117,
+    "thin": 10,
+    "thinShare": 0.0855,
+    "medianAreaPx": 189.0,
+    "thinFaces": [
+     "ch:end-r|riser",
+     "ch:end-r|top",
+     "ch:riser|top",
+     "top"
+    ]
+   },
+   "L1": {
+    "front": 48,
+    "thin": 0,
+    "thinShare": 0.0,
+    "medianAreaPx": 56.3,
+    "thinFaces": []
+   }
+  },
+  {
+   "id": "st-gully/fl-1/tr-11/sl-1",
+   "flight": "st-gully/fl-1",
+   "step": "st-gully/fl-1/tr-11",
+   "index": 11,
+   "lengthMm": 1211,
+   "riseMm": 169,
+   "lapMm": 46,
+   "jointsMm": [
+    5
+   ],
+   "leftMm": 545,
+   "ends": [
+    "joint",
+    "walled"
+   ],
+   "corner": false,
+   "riserFacets": 2,
+   "triangles": [
+    69,
+    30
+   ],
+   "smallestAltitudeMm": [
+    1.4871,
+    3.1166
+   ],
+   "l1VsL0Mm": 7.15,
+   "wearErrorMm": [
+    0.589,
+    2.532
+   ],
+   "fails": [],
+   "L0": {
+    "front": 63,
+    "thin": 15,
+    "thinShare": 0.2381,
+    "medianAreaPx": 33.2,
+    "thinFaces": [
+     "ch:end-l|riser",
+     "ch:end-l|riser:end-l|riser/facet-2",
+     "ch:end-l|top",
+     "ch:riser|top",
+     "top"
+    ]
+   },
+   "L1": {
+    "front": 21,
+    "thin": 2,
+    "thinShare": 0.0952,
+    "medianAreaPx": 66.7,
+    "thinFaces": [
+     "top"
+    ]
+   }
+  },
+  {
+   "id": "st-gully/fl-1/tr-12/sl-0",
+   "flight": "st-gully/fl-1",
+   "step": "st-gully/fl-1/tr-12",
+   "index": 12,
+   "lengthMm": 1205,
+   "riseMm": 187,
+   "lapMm": 41,
+   "jointsMm": [
+    10
+   ],
+   "leftMm": -1756,
+   "ends": [
+    "walled",
+    "joint"
+   ],
+   "corner": false,
+   "riserFacets": 1,
+   "triangles": [
+    61,
+    29
+   ],
+   "smallestAltitudeMm": [
+    1.8087,
+    10.2511
+   ],
+   "l1VsL0Mm": 7.78,
+   "wearErrorMm": [
+    0.576,
+    1.283
+   ],
+   "fails": [],
+   "L0": {
+    "front": 57,
+    "thin": 12,
+    "thinShare": 0.2105,
+    "medianAreaPx": 32.5,
+    "thinFaces": [
+     "ch:end-r|riser",
+     "ch:end-r|top",
+     "ch:riser|top",
+     "top"
+    ]
+   },
+   "L1": {
+    "front": 22,
+    "thin": 2,
+    "thinShare": 0.0909,
+    "medianAreaPx": 55.4,
+    "thinFaces": [
+     "top"
+    ]
+   }
+  },
+  {
+   "id": "st-gully/fl-1/tr-12/sl-1",
+   "flight": "st-gully/fl-1",
+   "step": "st-gully/fl-1/tr-12",
+   "index": 12,
+   "lengthMm": 2297,
+   "riseMm": 187,
+   "lapMm": 41,
+   "jointsMm": [
+    10
+   ],
+   "leftMm": -541,
+   "ends": [
+    "joint",
+    "walled"
+   ],
+   "corner": true,
+   "riserFacets": 2,
+   "triangles": [
+    148,
+    69
+   ],
+   "smallestAltitudeMm": [
+    1.6032,
+    3.7166
+   ],
+   "l1VsL0Mm": 8.49,
+   "wearErrorMm": [
+    0.81,
+    5.437
+   ],
+   "fails": [],
+   "L0": {
+    "front": 142,
+    "thin": 21,
+    "thinShare": 0.1479,
+    "medianAreaPx": 85.2,
+    "thinFaces": [
+     "ch:chip:l|end-l",
+     "ch:chip:l|riser",
+     "ch:chip:l|top",
+     "ch:end-l|riser:end-l|riser/facet-2",
+     "ch:end-l|top",
+     "ch:riser|top",
+     "chip:l",
+     "riser",
+     "top"
+    ]
+   },
+   "L1": {
+    "front": 61,
+    "thin": 4,
+    "thinShare": 0.0656,
+    "medianAreaPx": 48.6,
+    "thinFaces": [
+     "chip:l",
+     "riser",
+     "top"
+    ]
+   }
+  },
+  {
+   "id": "st-gully/fl-1/tr-13/sl-0",
+   "flight": "st-gully/fl-1",
+   "step": "st-gully/fl-1/tr-13",
+   "index": 13,
+   "lengthMm": 2297,
+   "riseMm": 167,
+   "lapMm": 50,
+   "jointsMm": [
+    8
+   ],
+   "leftMm": -1756,
+   "ends": [
+    "walled",
+    "joint"
+   ],
+   "corner": false,
+   "riserFacets": 1,
+   "triangles": [
+    120,
+    53
+   ],
+   "smallestAltitudeMm": [
+    2.0245,
+    15.0941
+   ],
+   "l1VsL0Mm": 7.07,
+   "wearErrorMm": [
+    0.807,
+    5.437
+   ],
+   "fails": [],
+   "L0": {
+    "front": 116,
+    "thin": 11,
+    "thinShare": 0.0948,
+    "medianAreaPx": 190.7,
+    "thinFaces": [
+     "ch:end-r|riser",
+     "ch:end-r|top",
+     "ch:riser|top",
+     "top"
+    ]
+   },
+   "L1": {
+    "front": 48,
+    "thin": 0,
+    "thinShare": 0.0,
+    "medianAreaPx": 56.5,
+    "thinFaces": []
+   }
+  },
+  {
+   "id": "st-gully/fl-1/tr-13/sl-1",
+   "flight": "st-gully/fl-1",
+   "step": "st-gully/fl-1/tr-13",
+   "index": 13,
+   "lengthMm": 1207,
+   "riseMm": 167,
+   "lapMm": 50,
+   "jointsMm": [
+    8
+   ],
+   "leftMm": 549,
+   "ends": [
+    "joint",
+    "walled"
+   ],
+   "corner": true,
+   "riserFacets": 2,
+   "triangles": [
+    68,
+    35
+   ],
+   "smallestAltitudeMm": [
+    4.4838,
+    9.4318
+   ],
+   "l1VsL0Mm": 7.78,
+   "wearErrorMm": [
+    0.39,
+    2.533
+   ],
+   "fails": [],
+   "L0": {
+    "front": 62,
+    "thin": 9,
+    "thinShare": 0.1452,
+    "medianAreaPx": 53.7,
+    "thinFaces": [
+     "ch:end-l|top",
+     "ch:riser|top",
+     "chip:l",
+     "top"
+    ]
+   },
+   "L1": {
+    "front": 27,
+    "thin": 4,
+    "thinShare": 0.1481,
+    "medianAreaPx": 38.3,
+    "thinFaces": [
+     "top"
+    ]
+   }
+  },
+  {
+   "id": "st-gully/fl-1/tr-15/sl-0",
+   "flight": "st-gully/fl-1",
+   "step": "st-gully/fl-1/tr-15",
+   "index": 15,
+   "lengthMm": 1212,
+   "riseMm": 154,
+   "lapMm": 50,
+   "jointsMm": [
+    4
+   ],
+   "leftMm": -1756,
+   "ends": [
+    "walled",
+    "joint"
+   ],
+   "corner": true,
+   "riserFacets": 1,
+   "triangles": [
+    77,
+    35
+   ],
+   "smallestAltitudeMm": [
+    0.2643,
+    12.9996
+   ],
+   "l1VsL0Mm": 7.07,
+   "wearErrorMm": [
+    0.734,
+    3.927
+   ],
+   "fails": [],
+   "L0": {
+    "front": 71,
+    "thin": 21,
+    "thinShare": 0.2958,
+    "medianAreaPx": 30.2,
+    "thinFaces": [
+     "ch:chip:r|end-r",
+     "ch:chip:r|riser",
+     "ch:chip:r|top",
+     "ch:end-r|riser",
+     "ch:end-r|top",
+     "ch:riser|top",
+     "top"
+    ]
+   },
+   "L1": {
+    "front": 26,
+    "thin": 4,
+    "thinShare": 0.1538,
+    "medianAreaPx": 29.9,
+    "thinFaces": [
+     "top"
+    ]
+   }
+  },
+  {
+   "id": "st-gully/fl-1/tr-15/sl-1",
+   "flight": "st-gully/fl-1",
+   "step": "st-gully/fl-1/tr-15",
+   "index": 15,
+   "lengthMm": 2296,
+   "riseMm": 154,
+   "lapMm": 50,
+   "jointsMm": [
+    4
+   ],
+   "leftMm": -540,
+   "ends": [
+    "joint",
+    "walled"
+   ],
+   "corner": true,
+   "riserFacets": 2,
+   "triangles": [
+    152,
+    69
+   ],
+   "smallestAltitudeMm": [
+    0.3273,
+    3.1086
+   ],
+   "l1VsL0Mm": 7.78,
+   "wearErrorMm": [
+    0.866,
+    5.437
+   ],
+   "fails": [],
+   "L0": {
+    "front": 146,
+    "thin": 25,
+    "thinShare": 0.1712,
+    "medianAreaPx": 63.2,
+    "thinFaces": [
+     "ch:chip:l|end-l",
+     "ch:chip:l|riser",
+     "ch:chip:l|top",
+     "ch:end-l|riser:end-l|riser/facet-2",
+     "ch:end-l|top",
+     "ch:riser|top",
+     "riser",
+     "top"
+    ]
+   },
+   "L1": {
+    "front": 60,
+    "thin": 2,
+    "thinShare": 0.0333,
+    "medianAreaPx": 31.8,
+    "thinFaces": [
+     "top"
+    ]
+   }
+  },
+  {
+   "id": "st-gully/fl-1/tr-16/sl-0",
+   "flight": "st-gully/fl-1",
+   "step": "st-gully/fl-1/tr-16",
+   "index": 16,
+   "lengthMm": 2295,
+   "riseMm": 168,
+   "lapMm": 52,
+   "jointsMm": [
+    9
+   ],
+   "leftMm": -1756,
+   "ends": [
+    "walled",
+    "joint"
+   ],
+   "corner": false,
+   "riserFacets": 1,
+   "triangles": [
+    120,
+    53
+   ],
+   "smallestAltitudeMm": [
+    2.2698,
+    15.0259
+   ],
+   "l1VsL0Mm": 7.78,
+   "wearErrorMm": [
+    0.807,
+    5.437
+   ],
+   "fails": [],
+   "L0": {
+    "front": 116,
+    "thin": 11,
+    "thinShare": 0.0948,
+    "medianAreaPx": 191.3,
+    "thinFaces": [
+     "ch:end-r|riser",
+     "ch:end-r|top",
+     "ch:riser|top",
+     "top"
+    ]
+   },
+   "L1": {
+    "front": 48,
+    "thin": 0,
+    "thinShare": 0.0,
+    "medianAreaPx": 56.5,
+    "thinFaces": []
+   }
+  },
+  {
+   "id": "st-gully/fl-1/tr-16/sl-1",
+   "flight": "st-gully/fl-1",
+   "step": "st-gully/fl-1/tr-16",
+   "index": 16,
+   "lengthMm": 1208,
+   "riseMm": 168,
+   "lapMm": 52,
+   "jointsMm": [
+    9
+   ],
+   "leftMm": 548,
+   "ends": [
+    "joint",
+    "walled"
+   ],
+   "corner": false,
+   "riserFacets": 1,
+   "triangles": [
+    62,
+    25
+   ],
+   "smallestAltitudeMm": [
+    1.8435,
+    3.753
+   ],
+   "l1VsL0Mm": 7.78,
+   "wearErrorMm": [
+    0.573,
+    2.535
+   ],
+   "fails": [],
+   "L0": {
+    "front": 58,
+    "thin": 12,
+    "thinShare": 0.2069,
+    "medianAreaPx": 34.1,
+    "thinFaces": [
+     "ch:end-l|riser",
+     "ch:end-l|top",
+     "ch:riser|top",
+     "top"
+    ]
+   },
+   "L1": {
+    "front": 18,
+    "thin": 2,
+    "thinShare": 0.1111,
+    "medianAreaPx": 55.3,
+    "thinFaces": [
+     "top"
+    ]
+   }
+  },
+  {
+   "id": "st-gully/fl-1/tr-17/sl-0",
+   "flight": "st-gully/fl-1",
+   "step": "st-gully/fl-1/tr-17",
+   "index": 17,
+   "lengthMm": 1212,
+   "riseMm": 172,
+   "lapMm": 40,
+   "jointsMm": [
+    8
+   ],
+   "leftMm": -1756,
+   "ends": [
+    "walled",
+    "joint"
+   ],
+   "corner": false,
+   "riserFacets": 1,
+   "triangles": [
+    61,
+    29
+   ],
+   "smallestAltitudeMm": [
+    1.4002,
+    11.2236
+   ],
+   "l1VsL0Mm": 7.07,
+   "wearErrorMm": [
+    0.586,
+    1.283
+   ],
+   "fails": [],
+   "L0": {
+    "front": 57,
+    "thin": 13,
+    "thinShare": 0.2281,
+    "medianAreaPx": 33.3,
+    "thinFaces": [
+     "ch:end-r|riser",
+     "ch:end-r|top",
+     "ch:riser|top",
+     "top"
+    ]
+   },
+   "L1": {
+    "front": 22,
+    "thin": 2,
+    "thinShare": 0.0909,
+    "medianAreaPx": 55.3,
+    "thinFaces": [
+     "top"
+    ]
+   }
+  },
+  {
+   "id": "st-gully/fl-1/tr-17/sl-1",
+   "flight": "st-gully/fl-1",
+   "step": "st-gully/fl-1/tr-17",
+   "index": 17,
+   "lengthMm": 2292,
+   "riseMm": 172,
+   "lapMm": 40,
+   "jointsMm": [
+    8
+   ],
+   "leftMm": -536,
+   "ends": [
+    "joint",
+    "walled"
+   ],
+   "corner": false,
+   "riserFacets": 1,
+   "triangles": [
+    120,
+    57
+   ],
+   "smallestAltitudeMm": [
+    2.2929,
+    7.6964
+   ],
+   "l1VsL0Mm": 7.78,
+   "wearErrorMm": [
+    0.807,
+    5.434
+   ],
+   "fails": [],
+   "L0": {
+    "front": 116,
+    "thin": 11,
+    "thinShare": 0.0948,
+    "medianAreaPx": 187.3,
+    "thinFaces": [
+     "ch:end-l|riser",
+     "ch:end-l|top",
+     "ch:riser|top",
+     "top"
+    ]
+   },
+   "L1": {
+    "front": 50,
+    "thin": 2,
+    "thinShare": 0.04,
+    "medianAreaPx": 55.9,
+    "thinFaces": [
+     "top"
+    ]
+   }
+  },
+  {
+   "id": "st-gully/fl-1/tr-18/sl-0",
+   "flight": "st-gully/fl-1",
+   "step": "st-gully/fl-1/tr-18",
+   "index": 18,
+   "lengthMm": 2299,
+   "riseMm": 158,
+   "lapMm": 56,
+   "jointsMm": [
+    4
+   ],
+   "leftMm": -1756,
+   "ends": [
+    "walled",
+    "joint"
+   ],
+   "corner": false,
+   "riserFacets": 1,
+   "triangles": [
+    120,
+    53
+   ],
+   "smallestAltitudeMm": [
+    2.0356,
+    15.162
+   ],
+   "l1VsL0Mm": 7.07,
+   "wearErrorMm": [
+    0.807,
+    5.437
+   ],
+   "fails": [],
+   "L0": {
+    "front": 116,
+    "thin": 11,
+    "thinShare": 0.0948,
+    "medianAreaPx": 190.8,
+    "thinFaces": [
+     "ch:end-r|riser",
+     "ch:end-r|top",
+     "ch:riser|top",
+     "top"
+    ]
+   },
+   "L1": {
+    "front": 48,
+    "thin": 0,
+    "thinShare": 0.0,
+    "medianAreaPx": 56.5,
+    "thinFaces": []
+   }
+  },
+  {
+   "id": "st-gully/fl-1/tr-18/sl-1",
+   "flight": "st-gully/fl-1",
+   "step": "st-gully/fl-1/tr-18",
+   "index": 18,
+   "lengthMm": 1209,
+   "riseMm": 158,
+   "lapMm": 56,
+   "jointsMm": [
+    4
+   ],
+   "leftMm": 547,
+   "ends": [
+    "joint",
+    "walled"
+   ],
+   "corner": false,
+   "riserFacets": 2,
+   "triangles": [
+    69,
+    30
+   ],
+   "smallestAltitudeMm": [
+    1.8597,
+    3.5502
+   ],
+   "l1VsL0Mm": 7.85,
+   "wearErrorMm": [
+    0.569,
+    2.533
+   ],
+   "fails": [],
+   "L0": {
+    "front": 63,
+    "thin": 14,
+    "thinShare": 0.2222,
+    "medianAreaPx": 32.6,
+    "thinFaces": [
+     "ch:end-l|riser",
+     "ch:end-l|riser:end-l|riser/facet-2",
+     "ch:end-l|top",
+     "ch:riser|top",
+     "top"
+    ]
+   },
+   "L1": {
+    "front": 21,
+    "thin": 2,
+    "thinShare": 0.0952,
+    "medianAreaPx": 56.9,
+    "thinFaces": [
+     "top"
+    ]
+   }
+  },
+  {
+   "id": "st-gully/fl-1/tr-19/sl-0",
+   "flight": "st-gully/fl-1",
+   "step": "st-gully/fl-1/tr-19",
+   "index": 19,
+   "lengthMm": 1210,
+   "riseMm": 166,
+   "lapMm": 45,
+   "jointsMm": [
+    5
+   ],
+   "leftMm": -1756,
+   "ends": [
+    "walled",
+    "joint"
+   ],
+   "corner": false,
+   "riserFacets": 1,
+   "triangles": [
+    61,
+    29
+   ],
+   "smallestAltitudeMm": [
+    1.5608,
+    10.4844
+   ],
+   "l1VsL0Mm": 7.07,
+   "wearErrorMm": [
+    0.586,
+    1.285
+   ],
+   "fails": [],
+   "L0": {
+    "front": 57,
+    "thin": 13,
+    "thinShare": 0.2281,
+    "medianAreaPx": 33.3,
+    "thinFaces": [
+     "ch:end-r|riser",
+     "ch:end-r|top",
+     "ch:riser|top",
+     "top"
+    ]
+   },
+   "L1": {
+    "front": 22,
+    "thin": 2,
+    "thinShare": 0.0909,
+    "medianAreaPx": 54.1,
+    "thinFaces": [
+     "top"
+    ]
+   }
+  },
+  {
+   "id": "st-gully/fl-1/tr-19/sl-1",
+   "flight": "st-gully/fl-1",
+   "step": "st-gully/fl-1/tr-19",
+   "index": 19,
+   "lengthMm": 2297,
+   "riseMm": 166,
+   "lapMm": 45,
+   "jointsMm": [
+    5
+   ],
+   "leftMm": -541,
+   "ends": [
+    "joint",
+    "walled"
+   ],
+   "corner": false,
+   "riserFacets": 1,
+   "triangles": [
+    120,
+    57
+   ],
+   "smallestAltitudeMm": [
+    2.2608,
+    7.3115
+   ],
+   "l1VsL0Mm": 7.78,
+   "wearErrorMm": [
+    0.809,
+    5.437
+   ],
+   "fails": [],
+   "L0": {
+    "front": 116,
+    "thin": 11,
+    "thinShare": 0.0948,
+    "medianAreaPx": 193.0,
+    "thinFaces": [
+     "ch:end-l|riser",
+     "ch:end-l|top",
+     "ch:riser|top",
+     "top"
+    ]
+   },
+   "L1": {
+    "front": 50,
+    "thin": 2,
+    "thinShare": 0.04,
+    "medianAreaPx": 56.1,
+    "thinFaces": [
+     "top"
+    ]
+   }
+  },
+  {
+   "id": "st-gully/fl-1/tr-21/sl-0",
+   "flight": "st-gully/fl-1",
+   "step": "st-gully/fl-1/tr-21",
+   "index": 21,
+   "lengthMm": 2295,
+   "riseMm": 170,
+   "lapMm": 53,
+   "jointsMm": [
+    4
+   ],
+   "leftMm": -1756,
+   "ends": [
+    "walled",
+    "joint"
+   ],
+   "corner": true,
+   "riserFacets": 1,
+   "triangles": [
+    131,
+    56
+   ],
+   "smallestAltitudeMm": [
+    2.2199,
+    15.0259
+   ],
+   "l1VsL0Mm": 8.49,
+   "wearErrorMm": [
+    0.807,
+    5.437
+   ],
+   "fails": [],
+   "L0": {
+    "front": 127,
+    "thin": 11,
+    "thinShare": 0.0866,
+    "medianAreaPx": 67.2,
+    "thinFaces": [
+     "ch:chip:l|top",
+     "ch:end-r|riser",
+     "ch:end-r|top",
+     "ch:riser|top",
+     "top"
+    ]
+   },
+   "L1": {
+    "front": 51,
+    "thin": 0,
+    "thinShare": 0.0,
+    "medianAreaPx": 56.3,
+    "thinFaces": []
+   }
+  },
+  {
+   "id": "st-gully/fl-1/tr-21/sl-1",
+   "flight": "st-gully/fl-1",
+   "step": "st-gully/fl-1/tr-21",
+   "index": 21,
+   "lengthMm": 1213,
+   "riseMm": 170,
+   "lapMm": 53,
+   "jointsMm": [
+    4
+   ],
+   "leftMm": 543,
+   "ends": [
+    "joint",
+    "walled"
+   ],
+   "corner": false,
+   "riserFacets": 2,
+   "triangles": [
+    69,
+    28
+   ],
+   "smallestAltitudeMm": [
+    1.6862,
+    4.5084
+   ],
+   "l1VsL0Mm": 7.79,
+   "wearErrorMm": [
+    0.569,
+    2.533
+   ],
+   "fails": [],
+   "L0": {
+    "front": 63,
+    "thin": 13,
+    "thinShare": 0.2063,
+    "medianAreaPx": 32.6,
+    "thinFaces": [
+     "ch:end-l|riser",
+     "ch:end-l|top",
+     "ch:riser|top",
+     "top"
+    ]
+   },
+   "L1": {
+    "front": 20,
+    "thin": 1,
+    "thinShare": 0.05,
+    "medianAreaPx": 55.3,
+    "thinFaces": [
+     "top"
+    ]
+   }
+  },
+  {
+   "id": "st-gully/fl-1/tr-22/sl-0",
+   "flight": "st-gully/fl-1",
+   "step": "st-gully/fl-1/tr-22",
+   "index": 22,
+   "lengthMm": 1208,
+   "riseMm": 174,
+   "lapMm": 50,
+   "jointsMm": [
+    8
+   ],
+   "leftMm": -1756,
+   "ends": [
+    "walled",
+    "joint"
+   ],
+   "corner": false,
+   "riserFacets": 1,
+   "triangles": [
+    61,
+    29
+   ],
+   "smallestAltitudeMm": [
+    1.5382,
+    11.0335
+   ],
+   "l1VsL0Mm": 8.49,
+   "wearErrorMm": [
+    0.56,
+    1.282
+   ],
+   "fails": [],
+   "L0": {
+    "front": 57,
+    "thin": 11,
+    "thinShare": 0.193,
+    "medianAreaPx": 36.4,
+    "thinFaces": [
+     "ch:end-r|riser",
+     "ch:end-r|top",
+     "ch:riser|top",
+     "top"
+    ]
+   },
+   "L1": {
+    "front": 22,
+    "thin": 2,
+    "thinShare": 0.0909,
+    "medianAreaPx": 54.5,
+    "thinFaces": [
+     "top"
+    ]
+   }
+  },
+  {
+   "id": "st-gully/fl-1/tr-22/sl-1",
+   "flight": "st-gully/fl-1",
+   "step": "st-gully/fl-1/tr-22",
+   "index": 22,
+   "lengthMm": 2296,
+   "riseMm": 174,
+   "lapMm": 50,
+   "jointsMm": [
+    8
+   ],
+   "leftMm": -540,
+   "ends": [
+    "joint",
+    "walled"
+   ],
+   "corner": false,
+   "riserFacets": 2,
+   "triangles": [
+    135,
+    65
+   ],
+   "smallestAltitudeMm": [
+    2.0115,
+    7.3887
+   ],
+   "l1VsL0Mm": 7.08,
+   "wearErrorMm": [
+    0.807,
+    5.434
+   ],
+   "fails": [],
+   "L0": {
+    "front": 129,
+    "thin": 13,
+    "thinShare": 0.1008,
+    "medianAreaPx": 91.6,
+    "thinFaces": [
+     "ch:end-l|riser",
+     "ch:end-l|riser:end-l|riser/facet-2",
+     "ch:end-l|top",
+     "ch:riser|top",
+     "top"
+    ]
+   },
+   "L1": {
+    "front": 56,
+    "thin": 2,
+    "thinShare": 0.0357,
+    "medianAreaPx": 46.1,
+    "thinFaces": [
+     "top"
+    ]
+   }
+  },
+  {
+   "id": "st-gully/fl-1/tr-23/sl-0",
+   "flight": "st-gully/fl-1",
+   "step": "st-gully/fl-1/tr-23",
+   "index": 23,
+   "lengthMm": 2293,
+   "riseMm": 154,
+   "lapMm": 44,
+   "jointsMm": [
+    8
+   ],
+   "leftMm": -1756,
+   "ends": [
+    "walled",
+    "joint"
+   ],
+   "corner": false,
+   "riserFacets": 2,
+   "triangles": [
+    136,
+    63
+   ],
+   "smallestAltitudeMm": [
+    1.9928,
+    14.9576
+   ],
+   "l1VsL0Mm": 7.13,
+   "wearErrorMm": [
+    0.807,
+    5.437
+   ],
+   "fails": [],
+   "L0": {
+    "front": 130,
+    "thin": 13,
+    "thinShare": 0.1,
+    "medianAreaPx": 183.3,
+    "thinFaces": [
+     "ch:end-r|riser",
+     "ch:end-r|riser:end-r|riser/facet-2",
+     "ch:end-r|top",
+     "ch:riser|top",
+     "top"
+    ]
+   },
+   "L1": {
+    "front": 56,
+    "thin": 0,
+    "thinShare": 0.0,
+    "medianAreaPx": 56.9,
+    "thinFaces": []
+   }
+  },
+  {
+   "id": "st-gully/fl-1/tr-23/sl-1",
+   "flight": "st-gully/fl-1",
+   "step": "st-gully/fl-1/tr-23",
+   "index": 23,
+   "lengthMm": 1211,
+   "riseMm": 154,
+   "lapMm": 44,
+   "jointsMm": [
+    8
+   ],
+   "leftMm": 545,
+   "ends": [
+    "joint",
+    "walled"
+   ],
+   "corner": false,
+   "riserFacets": 1,
+   "triangles": [
+    62,
+    25
+   ],
+   "smallestAltitudeMm": [
+    1.5527,
+    3.3347
+   ],
+   "l1VsL0Mm": 8.49,
+   "wearErrorMm": [
+    0.694,
+    2.533
+   ],
+   "fails": [],
+   "L0": {
+    "front": 58,
+    "thin": 11,
+    "thinShare": 0.1897,
+    "medianAreaPx": 35.4,
+    "thinFaces": [
+     "ch:end-l|riser",
+     "ch:end-l|top",
+     "ch:riser|top",
+     "top"
+    ]
+   },
+   "L1": {
+    "front": 18,
+    "thin": 2,
+    "thinShare": 0.1111,
+    "medianAreaPx": 55.3,
+    "thinFaces": [
+     "top"
+    ]
+   }
+  },
+  {
+   "id": "st-gully/fl-1/tr-24/sl-0",
+   "flight": "st-gully/fl-1",
+   "step": "st-gully/fl-1/tr-24",
+   "index": 24,
+   "lengthMm": 1210,
+   "riseMm": 172,
+   "lapMm": 45,
+   "jointsMm": [
+    9
+   ],
+   "leftMm": -1756,
+   "ends": [
+    "walled",
+    "joint"
+   ],
+   "corner": false,
+   "riserFacets": 1,
+   "triangles": [
+    61,
+    29
+   ],
+   "smallestAltitudeMm": [
+    1.89,
+    10.4844
+   ],
+   "l1VsL0Mm": 7.78,
+   "wearErrorMm": [
+    0.576,
+    1.285
+   ],
+   "fails": [],
+   "L0": {
+    "front": 57,
+    "thin": 12,
+    "thinShare": 0.2105,
+    "medianAreaPx": 32.6,
+    "thinFaces": [
+     "ch:end-r|riser",
+     "ch:end-r|top",
+     "ch:riser|top",
+     "top"
+    ]
+   },
+   "L1": {
+    "front": 22,
+    "thin": 2,
+    "thinShare": 0.0909,
+    "medianAreaPx": 55.0,
+    "thinFaces": [
+     "top"
+    ]
+   }
+  },
+  {
+   "id": "st-gully/fl-1/tr-24/sl-1",
+   "flight": "st-gully/fl-1",
+   "step": "st-gully/fl-1/tr-24",
+   "index": 24,
+   "lengthMm": 2293,
+   "riseMm": 172,
+   "lapMm": 45,
+   "jointsMm": [
+    9
+   ],
+   "leftMm": -537,
+   "ends": [
+    "joint",
+    "walled"
+   ],
+   "corner": false,
+   "riserFacets": 1,
+   "triangles": [
+    120,
+    57
+   ],
+   "smallestAltitudeMm": [
+    1.9356,
+    7.6196
+   ],
+   "l1VsL0Mm": 7.07,
+   "wearErrorMm": [
+    0.809,
+    5.437
+   ],
+   "fails": [],
+   "L0": {
+    "front": 116,
+    "thin": 11,
+    "thinShare": 0.0948,
+    "medianAreaPx": 188.4,
+    "thinFaces": [
+     "ch:end-l|riser",
+     "ch:end-l|top",
+     "ch:riser|top",
+     "top"
+    ]
+   },
+   "L1": {
+    "front": 50,
+    "thin": 2,
+    "thinShare": 0.04,
+    "medianAreaPx": 56.1,
+    "thinFaces": [
+     "top"
+    ]
+   }
+  },
+  {
+   "id": "st-gully/fl-1/tr-25/sl-0",
+   "flight": "st-gully/fl-1",
+   "step": "st-gully/fl-1/tr-25",
+   "index": 25,
+   "lengthMm": 2299,
+   "riseMm": 163,
+   "lapMm": 50,
+   "jointsMm": [
+    10
+   ],
+   "leftMm": -1756,
+   "ends": [
+    "walled",
+    "joint"
+   ],
+   "corner": false,
+   "riserFacets": 1,
+   "triangles": [
+    120,
+    53
+   ],
+   "smallestAltitudeMm": [
+    2.2335,
+    15.162
+   ],
+   "l1VsL0Mm": 7.78,
+   "wearErrorMm": [
+    0.807,
+    5.434
+   ],
+   "fails": [],
+   "L0": {
+    "front": 116,
+    "thin": 11,
+    "thinShare": 0.0948,
+    "medianAreaPx": 192.4,
+    "thinFaces": [
+     "ch:end-r|riser",
+     "ch:end-r|top",
+     "ch:riser|top",
+     "top"
+    ]
+   },
+   "L1": {
+    "front": 48,
+    "thin": 0,
+    "thinShare": 0.0,
+    "medianAreaPx": 56.3,
+    "thinFaces": []
+   }
+  },
+  {
+   "id": "st-gully/fl-1/tr-25/sl-1",
+   "flight": "st-gully/fl-1",
+   "step": "st-gully/fl-1/tr-25",
+   "index": 25,
+   "lengthMm": 1203,
+   "riseMm": 163,
+   "lapMm": 50,
+   "jointsMm": [
+    10
+   ],
+   "leftMm": 553,
+   "ends": [
+    "joint",
+    "walled"
+   ],
+   "corner": false,
+   "riserFacets": 1,
+   "triangles": [
+    62,
+    25
+   ],
+   "smallestAltitudeMm": [
+    1.8376,
+    4.6768
+   ],
+   "l1VsL0Mm": 7.07,
+   "wearErrorMm": [
+    0.589,
+    2.532
+   ],
+   "fails": [],
+   "L0": {
+    "front": 58,
+    "thin": 13,
+    "thinShare": 0.2241,
+    "medianAreaPx": 34.6,
+    "thinFaces": [
+     "ch:end-l|riser",
+     "ch:end-l|top",
+     "ch:riser|top",
+     "top"
+    ]
+   },
+   "L1": {
+    "front": 18,
+    "thin": 2,
+    "thinShare": 0.1111,
+    "medianAreaPx": 55.1,
+    "thinFaces": [
+     "top"
+    ]
+   }
+  },
+  {
+   "id": "st-gully/fl-1/tr-27/sl-0",
+   "flight": "st-gully/fl-1",
+   "step": "st-gully/fl-1/tr-27",
+   "index": 27,
+   "lengthMm": 1208,
+   "riseMm": 169,
+   "lapMm": 44,
+   "jointsMm": [
+    9
+   ],
+   "leftMm": -1756,
+   "ends": [
+    "walled",
+    "joint"
+   ],
+   "corner": false,
+   "riserFacets": 1,
+   "triangles": [
+    61,
+    29
+   ],
+   "smallestAltitudeMm": [
+    1.7221,
+    10.3935
+   ],
+   "l1VsL0Mm": 7.07,
+   "wearErrorMm": [
+    0.586,
+    1.284
+   ],
+   "fails": [],
+   "L0": {
+    "front": 57,
+    "thin": 13,
+    "thinShare": 0.2281,
+    "medianAreaPx": 33.4,
+    "thinFaces": [
+     "ch:end-r|riser",
+     "ch:end-r|top",
+     "ch:riser|top",
+     "top"
+    ]
+   },
+   "L1": {
+    "front": 22,
+    "thin": 2,
+    "thinShare": 0.0909,
+    "medianAreaPx": 53.9,
+    "thinFaces": [
+     "top"
+    ]
+   }
+  },
+  {
+   "id": "st-gully/fl-1/tr-27/sl-1",
+   "flight": "st-gully/fl-1",
+   "step": "st-gully/fl-1/tr-27",
+   "index": 27,
+   "lengthMm": 2295,
+   "riseMm": 169,
+   "lapMm": 44,
+   "jointsMm": [
+    9
+   ],
+   "leftMm": -539,
+   "ends": [
+    "joint",
+    "walled"
+   ],
+   "corner": true,
+   "riserFacets": 2,
+   "triangles": [
+    150,
+    69
+   ],
+   "smallestAltitudeMm": [
+    1.4968,
+    8.9134
+   ],
+   "l1VsL0Mm": 7.78,
+   "wearErrorMm": [
+    0.867,
+    5.437
+   ],
+   "fails": [],
+   "L0": {
+    "front": 144,
+    "thin": 22,
+    "thinShare": 0.1528,
+    "medianAreaPx": 73.0,
+    "thinFaces": [
+     "ch:chip:l|end-l",
+     "ch:chip:l|riser",
+     "ch:chip:l|top",
+     "ch:end-l|riser:end-l|riser/facet-2",
+     "ch:end-l|top",
+     "ch:riser|top",
+     "riser",
+     "top"
+    ]
+   },
+   "L1": {
+    "front": 60,
+    "thin": 2,
+    "thinShare": 0.0333,
+    "medianAreaPx": 35.1,
+    "thinFaces": [
+     "top"
+    ]
+   }
+  },
+  {
+   "id": "st-gully/fl-1/tr-28/sl-0",
+   "flight": "st-gully/fl-1",
+   "step": "st-gully/fl-1/tr-28",
+   "index": 28,
+   "lengthMm": 2292,
+   "riseMm": 158,
+   "lapMm": 45,
+   "jointsMm": [
+    7
+   ],
+   "leftMm": -1756,
+   "ends": [
+    "walled",
+    "joint"
+   ],
+   "corner": true,
+   "riserFacets": 1,
+   "triangles": [
+    138,
+    58
+   ],
+   "smallestAltitudeMm": [
+    2.3633,
+    17.346
+   ],
+   "l1VsL0Mm": 7.78,
+   "wearErrorMm": [
+    0.836,
+    5.434
+   ],
+   "fails": [],
+   "L0": {
+    "front": 132,
+    "thin": 21,
+    "thinShare": 0.1591,
+    "medianAreaPx": 63.0,
+    "thinFaces": [
+     "ch:chip:r|end-r",
+     "ch:chip:r|riser",
+     "ch:chip:r|top",
+     "ch:end-r|riser",
+     "ch:end-r|top",
+     "ch:riser|top",
+     "chip:r",
+     "top"
+    ]
+   },
+   "L1": {
+    "front": 51,
+    "thin": 2,
+    "thinShare": 0.0392,
+    "medianAreaPx": 56.1,
+    "thinFaces": [
+     "top"
+    ]
+   }
+  },
+  {
+   "id": "st-gully/fl-1/tr-28/sl-1",
+   "flight": "st-gully/fl-1",
+   "step": "st-gully/fl-1/tr-28",
+   "index": 28,
+   "lengthMm": 1213,
+   "riseMm": 158,
+   "lapMm": 45,
+   "jointsMm": [
+    7
+   ],
+   "leftMm": 543,
+   "ends": [
+    "joint",
+    "walled"
+   ],
+   "corner": false,
+   "riserFacets": 1,
+   "triangles": [
+    62,
+    23
+   ],
+   "smallestAltitudeMm": [
+    1.6563,
+    4.5335
+   ],
+   "l1VsL0Mm": 8.49,
+   "wearErrorMm": [
+    0.561,
+    2.532
+   ],
+   "fails": [],
+   "L0": {
+    "front": 58,
+    "thin": 11,
+    "thinShare": 0.1897,
+    "medianAreaPx": 35.3,
+    "thinFaces": [
+     "ch:end-l|riser",
+     "ch:end-l|top",
+     "ch:riser|top",
+     "top"
+    ]
+   },
+   "L1": {
+    "front": 17,
+    "thin": 1,
+    "thinShare": 0.0588,
+    "medianAreaPx": 55.6,
+    "thinFaces": [
+     "top"
+    ]
+   }
+  },
+  {
+   "id": "st-gully/fl-1/tr-29/sl-0",
+   "flight": "st-gully/fl-1",
+   "step": "st-gully/fl-1/tr-29",
+   "index": 29,
+   "lengthMm": 1211,
+   "riseMm": 160,
+   "lapMm": 49,
+   "jointsMm": [
+    5
+   ],
+   "leftMm": -1756,
+   "ends": [
+    "walled",
+    "joint"
+   ],
+   "corner": false,
+   "riserFacets": 1,
+   "triangles": [
+    61,
+    29
+   ],
+   "smallestAltitudeMm": [
+    1.8709,
+    11.1975
+   ],
+   "l1VsL0Mm": 7.78,
+   "wearErrorMm": [
+    0.576,
+    1.285
+   ],
+   "fails": [],
+   "L0": {
+    "front": 57,
+    "thin": 12,
+    "thinShare": 0.2105,
+    "medianAreaPx": 32.6,
+    "thinFaces": [
+     "ch:end-r|riser",
+     "ch:end-r|top",
+     "ch:riser|top",
+     "top"
+    ]
+   },
+   "L1": {
+    "front": 22,
+    "thin": 2,
+    "thinShare": 0.0909,
+    "medianAreaPx": 53.6,
+    "thinFaces": [
+     "top"
+    ]
+   }
+  },
+  {
+   "id": "st-gully/fl-1/tr-29/sl-1",
+   "flight": "st-gully/fl-1",
+   "step": "st-gully/fl-1/tr-29",
+   "index": 29,
+   "lengthMm": 2296,
+   "riseMm": 160,
+   "lapMm": 49,
+   "jointsMm": [
+    5
+   ],
+   "leftMm": -540,
+   "ends": [
+    "joint",
+    "walled"
+   ],
+   "corner": false,
+   "riserFacets": 1,
+   "triangles": [
+    121,
+    57
+   ],
+   "smallestAltitudeMm": [
+    2.2168,
+    7.3887
+   ],
+   "l1VsL0Mm": 8.49,
+   "wearErrorMm": [
+    0.807,
+    5.437
+   ],
+   "fails": [],
+   "L0": {
+    "front": 117,
+    "thin": 9,
+    "thinShare": 0.0769,
+    "medianAreaPx": 189.8,
+    "thinFaces": [
+     "ch:end-l|riser",
+     "ch:end-l|top",
+     "ch:riser|top",
+     "top"
+    ]
+   },
+   "L1": {
+    "front": 50,
+    "thin": 2,
+    "thinShare": 0.04,
+    "medianAreaPx": 56.1,
+    "thinFaces": [
+     "top"
+    ]
+   }
+  },
+  {
+   "id": "st-gully/fl-1/tr-30/sl-0",
+   "flight": "st-gully/fl-1",
+   "step": "st-gully/fl-1/tr-30",
+   "index": 30,
+   "lengthMm": 2292,
+   "riseMm": 181,
+   "lapMm": 47,
+   "jointsMm": [
+    7
+   ],
+   "leftMm": -1756,
+   "ends": [
+    "walled",
+    "joint"
+   ],
+   "corner": false,
+   "riserFacets": 2,
+   "triangles": [
+    133,
+    63
+   ],
+   "smallestAltitudeMm": [
+    2.2888,
+    14.9233
+   ],
+   "l1VsL0Mm": 7.81,
+   "wearErrorMm": [
+    0.807,
+    5.437
+   ],
+   "fails": [],
+   "L0": {
+    "front": 127,
+    "thin": 13,
+    "thinShare": 0.1024,
+    "medianAreaPx": 192.6,
+    "thinFaces": [
+     "ch:end-r|riser",
+     "ch:end-r|riser:end-r|riser/facet-2",
+     "ch:end-r|top",
+     "ch:riser|top",
+     "top"
+    ]
+   },
+   "L1": {
+    "front": 56,
+    "thin": 0,
+    "thinShare": 0.0,
+    "medianAreaPx": 56.7,
+    "thinFaces": []
+   }
+  },
+  {
+   "id": "st-gully/fl-1/tr-30/sl-1",
+   "flight": "st-gully/fl-1",
+   "step": "st-gully/fl-1/tr-30",
+   "index": 30,
+   "lengthMm": 1213,
+   "riseMm": 181,
+   "lapMm": 47,
+   "jointsMm": [
+    7
+   ],
+   "leftMm": 543,
+   "ends": [
+    "joint",
+    "walled"
+   ],
+   "corner": false,
+   "riserFacets": 1,
+   "triangles": [
+    62,
+    23
+   ],
+   "smallestAltitudeMm": [
+    1.6862,
+    4.5339
+   ],
+   "l1VsL0Mm": 7.78,
+   "wearErrorMm": [
+    0.569,
+    2.533
+   ],
+   "fails": [],
+   "L0": {
+    "front": 58,
+    "thin": 12,
+    "thinShare": 0.2069,
+    "medianAreaPx": 32.9,
+    "thinFaces": [
+     "ch:end-l|riser",
+     "ch:end-l|top",
+     "ch:riser|top",
+     "top"
+    ]
+   },
+   "L1": {
+    "front": 17,
+    "thin": 1,
+    "thinShare": 0.0588,
+    "medianAreaPx": 55.8,
+    "thinFaces": [
+     "top"
+    ]
+   }
+  },
+  {
+   "id": "st-gully/fl-1/tr-31/sl-0",
+   "flight": "st-gully/fl-1",
+   "step": "st-gully/fl-1/tr-31",
+   "index": 31,
+   "lengthMm": 1210,
+   "riseMm": 167,
+   "lapMm": 44,
+   "jointsMm": [
+    10
+   ],
+   "leftMm": -1756,
+   "ends": [
+    "walled",
+    "joint"
+   ],
+   "corner": false,
+   "riserFacets": 1,
+   "triangles": [
+    61,
+    29
+   ],
+   "smallestAltitudeMm": [
+    1.89,
+    10.4652
+   ],
+   "l1VsL0Mm": 7.78,
+   "wearErrorMm": [
+    0.576,
+    1.283
+   ],
+   "fails": [],
+   "L0": {
+    "front": 57,
+    "thin": 12,
+    "thinShare": 0.2105,
+    "medianAreaPx": 32.6,
+    "thinFaces": [
+     "ch:end-r|riser",
+     "ch:end-r|top",
+     "ch:riser|top",
+     "top"
+    ]
+   },
+   "L1": {
+    "front": 22,
+    "thin": 2,
+    "thinShare": 0.0909,
+    "medianAreaPx": 54.2,
+    "thinFaces": [
+     "top"
+    ]
+   }
+  },
+  {
+   "id": "st-gully/fl-1/tr-31/sl-1",
+   "flight": "st-gully/fl-1",
+   "step": "st-gully/fl-1/tr-31",
+   "index": 31,
+   "lengthMm": 2292,
+   "riseMm": 167,
+   "lapMm": 44,
+   "jointsMm": [
+    10
+   ],
+   "leftMm": -536,
+   "ends": [
+    "joint",
+    "walled"
+   ],
+   "corner": true,
+   "riserFacets": 1,
+   "triangles": [
+    128,
+    63
+   ],
+   "smallestAltitudeMm": [
+    1.6614,
+    6.3497
+   ],
+   "l1VsL0Mm": 8.49,
+   "wearErrorMm": [
+    0.818,
+    5.434
+   ],
+   "fails": [],
+   "L0": {
+    "front": 122,
+    "thin": 8,
+    "thinShare": 0.0656,
+    "medianAreaPx": 81.2,
+    "thinFaces": [
+     "ch:end-l|top",
+     "ch:riser|top",
+     "chip:l",
+     "top"
+    ]
+   },
+   "L1": {
+    "front": 54,
+    "thin": 3,
+    "thinShare": 0.0556,
+    "medianAreaPx": 55.3,
+    "thinFaces": [
+     "top"
+    ]
+   }
+  },
+  {
+   "id": "st-gully/fl-1/tr-32/sl-0",
+   "flight": "st-gully/fl-1",
+   "step": "st-gully/fl-1/tr-32",
+   "index": 32,
+   "lengthMm": 2300,
+   "riseMm": 170,
+   "lapMm": 56,
+   "jointsMm": [
+    8
+   ],
+   "leftMm": -1756,
+   "ends": [
+    "walled",
+    "joint"
+   ],
+   "corner": false,
+   "riserFacets": 1,
+   "triangles": [
+    120,
+    53
+   ],
+   "smallestAltitudeMm": [
+    2.2225,
+    15.1959
+   ],
+   "l1VsL0Mm": 7.78,
+   "wearErrorMm": [
+    0.807,
+    5.437
+   ],
+   "fails": [],
+   "L0": {
+    "front": 116,
+    "thin": 11,
+    "thinShare": 0.0948,
+    "medianAreaPx": 192.9,
+    "thinFaces": [
+     "ch:end-r|riser",
+     "ch:end-r|top",
+     "ch:riser|top",
+     "top"
+    ]
+   },
+   "L1": {
+    "front": 48,
+    "thin": 0,
+    "thinShare": 0.0,
+    "medianAreaPx": 56.5,
+    "thinFaces": []
+   }
+  },
+  {
+   "id": "st-gully/fl-1/tr-32/sl-1",
+   "flight": "st-gully/fl-1",
+   "step": "st-gully/fl-1/tr-32",
+   "index": 32,
+   "lengthMm": 1204,
+   "riseMm": 170,
+   "lapMm": 56,
+   "jointsMm": [
+    8
+   ],
+   "leftMm": 552,
+   "ends": [
+    "joint",
+    "walled"
+   ],
+   "corner": false,
+   "riserFacets": 1,
+   "triangles": [
+    62,
+    25
+   ],
+   "smallestAltitudeMm": [
+    1.7714,
+    4.5133
+   ],
+   "l1VsL0Mm": 7.78,
+   "wearErrorMm": [
+    0.573,
+    2.535
+   ],
+   "fails": [],
+   "L0": {
+    "front": 58,
+    "thin": 12,
+    "thinShare": 0.2069,
+    "medianAreaPx": 35.0,
+    "thinFaces": [
+     "ch:end-l|riser",
+     "ch:end-l|top",
+     "ch:riser|top",
+     "top"
+    ]
+   },
+   "L1": {
+    "front": 18,
+    "thin": 2,
+    "thinShare": 0.1111,
+    "medianAreaPx": 55.3,
+    "thinFaces": [
+     "top"
+    ]
+   }
+  },
+  {
+   "id": "st-gully/fl-1/tr-33/sl-0",
+   "flight": "st-gully/fl-1",
+   "step": "st-gully/fl-1/tr-33",
+   "index": 33,
+   "lengthMm": 1208,
+   "riseMm": 146,
+   "lapMm": 56,
+   "jointsMm": [
+    9
+   ],
+   "leftMm": -1756,
+   "ends": [
+    "walled",
+    "joint"
+   ],
+   "corner": false,
+   "riserFacets": 2,
+   "triangles": [
+    69,
+    34
+   ],
+   "smallestAltitudeMm": [
+    1.7221,
+    10.3935
+   ],
+   "l1VsL0Mm": 7.12,
+   "wearErrorMm": [
+    0.586,
+    1.284
+   ],
+   "fails": [],
+   "L0": {
+    "front": 63,
+    "thin": 15,
+    "thinShare": 0.2381,
+    "medianAreaPx": 33.5,
+    "thinFaces": [
+     "ch:end-r|riser",
+     "ch:end-r|riser:end-r|riser/facet-2",
+     "ch:end-r|top",
+     "ch:riser|top",
+     "top"
+    ]
+   },
+   "L1": {
+    "front": 25,
+    "thin": 2,
+    "thinShare": 0.08,
+    "medianAreaPx": 56.0,
+    "thinFaces": [
+     "top"
+    ]
+   }
+  },
+  {
+   "id": "st-gully/fl-1/tr-33/sl-1",
+   "flight": "st-gully/fl-1",
+   "step": "st-gully/fl-1/tr-33",
+   "index": 33,
+   "lengthMm": 2295,
+   "riseMm": 146,
+   "lapMm": 56,
+   "jointsMm": [
+    9
+   ],
+   "leftMm": -539,
+   "ends": [
+    "joint",
+    "walled"
+   ],
+   "corner": false,
+   "riserFacets": 1,
+   "triangles": [
+    121,
+    57
+   ],
+   "smallestAltitudeMm": [
+    2.24,
+    7.4658
+   ],
+   "l1VsL0Mm": 8.49,
+   "wearErrorMm": [
+    0.809,
+    5.437
+   ],
+   "fails": [],
+   "L0": {
+    "front": 117,
+    "thin": 9,
+    "thinShare": 0.0769,
+    "medianAreaPx": 188.6,
+    "thinFaces": [
+     "ch:end-l|riser",
+     "ch:end-l|top",
+     "ch:riser|top",
+     "top"
+    ]
+   },
+   "L1": {
+    "front": 50,
+    "thin": 2,
+    "thinShare": 0.04,
+    "medianAreaPx": 56.2,
+    "thinFaces": [
+     "top"
+    ]
+   }
+  },
+  {
+   "id": "st-gully/fl-1/tr-35/sl-0",
+   "flight": "st-gully/fl-1",
+   "step": "st-gully/fl-1/tr-35",
+   "index": 35,
+   "lengthMm": 2298,
+   "riseMm": 150,
+   "lapMm": 59,
+   "jointsMm": [
+    8
+   ],
+   "leftMm": -1756,
+   "ends": [
+    "walled",
+    "joint"
+   ],
+   "corner": true,
+   "riserFacets": 2,
+   "triangles": [
+    150,
+    64
+   ],
+   "smallestAltitudeMm": [
+    0.8687,
+    16.8643
+   ],
+   "l1VsL0Mm": 7.78,
+   "wearErrorMm": [
+    0.881,
+    5.437
+   ],
+   "fails": [],
+   "L0": {
+    "front": 144,
+    "thin": 22,
+    "thinShare": 0.1528,
+    "medianAreaPx": 66.7,
+    "thinFaces": [
+     "ch:chip:r|end-r",
+     "ch:chip:r|riser",
+     "ch:chip:r|top",
+     "ch:end-r|riser:end-r|riser/facet-2",
+     "ch:end-r|top",
+     "ch:riser|top",
+     "riser",
+     "top"
+    ]
+   },
+   "L1": {
+    "front": 57,
+    "thin": 1,
+    "thinShare": 0.0175,
+    "medianAreaPx": 43.8,
+    "thinFaces": [
+     "top"
+    ]
+   }
+  },
+  {
+   "id": "st-gully/fl-1/tr-35/sl-1",
+   "flight": "st-gully/fl-1",
+   "step": "st-gully/fl-1/tr-35",
+   "index": 35,
+   "lengthMm": 1206,
+   "riseMm": 150,
+   "lapMm": 59,
+   "jointsMm": [
+    8
+   ],
+   "leftMm": 550,
+   "ends": [
+    "joint",
+    "walled"
+   ],
+   "corner": false,
+   "riserFacets": 2,
+   "triangles": [
+    69,
+    30
+   ],
+   "smallestAltitudeMm": [
+    1.809,
+    4.143
+   ],
+   "l1VsL0Mm": 7.8,
+   "wearErrorMm": [
+    0.573,
+    2.535
+   ],
+   "fails": [],
+   "L0": {
+    "front": 63,
+    "thin": 13,
+    "thinShare": 0.2063,
+    "medianAreaPx": 32.6,
+    "thinFaces": [
+     "ch:end-l|riser",
+     "ch:end-l|top",
+     "ch:riser|top",
+     "top"
+    ]
+   },
+   "L1": {
+    "front": 21,
+    "thin": 2,
+    "thinShare": 0.0952,
+    "medianAreaPx": 54.8,
+    "thinFaces": [
+     "top"
+    ]
+   }
+  },
+  {
+   "id": "st-gully/fl-1/tr-36/sl-0",
+   "flight": "st-gully/fl-1",
+   "step": "st-gully/fl-1/tr-36",
+   "index": 36,
+   "lengthMm": 1204,
+   "riseMm": 174,
+   "lapMm": 48,
+   "jointsMm": [
+    8
+   ],
+   "leftMm": -1756,
+   "ends": [
+    "walled",
+    "joint"
+   ],
+   "corner": false,
+   "riserFacets": 1,
+   "triangles": [
+    61,
+    29
+   ],
+   "smallestAltitudeMm": [
+    1.8462,
+    10.1825
+   ],
+   "l1VsL0Mm": 7.07,
+   "wearErrorMm": [
+    0.586,
+    1.282
+   ],
+   "fails": [],
+   "L0": {
+    "front": 57,
+    "thin": 13,
+    "thinShare": 0.2281,
+    "medianAreaPx": 33.4,
+    "thinFaces": [
+     "ch:end-r|riser",
+     "ch:end-r|top",
+     "ch:riser|top",
+     "top"
+    ]
+   },
+   "L1": {
+    "front": 22,
+    "thin": 2,
+    "thinShare": 0.0909,
+    "medianAreaPx": 53.2,
+    "thinFaces": [
+     "top"
+    ]
+   }
+  },
+  {
+   "id": "st-gully/fl-1/tr-36/sl-1",
+   "flight": "st-gully/fl-1",
+   "step": "st-gully/fl-1/tr-36",
+   "index": 36,
+   "lengthMm": 2300,
+   "riseMm": 174,
+   "lapMm": 48,
+   "jointsMm": [
+    8
+   ],
+   "leftMm": -544,
+   "ends": [
+    "joint",
+    "walled"
+   ],
+   "corner": false,
+   "riserFacets": 2,
+   "triangles": [
+    133,
+    65
+   ],
+   "smallestAltitudeMm": [
+    2.1155,
+    7.0792
+   ],
+   "l1VsL0Mm": 8.53,
+   "wearErrorMm": [
+    0.807,
+    5.434
+   ],
+   "fails": [],
+   "L0": {
+    "front": 127,
+    "thin": 11,
+    "thinShare": 0.0866,
+    "medianAreaPx": 192.3,
+    "thinFaces": [
+     "ch:end-l|riser",
+     "ch:end-l|riser:end-l|riser/facet-2",
+     "ch:end-l|top",
+     "ch:riser|top",
+     "top"
+    ]
+   },
+   "L1": {
+    "front": 56,
+    "thin": 2,
+    "thinShare": 0.0357,
+    "medianAreaPx": 56.1,
+    "thinFaces": [
+     "top"
+    ]
+   }
+  },
+  {
+   "id": "st-gully/fl-1/tr-37/sl-0",
+   "flight": "st-gully/fl-1",
+   "step": "st-gully/fl-1/tr-37",
+   "index": 37,
+   "lengthMm": 2293,
+   "riseMm": 163,
+   "lapMm": 45,
+   "jointsMm": [
+    4
+   ],
+   "leftMm": -1756,
+   "ends": [
+    "walled",
+    "joint"
+   ],
+   "corner": true,
+   "riserFacets": 2,
+   "triangles": [
+    139,
+    68
+   ],
+   "smallestAltitudeMm": [
+    3.9483,
+    17.0251
+   ],
+   "l1VsL0Mm": 7.86,
+   "wearErrorMm": [
+    0.807,
+    5.437
+   ],
+   "fails": [],
+   "L0": {
+    "front": 131,
+    "thin": 11,
+    "thinShare": 0.084,
+    "medianAreaPx": 193.3,
+    "thinFaces": [
+     "ch:end-r|riser",
+     "ch:end-r|riser:end-r|riser/facet-2",
+     "ch:end-r|top",
+     "ch:riser|top",
+     "chip:r",
+     "top"
+    ]
+   },
+   "L1": {
+    "front": 59,
+    "thin": 1,
+    "thinShare": 0.0169,
+    "medianAreaPx": 56.3,
+    "thinFaces": [
+     "top"
+    ]
+   }
+  },
+  {
+   "id": "st-gully/fl-1/tr-37/sl-1",
+   "flight": "st-gully/fl-1",
+   "step": "st-gully/fl-1/tr-37",
+   "index": 37,
+   "lengthMm": 1215,
+   "riseMm": 163,
+   "lapMm": 45,
+   "jointsMm": [
+    4
+   ],
+   "leftMm": 541,
+   "ends": [
+    "joint",
+    "walled"
+   ],
+   "corner": false,
+   "riserFacets": 1,
+   "triangles": [
+    62,
+    23
+   ],
+   "smallestAltitudeMm": [
+    1.4955,
+    3.6274
+   ],
+   "l1VsL0Mm": 7.78,
+   "wearErrorMm": [
+    0.569,
+    2.533
+   ],
+   "fails": [],
+   "L0": {
+    "front": 58,
+    "thin": 12,
+    "thinShare": 0.2069,
+    "medianAreaPx": 33.1,
+    "thinFaces": [
+     "ch:end-l|riser",
+     "ch:end-l|top",
+     "ch:riser|top",
+     "top"
+    ]
+   },
+   "L1": {
+    "front": 17,
+    "thin": 1,
+    "thinShare": 0.0588,
+    "medianAreaPx": 55.9,
+    "thinFaces": [
+     "top"
+    ]
+   }
+  },
+  {
+   "id": "st-gully/fl-1/tr-38/sl-0",
+   "flight": "st-gully/fl-1",
+   "step": "st-gully/fl-1/tr-38",
+   "index": 38,
+   "lengthMm": 1210,
+   "riseMm": 165,
+   "lapMm": 60,
+   "jointsMm": [
+    4
+   ],
+   "leftMm": -1756,
+   "ends": [
+    "walled",
+    "joint"
+   ],
+   "corner": false,
+   "riserFacets": 1,
+   "triangles": [
+    61,
+    29
+   ],
+   "smallestAltitudeMm": [
+    1.5519,
+    11.1504
+   ],
+   "l1VsL0Mm": 8.49,
+   "wearErrorMm": [
+    0.696,
+    1.285
+   ],
+   "fails": [],
+   "L0": {
+    "front": 57,
+    "thin": 11,
+    "thinShare": 0.193,
+    "medianAreaPx": 34.7,
+    "thinFaces": [
+     "ch:end-r|riser",
+     "ch:end-r|top",
+     "ch:riser|top",
+     "top"
+    ]
+   },
+   "L1": {
+    "front": 22,
+    "thin": 2,
+    "thinShare": 0.0909,
+    "medianAreaPx": 54.0,
+    "thinFaces": [
+     "top"
+    ]
+   }
+  },
+  {
+   "id": "st-gully/fl-1/tr-38/sl-1",
+   "flight": "st-gully/fl-1",
+   "step": "st-gully/fl-1/tr-38",
+   "index": 38,
+   "lengthMm": 2298,
+   "riseMm": 165,
+   "lapMm": 60,
+   "jointsMm": [
+    4
+   ],
+   "leftMm": -542,
+   "ends": [
+    "joint",
+    "walled"
+   ],
+   "corner": false,
+   "riserFacets": 2,
+   "triangles": [
+    138,
+    65
+   ],
+   "smallestAltitudeMm": [
+    2.1678,
+    7.2342
+   ],
+   "l1VsL0Mm": 8.51,
+   "wearErrorMm": [
+    0.807,
+    5.437
+   ],
+   "fails": [],
+   "L0": {
+    "front": 132,
+    "thin": 11,
+    "thinShare": 0.0833,
+    "medianAreaPx": 102.8,
+    "thinFaces": [
+     "ch:end-l|riser",
+     "ch:end-l|riser:end-l|riser/facet-2",
+     "ch:end-l|top",
+     "ch:riser|top",
+     "top"
+    ]
+   },
+   "L1": {
+    "front": 56,
+    "thin": 2,
+    "thinShare": 0.0357,
+    "medianAreaPx": 47.8,
+    "thinFaces": [
+     "top"
+    ]
+   }
+  },
+  {
+   "id": "st-gully/fl-1/tr-39/sl-0",
+   "flight": "st-gully/fl-1",
+   "step": "st-gully/fl-1/tr-39",
+   "index": 39,
+   "lengthMm": 2297,
+   "riseMm": 182,
+   "lapMm": 45,
+   "jointsMm": [
+    6
+   ],
+   "leftMm": -1756,
+   "ends": [
+    "walled",
+    "joint"
+   ],
+   "corner": false,
+   "riserFacets": 1,
+   "triangles": [
+    120,
+    53
+   ],
+   "smallestAltitudeMm": [
+    2.2532,
+    15.094
+   ],
+   "l1VsL0Mm": 7.78,
+   "wearErrorMm": [
+    0.807,
+    5.434
+   ],
+   "fails": [],
+   "L0": {
+    "front": 116,
+    "thin": 11,
+    "thinShare": 0.0948,
+    "medianAreaPx": 191.9,
+    "thinFaces": [
+     "ch:end-r|riser",
+     "ch:end-r|top",
+     "ch:riser|top",
+     "top"
+    ]
+   },
+   "L1": {
+    "front": 48,
+    "thin": 0,
+    "thinShare": 0.0,
+    "medianAreaPx": 56.2,
+    "thinFaces": []
+   }
+  },
+  {
+   "id": "st-gully/fl-1/tr-39/sl-1",
+   "flight": "st-gully/fl-1",
+   "step": "st-gully/fl-1/tr-39",
+   "index": 39,
+   "lengthMm": 1209,
+   "riseMm": 182,
+   "lapMm": 45,
+   "jointsMm": [
+    6
+   ],
+   "leftMm": 547,
+   "ends": [
+    "joint",
+    "walled"
+   ],
+   "corner": false,
+   "riserFacets": 2,
+   "triangles": [
+    69,
+    30
+   ],
+   "smallestAltitudeMm": [
+    1.6486,
+    3.538
+   ],
+   "l1VsL0Mm": 7.09,
+   "wearErrorMm": [
+    0.589,
+    2.532
+   ],
+   "fails": [],
+   "L0": {
+    "front": 63,
+    "thin": 15,
+    "thinShare": 0.2381,
+    "medianAreaPx": 33.3,
+    "thinFaces": [
+     "ch:end-l|riser",
+     "ch:end-l|riser:end-l|riser/facet-2",
+     "ch:end-l|top",
+     "ch:riser|top",
+     "top"
+    ]
+   },
+   "L1": {
+    "front": 21,
+    "thin": 2,
+    "thinShare": 0.0952,
+    "medianAreaPx": 54.5,
+    "thinFaces": [
+     "top"
+    ]
+   }
+  },
+  {
+   "id": "st-gully/fl-1/tr-40/sl-0",
+   "flight": "st-gully/fl-1",
+   "step": "st-gully/fl-1/tr-40",
+   "index": 40,
+   "lengthMm": 1210,
+   "riseMm": 150,
+   "lapMm": 55,
+   "jointsMm": [
+    4
+   ],
+   "leftMm": -1756,
+   "ends": [
+    "walled",
+    "joint"
+   ],
+   "corner": false,
+   "riserFacets": 1,
+   "triangles": [
+    61,
+    29
+   ],
+   "smallestAltitudeMm": [
+    1.5608,
+    10.4844
+   ],
+   "l1VsL0Mm": 7.07,
+   "wearErrorMm": [
+    0.586,
+    1.285
+   ],
+   "fails": [],
+   "L0": {
+    "front": 57,
+    "thin": 13,
+    "thinShare": 0.2281,
+    "medianAreaPx": 33.2,
+    "thinFaces": [
+     "ch:end-r|riser",
+     "ch:end-r|top",
+     "ch:riser|top",
+     "top"
+    ]
+   },
+   "L1": {
+    "front": 22,
+    "thin": 2,
+    "thinShare": 0.0909,
+    "medianAreaPx": 51.9,
+    "thinFaces": [
+     "top"
+    ]
+   }
+  },
+  {
+   "id": "st-gully/fl-1/tr-40/sl-1",
+   "flight": "st-gully/fl-1",
+   "step": "st-gully/fl-1/tr-40",
+   "index": 40,
+   "lengthMm": 2298,
+   "riseMm": 150,
+   "lapMm": 55,
+   "jointsMm": [
+    4
+   ],
+   "leftMm": -542,
+   "ends": [
+    "joint",
+    "walled"
+   ],
+   "corner": true,
+   "riserFacets": 1,
+   "triangles": [
+    136,
+    63
+   ],
+   "smallestAltitudeMm": [
+    1.7711,
+    10.0316
+   ],
+   "l1VsL0Mm": 7.07,
+   "wearErrorMm": [
+    0.807,
+    5.437
+   ],
+   "fails": [],
+   "L0": {
+    "front": 130,
+    "thin": 21,
+    "thinShare": 0.1615,
+    "medianAreaPx": 63.1,
+    "thinFaces": [
+     "ch:chip:l|end-l",
+     "ch:chip:l|riser",
+     "ch:chip:l|top",
+     "ch:end-l|riser",
+     "ch:end-l|top",
+     "ch:riser|top",
+     "chip:l",
+     "top"
+    ]
+   },
+   "L1": {
+    "front": 55,
+    "thin": 5,
+    "thinShare": 0.0909,
+    "medianAreaPx": 55.3,
+    "thinFaces": [
+     "chip:l",
+     "riser",
+     "top"
+    ]
+   }
+  },
+  {
+   "id": "st-gully/fl-1/tr-42/sl-0",
+   "flight": "st-gully/fl-1",
+   "step": "st-gully/fl-1/tr-42",
+   "index": 42,
+   "lengthMm": 2299,
+   "riseMm": 183,
+   "lapMm": 44,
+   "jointsMm": [
+    8
+   ],
+   "leftMm": -1756,
+   "ends": [
+    "walled",
+    "joint"
+   ],
+   "corner": false,
+   "riserFacets": 2,
+   "triangles": [
+    135,
+    63
+   ],
+   "smallestAltitudeMm": [
+    2.1191,
+    15.162
+   ],
+   "l1VsL0Mm": 8.52,
+   "wearErrorMm": [
+    0.807,
+    5.434
+   ],
+   "fails": [],
+   "L0": {
+    "front": 129,
+    "thin": 12,
+    "thinShare": 0.093,
+    "medianAreaPx": 192.1,
+    "thinFaces": [
+     "ch:end-r|riser",
+     "ch:end-r|riser:end-r|riser/facet-2",
+     "ch:end-r|top",
+     "ch:riser|top",
+     "top"
+    ]
+   },
+   "L1": {
+    "front": 56,
+    "thin": 0,
+    "thinShare": 0.0,
+    "medianAreaPx": 56.7,
+    "thinFaces": []
+   }
+  },
+  {
+   "id": "st-gully/fl-1/tr-42/sl-1",
+   "flight": "st-gully/fl-1",
+   "step": "st-gully/fl-1/tr-42",
+   "index": 42,
+   "lengthMm": 1205,
+   "riseMm": 183,
+   "lapMm": 44,
+   "jointsMm": [
+    8
+   ],
+   "leftMm": 551,
+   "ends": [
+    "joint",
+    "walled"
+   ],
+   "corner": false,
+   "riserFacets": 1,
+   "triangles": [
+    62,
+    25
+   ],
+   "smallestAltitudeMm": [
+    1.4098,
+    4.5993
+   ],
+   "l1VsL0Mm": 8.49,
+   "wearErrorMm": [
+    0.561,
+    2.532
+   ],
+   "fails": [],
+   "L0": {
+    "front": 58,
+    "thin": 11,
+    "thinShare": 0.1897,
+    "medianAreaPx": 36.5,
+    "thinFaces": [
+     "ch:end-l|riser",
+     "ch:end-l|top",
+     "ch:riser|top",
+     "top"
+    ]
+   },
+   "L1": {
+    "front": 18,
+    "thin": 2,
+    "thinShare": 0.1111,
+    "medianAreaPx": 55.0,
+    "thinFaces": [
+     "top"
+    ]
+   }
+  },
+  {
+   "id": "st-gully/fl-1/tr-43/sl-0",
+   "flight": "st-gully/fl-1",
+   "step": "st-gully/fl-1/tr-43",
+   "index": 43,
+   "lengthMm": 1205,
+   "riseMm": 156,
+   "lapMm": 60,
+   "jointsMm": [
+    8
+   ],
+   "leftMm": -1756,
+   "ends": [
+    "walled",
+    "joint"
+   ],
+   "corner": false,
+   "riserFacets": 1,
+   "triangles": [
+    61,
+    29
+   ],
+   "smallestAltitudeMm": [
+    1.4416,
+    10.9026
+   ],
+   "l1VsL0Mm": 8.49,
+   "wearErrorMm": [
+    0.56,
+    1.283
+   ],
+   "fails": [],
+   "L0": {
+    "front": 57,
+    "thin": 11,
+    "thinShare": 0.193,
+    "medianAreaPx": 36.5,
+    "thinFaces": [
+     "ch:end-r|riser",
+     "ch:end-r|top",
+     "ch:riser|top",
+     "top"
+    ]
+   },
+   "L1": {
+    "front": 22,
+    "thin": 2,
+    "thinShare": 0.0909,
+    "medianAreaPx": 51.3,
+    "thinFaces": [
+     "top"
+    ]
+   }
+  },
+  {
+   "id": "st-gully/fl-1/tr-43/sl-1",
+   "flight": "st-gully/fl-1",
+   "step": "st-gully/fl-1/tr-43",
+   "index": 43,
+   "lengthMm": 2299,
+   "riseMm": 156,
+   "lapMm": 60,
+   "jointsMm": [
+    8
+   ],
+   "leftMm": -543,
+   "ends": [
+    "joint",
+    "walled"
+   ],
+   "corner": true,
+   "riserFacets": 1,
+   "triangles": [
+    135,
+    63
+   ],
+   "smallestAltitudeMm": [
+    1.2554,
+    4.8901
+   ],
+   "l1VsL0Mm": 8.49,
+   "wearErrorMm": [
+    0.809,
+    5.437
+   ],
+   "fails": [],
+   "L0": {
+    "front": 129,
+    "thin": 15,
+    "thinShare": 0.1163,
+    "medianAreaPx": 63.1,
+    "thinFaces": [
+     "ch:chip:l|end-l",
+     "ch:chip:l|riser",
+     "ch:chip:l|top",
+     "ch:end-l|riser",
+     "ch:end-l|top",
+     "ch:riser|top",
+     "chip:l",
+     "top"
+    ]
+   },
+   "L1": {
+    "front": 55,
+    "thin": 5,
+    "thinShare": 0.0909,
+    "medianAreaPx": 55.9,
+    "thinFaces": [
+     "chip:l",
+     "riser",
+     "top"
+    ]
+   }
+  },
+  {
+   "id": "st-gully/fl-1/tr-44/sl-0",
+   "flight": "st-gully/fl-1",
+   "step": "st-gully/fl-1/tr-44",
+   "index": 44,
+   "lengthMm": 2292,
+   "riseMm": 166,
+   "lapMm": 53,
+   "jointsMm": [
+    4
+   ],
+   "leftMm": -1756,
+   "ends": [
+    "walled",
+    "joint"
+   ],
+   "corner": false,
+   "riserFacets": 1,
+   "triangles": [
+    121,
+    53
+   ],
+   "smallestAltitudeMm": [
+    2.2867,
+    14.9233
+   ],
+   "l1VsL0Mm": 8.49,
+   "wearErrorMm": [
+    0.807,
+    5.437
+   ],
+   "fails": [],
+   "L0": {
+    "front": 117,
+    "thin": 10,
+    "thinShare": 0.0855,
+    "medianAreaPx": 188.2,
+    "thinFaces": [
+     "ch:end-r|riser",
+     "ch:end-r|top",
+     "ch:riser|top",
+     "top"
+    ]
+   },
+   "L1": {
+    "front": 48,
+    "thin": 0,
+    "thinShare": 0.0,
+    "medianAreaPx": 56.5,
+    "thinFaces": []
+   }
+  },
+  {
+   "id": "st-gully/fl-1/tr-44/sl-1",
+   "flight": "st-gully/fl-1",
+   "step": "st-gully/fl-1/tr-44",
+   "index": 44,
+   "lengthMm": 1216,
+   "riseMm": 166,
+   "lapMm": 53,
+   "jointsMm": [
+    4
+   ],
+   "leftMm": 540,
+   "ends": [
+    "joint",
+    "walled"
+   ],
+   "corner": true,
+   "riserFacets": 2,
+   "triangles": [
+    82,
+    30
+   ],
+   "smallestAltitudeMm": [
+    3.6704,
+    17.6044
+   ],
+   "l1VsL0Mm": 8.49,
+   "wearErrorMm": [
+    0.678,
+    2.535
+   ],
+   "fails": [],
+   "L0": {
+    "front": 76,
+    "thin": 20,
+    "thinShare": 0.2632,
+    "medianAreaPx": 30.5,
+    "thinFaces": [
+     "ch:chip:l|end-l",
+     "ch:chip:l|riser",
+     "ch:chip:l|top",
+     "ch:end-l|riser:end-l|riser/facet-2",
+     "ch:end-l|top",
+     "ch:riser|top",
+     "riser",
+     "top"
+    ]
+   },
+   "L1": {
+    "front": 23,
+    "thin": 3,
+    "thinShare": 0.1304,
+    "medianAreaPx": 54.7,
+    "thinFaces": [
+     "top"
+    ]
+   }
+  },
+  {
+   "id": "st-gully/fl-1/tr-45/sl-0",
+   "flight": "st-gully/fl-1",
+   "step": "st-gully/fl-1/tr-45",
+   "index": 45,
+   "lengthMm": 1209,
+   "riseMm": 173,
+   "lapMm": 60,
+   "jointsMm": [
+    10
+   ],
+   "leftMm": -1756,
+   "ends": [
+    "walled",
+    "joint"
+   ],
+   "corner": true,
+   "riserFacets": 1,
+   "triangles": [
+    65,
+    32
+   ],
+   "smallestAltitudeMm": [
+    2.158,
+    8.8589
+   ],
+   "l1VsL0Mm": 7.07,
+   "wearErrorMm": [
+    0.41,
+    1.281
+   ],
+   "fails": [],
+   "L0": {
+    "front": 59,
+    "thin": 12,
+    "thinShare": 0.2034,
+    "medianAreaPx": 33.4,
+    "thinFaces": [
+     "ch:end-r|riser",
+     "ch:end-r|top",
+     "ch:riser|top",
+     "chip:r",
+     "top"
+    ]
+   },
+   "L1": {
+    "front": 24,
+    "thin": 3,
+    "thinShare": 0.125,
+    "medianAreaPx": 39.4,
+    "thinFaces": [
+     "chip:r",
+     "top"
+    ]
+   }
+  },
+  {
+   "id": "st-gully/fl-1/tr-45/sl-1",
+   "flight": "st-gully/fl-1",
+   "step": "st-gully/fl-1/tr-45",
+   "index": 45,
+   "lengthMm": 2293,
+   "riseMm": 173,
+   "lapMm": 60,
+   "jointsMm": [
+    10
+   ],
+   "leftMm": -537,
+   "ends": [
+    "joint",
+    "walled"
+   ],
+   "corner": true,
+   "riserFacets": 1,
+   "triangles": [
+    124,
+    63
+   ],
+   "smallestAltitudeMm": [
+    2.4142,
+    6.6477
+   ],
+   "l1VsL0Mm": 7.07,
+   "wearErrorMm": [
+    0.81,
+    5.434
+   ],
+   "fails": [],
+   "L0": {
+    "front": 118,
+    "thin": 8,
+    "thinShare": 0.0678,
+    "medianAreaPx": 187.6,
+    "thinFaces": [
+     "ch:end-l|riser",
+     "ch:end-l|top",
+     "ch:riser|top",
+     "chip:l",
+     "top"
+    ]
+   },
+   "L1": {
+    "front": 55,
+    "thin": 4,
+    "thinShare": 0.0727,
+    "medianAreaPx": 55.6,
+    "thinFaces": [
+     "riser",
+     "top"
+    ]
+   }
+  },
+  {
+   "id": "st-gully/fl-1/tr-46/sl-0",
+   "flight": "st-gully/fl-1",
+   "step": "st-gully/fl-1/tr-46",
+   "index": 46,
+   "lengthMm": 2292,
+   "riseMm": 171,
+   "lapMm": 51,
+   "jointsMm": [
+    9
+   ],
+   "leftMm": -1756,
+   "ends": [
+    "walled",
+    "joint"
+   ],
+   "corner": false,
+   "riserFacets": 1,
+   "triangles": [
+    120,
+    53
+   ],
+   "smallestAltitudeMm": [
+    1.9268,
+    14.9233
+   ],
+   "l1VsL0Mm": 7.07,
+   "wearErrorMm": [
+    0.807,
+    5.437
+   ],
+   "fails": [],
+   "L0": {
+    "front": 116,
+    "thin": 11,
+    "thinShare": 0.0948,
+    "medianAreaPx": 188.4,
+    "thinFaces": [
+     "ch:end-r|riser",
+     "ch:end-r|top",
+     "ch:riser|top",
+     "top"
+    ]
+   },
+   "L1": {
+    "front": 48,
+    "thin": 0,
+    "thinShare": 0.0,
+    "medianAreaPx": 56.5,
+    "thinFaces": []
+   }
+  },
+  {
+   "id": "st-gully/fl-1/tr-46/sl-1",
+   "flight": "st-gully/fl-1",
+   "step": "st-gully/fl-1/tr-46",
+   "index": 46,
+   "lengthMm": 1211,
+   "riseMm": 171,
+   "lapMm": 51,
+   "jointsMm": [
+    9
+   ],
+   "leftMm": 545,
+   "ends": [
+    "joint",
+    "walled"
+   ],
+   "corner": false,
+   "riserFacets": 2,
+   "triangles": [
+    69,
+    30
+   ],
+   "smallestAltitudeMm": [
+    1.4875,
+    3.1276
+   ],
+   "l1VsL0Mm": 7.08,
+   "wearErrorMm": [
+    0.589,
+    2.533
+   ],
+   "fails": [],
+   "L0": {
+    "front": 63,
+    "thin": 15,
+    "thinShare": 0.2381,
+    "medianAreaPx": 33.2,
+    "thinFaces": [
+     "ch:end-l|riser",
+     "ch:end-l|riser:end-l|riser/facet-2",
+     "ch:end-l|top",
+     "ch:riser|top",
+     "top"
+    ]
+   },
+   "L1": {
+    "front": 21,
+    "thin": 2,
+    "thinShare": 0.0952,
+    "medianAreaPx": 54.7,
+    "thinFaces": [
+     "top"
+    ]
+   }
+  }
+ ]
+}

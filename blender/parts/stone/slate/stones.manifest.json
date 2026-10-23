@@ -1,0 +1,53 @@
+{
+ "step.fbx": {
+  "tool": "mesh_hash 1",
+  "hash": "df9d7a1ae9f8d7ab",
+  "triangles": 213,
+  "meshes": {
+   "step_L0": {
+    "hash": "04e2cb4d109d55e1",
+    "vertices": 89,
+    "corners": 432,
+    "triangles": 144,
+    "channels": {
+     "edges": "eacf54187fd64510",
+     "indices": "dead59c8be96ace5",
+     "normals": "365581370dfbee9b",
+     "other": "cb7eb6a0428adf70",
+     "positions": "edc31748d1cce363",
+     "uv0": "ec080669dcbb2eec",
+     "uv1": "70020f5ba8f0a7f8",
+     "uv2": "0514053383d34718",
+     "uv3": "ac4d9f77754349aa",
+     "uv4": "31139922e5e9e3b3",
+     "uv5": "0e0a8a6108add35f",
+     "uv6": "5b8acf69c14f747a",
+     "uv7": "db2fe92084157b5a",
+     "transform": "e3b0c44298fc1c14"
+    }
+   },
+   "step_L1": {
+    "hash": "c10cd38df04478a1",
+    "vertices": 45,
+    "corners": 207,
+    "triangles": 69,
+    "channels": {
+     "edges": "34705bd0b49259d9",
+     "indices": "a177e66235e45ca3",
+     "normals": "2e5840f42b1f3f87",
+     "other": "cb7eb6a0428adf70",
+     "positions": "37d41145231ab147",
+     "uv0": "9d75caff346abdc1",
+     "uv1": "d68731e51c1fbf04",
+     "uv2": "8db9845bf4a4d502",
+     "uv3": "444cbc4d7b09a1b2",
+     "uv4": "8431f8e59694dbaf",
+     "uv5": "c1a43c9f1997593d",
+     "uv6": "0fd05edf43ba70a9",
+     "uv7": "58b85ea103c858fc",
+     "transform": "e3b0c44298fc1c14"
+    }
+   }
+  }
+ }
+}

@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 2,
+  "part": "stone/step",
+  "version": 1,
+  "describes": "A block step of split slate laid on its bed (port step 2b, R2a; the design's SN3 and SN4): a rigid convex block the stair's rise high, its top the bedding plane, its front and any joint or open end split faces of at most three planar facets, every exposed arris chamfered at L0, its tread worn by the record's feet. Fitted to its step's facts: its length between its ends (joint, walled or open), the rise, the going and the lap.",
+  "madeAs": "fitted",
+  "era": { "first": 1874, "last": null },
+  "sizes": { "w": [700, 2300], "h": [138, 192], "d": [310, 460] },
+  "fits": ["fitted"],
+  "pivot": "bed-front-left",
+  "sockets": [],
+  "removalMark": null,
+  "levels": {
+    "l0": { "errorMm": 1, "triangles": 300, "shadow": "none", "collision": "proxy" },
+    "l1": { "errorMm": 11, "triangles": 120, "shadow": "self", "collision": "proxy" },
+    "l2": { "errorMm": 25, "triangles": 0, "shadow": "proxy", "collision": "proxy" },
+    "l3": { "errorMm": 100, "triangles": 0, "shadow": "proxy", "collision": "proxy" },
+    "l4": { "errorMm": 250, "triangles": 0, "shadow": "proxy", "collision": "proxy" }
+  },
+  "motion": [{ "element": "stone", "class": "still", "deform": "none" }],
+  "intrinsicChannels": ["face-kind", "edge-distance"],
+  "marks": [{ "name": "face-patch", "smallestFeatureMm": 2 }],
+  "shaderFamily": "stone",
+  "materials": ["slate"],
+  "function": { "python": "blender/parts/stone/slate/stones.py:step", "csharp": null },
+  "lifecycle": { "state": "draft" },
+  "note": "Sizes from the stair kind (kinds/stair.json) and R1's walling table (packs/stavanger-1989/walling.json, the dry-split-1874 working's steps): w the finish's slab widths (other: 700 to 2300), h the block's stone rises (150 to 180) with the rise error (12), d the going's range (270 to 400) with the steps' lap (40 to 60). Levels: the design's SN8 budgets (300 and 120); L0's error is the wear grid's tolerance; L1's is L1 drawn without L0's chamfers: 8.5 mm on an arris at a 12 mm leg (its sagitta), 10.4 mm at a corner where three chamfers meet (half the leg times root three), rounded up to 11, above the design's 'about 6 mm'; L2 to L4 are the chunk's (the port's step 5), so none is made here. The part's own numbers (chamfer, facets, laminae, chips, skirt, wear grid, patch sets) are stones.py's PARAMS until this schema takes a params object (reviews/lt1/port/2b/r2a/stones/blender.md)."
+}
