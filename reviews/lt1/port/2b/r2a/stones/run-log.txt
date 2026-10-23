@@ -331,3 +331,30 @@
   - a soft dark smudge at the left end's joint in sun, at 5 m, 12 m and eye12;
   - nothing beside the right end in the context;
   - the faces are flat and uniform, though the top shows some mottling in sun.
+
+## 2026-10-23, the step again, with its context
+
+- **Whether its context changes anything in the step's own mask.** A cheap check came first: grey L0 and L1 at 1 m,
+  5 m and eye5, at the foot in drizzle and at the sun stand in low sun, against frames/step-alone. It does:
+  - **Hidden:** the context hides 9 to 14% of the step's mask at 5 m and eye5 (its ends, behind the cheek walls, and
+    the back of its tread top, under the step above), and 1.6% at 1 m.
+  - **Shaded, in sun:** the context's shadows cover 12 to 21% of what remains, by up to about 50 L* (mean -4.6 to
+    -7.0, p99 50). The shadow is the stepped one of the flight above, across the riser.
+  - **Shaded, in drizzle:** a mean of -0.3 to -0.4 L* and a p99 of 2.4 to 4.8.
+
+  The lift confounds this a little. The step and its context are lifted 0.190 m, its bed at 3.187 against 2.997
+  alone, so that the step below sits on the ground.
+- **So the lean set ran again** with the context: the foot in three lights, the sun stand in low sun, and the dolly.
+  It replaces the step's earlier frames as the judging set; those stay in frames/step-alone as the control.
+- **Did the earlier frames show an open end?** No. The earlier frames showed none, and the open faces seen with the
+  context are 0 px at every view and level, at both stands. Alone, the Blender builder's ray check found rays through
+  the uncovered top past the cover: 2,893 px at 1 m at L0. With the context it finds 0.
+- **L1 against L0, at the switch** (switch p99 against motion p99):
+  - **Sun stand, grey:** 6.2 against 2.8 at 8 m, 5.7 against 2.1 at 10 m and 5.9 against 1.8 at 12 m. Alone it was
+    5.9, 5.2 and 5.3.
+  - **Sun stand, material:** 4.5 against 3.5 at 8 m, 4.5 against 3.2 at 10 m and 3.6 against 2.2 at 12 m. Alone it
+    was 3.1, 2.8 and 2.5.
+  - **The foot:** within about 1 L* of the motion in every light.
+
+  The context adds about 1 L* in sun.
+- **The mesh as imported:** L0 has 144 triangles and 432 vertices; L1 has 69 and 207.

@@ -1,4 +1,4 @@
-LT1R2a.Stones, 2026-10-23 05:16: step in 1600-low-sun, the sun stand; looks grey,material; configs L0,L1,L1-noline,L0-flat,L1-noline-nomotes; views 1,5,8,10,12,eye5,eye12; the trial file /private/tmp/claude-501/-Users-oystein-code-Overstory/2e7c5731-4a7e-4b7c-8cda-584be3fc6804/scratchpad/split/step-split.fbx in the installed one's place
+LT1R2a.Stones, 2026-10-23 08:27: step in 1600-low-sun, the sun stand; looks grey,material; configs L0,L1,L1-noline; views 1,5,8,10,12,eye5,eye12
 light 1600-low-sun: fog density 0.0006, max opacity 0.85, mid at 300 m, far at 2500 m, haze 0.0025; OS_HAZE_OFF off: the air is on; lamps off
 patch array: 14 slices 1024 x 1024, RGBAHalf, 11 mips, 0.9765625 patches a metre (1024 texels at 1 mm), value = 0.75 + 0.5 v
    0 split-0            mean value 1.0003, mean normal (0.0000, 0.0001, 0.9989) length 0.9989; normal ea0f8971cb13, value 63049a750adf as the manifest
@@ -16,11 +16,10 @@ patch array: 14 slices 1024 x 1024, RGBAHalf, 11 mips, 0.9765625 patches a metre
   12 split-2-nominor    mean value 0.9938, mean normal (0.0000, 0.0000, 0.9992) length 0.9992; normal 49422fd24923, value 91f26fa542dd as the manifest
   13 split-3-nominor    mean value 1.0003, mean normal (0.0000, 0.0000, 0.9999) length 0.9999; normal fdc8210875ce, value 59097f723904 as the manifest
   shifts: facets2 [6, 6, 6, 6, 0, 0, 0, 0]; nominor [10, 10, 10, 10, 0, 0, 0, 0]; as-built [0, 0, 0, 0, 0, 0, 0, 0]
-  built in 2.2 s
+  built in 2.3 s
 materials: copies of Assets/Art/Stone/M_Stone_slate.mat with OS_PATCHES (True), _Grey 0 and 1; never saved
-stone step: Assets/Experiments/LT1/R2a/Generated/test/step.fbx (md5 4b41a2a475ac), its sidecar (md5 1a43436760cd), the definition packs/stavanger-1989/parts/stone/step.json (md5 1dd9b5ee6536)
-  importer: compression Off, normals Import, tangents CalculateMikk, weld True, optimise polygons True vertices True, readable False, axis conversion baked False, scale 1 (file scale True, 1), lightmap UVs False, swap UVs False, keep quads False
-  importer: weld set off on this generated file and the file imported again (its .meta is git-ignored)
+stone step: Assets/Experiments/LT1/R2a/Generated/step.fbx (md5 ebbfaa247416), its sidecar (md5 7206e014cb25), the definition packs/stavanger-1989/parts/stone/step.json (md5 1dd9b5ee6536)
+  importer: compression Off, normals Import, tangents CalculateMikk, weld False, optimise polygons True vertices True, readable False, axis conversion baked False, scale 1 (file scale True, 1), lightmap UVs False, swap UVs False, keep quads False
   object step_L0: mesh step_L0, local position (0.00, 0.00, 0.00), rotation (0.00, 180.00, 0.00), scale (1.00, 1.00, 1.00) (the rotation and position taken off: the mesh is in Unity's order)
   object step_L1: mesh step_L1, local position (0.00, 0.00, 0.00), rotation (0.00, 180.00, 0.00), scale (1.00, 1.00, 1.00) (the rotation and position taken off: the mesh is in Unity's order)
   the levels by the sidecar's objects: L0 step_L0 (step_L0), L1 step_L1 (step_L1)
@@ -28,7 +27,7 @@ stone step: Assets/Experiments/LT1/R2a/Generated/test/step.fbx (md5 4b41a2a475ac
     edges: 232; open 32 (the undrawn faces' borders); non-manifold 0; creases (turn of 20 degrees or more) 39, their turns in degrees to 5: 30: 2, 35: 1, 40: 4, 45: 17, 50: 1, 55: 2, 65: 1, 75: 9, 80: 2
     kinds: top 77 (0.7341 m2), chamfer 19 (0.0258 m2), split 48 (0.4294 m2)
     slices by kind: chamfer 7: 19, split 2: 7, split 3: 41, top 4: 77; chamfer codes 12 mm: 144; 0 triangles masked
-    history: years/200 0.575, seed 0.7921811, one for the stone; normals: the worst 0.000 degrees off the face; sky (UV3) the worst 7.7E-007 off 0.5 + 0.5 n_up; edge distances the worst 0.00012 mm off the corners' heights
+    history: years/200 0.575, seed 0.7921811, one for the stone; normals: the worst 0.000 degrees off the face; sky (UV3) the worst 8.8E-007 off 0.5 + 0.5 n_up; edge distances the worst 0.00012 mm off the corners' heights
     triangles 144 against the sidecar's 144
     the stone's chamfer 12 mm (L0's code), the sidecar's 12
   L1 (step_L1): 69 triangles, 207 vertices, UV dimensions 2 2 2 2 2 2 2 2, normals yes
@@ -40,17 +39,39 @@ stone step: Assets/Experiments/LT1/R2a/Generated/test/step.fbx (md5 4b41a2a475ac
   bounds: L1 (0.0000, -0.0300, 0.0000) to (2.2950, 0.1660, 0.3270), L0 (0.0000, -0.0300, 0.0000) to (2.2950, 0.1660, 0.3270) (pivot 'bed-front-left')
   L0's bounds against the sidecar's (0.0000, -0.0300, 0.0000) to (2.2950, 0.1660, 0.3270): 0.000 mm off
   L1's bounds against the sidecar's (0.0000, -0.0300, 0.0000) to (2.2950, 0.1660, 0.3270): 0.000 mm off
-  the faces' mean normals: the top (-0.002, 1.000, -0.019), the split faces (-0.025, -0.134, -0.991)
+  L0's faces: the drawn faces' mean (1144.5, 126.7, 107.3) mm lies behind every face's plane but the tread's top's, each of whose triangles faces up, 95.1 mm behind the nearest; the mean normals: the top (-0.001, 1.000, -0.020), the split faces (-0.015, -0.138, -0.990)
+    the nearest planes: chamfer at (1201, 160, 6) mm facing (0.000, 0.707, -0.707), 95.1 mm; chamfer at (1395, 162, 8) mm facing (0.000, 0.707, -0.707), 95.1 mm; chamfer at (1589, 162, 8) mm facing (0.000, 0.707, -0.707), 95.1 mm; chamfer at (1137, 158, 4) mm facing (0.000, 0.707, -0.707), 95.1 mm
+  L1's faces: the drawn faces' mean (1146.2, 126.7, 106.6) mm lies behind every face's plane but the tread's top's, each of whose triangles faces up, 106.6 mm behind the nearest; the mean normals: the top (-0.002, 1.000, -0.019), the split faces (-0.025, -0.134, -0.991)
+    the nearest planes: split at (55, 118, 0) mm facing (0.000, 0.000, -1.000), 106.6 mm; split at (2017, 144, 0) mm facing (0.000, 0.000, -1.000), 106.6 mm; split at (1201, 140, 0) mm facing (0.000, 0.000, -1.000), 106.6 mm; split at (1331, 143, 0) mm facing (0.000, 0.000, -1.000), 106.6 mm
   readback step: every check passes
 chamfer: the part's measure 'leg' (the code's mm is the leg kept along each face), at 45 degrees (an equal-legged chamfer on a square arris; the arrises' own turns are measured below); _OS_Chamfer (0.001, 0.7071, 0.7071)
-step on the stand (53, -1): 2.295 x 0.327 m in plan, 0.166 high over its bed (0.030 m of skirt below it, in the ground) (L1's bounds); the ground (ground_heart) 1.900 to 1.900 m under its corners, its bed at 1.900 (sunk 0.000 m at the highest); its face's middle (53.00, -1.16, 1.98); L0 144 triangles, L1 69
-  view 1m: camera (53.00, -2.10, 2.33) on (53.00, -1.16, 1.98), 46.4 degrees, 1.00 m
-  view 5m: camera (53.00, -5.86, 3.69) on (53.00, -1.16, 1.98), 46.4 degrees, 5.00 m
-  view 8m: camera (53.00, -8.68, 4.72) on (53.00, -1.16, 1.98), 46.4 degrees, 8.00 m
-  view 10m: camera (53.00, -10.56, 5.40) on (53.00, -1.16, 1.98), 46.4 degrees, 10.00 m
-  view 12m: camera (53.00, -12.44, 6.09) on (53.00, -1.16, 1.98), 46.4 degrees, 12.00 m
-  view eye5: camera (53.00, -6.16, 3.50) on (53.00, -1.16, 1.98), 46.4 degrees, 5.23 m
-  view eye12: camera (53.00, -13.16, 3.50) on (53.00, -1.16, 1.98), 46.4 degrees, 12.10 m
+context step: Assets/Experiments/LT1/R2a/Generated/step_context.fbx (md5 0be60a593d45), its sidecar (md5 f4471e4835e2)
+  5 neighbours (step 5) at L0 447 and L1 200 triangles; 3 fill planes (16 triangles); 6 grey proxies (72 triangles); its bounds (-1.217, -0.187, -0.826) to (2.382, 0.498, 0.647) in the stone's frame
+    st-gully/fl-0/tr-8/sl-0 (step): L0 st-gully/fl-0/tr-8/sl-0_L0 126, L1 st-gully/fl-0/tr-8/sl-0_L1 58 triangles
+    st-gully/fl-0/tr-8/sl-1 (step): L0 st-gully/fl-0/tr-8/sl-1_L0 62, L1 st-gully/fl-0/tr-8/sl-1_L1 25 triangles
+    st-gully/fl-0/tr-9/sl-0 (step): L0 st-gully/fl-0/tr-9/sl-0_L0 61, L1 st-gully/fl-0/tr-9/sl-0_L1 29 triangles
+    st-gully/fl-0/tr-10/sl-0 (step): L0 st-gully/fl-0/tr-10/sl-0_L0 136, L1 st-gully/fl-0/tr-10/sl-0_L1 63 triangles
+    st-gully/fl-0/tr-10/sl-1 (step): L0 st-gully/fl-0/tr-10/sl-1_L0 62, L1 st-gully/fl-0/tr-10/sl-1_L1 25 triangles
+    wl-gully/fl-0/r/pn-1/stair/co-10/sp-0 (proxy, a proxy): proxy_0 12 triangles
+    wl-gully/fl-0/r/pn-1/stair/co-11/sp-1 (proxy, a proxy): proxy_1 12 triangles
+    wl-gully/fl-0/r/pn-1/stair/co-12/sp-1 (proxy, a proxy): proxy_2 12 triangles
+    wl-gully/fl-0/r/pn-1/stair/co-12/sp-2 (proxy, a proxy): proxy_3 12 triangles
+    wl-gully/fl-0/r/pn-1/stair/co-13/sp-2 (proxy, a proxy): proxy_4 12 triangles
+    wl-gully/fl-0/r/pn-1/stair/co-13/sp-3 (proxy, a proxy): proxy_5 12 triangles
+    st-gully/fl-0/tr-10/jt-0 (fill): fill_0 6 triangles
+    st-gully/fl-0/tr-8/jt-0 (fill): fill_1 4 triangles
+    st-gully/fl-0/tr-9/jt-0 (fill): fill_2 6 triangles
+  context: every check passes
+  closer: 19 open edges in 1 loops (19 corners); L1 with its borders capped (19 cap triangles), shadow-only; its bounds (0.000, -0.030, 0.000) to (2.295, 0.166, 0.327), L1's (0.000, -0.030, 0.000) to (2.295, 0.166, 0.327)
+  context placed at the stone's transform: 5 neighbours switching level with it (L0 casting none, its L1 shadow-only copy casting; 5 with their open borders capped, shadow-only, as the stone's), 3 fill planes and 6 grey proxies (the slate's grey copy) casting; drawn, never counted
+step on the stand (53, -1): 2.295 x 0.327 m in plan, 0.166 high over its bed (0.030 m of skirt below it, in the ground) (L1's bounds); the ground (ground_heart) 1.900 to 1.900 m under its corners, its bed at 1.900 (sunk 0.000 m at the highest); with its context lifted 0.364 m, so the context's lowest point (0.187 m under the stone's bed) sits on the highest ground under its footprint (3.60 x 1.45 m, the ground 1.900 to 2.077 m): its bed at 2.264; its face's middle (53.00, -1.16, 2.35); L0 144 triangles, L1 69
+  view 1m: camera (53.00, -2.10, 2.69) on (53.00, -1.16, 2.35), 46.4 degrees, 1.00 m
+  view 5m: camera (53.00, -5.86, 4.06) on (53.00, -1.16, 2.35), 46.4 degrees, 5.00 m
+  view 8m: camera (53.00, -8.68, 5.08) on (53.00, -1.16, 2.35), 46.4 degrees, 8.00 m
+  view 10m: camera (53.00, -10.56, 5.77) on (53.00, -1.16, 2.35), 46.4 degrees, 10.00 m
+  view 12m: camera (53.00, -12.44, 6.45) on (53.00, -1.16, 2.35), 46.4 degrees, 12.00 m
+  view eye5: camera (53.00, -6.16, 3.50) on (53.00, -1.16, 2.35), 46.4 degrees, 5.13 m
+  view eye12: camera (53.00, -13.16, 3.50) on (53.00, -1.16, 2.35), 46.4 degrees, 12.06 m
   grey L0 1m: 0.6 s
   grey L0 5m: 0.3 s
   grey L0 8m: 0.3 s
@@ -63,7 +84,7 @@ step on the stand (53, -1): 2.295 x 0.327 m in plan, 0.166 high over its bed (0.
   grey L1 8m: 0.3 s
   grey L1 10m: 0.3 s
   grey L1 12m: 0.3 s
-  grey L1 eye5: 0.3 s
+  grey L1 eye5: 0.4 s
   grey L1 eye12: 0.3 s
   grey L1-noline 1m: 0.4 s
   grey L1-noline 5m: 0.3 s
@@ -72,20 +93,6 @@ step on the stand (53, -1): 2.295 x 0.327 m in plan, 0.166 high over its bed (0.
   grey L1-noline 12m: 0.3 s
   grey L1-noline eye5: 0.3 s
   grey L1-noline eye12: 0.3 s
-  grey L0-flat 1m: 0.3 s
-  grey L0-flat 5m: 0.3 s
-  grey L0-flat 8m: 0.3 s
-  grey L0-flat 10m: 0.3 s
-  grey L0-flat 12m: 0.3 s
-  grey L0-flat eye5: 0.3 s
-  grey L0-flat eye12: 0.3 s
-  grey L1-noline-nomotes 1m: 0.4 s
-  grey L1-noline-nomotes 5m: 0.3 s
-  grey L1-noline-nomotes 8m: 0.3 s
-  grey L1-noline-nomotes 10m: 0.3 s
-  grey L1-noline-nomotes 12m: 0.3 s
-  grey L1-noline-nomotes eye5: 0.3 s
-  grey L1-noline-nomotes eye12: 0.3 s
   material L0 1m: 0.4 s
   material L0 5m: 0.3 s
   material L0 8m: 0.3 s
@@ -100,62 +107,78 @@ step on the stand (53, -1): 2.295 x 0.327 m in plan, 0.166 high over its bed (0.
   material L1 12m: 0.3 s
   material L1 eye5: 0.3 s
   material L1 eye12: 0.3 s
-  material L1-noline 1m: 0.3 s
+  material L1-noline 1m: 0.4 s
   material L1-noline 5m: 0.3 s
   material L1-noline 8m: 0.3 s
   material L1-noline 10m: 0.3 s
-  material L1-noline 12m: 0.4 s
+  material L1-noline 12m: 0.3 s
   material L1-noline eye5: 0.3 s
   material L1-noline eye12: 0.3 s
-  material L0-flat 1m: 0.4 s
-  material L0-flat 5m: 0.3 s
-  material L0-flat 8m: 0.3 s
-  material L0-flat 10m: 0.3 s
-  material L0-flat 12m: 0.3 s
-  material L0-flat eye5: 0.3 s
-  material L0-flat eye12: 0.3 s
-  material L1-noline-nomotes 1m: 0.4 s
-  material L1-noline-nomotes 5m: 0.3 s
-  material L1-noline-nomotes 8m: 0.3 s
-  material L1-noline-nomotes 10m: 0.3 s
-  material L1-noline-nomotes 12m: 0.3 s
-  material L1-noline-nomotes eye5: 0.3 s
-  material L1-noline-nomotes eye12: 0.3 s
   ids render: shader Overstory/R2aIds supported True, errors False; renderer PC_Renderer features ScreenSpaceAmbientOcclusion off, ScreenSpaceReflection off, KeyBlock off, FogLights off, Palette off, SunBeams off; async compiling False
-  ids L0/1m: 926660 px; slice 3: 580111, slice 4: 314721, slice 7: 31828; 0 inexact
-  ids L0/5m: 63960 px; slice 3: 35540, slice 4: 26444, slice 7: 1976; 0 inexact
-  ids L0/8m: 25491 px; slice 3: 13779, slice 4: 10906, slice 7: 806; 0 inexact
-  ids L0/10m: 16472 px; slice 3: 8845, slice 4: 7005, slice 7: 622; 0 inexact
-  ids L0/12m: 11502 px; slice 3: 6093, slice 4: 4938, slice 7: 471; 0 inexact
-  ids L0/eye5: 55424 px; slice 3: 32800, slice 4: 20712, slice 7: 1912; 0 inexact
-  ids L0/eye12: 8736 px; slice 3: 6554, slice 4: 1866, slice 7: 316; 0 inexact
-  ids L1/1m: 926660 px; slice 3: 604952, slice 4: 321708; 0 inexact
-  ids L1/5m: 64072 px; slice 3: 36842, slice 4: 27230; 0 inexact
-  ids L1/8m: 25546 px; slice 3: 14336, slice 4: 11210; 0 inexact
-  ids L1/10m: 16486 px; slice 3: 9274, slice 4: 7212; 0 inexact
-  ids L1/12m: 11512 px; slice 3: 6445, slice 4: 5067; 0 inexact
-  ids L1/eye5: 55513 px; slice 3: 34341, slice 4: 21172; 0 inexact
-  ids L1/eye12: 8744 px; slice 3: 6740, slice 4: 2004; 0 inexact
+  ids L0/1m: 916288 px; slice 3: 584615, slice 4: 299845, slice 7: 31828; 0 inexact
+  ids L0/1m-ctx: 2207591 px; slice 0: 553633, slice 1: 407223, slice 2: 5044, slice 3: 285361, slice 4: 776431, slice 5: 58374, slice 7: 121525; 0 inexact
+  open faces seen L0 1m: 0 px
+  ids L0/5m: 58131 px; slice 3: 32934, slice 4: 23520, slice 7: 1677; 0 inexact
+  ids L0/5m-ctx: 270937 px; slice 0: 77700, slice 1: 20032, slice 2: 19822, slice 3: 16055, slice 4: 66671, slice 5: 21419, slice 7: 49238; 0 inexact
+  open faces seen L0 5m: 0 px
+  ids L0/8m: 23060 px; slice 3: 12764, slice 4: 9608, slice 7: 688; 0 inexact
+  ids L0/8m-ctx: 104670 px; slice 0: 30177, slice 1: 7562, slice 2: 7609, slice 3: 6361, slice 4: 26293, slice 5: 9405, slice 7: 17263; 0 inexact
+  open faces seen L0 8m: 0 px
+  ids L0/10m: 14783 px; slice 3: 8194, slice 4: 6062, slice 7: 527; 0 inexact
+  ids L0/10m-ctx: 67279 px; slice 0: 19409, slice 1: 4812, slice 2: 4854, slice 3: 4174, slice 4: 16671, slice 5: 6445, slice 7: 10914; 0 inexact
+  open faces seen L0 10m: 0 px
+  ids L0/12m: 10383 px; slice 3: 5643, slice 4: 4342, slice 7: 398; 0 inexact
+  ids L0/12m-ctx: 46679 px; slice 0: 13659, slice 1: 3410, slice 2: 3369, slice 3: 2785, slice 4: 11574, slice 5: 4488, slice 7: 7394; 0 inexact
+  open faces seen L0 12m: 0 px
+  ids L0/eye5: 49133 px; slice 3: 32835, slice 4: 14905, slice 7: 1393; 0 inexact
+  ids L0/eye5-ctx: 229437 px; slice 0: 77688, slice 1: 19935, slice 2: 19400, slice 3: 15574, slice 4: 42714, slice 5: 12513, slice 7: 41613; 0 inexact
+  open faces seen L0 eye5: 0 px
+  ids L0/eye12: 7787 px; slice 3: 6198, slice 4: 1316, slice 7: 273; 0 inexact
+  ids L0/eye12-ctx: 34287 px; slice 0: 14222, slice 1: 3558, slice 2: 3677, slice 3: 3036, slice 4: 3335, slice 5: 1208, slice 7: 5251; 0 inexact
+  open faces seen L0 eye12: 0 px
+  ids L1/1m: 915717 px; slice 3: 609156, slice 4: 306561; 0 inexact
+  ids L1/1m-ctx: 2208568 px; slice 0: 562931, slice 1: 439238, slice 2: 6652, slice 3: 305414, slice 4: 804825, slice 5: 58941, slice 7: 30567; 0 inexact
+  open faces seen L1 1m: 0 px
+  ids L1/5m: 58264 px; slice 3: 34068, slice 4: 24196; 0 inexact
+  ids L1/5m-ctx: 270818 px; slice 0: 80473, slice 1: 21242, slice 2: 21181, slice 3: 17177, slice 4: 69520, slice 5: 21834, slice 7: 39391; 0 inexact
+  open faces seen L1 5m: 0 px
+  ids L1/8m: 23110 px; slice 3: 13253, slice 4: 9857; 0 inexact
+  ids L1/8m-ctx: 104635 px; slice 0: 31273, slice 1: 8042, slice 2: 8182, slice 3: 6826, slice 4: 27306, slice 5: 9645, slice 7: 13361; 0 inexact
+  open faces seen L1 8m: 0 px
+  ids L1/10m: 14809 px; slice 3: 8570, slice 4: 6239; 0 inexact
+  ids L1/10m-ctx: 67261 px; slice 0: 20263, slice 1: 5198, slice 2: 5291, slice 3: 4530, slice 4: 17314, slice 5: 6498, slice 7: 8167; 0 inexact
+  open faces seen L1 10m: 0 px
+  ids L1/12m: 10395 px; slice 3: 5949, slice 4: 4446; 0 inexact
+  ids L1/12m-ctx: 46678 px; slice 0: 14199, slice 1: 3596, slice 2: 3721, slice 3: 3072, slice 4: 12062, slice 5: 4528, slice 7: 5500; 0 inexact
+  open faces seen L1 12m: 0 px
+  ids L1/eye5: 49250 px; slice 3: 34170, slice 4: 15080; 0 inexact
+  ids L1/eye5-ctx: 229346 px; slice 0: 80679, slice 1: 21452, slice 2: 20987, slice 3: 16579, slice 4: 43904, slice 5: 12630, slice 7: 33115; 0 inexact
+  open faces seen L1 eye5: 0 px
+  ids L1/eye12: 7800 px; slice 3: 6465, slice 4: 1335; 0 inexact
+  ids L1/eye12-ctx: 34277 px; slice 0: 14805, slice 1: 3739, slice 2: 3998, slice 3: 3190, slice 4: 3412, slice 5: 1214, slice 7: 3919; 0 inexact
+  open faces seen L1 eye12: 0 px
   triangles L0 1m: 130 front-facing of 144; thin (smallest altitude under 2 px) 0 = 0%; median area 6044.7 px, median smallest altitude 41.80 px
   triangles L0 5m: 137 front-facing of 144; thin (smallest altitude under 2 px) 6 = 4%; median area 257.7 px, median smallest altitude 13.82 px
   triangles L0 8m: 137 front-facing of 144; thin (smallest altitude under 2 px) 12 = 9%; median area 100.3 px, median smallest altitude 8.70 px
   triangles L0 10m: 137 front-facing of 144; thin (smallest altitude under 2 px) 16 = 12%; median area 64.1 px, median smallest altitude 6.97 px
   triangles L0 12m: 137 front-facing of 144; thin (smallest altitude under 2 px) 34 = 25%; median area 44.5 px, median smallest altitude 5.82 px
-  triangles L0 eye5: 137 front-facing of 144; thin (smallest altitude under 2 px) 7 = 5%; median area 239.9 px, median smallest altitude 13.47 px
-  triangles L0 eye12: 137 front-facing of 144; thin (smallest altitude under 2 px) 46 = 34%; median area 29.3 px, median smallest altitude 3.64 px
+  triangles L0 eye5: 134 front-facing of 144; thin (smallest altitude under 2 px) 4 = 3%; median area 253.2 px, median smallest altitude 11.49 px
+  triangles L0 eye12: 134 front-facing of 144; thin (smallest altitude under 2 px) 44 = 33%; median area 22.5 px, median smallest altitude 2.93 px
   triangles L0 20m: 137 front-facing of 144; thin (smallest altitude under 2 px) 48 = 35%; median area 16.0 px, median smallest altitude 3.50 px
-  triangles L1 1m: 60 front-facing of 69; thin (smallest altitude under 2 px) 0 = 0%; median area 10368.2 px, median smallest altitude 68.34 px
+  triangles L1 1m: 60 front-facing of 69; thin (smallest altitude under 2 px) 0 = 0%; median area 10368.3 px, median smallest altitude 68.34 px
   triangles L1 5m: 60 front-facing of 69; thin (smallest altitude under 2 px) 2 = 3%; median area 657.4 px, median smallest altitude 17.12 px
   triangles L1 8m: 60 front-facing of 69; thin (smallest altitude under 2 px) 2 = 3%; median area 256.7 px, median smallest altitude 10.64 px
   triangles L1 10m: 60 front-facing of 69; thin (smallest altitude under 2 px) 2 = 3%; median area 164.2 px, median smallest altitude 8.52 px
   triangles L1 12m: 60 front-facing of 69; thin (smallest altitude under 2 px) 2 = 3%; median area 114.0 px, median smallest altitude 7.13 px
-  triangles L1 eye5: 60 front-facing of 69; thin (smallest altitude under 2 px) 2 = 3%; median area 587.9 px, median smallest altitude 16.12 px
-  triangles L1 eye12: 60 front-facing of 69; thin (smallest altitude under 2 px) 8 = 13%; median area 54.3 px, median smallest altitude 3.99 px
+  triangles L1 eye5: 60 front-facing of 69; thin (smallest altitude under 2 px) 2 = 3%; median area 480.7 px, median smallest altitude 14.67 px
+  triangles L1 eye12: 60 front-facing of 69; thin (smallest altitude under 2 px) 11 = 18%; median area 42.1 px, median smallest altitude 3.08 px
   triangles L1 20m: 60 front-facing of 69; thin (smallest altitude under 2 px) 3 = 5%; median area 41.0 px, median smallest altitude 4.30 px
   mesh L0 as imported: 144 triangles, 432 vertices (step_L0)
   mesh L1 as imported: 69 triangles, 207 vertices (step_L1)
   dolly: 6 to 13.980 m at 1.4 m/s and 60 fps (23.3 mm a frame), 343 frames a level; crops 640 x 400 from (960, 520)
-  dolly grey L0: 343 frames in 16.2 s
-  dolly grey L1: 343 frames in 16.5 s
-  dolly material L0: 343 frames in 16.7 s
-  dolly material L1: 343 frames in 16.8 s
+  dolly grey L0: 343 frames in 16.7 s
+  dolly grey L1: 343 frames in 17.0 s
+  dolly material L0: 343 frames in 17.0 s
+  dolly material L1: 343 frames in 16.9 s
+  dolly masks L0: 343 frames in 8.6 s, 17695 px a frame on average
+  dolly masks L1: 343 frames in 8.6 s, 17729 px a frame on average
