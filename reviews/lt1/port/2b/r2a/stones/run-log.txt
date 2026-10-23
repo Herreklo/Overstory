@@ -304,8 +304,8 @@
 ## 2026-10-23, the coping with its context: counted and sheeted
 
 - **The set:** as the wall stone's, without the arms. L1-noline is in low sun.
-- **The lift:** 0.329 m at the foot. At the sun stand it is 0.335 m, where the ground runs 2.992 to 3.000 m under the
-  footprint of 1.72 x 0.59 m. Nothing is buried.
+- **The lift:** 0.335 m at the foot, where the ground runs 2.992 to 3.000 m under the footprint of 1.72 x 0.59 m.
+  At the sun stand it is 0.329 m, on ground level at 1.900 m. Nothing is buried.
 - **The open faces seen:** 0 px at every view and level, at both stands.
 - **The mesh as imported:** L0 has 36 triangles and 108 vertices; L1 has 26 and 78.
 - **L1 against L0, at the switch:** switch p99 against motion p99 is at most 4.4 against 3.9 (sun stand, material,
