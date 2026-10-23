@@ -391,7 +391,7 @@ def joint_signal(L, cls, ppm):
             i_ = i_[(i_ >= 0) & (i_ < len(c))]
             r = runs_of(c[i_].tolist())
             k = 0
-            if k < len(r) and r[k][0] in (0, 3) and k + 1 < len(r) and r[k + 1][0] == 1:
+            if k < len(r) and r[k][0] in (0, 3) and k + 1 < len(r) and r[k + 1][0] in (1, 2):
                 acc["top"] += [l[i_[i]] for i in trimmed(r[k])]
                 k += 1
             if k < len(r) and r[k][0] == 1:
@@ -557,7 +557,7 @@ def count_piece(piece):
             out[f"mesh/{piece}/{stand}"] = json.load(open(mj))
         for level in ("L0", "L1"):
             for f in ls(os.path.join(sdir, "ids", level)):
-                if f.endswith("-ids.png"):
+                if f.endswith("-ids.png") and not f.endswith("-ctx-ids.png"):     # (the context's ids: SN5's alone)
                     view = f[:-len("-ids.png")]
                     ids, _, mask, _ = ids_for(level, view)
                     top, upright = chamfer_width(ids, mask)

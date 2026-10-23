@@ -235,3 +235,68 @@
     - there are no lines in the ring.
 
     The context will decide what borders the top chamfer: the top bed, or the joint's fill.
+
+## 2026-10-23, the wall stone with its context: counted and sheeted
+
+- **The set** (lean, on the budget note):
+  - the foot (49.3, 22.6) in drizzle, low sun and blue hour;
+  - the sun stand (53.0, -1.0) in low sun only, with the arms (facets x2, minor off);
+  - grey, then material, at 1, 5, 8, 10 and 12 m and at eye5 and eye12;
+  - the dolly through 8, 10 and 12 m, with the stone's own masks.
+
+  L0-flat exists only for drizzle, left from the stopped full set. L1-noline is in low sun.
+- **The lift.** The stone and its context are lifted 0.162 m, so the context's lowest point sits on the highest
+  ground under its footprint (1.33 x 0.16 m). Nothing is buried.
+- **The open faces seen:** 0 px at every view and level, at both stands.
+- **The mesh as imported:** L0 has 18 triangles and 54 vertices; L1 has 10 and 30.
+- **SN5, grey:**
+  - **Drizzle:** the top chamfer is a light rim, +7.6 L* at 1 m and +8.9 at 5 m. It shows as bright lines in the
+    joints' ring (2, 157 px, at 5 m), and on the next course down as a lighter horizontal line under each stone.
+  - **Sun stand, low sun:** the right end's chamfer, turned to the sun, is +8.5 at 1 m and +8.7 at 5 m. The left
+    end's is -36, in its own shade. The joint reads as relief: one bright edge and one dark.
+  - **Foot, low sun and blue hour:** at most +4.1. The up-facing top chamfer takes the sky's blue.
+  - **Rings:** nowhere. The joint fill lies within 2.2 L* of the faces in every light.
+- **SN5, material:**
+  - **Rims:** none at 6 or more. The largest is +3.2, at the sun's end.
+  - **Joint fill against the faces either side:** the soil (kind 6, _Soil) reads darker by:
+    - 14 L* in drizzle;
+    - 11 L* at the foot in low sun (0.7 against 12.3);
+    - 28 L* at the sun stand;
+    - 3.6 L* in blue hour.
+
+    SN5's 6 L* fails in three lights of four. The joints draw a near-black grid round every stone, the strongest
+    fault on the material sheet. Grey shows no such gap, so it is the material's own: the soil's albedo and damp.
+    The ratio of luminance runs from 3.8 in sun to about 18 in shade, so a term that depends on the light adds to
+    the albedo. R0b's JointFloor arm, which keeps the soil within 6 L* of its face, is off here, as built.
+- **L1 against L0, at the switch** (switch p99 against motion p99, L* in the stone's own masks):
+
+  | stand and light | 8 m | 10 m | 12 m |
+  | --- | --- | --- | --- |
+  | sun stand, low sun, material | 19.5 / 3.9 | 15.4 / 2.3 | 12.0 / 5.0 |
+  | foot, drizzle, material | 12.8 / 2.6 | 10.2 / 0.4 | 8.8 / 0.9 |
+  | foot, low sun, material | 7.0 / 0.6 | 6.4 / 0.5 | 5.4 / 1.4 |
+  | foot, blue hour, material | 3.7 / 0.3 | 3.4 / 0.2 | 2.8 / 0.8 |
+
+  The difference frames put all of it in the joints. L1 removes the chamfer and its face runs to the outline, so
+  the visible fill narrows, measured at 1 m:
+
+  | side | L0 | L1 |
+  | --- | --- | --- |
+  | top | 13.7 mm | 6.0 mm |
+  | bottom | 16.1 mm | 9.5 mm |
+  | left | 24.4 mm | 8.3 mm |
+  | right | 20.2 mm | 4.2 mm |
+
+  That is about 8 mm a side, 16 mm across a joint whose neighbour switches too. At 8 m it is 3.3 px of dark soil
+  lost; at 12 m, 2.2 px.
+
+  The lit line carries the chamfer's light. In grey, in sun, it reads 81.8 and 38.6 against L0's chamfers at 81.0
+  and 35.5. It does not carry the joint's opening.
+- **The arms** change the faces by at most a mean of 0.30 L* (p95 0.6), facets x2 at the sun stand's 1 m. Minor off
+  changes them by at most 0.08. Neither shows on the sheet.
+- **Specks** at the sun stand: L1 has 5 at 1 m and 2 to 3 at 5 m, L0 has 1. The foot has none.
+- **Seen on the sheets:**
+  - the faces are flat and uniform: no grain, no tooling, no wear;
+  - the stones read as clean rectangles, near tiles, against references 05 and 10;
+  - the soil's black grid, as above;
+  - the context's upper course ends at its 0.6 m limit.
