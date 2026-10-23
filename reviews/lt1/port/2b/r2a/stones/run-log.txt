@@ -300,3 +300,34 @@
   - the stones read as clean rectangles, near tiles, against references 05 and 10;
   - the soil's black grid, as above;
   - the context's upper course ends at its 0.6 m limit.
+
+## 2026-10-23, the coping with its context: counted and sheeted
+
+- **The set:** as the wall stone's, without the arms. L1-noline is in low sun.
+- **The lift:** 0.329 m at the foot. At the sun stand it is 0.335 m, where the ground runs 2.992 to 3.000 m under the
+  footprint of 1.72 x 0.59 m. Nothing is buried.
+- **The open faces seen:** 0 px at every view and level, at both stands.
+- **The mesh as imported:** L0 has 36 triangles and 108 vertices; L1 has 26 and 78.
+- **L1 against L0, at the switch:** switch p99 against motion p99 is at most 4.4 against 3.9 (sun stand, material,
+  8 m) and 3.3 against 1.1 (foot, drizzle, material, 8 m). Everywhere else it is under 2.3. No visible pop: the
+  coping's joints lie at its ends and its bed, not across the face the street sees.
+- **SN5:**
+  - **The bed joint:** the joint against the faces is within 3.2 L* in grey in every light.
+  - **The end chamfers of the top's perimeter:**
+    - in grey, +12.9 L* over the face in drizzle and +7.6 to 7.9 in blue hour, at 1 and 5 m;
+    - in grey low sun, under 6;
+    - in material, at most +5.5 (blue hour).
+
+    The counter finds no top beside them, so it measures them against the face alone, and the true rim is smaller.
+    On the 5 m sheet they read as a soft step from the bright top down to the face, not as a line round the stone.
+  - **Bright lines in the joints' ring:** 1, of 80 px, at 5 m in drizzle. Rings: none.
+- **Lines:**
+  - **L1 at 1 m in sun:** 315 px in grey (4 floating) and 319 px in material (11 floating). The lit line lies about
+    9 mm inside the outline, about 8 px at 1 m, so the counter calls it floating. L1 does not show at 1 m.
+  - **L0 in material in sun:** dark lines of 16 to 64 px at 8 m, eye5 and eye12, on form edges.
+- **Seen on the sheets:**
+  - the top takes the sky's blue strongly in shade (the foot in low sun and blue hour), in grey and material alike.
+    That is the light, not the part;
+  - a soft dark smudge at the left end's joint in sun, at 5 m, 12 m and eye12;
+  - nothing beside the right end in the context;
+  - the faces are flat and uniform, though the top shows some mottling in sun.
