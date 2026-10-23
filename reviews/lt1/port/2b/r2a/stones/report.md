@@ -1,31 +1,46 @@
 # R2a stones: report
 
-Port step 2b, rung R2a: the gully's three stones redrawn (the step, the wall stone and the coping). Written 23 October 2026 from the builders' files (`blender.md`, `run-log.txt`), `counts.json`, the sheets and the reference board. Every number here was checked against `counts.json` or a sheet, and I say where I disagree with a builder. No reviewer has passed anything here.
+Port step 2b, rung R2a: the gully's three stones redrawn (the step, the wall stone and the coping). Written 23 October 2026 from the builders' files (`blender.md`, `run-log.txt`), `counts.json`, the sheets and the reference board. Every number here was checked against `counts.json` or a sheet, and I say where I disagree with a builder. The strict review (`review.md`, on Opus because Fable can't use credits) passed R2a with conditions. This page was corrected after it; the corrections are marked "after the review".
 
 ## In short
 
 **Asked.** Do the three stones hold SN7's restraint and SN8's budgets at 1, 5 and 12 m? Does L1 pass for L0 at 8, 10 or 12 m? Which split face does the wall stone want: patches as built, facets ×2 or minor ledges off?
 
-**Passed.**
+**Answered.** Two of the three, honestly, and mostly no. SN7 in context: no. The switch on the wall stone: no, in every light. The third, the split face, was not answered: the A/B ran on a patch that is nearly empty, so nothing it varied could show. It is carried to R2b.
+
+**Passed**, with the limits each pass has:
 - Every stone is within its triangle budget at both levels, and imports as built.
-- Thin triangles hold over the level: 7.3% at L0, 2.2% at L1.
+- Thin triangles hold over the level: 7.3% at L0, 2.2% at L1. That is face-on and pooled only; the wall stones' 0% carries the steps and copings, and at eye height the step's L1 is 18 to 28% thin (after the review).
 - With their contexts, no open face shows in any view, level or stand.
-- The off-state frame is byte-identical against the current shader.
-- In grey, the joints sit within about 2 L* of the faces, and no stone has a ring.
+- The off-state frame is byte-identical against the current shader, in one frame and one light; the wet branch was never tried.
+- In grey, the joints sit within about 2 L* of the faces, except the step's bottom joint (below). This passes by construction, since grey gives the fill and the stone one albedo.
 - The coping's switch passes everywhere at 12 m.
 - `tools/check.py` does not exist yet; the builders' own tests and `tools/validate_record.py` pass.
 
 **Failed.**
-- The wall stone's switch pops at every distance tried, all in the joints: switch p99 is over motion p99 by up to 15.6 L* at 8 m and 8.9 at 12 m, in sun.
-- The step pops in grey at the sun stand, on the nosing (+3.4 to +4.2).
+- The wall stone's switch pops in every light and at every distance tried, all in the joints: switch p99 is over motion p99 by up to 15.6 L* at 8 m and 8.9 at 12 m in sun, and by 10.2 at 8 m in drizzle in material.
+- The step pops in grey at the sun stand, on the nosing (+3.4 to +4.2), worse with distance.
 - In material, the joint soil reads 11 to 28 L* under the faces in three lights of four: a near-black grid.
+- The step's bottom joint, 34.5 mm wide, is off its faces in every light, even in grey: −25.7 L* in sun, +18.4 in drizzle, +12.2 in blue hour; −45.7 in material in sun (after the review).
 - SN4's 2 px chamfer fails on the wall stone at 8 m (1 px), because the fill buries it.
+- Neighbouring wall stones sit within 0.3 to 1.2 L* of each other; SN7 asks for 1 to 6 (after the review).
 - Beside 05 and 10, the wall reads as flat tiles in regular courses, and the step as a plain bar.
 
-**Proposals.**
-1. Keep SN7's split face at about 2 L* and the patches as built. Neither arm changes what reads; the flatness is form at block scale.
-2. Use one switch rule for every part, light and stand, with a distance per part. For the wall stone, move L1's outline to where L0's stone meets the fill. Replace the 9 mm error with the visible joint error.
-3. Move the soil into the pack's data. First find out why its contrast depends on the light, then fix it.
+**Proposals, as the review left them.**
+1. SN7's split-face number stays open. R2b gives the stone its block-scale form and the patch content, then the A/B runs again in a raking light.
+2. One switch rule for every part, light and stand: switch p99 at most motion p99 + 2 L*, at a fixed dolly speed, with an absolute cap, a floor on the baseline and a term for connected area. The coping at 12 m. The step only after a re-run. For the wall stone, settle SN4 against SN5 first, then by default fix L0's joint, not L1's outline. Replace the 9 mm error with the visible joint error.
+3. The soil goes to the pack after the form work, once the ambient term that darkens it in shade is diagnosed, calibrated on 10.
+
+## The review
+
+`review.md`: **pass with conditions**, on Opus 5.5 because Fable can't use credits now. R2a is done as a rung that found out the answers. Nothing must re-run to close it. Two things must run before anything is decided on them: the step's switch at 8 m, and patch off at the wall stone's sun stand. Its must-fix list before R2b, ranked:
+1. The wall stone's form: a block-scale outline and a measured neighbour value spread of 1 to 6 L*.
+2. SN4 against SN5, settled in writing; then L0's joint and L1's outline to match, and the dolly re-run in all three lights at both stands.
+3. The measuring tools: the line counter catching wide dark lines at 1 m, `joint_off` treated as a fail, the thin share gated per kind and at eye height, a neutral grey rig, and a fixed dolly speed.
+4. The step: L1's nosing facets, the right rim, the bottom joint.
+5. The coping: the slivers and the corner fan; the smudge diagnosed, with one frame where L0 casts its own shadow.
+6. The soil: the ambient term diagnosed, then the value to the pack, calibrated on 10.
+7. The missing proofs: the off-state in all three lights and on the wet branch; patch off at the sun stand in a raking light.
 
 ## The numbers
 
@@ -43,8 +58,8 @@ Port step 2b, rung R2a: the gully's three stones redrawn (the step, the wall sto
 | L1's mesh error from L0 | 8.51 mm | 9.21 mm | 8.98 mm |
 | Chamfer on screen at 8 m in context (top / upright) | 3 / 1 px | 1 / 1 px | 3 / 2 px |
 | Open faces, every view, level and stand | 0 px | 0 px (alone: 20,886 at 1 m) | 0 px |
-| Joint against face, grey | within 2.2 L* | within 2.2 L* | within 2.2 L* |
-| Joint against face, material | −11.7 to −16 | sun −28, drizzle −14, low-sun shade −11.4, blue hour −3.6 | bottom joint −35.5 in sun |
+| Joint against face, grey | within 2.2 L*, except the bottom joint (34.5 mm): sun −25.7, drizzle +18.4, blue hour +12.2 | within 2.2 L* | within 2.2 L* |
+| Joint against face, material | −11.7 to −16; the bottom joint −45.7 in sun | sun −28, drizzle −14, low-sun shade −11.4, blue hour −3.6 | bottom joint −35.5 in sun |
 
 The pools: at L0, 8 m, 2,028 of 27,794 front-facing triangles are thin (7.3%: steps 13.7%, wall stones 0%, copings 23.4%). At L1, 20 m, 243 of 11,016 are thin (2.2%). The walls kind's L1 is 0.580 of its L0 (limit 0.6).
 
@@ -102,7 +117,7 @@ Spread was measured in grey only. In material, the files hold only each arm's ch
 - facets ×2: at most 0.15 / 0.55;
 - minor off: at most 0.09 / 0.22.
 
-In grey, facets ×2 changes at most 0.30 / 0.63 (sun stand, 1 m), and minor off at most 0.06 / 0.15. Minor off changes about as much at 12 m as at 1 m. A pure re-render difference would look like that, so it is not proven that the arm reached the shader.
+In grey, facets ×2 changes at most 0.30 / 0.63 (sun stand, 1 m), and minor off at most 0.06 / 0.15. Minor off changes about as much at 12 m as at 1 m. A pure re-render difference would look like that, so I first doubted the arm reached the shader. After the review: it did (slice 0's normal hash changes); the minor ledges carry almost nothing.
 
 ## What the images show
 
@@ -121,6 +136,8 @@ By my own eye, on the sheets and in native crops, beside the references in `docs
 
 ### 1. SN7's number for a split face
 
+**After the review: rejected as written.** The patch is nearly empty: its normals' mean length is 0.9986 to 0.9991 in every arm, and `patch-split-0.png` shows one lamina line in raking light. Minor off did reach the shader (slice 0's normal hash changes, 9b4c50bdabd0 against ea0f8971cb13), so my doubt below was wrong; its ledges carry almost nothing. The test lights could not show a full patch either: the sun is 8° up and the shade is soft, so neither rakes horizontal laminae. So "1.68 under 2 L*" shows only that an empty patch is quiet. SN7's number stays open, for R2b to settle after the form work, with patch off run at the sun stand in a raking light. The text below is the proposal as reviewed.
+
 **Proposed.** Keep about 2 L* as a starting value, and keep the patches as built. This is the coordinator's lean, and the evidence supports it.
 
 **Evidence.**
@@ -134,6 +151,15 @@ By my own eye, on the sheets and in native crops, beside the references in `docs
 **What would change our mind.** A blind cold reader preferring facets ×2. Or R2b giving the face its block-scale form, after which a 2 L* face reads dead beside 05.
 
 ### 2. The L0 to L1 switch
+
+**After the review.**
+- **The rule is taken, with changes.** Motion p99 ranges from 0.2 to 5.0 L*, so where motion is 5 a 7 L* pop passes, and the baseline depends on a dolly speed chosen without reason (about 23 mm a frame). The rule gets a fixed dolly speed, an absolute cap, a floor on the baseline, and a term for connected area, so a pop shaped like a joint counts for more than scattered pixels.
+- **The coping at 12 m:** taken.
+- **The step:** only after a re-run; no distance passes yet.
+- **Option 1 is changed.** L1's joints (4.2 to 9.5 mm) are inside SN5's 4 to 12 mm, and L0's visible joints (13.7 to 24.4 mm) are outside it. Copying L0 into L1 would copy the wrong level and lock in the brick-and-mortar look. Settle SN4 against SN5 first; then, by default, fix L0. The reviewer is wrong if 10 shows joints of 15 to 25 mm at that scale.
+- **The visible joint error replacing 9 mm, and no switch at 18 m:** taken.
+
+The text below is the proposal as reviewed.
 
 **Proposed rule.** One pass criterion for every part, light and stand, in grey and in material: switch p99 at most motion p99 + 2 L*. The 2 L* is a starting value. Motion p99 is noisy, so the alone control (within +0.4) shows the measure's floor.
 
@@ -165,6 +191,8 @@ The lit line is right: L1's face band reads 41.1 against L0's chamfer at 39.8. W
 **What would change our mind.** If the dolly, re-run with option 1, still pops in material, the soil (proposal 3) is part of the pop and comes first.
 
 ### 3. SN5's joint soil
+
+**After the review: taken, but after the form work.** The extra dark in shade (18× against 2.7× in the albedo) is in the ambient term, occlusion or sky light, so it is a lighting fault before it is a pack value. The value is calibrated on 10, where the joints are dark but don't read as a grid. The reviewer is wrong if fixing the joint's darkness alone makes the wall read as stone.
 
 **Proposed.** The soil is a material fact: what a dry joint is filled with and how dark it is. Today it is a code constant, `_Soil = (0.32, 0.30, 0.26)`, in `LT1Stone.cs` line 89, on the slate material only. It belongs in the pack, as `packs/stavanger-1989/materials/soil.json`. `walling.json`'s working would name its fill (dry: soil; the 1952 reset: cement), and `LT1Stone.cs` would read it.
 
@@ -200,7 +228,10 @@ All of them, including those that go to R2b.
 8. The course below aligns its facet steps into one line (R2b).
 9. The step is a plain bar against 06 (R2b).
 10. The coping has a dark smudge at its left end, and dark lines of 16 to 64 px on its form edges in material in sun.
-11. Specks: at the sun stand, the wall stone at L1 has 5 at 1 m, against L0's 1.
+11. Specks: at the sun stand, the wall stone at L1 has 5 at 1 m, against L0's 1. One bright speck on the block at 12 m in sun is probably a mote in the scene, which spoils the speck counts (after the review).
+11a. The step's bottom joint is off its faces in every light, even in grey (the table above), and the step's right rim reads +32.8 L* in sun at 1 m, +14.1 in drizzle and +9.6 in blue hour (after the review).
+11b. Neighbouring wall stones sit within 0.3 to 1.2 L* (material medians 61.2 to 62.4 at 12 m in sun). SN7 asks for 1 to 6. One flat face, four straight edges, even courses and one value make the brick (after the review).
+11c. The coping's smudge and its dark edge lines may share one cause: L1 casts the shadows, has no chamfers and stands about 9 mm proud, so L0's chamfers may sit in L1's shadow. One frame with L0 casting its own shadow tests it (after the review).
 
 **The making**
 
@@ -225,9 +256,12 @@ All of them, including those that go to R2b.
 **The evidence**
 
 26. The off-state proof is one frame (eye-foot, 1600 low sun). It is byte-identical, and it was re-run after the lit line's second form, against the current `Stone.shader` (md5 1656f6c1…).
-27. Minor off is not proven to have taken.
+27. Minor off did take: slice 0's normal hash changes (after the review; this page first said it was unproven).
 28. No spread was measured in material.
 29. Motion p99 is a noisy baseline.
+29a. The line counter misses wide dark lines at 1 m: the wall stone's left rim is −36.3 L* in sun and it reads "dark 0". Every "no dark line" at 1 m is unproven (after the review).
+29b. The thin share is gated face-on only. From eye height at 12 m, the step's L1 is 18 to 28% thin and its L0 33 to 39%, and the coping's L1 20%. The coping's L0 has 4 of 11 triangles thin even at 1 m, and its top is a fan from one corner. The "median 10 px" was read as area, which is lenient (after the review).
+29c. The grey rig is not neutral (an orange sun, blue up-facing faces, a near-black foot), so "judge form in grey light" was not met. The foot-oblique view is framed through roofs and shows nothing (after the review).
 
 **Conflicts in the files** (from `blender.md`, not yet put right):
 
