@@ -36,7 +36,8 @@ Port step 2b, rung R2a, the Blender half (`plan.md` in this folder is the contra
   Across the pools: wall stones L0 15,872, 73,272, 73,272 and L1 10,376, 39,608, 40,296; copings L0 3,052, 13,487, 13,524 and L1 2,476, 9,563, 10,068. The step's finding holds for every part: under the contract's per-triangle edge distances, an exact indexed mesh shares almost nothing more than the FBX does.
 - **For the Unity side.**
   - `LT1R2a.cs`'s `Pivot()` will fail both new parts with "the top does not face up". It sums kind-0 triangles, and their tops are bed faces (kind 3).
-  - A wall stone judged alone shows its open band: it is drawn only 77 mm behind the wall's plane. It needs a backing or neighbours to be judged.
+  - A wall stone judged alone shows its open band: it is drawn only 77 mm behind the wall's plane. Its context (below) hides it.
+- **Contexts.** Each specimen has a context in its own frame (`context.py`): its neighbours built by their parts, SN5's fills, and proxies where no part exists yet. With the context in place, a ray at every pixel of the five judging views sees none of the specimen's open bands at either level. Details and faults are in "The contexts".
 - **Data and code.** Every fact is read from data through one function that records its source. The proposed fields have documented defaults:
   - five for `walling.json` (`jointMm`, `batterPerHeight`, `topThickMm`, `copeOverMm`, `copeProudMm`);
   - `slate.json`'s `cornerBreak`;
@@ -289,6 +290,34 @@ What the pools leave out: the fills (eight large triangles a panel, never thin, 
   - every channel: 428 and 204.
 
   Only the edge distances keep corners apart beyond the hard edges, and they keep almost all of them apart: an exact indexed chunk needs 99.2% and 99.0% of the FBX's vertices across the steps (L0, L1), 100% and 98.3% across the wall stones, and 99.7% and 95.0% across the copings. Fewer vertices would need edge distances shared within a face, a change to the contract that is the Unity side's to weigh. The rule stands as given: the unsharing lives in the FBX step only.
+
+## The contexts
+
+`blender/parts/stone/slate/context.py` (23 October) builds, for each specimen, what R1's laying or the stair's plan puts within about 0.6 m of it, in the specimen's frame. Unity places it at the specimen's transform.
+
+- **What each holds.**
+  - The step: the five other stones of tr-8, tr-9 and tr-10 (step part), three tread-joint fills, and six proxies of the right cheek wall's stair-face cells. It has 19 objects and 735 triangles.
+  - The wall stone: the six cells touching it on the bank face (wall stone part) and one bank fill. It has 13 objects and 232 triangles.
+  - The coping: cp-2 and cp-4 (coping part); co-31/sp-1 on both faces (wall stone part); proxies for co-31/sp-0 and co-32/sp-0 on both faces, whose lo side is open to the air; and a fill on each face. It has 14 objects and 256 triangles.
+- **How pieces are made.** Every built piece passes its part's own checks. Fills use kind 6 and code 7. Proxies use kind 2 and code 7, are their cell exactly and are 210 mm deep, and the sidecar names each one's reason.
+- **Files.** `<part>_context.fbx` and `.json`, installed under `install_lock`:
+  - `step_context.fbx` `9a0e1e98a4a1067c`;
+  - `wallstone_context.fbx` `3d43f6a804d263d0`;
+  - `coping_context.fbx` `79212bc945de9c5a`.
+
+  The hashes are in the manifest. Every object was read back exact, and the probe was refused. The specimens' own hashes are unchanged.
+- **The ray test.** It runs in Blender's CPU BVH, one ray per pixel at 2560 × 1440 through the 28 mm lens. The views are face-on 20° at 1, 5 and 12 m and eye height at 5 and 12 m. A leak is a first hit on a specimen face from behind, or a ray reaching the specimen's solid (its planes 2 mm inside) before its first hit.
+  - With the context: 0 leaks in all 30 view-and-level cases.
+  - Alone, the wall stone: 20,886, 1,294, 216, 1,164 and 108 leaks at both levels.
+  - Alone, the step: at L0, 2,893, 745, 154, 275 and 0, through the top beyond the cover and the joint slot.
+  - Alone, the coping: 0, because its open faces (the joint end and the bed) face away from every judging view.
+- **Faults, named.**
+  - The face planes' datum is not in data (the geometry stage is planned). Each context runs one plane per face through the specimen, constant along s:
+    - The step's cheek-wall face is battered through the specimen's tread, so it stands 22 to 48 mm inside the walking width at tr-8.
+    - cp-2 and cp-4 are placed by their stair side, so their backs miss the bank plane by -110 and +112 mm. This is seen only from the bank.
+  - **The L1 test has a 7.5 mm margin on the worn top.** The test holds L1 7.5 mm inside the wear field, its 5.5 mm share plus 2 mm. So the L1 test cannot see a top band shallower than that, and the alone step shows 0 at L1. L0's 3 mm margin bites, and the context's pieces are the same at either level.
+  - **The readback's own-normal bound is scaled.** At a context's distances it uses 4R·2⁻²⁴/altitude over the fixed 1e-5, like the plane bound. A chamfer-corner triangle of tr-8/sl-0 is 2.4e-5 off at 1.2 m from the pivot. stones.py itself is unchanged.
+  - **A wall fill's grid merges lines closer than 10 mm.** A 1 mm column failed the normals check. The fill can grow past the union of its cells by less than that, but never falls short.
 
 ## The quick sheets
 
