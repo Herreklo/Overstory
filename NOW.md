@@ -2,6 +2,8 @@
 
 What is running and what is next, under about 1,100 words. The order, the boxes and this week are in `docs/plan.md`; each decision is in its design doc's In short; history is in `docs/experiments.md` and git.
 
+**From 23 October: make, look, fix** (`CLAUDE.md`, How work runs; Øystein: "i do not want to spend all my money on admin"). From Monday every build runs that way, starting with R2b: one still of the wall stone beside reference 10, fixed until it reads as split stone, before any measuring.
+
 **Next job:** 1c's L1 and L2 beside the port's 2b (the stones redrawn), each in its own session, in the walked corner. 1c's LA is done (`2983d52`), and L5 named the materials' cost owner, the light both shaders share (`a5efca7`; `docs/plan.md`, line 120). Then the camera's zoom test (1g's camera milestone, below). The walk (1g Phase 1a) closed on 22 October: W5 `da250bb`, the walk without its birch `421e831`, W7 `f2cc838`; W6 was cut; Øystein's own verdict replaced W7's strict review (`docs/experiments.md`, LT1g).
 
 ## Where we are (22 October)
@@ -31,17 +33,16 @@ Each session commits its own work; a stopped one resumes from its files. Long wo
   - *The camera:* 1g's camera milestone, after the walk and beside the port's 2b, holds whatever the game becomes (Øystein: "we just need to figure out if it is possible to make something where navigating over the city as well as moving trough the streets is nice"): is one continuous zoom, eye to city camera as `camera-and-composition.md` designs it, pleasant and quick to answer at both scales (the walk's control was "slow and gluey"), and does it hold its frame rate at the top? What the player controls and the camera's play tuning wait for the game.
 - **The gully port,** resumed at 2b: step 1, step 2a (hashes unchanged) and step 3's early rungs are done, with Fable's verdict in the docs.
   - *Next:* 2b, the stones redrawn (Øystein: "very buggy and not nice"; Q15), running in its own session inside the playable corner; what's left, in order, is in `reviews/lt1/port-handover.md`. Steps 4 and 5 are done only as `reviews/lt1/port/foundation-needs.md` says.
-  - *22 October, night:* R0b is done (`cd79b22`): the pipeline makes none of the gully's one-pixel lines and specks, so the redraw owns them. The patches' third round did not pass as a finished face (`7270491`); the patches go to R2a's three stones in Unity (its own session, started by 2b) beside R1's second round. Weekly usage was 92% at 23:40; work stops at pushed points if it runs out, and resumes after the reset on Monday 26 October at 14:00.
+  - *22 October, night:* R0b is done (`cd79b22`): the pipeline makes none of the gully's one-pixel lines and specks, so the redraw owns them. The patches' third round did not pass as a finished face (`7270491`); the patches go to R2a's three stones in Unity (its own session, started by 2b) beside R1's second round. Weekly usage was 92% at 23:40; work stops at pushed points if it runs out, and resumes after the reset on Monday 26 October at 13:00.
 - **The paper playtests, stopped** at 11 of 24 runs (Øystein: "Maybe stop playtest, and focus on building?"). Outcome and next: `docs/playtests/paper-1/analysis/interim.md`; the concepts are redesigned from its needs when people play the greybox.
 - **Held, on Opus:** the camera and play-craft studies' unread talks and masters (their Limits sections), each read before the step that rests on it; a review of the playtest programme when the greybox is close.
 - **One check command** (Øystein, 22 October: yes; `CLAUDE.md`, Working in the right order): after the reset on 26 October, `tools/check.py` gathers every machine check (budgets, seeds, hashes, data not code). It then runs once over the generators, shaders and C#, to size how much holds style, era or place in code. Rules it checks then shrink to a line in `CLAUDE.md`.
 - **Housekeeping:** a "22 October" label on older work takes its commit's date (`git blame`).
 - **Game ideas,** Inquest among them, are catalogued in `docs/ideas/README.md`, with Inquest's engine needs mapped to current request numbers.
 
-## For the milestone's reviewer (Monday 26 October)
+## Proposals (23 October)
 
-- `docs/proposals.md`: proposed changes to the plan and the rules (Q1 to Q19), for the next milestone's fresh reviewer. Nothing in it is acted on before then.
-- `reviews/docs-trim/disagreements.md`: 56 places where the design docs disagree, not settled.
+- `docs/proposals.md` is closed. Q19 is in `CLAUDE.md`. Q1 to Q18 are not reviewed as a batch: one that a build reaches is decided then, in a line. The docs' 56 disagreements (`reviews/docs-trim/disagreements.md`) are not worked on.
 
 ## Waiting for Øystein
 

@@ -33,9 +33,11 @@ Read `NOW.md`. If it names an open experiment's branch, switch to that branch an
 
 ## How work runs
 
-One experiment per session, on its own branch (`lt/1-first-street`), run by the `game-lab-workflow` skill: from its question, written first, to something Øystein can judge in Unity, recorded in `docs/experiments.md`, then merged to main with `NOW.md` updated.
+**Make, look, fix** (Øystein, 23 October: "i do not want to spend all my money on admin"). Make the thing at the cheapest rung that can show it; render one still beside its reference, in grey and one light, and look; fix the part or start it again; repeat. Only when the look holds do the other lights, distances and the frame rate run, by script (`tools/check.py`), never by an agent reading numbers. A strict review comes only right before Øystein judges. Three stones once took 1,295 messages and 37,793 frames, then failed on a look one still would have shown.
 
-**What goes to Øystein:** scope, play, permissions and the milestones he judges, each with a recommendation. Everything else, the architecture and the look and craft questions included, is decided on frames, numbers and strict reviews, recorded with its reasons, and shown to him as finished work he can overturn. Work runs on without waiting for him (Øystein, 21 October: "unless it is super important, you can just continue working"; more in the skill).
+One thing per fresh, short session, on the experiment's branch (`lt/1-first-street`), run by the `game-lab-workflow` skill. A report is a few lines beside its stills and a commit is one line. No new rule, design doc, proposal or reconciling of docs unless Øystein asks for it. When in doubt, cut process.
+
+**What goes to Øystein:** scope, play, permissions and the milestones he judges, each with a recommendation. He decides in chat, recorded in one line where it applies. Everything else is decided by looking and shown to him as finished work he can overturn. Work runs on without waiting for him (Øystein, 21 October: "unless it is super important, you can just continue working").
 
 ## Standing rules
 
@@ -45,7 +47,7 @@ One experiment per session, on its own branch (`lt/1-first-street`), run by the 
 - **Seeded and deterministic** (`unity-conventions` skill): the same building looks the same until its history changes it.
 - **Visuals may elaborate world facts, but may not contradict them or falsely claim a causal history.** Five kinds of thing are on screen: canonical facts (the engine's); visual interpretations of facts (a shabby front from age and upkeep); non-semantic texture (stable, seeded, claiming no history: woodgrain, a lean, minor clutter); perceived information (a person's account, or a record such as a poster or a newspaper report, which may be wrong); and local scene state (committed back to the engine only when it matters). Anything that reads as history must be a fact.
 - **Reuse systems, never looks; quality first, at pace** (Øystein, 22 October). Elements share the town's systems (growth, upkeep and repairs, the light, the near and far fade, the history budget) wherever the same cause acts on them, and reuse a part only where the facts say it is the same kind of thing; each keeps its own material identity from its facts (source, working, exposure), so things never look made of the same stuff unless they are. Fast loops, strict reviews at milestones, polish in the ensemble (the skill).
-- **Research the subject and the craft before building** (Øystein, 22 October): what a new material, kind or system is, and how the best studios build it at quality and scale for our stack; no new heavy geometry before the craft is known. A gap or wrong assumption found on the way stops the work until it is studied (coverage in `docs/systems.md`); what can only be learned on the way is named as an unknown, with where it will be learned.
+- **Know the craft before building** (Øystein, 22 October): a short look at what a new material or kind is and how good studios build it, then build. What can only be learned by building is learned by building.
 - **Judged in the engine,** never on concept images. Target frames painted over our own renders set the bar; the judgement is the render beside them.
 - **Evidence, not verdicts.** The screen shows what was seen and heard. A read of someone's character is someone's opinion, shown as fallible, never as the game's truth: a vivid act read as a whole character makes readers worse (Understory's human test).
 - **The setting is a pack, and the pack is data.** The harbour town, its era content and its look sit on top of the engine; the engine stays general and assumes no country. Every value that depends on style, era, place or material is data (the pack, a kind, a part's definition); code holds only rules true everywhere, and each kind proves it with a variant built from data alone (Øystein, 22 October: changing style, era or world should be "as easy as possible, without adding more complexity").
@@ -53,13 +55,11 @@ One experiment per session, on its own branch (`lt/1-first-street`), run by the 
 
 ## Working in the right order
 
-Quality is fixed; the order saves the time. Hardest to change first (formats, architecture, measuring tools and scale before parts; polish last, in the ensemble). Biggest risk first, at the cheapest fidelity that can answer it. A ladder of fidelity (a number, grey form, a quick sheet, clay, a still), up only when the rung below passes. Play in greybox early (Øystein, 22 October), never behind the look. One thing end to end before many. "Done" written first, and `tools/check.py` passing before any review: one command that runs every machine check in seconds, for no tokens (built after the reset on 26 October). A rule no machine can check is on the short list every brief carries (the skill). Øystein, 22 October: "things like this has been happening a lot and it kills our progress. we need to be focus, clearm highest quality . without making it complex and expensive". Research just in time, except the craft that shapes the foundations. A loop that won't converge stops: grey light, one change at a time. A pre-mortem by a fresh reviewer before every big build (Øystein, 22 October: "that scares me"). Each rule in full, with Øystein's words and what it cost before it existed: the `game-lab-workflow` skill.
-
-**Decide once, answer from the plan** (Øystein, 22 October). Decisions are written once in the design docs and reopened only on new evidence. Before recommending order, scope or what comes next, read the order in `NOW.md` and say "the plan says" or "I propose a change because <evidence>". A question is not evidence: a real point becomes a written proposal in `docs/proposals.md`, decided at a milestone by a fresh reviewer who sees the plan and the proposal, not the chat. What joins `CLAUDE.md` or `NOW.md` replaces something.
+Hardest to change first (formats, scale), polish last, in the ensemble. Biggest risk first, at the cheapest fidelity. Play in greybox early (Øystein, 22 October). One thing end to end before many. A loop that won't converge stops: grey light, one change at a time.
 
 ## Models and tokens
 
-Quality comes first (Øystein, 22 October: "My main thing is that I want work of highest quality. If that cost a lot of tokens, I would still prefer that than using a poorer model, or give less information."). Never use a weaker model or give a job less information to save tokens; only waste goes. **Fable 5.1** decides and judges, from lean packets, since it has its own weekly limit (Øystein: "Fable eats credits, be mindful of that"); **Opus 5.5** builds, researches, drafts and checks; **Sonnet 5.5** does only mechanical work a check proves unchanged. Say in one line when a step needs another model, and delegate rather than switch. One job per session, fresh agents not forks, a doc's In short first, usage checked each day: the practice and its measurements are in the `game-lab-workflow` skill.
+Quality comes first (Øystein, 22 October: "My main thing is that I want work of highest quality. If that cost a lot of tokens, I would still prefer that than using a poorer model, or give less information."). Never use a weaker model or give a job less information to save tokens; only waste goes. **Fable 5.1** decides and judges, from lean packets, since it has its own weekly limit (Øystein: "Fable eats credits, be mindful of that"); **Opus 5.5** builds, researches, drafts and checks; **Sonnet 5.5** does only mechanical work a check proves unchanged. Say in one line when a step needs another model, and delegate rather than switch. One job per fresh session, and usage checked each day (the `game-lab-workflow` skill).
 
 ## Docs
 
@@ -68,7 +68,7 @@ Quality comes first (Øystein, 22 October: "My main thing is that I want work of
 | File | What it holds |
 | --- | --- |
 | `docs/plan.md` | The order, the definition of done, this week |
-| `docs/proposals.md` | Proposed changes, waiting for the next milestone's fresh reviewer |
+| `docs/proposals.md` | Closed on 23 October; kept as history |
 | `docs/systems.md` | Systems, materials and kinds with their state; research coverage |
 | `docs/foundations.md`, `building-blocks.md`, `measuring.md` | What every system shares; how everything is built; the tools that judge each change |
 | `docs/visual-direction.md`, `living-world.md` | The look; how places, people and history are shown |

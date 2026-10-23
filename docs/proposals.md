@@ -1,5 +1,7 @@
 # Proposals for the next milestone
 
+**Closed on 23 October** (Øystein: "i do not want to spend all my money on admin"). Q19 is in `CLAUDE.md` (How work runs). Q1 to Q18 are not reviewed as a batch: one that a build reaches is decided then, in a line. Nothing new is added.
+
 Proposals wait here for the next milestone's fresh reviewer, who sees the plan and this page, not the chat. Each one gives its evidence, what it changes, its standing cost (every always-read line costs every session), and what would change our minds. A decided proposal leaves this page and goes into the doc it changes.
 
 ## Evidence for Q1 to Q5 (measured 22 October)
