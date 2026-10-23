@@ -112,11 +112,13 @@ Triangles. The export fails above:
 | step stone, rest slab | 300 | 120 |
 | sett | 24 | 12 |
 | a panel's fill | 8 | 8 |
-| **walls** | 110,000 | 45,000 |
-| **stairs** | 40,000 | 16,000 |
-| **the gully** | 150,000 | 65,000 |
+| **walls** | 131,100 | 53,500 |
+| **stairs** | 51,000 | 20,400 |
+| **the gully** | 182,100 | 73,900 |
 
-Estimate at L0: about 2,700 wall stones at about 32 triangles over about 140 m² of face, plus 150 copings, comes to about 100,000; 78 steps of about 1.6 stones at 250 to about 31,000; the rests about 8,000.
+**Re-derived at R1 (23 October), at the same density.** The first estimate counted about 140 m² of face. R1 measured the faces the judging views and the walkable ground see: 166.79 m² of course face, with the buried 12.01 m² left out. At the old density (786 L0 and 321 L1 triangles a m², copings included) that gives the walls' numbers. The steps are 170 stones by the facts, not about 125, at 300 and 120 each. R1 lays 129,664 and 52,192 for the walls, and 51,000 for the steps.
+- Building the faces seen only from beyond 8 m (35.97 m²) at L1 alone was not taken. L0 is drawn only within 8 m, so it saves no frame time, and it would tie the mesh to today's eyes. If it returns at all, it is step 5's, for the chunks.
+- Frame time is the real cap: R0's and R3's A/B at the judging views. A count over this table fails the export. Frame time over its share reopens the table.
 
 **Thin triangles,** what the M4 pays for under 4× MSAA (the craft study's In short 7). At each level's far edge (L0 at 8 m, L1 at 20 m), triangles whose smallest altitude is under 2 px are at most 10% of the level's front-facing triangles, the fills included. The median visible triangle is at least 10 px. The contact sheets print both.
 
@@ -199,7 +201,7 @@ The redraw is done when all of these hold, the numbers first and the eyes last:
 | --- | --- | --- | --- |
 | R0 | Today's gully A/B, at the five views in drizzle and the blue hour; busyness measured on today's gully, the clay and the street target | the frame budget's base; Done 5's calibration | yes, when the lock is free |
 | R0b | Shading only, on today's mesh, one change at a time: the stone's own (`GeometricNormalFiltering`, the joint value floor, the cut marks off) and the pipeline's (bloom with a Karis average, shadow normal bias 0.5 against 0.2, SSAO off), the pipeline's as overrides at render time, never saved; one-pixel lines and specks counted at native size | how much of the lines and specks the redraw owns | yes, in R0's run |
-| R1 | Elevations in integer mm: every wall unrolled, by panel, its features first (heads, rests, the coping's steps, the step ends as occupied cells, the 1961 panel's edges, fallen stones), courses filled by choosing; the steps' stones and joints; SN10's tests; a 2D sheet | the layout is a mason's, before any mesh | no |
+| R1 | Elevations in integer mm: every wall unrolled, by panel, its features first (heads, rests, the coping's steps, the step ends as occupied cells, the 1961 panel's edges, fallen stones), courses filled by choosing; the steps' stones and joints; SN10's tests; a 2D sheet. **Passed at round 2** (23 October, `r1/report.md`): 2,714 wall stones, 44 checks pass. One course a rise, two goings a level run, every seen face laid, every stone and working number in data (`packs/stavanger-1989/walling.json`, `kinds/wall.json`). Two things are left before R2b: the 1930s granite record still fails SN2 on two short copings, so 7b is not met; and the walling table gets a schema and a check | the layout is a mason's, before any mesh | no |
 | R2a | Look-dev: the six face patches, then a wall stone, a step and a coping at L0 and L1, grey first and then in material, in the target's light, at 1, 5 and 12 m, with the patches' two A/B arms on the wall stone (facets ×2, minor ledges off; `r2a/patches.md`, the read of 23 October), which set SN7's number for a split face; the L0 to L1 switch A/B'd at 8, 10 and 12 m, with the town's fog on | the surface model and the levels, on three stones before thousands | yes, to judge |
 | R2b | Grey form in Blender: the parts and the laying through the stages, every piece one grey; SN1, SN8 and SN9's checks; a quick sheet at the judging cameras in neutral light | the form and the counts, cheaply | no |
 | R3 | Grey form in Unity: the golden views in grey light, native crops, the frame-time A/B; then the eye-level target, painted over the eye-foot and eye-on grey renders with `blender/tools/paintover.py` as the street target was, the clay beside it as it is planned | form at the views, the cost, and the eye level's bar | yes |
