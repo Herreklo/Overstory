@@ -167,3 +167,71 @@
   triangle measures alone). The triangle measures always include the main set's views and the far edges, so a short
   run never drops them. Each level's mesh as imported goes to ids/mesh.json, and r2a_count.py carries it into
   counts.json, the table and the sheets.
+
+## 2026-10-23, the wall stone and the coping read back; the contexts wired
+
+- The orientation check is fixed. It found a stone's top by summing its kind-0 triangles. The wall stone's and the
+  coping's tops are beds (kind 3), so both failed on their first readback. The check now has two parts:
+  - **The frame:** the bounds against the sidecar's, in its pivot (bed-front-left).
+  - **The winding, from the geometry:** each triangle's plane must lie in front of the drawn faces' area-weighted
+    mean, as SN1's convex block has it. The tread's top (kind 0) is the one exception: wear dishes it, so it is
+    concave. Each of its triangles must face up instead, and their mean must lie within 25 degrees of up.
+  - **Result:** all three stones pass at both levels, 0.000 mm off their sidecars' bounds. The nearest planes lie
+    22.7 / 21.8 mm (the wall stone, L0 / L1), 22.6 / 21.9 mm (the coping) and 95.1 / 106.6 mm (the step) in front
+    of the mean.
+- The two new stones as imported (logs/readback-wallstone.txt, readback-coping.txt). Every triangle has its own
+  three vertices, as the FBX route requires:
+  - **The wall stone** (wl-gully/fl-1/r/pn-4/bank/co-21/sp-1, 398 x 157 x 103 mm, the face battered at 1/6): L0 has
+    18 triangles and 54 vertices, L1 10 and 30. L0's kinds are 6 chamfer, 6 split and 6 bed triangles. The chamfer
+    is 12 mm. L1 masks 8 of its triangles' arrises.
+  - **The coping** (wl-gully/fl-0/r/pn-4/cp-3, 586 x 85 x 470 mm, its left end a joint, its right end open): L0 has
+    36 triangles and 108 vertices, L1 26 and 78. The chamfer is 11 mm, on the top's perimeter only.
+- **The contexts:** loading wired; the files are not yet installed. The format is the builder's:
+  - files: Generated/<part>_context.fbx with <part>_context.json, in the stone's own frame;
+  - objects: <id>_L0 and <id>_L1 for each neighbour, and single-level fill_<n> and proxy_<n>;
+  - the fills carry kind 6, slice 7 and mask 0.
+
+  How the harness uses them:
+  - **Placement and levels.** The context goes in at the stone's transform. Its neighbours switch level with the
+    stone, each L1 casting through its own shadow-only copy, as the stone's does.
+  - **Fills and proxies** are drawn at both levels.
+  - **Measured but never counted.** The stone's mask, the dolly's masks and every count are the stone's alone. The
+    context's ids are written beside the stone's (ids/<level>/<view>-ctx-ids.png), and SN5's joints are read from
+    them.
+  - **Strict on judging, tolerant on readback.** A judging run fails without its context; -nocontext makes the alone
+    control, into frames/<part>-alone. Readback logs "context: none installed" and passes.
+  - **Below the bed.** A context piece below the stone's bed (the course below, the step below) lies under the
+    street at the stands, so the ground hides it.
+- **The open faces.** The closer's caps (the open faces turned into faces) are drawn alone as ids in every view.
+  Each view's count of their visible pixels goes to ids/open.json: 0 means no open face is seen.
+- **The step's earlier frames show no open end.** Its undrawn faces (the bed, the back, the slanted right end) all
+  face away from every judging camera. The cameras stand at the stone's middle, face-on or at eye height in front
+  of it. The 5 m, 12 m, eye5 and eye12 crops of both ends show closed ends. open.json will give the number on the
+  context run.
+- **The alone wall stone's set is kept as a control.** Its foot set in three lights, with the arms in low sun, ran
+  before the contexts were announced. It is now frames/wallstone-alone, with logs wallstone-alone-foot-*.txt. The
+  rest of that set was stopped, so it has no sun stand, no fade and no dolly. The judging set runs with the context.
+- **The counter** (tools/r2a_count.py):
+  - **The pop** reads the stone's own masks from each dolly frame: ids/dolly/<level>/NNN.png, the union of L0 at
+    k - 1, L0 at k and L1 at k, dilated by 3 px. A dolly without masks falls back to the box on screen, and the
+    region used is recorded.
+  - **The arms** against as built.
+  - **The open faces seen.**
+  - **SN5's joints,** for L0 and L1 at 1 m, 5 m and eye5. Profiles run across each side's middle 60%:
+    - outward, the joint's fill, then the neighbour's top (where it shows), chamfer and face;
+    - inward, the stone's top or bed (where it shows), chamfer and face;
+    - each run is trimmed of its blended ends, and the face beside a chamfer or joint is its first 8 mm.
+
+    From the profiles come each side's rim (the chamfer less the brighter of the face, top and joint beside it), the
+    joint against the faces on either side, its 5th percentile and any slots.
+  - **Every chamfer facet** is measured against whatever lies beside it, wherever it is. A part present only at the
+    facet's ends, a corner's, is not beside it.
+  - **Lines in the joints' ring:** r0b's bright and dark lines in a ring round the stone's outline.
+  - **Numbers.** SN5 gives the joint its 6 L*. The rim threshold, also 6 L*, is mine, a starting value, since SN5
+    gives the rim no number.
+  - **First read, the wall stone alone in drizzle at 1 m:**
+    - the top chamfer is 40.6 L* against a face of 28.3 and a top of 44.3;
+    - the end chamfers are 26.9 and 32.2 against 27.9 and 27.5;
+    - there are no lines in the ring.
+
+    The context will decide what borders the top chamfer: the top bed, or the joint's fill.

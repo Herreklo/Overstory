@@ -34,9 +34,14 @@ namespace Overstory.EditorTools
     ///     control), -near (OS_Near 1 everywhere, a control for the patch fade); -dolly adds the levels in motion;
     ///     -tag t writes the log as logs/block-&lt;stand&gt;-&lt;moment&gt;-t.txt.
     /// Readback -parts step[,wallstone,coping]: each stone's FBX as imported, read back against its sidecar, its part
-    ///     definition and the contract, with no render (logs/readback-&lt;part&gt;.txt; the run fails on any difference).
-    /// Stones -parts p -moments m [-stand foot|sun] [...as Block]: each stone judged as the block is, one at a time,
-    ///     read back first; frames into frames/&lt;part&gt;/&lt;stand&gt;/..., the log into logs/&lt;part&gt;-&lt;stand&gt;-&lt;moment&gt;.txt.
+    ///     definition and the contract, and its context's where installed, with no render (logs/readback-&lt;part&gt;.txt;
+    ///     the run fails on any difference).
+    /// Stones -parts p -moments m [-stand foot|sun] [...as Block] [-nocontext]: each stone judged as the block is, one at a
+    ///     time, read back first, in its context (Context: its neighbours, fill planes and proxies, drawn and never
+    ///     counted; -nocontext judges it alone, the control, into frames/&lt;part&gt;-alone/ and logs/&lt;part&gt;-alone-...);
+    ///     frames into frames/&lt;part&gt;/&lt;stand&gt;/..., the context's
+    ///     ids beside the stone's (&lt;view&gt;-ctx-ids.png), the open faces seen into ids/open.json, the stone's mask in
+    ///     each dolly frame into ids/dolly/, the log into logs/&lt;part&gt;-&lt;stand&gt;-&lt;moment&gt;.txt.
     ///
     /// Every frame is the player's (PlayerFrame: 2560 x 1440, MSAA 4x, never supersampled). The heart is staged as the
     /// gully's frames stage it (LT1Stone.Stage) and never saved; the judged stone's materials are copies of the slate's
@@ -422,15 +427,28 @@ namespace Overstory.EditorTools
             }
             kit.Look(false);
             kit.Arm("as-built");
+            // each level's ids, normals and mask per view; the context's ids alone (where SN5's joints are read); and how
+            // much of the stone's open faces each view sees (ids/open.json: px, 0 none, -1 a stone with none)
+            var open = new StringBuilder("{\n");
+            bool firstOpen = true;
             foreach (var level in new[] { "L0", "L1" })
             {
                 piece.Show(level, kit.material);
                 foreach (var v in views)
                 {
                     LT1Stone.Aim(stage, shot, v);
-                    kit.Ids(stage.view, level == "L0" ? piece.l0 : piece.l1, Path.Combine(root, "ids", level, v.name), log);
+                    string stem = Path.Combine(root, "ids", level, v.name);
+                    kit.Ids(stage.view, new Renderer[] { level == "L0" ? piece.l0 : piece.l1 }, stem, log);
+                    if (piece.HasContext)
+                        kit.Ids(stage.view, piece.ContextShown(), stem + "-ctx", log, false);
+                    int seen = kit.OpenSeen(stage.view, piece, stem);
+                    if (seen >= 0)
+                        log.AppendLine($"  open faces seen {level} {v.name}: {seen} px" + (seen > 0 ? $" ({Path.GetFileName(stem)}-open.png)" : ""));
+                    open.Append(firstOpen ? "" : ",\n").Append($" \"{level}/{v.name}\": {seen}");
+                    firstOpen = false;
                 }
             }
+            MergeJson(Path.Combine(root, "ids", "open.json"), open.Append("\n}\n").ToString());
             Triangles(stage, shot, piece, views, root, log);
             Debug.Log($"[LT1R2a] {piece.name} in {moment}: {(Cli.Flag("-measure") ? 0 : looks.Length * configs.Length * views.Count)} frames into {root}");
         }
@@ -485,6 +503,28 @@ namespace Overstory.EditorTools
         }
 
         static string F(float v) => v.ToString("0.###", System.Globalization.CultureInfo.InvariantCulture);
+
+        /// <summary>A flat JSON object of numbers written over the one at path, its keys kept where the new one has
+        /// none (a run of a few views keeps the main set's entries).</summary>
+        static void MergeJson(string path, string json)
+        {
+            var merged = new SortedDictionary<string, object>(System.StringComparer.Ordinal);
+            if (File.Exists(path) && R2aPatches.Json.Parse(File.ReadAllText(path)) is Dictionary<string, object> old)
+                foreach (var kv in old)
+                    merged[kv.Key] = kv.Value;
+            foreach (var kv in (Dictionary<string, object>)R2aPatches.Json.Parse(json))
+                merged[kv.Key] = kv.Value;
+            var sb = new StringBuilder("{\n");
+            bool first = true;
+            foreach (var kv in merged)
+            {
+                string v = kv.Value is double d ? d.ToString("R", System.Globalization.CultureInfo.InvariantCulture) : kv.Value?.ToString() ?? "null";
+                sb.Append(first ? "" : ",\n").Append($" \"{kv.Key}\": {v}");
+                first = false;
+            }
+            Directory.CreateDirectory(Path.GetDirectoryName(path));
+            File.WriteAllText(path, sb.Append("\n}\n").ToString());
+        }
 
         static float ArgF(string flag, float fallback) =>
             float.Parse(Cli.Arg(flag, fallback.ToString(System.Globalization.CultureInfo.InvariantCulture)), System.Globalization.CultureInfo.InvariantCulture);
@@ -547,6 +587,7 @@ namespace Overstory.EditorTools
                     }
                 }
                 kit.Look(false);
+                DollyMasks(stage, shot, kit, piece, dist, cx0, cy0, cw, ch, root, log);
             }
             finally
             {
@@ -563,6 +604,67 @@ namespace Overstory.EditorTools
                 json.Append(i == 0 ? "" : ", ").Append(windows[i]);
             json.Append("]\n}\n");
             File.WriteAllText(Path.Combine(dir, "dolly.json"), json.ToString());
+        }
+
+        /// <summary>
+        /// The stone's own mask in each dolly frame's crop, per level (the id render: its context and the town black,
+        /// hiding what lies behind them), into &lt;root&gt;/ids/dolly/&lt;level&gt;/NNN.png: where tools/r2a_count.py reads
+        /// the pop, so the context, which switches with the stone, is drawn and never counted. The masks hang on the
+        /// geometry and the path alone, so a stand's are made once (stamp.txt names what they were made for).
+        /// </summary>
+        static void DollyMasks(StreetStage stage, CameraShot shot, Kit kit, Piece piece, float[] dist, int cx0, int cy0, int cw, int ch,
+                               string root, StringBuilder log)
+        {
+            int n = dist.Length, h = PlayerFrame.Height, w = PlayerFrame.Width;
+            var crop = new Texture2D(cw, ch, TextureFormat.RGBA32, false, true);
+            var cropPx = new Color32[cw * ch];
+            try
+            {
+                foreach (var level in new[] { "L0", "L1" })
+                {
+                    piece.Show(level, kit.material);
+                    var target = level == "L0" ? piece.l0 : piece.l1;
+                    var mesh = target.GetComponent<MeshFilter>().sharedMesh;
+                    string dir = Path.Combine(root, "ids", "dolly", level);
+                    string stamp = $"{piece.name} {mesh.name} {mesh.vertexCount} v, {piece.contextSig}, {piece.ContextShown().Count} shown; " +
+                                   $"{F(dist[0])} to {F(dist[n - 1])} m, {n} frames; crop {cx0} {cy0} {cw} {ch}; at {target.transform.position.ToString("F4")}";
+                    string stampFile = Path.Combine(dir, "stamp.txt");
+                    if (File.Exists(stampFile) && File.ReadAllText(stampFile) == stamp && Directory.GetFiles(dir, "*.png").Length == n)
+                    {
+                        log.AppendLine($"  dolly masks {level}: kept ({stamp})");
+                        continue;
+                    }
+                    Directory.CreateDirectory(dir);
+                    var clock = Stopwatch.StartNew();
+                    long px = 0;
+                    for (int i = 0; i < n; i++)
+                    {
+                        LT1Stone.Aim(stage, shot, piece.ViewAt(dist[i], $"dolly{i:000}"));
+                        kit.IdPass(stage.view, new Renderer[] { target }, render =>
+                        {
+                            var full = render(0f);
+                            // (rows bottom up in both: the crop's row j is the frame's row h - cy0 - ch + j)
+                            for (int j = 0; j < ch; j++)
+                                for (int x = 0; x < cw; x++)
+                                {
+                                    bool on = full[(h - cy0 - ch + j) * w + cx0 + x].g > 0;
+                                    cropPx[j * cw + x] = on ? new Color32(255, 255, 255, 255) : new Color32(0, 0, 0, 255);
+                                    if (on)
+                                        px++;
+                                }
+                        }, null);
+                        crop.SetPixels32(cropPx);
+                        crop.Apply();
+                        File.WriteAllBytes(Path.Combine(dir, $"{i:000}.png"), crop.EncodeToPNG());
+                    }
+                    File.WriteAllText(stampFile, stamp);
+                    log.AppendLine($"  dolly masks {level}: {n} frames in {clock.Elapsed.TotalSeconds:F1} s, {px / n} px a frame on average");
+                }
+            }
+            finally
+            {
+                Object.DestroyImmediate(crop);
+            }
         }
 
         /// <summary>The renderer's bounds on the player's frame, in pixels from the top left.</summary>
@@ -659,6 +761,12 @@ namespace Overstory.EditorTools
                         AssetDatabase.DeleteAsset($"{Generated}/test");
                 }
                 failed += stone.fails.Count;
+                if (trial == "")
+                {
+                    var ctx = Context.Load(part, log, false);
+                    if (ctx != null)
+                        failed += ctx.fails.Count;
+                }
                 Directory.CreateDirectory(LogDir);
                 File.WriteAllText(Path.Combine(LogDir, $"readback-{part}{(trial != "" ? "-test" : "")}.txt"), log.ToString());
                 Debug.Log("[LT1R2a] " + log.ToString().Replace("\n", "\n[LT1R2a] "));
@@ -741,8 +849,14 @@ namespace Overstory.EditorTools
                             throw new System.InvalidOperationException($"{part}: the readback fails ({stone.fails.Count}): " +
                                                                        string.Join("; ", stone.fails));
                         kit.Chamfer(stone.legPerMm, stone.chamferDeg, stone.chamferSource, log);
-                        var piece = kit.Place(part, stand.at, stone.l0, stone.l1, log, stone.bedY);
-                        string root = Path.Combine(OutDir, part, stand.name);
+                        // (its context is required: a stone is judged as it sits; -nocontext judges it alone, the control)
+                        var ctx = Context.Load(part, log, true);
+                        if (ctx != null && ctx.fails.Count > 0)
+                            throw new System.InvalidOperationException($"{part}'s context: the readback fails ({ctx.fails.Count}): " +
+                                                                       string.Join("; ", ctx.fails));
+                        var piece = kit.Place(part, stand.at, stone.l0, stone.l1, log, stone.bedY, ctx);
+                        // (alone, the control, into frames/<part>-alone/: the stone in context keeps frames/<part>/)
+                        string root = Path.Combine(OutDir, ctx == null ? part + "-alone" : part, stand.name);
                         Judge(stage, shot, kit, piece, moment, looks, configs, viewNames, root, log);
                         if (Cli.Flag("-dolly"))
                             Dolly(stage, shot, kit, piece, moment, looks, root, log);
@@ -754,7 +868,7 @@ namespace Overstory.EditorTools
                     if (at != null)
                         AssetDatabase.DeleteAsset($"{Generated}/test");
                     Directory.CreateDirectory(LogDir);
-                    File.WriteAllText(Path.Combine(LogDir, $"{part}-{stand.name}-{moment}{Tag}.txt"), log.ToString());
+                    File.WriteAllText(Path.Combine(LogDir, $"{part}{(Cli.Flag("-nocontext") ? "-alone" : "")}-{stand.name}-{moment}{Tag}.txt"), log.ToString());
                 }
             }
         }
@@ -1223,21 +1337,60 @@ namespace Overstory.EditorTools
                     if (Mathf.Abs(b.min.x) > 1e-4f || Mathf.Abs(b.min.y) > 1e-4f || Mathf.Abs(b.min.z) > 1e-4f)
                         Fail(log, $"pivot: L1's bounds start at {b.min.ToString("F4")}, not at the bed's front left (0, 0, 0)");
                 }
-                // the face to the street: the drawn split faces' mean normal looks -z, the top's +y
-                Vector3 split = Vector3.zero, top = Vector3.zero;
-                var v = l1.vertices;
-                var tri = l1.triangles;
-                var k = new List<Vector4>();
-                l1.GetUVs(2, k);
-                for (int t = 0; t < tri.Length; t += 3)
+                // the frame is held by the bounds above: a turn or a mirror would move them off the pivot's corner. The
+                // winding: a convex block's faces all look away from any point inside it (SN1), and the drawn faces' mean
+                // (a mix of points on several of them) is such a point, so it lies behind every face's plane. A tread's
+                // top (face kind 0) is not one of the block's planes: its wear dishes it, and a dish's planes cut into the
+                // stone (the step's, near its left end, by up to 12 mm at the mean). So each of its triangles faces up
+                // instead, and their mean within 25 degrees of up.
+                foreach (var (L, m) in new[] { ("L0", l0), ("L1", l1) })
                 {
-                    var cr = Vector3.Cross(v[tri[t + 1]] - v[tri[t]], v[tri[t + 2]] - v[tri[t]]);
-                    if (k[tri[t]].x == 2f) split += cr;
-                    if (k[tri[t]].x == 0f) top += cr;
+                    var v = m.vertices;
+                    var tri = m.triangles;
+                    var k = new List<Vector4>();
+                    m.GetUVs(2, k);
+                    Vector3 mean = Vector3.zero, split = Vector3.zero, top = Vector3.zero;
+                    float area = 0f;
+                    for (int t = 0; t < tri.Length; t += 3)
+                    {
+                        var cr = Vector3.Cross(v[tri[t + 1]] - v[tri[t]], v[tri[t + 2]] - v[tri[t]]);
+                        mean += cr.magnitude * (v[tri[t]] + v[tri[t + 1]] + v[tri[t + 2]]) / 3f;
+                        area += cr.magnitude;
+                    }
+                    mean /= area;
+                    int inward = 0, down = 0;
+                    float least = float.MaxValue;
+                    var near = new List<(float depth, string what)>();
+                    for (int t = 0; t < tri.Length; t += 3)
+                    {
+                        var cr = Vector3.Cross(v[tri[t + 1]] - v[tri[t]], v[tri[t + 2]] - v[tri[t]]);
+                        if (k[tri[t]].x == 0f)
+                        {
+                            top += cr;
+                            if (cr.y <= 0f) down++;
+                            continue;
+                        }
+                        float depth = Vector3.Dot(cr.normalized, (v[tri[t]] + v[tri[t + 1]] + v[tri[t + 2]]) / 3f - mean);
+                        least = Mathf.Min(least, depth);
+                        near.Add((depth, $"{KindName((int)k[tri[t]].x)} at {((v[tri[t]] + v[tri[t + 1]] + v[tri[t + 2]]) / 3f * 1000f).ToString("F0")} mm facing {cr.normalized.ToString("F3")}, {depth * 1000f:F1} mm"));
+                        if (depth <= 0f) inward++;
+                        if (k[tri[t]].x == 2f) split += cr;
+                    }
+                    log.AppendLine($"  {L}'s faces: the drawn faces' mean {(mean * 1000f).ToString("F1")} mm lies behind " +
+                                   (inward == 0 ? "every face's plane" : $"all but {inward} of the faces' planes") +
+                                   (top.sqrMagnitude > 0f ? " but the tread's top's" + (down == 0 ? ", each of whose triangles faces up" : $", {down} of whose triangles face down") : "") +
+                                   $", {least * 1000f:F1} mm behind the nearest; the mean normals: " +
+                                   (top.sqrMagnitude > 0f ? $"the top {top.normalized.ToString("F3")}, " : "no top (face kind 0), ") +
+                                   $"the split faces {split.normalized.ToString("F3")}");
+                    near.Sort((x, y) => x.depth.CompareTo(y.depth));
+                    log.AppendLine($"    the nearest planes: {string.Join("; ", near.GetRange(0, Mathf.Min(4, near.Count)).ConvertAll(n => n.what))}");
+                    if (inward > 0)
+                        Fail(log, $"orientation: {L}: {inward} triangles face into the stone");
+                    if (down > 0)
+                        Fail(log, $"orientation: {L}: {down} of the tread's top's triangles face down");
+                    if (top.sqrMagnitude > 0f && top.normalized.y < 0.9f)
+                        Fail(log, $"orientation: {L}'s top does not face up (+y)");
                 }
-                log.AppendLine($"  the faces' mean normals: the top {top.normalized.ToString("F3")}, the split faces {split.normalized.ToString("F3")}");
-                if (top.normalized.y < 0.9f)
-                    Fail(log, "orientation: the top does not face up (+y)");
             }
 
             static float LineDist(Vector3 p, Vector3 a, Vector3 b)
@@ -1253,11 +1406,266 @@ namespace Overstory.EditorTools
         // ---------------------------------------------------------------------------------------------------------
         // The piece on the stand
 
+        /// <summary>
+        /// The context a stone is judged in (Generated/&lt;part&gt;_context.fbx and its sidecar &lt;part&gt;_context.json, in
+        /// the stone's own frame, made by the Blender builder): its neighbours as R1's layout or the stair's plan puts
+        /// them, each at L0 and L1 (objects &lt;id&gt;_L0 and &lt;id&gt;_L1, by their own part functions, seeds and patches),
+        /// SN5's fill planes (fill_&lt;n&gt;: face kind 6, slice 7, mask 0) and grey proxy blocks for kinds with no part
+        /// yet (proxy_&lt;n&gt;, flagged in the sidecar). Placed at the stone's own transform; the neighbours switch level
+        /// with the stone; drawn, never counted (the measures read the stone's own mask). Read back lightly here: the
+        /// importer's weld off (as the stone's), every mesh three vertices a triangle (nothing merged on import), the
+        /// channels' dimensions, the fill planes' codes; the Blender builder's export checks the rest.
+        /// </summary>
+        sealed class Context
+        {
+            public string fbx;
+            public readonly List<(string id, string kind, Mesh l0, Mesh l1)> pairs = new List<(string, string, Mesh, Mesh)>();
+            public readonly List<(string id, string kind, Mesh mesh, bool proxy)> singles = new List<(string, string, Mesh, bool)>();
+            public readonly List<string> fails = new List<string>();
+
+            void Fail(StringBuilder log, string what)
+            {
+                fails.Add(what);
+                log.AppendLine("  FAIL context: " + what);
+            }
+
+            /// <summary>The stone's context: null with -nocontext (the control: the stone alone), or when none is
+            /// installed and none is required.</summary>
+            public static Context Load(string part, StringBuilder log, bool required)
+            {
+                if (Cli.Flag("-nocontext"))
+                {
+                    log.AppendLine("context: none (-nocontext, the control: the stone alone)");
+                    return null;
+                }
+                var c = new Context { fbx = $"{Generated}/{part}_context.fbx" };
+                string side = Path.Combine(Repo, "unity", Generated, part + "_context.json");
+                if (!File.Exists(Path.Combine(Repo, "unity", c.fbx)) || !File.Exists(side))
+                {
+                    if (required)
+                        throw new FileNotFoundException($"no {c.fbx} with its sidecar: the Blender builder installs it (-nocontext judges the stone alone)");
+                    log.AppendLine($"context: none installed ({c.fbx})");
+                    return null;
+                }
+                var sidecar = R2aPatches.Json.Parse(File.ReadAllText(side));
+                log.AppendLine($"context {part}: {c.fbx} (md5 {StoneMd5(Path.Combine(Repo, "unity", c.fbx))}), its sidecar (md5 {StoneMd5(side)})");
+                var imp = AssetImporter.GetAtPath(c.fbx) as ModelImporter;
+                if (imp == null)
+                    throw new FileNotFoundException($"{c.fbx} is not imported as a model");
+                if (imp.weldVertices)
+                {
+                    imp.weldVertices = false;
+                    imp.SaveAndReimport();
+                    log.AppendLine("  importer: weld set off on this generated file and the file imported again (its .meta is git-ignored)");
+                }
+                if (imp.meshCompression != ModelImporterMeshCompression.Off || imp.generateSecondaryUV || imp.swapUVChannels ||
+                    imp.importNormals != ModelImporterNormals.Import)
+                    c.Fail(log, $"importer: compression {imp.meshCompression}, lightmap UVs {imp.generateSecondaryUV}, swap UVs " +
+                                $"{imp.swapUVChannels}, normals {imp.importNormals} (the channels must come through as written)");
+                var model = AssetDatabase.LoadAssetAtPath<GameObject>(c.fbx);
+                var byName = new Dictionary<string, Mesh>();
+                foreach (var mf in model.GetComponentsInChildren<MeshFilter>())
+                {
+                    byName[mf.name] = mf.sharedMesh;
+                    if ((mf.transform.localScale - Vector3.one).sqrMagnitude > 1e-10f)
+                        c.Fail(log, $"object {mf.name}: scale {mf.transform.localScale}, not 1");
+                }
+                // (a name as Blender wrote it, or with the characters an FBX name cannot hold made underscores)
+                string Norm(string s) => System.Text.RegularExpressions.Regex.Replace(s, "[^A-Za-z0-9]", "_");
+                Mesh Get(string name)
+                {
+                    if (name == null)
+                        return null;
+                    if (byName.TryGetValue(name, out var m))
+                        return m;
+                    foreach (var kv in byName)
+                        if (Norm(kv.Key) == Norm(name))
+                            return kv.Value;
+                    return null;
+                }
+                var used = new HashSet<Mesh>();
+                // the pieces: the sidecar's list (under "pieces", else the first list of objects that carry an id)
+                List<object> list = null;
+                if (sidecar is Dictionary<string, object> root)
+                {
+                    if (root.TryGetValue("pieces", out var p) && p is List<object> pl)
+                        list = pl;
+                    else
+                        foreach (var kv in root)
+                            if (kv.Value is List<object> l && l.Count > 0 && l[0] is Dictionary<string, object> d0 && d0.ContainsKey("id"))
+                            {
+                                list = l;
+                                break;
+                            }
+                }
+                else if (sidecar is List<object> top)
+                    list = top;
+                if (list == null)
+                    throw new System.InvalidOperationException($"{side}: no list of pieces");
+                foreach (var o in list)
+                {
+                    if (!(o is Dictionary<string, object> e))
+                        continue;
+                    string id = (e.TryGetValue("id", out var iv) ? iv : e.TryGetValue("name", out var nv) ? nv : "?") as string ?? "?";
+                    string kind = e.TryGetValue("kind", out var kv2) ? kv2?.ToString() : "?";
+                    bool proxy = e.TryGetValue("proxy", out var pv) && pv is bool pb && pb;
+                    string o0 = null, o1 = null, one = null;
+                    object objs = e.TryGetValue("objects", out var ov) ? ov : e.TryGetValue("levels", out var lv) ? lv : null;
+                    if (objs is Dictionary<string, object> od)
+                    {
+                        o0 = (od.TryGetValue("L0", out var a) ? a : od.TryGetValue("l0", out var a2) ? a2 : null) as string;
+                        o1 = (od.TryGetValue("L1", out var b) ? b : od.TryGetValue("l1", out var b2) ? b2 : null) as string;
+                        if (o0 == null && o1 == null)
+                            foreach (var x in od.Values)
+                                one ??= x as string;
+                    }
+                    else if (objs is List<object> ol)
+                    {
+                        if (ol.Count == 1)
+                            one = ol[0] as string;
+                        else if (ol.Count >= 2)
+                        {
+                            o0 = ol[0] as string;
+                            o1 = ol[1] as string;
+                        }
+                    }
+                    else if (objs is string os)
+                        one = os;
+                    one ??= e.TryGetValue("object", out var sv) ? sv as string : null;
+                    if (o0 == null && o1 == null && one == null)
+                    {
+                        if (Get(id + "_L0") != null)
+                        {
+                            o0 = id + "_L0";
+                            o1 = id + "_L1";
+                        }
+                        else
+                            one = id;
+                    }
+                    if (o0 != null || o1 != null)
+                    {
+                        Mesh m0 = Get(o0), m1 = Get(o1);
+                        if (m0 == null || m1 == null)
+                        {
+                            c.Fail(log, $"{id}: its levels {o0} and {o1} not both in the FBX");
+                            continue;
+                        }
+                        c.pairs.Add((id, kind, m0, m1));
+                        used.Add(m0);
+                        used.Add(m1);
+                    }
+                    else
+                    {
+                        var m = Get(one);
+                        if (m == null)
+                        {
+                            c.Fail(log, $"{id}: its object {one} not in the FBX");
+                            continue;
+                        }
+                        c.singles.Add((id, kind, m, proxy));
+                        used.Add(m);
+                    }
+                }
+                foreach (var kv in byName)
+                    if (!used.Contains(kv.Value))
+                        c.Fail(log, $"object {kv.Key} in the FBX and not in the sidecar");
+                // the light readback
+                int t0 = 0, t1 = 0, tf = 0, tp = 0;
+                void Check(string what, Mesh m, bool fill, bool l0)
+                {
+                    int nt = m.triangles.Length / 3;
+                    if (m.vertexCount != 3 * nt)
+                        c.Fail(log, $"{what}: {m.vertexCount} vertices for {nt} triangles (three a triangle as exported: the import merged some)");
+                    if (!fill && !l0)
+                        return;
+                    var k = new List<Vector4>();
+                    var code = new List<Vector4>();
+                    m.GetUVs(2, k);
+                    m.GetUVs(7, code);
+                    if (k.Count != m.vertexCount || code.Count != m.vertexCount)
+                    {
+                        c.Fail(log, $"{what}: no UV2 or UV7 (the face kind and the code)");
+                        return;
+                    }
+                    int bad = 0;
+                    for (int i = 0; i < m.vertexCount; i++)
+                    {
+                        int cd = Mathf.RoundToInt(code[i].y), slice = cd % 8, mask = (cd / 8) % 8;
+                        if (fill && (Mathf.Abs(k[i].x - 6f) > 1e-4f || slice != 7 || mask != 0))
+                            bad++;
+                        else if (!fill && mask != 0)
+                            bad++;
+                    }
+                    if (bad > 0)
+                        c.Fail(log, fill ? $"{what}: {bad} corners not kind 6, slice 7, mask 0 (a fill plane's)" : $"{what}: {bad} corners masked at L0");
+                }
+                var kinds = new SortedDictionary<string, int>();
+                foreach (var p in c.pairs)
+                {
+                    Check(p.id + " L0", p.l0, false, true);
+                    Check(p.id + " L1", p.l1, false, false);
+                    t0 += p.l0.triangles.Length / 3;
+                    t1 += p.l1.triangles.Length / 3;
+                    kinds[p.kind] = kinds.TryGetValue(p.kind, out var n) ? n + 1 : 1;
+                }
+                int fills = 0, proxies = 0;
+                foreach (var s in c.singles)
+                {
+                    bool fill = !s.proxy;
+                    Check(s.id, s.mesh, fill, false);
+                    if (s.proxy)
+                    {
+                        proxies++;
+                        tp += s.mesh.triangles.Length / 3;
+                    }
+                    else
+                    {
+                        fills++;
+                        tf += s.mesh.triangles.Length / 3;
+                    }
+                }
+                var bounds = new Bounds();
+                bool any = false;
+                foreach (var m in used)
+                {
+                    if (!any)
+                        bounds = m.bounds;
+                    else
+                        bounds.Encapsulate(m.bounds);
+                    any = true;
+                }
+                log.AppendLine($"  {c.pairs.Count} neighbours ({string.Join(", ", System.Linq.Enumerable.Select(kinds, kv => $"{kv.Key} {kv.Value}"))}) at " +
+                               $"L0 {t0} and L1 {t1} triangles; {fills} fill planes ({tf} triangles); {proxies} grey proxies ({tp} triangles); " +
+                               $"its bounds {bounds.min.ToString("F3")} to {bounds.max.ToString("F3")} in the stone's frame");
+                foreach (var p in c.pairs)
+                    log.AppendLine($"    {p.id} ({p.kind}): L0 {p.l0.name} {p.l0.triangles.Length / 3}, L1 {p.l1.name} {p.l1.triangles.Length / 3} triangles");
+                foreach (var s in c.singles)
+                    log.AppendLine($"    {s.id} ({s.kind}{(s.proxy ? ", a proxy" : "")}): {s.mesh.name} {s.mesh.triangles.Length / 3} triangles");
+                log.AppendLine(c.fails.Count == 0 ? "  context: every check passes" : $"  context: {c.fails.Count} FAIL");
+                return c;
+            }
+        }
+
+        static string StoneMd5(string path)
+        {
+            using (var md5 = System.Security.Cryptography.MD5.Create())
+                return System.BitConverter.ToString(md5.ComputeHash(File.ReadAllBytes(path))).Replace("-", "").ToLowerInvariant()[..12];
+        }
+
         sealed class Piece
         {
             public string name;
             public MeshRenderer l0, l1, shadow;
             public MeshRenderer closer;  // a stone with undrawn faces: a shadow-only box inside it (Kit.Closer), or null
+            public MeshRenderer caps;    // the closer's caps alone: the open faces as faces, drawn only by Kit.OpenSeen's id render
+            // its context (Context), at its own transform: the neighbours' levels with their L1 shadow copies and closers,
+            // the fill planes and the grey proxies
+            public readonly List<MeshRenderer> ctx0 = new List<MeshRenderer>(), ctx1 = new List<MeshRenderer>(),
+                ctxShadow = new List<MeshRenderer>(), ctxClosers = new List<MeshRenderer>(), ctxFill = new List<MeshRenderer>(),
+                ctxProxy = new List<MeshRenderer>();
+            public Material proxyGrey;
+            public string contextSig = "no context";
+            public bool HasContext => ctx0.Count + ctxFill.Count + ctxProxy.Count > 0;
             public Vector3 front;        // street metres: the middle of its face to the street
             public float baseZ, height;
             public readonly List<Object> made = new List<Object>();
@@ -1283,6 +1691,23 @@ namespace Overstory.EditorTools
                     closer.sharedMaterial = m;
                     closer.shadowCastingMode = ShadowCastingMode.ShadowsOnly;
                 }
+                // the context: the neighbours at the stone's level, cast as the stone's are; the fill and the proxies at
+                // their one level, casting
+                void Set(List<MeshRenderer> rs, bool on, Material mat, ShadowCastingMode cast)
+                {
+                    foreach (var r in rs)
+                    {
+                        r.enabled = on;
+                        r.sharedMaterial = mat;
+                        r.shadowCastingMode = cast;
+                    }
+                }
+                Set(ctx0, isL0, m, ShadowCastingMode.Off);
+                Set(ctxShadow, isL0, m, ShadowCastingMode.ShadowsOnly);
+                Set(ctx1, !isL0, m, ShadowCastingMode.On);
+                Set(ctxClosers, Closing, m, ShadowCastingMode.ShadowsOnly);
+                Set(ctxFill, true, m, ShadowCastingMode.On);
+                Set(ctxProxy, true, proxyGrey != null ? proxyGrey : m, ShadowCastingMode.On);
                 Shader.SetGlobalFloat("_OS_PatchLineOff", config.Contains("noline") ? 1f : 0f);
                 Shader.SetGlobalFloat("_OS_PatchFlat", config.Contains("flat") ? 1f : 0f);
                 // (-near, a control for the patch fade: OS_Near 1 everywhere in the frame, Detail.hlsl's own debug
@@ -1292,9 +1717,31 @@ namespace Overstory.EditorTools
 
             public void Hide()
             {
-                l0.enabled = l1.enabled = shadow.enabled = false;
-                if (closer != null)
-                    closer.enabled = false;
+                foreach (var r in All())
+                    r.enabled = false;
+            }
+
+            /// <summary>Every renderer the piece made: its own and its context's.</summary>
+            public IEnumerable<MeshRenderer> All()
+            {
+                foreach (var r in new[] { l0, l1, shadow, closer, caps })
+                    if (r != null)
+                        yield return r;
+                foreach (var list in new[] { ctx0, ctx1, ctxShadow, ctxClosers, ctxFill, ctxProxy })
+                    foreach (var r in list)
+                        yield return r;
+            }
+
+            /// <summary>The context's renderers that draw in the frame now (the neighbours at the shown level, the fill,
+            /// the proxies).</summary>
+            public List<Renderer> ContextShown()
+            {
+                var shown = new List<Renderer>();
+                foreach (var list in new[] { ctx0, ctx1, ctxFill, ctxProxy })
+                    foreach (var r in list)
+                        if (r.enabled)
+                            shown.Add(r);
+                return shown;
             }
 
             /// <summary>A judging view by name: "5" face-on from 5 m with the top seen at 20 degrees, "eye5" from 5 m
@@ -1420,8 +1867,9 @@ namespace Overstory.EditorTools
             bool IsPiece(Renderer r)
             {
                 foreach (var p in pieces)
-                    if (r == p.l0 || r == p.l1 || r == p.shadow || (p.closer != null && r == p.closer))
-                        return true;
+                    foreach (var o in p.All())
+                        if (r == o)
+                            return true;
                 return false;
             }
 
@@ -1430,7 +1878,7 @@ namespace Overstory.EditorTools
             /// ground at the lowest corner (the ground's slope sinks the rest a little, as a stone lies bedded), and
             /// L1's shadow-only copy. Its face's middle is where the views look: the bounds' front, half its height up.
             /// </summary>
-            public Piece Place(string name, Vector2 stand, Mesh l0, Mesh l1, StringBuilder log, float? bed = null)
+            public Piece Place(string name, Vector2 stand, Mesh l0, Mesh l1, StringBuilder log, float? bed = null, Context ctx = null)
             {
                 var b = l1.bounds;
                 // (the bed's height in the mesh: L1's lowest point for the block; 0 for a stone whose pivot is on its bed,
@@ -1454,9 +1902,41 @@ namespace Overstory.EditorTools
                 piece.l0 = Make(name + " L0", l0, at, piece);
                 piece.l1 = Make(name + " L1", l1, at, piece);
                 piece.shadow = Make(name + " L1 shadow", l1, at, piece);
-                var box = Closer(l1, log);
+                var box = Closer(l1, log, out var caps);
                 if (box != null)
+                {
                     piece.closer = Make(name + " closer", box, at, piece);
+                    piece.caps = Make(name + " open faces", caps, at, piece);
+                    piece.caps.shadowCastingMode = ShadowCastingMode.Off;
+                }
+                // the context at the stone's own transform (it is in the stone's frame)
+                if (ctx != null)
+                {
+                    piece.proxyGrey = grey;
+                    piece.contextSig = $"context {StoneMd5(Path.Combine(Repo, "unity", ctx.fbx))}";
+                    var quiet = new StringBuilder();
+                    int closed = 0;
+                    foreach (var nb in ctx.pairs)
+                    {
+                        piece.ctx0.Add(Make($"{name} context {nb.id} L0", nb.l0, at, piece));
+                        piece.ctx1.Add(Make($"{name} context {nb.id} L1", nb.l1, at, piece));
+                        piece.ctxShadow.Add(Make($"{name} context {nb.id} L1 shadow", nb.l1, at, piece));
+                        var cb = Closer(nb.l1, quiet, out var nc);
+                        if (nc != null)
+                            Object.DestroyImmediate(nc);
+                        if (cb != null)
+                        {
+                            piece.ctxClosers.Add(Make($"{name} context {nb.id} closer", cb, at, piece));
+                            closed++;
+                        }
+                    }
+                    foreach (var sg in ctx.singles)
+                        (sg.proxy ? piece.ctxProxy : piece.ctxFill).Add(Make($"{name} context {sg.id}", sg.mesh, at, piece));
+                    log.AppendLine($"  context placed at the stone's transform: {ctx.pairs.Count} neighbours switching level with it (L0 " +
+                                   $"casting none, its L1 shadow-only copy casting; {closed} with their open borders capped, shadow-only, " +
+                                   $"as the stone's), {piece.ctxFill.Count} fill planes and {piece.ctxProxy.Count} grey proxies (the slate's " +
+                                   $"grey copy) casting; drawn, never counted");
+                }
                 piece.front = new Vector3(stand.x, stand.y - halfD, lowest + tall / 2f);
                 pieces.Add(piece);
                 log.AppendLine($"{name} on the stand ({stand.x}, {stand.y}): {b.size.x:F3} x {b.size.z:F3} m in plan, {tall:F3} high over " +
@@ -1480,8 +1960,9 @@ namespace Overstory.EditorTools
             /// would not cast. A mesh with no open edge gets none. (-noclose: not drawn, the control; a harness
             /// fixture, not the stone's.)
             /// </summary>
-            Mesh Closer(Mesh l1, StringBuilder log)
+            Mesh Closer(Mesh l1, StringBuilder log, out Mesh caps)
             {
+                caps = null;
                 var v = l1.vertices;
                 var t = l1.triangles;
                 // (corners by place: the export gives every triangle its own corners)
@@ -1580,6 +2061,11 @@ namespace Overstory.EditorTools
                 ln.AddRange(fn);
                 foreach (var i in ft)
                     lt.Add(baseIndex + i);
+                caps = new Mesh { name = "open faces", hideFlags = HideFlags.DontSave };
+                caps.SetVertices(fv);
+                caps.SetNormals(fn);
+                caps.SetTriangles(ft, 0);
+                caps.RecalculateBounds();
                 var m = new Mesh { name = "closer", hideFlags = HideFlags.DontSave };
                 m.SetVertices(lv);
                 m.SetNormals(ln);
@@ -1612,9 +2098,113 @@ namespace Overstory.EditorTools
             /// The piece's ids and normals (R2aIds.shader) and its mask, from the camera as the frames see it: every
             /// other renderer drawn black (it still hides what lies behind it), particles and lines off, post and the
             /// renderer features off, HDR and MSAA off, into a linear 8-bit target (no intermediate's rounding: the
-            /// slices' values are checked exact). All restored after.
+            /// slices' values are checked exact). All restored after. The targets are the stone's shown level, or the
+            /// context's shown renderers (stem ...-ctx: its ids alone, where SN5's joints are read).
             /// </summary>
-            public void Ids(Camera cam, Renderer target, string stem, StringBuilder log)
+            public void Ids(Camera cam, ICollection<Renderer> targets, string stem, StringBuilder log, bool normals = true)
+            {
+                int w = PlayerFrame.Width, h = PlayerFrame.Height;
+                var tex = new Texture2D(w, h, TextureFormat.RGBA32, false, true);
+                try
+                {
+                    IdPass(cam, targets, render =>
+                    {
+                        Directory.CreateDirectory(Path.GetDirectoryName(stem));
+                        Color32[] idPixels = null;
+                        foreach (var (mode, suffix) in normals ? new[] { (0f, "ids"), (1f, "normals") } : new[] { (0f, "ids") })
+                        {
+                            var px = render(mode);
+                            tex.SetPixels32(px);
+                            tex.Apply();
+                            File.WriteAllBytes($"{stem}-{suffix}.png", tex.EncodeToPNG());
+                            if (mode == 0f)
+                                idPixels = px;
+                        }
+                        // the mask: the targets' pixels (an id's green is never 0 on a stone); and the slices' values,
+                        // which must be exact (32 slice + 16) if nothing rounded them on the way
+                        var counts = new SortedDictionary<int, int>();
+                        int inexact = 0, n = 0;
+                        var mask = new Color32[idPixels.Length];
+                        for (int i = 0; i < idPixels.Length; i++)
+                        {
+                            byte g = idPixels[i].g;
+                            bool on = g > 0;
+                            mask[i] = on ? new Color32(255, 255, 255, 255) : new Color32(0, 0, 0, 255);
+                            if (!on)
+                                continue;
+                            n++;
+                            if ((g - 16) % 32 != 0)
+                                inexact++;
+                            counts[g] = counts.TryGetValue(g, out var k) ? k + 1 : 1;
+                        }
+                        tex.SetPixels32(mask);
+                        tex.Apply();
+                        File.WriteAllBytes($"{stem}-mask.png", tex.EncodeToPNG());
+                        var parts = new List<string>();
+                        foreach (var kv in counts)
+                            parts.Add((kv.Key - 16) % 32 == 0 ? $"slice {(kv.Key - 16) / 32}: {kv.Value}" : $"g {kv.Key}: {kv.Value}");
+                        log.AppendLine($"  ids {Path.GetFileName(Path.GetDirectoryName(stem))}/{Path.GetFileName(stem)}: {n} px; " +
+                                       $"{string.Join(", ", parts)}; {inexact} inexact");
+                        if (inexact > 0)
+                            Debug.LogWarning($"[LT1R2a] ids {stem}: {inexact} pixels' slice values are not exact: something rounded them");
+                    }, log);
+                }
+                finally
+                {
+                    Object.DestroyImmediate(tex);
+                }
+            }
+
+            /// <summary>
+            /// How much of the stone's open faces (its undrawn bed, back or ends: the closer's caps, as faces turned out)
+            /// the camera sees, in pixels: the caps drawn as ids, everything else black and hiding what lies behind it,
+            /// the caps culled where they face away. 0 is no open face seen. -1 when the stone has no open face. Its
+            /// mask is written to stem-open.png when any is seen.
+            /// </summary>
+            public int OpenSeen(Camera cam, Piece piece, string stem)
+            {
+                if (piece.caps == null)
+                    return -1;
+                int seen = 0;
+                piece.caps.enabled = true;
+                try
+                {
+                    IdPass(cam, new Renderer[] { piece.caps }, render =>
+                    {
+                        var px = render(0f);
+                        var mask = new Color32[px.Length];
+                        for (int i = 0; i < px.Length; i++)
+                        {
+                            bool on = px[i].g > 0;
+                            mask[i] = on ? new Color32(255, 255, 255, 255) : new Color32(0, 0, 0, 255);
+                            if (on)
+                                seen++;
+                        }
+                        if (seen > 0)
+                        {
+                            var tex = new Texture2D(PlayerFrame.Width, PlayerFrame.Height, TextureFormat.RGBA32, false, true);
+                            tex.SetPixels32(mask);
+                            tex.Apply();
+                            Directory.CreateDirectory(Path.GetDirectoryName(stem));
+                            File.WriteAllBytes($"{stem}-open.png", tex.EncodeToPNG());
+                            Object.DestroyImmediate(tex);
+                        }
+                    }, null);
+                }
+                finally
+                {
+                    piece.caps.enabled = false;
+                }
+                return seen;
+            }
+
+            /// <summary>
+            /// The id render's setting, round body: every enabled renderer drawn by R2aIds.shader, the targets as ids
+            /// (or normals) and every other black, particles and lines off, post, the renderer features, HDR and MSAA
+            /// off, the camera into a linear 8-bit target. body's render(mode) draws the frame (mode 0 ids, 1 normals)
+            /// and returns its pixels, bottom row first. All restored after.
+            /// </summary>
+            public void IdPass(Camera cam, ICollection<Renderer> targets, System.Action<System.Func<float, Color32[]>> body, StringBuilder log)
             {
                 var rendererData = AssetDatabase.LoadAssetAtPath<UniversalRendererData>("Assets/Settings/PC_Renderer.asset");
                 var data = cam.GetUniversalAdditionalCameraData();
@@ -1628,12 +2218,13 @@ namespace Overstory.EditorTools
                 int w = PlayerFrame.Width, h = PlayerFrame.Height;
                 var rt = new RenderTexture(w, h, 24, RenderTextureFormat.ARGB32, RenderTextureReadWrite.Linear) { antiAliasing = 1 };
                 var tex = new Texture2D(w, h, TextureFormat.RGBA32, false, true);
+                var target = new HashSet<Renderer>(targets);
                 try
                 {
-                    // (the town's renderers, and the piece's own: objects made DontSave are not found by a search)
+                    // (the town's renderers, and the pieces' own: objects made DontSave are not found by a search)
                     var all = new List<Renderer>(Object.FindObjectsByType<Renderer>(FindObjectsSortMode.None));
                     foreach (var p in pieces)
-                        all.AddRange(new Renderer[] { p.l0, p.l1, p.shadow });
+                        all.AddRange(p.All());
                     foreach (var r in all)
                     {
                         if (!r.enabled || mats.ContainsKey(r))
@@ -1647,7 +2238,7 @@ namespace Overstory.EditorTools
                         mats[r] = r.sharedMaterials;
                         var m = new Material[r.sharedMaterials.Length];
                         for (int i = 0; i < m.Length; i++)
-                            m[i] = r == target ? ids : blank;
+                            m[i] = target.Contains(r) ? ids : blank;
                         r.sharedMaterials = m;
                     }
                     if (rendererData != null)
@@ -1657,7 +2248,7 @@ namespace Overstory.EditorTools
                                 feats[f] = f.isActive;
                                 f.SetActive(false);
                             }
-                    if (!idsChecked)
+                    if (!idsChecked && log != null)
                     {
                         idsChecked = true;
                         var states = new List<string>();
@@ -1675,9 +2266,7 @@ namespace Overstory.EditorTools
                     cam.clearFlags = CameraClearFlags.SolidColor;
                     cam.backgroundColor = new Color(0f, 0f, 0f, 0f);
                     cam.targetTexture = rt;
-                    Directory.CreateDirectory(Path.GetDirectoryName(stem));
-                    Color32[] idPixels = null;
-                    foreach (var (mode, suffix) in new[] { (0f, "ids"), (1f, "normals") })
+                    body(mode =>
                     {
                         ids.SetFloat("_Mode", mode);
                         LT1Render.Render(cam, rt);
@@ -1687,37 +2276,8 @@ namespace Overstory.EditorTools
                         tex.ReadPixels(new Rect(0, 0, w, h), 0, 0);
                         tex.Apply();
                         RenderTexture.active = prev;
-                        File.WriteAllBytes($"{stem}-{suffix}.png", tex.EncodeToPNG());
-                        if (mode == 0f)
-                            idPixels = tex.GetPixels32();
-                    }
-                    // the mask: the piece's pixels (an id's green is never 0 on a stone); and the slices' values, which
-                    // must be exact (32 slice + 16) if nothing rounded them on the way
-                    var counts = new SortedDictionary<int, int>();
-                    int inexact = 0, n = 0;
-                    var mask = new Color32[idPixels.Length];
-                    for (int i = 0; i < idPixels.Length; i++)
-                    {
-                        byte g = idPixels[i].g;
-                        bool on = g > 0;
-                        mask[i] = on ? new Color32(255, 255, 255, 255) : new Color32(0, 0, 0, 255);
-                        if (!on)
-                            continue;
-                        n++;
-                        if ((g - 16) % 32 != 0)
-                            inexact++;
-                        counts[g] = counts.TryGetValue(g, out var k) ? k + 1 : 1;
-                    }
-                    tex.SetPixels32(mask);
-                    tex.Apply();
-                    File.WriteAllBytes($"{stem}-mask.png", tex.EncodeToPNG());
-                    var parts = new List<string>();
-                    foreach (var kv in counts)
-                        parts.Add((kv.Key - 16) % 32 == 0 ? $"slice {(kv.Key - 16) / 32}: {kv.Value}" : $"g {kv.Key}: {kv.Value}");
-                    log.AppendLine($"  ids {Path.GetFileName(Path.GetDirectoryName(stem))}/{Path.GetFileName(stem)}: {n} px; " +
-                                   $"{string.Join(", ", parts)}; {inexact} inexact");
-                    if (inexact > 0)
-                        Debug.LogWarning($"[LT1R2a] ids {stem}: {inexact} pixels' slice values are not exact: something rounded them");
+                        return tex.GetPixels32();
+                    });
                 }
                 finally
                 {

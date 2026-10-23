@@ -20,6 +20,8 @@ A config is a level (L0, L1) with its changes: -noline (L1's lit line off), -fla
   connected region of one id and one normal), eroded by 2 px, in grey; with its mean, SN7's one value;
 - the patches by distance (the fade, OS_Near): per face of L0, |L0 - L0-flat| on L* box-filtered 3 x 3, as drawn and with
   the near detail forced (-near: the mips alone), wherever those frames exist;
+- the arms against as built (SN7's A/B): per face of L0, |arm - L0| on L* box-filtered 3 x 3, for facets x2 and minor
+  ledges off, wherever those frames exist; their lines, specks and spread are counted as any config's;
 - the chamfer's width on screen (SN4: at least 2 px at 8 m): kind 1's runs across the top arris (columns) and the
   uprights (rows), through the middle half of the piece, the median run;
 - the pop (SN8): at each candidate switch k (the first dolly frame at 8, 10 and 12 m), the level's difference
@@ -225,6 +227,263 @@ def patch_signal(sdir, moment, look, view, faces_):
     return out
 
 
+def arm_signal(sdir, moment, look, view, faces_):
+    """What each arm changes against the patches as built, per face of L0 (SN7's A/B: facets x2, minor ledges off):
+    |arm - L0| on L* box-filtered 3 x 3, mean and 95th percentile, as the game draws it (the fade on). A bed face
+    never moves with the arm, so its value is the frame's noise floor (the pipeline's dither and the motes)."""
+    def frame(config):
+        f = os.path.join(sdir, moment, look, config, view + ".png")
+        return box3(lstar(read_png(f))) if os.path.exists(f) else None
+    base = frame("L0")
+    if base is None:
+        return None
+    out = {}
+    for arm in ("L0-facets2", "L0-nominor"):
+        a = frame(arm)
+        if a is None:
+            continue
+        rows = []
+        for k, sl, r in faces_:
+            d = np.abs(a - base)[r]
+            rows.append({"kind": KINDS[k] if k < len(KINDS) else k, "slice": sl, "px": int(r.sum()),
+                         "change": [round(float(d.mean()), 2), round(float(np.percentile(d, 95)), 2)]})
+        out[arm] = rows
+    return out or None
+
+
+# -- the joints (SN5) -----------------------------------------------------------------------------------------------
+
+RIM = 6.0       # L*: a chamfer this far above both the face and the joint beside it reads as a light rim (SN5's
+                # joint tolerance, taken for the rim as a starting value: SN5 gives the rim no number of its own)
+JOINT_TOL = 6.0     # L*: a joint's fill within this of the faces beside it (SN5, from The Witness's slides)
+JOINT_MM = 12.0     # the widest wall joint (SN5)
+GENERATED = os.path.join(REPO, "unity", "Assets", "Experiments", "LT1", "R2a", "Generated")
+
+
+def part_of(piece):
+    """The part a frames folder judges: step, wallstone or coping (step-alone: the step without its context)."""
+    return piece.split("-")[0]
+
+
+def length_mm(piece):
+    b = json.load(open(os.path.join(GENERATED, part_of(piece) + ".json")))["bounds"]["L0"]
+    return b["maxMm"][0] - b["minMm"][0]
+
+
+def classes(s_ids, s_mask, c_ids, c_mask):
+    """Each pixel's class: the stone's face kinds 0 to 3 (top, chamfer, split, bed) as 0 to 3, the joint's fill 6, a
+    neighbour's (or proxy's) kinds as 10 + kind, -1 neither (the town, the sky)."""
+    ks = (s_ids[..., 2].astype(np.int32) - 16) // 32
+    kc = (c_ids[..., 2].astype(np.int32) - 16) // 32
+    cls = np.full(s_mask.shape, -1, np.int32)
+    c = c_mask & ~s_mask
+    cls[c] = np.where(kc[c] == 6, 6, 10 + kc[c])
+    cls[s_mask] = ks[s_mask]
+    return cls
+
+
+def runs_of(seq):
+    """A line of classes as runs: [(class, start, length)]."""
+    out = []
+    for i, v in enumerate(seq):
+        if out and out[-1][0] == v:
+            out[-1][2] += 1
+        else:
+            out.append([v, i, 1])
+    return out
+
+
+def trimmed(run, take=None):
+    """A run's samples without its first and last pixel (the frame's MSAA blends them with the next class), when it is
+    3 px or more; its middle pixel otherwise. take: only the first n samples after the trim (the face beside)."""
+    _, a, n = run
+    idx = list(range(a + 1, a + n - 1)) if n >= 3 else [a + n // 2]
+    return idx[:take] if take else idx
+
+
+LENS_V = 46.4      # degrees: the 28 mm lens's vertical field (LT1R2a.cs, Lens28)
+EYE_DROP = 1.5     # m: about the eye's height over a stone's front at the eye views (their distance is along the ground)
+
+
+def px_per_mm(view):
+    """About how many pixels a millimetre at the stone's front spans in a view of 1440 rows (its distance from the
+    name: "5m" face-on from 5 m, "eye5" 5 m along the ground at eye height)."""
+    d = float(view[3:]) if view.startswith("eye") else float(view.rstrip("m"))
+    if view.startswith("eye"):
+        d = (d * d + EYE_DROP * EYE_DROP) ** 0.5
+    return 1440 / (2 * np.tan(np.radians(LENS_V / 2)) * d * 1000)
+
+
+def ctx_ids(sdir, level, view, shape):
+    """The context's ids in a view (what LT1R2a.cs drew beside the stone, the stone black), or none."""
+    stem = os.path.join(sdir, "ids", level, view + "-ctx")
+    if os.path.exists(stem + "-ids.png"):
+        return read_png(stem + "-ids.png").astype(np.int32), read_png(stem + "-mask.png")[..., 0] > 127
+    return np.zeros(shape + (3,), np.int32), np.zeros(shape, bool)
+
+
+JOINT_VIEWS = ("1m", "5m", "eye5")
+
+
+def joint_signal(L, cls, ppm):
+    """SN5 on one frame: per side of the stone (top, bottom, left, right), profiles across its edge through the middle
+    60% of that side (columns for top and bottom, rows for the ends). Walking out from the stone's outline: the
+    joint's fill, then the neighbour's chamfer and face (the course below's top first, where it shows); walking in: the
+    stone's chamfer, then its face (its top or bed first, where it shows above the chamfer). Each part's L* pooled over the profiles (each run trimmed of its blended ends), the
+    face beside a chamfer or joint its first 8 mm (at least 2 px). The rim on a side: the stone's chamfer less the
+    brighter of the face and the joint beside it; RIM or more reads as a light rim. The joint against the faces either
+    side: SN5's within JOINT_TOL."""
+    S = (cls >= 0) & (cls < 6)
+    ys, xs = np.nonzero(S)
+    if len(ys) < 50:
+        return None
+    rb = max(2, int(round(8 * ppm)))
+    reach = max(6, int(np.ceil((JOINT_MM + 20) * ppm)) + 4)     # how far a profile walks: a joint, a chamfer, a face
+    out = {"ppm": round(ppm, 4), "beside_px": rb}
+    y0, y1, x0, x1 = ys.min(), ys.max(), xs.min(), xs.max()
+    for side in ("top", "bottom", "left", "right"):
+        lines = []
+        if side in ("top", "bottom"):
+            lo, hi = x0 + (x1 - x0) // 5, x1 - (x1 - x0) // 5
+            for x in range(lo, hi + 1):
+                col = np.nonzero(S[:, x])[0]
+                if not len(col):
+                    continue
+                e = col.min() if side == "top" else col.max()
+                d = -1 if side == "top" else 1
+                lines.append((e, d, cls[:, x], L[:, x]))
+        else:
+            lo, hi = y0 + (y1 - y0) // 5, y1 - (y1 - y0) // 5
+            for y in range(lo, hi + 1):
+                row = np.nonzero(S[y, :])[0]
+                if not len(row):
+                    continue
+                e = row.min() if side == "left" else row.max()
+                d = -1 if side == "left" else 1
+                lines.append((e, d, cls[y, :], L[y, :]))
+        acc = {k: [] for k in ("chamfer", "face", "top", "joint", "n_top", "n_chamfer", "n_face")}
+        widths = {"chamfer": [], "joint": []}
+        gaps = n_prof = 0
+        for e, d, c, l in lines:
+            n_prof += 1
+            # outward from the outline: the joint, the neighbour
+            o = np.arange(e + d, e + d * (reach + 1), d)
+            o = o[(o >= 0) & (o < len(c))]
+            r = runs_of(c[o].tolist())
+            k = 0
+            if r and r[0][0] == -1 and any(q[0] >= 6 for q in r[1:]):
+                gaps += 1                       # the town or the sky seen between the stone and its joint: a slot
+                k = 1
+            if k < len(r) and r[k][0] == 6:
+                widths["joint"].append(r[k][2])
+                acc["joint"] += [l[o[i]] for i in trimmed(r[k])]
+                k += 1
+                if k < len(r) and r[k][0] in (10, 13) and k + 1 < len(r) and r[k + 1][0] in (11, 12):
+                    acc["n_top"] += [l[o[i]] for i in trimmed(r[k])]      # (the course below's top, seen from above)
+                    k += 1
+                if k < len(r) and r[k][0] == 11:
+                    acc["n_chamfer"] += [l[o[i]] for i in trimmed(r[k])]
+                    k += 1
+                if k < len(r) and r[k][0] in (10, 12):
+                    acc["n_face"] += [l[o[i]] for i in trimmed(r[k], rb)]
+            # inward: the stone's chamfer and face (the coping's top or a tread's top before them, where it shows)
+            i_ = np.arange(e, e - d * reach, -d)
+            i_ = i_[(i_ >= 0) & (i_ < len(c))]
+            r = runs_of(c[i_].tolist())
+            k = 0
+            if k < len(r) and r[k][0] in (0, 3) and k + 1 < len(r) and r[k + 1][0] == 1:
+                acc["top"] += [l[i_[i]] for i in trimmed(r[k])]
+                k += 1
+            if k < len(r) and r[k][0] == 1:
+                widths["chamfer"].append(r[k][2])
+                acc["chamfer"] += [l[i_[i]] for i in trimmed(r[k])]
+                k += 1
+            if k < len(r) and r[k][0] == 2:
+                acc["face"] += [l[i_[i]] for i in trimmed(r[k], rb)]
+
+        def med(v):
+            return round(float(np.median(v)), 2) if len(v) >= 8 else None
+        rec = {"profiles": n_prof, "slots": gaps}
+        for k, v in acc.items():
+            rec[k] = med(v)
+            rec[k + "_n"] = len(v)
+        rec["joint_p5"] = round(float(np.percentile(acc["joint"], 5)), 2) if len(acc["joint"]) >= 8 else None
+        for k, v in widths.items():
+            rec[k + "_px"] = float(np.median(v)) if v else None
+            rec[k + "_mm"] = round(float(np.median(v)) / ppm, 1) if v else None
+        if rec["chamfer"] is not None:
+            beside = [x for x in (rec["face"], rec["joint"], rec["top"]) if x is not None]
+            rec["rim"] = round(rec["chamfer"] - max(beside), 2) if beside else None
+        else:
+            rec["rim"] = None
+        if rec["joint"] is not None:
+            rec["joint_vs_face"] = round(rec["joint"] - rec["face"], 2) if rec["face"] is not None else None
+            rec["joint_vs_neighbour"] = round(rec["joint"] - rec["n_face"], 2) if rec["n_face"] is not None else None
+        out[side] = rec
+    jointed = [s for s in ("top", "bottom", "left", "right") if out[s]["joint"] is not None]
+    rimmed = [s for s in ("top", "bottom", "left", "right") if (out[s]["rim"] or -99) >= RIM]
+    out["jointed"], out["rimmed"] = jointed, rimmed
+    out["rings"] = bool(jointed) and all(s in rimmed for s in jointed) and len(jointed) >= 2
+    out["joint_off"] = [s for s in jointed if any(abs(out[s].get(k) or 0) > JOINT_TOL for k in ("joint_vs_face", "joint_vs_neighbour"))]
+    return out
+
+
+def chamfer_facets(L, cls, normals, ppm):
+    """Every chamfer facet of the stone on screen (one connected region of kind 1 and one normal, 12 px or more)
+    against what lies beside it, wherever it is (a coping's front arris borders its top, not a joint): its L* (trimmed
+    of its blended edge where that leaves 30% of it) and, in a band from 2 px to 8 mm (at least 3 px) beyond it, the
+    stone's top or bed, its split faces, the joint's fill and the context's pieces, each a median where it is 15% or
+    more of the band (not a corner's alone). Its rim: its L* less
+    the brightest of them; RIM or more reads as a light line along that arris. Named by its normal (top, bottom) or,
+    upright, by its side on screen."""
+    cham = cls == 1
+    if not cham.any():
+        return []
+    nkey = ((normals[..., 0] // 8) << 10) | ((normals[..., 1] // 8) << 5) | (normals[..., 2] // 8)
+    rb = max(3, int(round(8 * ppm)))
+    S = (cls >= 0) & (cls < 6)
+    cx = np.nonzero(S)[1].mean()
+    out = []
+    for k in np.unique(nkey[cham]):
+        ys, xs, lab = pieces(cham & (nkey == k))
+        for gy, gx in zip(*groups(ys, xs, lab)):
+            if len(gy) < 12:
+                continue
+            g = np.zeros(cls.shape, bool)
+            g[gy, gx] = True
+            core = erode(g, 1)
+            if core.sum() < 0.3 * len(gy):
+                core = g
+            ring = dilate(g, rb) & ~dilate(g, 1)
+            n = normals[gy[0], gx[0]].astype(np.float64) / 255 * 2 - 1
+            name = "top" if n[1] > 0.5 else "bottom" if n[1] < -0.5 else ("left" if gx.mean() < cx else "right")
+            rec = {"side": name, "px": int(len(gy)), "normal": [round(float(v), 3) for v in n],
+                   "box": [int(gx.min()), int(gy.min()), int(gx.max()), int(gy.max())],
+                   "L": round(float(np.median(L[core])), 2)}
+            seen = int((ring & (cls >= 0)).sum())
+            for part, m in (("top", (cls == 0) | (cls == 3)), ("face", cls == 2), ("joint", cls == 6), ("context", cls >= 10)):
+                m = ring & m
+                # (a part only at the facet's ends, a corner's, under 15% of what lies beside it, is not beside it)
+                rec[part] = round(float(np.median(L[m])), 2) if m.sum() >= max(8, 0.15 * seen) else None
+            beside = [rec[p_] for p_ in ("top", "face", "joint", "context") if rec[p_] is not None]
+            rec["rim"] = round(rec["L"] - max(beside), 2) if beside else None
+            out.append(rec)
+    return sorted(out, key=lambda r: -r["px"])
+
+
+def joint_lines(frame, cls, ppm):
+    """r0b's lines in the ring round the stone's outline (its joint and the faces either side, out to the widest joint
+    and 8 mm in): the bright lines lying along the joints (a light rim drawn as a line) and the dark ones (a dark
+    outline, SN5's other fault)."""
+    S = (cls >= 0) & (cls < 6)
+    C = cls >= 6
+    rj = max(3, int(np.ceil(JOINT_MM * ppm)) + 2)
+    rin = max(3, int(np.ceil(20 * ppm)))
+    ring = (S | C) & dilate(S, rj) & ~erode(S, rin)
+    res, marks = count(frame, ring, overlay=True)
+    return {k: res[k] for k in ("mask_px", "bright_line_px", "bright_lines", "dark_line_px", "dark_lines")}, marks
+
+
 # -- the pop ---------------------------------------------------------------------------------------------------------
 
 def box3(a):
@@ -232,15 +491,23 @@ def box3(a):
     return sum(p[1 + dy:1 + dy + a.shape[0], 1 + dx:1 + dx + a.shape[1]] for dy in (-1, 0, 1) for dx in (-1, 0, 1)) / 9.0
 
 
-def pop(dolly_dir, look):
+def pop(sdir, dolly_dir, look):
     d = json.load(open(os.path.join(dolly_dir, "dolly.json")))
     dist, win = d["distances"], d["windows"]
     cw, ch = d["crop"][2], d["crop"][3]
+    mdir = os.path.join(sdir, "ids", "dolly")
+    # the stone's own masks (ids/dolly/<level>/NNN.png: its context drawn and never counted), else its box on screen
+    masks = all(len([f for f in ls(os.path.join(mdir, lv)) if f.endswith(".png")]) == len(dist) for lv in ("L0", "L1"))
 
     def L(level, i):
         return box3(lstar(read_png(os.path.join(dolly_dir, look, level, f"{i:03d}.png"))))
 
-    def region(i):
+    def mask(level, i):
+        return read_png(os.path.join(mdir, level, f"{i:03d}.png"))[..., 0] > 127
+
+    def region(i, levels):
+        if masks:
+            return dilate(np.logical_or.reduce([mask(lv, j) for lv, j in levels]), 3)
         x0, y0, x1, y1 = win[i]
         m = np.zeros((ch, cw), bool)
         m[max(0, int(y0) - 3):min(ch, int(np.ceil(y1)) + 4), max(0, int(x0) - 3):min(cw, int(np.ceil(x1)) + 4)] = True
@@ -249,18 +516,18 @@ def pop(dolly_dir, look):
     def stats(a, m):
         v = a[m]
         return {"mean": round(float(v.mean()), 3), "p99": round(float(np.percentile(v, 99)), 2), "max": round(float(v.max()), 2)}
-    out = {"step_mm": round(1000 * d["step"], 1), "frames": d["frames"]}
+    out = {"step_mm": round(1000 * d["step"], 1), "frames": d["frames"], "region": "mask" if masks else "box"}
     for s in SWITCHES:
         k = next((i for i, x in enumerate(dist) if x >= s - 1e-6), None)
         if k is None or k == 0:
             continue
-        m = region(k)
+        m = region(k, (("L0", k - 1), ("L0", k), ("L1", k)))
         a0p, a0, a1 = L("L0", k - 1), L("L0", k), L("L1", k)
         out[f"{s:g}"] = {"frame": k, "at_m": dist[k], "level": stats(np.abs(a1 - a0), m),
                          "switch": stats(np.abs(a1 - a0p), m), "motion": stats(np.abs(a0 - a0p), m)}
     curve = []
     for i in range(0, len(dist), max(1, int(round(0.5 / d["step"])))):
-        curve.append([round(dist[i], 2), stats(np.abs(L("L1", i) - L("L0", i)), region(i))["mean"]])
+        curve.append([round(dist[i], 2), stats(np.abs(L("L1", i) - L("L0", i)), region(i, (("L0", i), ("L1", i))))["mean"]])
     out["level_along"] = curve
     return out
 
@@ -282,6 +549,9 @@ def count_piece(piece):
         tj = os.path.join(sdir, "ids", "triangles.json")
         if os.path.exists(tj):
             out[f"triangles/{piece}/{stand}"] = json.load(open(tj))
+        oj = os.path.join(sdir, "ids", "open.json")
+        if os.path.exists(oj):
+            out[f"open/{piece}/{stand}"] = json.load(open(oj))
         mj = os.path.join(sdir, "ids", "mesh.json")
         if os.path.exists(mj):
             out[f"mesh/{piece}/{stand}"] = json.load(open(mj))
@@ -308,6 +578,16 @@ def count_piece(piece):
                         by_view.setdefault(view, ({}, {}))
                         by_view[view][0][config] = out[key]
                         by_view[view][1][config] = specks
+                        if config in ("L0", "L1") and view in JOINT_VIEWS:
+                            ci, cm = ctx_ids(sdir, level, view, mask.shape)
+                            cls = classes(ids, mask, ci, cm)
+                            Lf = lstar(frame)
+                            j = joint_signal(Lf, cls, px_per_mm(view))
+                            if j is not None:
+                                j["context"] = bool(cm.any())
+                                j["chamfers"] = chamfer_facets(Lf, cls, normals, px_per_mm(view))
+                                j["lines"] = joint_lines(frame, cls, px_per_mm(view))[0]
+                                out["joint/" + key] = j
                         if look == "grey" and level == "L0":
                             L = lstar(frame)
                             out["spread/" + key] = [
@@ -322,11 +602,14 @@ def count_piece(piece):
                     sig = patch_signal(sdir, moment, look, view, faces(ids, normals, mask))
                     if sig is not None:
                         out[f"patch/{piece}/{stand}/{moment}/{look}/{view}"] = sig
+                    arms = arm_signal(sdir, moment, look, view, faces(ids, normals, mask))
+                    if arms is not None:
+                        out[f"arm/{piece}/{stand}/{moment}/{look}/{view}"] = arms
         for moment in ls(os.path.join(sdir, "dolly")):
             ddir = os.path.join(sdir, "dolly", moment)
             for look in ls(ddir):
                 if os.path.isdir(os.path.join(ddir, look)):
-                    out[f"pop/{piece}/{stand}/{moment}/{look}"] = pop(ddir, look)
+                    out[f"pop/{piece}/{stand}/{moment}/{look}"] = pop(sdir, ddir, look)
                     print("pop", piece, stand, moment, look, flush=True)
     return out
 
@@ -336,7 +619,7 @@ def run(pieces_):
     out = json.load(open(cj)) if os.path.exists(cj) else {}
     for p in pieces_:
         for k in [k for k in out if k.split("/")[0] == p
-                  or (k.split("/")[0] in ("spread", "chamfer", "triangles", "mesh", "pop", "patch") and k.split("/")[1] == p)]:
+                  or (k.split("/")[0] in ("spread", "chamfer", "triangles", "mesh", "pop", "patch", "arm", "joint", "open") and k.split("/")[1] == p)]:
             del out[k]
         out.update(count_piece(p))
     with open(cj, "w") as fh:
@@ -400,6 +683,43 @@ def table(pieces_):
             cells = "; ".join(f"{f['kind']} {f['slice']} {f['px']}: {f['fade'][0]:.2f} / {f['fade'][1]:.1f}"
                               + (f", {f['mips'][0]:.2f} / {f['mips'][1]:.1f}" if "mips" in f else "") for f in c[k])
             rows.append(f"| {'/'.join(parts[1:5])} | {parts[5]} | {cells} |")
+    rows += ["", "| the arms against as built (L* box 3x3) | view | arm | faces: kind slice px, change mean / p95 |",
+             "| --- | --- | --- | --- |"]
+    for k in sorted(c, key=lambda k: (k.split("/")[:-1], view_order(k.split("/")[-1]))):
+        parts = k.split("/")
+        if parts[0] == "arm" and parts[1] in pieces_:
+            for arm, faces_ in sorted(c[k].items()):
+                cells = "; ".join(f"{f['kind']} {f['slice']} {f['px']}: {f['change'][0]:.2f} / {f['change'][1]:.1f}" for f in faces_)
+                rows.append(f"| {'/'.join(parts[1:5])} | {parts[5]} | {arm} | {cells} |")
+    rows += ["", "| open faces seen (px of the undrawn bed, back and ends; -1 none to see) | level/view: px |", "| --- | --- |"]
+    for k in sorted(c):
+        parts = k.split("/")
+        if parts[0] == "open" and parts[1] in pieces_:
+            rows.append(f"| {'/'.join(parts[1:])} | " + "; ".join(f"{lv} {n}" for lv, n in sorted(c[k].items())) + " |")
+    rows += ["", f"| joints (SN5, L* median; rim = chamfer - brighter beside, a rim at {RIM:g}; joint within {JOINT_TOL:g} of the faces) "
+             "| view | side | chamfer px (mm) / L* | face | top | joint px (mm) / L* / p5 | neighbour chamfer / face | rim | "
+             "joint - face / - neighbour | slots |", "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |"]
+    f_ = lambda v: "-" if v is None else f"{v:.1f}"
+    for k in sorted(c, key=lambda k: (k.split("/")[:-1], view_order(k.split("/")[-1]))):
+        parts = k.split("/")
+        if parts[0] == "joint" and parts[1] in pieces_:
+            j = c[k]
+            for side in ("top", "bottom", "left", "right"):
+                r = j[side]
+                if r["chamfer"] is None and r["joint"] is None:
+                    continue
+                rows.append(f"| {'/'.join(parts[1:6])} | {parts[6]} | {side} | {f_(r['chamfer_px'])} ({f_(r['chamfer_mm'])}) / {f_(r['chamfer'])} | "
+                            f"{f_(r['face'])} | {f_(r['top'])} | {f_(r['joint_px'])} ({f_(r['joint_mm'])}) / {f_(r['joint'])} / {f_(r['joint_p5'])} | "
+                            f"{f_(r['n_chamfer'])} / {f_(r['n_face'])} | {f_(r['rim'])} | {f_(r.get('joint_vs_face'))} / "
+                            f"{f_(r.get('joint_vs_neighbour'))} | {r['slots']} of {r['profiles']} |")
+            for f in j.get("chamfers", []):
+                rows.append(f"| {'/'.join(parts[1:6])} | {parts[6]} | chamfer facet {f['side']} ({f['px']} px) | {f_(f['L'])} | "
+                            f"{f_(f['face'])} | {f_(f['top'])} | {f_(f['joint'])} | context {f_(f['context'])} | {f_(f['rim'])} | | |")
+            ln = j["lines"]
+            rows.append(f"| {'/'.join(parts[1:6])} | {parts[6]} | all | rimmed: {', '.join(j['rimmed']) or 'none'} of jointed: "
+                        f"{', '.join(j['jointed']) or 'none'}; rings: {'YES' if j['rings'] else 'no'}; joint off by more than {JOINT_TOL:g}: "
+                        f"{', '.join(j['joint_off']) or 'none'}; lines in the joints' ring: bright {ln['bright_lines']} ({ln['bright_line_px']} px), "
+                        f"dark {ln['dark_lines']} ({ln['dark_line_px']} px) | | | | | | | |")
     print("\n".join(rows))
 
 
