@@ -181,3 +181,18 @@ Proposals wait here for the next milestone's fresh reviewer, who sees the plan a
   No rendered test in a second style is proposed (Øystein: "yes not the test"). Øystein, on the proposal: "Yeah not sure about this, but we'll se on Monday".
 - **Standing cost:** one rule in the check command. The paper check is about 1 to 2% of a week on Opus, once.
 - **What would change our minds:** the paper check finding the layers already apart, so (a) alone is enough; or keeping them apart costing more than the parts it protects. A chosen game committing to this one style for good would not, since the town must make many games (`docs/town-plan.md`).
+
+## Q19. Look before numbers, short sessions, measuring by script
+
+- **Evidence:**
+  - Øystein, 23 October, after R2a: "still very expensive to build".
+  - `docs/usage-log.md`: building itself was about a fifth of usage, and research, review and docs together 59%. A request's cost is mostly the re-reading of its context: building cost $14 an hour in a fresh agent and $22 in the main session.
+  - R2a, three stones, ran in one session of 1,295 messages. It measured each switch's p99 against motion in several lights, distances and contexts, then moved every number to data and proved it pure. Its review found the wall reads as orange tiles in a near-black grid beside reference 10 (`3cde7aa`). One still beside the reference shows that. The walk's session ran to 1,223 messages.
+  - Three builders drew about $28 an hour on 22 October, and the credits ran out on 23 October at 14:35.
+- **Change:** four rules for every build rung, with the bar unchanged:
+  - (a) a rung's first output is one still beside its reference, in grey and in one light, and the sweep of lights, distances and p99s runs only after that still passes a quick look (the ladder of fidelity, made a gate);
+  - (b) one rung per fresh session, handed over in a short file, and a session that passes about 300 messages hands off;
+  - (c) a measurement used twice becomes a script in `tools/check.py`, run for no tokens, never read again by an agent by hand;
+  - (d) strict reviews only at the plan's milestones, not per rung.
+- **Standing cost:** none; `tools/check.py` is already planned for 26 October.
+- **What would change our minds:** R2b's first rung run this way costing no less per judged part than R2a (measured in `docs/usage-log.md`), or the quick still missing a fault the full sweep would have caught, which then costs a later round.

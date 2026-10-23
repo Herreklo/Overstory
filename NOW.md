@@ -40,7 +40,7 @@ Each session commits its own work; a stopped one resumes from its files. Long wo
 
 ## For the milestone's reviewer (Monday 26 October)
 
-- `docs/proposals.md`: proposed changes to the plan and the rules (Q1 to Q18), for the next milestone's fresh reviewer. Nothing in it is acted on before then.
+- `docs/proposals.md`: proposed changes to the plan and the rules (Q1 to Q19), for the next milestone's fresh reviewer. Nothing in it is acted on before then.
 - `reviews/docs-trim/disagreements.md`: 56 places where the design docs disagree, not settled.
 
 ## Waiting for Øystein
