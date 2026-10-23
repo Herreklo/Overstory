@@ -51,7 +51,7 @@
   "budgets": {
     "view": "street-stop",
     "shadingOverFlatUs": { "stone": 600 },
-    "provisional": false
+    "provisional": true
   },
   "motion": [{ "element": "body", "class": "still", "deform": "none" }],
   "affordances": [
