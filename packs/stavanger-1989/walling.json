@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "describes": "How this pack's builders laid walls of stone, by working: the sizes their stone was split or dressed to and how they laid it (the courses, the stones, the copings, the heads, the through stones, a rebuilt panel's edges, the steps' laps and joints). The wall kind's plan stage reads it (kinds/wall.json; at R1, blender/generators/masonry.py through tools/r1_elevations.py), by the working a wall's, a rebuilt panel's or a stair's facts name. A working names its material (materials/<id>.json), whose wear and cracking are the material's own. The wall's structure (its parapet, its stepped top, its heads, its panels' teeth) is the kind's; the rules of any wall (level beds, SN10's bond, SN2's sliver and acute limits) are code's.",
+  "describes": "How this pack's builders laid walls of stone, by working: the sizes their stone was split or dressed to and how they laid it (the courses, the stones, the copings, the heads, the through stones, the joints, the face's batter, the top's thickness and the copings' overhang, a rebuilt panel's edges, the steps' laps and joints). The wall kind's plan stage reads it (kinds/wall.json; at R1, blender/generators/masonry.py through tools/r1_elevations.py; at R2a, the stones' part functions, blender/parts/stone/slate/stones.py and context.py, which have no defaults: a missing key is an error), by the working a wall's, a rebuilt panel's or a stair's facts name. A working names its material (materials/<id>.json), whose wear and cracking are the material's own. The wall's structure (its parapet, its stepped top, its heads, its panels' teeth) is the kind's; the rules of any wall (level beds, SN10's bond, SN2's sliver and acute limits) are code's.",
   "workings": {
     "dry-split-1874": {
       "material": "slate",
@@ -64,6 +64,20 @@
         800,
         1000
       ],
+      "jointMm": [
+        4,
+        12
+      ],
+      "batterPerHeight": [
+        1,
+        6
+      ],
+      "topThickMm": 420,
+      "copeOverMm": 50,
+      "copeProudMm": [
+        15,
+        35
+      ],
       "steps": {
         "lapMm": [
           40,
@@ -90,6 +104,20 @@
           200,
           270
         ]
+      ],
+      "jointMm": [
+        4,
+        12
+      ],
+      "batterPerHeight": [
+        1,
+        6
+      ],
+      "topThickMm": 420,
+      "copeOverMm": 50,
+      "copeProudMm": [
+        15,
+        35
       ]
     }
   },
@@ -100,7 +128,7 @@
     "riseOneMm": "A rise up to this is one course; over it, one line between, the lower course the larger: about 190 mm, the largest rise the coordinator's read lets one course cover.",
     "foundationMm": "The courses under the foot: larger than any rise, the largest courses low (31 and 36: the biggest stone at the foot).",
     "stoneMm": "A face stone's length: from 180 mm (wall.py's shortest) to 850 mm, so that SN10's 4.5 times a 190 mm course can stand (wall.py's 620 mm longest was for courses to 140 mm).",
-    "drawnPerHeight": "A face stone's length is drawn from 3/2 to 4/1 times its course's height (the slabs in 31 and 36 are long for their height), within stoneMm and SN10's 4.5.",
+    "drawnPerHeight": "A face stone's length is drawn from 3/2 to 4/1 times its course's height (the slabs in 31 and 36 are long for their height), within stoneMm and SN10's 4.5. A draw, not a limit: the limits are SN2's sliver and SN10's 4.5, and the 139 stones R1 lays outside it are closers and cuts.",
     "shortMm": "Where the geometry leaves a run no whole stones fill, the least a stone may be; every such stone is flagged in the laying's report.",
     "copeThickMm": "A coping slab's thickness, split slate (wall.py's).",
     "copeNominalMm": "Its nominal thickness: the ideal bed is the pitch line plus the kind's parapet less this.",
@@ -112,7 +140,12 @@
     "throughMm": "A through stone's face. A dry wall is tied by through stones (docs/research/stone.md, Walls and Stones and bonding).",
     "throughFirstMm": "The first through from a panel's start.",
     "throughEveryMm": "And then one every 800 to 1000 mm: throughs about every 90 cm in dry double walls (docs/research/stone.md, secondary).",
+    "jointMm": "A joint's width between two of the wall's stones, its faces' and its copings' (SN5: 4 to 12 mm in the walls); a stone is set into its cell by a seeded half joint on each side, 2 to 6 mm. R1 lays the cells with none (the stones meet at their outlines); R2a's stones draw them (reviews/lt1/port/2b/r2a/stones/blender.md). Not the steps' tread joints, which are steps.jointMm (4 to 10 mm).",
+    "batterPerHeight": "How far the face leans back for its height, back then up: about one in six (SN2; wall.py's BATTER, 1/6). Only the face is cut at it; the beds stay level.",
+    "topThickMm": "The wall's thickness at its top, under the coping (wall.py's DEPTH, 0.42 m): a coping spans it and its overhangs, and a face stone's hidden back is half of it.",
+    "copeOverMm": "How much wider a standing wall's coping is than the wall's top, its overhangs on both faces together (wall.py: a standing wall's coping DEPTH + 0.05 m wide).",
+    "copeProudMm": "How far a coping's front stands proud of the face under it, least and most (wall.py's 15 to 35 mm); its back stands the rest of copeOverMm.",
     "steps": "The stair's block steps, split slate, dry (SN3, SN5): each step's front bears lapMm on the back of the one below; a tread's joint is jointMm wide; no joint lies within jointClearMm of the joint on the step below.",
-    "cement-relaid-1961": "The 1961 rebuild of fl-0/r's middle (the facts' rebuilt: it bulged where the lane's water ran behind it): the wall's own stones reclaimed and relaid in cement, so its stones are the wall's working's; its own numbers are only its edges, long and short in alternate courses against the old work (wall.py's)."
+    "cement-relaid-1961": "The 1961 rebuild of fl-0/r's middle (the facts' rebuilt: it bulged where the lane's water ran behind it): the wall's own stones reclaimed and relaid in cement, so its stones are the wall's working's; its own numbers are only its edges, long and short in alternate courses against the old work (wall.py's). Relaid on the wall's own line, so its joints, its batter, its top's thickness and its copings' overhang are the old work's either side (the same values as dry-split-1874's), its joints mortared within SN5's 4 to 12 mm for the walls."
   }
 }

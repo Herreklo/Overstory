@@ -11,11 +11,11 @@
   "sockets": [],
   "removalMark": null,
   "levels": {
-    "l0": { "errorMm": 1, "triangles": 120, "shadow": "none", "collision": "proxy" },
-    "l1": { "errorMm": 11, "triangles": 48, "shadow": "self", "collision": "proxy" },
-    "l2": { "errorMm": 25, "triangles": 0, "shadow": "proxy", "collision": "proxy" },
-    "l3": { "errorMm": 100, "triangles": 0, "shadow": "proxy", "collision": "proxy" },
-    "l4": { "errorMm": 250, "triangles": 0, "shadow": "proxy", "collision": "proxy" }
+    "l0": { "triangles": 120, "shadow": "none", "collision": "proxy" },
+    "l1": { "triangles": 48, "shadow": "self", "collision": "proxy" },
+    "l2": { "triangles": 0, "shadow": "proxy", "collision": "proxy" },
+    "l3": { "triangles": 0, "shadow": "proxy", "collision": "proxy" },
+    "l4": { "triangles": 0, "shadow": "proxy", "collision": "proxy" }
   },
   "motion": [{ "element": "stone", "class": "still", "deform": "none" }],
   "intrinsicChannels": ["face-kind", "edge-distance"],
@@ -24,5 +24,17 @@
   "materials": ["slate"],
   "function": { "python": "blender/parts/stone/slate/stones.py:coping", "csharp": null },
   "lifecycle": { "state": "draft" },
-  "note": "Sizes from R1's walling table (packs/stavanger-1989/walling.json, the dry-split-1874 working) and its laying: w a coping's cell (copeLeastMm 200 where a run leaves less than a slab, to copeLengthMm's 1000) less a half joint (2 to 6 mm) at each joint end; h its run's thickness (copeThickMm 70 to 100) less its bed's half joint; d the wall's top (wall.py's 420 mm) and its overhangs (50 mm on a standing wall). Levels: the design's SN8 budgets per piece (120 and 48); L1's error is L0's chamfers' (their sagitta, 8.5 mm at a 12 mm leg; up to 9.8 mm measured at a corner where two meet), 11 mm as the step's, against kinds/wall.json's 4 (blender.md, the conflicts); L2 to L4 are the chunk's. The part's own numbers (chamfer, which arrises it takes, chips, patch sets) are stones.py's PARAMS until this schema takes a params object (reviews/lt1/port/2b/r2a/stones/blender.md)."
+  "params": {
+    "chamferMm": { "value": [10, 12], "note": "SN4: the top's arrises chamfered, a seeded leg of 10 to 12 mm per slab." },
+    "chamferMeasure": { "value": "leg", "note": "Measured along each face, as a mason gives it (C10); 'face' (the chamfer's width) is not built." },
+    "arrisMaxDeg": { "value": 160, "note": "Two faces meeting at a turn of 20 degrees or more meet at an arris (a face's own facets never do: they are one face)." },
+    "bedChamfer": { "value": false, "note": "As the wall stone's: the bed's arrises square (SN7)." },
+    "uprightChamfer": { "value": false, "note": "The ends' upright arrises square: each meets two of the top's at a corner, and three chamfers meet in a point whose tips are under SN8's 2 px at 8 m whatever the triangulation; two meet in a mitre (blender.md, the corners)." },
+    "chipChamfer": { "value": false, "note": "A knock is a break after the dressing: sharp, through the top's chamfers." },
+    "chipPerMille": { "value": 250, "note": "An open end's top corners knocked, per mille of corners (SN4: chips at a coping's ends)." },
+    "chipLegMm": { "value": [50, 80], "note": "A knock's legs along and back, least and most: at least SN9's 50 mm (no sliver)." },
+    "patches": { "value": {"split": ["split-0", "split-1", "split-2", "split-3"], "bed": ["bed-0", "bed-1"]}, "note": "The face patches (blender/parts/stone/slate/patches.manifest.json; SN6) each kind of face draws one from by seed: a split face from the split ones, the top and bed (bed faces) from the bed ones." },
+    "chipDepthPerMille": { "value": 500, "note": "And down at most this share of the slab's thickness, per mille: a knock takes no more than half the coping." }
+  },
+  "note": "Sizes from R1's walling table (packs/stavanger-1989/walling.json, the dry-split-1874 working) and its laying: w a coping's cell (copeLeastMm 200 where a run leaves less than a slab, to copeLengthMm's 1000) less a half joint (2 to 6 mm) at each joint end; h its run's thickness (copeThickMm 70 to 100) less its bed's half joint; d the wall's top (wall.py's 420 mm) and its overhangs (50 mm on a standing wall). Levels: the design's SN8 budgets per piece (120 and 48); their errors are the wall kind's (kinds/wall.json: levels), the one source (design.md SN8): L1's is L0's chamfers' (8.5 mm at a 12 mm leg; up to 9.8 mm at a corner where two meet). L2 to L4 are the chunk's. The part's own numbers are its params, each with its reason; the working's (joints, batter, the top's thickness, the overhang and how proud the front stands) are walling.json's (reviews/lt1/port/2b/r2a/stones/blender.md, Data and code)."
 }

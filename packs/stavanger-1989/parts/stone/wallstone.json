@@ -11,11 +11,11 @@
   "sockets": [],
   "removalMark": null,
   "levels": {
-    "l0": { "errorMm": 1, "triangles": 40, "shadow": "none", "collision": "proxy" },
-    "l1": { "errorMm": 11, "triangles": 16, "shadow": "self", "collision": "proxy" },
-    "l2": { "errorMm": 25, "triangles": 0, "shadow": "proxy", "collision": "proxy" },
-    "l3": { "errorMm": 100, "triangles": 0, "shadow": "proxy", "collision": "proxy" },
-    "l4": { "errorMm": 250, "triangles": 0, "shadow": "proxy", "collision": "proxy" }
+    "l0": { "triangles": 40, "shadow": "none", "collision": "proxy" },
+    "l1": { "triangles": 16, "shadow": "self", "collision": "proxy" },
+    "l2": { "triangles": 0, "shadow": "proxy", "collision": "proxy" },
+    "l3": { "triangles": 0, "shadow": "proxy", "collision": "proxy" },
+    "l4": { "triangles": 0, "shadow": "proxy", "collision": "proxy" }
   },
   "motion": [{ "element": "stone", "class": "still", "deform": "none" }],
   "intrinsicChannels": ["face-kind", "edge-distance"],
@@ -24,5 +24,16 @@
   "materials": ["slate"],
   "function": { "python": "blender/parts/stone/slate/stones.py:wallstone", "csharp": null },
   "lifecycle": { "state": "draft" },
-  "note": "Sizes from R1's walling table (packs/stavanger-1989/walling.json, the dry-split-1874 working) and its laying: w a cell's length (shortMm 120 where a run leaves no whole stone, to stoneMm's 850) less its two half joints (2 to 6 mm each), h a course (courseMm 120 to 260) less its two; d half the wall's top (wall.py's 420 mm), a hidden back that changes nothing drawn (only a band about 70 mm deep behind the face is). Levels: the design's SN8 budgets per piece (40 and 16); L1 is the same planes without L0's chamfers, so its error is the chamfers' (their sagitta, 8.5 mm on an arris at a 12 mm leg; up to 9.2 mm measured at the top corners, where two meet: 11, as the step's, whose corners meet three), against kinds/wall.json's 4 mm for the walls' L1 (blender.md, the conflicts); L2 to L4 are the chunk's (the port's step 5). The part's own numbers (chamfer, facets, the bed's chamfer, the band's margin, patch sets) are stones.py's PARAMS until this schema takes a params object (reviews/lt1/port/2b/r2a/stones/blender.md)."
+  "params": {
+    "chamferMm": { "value": [12, 12], "note": "SN4's 10 to 12 at its top. SN4 asks at least 2 px at 8 m, and the face's end chamfers are seen about 50 degrees off their normal in the judging view, where a 10 mm leg is 1.9 px and 11 mm leaves a two-facet face's lower piece under 2 (every sixth pool stone: 19.9%, 1.2% and 0% thin at 10, 11 and 12; reviews/lt1/port/2b/r2a/stones/blender.md)." },
+    "chamferMeasure": { "value": "leg", "note": "Measured along each face, as a mason gives it (C10); 'face' (the chamfer's width) is not built." },
+    "arrisMaxDeg": { "value": 160, "note": "Two faces meeting at a turn of 20 degrees or more meet at an arris (a face's own facets never do: they are one face)." },
+    "faceFacets": { "value": [[1, 3], [2, 1]], "note": "SN4: a face's planes, weighted [count, weight]: most faces one plane, one in four broken once; L1's 16 triangles allow no third (its ends would take four each)." },
+    "facetStepMm": { "value": [15, 25], "note": "SN4: a facet stepped back 15 to 25 mm (a seeded whole mm) where laminae broke." },
+    "facetLeastMm": { "value": 50, "note": "SN9: no face under 50 mm; every facet is a lamina at least this high." },
+    "bedChamfer": { "value": false, "note": "The bed's arrises square: a chamfer there faces down, the dark line beneath an edge SN7 forbids, and SN8's thin piece at 8 m (blender.md, the bed arris); true is the arm for R2a's A/B." },
+    "bandMarginPerMille": { "value": 100, "note": "The drawn band clears SN8's 2 px by this, per mille, in the gate's view (the top of a tall stone sits a little above the view's target, seen a little flatter)." },
+    "patches": { "value": {"split": ["split-0", "split-1", "split-2", "split-3"], "bed": ["bed-0", "bed-1"]}, "note": "The face patches (blender/parts/stone/slate/patches.manifest.json; SN6) each kind of face draws one from by seed: a split face from the split ones, the top and bed (bed faces) from the bed ones." }
+  },
+  "note": "Sizes from R1's walling table (packs/stavanger-1989/walling.json, the dry-split-1874 working) and its laying: w a cell's length (shortMm 120 where a run leaves no whole stone, to stoneMm's 850) less its two half joints (2 to 6 mm each), h a course (courseMm 120 to 260) less its two; d half the wall's top (wall.py's 420 mm), a hidden back that changes nothing drawn (only a band about 70 mm deep behind the face is). Levels: the design's SN8 budgets per piece (40 and 16); their errors are the wall kind's (kinds/wall.json: levels), the one source (design.md SN8): L1 is the same planes without L0's chamfers, so its error is the chamfers' (8.5 mm on an arris at a 12 mm leg, 9.2 mm at the top corners, where two meet). L2 to L4 are the chunk's (the port's step 5). The part's own numbers are its params, each with its reason; the working's (joints, batter, the top's thickness) are walling.json's (reviews/lt1/port/2b/r2a/stones/blender.md, Data and code)."
 }

@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://overstory.invalid/schemas/walling.schema.json",
   "title": "A pack's walling table",
-  "description": "How a pack's builders laid walls of stone, by working (packs/<pack>/walling.json), read by the wall kind's plan stage as the table `walling` (kinds/wall.json; at R1, blender/generators/masonry.py through tools/r1_elevations.py) by the working a wall's, a rebuilt panel's or a stair's facts name. A working is a stone and the way it was laid: the course heights it was split or dressed to, its stones, copings, topstones, heads and through stones, a rebuilt panel's edge stones, a stair's laps and joints. The wall's structure (its parapet, its stepped top, its heads' form, its panels' teeth) is the kind's, and the rules of any wall (level beds, SN10's bond, SN2's sliver and acute limits) are code's. Integers only, in millimetres, as every fact. tools/validate_record.py also checks what this schema cannot say: each range's least is no more than its most, each working's material is one of the pack's, and a test table's workings are not the pack's own.",
+  "description": "How a pack's builders laid walls of stone, by working (packs/<pack>/walling.json), read by the wall kind's plan stage as the table `walling` (kinds/wall.json; at R1, blender/generators/masonry.py through tools/r1_elevations.py) by the working a wall's, a rebuilt panel's or a stair's facts name. A working is a stone and the way it was laid: the course heights it was split or dressed to, its stones, copings, topstones, heads and through stones, its joints, its face's batter, its top's thickness and its copings' overhang, a rebuilt panel's edge stones, a stair's laps and joints. Every key a working's kind requires is required: the readers keep no defaults, so a missing key is an error. The wall's structure (its parapet, its stepped top, its heads' form, its panels' teeth) is the kind's, and the rules of any wall (level beds, SN10's bond, SN2's sliver and acute limits) are code's. Integers only, in millimetres, as every fact. tools/validate_record.py also checks what this schema cannot say: each range's least is no more than its most, each working's material is one of the pack's, and a test table's workings are not the pack's own.",
   "type": "object",
   "additionalProperties": false,
   "required": ["schemaVersion", "describes", "workings", "provenance"],
@@ -49,13 +49,15 @@
       "required": ["material", "mortar", "built"],
       "anyOf": [
         { "required": ["courseMm"], "description": "a wall's working" },
-        { "required": ["edgeStonesMm"], "description": "a rebuilt panel's: only its edges are its own" },
+        { "required": ["edgeStonesMm"], "description": "a rebuilt panel's: its edges are its own, and the line it is relaid to (its joints, batter, top and copings' overhang)" },
         { "required": ["steps"], "description": "a stair's" }
       ],
       "dependentRequired": {
         "courseMm": ["riseOneMm", "foundationMm", "stoneMm", "drawnPerHeight", "shortMm", "copeThickMm", "copeNominalMm",
                      "copeLengthMm", "copeLeastMm", "topstoneMm", "headTieMm", "headRunnerMm", "throughMm",
-                     "throughFirstMm", "throughEveryMm"]
+                     "throughFirstMm", "throughEveryMm", "jointMm", "batterPerHeight", "topThickMm", "copeOverMm",
+                     "copeProudMm"],
+        "edgeStonesMm": ["jointMm", "batterPerHeight", "topThickMm", "copeOverMm", "copeProudMm"]
       },
       "properties": {
         "material": { "$ref": "record.schema.json#/$defs/word", "description": "Its stone: materials/<material>.json in the pack, whose wear and cracking are the material's own." },
@@ -81,6 +83,15 @@
         "throughMm": { "$ref": "#/$defs/rangeMm", "description": "A through stone's face." },
         "throughFirstMm": { "$ref": "#/$defs/rangeMm", "description": "The first through stone from a panel's start." },
         "throughEveryMm": { "$ref": "#/$defs/rangeMm", "description": "And then one about this often." },
+        "jointMm": { "$ref": "#/$defs/rangeMm", "description": "A joint's width between two of the wall's stones, its faces' and its copings' (a stone is set into its cell by half of one on each side). A stair's tread joints are steps.jointMm." },
+        "batterPerHeight": {
+          "type": "array", "prefixItems": [{ "type": "integer", "minimum": 0 }, { "type": "integer", "minimum": 1 }],
+          "items": false, "minItems": 2,
+          "description": "How far the face leans back for its height, back then up ([1, 6] is one in six, [0, 1] plumb). Only the face is cut at it; the beds stay level."
+        },
+        "topThickMm": { "$ref": "#/$defs/mm", "description": "The wall's thickness at its top, under the coping." },
+        "copeOverMm": { "$ref": "#/$defs/mm", "description": "How much wider a standing wall's coping is than the wall's top: its overhangs on both faces together." },
+        "copeProudMm": { "$ref": "#/$defs/rangeMm", "description": "How far a coping's front stands proud of the face under it, least and most; its back stands the rest of copeOverMm." },
         "edgeStonesMm": {
           "type": "array", "items": { "$ref": "#/$defs/rangeMm" }, "minItems": 2, "maxItems": 2,
           "description": "A rebuilt panel's end stones against the old work: long, then short, in alternate courses."

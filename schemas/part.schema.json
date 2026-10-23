@@ -53,7 +53,7 @@
       "anyOf": [{ "type": "null" }, { "$ref": "record.schema.json#/$defs/partPath" }]
     },
     "levels": {
-      "description": "Its five levels, each with its error, triangles, shadow role and collision role. Required once the part is judged.",
+      "description": "Its five levels, each with its triangles, shadow role and collision role. Required once the part is judged. A level's error is not the part's: it is its kind's (kinds/<kind>.json: levels), the one source (the gully port's design.md, SN8).",
       "type": "object", "additionalProperties": false, "required": ["l0", "l1", "l2", "l3", "l4"],
       "properties": { "l0": { "$ref": "#/$defs/level" }, "l1": { "$ref": "#/$defs/level" }, "l2": { "$ref": "#/$defs/level" }, "l3": { "$ref": "#/$defs/level" }, "l4": { "$ref": "#/$defs/level" } }
     },
@@ -102,6 +102,17 @@
       },
       "allOf": [{ "if": { "properties": { "state": { "const": "removed" } } }, "then": { "required": ["tombstone"] } }]
     },
+    "params": {
+      "description": "A fitted part's own numbers, which its function reads by name and keeps no default for (a missing key is an error): its chamfers, facets, chips and the like, each a value with the note that gives its reason. The keys are the family's, documented by each definition's notes. What depends on the material is the material's (packs/<pack>/materials/), what depends on the working the pack's tables', and a level's error the kind's.",
+      "type": "object",
+      "additionalProperties": {
+        "type": "object", "additionalProperties": false, "required": ["value", "note"],
+        "properties": {
+          "value": { "description": "Any JSON value: a number, a [least, most] range, a weighted list, a flag or a set of names." },
+          "note": { "type": "string", "minLength": 1, "description": "Why it is what it is, and its source." }
+        }
+      }
+    },
     "note": { "type": "string" }
   },
   "allOf": [
@@ -121,9 +132,8 @@
     "range": { "type": "array", "items": { "type": "integer", "minimum": 0 }, "minItems": 2, "maxItems": 2 },
     "hash64": { "type": "string", "pattern": "^[0-9a-f]{16}$", "description": "A 64-bit hash as 16 hex digits." },
     "level": {
-      "type": "object", "additionalProperties": false, "required": ["errorMm", "triangles", "shadow", "collision"],
+      "type": "object", "additionalProperties": false, "required": ["triangles", "shadow", "collision"],
       "properties": {
-        "errorMm": { "type": "integer", "minimum": 0 },
         "triangles": { "type": "integer", "minimum": 0 },
         "shadow": { "description": "none: never casts. self: casts from this level's mesh. proxy: casts through its chunk's or cell's caster proxy (decisions D6.8).", "enum": ["none", "self", "proxy"] },
         "collision": { "description": "none, proxy (joins its chunk's merged proxy) or full (its own mesh collides).", "enum": ["none", "proxy", "full"] }

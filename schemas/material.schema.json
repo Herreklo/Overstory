@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://overstory.invalid/schemas/material.schema.json",
   "title": "A pack's material",
-  "description": "A material a pack brings (packs/<pack>/materials/<material>.json), read by the stages as the table `materials`. Minimal since the gully port's step 2a: how fast the stone wears under feet and how readily it cracks. Where it came from, how it was worked and how it weathers join it as the materials are built (docs/systems.md). Integers only, as every fact.",
+  "description": "A material a pack brings (packs/<pack>/materials/<material>.json), read by the stages as the table `materials`. Minimal since the gully port's step 2a: how fast the stone wears under feet and how readily it cracks, and since R2a of step 2b how a step's corner breaks. Where it came from, how it was worked and how it weathers join it as the materials are built (docs/systems.md). Integers only, as every fact.",
   "type": "object",
   "additionalProperties": false,
   "required": ["schemaVersion", "material", "describes", "wearUmPerCentury", "cracksPerMille", "provenance"],
@@ -22,6 +22,19 @@
       "type": "integer",
       "minimum": 0,
       "description": "How readily a piece of it cracks, against slate's 1000: the factor upkeep.py's crack draws are scaled by."
+    },
+    "cornerBreak": {
+      "description": "How a corner breaks off a step's nosing, the chip rule's material half: the bite along the step and back from the nosing, per mille of the break's size (the record's), and its depth, depthMm plus depthPerMille of the size, taken down to the nearest bedding plane where toBed (a stone that parts along its beds). Required by a stone a step is made of when its record breaks a corner; the readers keep no default.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["alongPerMille", "backPerMille", "depthMm", "depthPerMille", "toBed"],
+      "properties": {
+        "alongPerMille": { "type": "integer", "minimum": 0 },
+        "backPerMille": { "type": "integer", "minimum": 0 },
+        "depthMm": { "type": "integer", "minimum": 0 },
+        "depthPerMille": { "type": "integer", "minimum": 0 },
+        "toBed": { "type": "boolean" }
+      }
     },
     "provenance": { "$ref": "record.schema.json#/$defs/provenance" },
     "notes": {

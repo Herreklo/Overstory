@@ -122,9 +122,10 @@
     "level": {
       "type": "object", "additionalProperties": false, "required": ["errorMm", "triangles", "mergeUnit"],
       "properties": {
-        "errorMm": { "type": "integer", "minimum": 0 },
+        "errorMm": { "type": "integer", "minimum": 0, "description": "The level's geometric error: the one source for the kind's parts too (a part's definition holds none)." },
         "triangles": { "type": "integer", "minimum": 0 },
-        "mergeUnit": { "description": "ch: the 4 m draw chunk. ce: the 32 m cell. bk: the 128 m block. instance: drawn as its own instance (lamps, boats, people).", "enum": ["ch", "ce", "bk", "instance"] }
+        "mergeUnit": { "description": "ch: the 4 m draw chunk. ce: the 32 m cell. bk: the 128 m block. instance: drawn as its own instance (lamps, boats, people).", "enum": ["ch", "ce", "bk", "instance"] },
+        "note": { "type": "string", "minLength": 1, "description": "Why the level's numbers are what they are." }
       }
     },
     "stageCommon": {

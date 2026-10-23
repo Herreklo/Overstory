@@ -2,6 +2,16 @@
 
 Every change to the files in `schemas/` with its migration. The contracts' version is `schemaVersion`, carried by every record, kind, pack file and fixture. `tools/migrate.py` runs `migrations/NNN_<name>.py` in order on every file behind; `tools/migrate.py --check` fails while any is behind. `tools/validate_record.py` checks records, kinds, parts and the registries against the current version.
 
+## 2, unchanged: the stones' numbers into data, and the levels' errors from the kinds (23 October, the gully port's step 2b, R2a)
+
+No migration: every file these change was changed with them, and every installed mesh hashes as before. The readers (`blender/parts/stone/slate/stones.py`, `context.py`) keep no default: a missing key is an error.
+
+Changed:
+- `part.schema.json`: an optional `params`, a fitted part's own numbers, each a `value` with the `note` that gives its reason; stones.py's PARAMS moved into the three stone definitions (`packs/stavanger-1989/parts/stone/`). A level no longer holds `errorMm`: a level's error is its kind's, the one source (design.md SN8), and the three definitions lost theirs and keep their triangles.
+- `kind.schema.json`: a level may carry a `note`. `kinds/wall.json` and `kinds/stair.json` hold L1 at 11 mm, the value R2a's stones were built and judged with, until R2b replaces it with the visible joint error.
+- `walling.schema.json`: a wall's working and a rebuilt panel's require `jointMm` (a wall joint's width), `batterPerHeight` (the face's lean, back then up), `topThickMm`, `copeOverMm` and `copeProudMm`; the pack's table and the granite test record carry them.
+- `material.schema.json`: an optional `cornerBreak`, how a step's corner breaks (the chip rule's material half); `materials/slate.json` carries it.
+
 ## 2, unchanged: the walling table's schema (23 October, the gully port's step 2b, R1)
 
 No migration: the pack's one walling table already had this shape, and no record or kind changes.

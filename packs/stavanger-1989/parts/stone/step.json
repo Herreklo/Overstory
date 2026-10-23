@@ -11,11 +11,11 @@
   "sockets": [],
   "removalMark": null,
   "levels": {
-    "l0": { "errorMm": 1, "triangles": 300, "shadow": "none", "collision": "proxy" },
-    "l1": { "errorMm": 11, "triangles": 120, "shadow": "self", "collision": "proxy" },
-    "l2": { "errorMm": 25, "triangles": 0, "shadow": "proxy", "collision": "proxy" },
-    "l3": { "errorMm": 100, "triangles": 0, "shadow": "proxy", "collision": "proxy" },
-    "l4": { "errorMm": 250, "triangles": 0, "shadow": "proxy", "collision": "proxy" }
+    "l0": { "triangles": 300, "shadow": "none", "collision": "proxy" },
+    "l1": { "triangles": 120, "shadow": "self", "collision": "proxy" },
+    "l2": { "triangles": 0, "shadow": "proxy", "collision": "proxy" },
+    "l3": { "triangles": 0, "shadow": "proxy", "collision": "proxy" },
+    "l4": { "triangles": 0, "shadow": "proxy", "collision": "proxy" }
   },
   "motion": [{ "element": "stone", "class": "still", "deform": "none" }],
   "intrinsicChannels": ["face-kind", "edge-distance"],
@@ -24,5 +24,22 @@
   "materials": ["slate"],
   "function": { "python": "blender/parts/stone/slate/stones.py:step", "csharp": null },
   "lifecycle": { "state": "draft" },
-  "note": "Sizes from the stair kind (kinds/stair.json) and R1's walling table (packs/stavanger-1989/walling.json, the dry-split-1874 working's steps): w the finish's slab widths (other: 700 to 2300), h the block's stone rises (150 to 180) with the rise error (12), d the going's range (270 to 400) with the steps' lap (40 to 60). Levels: the design's SN8 budgets (300 and 120); L0's error is the wear grid's tolerance; L1's is L1 drawn without L0's chamfers: 8.5 mm on an arris at a 12 mm leg (its sagitta), 10.4 mm at a corner where three chamfers meet (half the leg times root three), rounded up to 11, above the design's 'about 6 mm'; L2 to L4 are the chunk's (the port's step 5), so none is made here. The part's own numbers (chamfer, facets, laminae, chips, skirt, wear grid, patch sets) are stones.py's PARAMS until this schema takes a params object (reviews/lt1/port/2b/r2a/stones/blender.md)."
+  "params": {
+    "chamferMm": { "value": [10, 12], "note": "SN4: every exposed arris chamfered, a seeded leg of 10 to 12 mm per stone, at least 2 px at 8 m through the 28 mm lens." },
+    "chamferMeasure": { "value": "leg", "note": "Measured along each face, as a mason gives it (C10); 'face' (the chamfer's width) is not built." },
+    "arrisMaxDeg": { "value": 160, "note": "Two faces meeting at a turn of 20 degrees or more meet at an arris (a face's own facets never do: they are one face)." },
+    "riserFacets": { "value": [[1, 3], [2, 1]], "note": "SN4: a riser's planes, weighted [count, weight]: at most three; most risers one plane, one in four broken back once." },
+    "endFacets": { "value": [[1, 2], [2, 1], [3, 1]], "note": "An open end's planes, weighted [count, weight]." },
+    "facetStepMm": { "value": [15, 25], "note": "SN4: a facet stepped back 15 to 25 mm (a seeded whole mm) where laminae broke." },
+    "facetLeastMm": { "value": 50, "note": "SN9: no face under 50 mm; every facet is a lamina at least this high." },
+    "chipPerMille": { "value": 250, "note": "An open end's top front corner knocked, per mille of stones (SN4: most stones none)." },
+    "chipLegMm": { "value": [50, 80], "note": "A knock's three legs, least and most: at least SN9's 50 mm, so a chip is no sliver." },
+    "skirtMm": { "value": 30, "note": "A drawn face runs this far past a hidden face or a cover: the next riser's foot set back (facetStepMm's 25) and SN9's 3 mm contact, checked at build." },
+    "nosingReachMm": { "value": 50, "note": "The nosing's rounding runs back this far (stair_stages.py: the nose band)." },
+    "wearGridMm": { "value": 120, "note": "SN4: the wear's grid columns at most 120 mm apart across the walking line." },
+    "wearFlatShare": { "value": 100, "note": "Per mille of a level's error (the kind's, kinds/stair.json): wear under this is flat stone." },
+    "l1WearShare": { "value": 500, "note": "Per mille of L1's error (the kind's, kinds/stair.json) the wear's grid may take at L1; the chamfer's sagitta is the rest, elsewhere on the stone. At L1's 11 it is 5.5 mm." },
+    "patches": { "value": {"top": ["bed-0", "bed-1"], "split": ["split-0", "split-1", "split-2", "split-3"], "bed": ["bed-0", "bed-1"]}, "note": "The face patches (blender/parts/stone/slate/patches.manifest.json; SN6) each kind of face draws one from by seed: the tread from the bed patches, a split face from the split ones, a bed face from the bed ones." }
+  },
+  "note": "Sizes from the stair kind (kinds/stair.json) and R1's walling table (packs/stavanger-1989/walling.json, the dry-split-1874 working's steps): w the finish's slab widths (other: 700 to 2300), h the block's stone rises (150 to 180) with the rise error (12), d the going's range (270 to 400) with the steps' lap (40 to 60). Levels: the design's SN8 budgets (300 and 120); their errors are the stair kind's (kinds/stair.json: levels), the one source (design.md SN8): L0's is the wear grid's tolerance, L1's is L1 drawn without L0's chamfers (8.5 mm on an arris at a 12 mm leg, its sagitta). L2 to L4 are the chunk's (the port's step 5), so none is made here. The part's own numbers are its params, each with its reason; the material's (wear, the corner's break) are materials/slate.json's, the working's (laps, joints) walling.json's (reviews/lt1/port/2b/r2a/stones/blender.md, Data and code)."
 }

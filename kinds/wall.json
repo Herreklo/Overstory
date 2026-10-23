@@ -43,7 +43,7 @@
   ],
   "levels": {
     "l0": { "errorMm": 1, "triangles": 131100, "mergeUnit": "ch" },
-    "l1": { "errorMm": 4, "triangles": 53500, "mergeUnit": "ch" },
+    "l1": { "errorMm": 11, "triangles": 53500, "mergeUnit": "ch", "note": "11 mm: the value R2a's wall stones and copings were built and judged with (L1 is L0 without its chamfers: 9.21 mm on the wall stones, up to 9.8 mm on the copings). R2b replaces it with the visible joint error, measured in context, keeping the mesh error only as a check (reviews/lt1/port/2b/r2a/stones/review.md, proposal 2)." },
     "l2": { "errorMm": 10, "triangles": 10700, "mergeUnit": "ce" },
     "l3": { "errorMm": 25, "triangles": 2140, "mergeUnit": "ce" },
     "l4": { "errorMm": 100, "triangles": 214, "mergeUnit": "bk" }

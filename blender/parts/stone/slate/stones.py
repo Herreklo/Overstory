@@ -15,16 +15,18 @@ Every value comes from data, never a constant in code (Øystein, 23 October; the
 - the stair's facts (rise, going, the flight's width and lean) from the plan stage's output (fixtures/golden/stair);
   the stone's history (its years, its broken corner) from the life stage's; the footfall and the dates from the record
   (fixtures/records/st-gully.json); the world seed and the show year from the pack;
-- the lap and the joint from R1's walling table (packs/<pack>/walling.json, its working's steps; kinds/stair.json the
-  fallback), and each stone's outline from R1's laying (masonry.lay on R1's facts, kinds/wall.json's plan params and
-  the walling table, all at one pinned commit), through one function each;
-- the wear rate and how a corner of slate breaks from the material (packs/<pack>/materials/slate.json), through one
-  function each with the proposed key and a documented default where the file has no field yet;
+- the working's numbers from R1's walling table (packs/<pack>/walling.json), by the working R1's facts name: the steps'
+  lap and joint, a wall's joint, batter and top thickness, a coping's overhang and how proud it stands; and each
+  stone's outline from R1's laying (masonry.lay on R1's facts, kinds/wall.json's plan params and the walling table, all
+  at one pinned commit);
+- the wear rate and how a corner breaks from the material the steps' working names (packs/<pack>/materials/);
+- the levels' errors from the kind's table (kinds/stair.json, kinds/wall.json: levels), the one source;
 - the part's own numbers (chamfer, facets, chips, skirt, wear grid, patch sets) from its definition
-  (packs/<pack>/parts/stone/step.json), through `param`: the schema has no field for them yet (closed: the proposed
-  `params` object is in blender.md), so each has its default here, in one table, read only through that function.
+  (packs/<pack>/parts/<part>.json: params), through `param`.
+Each is read through one function that notes its source, and none has a default here: a missing key is an error.
 What stays in code is the rule of any stone (convex, planar, level beds, no rake, square arrises, SN9's limits), the
-wear's laws (wear.py) and the judging rig (the 28 mm lens at 2560 x 1440).
+wear's laws (wear.py, and where feet land on a tread), the judging rig (the 28 mm lens at 2560 x 1440), the contract's
+encodings and the hashing (reviews/lt1/port/2b/r2a/stones/blender.md, Data and code).
 
     PY=/Applications/Blender.app/Contents/Resources/5.2/python/bin/python3.13
     $PY blender/parts/stone/slate/stones.py flight               every stone of the gully's flights: SN8's pooled share
@@ -141,7 +143,7 @@ class Data:
         self.commit = commit or subprocess.run(["git", "-C", ROOT, "rev-parse", "HEAD"], capture_output=True,
                                                text=True, check=True).stdout.strip()
         self.pack = _load(f"{PACK}/pack.json")
-        self.slate = _load(f"{PACK}/materials/slate.json")
+        self.materials = {}
         self.stair = _load("kinds/stair.json")
         self.wall = self.at_commit("kinds/wall.json") if tracked("kinds/wall.json") else None
         self.walling = self.at_commit(f"{PACK}/walling.json") if tracked(f"{PACK}/walling.json") else None
@@ -196,58 +198,91 @@ class Data:
         u = max(use, key=lambda u: u["from"]["year"])
         return self.note("footfall", u["footfall"], f"fixtures/records/st-gully.json: use from {u['from']['year']}")
 
-    # the material
+    # the material: the steps' working's (a stone's wear and how its corners break are its material's)
+    def material(self):
+        """The material the stair's steps are of, by their working (R1's facts: stair.working; the walling table's
+        working names its material): packs/<pack>/materials/<material>.json, read from the checkout."""
+        name, w = self.steps_working()
+        mat = w["material"]
+        if mat not in self.materials:
+            rel = f"{PACK}/materials/{mat}.json"
+            if not os.path.exists(os.path.join(ROOT, rel)):
+                raise ValueError(f"{PACK}/walling.json: workings.{name} names material {mat!r}, and {rel} does not exist")
+            self.materials[mat] = (_load(rel), rel)
+        return self.materials[mat]
+
+    def material_value(self, key):
+        m, rel = self.material()
+        if key not in m:
+            raise ValueError(f"{rel} has no {key}: the step's material must give it (schemas/material.schema.json)")
+        return m[key], rel
+
     def wear_rate_mm(self):
         """mm a century at 100,000 footfalls a year on a flight 3.2 m wide (wear.py, depth)."""
-        return self.note("wearMmPerCentury", self.slate["wearUmPerCentury"] / 1000.0,
-                         f"{PACK}/materials/slate.json: wearUmPerCentury")
+        v, rel = self.material_value("wearUmPerCentury")
+        return self.note("wearMmPerCentury", v / 1000.0, f"{rel}: wearUmPerCentury")
 
     def corner_break(self):
-        """How a corner of slate breaks off a step's nosing: the bite along the step and back from the nosing per its
-        size, and how deep (a bedding plane). Proposed for slate.json as cornerBreak; until then slab.py's and
-        stair_stages.py's numbers, the gully's broken corners as they were judged."""
-        key = "cornerBreak"
-        if key in self.slate:
-            return self.note(key, self.slate[key], f"{PACK}/materials/slate.json: {key}")
-        return self.note(key, dict(alongPerMille=1300, backPerMille=750, depthMm=40, depthPerMille=600),
-                         "default in stones.py (proposed slate.json: cornerBreak), from blender/parts/stone/slate/"
-                         "slab.py (the bite 1.3 x size along, 0.75 x size back) and blender/generators/"
-                         "stair_stages.py (down to 40 mm + 0.6 x size)")
+        """How a corner breaks off a step's nosing (the chip rule's material half): the bite along the step and back
+        from the nosing per mille of its size, how deep, and whether it goes down to a bedding plane."""
+        v, rel = self.material_value("cornerBreak")
+        return self.note("cornerBreak", v, f"{rel}: cornerBreak")
 
-    # the stair kind and R1's walling
-    def _steps_working(self):
-        """R1's walling table's working for the stair's steps: the one of the stone (slate) and the record's built
-        year that gives steps (dry-split-1874 for the gully), as the pinned commit holds it."""
-        if not self.walling:
-            return None, None
-        built = self.built()
-        for name, w in sorted(self.walling["workings"].items()):
-            if "steps" in w and w.get("material") == "slate" and w.get("built") == built:
-                return name, w["steps"]
-        return None, None
+    # the stair's working in R1's walling table
+    def steps_working(self):
+        """The working the stair's steps were laid in (R1's facts: stair.working, dry-split-1874 for the gully) and
+        its entry in the walling table, both as the pinned commit holds them."""
+        name = self.r1_facts()["stair"].get("working")
+        if not name:
+            raise ValueError(f"{R1_FACTS} names no stair.working at {self.commit[:7]}")
+        w = self.working(name)
+        if "steps" not in w:
+            raise ValueError(f"{PACK}/walling.json: workings.{name} has no steps, and the stair is laid in it")
+        self.note("stairWorking", name, f"{R1_FACTS}: stair.working")
+        return name, w
+
+    def steps_value(self, key):
+        name, w = self.steps_working()
+        if key not in w["steps"]:
+            raise ValueError(f"{PACK}/walling.json: workings.{name}.steps has no {key}")
+        return name, w["steps"][key]
 
     def tread_joint(self):
-        """[least, most] mm between two stones of a step: R1's walling table's, else the stair kind's (which says
-        [4, 12] against the table's [4, 10]: the table is R1's laying's, so it wins)."""
-        name, st = self._steps_working()
-        if st and "jointMm" in st:
-            return self.note("treadJointMm", list(st["jointMm"]), f"{PACK}/walling.json: workings.{name}.steps.jointMm")
-        return self.note("treadJointMm", list(self.stair["stages"]["geometry"]["params"]["jointMm"]),
-                         "kinds/stair.json: stages.geometry.params.jointMm (no walling.json steps.jointMm)")
+        """[least, most] mm between two stones of a step: the working's (R1's walling table, which R1 laid by; the
+        stair kind's own [4, 12] builds 2a's baseline and is not read here)."""
+        name, v = self.steps_value("jointMm")
+        return self.note("treadJointMm", list(v), f"{PACK}/walling.json: workings.{name}.steps.jointMm")
 
     def tread_lap(self):
-        """[least, most] mm a step lies on the one below: R1's walling table's, else the stair kind's single lap
-        (which says 100 against the table's [40, 60]: the table is what R1 laid, so it wins)."""
-        name, st = self._steps_working()
-        if st and "lapMm" in st:
-            return self.note("treadLapMm", list(st["lapMm"]), f"{PACK}/walling.json: workings.{name}.steps.lapMm")
-        lap = self.stair["stages"]["geometry"]["params"]["lapMm"]
-        return self.note("treadLapMm", [lap, lap], "kinds/stair.json: stages.geometry.params.lapMm (no walling.json "
-                                                   "steps.lapMm)")
+        """[least, most] mm a step lies on the one below: the working's (R1's walling table; the stair kind's own
+        lap of 100 builds 2a's baseline and is not read here)."""
+        name, v = self.steps_value("lapMm")
+        return self.note("treadLapMm", list(v), f"{PACK}/walling.json: workings.{name}.steps.lapMm")
 
+    # the levels: one source, the kind's table (design.md SN8)
+    def level_error(self, part, level):
+        """A level's geometric error (mm) for a part's stones: its kind's (kinds/<kind>.json: levels), the one source;
+        the stair kind's from the checkout, the wall kind's at the pinned commit (the commit R1 laid by)."""
+        rel = KIND_FILES[part]
+        k = self.stair if rel == "kinds/stair.json" else self.wall
+        if k is None:
+            raise ValueError(f"{rel} is not tracked, so no level's error can be read for {part}")
+        lv = k.get("levels", {}).get(level, {})
+        if "errorMm" not in lv:
+            raise ValueError(f"{rel}: levels.{level} has no errorMm")
+        at = "" if rel == "kinds/stair.json" else f" (at {self.commit[:7]})"
+        return self.note(f"{part}.{level}.errorMm", lv["errorMm"], f"{rel}: levels.{level}.errorMm{at}")
+
+    # the face patches
     def slice_of(self, name):
         names = list(self.patches["patches"])
         return names.index(name)
+
+    def patch_mm(self):
+        """A face patch's side in whole mm (patches.manifest.json: texels x mmPerTexel): a face's offset into its patch
+        is drawn within it."""
+        return self.note("patchMm", int(self.patches["texels"] * self.patches["mmPerTexel"]),
+                         "blender/parts/stone/slate/patches.manifest.json: texels x mmPerTexel")
 
     # R1's walling: a wall stone's working, and the fields the table has no key for yet
     def r1_facts(self):
@@ -278,109 +313,46 @@ class Data:
             raise ValueError(f"no working {name!r} in {PACK}/walling.json at {self.commit[:7]}")
         return self.walling["workings"][name]
 
-    def walling_value(self, name, key, default=None, why=""):
-        """One value of a working of R1's walling table, as the pinned commit holds it: the table's where it has the key,
-        else the documented default (a key proposed for the table: blender.md), noted with where it came from."""
+    def walling_value(self, name, key):
+        """One value of a working of R1's walling table, as the pinned commit holds it, noted with where it came from.
+        There is no default: a working without the key is an error (schemas/walling.schema.json requires it)."""
         w = self.working(name)
-        if key in w:
-            return self.note(f"{name}.{key}", w[key], f"{PACK}/walling.json: workings.{name}.{key}")
-        if default is None:
-            raise ValueError(f"{PACK}/walling.json: workings.{name} has no {key}")
-        return self.note(f"{name}.{key}", default, f"default in stones.py (proposed {PACK}/walling.json: "
-                                                   f"workings.{name}.{key}): {why}")
+        if key not in w:
+            raise ValueError(f"{PACK}/walling.json: workings.{name} has no {key} (at {self.commit[:7]})")
+        return self.note(f"{name}.{key}", w[key], f"{PACK}/walling.json: workings.{name}.{key}")
 
     def wall_joint(self, name):
         """[least, most] mm of a joint between two stones of a wall (the faces' and the copings')."""
-        return list(self.walling_value(name, "jointMm", [4, 12], "SN5's wall joints, 4 to 12 mm (the table holds the "
-                                                                 "steps' only, [4, 10])"))
+        return list(self.walling_value(name, "jointMm"))
 
     def batter(self, name):
         """How far the face leans back for its height, as whole numbers [back, up]."""
-        return list(self.walling_value(name, "batterPerHeight", [1, 6], "blender/generators/wall.py's BATTER, 1/6 "
-                                                                         "(SN2: about 1/6)"))
+        return list(self.walling_value(name, "batterPerHeight"))
 
     def top_thick(self, name):
         """The wall's thickness at its top, under the coping (mm)."""
-        return self.walling_value(name, "topThickMm", 420, "blender/generators/wall.py's DEPTH")
+        return self.walling_value(name, "topThickMm")
 
     def cope_over(self, name):
         """How much wider a standing wall's coping is than the wall's top (mm), its overhangs on both faces together."""
-        return self.walling_value(name, "copeOverMm", 50, "blender/generators/wall.py (a standing wall's coping "
-                                                          "DEPTH + 0.05 wide)")
+        return self.walling_value(name, "copeOverMm")
 
     def cope_proud(self, name):
         """[least, most] mm a coping's front stands proud of the face under it (the rest of copeOver at its back)."""
-        return list(self.walling_value(name, "copeProudMm", [15, 35], "blender/generators/wall.py (the front 15 to "
-                                                                       "35 mm proud)"))
+        return list(self.walling_value(name, "copeProudMm"))
 
 
-# The part's own numbers, by part: the defaults of the proposed `params` object (blender.md: the schema has no field;
-# the definition's params win once the schema takes them). Each is read only through param().
-PARAMS = {
-    "step": {
-        "chamferMm": [10, 12],          # SN4: every exposed arris, at least 2 px at 8 m through the 28 mm lens
-        "chamferMeasure": "leg",        # along each face, as a mason gives it (C10); "face" for the chamfer's width
-        "arrisMaxDeg": 160,             # two faces meeting at a turn of 20 degrees or more meet at an arris (a
-                                        # face's own facets are never one: they are one face)
-        "riserFacets": [[1, 3], [2, 1]],  # SN4: at most three; most risers one plane, one in four broken back once
-        "endFacets": [[1, 2], [2, 1], [3, 1]],  # an open end's
-        "facetStepMm": [15, 25],        # SN4: stepped at least 15 mm where laminae broke
-        "facetLeastMm": 50,             # SN9: no face under 50 mm
-        "chipPerMille": 250,            # an open end's top front corner knocked (SN4: most stones none)
-        "chipLegMm": [50, 80],          # at least SN9's 50 mm, so a chip is no sliver
-        "skirtMm": 30,                  # a drawn face runs this far past a hidden face or a cover: the next riser's
-                                        # foot set back (facetStepMm's 25) and SN9's 3 mm contact (checked at build)
-        "nosingReachMm": 50,            # the nosing's rounding runs back this far (stair_stages.py: the nose band)
-        "wearGridMm": 120,              # SN4: at most 120 mm apart across the walking line
-        "wearFlatShare": 100,           # per mille of L0's error: wear under this is flat stone
-        "l1WearShare": 500,             # per mille of L1's error the wear's grid may take (the chamfer's sagitta the
-                                        # rest, elsewhere on the stone)
-        "patches": {"top": ["bed-0", "bed-1"], "split": ["split-0", "split-1", "split-2", "split-3"],
-                    "bed": ["bed-0", "bed-1"]},
-    },
-    "wallstone": {
-        "chamferMm": [12, 12],          # SN4's 10 to 12 at its top: SN4 asks at least 2 px at 8 m, and the face's end
-                                        # chamfers are seen about 50 degrees off their normal in the judging view, where
-                                        # a 10 mm leg is 1.9 px and 11 mm leaves a two-facet face's lower piece under 2
-                                        # (every sixth pool stone: 19.9%, 1.2% and 0% thin at 10, 11 and 12; blender.md)
-        "chamferMeasure": "leg",
-        "arrisMaxDeg": 160,
-        "faceFacets": [[1, 3], [2, 1]],  # SN4: most faces one plane, one in four broken once; L1's 16 triangles allow
-                                        # no third (its ends would take four each)
-        "facetStepMm": [15, 25],        # SN4: stepped at least 15 mm where laminae broke
-        "facetLeastMm": 50,             # SN9: no face under 50 mm
-        "bedChamfer": False,            # the bed's arrises square: a chamfer there faces down, the dark line beneath
-                                        # an edge SN7 forbids, and SN8's thin piece at 8 m (blender.md, the bed arris;
-                                        # True is the arm for R2a's A/B)
-        "bandMarginPerMille": 100,      # the drawn band clears SN8's 2 px by this in the gate's view (the top of a
-                                        # tall stone sits a little above the view's target, seen a little flatter)
-        "patches": {"split": ["split-0", "split-1", "split-2", "split-3"], "bed": ["bed-0", "bed-1"]},
-    },
-    "coping": {
-        "chamferMm": [10, 12],
-        "chamferMeasure": "leg",
-        "arrisMaxDeg": 160,
-        "bedChamfer": False,            # as the wall stone's (SN7)
-        "uprightChamfer": False,        # the ends' upright arrises square: each meets two of the top's at a corner, and
-                                        # three chamfers meet in a point whose tips are under SN8's 2 px at 8 m whatever
-                                        # the triangulation; two meet in a mitre (blender.md, the corners)
-        "chipChamfer": False,           # a knock is a break after the dressing: sharp, through the top's chamfers
-        "chipPerMille": 250,            # an open end's top corners knocked (SN4: chips at a coping's ends)
-        "chipLegMm": [50, 80],          # along and back; down no more than half the coping (SN9: no sliver)
-        "patches": {"split": ["split-0", "split-1", "split-2", "split-3"], "bed": ["bed-0", "bed-1"]},
-    },
-}
-
-
+# The part's own numbers are its definition's params (packs/<pack>/parts/stone/<part>.json: params, each a value with
+# the note that gives its reason; schemas/part.schema.json). stones.py keeps no default: each is read only through
+# param(), and a missing key is an error.
 def param(part, defn, key, data=None):
-    """A part's number: its definition's params when the schema takes them, else the default above."""
+    """A part's number: its definition's params.<key>.value."""
     held = (defn or {}).get("params", {})
-    if key in held:
-        v, src = held[key], f"{PACK}/parts/stone/{part}.json: params.{key}"
-    else:
-        v, src = PARAMS[part][key], f"default in stones.py (proposed {PACK}/parts/stone/{part}.json: params.{key})"
+    if key not in held:
+        raise ValueError(f"{PACK}/parts/stone/{part}.json has no params.{key}")
+    v = held[key]["value"]
     if data is not None:
-        data.note(f"{part}.{key}", v, src)
+        data.note(f"{part}.{key}", v, f"{PACK}/parts/stone/{part}.json: params.{key}")
     return v
 
 
@@ -905,7 +877,7 @@ def outline(facts, defn=None, data=None):
         size = _f(cn["sizeMm"])
         b, a = size * cb["alongPerMille"] / 1000.0, size * cb["backPerMille"] / 1000.0
         dz = min(H, _f(cb["depthMm"]) + size * cb["depthPerMille"] / 1000.0)
-        if planes_mm:           # a corner of slate breaks down to a bedding plane: the stone's nearest lamina
+        if cb["toBed"] and planes_mm:   # a stone that parts along its beds breaks down to one: its nearest lamina
             dz = min((H - _f(z) for z in planes_mm), key=lambda d: (abs(d - dz), d))
         b, a, grown = chip_least(b, a, dz)
         chips.append(corner_chip(f"chip:{cn['side']}", cn["side"], L, H, (b, a, dz), centre,
@@ -929,9 +901,8 @@ def outline(facts, defn=None, data=None):
     ch = B.chamfers(block + open_chips, _f(c_mm), P("arrisMaxDeg"))
     # the wear (wear.py) and its grid: L0's rows within L0's error, L1's within its share of L1's, each no narrower
     # than SN8's 2 px in its far view (face-on, 20 degrees of top)
-    lv = (defn or {}).get("levels", {})
-    tol0 = _f(lv.get("l0", {}).get("errorMm", 1))
-    tol1 = _f(lv.get("l1", {}).get("errorMm", 9)) * P("l1WearShare") / 1000.0
+    tol0 = _f(data.level_error(part, "l0"))
+    tol1 = _f(data.level_error(part, "l1")) * P("l1WearShare") / 1000.0
     wear = Wear(facts, _f(P("nosingReachMm")))
     y_end = g + s if covers else D
     rows0 = wear_rows(wear, y_end, tol0, least=least_row(GATE["l0Distance"]), fixed=(wear.reach,))
@@ -1053,6 +1024,7 @@ def face_frames(o, defn, data):
     facts = o["facts"]
     part, world, sid = facts["part"], facts["worldSeed"], facts["id"]
     sets = param(part, defn, "patches", data)
+    tile = data.patch_mm()
     out = {}
     z = np.array([0.0, 0.0, 1.0])
 
@@ -1076,14 +1048,14 @@ def face_frames(o, defn, data):
             u = np.array([math.cos(th), math.sin(th), 0.0])
             v = np.array([-math.sin(th), math.cos(th), 0.0])
             out[face] = dict(kind=0 if role == "tread" else 3, patch=name, slice=sl, o=np.zeros(3), u=u, v=v, mode=0,
-                             plan=True, offset=(r.randint(0, 1023), r.randint(0, 1023)), turnDeg=turn)
+                             plan=True, offset=(r.randint(0, tile - 1), r.randint(0, tile - 1)), turnDeg=turn)
         else:
             name, sl, r = pick(face, sets["split"])
             base = next(q for q in o["block"] + o["chips"] if q["name"] == face)
             n = base["n"]
             u = B.unit(np.cross(z, n))
             out[face] = dict(kind=2, patch=name, slice=sl, o=np.zeros(3), u=u, v=np.cross(n, u), mode=r.randint(0, 2),
-                             plan=False, offset=(r.randint(0, 1023), r.randint(0, 1023)))
+                             plan=False, offset=(r.randint(0, tile - 1), r.randint(0, tile - 1)))
     for p, _sag, _ang in o["chamfers"]:
         q0, q1 = p["arris"]
         u = B.unit(q1 - q0)
@@ -1660,11 +1632,10 @@ def outline_wallstone(facts, defn=None, data=None):
     nb = math.sqrt(1.0 + b * b)
     seen = [dict(n=np.array([0.0, 1.0, -b]) / nb, d=_f(band_mm) / nb)]
     regions = {f: [seen] for f in ("top", "bed", "end-l", "end-r")}
-    lv = (defn or {}).get("levels", {})
     o = dict(facts=facts, part=part, L=L, H=H, g=0.0, D=back, skirt=0.0, block=block, covers=[], chamfers=ch,
              chamferMm=c_mm, chips=[], wear=None, rows0=[], rows1=[], cols0=[], cols1=[], flat=0.0, flat1=0.0,
-             regions=regions, laminaeMm=lam, tol0=_f(lv.get("l0", {}).get("errorMm", 1)),
-             tol1=_f(lv.get("l1", {}).get("errorMm", 11)), y_end=back, ends=dict(l="joint", r="joint"),
+             regions=regions, laminaeMm=lam, tol0=_f(data.level_error(part, "l0")),
+             tol1=_f(data.level_error(part, "l1")), y_end=back, ends=dict(l="joint", r="joint"),
              faceRoles={"top": "bed", "bed": "bed"}, target=np.array([L / 2, b * H / 2, H / 2]), batter=b,
              bandMm=band_mm, setInMm=half, setInRule=sn10, faceFacets=len(lines), ridgesMm=sorted(chosen, reverse=True),
              setbacksMm=steps_mm, proudMm=[round(p * 1000, 2) for p in proud], bedChamfer=bool(P("bedChamfer")))
@@ -1741,7 +1712,7 @@ def outline_coping(facts, defn=None, data=None):
             if r3.randint(0, 999) < P("chipPerMille"):
                 lo, hi = P("chipLegMm")
                 bb, aa = _f(r3.randint(lo, hi)), _f(r3.randint(lo, hi))
-                dz = _f(min(r3.randint(lo, hi), Tmm // 2))
+                dz = _f(min(r3.randint(lo, hi), Tmm * P("chipDepthPerMille") // 1000))
                 bb, aa, grown = chip_least(bb, aa, dz)
                 chips.append(corner_chip(f"chip:{side}-{corner}", side, L, T, (bb, aa, dz), centre,
                                          back=W if corner == "back" else None, fact="knocked (seed)",
@@ -1785,11 +1756,10 @@ def outline_coping(facts, defn=None, data=None):
         if back_seen:
             reg.append([dict(n=-ey, d=-(W - _f(proud_back + lean + cb))), below])
         regions[f"end-{side}"] = reg
-    lv = (defn or {}).get("levels", {})
     o = dict(facts=facts, part=part, L=L, H=T, g=0.0, D=W, skirt=0.0, block=block, covers=[], chamfers=ch,
              chamferMm=c_mm, chips=chips, wear=None, rows0=[], rows1=[], cols0=[], cols1=[], flat=0.0, flat1=0.0,
-             regions=regions, laminaeMm=[], tol0=_f(lv.get("l0", {}).get("errorMm", 1)),
-             tol1=_f(lv.get("l1", {}).get("errorMm", 11)), y_end=W, ends=dict(facts["ends"]),
+             regions=regions, laminaeMm=[], tol0=_f(data.level_error(part, "l0")),
+             tol1=_f(data.level_error(part, "l1")), y_end=W, ends=dict(facts["ends"]),
              faceRoles={"top": "bed", "bed": "bed"}, target=np.array([L / 2, 0.0, T / 2]), batter=b,
              setInMm=half, proudMm=[proud, proud_back])
     o["faces"] = face_frames(o, defn, data)
@@ -1951,7 +1921,7 @@ def check(part, out, defn):
     res["wear"] = dict(L0=wear_checks(o, L0, o["tol0"]), L1=wear_checks(o, L1, o["tol1"]))
     fails += res["wear"]["L0"]["fails"] + [f"L1 {f}" for f in res["wear"]["L1"]["fails"]]
     # L1 against L0
-    res["l1VsL0"] = l1_vs_l0(o, L0, L1, lv["l1"]["errorMm"])
+    res["l1VsL0"] = l1_vs_l0(o, L0, L1, data.level_error(part, "l1"))
     fails += res["l1VsL0"]["fails"]
     # thin triangles at each level's far edge
     th = {}
@@ -2466,11 +2436,12 @@ def wall_variants(part, data):
 
 
 def with_params(defn, params):
-    """The definition with params set (the proposed object: param() reads it before the defaults)."""
+    """The definition with some params' values set (a variant's: the machinery on inputs the specimen does not take)."""
     if not params:
         return defn
     d = json.loads(json.dumps(defn))
-    d.setdefault("params", {}).update(params)
+    for k, v in params.items():
+        d.setdefault("params", {})[k] = dict(value=v, note="a variant's (stones.py: wall_variants)")
     return d
 
 
@@ -2547,6 +2518,7 @@ SHARE_RULE = ("SN8 sets its 10% over a level's front-facing triangles at its far
               "(level_gate), and every stone's other checks (ok)")
 LEVEL_RATIO = 0.6       # building-blocks.md: each kind's export check, each level at most 60% of the one before
 KINDS = {"step": "stair", "wallstone": "walls", "coping": "walls"}     # the kind (kinds/) each part's stones are of
+KIND_FILES = {"step": "kinds/stair.json", "wallstone": "kinds/wall.json", "coping": "kinds/wall.json"}  # and its file
 LEVEL_RULE = ("SN8's share over the gully's pieces as R1 laid them: every part's pool (the steps, the wall face stones, "
               "the copings), each stone at each level's far edge in the judging view, its front-facing triangles "
               "pooled: at most 10% under 2 px, and each pool's median visible triangle at least 10 px (the fills, eight "
@@ -2862,8 +2834,12 @@ def code_ids(part="step"):
     current only while none of them has changed."""
     common = ("blender/parts/stone/slate/stones.py", "blender/parts/stone/slate/block.py", "blender/generators/wear.py",
               "blender/resolver/hashing.py", f"{PACK}/parts/stone/{part}.json", f"{PACK}/pack.json")
-    own = {"step": (f"{PACK}/materials/slate.json", "kinds/stair.json", "fixtures/records/st-gully.json",
-                    "fixtures/golden/stair/plan.json", "fixtures/golden/stair/life.json")}.get(part, ())
+    # the step reads the material its working names (the pinned commit's facts and table name it): every one the pack
+    # has is named, so a change to any shows
+    mats = tuple(sorted(f"{PACK}/materials/{f}" for f in os.listdir(os.path.join(ROOT, PACK, "materials"))
+                        if f.endswith(".json")))
+    own = {"step": mats + ("kinds/stair.json", "fixtures/records/st-gully.json", "fixtures/golden/stair/plan.json",
+                           "fixtures/golden/stair/life.json")}.get(part, ())
     return {rel: blob(rel) for rel in common + own + ("blender/parts/stone/slate/patches.manifest.json",)}
 
 
@@ -2879,7 +2855,6 @@ def sidecar(part, out, res, rule, data, defn, flight=None, level=None):
         return dict(minMm=[round(float(v) * 1000, 3) for v in U.min(axis=0)],
                     maxMm=[round(float(v) * 1000, 3) for v in U.max(axis=0)])
 
-    lv = defn["levels"]
     th = res["thin"]
     if part == "step":
         note = (f"the pivot is the bed's front left corner; the drawn faces run {o['skirt'] * 1000:g} mm past a hidden "
@@ -2911,7 +2886,7 @@ def sidecar(part, out, res, rule, data, defn, flight=None, level=None):
         bounds=dict(L0=bounds(out["L0"]), L1=bounds(out["L1"]), note=note),
         levels={k: dict(triangles=len(out[k]["T"]), vertices=len(out[k]["V"]),
                         indexedVertices=res["triangles"]["indexedVertices"][k], fbxVertices=3 * len(out[k]["T"]),
-                        errorMm=lv[k.lower()]["errorMm"]) for k in ("L0", "L1")},
+                        errorMm=data.level_error(part, k.lower())) for k in ("L0", "L1")},
         vertices="vertices: the part's own mesh, its positions shared where corners are one; indexedVertices: its "
                  "corners identical in every channel (position, normal, all eight UVs) counted once, what an exact "
                  "indexed mesh such as step 5's chunks needs under the contract (the edge distances, UV6 and UV7, are "

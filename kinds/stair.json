@@ -62,7 +62,7 @@
   ],
   "levels": {
     "l0": { "errorMm": 1, "triangles": 400000, "mergeUnit": "ch" },
-    "l1": { "errorMm": 4, "triangles": 100000, "mergeUnit": "ch" },
+    "l1": { "errorMm": 11, "triangles": 100000, "mergeUnit": "ch", "note": "11 mm: the value R2a's step stones were built and judged with (the step's L1 is L0 without its chamfers, 8.5 mm on an arris at a 12 mm leg; the wear grid takes stones.py's l1WearShare of it, 5.5 mm). R2b replaces it with the visible joint error, measured in context, keeping the mesh error only as a check (reviews/lt1/port/2b/r2a/stones/review.md, proposal 2)." },
     "l2": { "errorMm": 10, "triangles": 20000, "mergeUnit": "ce" },
     "l3": { "errorMm": 25, "triangles": 4000, "mergeUnit": "ce" },
     "l4": { "errorMm": 100, "triangles": 400, "mergeUnit": "bk" }
