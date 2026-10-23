@@ -190,7 +190,7 @@ Proposals wait here for the next milestone's fresh reviewer, who sees the plan a
   - Parts name members (`"materials": ["slate"]`), so a new stone has to be added by hand to every part that could use it. The code defaults to slate (`stair_facts.py`, `stone.py`, `wall.py`).
   - Material numbers sit outside the members: slate's history constants in `schemas/layers.json`, the pack's growth rates in `GrowthPack.cs`.
 - **Change**, in the shape of `docs/taxonomy.md` (In the data):
-  - `materials/<family>.json` at the repo root, beside `kinds/`: the family's properties, finishes and what each needs, its shader family, how each of the six changes acts, and the numbers every member must state. Stone first.
+  - `materials/<family>.json` at the repo root, beside `kinds/`: the family's properties and finishes, its shader family, how each of the six changes acts, and the numbers every member must state. Stone first.
   - Members stay flat in `packs/<pack>/materials/<member>.json`, named by a bare word as `schemas/naming.md` has it, each with a `family` field. `slate.json` becomes `phyllite.json` with the finishes natural, rough and split. Mica schist, gneiss and erratic granite join from their research when the land (1d) or a wall needs them.
   - `material.schema.json` gains `family`, `source`, `finishes`, the family's properties and the links `yields` and `madeOf`. A member missing a number its family requires fails validation.
   - `part.schema.json`'s `materials` becomes `takes`, a family and the properties the part needs, plus `finish`. The construction or the record names the member.
@@ -210,9 +210,26 @@ Proposals wait here for the next milestone's fresh reviewer, who sees the plan a
   - `docs/systems.md`'s materials table and `docs/taxonomy.md`'s families overlap; one of them must hold the state.
   - The docs-trim test (`reviews/docs-trim/score.md`): a fresh reader with `CLAUDE.md`, `NOW.md`, the skills and the design pages' In shorts, closed book, answered 23 of 30 hinge questions as the full docs do. After the In shorts were fixed, the same reader answered 6 of the 7 misses, for 29 against a target of 27.
 - **Change:**
-  - Each fact has one home by its type (`docs/taxonomy.md`, TX7). Design pages hold no dates, quotes, review rounds or step codes; those belong in `docs/experiments.md`. A page names a data field and leaves its value to the data. State lives in `docs/systems.md` only.
+  - Each fact has one home by its type (`docs/taxonomy.md`, TX8). Design pages hold no dates, quotes, review rounds or step codes; those belong in `docs/experiments.md`. A page names a data field and leaves its value to the data. State lives in `docs/systems.md` only.
   - `tools/check_docs.py`, joining `tools/check.py` when it lands. In design pages it flags dates, quotes, review-round and step codes, and paths that don't exist, and it warns on a number with a unit that also sits in a data field the page names. It fails when a material family named in `docs/taxonomy.md` has no file, or a family file is missing from the page.
   - Pages are cleaned one at a time when their system is next worked, `docs/stone.md` and `docs/building-blocks.md` first, since the stone is open. Each cleaned page passes the docs-trim test (a fresh reader, 30 hinge questions, closed book) at 27 of 30 or better on first asking before it merges.
   - How-to steps (adding a member, a part or a kind) move into the skills, which load when the job needs them.
 - **Standing cost:** the check, and 30 questions written once for each cleaned page. `CLAUDE.md`'s docs table points to the map instead of listing every page.
 - **What would change our minds:** a cleaned page failing the question test twice. That nuance needs the body, so it stays there and is linked.
+
+## Q21. Techniques, a library pack, and histories of any length
+
+- **Evidence:**
+  - The first town holds medieval stone: a cathedral of about 1125 and the monastery ruin on Gull Island (`docs/town-plan.md`; `docs/town-system.md`, the script). `pack.json`'s `firstYear` is 1800, and the shell atlas stores a piece's year in one byte from it, so it holds 256 years, to 2055 (`docs/building-blocks.md`, the map registry). `docs/research/history-pages.md` assumes reset years from 1850 to 2050.
+  - Tool marks date work. Granite split with flat wedges shows long rectangular slots and granite split with plug and feathers rows of round holes, and researchers tell the techniques apart by them (`docs/research/taxonomy-precedents.md`). The face patches are chosen per member and finish, by seed (SN6), so a mark that dates a stone can't be told from texture.
+  - Techniques live as prose in LF3's tables and `docs/stone.md`, and the builder's craft (LF3) has no field that a part reads.
+  - No pack can use another's members, so a second world would copy every rock.
+- **Change:**
+  - `techniques/<technique>.json` at the repo root: tools, marks, the finish it gives, what it needs from a member, and how skill shows. The first are the stone's: split along the bed by hand, flat wedges, plug and feathers, scrabbled, axed, boasted, frame saw, dry-stone and lime-mortared walling.
+  - A construction names its techniques and the years it was used. Face patches are made per member and technique.
+  - The record's `made.by` carries the maker's skill, which each technique turns into its own effects (regularity, bridged joints, a true line); means stays apart.
+  - `pack.json` gains `buildsOn`. `packs/library/` holds real members and techniques, moved out of the first pack as each is made; a world adds only its own.
+  - Years: the shell index's year widens to 16 bits, and `firstYear` may be any year, before port steps 4 and 5 fix the formats. The piece table's u16 of year × 16 + month already spans 4,096 years.
+- **Standing cost:** none in the always-read files; two bytes a shell texel in the index.
+- **What would change our minds:** a second world needing a rule changed rather than data added. The rule was then wrong, and it is fixed in the system.
+

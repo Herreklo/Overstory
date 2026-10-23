@@ -4,31 +4,33 @@ What the world is made of, the words for it, and where each fact lives. This is 
 
 ## In short
 
-- **TX1** A thing is a kind, made by a construction from parts, grown by a habit, or laid down by the land; its parts are materials, each face in a finish. Anything with its own history is a thing, so things nest. Evidence: LF1, LF3, TR1. Reopens: a thing made none of these ways.
-- **TX2** A material family holds the rules; a member, one material from one source, holds every number. Reopens: a member needing a rule its family lacks.
-- **TX3** A rock is a member and a finish is how a face was got: a knoll and a step can be the same phyllite. A living thing and what it yields are two linked members.
-- **TX4** Parts, growth and coats ask for properties; constructions and records name members. Reopens: a choice properties can't state.
-- **TX5** Six changes: slow ones worked out from the date (grows, grows on, worn, weathered) and sudden ones dated in the record (worked, struck). Every family says how each acts on it. Evidence: D5.1, LF1.
-- **TX6** A new member, construction or pack is data only. Needing code means the family or part lacks something; fix it there.
-- **TX7** Each fact has one home by its type, and others link to it. Where prose and data disagree, the data is right.
-- **TX8** Six tests place anything new (Where does it go). What none of them settles is raised before building.
+- **TX1** A thing is a kind, made by a construction from parts, grown by a habit, or laid down by the land. Its parts are materials, each face in a finish. Anything with its own history is a thing, so things nest. Evidence: LF1, LF3, TR1.
+- **TX2** A material family holds the rules; a member, one material from one source, holds every number.
+- **TX3** A rock is a member: a knoll and a step can be the same phyllite. A living thing and what it yields are two linked members.
+- **TX4** Parts, techniques, growth and coats ask for properties; constructions and records name members.
+- **TX5** Six changes: slow, from the date (grows, grows on, worn, weathered); sudden, dated in the record (worked, struck). Evidence: D5.1.
+- **TX6** A technique is how something is done in any world; a construction is how one world's builders did it, and when. Tool marks are history: they come from the recorded technique and the maker's skill. Evidence: LF3.
+- **TX7** A world is a pack built on other packs. Members, techniques, constructions and worlds are data; a pack never changes a rule. Evidence: `docs/town-system.md`.
+- **TX8** Each fact has one home by its type. Where prose and data disagree, the data is right.
+- **TX9** Where does it go places anything new; what it doesn't settle is raised before building.
 
 ## The model
 
 ```
-the system, at the repo root, for any place
+the system, at the repo root, true in any world
   material family  stone, wood, metal              its rules: fields, finishes, changes
+  technique        split along the bed, axed       how something is done: tools, marks, needs
   kind             stair, wall, natural-stone      what a thing is
   change           slow: grows, grows on, worn, weathered; sudden: worked, struck
-the pack, one place and its years
+a pack, one world or place and its years, built on other packs
   member           phyllite, Iddefjord granite     one material from one source, every number
   part             stone/step, coat/paint          a piece made from facts
-  construction     block, dry-split-1874           how its builders made a kind
-a thing            one flight in the town: its record, and its life at a date;
+  construction     block, dry-split-1874           how its builders made a kind: techniques, members, sizes, dates
+a thing            one flight in the town: its record (who made it, how skilled, when), and its life at a date;
                    a thing can hold things (a house and its shopfront)
 ```
 
-One flight in the gully, read through it. It is a stair (the kind), built as `block` steps between walls laid `dry-split-1874` (the constructions). Each step is a `stone/step` part of phyllite, a member of the stone family. Its finish is split, so its top and bottom are bed faces and its front and ends split faces. Since then the feet in its record have worn it, and lichen and moss have grown on it as its place allows. Water has weathered it, and it was worked when a run was reset.
+One flight in the gully, read through it. It is a stair (the kind), built as `block` steps between walls laid `dry-split-1874` (the constructions). Each step is a `stone/step` part of phyllite, a member of the stone family, split along its bed by hand (the technique). Its finish is split, so its top and bottom are bed faces and its front and ends split faces. Since then the feet in its record have worn it, and lichen and moss have grown on it as its place allows. Water has weathered it, and it was worked when a run was reset.
 
 Watch Knoll is the same phyllite with the natural finish, a `natural-stone` thing laid down by the land. It takes the same lichen and the same rust bands, and it is worn only where the uses in its record walk it.
 
@@ -41,17 +43,19 @@ Each word has one meaning. Use it for nothing else.
 | thing | anything with its own history: a flight, a wall, a house, its shopfront, a tree | a part | its record |
 | kind | what a thing is: stair, wall, natural-stone, house, tree, lamp | a rock or a species | `kinds/<kind>.json` |
 | making | how a thing came to be: a construction, a habit, or the land | a change | the thing's `made` |
-| construction | how a pack's builders made a kind: its parts, sizes, laying rules and what breaks in it (LF3) | a finish | the stair's in `kinds/stair.json` (`block`, `treadOnRiser`), the walls' in `walling.json` |
+| technique | how something is done, true in any world: its tools, the marks it leaves, the finish it gives, what it needs from a member, how skill shows in it | a construction | `techniques/<technique>.json` |
+| construction | how a pack's builders made a kind: its techniques, members, parts, sizes, laying rules and dates, and what breaks in it (LF3) | a technique | the stair's in `kinds/stair.json` (`block`, `treadOnRiser`), the walls' in `walling.json` |
 | habit | how a species grows: the rules and numbers its timeline follows | a construction | `docs/trees.md`, the species' data |
 | part | a piece made by a judged mesh or function from facts; a living member brings its own (bark, twigs) | a whole thing | `packs/<pack>/parts/<path>.json`, code in `blender/parts/` |
 | material family | materials that change in the same way: stone, wood, metal | a part family or a shader family | `materials/<family>.json` |
 | member | one material from one source, as a pack has it: phyllite, Iddefjord granite, slow-grown pine | | `packs/<pack>/materials/<member>.json`, naming its family |
-| finish | how a face was got: natural, rough, split, hewn, dressed, sawn for stone; sawn and planed for wood; cast and wrought for iron | a construction | its family |
+| finish | the class of face a technique leaves: natural, rough, split, hewn, dressed, sawn for stone; sawn and planed for wood; cast and wrought for iron | a technique | its family |
+| skill | how well the maker did it: a fact in the record (`made.by`), shown as each technique says | means (money), which buys the member and the technique | the record |
 | property | what a member has that others ask for: how it breaks (in slabs or in blocks), its chemistry (acid or lime) | a number | its family lists them; the member states them |
 | change | one of the six ways a thing changes over time | a layer | its design page |
 | layer | one entry of `schemas/layers.json`: a channel a change draws through on a surface (polish, lichen, moss) | a change | `schemas/layers.json` |
 | record | a thing's facts: made, keepers, uses, works, events | its look | `fixtures/`, later the engine |
-| pack | a place and its years | code | `packs/<pack>/` |
+| pack | a world or a place and its years; it can build on other packs | code | `packs/<pack>/` |
 
 Three things are called families, so write the full name each time. A material family is stone or wood. A shader family (`stone`, `street`, `tree`) is what draws it. A part family is a part path's first segments, such as `stone` or `window` (`schemas/naming.md`).
 
@@ -59,12 +63,12 @@ The seven surface layers of `docs/foundations.md` are a surface's drawing order:
 
 ## Where does it go
 
-Six questions place anything new. Ask them before building it.
+These questions place anything new. Ask them before building it.
 
 | Question | The test | Example |
 | --- | --- | --- |
 | thing or part? | It has its own history (its own works or keepers): a thing. Otherwise a part. | a shopfront refitted in 1972 is a thing in its house; a step is a part of its flight |
-| kind or construction? | True in every town: the kind. This place's or era's way of building: a construction. | level beds are the wall kind's; dry-split walls are a construction |
+| kind, technique or construction? | True of the thing in every world: the kind. How something is done, in any world: a technique. How this world's builders did it, and when: a construction. | level beds are the wall kind's; splitting along the bed is a technique; dry-split walls of 1874 are a construction |
 | family or member? | It changes by other rules: a family. The same rules with other numbers: a member. | stone and wood are families; phyllite and granite are members |
 | member or finish? | Break it open. Other stuff, or a source that ages differently: a member. The same stuff worked another way: a finish. | Iddefjord and erratic granite are two members; split and dressed granite are one member in two finishes |
 | property or name? | Another member could do the same job: ask for the property. | a step asks for a stone that breaks in slabs |
@@ -93,15 +97,31 @@ The first pack's members:
 
 Larvikite and concrete join the same way when the pack needs them. The rock is from `docs/research/land-rock-and-water.md` and `docs/stone.md`.
 
-**Finishes.** A finish is how a face was got. A part made in a finish has that finish's faces: a split step has bed faces and split faces (its face patches in `packs/stavanger-1989/parts/stone/step.json`). A work can change a face's finish, as when a face is re-dressed or rock is cut back for a lane; it resets the layers that face held. Each finish says what it needs from a member and what it leaves on the face:
-- natural: any member, made by the land's generators and shaped by how the member breaks (phyllite plucks into thin stepped ledges, gneiss and granite into broad whalebacks);
-- rough: any member, knocked to size, its faces as they broke;
-- split: a member that breaks in slabs; flat beds, split faces of few facets (SN4);
-- hewn: any member, squared with hammer and pick;
-- dressed: a member that breaks in blocks; tooled faces and arrises;
-- sawn: any member, from the year a construction names.
+**Finishes and techniques.** A finish is the class of face; a technique is how it was made. A part's geometry follows the finish: a split step has bed faces and split faces (its face patches in `packs/stavanger-1989/parts/stone/step.json`). Its marks follow the technique and the maker's skill, since tool marks date work and say who did it. A work can change a face's finish, as when a face is re-dressed or rock is cut back for a lane; it resets the layers that face held.
 
-Each member and finish has its own face patches (SN6), made by the finish's rules with the member's numbers. So mica schist costs one member file, its patches for natural and split, and a variety sheet. The step part asks for a stone that breaks in slabs, so mica schist steps work the day the file lands.
+The finishes:
+- natural: made by the land's generators, shaped by how the member breaks (phyllite plucks into thin stepped ledges, gneiss and granite into broad whalebacks);
+- rough: knocked to size, its faces as they broke;
+- split: parted along a bed or a line of wedges; split faces of few facets (SN4);
+- hewn: squared with hammer and pick;
+- dressed: tooled flat, with arrises;
+- sawn: cut by a saw.
+
+Some techniques for stone, each with the finish it gives and the marks it leaves:
+
+| Technique | Gives | Needs | Marks |
+| --- | --- | --- | --- |
+| split along the bed by hand | split | a member that breaks in slabs | flat beds; split faces of few facets |
+| flat wedges in cut slots | split | | long rectangular slots along the split edge |
+| plug and feathers in drilled holes | split | | a row of round half-holes along the split edge |
+| scrabbled | rough | | irregular projections knocked off |
+| axed | dressed | a hard stone, such as granite | the axe's marks |
+| boasted | dressed | | parallel lines, level, upright or slanting |
+| frame saw | sawn | | the saw's lines |
+
+Each member and technique has its own face patches (SN6), made by the technique's rules with the member's numbers. So mica schist costs one member file, its patches for the techniques it takes, and a variety sheet. The step part asks for a stone that breaks in slabs, so mica schist steps work the day the file lands.
+
+**Skill.** A maker's skill is a fact of the record (LF3: craft and means). Each technique says how skill shows. For a wall it is the regularity, the bridged joints and a true line; means shows as thickness, dressing and the stone's grade. A master and a farmhand using the same technique on the same granite leave different walls, and both are true.
 
 ## In the data
 
@@ -115,11 +135,7 @@ The shape Q19 moves the data to. The values are left out here, since they live i
   "shaderFamily": "stone",
   "rigid": true,
   "properties": { "breaks": ["slabs", "blocks"], "chemistry": ["acid", "lime"] },
-  "finishes": {
-    "natural": {}, "rough": {}, "hewn": {}, "sawn": {},
-    "split": { "needs": { "breaks": "slabs" } },
-    "dressed": { "needs": { "breaks": "blocks" } }
-  },
+  "finishes": ["natural", "rough", "split", "hewn", "dressed", "sawn"],
   "changes": {
     "grows": "none",
     "growsOn": ["lichen", "moss"],
@@ -141,9 +157,22 @@ The shape Q19 moves the data to. The values are left out here, since they live i
   "source": "the town's bedrock",
   "breaks": "slabs",
   "chemistry": "acid",
-  "finishes": ["natural", "rough", "split"],
   "wearUmPerCentury": "…",
   "cracksPerMille": "…"
+}
+```
+
+`techniques/split-along-bed.json`, a technique:
+
+```json
+{
+  "technique": "split-along-bed",
+  "family": "stone",
+  "gives": "split",
+  "needs": { "breaks": "slabs" },
+  "tools": ["hammer", "wedge"],
+  "marks": "flat beds; split faces of few facets",
+  "skill": ["regularity", "a true line"]
 }
 ```
 
@@ -199,13 +228,28 @@ One file of code can serve two changes: `upkeep.py` draws both damage and repair
 | To add | Write | It then works with | Cost |
 | --- | --- | --- | --- |
 | a member (mica schist) | its file, copied from its nearest sibling with the numbers that differ; face patches for each finish it takes | every part that asks for its properties; every change | data and patches |
-| a finish (sawn stone) | its entry in the family, and the rules that make its faces | every member that can take it | one function |
+| a technique (plug and feathers) | its file: tools, marks, the finish it gives, what it needs, how skill shows; face patches per member that can take it | every construction that names it, in any world | data and patches |
+| a finish (sawn stone) | its entry in the family, and the rules that make its faces | every technique that gives it | one function |
 | a part (a kerb) | its definition and part function, asking for properties | every member that has them | one function |
 | a kind (a quay wall) | its kind file and stages | existing parts, members and changes | its stages |
 | a construction (a mortared wall) | its entry in the pack | the kind it builds | data |
 | a material family (metal) | its file: properties, finishes, how each change acts, required numbers, shader family | everything above | the biggest step; every member after it is data |
 | a change (soot) | its layers, its design page, and each family's answer | every thing | one system |
-| a pack (London) | its members, constructions and part definitions | everything above | data; each system's foreign part proves it (`docs/foundations.md`, Packs and facts) |
+| a world (a medieval town, London) | a pack built on the library: its sources, constructions with their dates, land and records | everything above | data; each system's foreign part proves it (`docs/foundations.md`, Packs and facts) |
+
+## Other worlds
+
+A world is a pack, and a pack builds on other packs (`buildsOn`). The library pack holds what is real anywhere: real rocks, woods and metals as members, and real techniques. A world adds only its own: where its stone comes from, which techniques its builders knew and from when, its constructions, its land and its records. Its look is the drawing's, kept apart from all of this (Q18).
+
+Granite in a medieval world:
+1. The pack builds on the library and takes its granite. If its granite comes from a source that looks or ages differently, it adds a member copied from the library's.
+2. Its constructions name what its masons used and when: granite split with wedges and dressed with the axe, walls of rubble in lime mortar with dressed corners, no sawn granite.
+3. Its things use the system's kinds. A kind it lacks, such as a spiral stair or a vault, is added to the system once, and every world has it.
+4. Its records say who built each thing, how skilled they were, and when. The six changes then give it centuries of lichen and hollowed steps.
+
+None of this needs code. The first town needs the same, since its cathedral of about 1125 and the monastery ruin on Gull Island are medieval stone (`docs/town-plan.md`).
+
+An invented world works the same way. An invented stone or technique is a member or technique with its own numbers. A pack never changes a rule (`docs/town-system.md`). If an invention needs one, such as a stone that heals, the rule joins the system once, as a family or a change, and every world can use it.
 
 ## Where each fact lives
 
@@ -221,4 +265,4 @@ One file of code can serve two changes: `upkeep.py` draws both damage and repair
 
 Read a system's In short first and its data next. Page bodies, research and reviews are opened to reopen a decision or to find a rule's reason. A design page names a field and leaves its value to the data.
 
-The stone members are in `packs/stavanger-1989/materials/slate.json` (phyllite) and `granite.json` today, with no family file, and parts name members (`"materials": ["slate"]`). Proposal Q19 moves the data to this shape, and Q20 gives every fact one home (`docs/proposals.md`).
+The stone members are in `packs/stavanger-1989/materials/slate.json` (phyllite) and `granite.json` today, with no family file, and parts name members (`"materials": ["slate"]`). Proposal Q19 moves the data to this shape, Q20 gives every fact one home, and Q21 adds techniques, the library pack and histories longer than 256 years (`docs/proposals.md`).

@@ -9,7 +9,9 @@ The evidence behind the shape of `docs/taxonomy.md`: how other games and tools k
 - Shared templates for materials, and a living thing that carries the material it yields (Dwarf Fortress), are TX2 and TX3.
 - A parent material with variants that change only what differs is in our own engine (Unity's Material Variants), for TX2.
 - Wear worked out from the shape, so one generator serves every material (Substance 3D Painter), is TX5.
-- Light always-read files, detail loaded when needed, and no repeated or conflicting instructions (Anthropic's guidance for Claude 5 models) is TX7.
+- Tool marks date stonework, and masons name finishes by the tool that made them (plug and feathers; designingbuildings; the BGS on Edinburgh's quarries). That is TX6: techniques as facts with marks.
+- A world built on shared content and adding only its own is how a game's expansions and mods sit on its core content. That is TX7.
+- Light always-read files, detail loaded when needed, and no repeated or conflicting instructions (Anthropic's guidance for Claude 5 models) is TX8.
 
 ## What each shows
 
@@ -25,10 +27,15 @@ The evidence behind the shape of `docs/taxonomy.md`: how other games and tools k
 
 **Substance 3D Painter.** The Metal Edge Wear generator finds edges from the baked curvature map and keeps wear out of occluded places with the ambient occlusion map. It reads the shape, so one generator serves every model and material. What we take: a change is written once and reads the thing's shape and facts (TX5); our wear reads the record's feet and hands as well.
 
+**Tool marks and techniques.** Masons name finishes by the tool and method: axed ("hard stones such as granite are dressed using a stone axe"), boasted (parallel lines from a boaster), scrabbled (projections removed "using a scrabbling hammer leaving a rough finish"), rubbed and polished. Splitting leaves marks that date it. With flat wedges, "cape chisel work left long, rectangular slots"; plug and feathers in drilled holes "left round holes", and "researchers use these differing marks to tell which splitting technique was used". Plug and feathers split Dartmoor granite from about 1800 and spread through New England from 1803. In Edinburgh, small blocks were split by hammering in wedges and larger ones with plug and feathers, and stone "was hand-dressed" until recently, with frame saws and wire saws for slabs. What we take: a technique is a fact with tools, marks and dates, and its marks are history (TX6).
+
 **Anthropic, on context for Claude 5 models.** Keep `CLAUDE.md` light and use "a tree of files that can be loaded at the right time". Remove conflicting or excessive instructions, since a model spends effort reconciling them. What we take: the map, In shorts first, data last, one home per fact (TX7, Q20).
 
 ## Sources
 
+- Designing Buildings, [Stone dressing](https://www.designingbuildings.co.uk/wiki/Dressing_stone)
+- Wikipedia, [Plug and feather](https://en.wikipedia.org/wiki/Plug_and_feather)
+- British Geological Survey, [Building stones of Edinburgh: quarrying methods](https://earthwise.bgs.ac.uk/index.php/Building_stones_of_Edinburgh:_quarrying_methods)
 - NBS, [Uniclass tables explained](https://www.thenbs.com/knowledge/uniclass-tables-explained)
 - buildingSMART, [IfcRelAssociatesMaterial (IFC 4.3)](https://standards.buildingsmart.org/IFC/RELEASE/IFC4_3/HTML/lexical/IfcRelAssociatesMaterial.htm)
 - RimWorld Wiki, [Stuff](https://rimworldwiki.com/wiki/Stuff)
