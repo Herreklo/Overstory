@@ -771,7 +771,8 @@
     "zFoot": 8000
    }
   ],
-  "id": "st-gully"
+  "id": "st-gully",
+  "working": "dry-split-1874"
  },
  "walls": {
   "built": 1874,
@@ -1238,6 +1239,7 @@
       6226
      ],
      "stock": "reclaimed",
+     "working": "cement-relaid-1961",
      "year": 1961
     },
     "retains": false,
@@ -4498,7 +4500,1893 @@
     "s1": 33705,
     "side": -1
    }
-  ]
+  ],
+  "visibility": {
+   "eyeHeightMm": 1600,
+   "eyes": {
+    "droppedInHouses": 11,
+    "lane": 4585,
+    "place": 164,
+    "view": 6,
+    "withinRange": 3026,
+    "yard": 18
+   },
+   "farOnly": {
+    "nearestEyeM": [
+     8.0,
+     10.2,
+     12.4,
+     14.9,
+     17.5
+    ],
+    "seenFrom": {
+     "Top Terrace": 20.19,
+     "the Landing": 5.28,
+     "the way to D (1107, empty since 1986)": 10.49
+    },
+    "what": "the walkable ground's nearest clear eye of each sample seen only from beyond 8 m (min, quartiles, max), and the m2 by the lane or place of that eye"
+   },
+   "method": {
+    "classes": "near: seen from an eye within 8 m (L0's range); farOnly: seen only from farther, up to 80 m; unseen: from nowhere within 80 m; buried: under the ground",
+    "eyes": "the six judging views (LT1Stone.cs, in frame at 2560 x 1440) and standing eyes 1.6 m over the walkable ground: every lane, stair and quay of heart_layout.LANES every 1.75 m along and about 1.5 m across (0.3 m in from the edges), the Landing, the small places, the market square and the yards on a 1.5 m grid, none inside a house",
+    "faces": "a sample every 220 mm along each course at its mid-height, on the face battered 1 in 6 (wall.py), 20 mm off it; a sample is buried where the ground 0.1 m outside the face stands over it",
+    "ground": "the clay's carved ground on its 1.5 m grid (heart_layout.carve over centre_land.heights, as wall.py's ground_near), bilinear; inside each flight's clear width the steps' treads",
+    "measuredOn": "the two-going layout's courses and copings, before any fill",
+    "rays": "from the sample to the eye, if the eye is in front of the face; blocked by another wall line (its top as a slab 0.15 to 0.57 m outside the stair's clear half-width, under its coping's top) or by the ground (marched every 0.5 m, 20 mm under it); houses do not block (sensitivity.withHouses adds them)"
+   },
+   "nearMm": 8000,
+   "panels": {
+    "wl-gully/fl-0/l/pn-0": {
+     "bank": {
+      "laid": true,
+      "laidAt120m": true,
+      "laidWithHouses": true,
+      "laidWithoutYards": true,
+      "m2": {
+       "buried": 0.9386,
+       "farOnly": 0.0,
+       "near": 5.5477,
+       "unseen": 0.0
+      },
+      "m2WithHouses": {
+       "buried": 0.9386,
+       "farOnly": 0.0,
+       "near": 5.5477,
+       "unseen": 0.0
+      },
+      "nearWithoutYards": 5.5477,
+      "samples": 188,
+      "seenFrom": [
+       "lane"
+      ],
+      "views": []
+     },
+     "stair": {
+      "laid": true,
+      "laidAt120m": true,
+      "laidWithHouses": true,
+      "laidWithoutYards": true,
+      "m2": {
+       "buried": 0.0,
+       "farOnly": 0.0,
+       "near": 3.843,
+       "unseen": 0.0
+      },
+      "m2WithHouses": {
+       "buried": 0.0,
+       "farOnly": 0.0,
+       "near": 3.843,
+       "unseen": 0.0
+      },
+      "nearWithoutYards": 3.843,
+      "samples": 115,
+      "seenFrom": [
+       "lane"
+      ],
+      "views": [
+       "eye-foot",
+       "high",
+       "into12",
+       "street"
+      ]
+     }
+    },
+    "wl-gully/fl-0/l/pn-1": {
+     "bank": {
+      "laid": true,
+      "laidAt120m": true,
+      "laidWithHouses": true,
+      "laidWithoutYards": true,
+      "m2": {
+       "buried": 0.3481,
+       "farOnly": 0.0,
+       "near": 1.9369,
+       "unseen": 0.0
+      },
+      "m2WithHouses": {
+       "buried": 0.3481,
+       "farOnly": 0.0,
+       "near": 1.9369,
+       "unseen": 0.0
+      },
+      "nearWithoutYards": 1.9369,
+      "samples": 66,
+      "seenFrom": [
+       "lane"
+      ],
+      "views": []
+     },
+     "stair": {
+      "laid": true,
+      "laidAt120m": true,
+      "laidWithHouses": true,
+      "laidWithoutYards": true,
+      "m2": {
+       "buried": 0.0,
+       "farOnly": 0.0,
+       "near": 1.4275,
+       "unseen": 0.0
+      },
+      "m2WithHouses": {
+       "buried": 0.0,
+       "farOnly": 0.0,
+       "near": 1.4275,
+       "unseen": 0.0
+      },
+      "nearWithoutYards": 1.4275,
+      "samples": 41,
+      "seenFrom": [
+       "lane"
+      ],
+      "views": [
+       "eye-foot",
+       "high",
+       "into12",
+       "street"
+      ]
+     }
+    },
+    "wl-gully/fl-0/l/pn-2": {
+     "bank": {
+      "laid": true,
+      "laidAt120m": true,
+      "laidWithHouses": true,
+      "laidWithoutYards": true,
+      "m2": {
+       "buried": 0.2892,
+       "farOnly": 0.0,
+       "near": 6.1501,
+       "unseen": 0.0
+      },
+      "m2WithHouses": {
+       "buried": 0.2892,
+       "farOnly": 0.0,
+       "near": 6.1501,
+       "unseen": 0.0
+      },
+      "nearWithoutYards": 6.1501,
+      "samples": 184,
+      "seenFrom": [
+       "lane",
+       "place"
+      ],
+      "views": []
+     },
+     "stair": {
+      "laid": true,
+      "laidAt120m": true,
+      "laidWithHouses": true,
+      "laidWithoutYards": true,
+      "m2": {
+       "buried": 0.0,
+       "farOnly": 0.0,
+       "near": 4.2111,
+       "unseen": 0.0
+      },
+      "m2WithHouses": {
+       "buried": 0.0,
+       "farOnly": 0.0,
+       "near": 4.2111,
+       "unseen": 0.0
+      },
+      "nearWithoutYards": 4.2111,
+      "samples": 122,
+      "seenFrom": [
+       "lane"
+      ],
+      "views": [
+       "eye-foot",
+       "eye-on",
+       "high",
+       "into12",
+       "street"
+      ]
+     }
+    },
+    "wl-gully/fl-0/r/pn-0": {
+     "bank": {
+      "laid": true,
+      "laidAt120m": true,
+      "laidWithHouses": true,
+      "laidWithoutYards": true,
+      "m2": {
+       "buried": 0.2959,
+       "farOnly": 0.0,
+       "near": 2.2456,
+       "unseen": 0.0
+      },
+      "m2WithHouses": {
+       "buried": 0.2959,
+       "farOnly": 0.0,
+       "near": 2.2456,
+       "unseen": 0.0
+      },
+      "nearWithoutYards": 2.2456,
+      "samples": 75,
+      "seenFrom": [
+       "lane"
+      ],
+      "views": [
+       "high",
+       "into12"
+      ]
+     },
+     "stair": {
+      "laid": true,
+      "laidAt120m": true,
+      "laidWithHouses": true,
+      "laidWithoutYards": true,
+      "m2": {
+       "buried": 0.0242,
+       "farOnly": 0.0,
+       "near": 1.8071,
+       "unseen": 0.0
+      },
+      "m2WithHouses": {
+       "buried": 0.0242,
+       "farOnly": 0.0,
+       "near": 1.8071,
+       "unseen": 0.0
+      },
+      "nearWithoutYards": 1.8071,
+      "samples": 55,
+      "seenFrom": [
+       "lane"
+      ],
+      "views": [
+       "eye-foot",
+       "street"
+      ]
+     }
+    },
+    "wl-gully/fl-0/r/pn-1": {
+     "bank": {
+      "laid": true,
+      "laidAt120m": true,
+      "laidWithHouses": true,
+      "laidWithoutYards": true,
+      "m2": {
+       "buried": 0.397,
+       "farOnly": 0.0,
+       "near": 3.2142,
+       "unseen": 0.0
+      },
+      "m2WithHouses": {
+       "buried": 0.397,
+       "farOnly": 0.0,
+       "near": 3.2142,
+       "unseen": 0.0
+      },
+      "nearWithoutYards": 3.2142,
+      "samples": 105,
+      "seenFrom": [
+       "lane"
+      ],
+      "views": [
+       "high",
+       "into12"
+      ]
+     },
+     "stair": {
+      "laid": true,
+      "laidAt120m": true,
+      "laidWithHouses": true,
+      "laidWithoutYards": true,
+      "m2": {
+       "buried": 0.0,
+       "farOnly": 0.0,
+       "near": 1.9962,
+       "unseen": 0.0
+      },
+      "m2WithHouses": {
+       "buried": 0.0,
+       "farOnly": 0.0,
+       "near": 1.9962,
+       "unseen": 0.0
+      },
+      "nearWithoutYards": 1.9962,
+      "samples": 61,
+      "seenFrom": [
+       "lane"
+      ],
+      "views": [
+       "eye-down",
+       "eye-foot",
+       "street"
+      ]
+     }
+    },
+    "wl-gully/fl-0/r/pn-2": {
+     "bank": {
+      "laid": true,
+      "laidAt120m": true,
+      "laidWithHouses": true,
+      "laidWithoutYards": true,
+      "m2": {
+       "buried": 0.4585,
+       "farOnly": 0.0,
+       "near": 1.9839,
+       "unseen": 0.0
+      },
+      "m2WithHouses": {
+       "buried": 0.4585,
+       "farOnly": 0.0,
+       "near": 1.9839,
+       "unseen": 0.0
+      },
+      "nearWithoutYards": 1.9839,
+      "samples": 73,
+      "seenFrom": [
+       "lane",
+       "place"
+      ],
+      "views": [
+       "high",
+       "into12"
+      ]
+     },
+     "stair": {
+      "laid": true,
+      "laidAt120m": true,
+      "laidWithHouses": true,
+      "laidWithoutYards": true,
+      "m2": {
+       "buried": 0.0,
+       "farOnly": 0.0,
+       "near": 1.3441,
+       "unseen": 0.0
+      },
+      "m2WithHouses": {
+       "buried": 0.0,
+       "farOnly": 0.0,
+       "near": 1.3441,
+       "unseen": 0.0
+      },
+      "nearWithoutYards": 1.3441,
+      "samples": 41,
+      "seenFrom": [
+       "lane"
+      ],
+      "views": [
+       "eye-foot",
+       "eye-on",
+       "street"
+      ]
+     }
+    },
+    "wl-gully/fl-0/r/pn-3": {
+     "bank": {
+      "laid": true,
+      "laidAt120m": true,
+      "laidWithHouses": true,
+      "laidWithoutYards": true,
+      "m2": {
+       "buried": 0.0859,
+       "farOnly": 0.0,
+       "near": 0.6783,
+       "unseen": 0.0
+      },
+      "m2WithHouses": {
+       "buried": 0.0859,
+       "farOnly": 0.0,
+       "near": 0.6783,
+       "unseen": 0.0
+      },
+      "nearWithoutYards": 0.6783,
+      "samples": 25,
+      "seenFrom": [
+       "lane",
+       "place"
+      ],
+      "views": [
+       "high",
+       "into12"
+      ]
+     },
+     "stair": {
+      "laid": true,
+      "laidAt120m": true,
+      "laidWithHouses": true,
+      "laidWithoutYards": true,
+      "m2": {
+       "buried": 0.0,
+       "farOnly": 0.0,
+       "near": 0.547,
+       "unseen": 0.0
+      },
+      "m2WithHouses": {
+       "buried": 0.0,
+       "farOnly": 0.0,
+       "near": 0.547,
+       "unseen": 0.0
+      },
+      "nearWithoutYards": 0.547,
+      "samples": 18,
+      "seenFrom": [
+       "lane"
+      ],
+      "views": [
+       "eye-foot",
+       "eye-on",
+       "street"
+      ]
+     }
+    },
+    "wl-gully/fl-0/r/pn-4": {
+     "bank": {
+      "laid": true,
+      "laidAt120m": true,
+      "laidWithHouses": true,
+      "laidWithoutYards": true,
+      "m2": {
+       "buried": 0.9765,
+       "farOnly": 0.0,
+       "near": 5.2096,
+       "unseen": 0.0
+      },
+      "m2WithHouses": {
+       "buried": 0.9765,
+       "farOnly": 0.0,
+       "near": 5.2096,
+       "unseen": 0.0
+      },
+      "nearWithoutYards": 5.2096,
+      "samples": 178,
+      "seenFrom": [
+       "place"
+      ],
+      "views": [
+       "high",
+       "into12"
+      ]
+     },
+     "stair": {
+      "laid": true,
+      "laidAt120m": true,
+      "laidWithHouses": true,
+      "laidWithoutYards": true,
+      "m2": {
+       "buried": 0.0,
+       "farOnly": 0.0,
+       "near": 3.7803,
+       "unseen": 0.0
+      },
+      "m2WithHouses": {
+       "buried": 0.0,
+       "farOnly": 0.0,
+       "near": 3.7803,
+       "unseen": 0.0
+      },
+      "nearWithoutYards": 3.7803,
+      "samples": 109,
+      "seenFrom": [
+       "lane"
+      ],
+      "views": [
+       "eye-foot",
+       "eye-on",
+       "street"
+      ]
+     }
+    },
+    "wl-gully/fl-1/l/pn-0": {
+     "bank": {
+      "laid": true,
+      "laidAt120m": true,
+      "laidWithHouses": true,
+      "laidWithoutYards": true,
+      "m2": {
+       "buried": 0.4282,
+       "farOnly": 0.0,
+       "near": 2.9575,
+       "unseen": 0.0
+      },
+      "m2WithHouses": {
+       "buried": 0.4282,
+       "farOnly": 0.0,
+       "near": 2.9575,
+       "unseen": 0.0
+      },
+      "nearWithoutYards": 2.9575,
+      "samples": 98,
+      "seenFrom": [
+       "place"
+      ],
+      "views": []
+     },
+     "stair": {
+      "laid": true,
+      "laidAt120m": true,
+      "laidWithHouses": true,
+      "laidWithoutYards": true,
+      "m2": {
+       "buried": 0.0,
+       "farOnly": 0.0,
+       "near": 3.1465,
+       "unseen": 0.0
+      },
+      "m2WithHouses": {
+       "buried": 0.0,
+       "farOnly": 0.0,
+       "near": 3.1465,
+       "unseen": 0.0
+      },
+      "nearWithoutYards": 3.1465,
+      "samples": 90,
+      "seenFrom": [
+       "lane"
+      ],
+      "views": [
+       "high",
+       "into12",
+       "street"
+      ]
+     }
+    },
+    "wl-gully/fl-1/l/pn-1": {
+     "bank": {
+      "laid": true,
+      "laidAt120m": true,
+      "laidWithHouses": true,
+      "laidWithoutYards": true,
+      "m2": {
+       "buried": 0.7692,
+       "farOnly": 0.0389,
+       "near": 1.8545,
+       "unseen": 0.0
+      },
+      "m2WithHouses": {
+       "buried": 0.7692,
+       "farOnly": 1.436,
+       "near": 0.4574,
+       "unseen": 0.0
+      },
+      "nearWithoutYards": 1.8545,
+      "samples": 76,
+      "seenFrom": [
+       "place"
+      ],
+      "views": []
+     },
+     "stair": {
+      "laid": true,
+      "laidAt120m": true,
+      "laidWithHouses": true,
+      "laidWithoutYards": true,
+      "m2": {
+       "buried": 0.0,
+       "farOnly": 0.0,
+       "near": 2.8252,
+       "unseen": 0.0
+      },
+      "m2WithHouses": {
+       "buried": 0.0,
+       "farOnly": 0.0,
+       "near": 2.8252,
+       "unseen": 0.0
+      },
+      "nearWithoutYards": 2.8252,
+      "samples": 81,
+      "seenFrom": [
+       "lane"
+      ],
+      "views": [
+       "street"
+      ]
+     }
+    },
+    "wl-gully/fl-1/l/pn-10": {
+     "bank": {
+      "laid": true,
+      "laidAt120m": true,
+      "laidWithHouses": true,
+      "laidWithoutYards": true,
+      "m2": {
+       "buried": 0.1856,
+       "farOnly": 0.0,
+       "near": 1.5673,
+       "unseen": 0.0
+      },
+      "m2WithHouses": {
+       "buried": 0.1856,
+       "farOnly": 0.0,
+       "near": 1.5673,
+       "unseen": 0.0
+      },
+      "nearWithoutYards": 1.5673,
+      "samples": 53,
+      "seenFrom": [
+       "lane"
+      ],
+      "views": []
+     },
+     "stair": {
+      "laid": true,
+      "laidAt120m": true,
+      "laidWithHouses": true,
+      "laidWithoutYards": true,
+      "m2": {
+       "buried": 0.0,
+       "farOnly": 0.0,
+       "near": 1.4898,
+       "unseen": 0.0
+      },
+      "m2WithHouses": {
+       "buried": 0.0,
+       "farOnly": 0.0,
+       "near": 1.4898,
+       "unseen": 0.0
+      },
+      "nearWithoutYards": 1.4898,
+      "samples": 46,
+      "seenFrom": [
+       "lane"
+      ],
+      "views": [
+       "street"
+      ]
+     }
+    },
+    "wl-gully/fl-1/l/pn-11": {
+     "bank": {
+      "laid": true,
+      "laidAt120m": true,
+      "laidWithHouses": true,
+      "laidWithoutYards": true,
+      "m2": {
+       "buried": 0.4173,
+       "farOnly": 0.0,
+       "near": 3.4189,
+       "unseen": 0.0
+      },
+      "m2WithHouses": {
+       "buried": 0.4173,
+       "farOnly": 0.0,
+       "near": 3.4189,
+       "unseen": 0.0
+      },
+      "nearWithoutYards": 3.4189,
+      "samples": 110,
+      "seenFrom": [
+       "lane"
+      ],
+      "views": []
+     },
+     "stair": {
+      "laid": true,
+      "laidAt120m": true,
+      "laidWithHouses": true,
+      "laidWithoutYards": true,
+      "m2": {
+       "buried": 0.0,
+       "farOnly": 0.0,
+       "near": 3.2245,
+       "unseen": 0.0
+      },
+      "m2WithHouses": {
+       "buried": 0.0,
+       "farOnly": 0.0,
+       "near": 3.2245,
+       "unseen": 0.0
+      },
+      "nearWithoutYards": 3.2245,
+      "samples": 91,
+      "seenFrom": [
+       "lane"
+      ],
+      "views": [
+       "street"
+      ]
+     }
+    },
+    "wl-gully/fl-1/l/pn-12": {
+     "bank": {
+      "laid": true,
+      "laidAt120m": true,
+      "laidWithHouses": true,
+      "laidWithoutYards": true,
+      "m2": {
+       "buried": 0.3325,
+       "farOnly": 0.0,
+       "near": 1.4372,
+       "unseen": 0.0
+      },
+      "m2WithHouses": {
+       "buried": 0.3325,
+       "farOnly": 0.0,
+       "near": 1.4372,
+       "unseen": 0.0
+      },
+      "nearWithoutYards": 1.4372,
+      "samples": 60,
+      "seenFrom": [
+       "lane"
+      ],
+      "views": []
+     },
+     "stair": {
+      "laid": true,
+      "laidAt120m": true,
+      "laidWithHouses": true,
+      "laidWithoutYards": true,
+      "m2": {
+       "buried": 0.0,
+       "farOnly": 0.0,
+       "near": 1.8416,
+       "unseen": 0.0
+      },
+      "m2WithHouses": {
+       "buried": 0.0,
+       "farOnly": 0.0,
+       "near": 1.8416,
+       "unseen": 0.0
+      },
+      "nearWithoutYards": 1.8416,
+      "samples": 63,
+      "seenFrom": [
+       "lane"
+      ],
+      "views": [
+       "street"
+      ]
+     }
+    },
+    "wl-gully/fl-1/l/pn-2": {
+     "bank": {
+      "laid": true,
+      "laidAt120m": true,
+      "laidWithHouses": true,
+      "laidWithoutYards": true,
+      "m2": {
+       "buried": 0.3025,
+       "farOnly": 0.943,
+       "near": 0.0,
+       "unseen": 0.0
+      },
+      "m2WithHouses": {
+       "buried": 0.3025,
+       "farOnly": 0.943,
+       "near": 0.0,
+       "unseen": 0.0
+      },
+      "nearWithoutYards": 0.0,
+      "samples": 39,
+      "seenFrom": [
+       "place"
+      ],
+      "views": []
+     },
+     "stair": {
+      "laid": true,
+      "laidAt120m": true,
+      "laidWithHouses": true,
+      "laidWithoutYards": true,
+      "m2": {
+       "buried": 0.0,
+       "farOnly": 0.0,
+       "near": 1.4607,
+       "unseen": 0.0
+      },
+      "m2WithHouses": {
+       "buried": 0.0,
+       "farOnly": 0.0,
+       "near": 1.4607,
+       "unseen": 0.0
+      },
+      "nearWithoutYards": 1.4607,
+      "samples": 46,
+      "seenFrom": [
+       "lane"
+      ],
+      "views": [
+       "street"
+      ]
+     }
+    },
+    "wl-gully/fl-1/l/pn-3": {
+     "bank": {
+      "laid": true,
+      "laidAt120m": true,
+      "laidWithHouses": true,
+      "laidWithoutYards": true,
+      "m2": {
+       "buried": 0.6084,
+       "farOnly": 1.8023,
+       "near": 0.0,
+       "unseen": 0.0
+      },
+      "m2WithHouses": {
+       "buried": 0.6084,
+       "farOnly": 1.8023,
+       "near": 0.0,
+       "unseen": 0.0
+      },
+      "nearWithoutYards": 0.0,
+      "samples": 71,
+      "seenFrom": [
+       "place"
+      ],
+      "views": []
+     },
+     "stair": {
+      "laid": true,
+      "laidAt120m": true,
+      "laidWithHouses": true,
+      "laidWithoutYards": true,
+      "m2": {
+       "buried": 0.0,
+       "farOnly": 0.0,
+       "near": 2.6079,
+       "unseen": 0.0
+      },
+      "m2WithHouses": {
+       "buried": 0.0,
+       "farOnly": 0.0,
+       "near": 2.6079,
+       "unseen": 0.0
+      },
+      "nearWithoutYards": 2.6079,
+      "samples": 76,
+      "seenFrom": [
+       "lane"
+      ],
+      "views": [
+       "street"
+      ]
+     }
+    },
+    "wl-gully/fl-1/l/pn-4": {
+     "bank": {
+      "laid": true,
+      "laidAt120m": true,
+      "laidWithHouses": true,
+      "laidWithoutYards": true,
+      "m2": {
+       "buried": 0.2066,
+       "farOnly": 0.7027,
+       "near": 0.0,
+       "unseen": 0.0
+      },
+      "m2WithHouses": {
+       "buried": 0.2066,
+       "farOnly": 0.7027,
+       "near": 0.0,
+       "unseen": 0.0
+      },
+      "nearWithoutYards": 0.0,
+      "samples": 28,
+      "seenFrom": [
+       "place"
+      ],
+      "views": []
+     },
+     "stair": {
+      "laid": true,
+      "laidAt120m": true,
+      "laidWithHouses": true,
+      "laidWithoutYards": true,
+      "m2": {
+       "buried": 0.0,
+       "farOnly": 0.0,
+       "near": 1.0778,
+       "unseen": 0.0
+      },
+      "m2WithHouses": {
+       "buried": 0.0,
+       "farOnly": 0.0,
+       "near": 1.0778,
+       "unseen": 0.0
+      },
+      "nearWithoutYards": 1.0778,
+      "samples": 33,
+      "seenFrom": [
+       "lane"
+      ],
+      "views": [
+       "street"
+      ]
+     }
+    },
+    "wl-gully/fl-1/l/pn-5": {
+     "bank": {
+      "laid": true,
+      "laidAt120m": true,
+      "laidWithHouses": true,
+      "laidWithoutYards": true,
+      "m2": {
+       "buried": 0.5909,
+       "farOnly": 1.9398,
+       "near": 0.0,
+       "unseen": 0.0
+      },
+      "m2WithHouses": {
+       "buried": 0.5909,
+       "farOnly": 1.9398,
+       "near": 0.0,
+       "unseen": 0.0
+      },
+      "nearWithoutYards": 0.0,
+      "samples": 72,
+      "seenFrom": [
+       "lane",
+       "place"
+      ],
+      "views": []
+     },
+     "stair": {
+      "laid": true,
+      "laidAt120m": true,
+      "laidWithHouses": true,
+      "laidWithoutYards": true,
+      "m2": {
+       "buried": 0.0,
+       "farOnly": 0.0,
+       "near": 2.7129,
+       "unseen": 0.0
+      },
+      "m2WithHouses": {
+       "buried": 0.0,
+       "farOnly": 0.0,
+       "near": 2.7129,
+       "unseen": 0.0
+      },
+      "nearWithoutYards": 2.7129,
+      "samples": 77,
+      "seenFrom": [
+       "lane"
+      ],
+      "views": [
+       "street"
+      ]
+     }
+    },
+    "wl-gully/fl-1/l/pn-6": {
+     "bank": {
+      "laid": true,
+      "laidAt120m": true,
+      "laidWithHouses": true,
+      "laidWithoutYards": true,
+      "m2": {
+       "buried": 0.2301,
+       "farOnly": 0.722,
+       "near": 0.0,
+       "unseen": 0.0
+      },
+      "m2WithHouses": {
+       "buried": 0.2301,
+       "farOnly": 0.722,
+       "near": 0.0,
+       "unseen": 0.0
+      },
+      "nearWithoutYards": 0.0,
+      "samples": 30,
+      "seenFrom": [
+       "lane"
+      ],
+      "views": []
+     },
+     "stair": {
+      "laid": true,
+      "laidAt120m": true,
+      "laidWithHouses": true,
+      "laidWithoutYards": true,
+      "m2": {
+       "buried": 0.0,
+       "farOnly": 0.0,
+       "near": 1.06,
+       "unseen": 0.0
+      },
+      "m2WithHouses": {
+       "buried": 0.0,
+       "farOnly": 0.0,
+       "near": 1.06,
+       "unseen": 0.0
+      },
+      "nearWithoutYards": 1.06,
+      "samples": 33,
+      "seenFrom": [
+       "lane"
+      ],
+      "views": [
+       "street"
+      ]
+     }
+    },
+    "wl-gully/fl-1/l/pn-7": {
+     "bank": {
+      "laid": true,
+      "laidAt120m": true,
+      "laidWithHouses": true,
+      "laidWithoutYards": true,
+      "m2": {
+       "buried": 0.5455,
+       "farOnly": 2.2938,
+       "near": 0.0,
+       "unseen": 0.0
+      },
+      "m2WithHouses": {
+       "buried": 0.5455,
+       "farOnly": 2.2938,
+       "near": 0.0,
+       "unseen": 0.0
+      },
+      "nearWithoutYards": 0.0,
+      "samples": 81,
+      "seenFrom": [
+       "lane"
+      ],
+      "views": []
+     },
+     "stair": {
+      "laid": true,
+      "laidAt120m": true,
+      "laidWithHouses": true,
+      "laidWithoutYards": true,
+      "m2": {
+       "buried": 0.0,
+       "farOnly": 0.0,
+       "near": 3.007,
+       "unseen": 0.0
+      },
+      "m2WithHouses": {
+       "buried": 0.0,
+       "farOnly": 0.0,
+       "near": 3.007,
+       "unseen": 0.0
+      },
+      "nearWithoutYards": 3.007,
+      "samples": 87,
+      "seenFrom": [
+       "lane"
+      ],
+      "views": [
+       "street"
+      ]
+     }
+    },
+    "wl-gully/fl-1/l/pn-8": {
+     "bank": {
+      "laid": true,
+      "laidAt120m": true,
+      "laidWithHouses": true,
+      "laidWithoutYards": true,
+      "m2": {
+       "buried": 0.2929,
+       "farOnly": 1.3168,
+       "near": 0.0,
+       "unseen": 0.0
+      },
+      "m2WithHouses": {
+       "buried": 0.2929,
+       "farOnly": 1.3168,
+       "near": 0.0,
+       "unseen": 0.0
+      },
+      "nearWithoutYards": 0.0,
+      "samples": 48,
+      "seenFrom": [
+       "lane"
+      ],
+      "views": []
+     },
+     "stair": {
+      "laid": true,
+      "laidAt120m": true,
+      "laidWithHouses": true,
+      "laidWithoutYards": true,
+      "m2": {
+       "buried": 0.0,
+       "farOnly": 0.0,
+       "near": 1.5993,
+       "unseen": 0.0
+      },
+      "m2WithHouses": {
+       "buried": 0.0,
+       "farOnly": 0.0,
+       "near": 1.5993,
+       "unseen": 0.0
+      },
+      "nearWithoutYards": 1.5993,
+      "samples": 48,
+      "seenFrom": [
+       "lane"
+      ],
+      "views": [
+       "street"
+      ]
+     }
+    },
+    "wl-gully/fl-1/l/pn-9": {
+     "bank": {
+      "laid": true,
+      "laidAt120m": true,
+      "laidWithHouses": true,
+      "laidWithoutYards": true,
+      "m2": {
+       "buried": 0.5575,
+       "farOnly": 2.6078,
+       "near": 0.6112,
+       "unseen": 0.0
+      },
+      "m2WithHouses": {
+       "buried": 0.5575,
+       "farOnly": 2.6078,
+       "near": 0.6112,
+       "unseen": 0.0
+      },
+      "nearWithoutYards": 0.6112,
+      "samples": 108,
+      "seenFrom": [
+       "lane"
+      ],
+      "views": []
+     },
+     "stair": {
+      "laid": true,
+      "laidAt120m": true,
+      "laidWithHouses": true,
+      "laidWithoutYards": true,
+      "m2": {
+       "buried": 0.0,
+       "farOnly": 0.0,
+       "near": 3.2092,
+       "unseen": 0.0
+      },
+      "m2WithHouses": {
+       "buried": 0.0,
+       "farOnly": 0.0,
+       "near": 3.2092,
+       "unseen": 0.0
+      },
+      "nearWithoutYards": 3.2092,
+      "samples": 92,
+      "seenFrom": [
+       "lane"
+      ],
+      "views": [
+       "street"
+      ]
+     }
+    },
+    "wl-gully/fl-1/r/pn-0": {
+     "bank": {
+      "laid": true,
+      "laidAt120m": true,
+      "laidWithHouses": true,
+      "laidWithoutYards": true,
+      "m2": {
+       "buried": 0.4934,
+       "farOnly": 0.0,
+       "near": 2.2495,
+       "unseen": 0.0
+      },
+      "m2WithHouses": {
+       "buried": 0.4934,
+       "farOnly": 0.0,
+       "near": 2.2495,
+       "unseen": 0.0
+      },
+      "nearWithoutYards": 2.2495,
+      "samples": 81,
+      "seenFrom": [
+       "lane"
+      ],
+      "views": [
+       "high",
+       "into12"
+      ]
+     },
+     "stair": {
+      "laid": true,
+      "laidAt120m": true,
+      "laidWithHouses": true,
+      "laidWithoutYards": true,
+      "m2": {
+       "buried": 0.0,
+       "farOnly": 0.0,
+       "near": 3.1475,
+       "unseen": 0.0
+      },
+      "m2WithHouses": {
+       "buried": 0.0,
+       "farOnly": 0.0,
+       "near": 3.1475,
+       "unseen": 0.0
+      },
+      "nearWithoutYards": 3.1475,
+      "samples": 90,
+      "seenFrom": [
+       "lane"
+      ],
+      "views": []
+     }
+    },
+    "wl-gully/fl-1/r/pn-1": {
+     "bank": {
+      "laid": true,
+      "laidAt120m": true,
+      "laidWithHouses": true,
+      "laidWithoutYards": true,
+      "m2": {
+       "buried": 0.4418,
+       "farOnly": 0.0,
+       "near": 3.4503,
+       "unseen": 0.0
+      },
+      "m2WithHouses": {
+       "buried": 0.4418,
+       "farOnly": 0.0,
+       "near": 3.4503,
+       "unseen": 0.0
+      },
+      "nearWithoutYards": 3.4503,
+      "samples": 111,
+      "seenFrom": [
+       "lane"
+      ],
+      "views": [
+       "high",
+       "into12"
+      ]
+     },
+     "stair": {
+      "laid": true,
+      "laidAt120m": true,
+      "laidWithHouses": true,
+      "laidWithoutYards": true,
+      "m2": {
+       "buried": 0.0,
+       "farOnly": 0.0,
+       "near": 2.8252,
+       "unseen": 0.0
+      },
+      "m2WithHouses": {
+       "buried": 0.0,
+       "farOnly": 0.0,
+       "near": 2.8252,
+       "unseen": 0.0
+      },
+      "nearWithoutYards": 2.8252,
+      "samples": 81,
+      "seenFrom": [
+       "lane"
+      ],
+      "views": []
+     }
+    },
+    "wl-gully/fl-1/r/pn-10": {
+     "bank": {
+      "laid": true,
+      "laidAt120m": true,
+      "laidWithHouses": true,
+      "laidWithoutYards": true,
+      "m2": {
+       "buried": 0.0251,
+       "farOnly": 0.1251,
+       "near": 2.1698,
+       "unseen": 0.0
+      },
+      "m2WithHouses": {
+       "buried": 0.0251,
+       "farOnly": 0.1251,
+       "near": 2.1698,
+       "unseen": 0.0
+      },
+      "nearWithoutYards": 2.1698,
+      "samples": 70,
+      "seenFrom": [
+       "lane"
+      ],
+      "views": []
+     },
+     "stair": {
+      "laid": true,
+      "laidAt120m": true,
+      "laidWithHouses": true,
+      "laidWithoutYards": true,
+      "m2": {
+       "buried": 0.0,
+       "farOnly": 0.0,
+       "near": 1.4898,
+       "unseen": 0.0
+      },
+      "m2WithHouses": {
+       "buried": 0.0,
+       "farOnly": 0.0,
+       "near": 1.4898,
+       "unseen": 0.0
+      },
+      "nearWithoutYards": 1.4898,
+      "samples": 46,
+      "seenFrom": [
+       "lane"
+      ],
+      "views": []
+     }
+    },
+    "wl-gully/fl-1/r/pn-11": {
+     "bank": {
+      "laid": true,
+      "laidAt120m": true,
+      "laidWithHouses": true,
+      "laidWithoutYards": true,
+      "m2": {
+       "buried": 0.1442,
+       "farOnly": 0.0,
+       "near": 4.7554,
+       "unseen": 0.0
+      },
+      "m2WithHouses": {
+       "buried": 0.1442,
+       "farOnly": 0.0,
+       "near": 4.7554,
+       "unseen": 0.0
+      },
+      "nearWithoutYards": 4.7554,
+      "samples": 139,
+      "seenFrom": [
+       "lane"
+      ],
+      "views": []
+     },
+     "stair": {
+      "laid": true,
+      "laidAt120m": true,
+      "laidWithHouses": true,
+      "laidWithoutYards": true,
+      "m2": {
+       "buried": 0.0,
+       "farOnly": 0.0,
+       "near": 3.2245,
+       "unseen": 0.0
+      },
+      "m2WithHouses": {
+       "buried": 0.0,
+       "farOnly": 0.0,
+       "near": 3.2245,
+       "unseen": 0.0
+      },
+      "nearWithoutYards": 3.2245,
+      "samples": 91,
+      "seenFrom": [
+       "lane"
+      ],
+      "views": []
+     }
+    },
+    "wl-gully/fl-1/r/pn-12": {
+     "bank": {
+      "laid": true,
+      "laidAt120m": true,
+      "laidWithHouses": true,
+      "laidWithoutYards": true,
+      "m2": {
+       "buried": 0.2871,
+       "farOnly": 0.0,
+       "near": 1.7856,
+       "unseen": 0.0
+      },
+      "m2WithHouses": {
+       "buried": 0.2871,
+       "farOnly": 0.0,
+       "near": 1.7856,
+       "unseen": 0.0
+      },
+      "nearWithoutYards": 1.7856,
+      "samples": 66,
+      "seenFrom": [
+       "lane"
+      ],
+      "views": []
+     },
+     "stair": {
+      "laid": true,
+      "laidAt120m": true,
+      "laidWithHouses": true,
+      "laidWithoutYards": true,
+      "m2": {
+       "buried": 0.0,
+       "farOnly": 0.0,
+       "near": 1.7444,
+       "unseen": 0.0
+      },
+      "m2WithHouses": {
+       "buried": 0.0,
+       "farOnly": 0.0,
+       "near": 1.7444,
+       "unseen": 0.0
+      },
+      "nearWithoutYards": 1.7444,
+      "samples": 55,
+      "seenFrom": [
+       "lane"
+      ],
+      "views": []
+     }
+    },
+    "wl-gully/fl-1/r/pn-2": {
+     "bank": {
+      "laid": true,
+      "laidAt120m": true,
+      "laidWithHouses": true,
+      "laidWithoutYards": true,
+      "m2": {
+       "buried": 0.2143,
+       "farOnly": 1.5591,
+       "near": 0.2056,
+       "unseen": 0.0
+      },
+      "m2WithHouses": {
+       "buried": 0.2143,
+       "farOnly": 1.5591,
+       "near": 0.2056,
+       "unseen": 0.0
+      },
+      "nearWithoutYards": 0.2056,
+      "samples": 61,
+      "seenFrom": [
+       "lane"
+      ],
+      "views": []
+     },
+     "stair": {
+      "laid": true,
+      "laidAt120m": true,
+      "laidWithHouses": true,
+      "laidWithoutYards": true,
+      "m2": {
+       "buried": 0.0,
+       "farOnly": 0.0,
+       "near": 1.4607,
+       "unseen": 0.0
+      },
+      "m2WithHouses": {
+       "buried": 0.0,
+       "farOnly": 0.0,
+       "near": 1.4607,
+       "unseen": 0.0
+      },
+      "nearWithoutYards": 1.4607,
+      "samples": 46,
+      "seenFrom": [
+       "lane"
+      ],
+      "views": []
+     }
+    },
+    "wl-gully/fl-1/r/pn-3": {
+     "bank": {
+      "laid": true,
+      "laidAt120m": true,
+      "laidWithHouses": true,
+      "laidWithoutYards": true,
+      "m2": {
+       "buried": 0.2862,
+       "farOnly": 3.5317,
+       "near": 0.0,
+       "unseen": 0.0
+      },
+      "m2WithHouses": {
+       "buried": 0.2862,
+       "farOnly": 3.5317,
+       "near": 0.0,
+       "unseen": 0.0
+      },
+      "nearWithoutYards": 0.0,
+      "samples": 110,
+      "seenFrom": [
+       "lane"
+      ],
+      "views": []
+     },
+     "stair": {
+      "laid": true,
+      "laidAt120m": true,
+      "laidWithHouses": true,
+      "laidWithoutYards": true,
+      "m2": {
+       "buried": 0.0,
+       "farOnly": 0.0,
+       "near": 2.6079,
+       "unseen": 0.0
+      },
+      "m2WithHouses": {
+       "buried": 0.0,
+       "farOnly": 0.0,
+       "near": 2.6079,
+       "unseen": 0.0
+      },
+      "nearWithoutYards": 2.6079,
+      "samples": 76,
+      "seenFrom": [
+       "lane"
+      ],
+      "views": []
+     }
+    },
+    "wl-gully/fl-1/r/pn-4": {
+     "bank": {
+      "laid": true,
+      "laidAt120m": true,
+      "laidWithHouses": true,
+      "laidWithoutYards": true,
+      "m2": {
+       "buried": 0.1406,
+       "farOnly": 1.3263,
+       "near": 0.0,
+       "unseen": 0.0
+      },
+      "m2WithHouses": {
+       "buried": 0.1406,
+       "farOnly": 1.3263,
+       "near": 0.0,
+       "unseen": 0.0
+      },
+      "nearWithoutYards": 0.0,
+      "samples": 45,
+      "seenFrom": [
+       "lane"
+      ],
+      "views": []
+     },
+     "stair": {
+      "laid": true,
+      "laidAt120m": true,
+      "laidWithHouses": true,
+      "laidWithoutYards": true,
+      "m2": {
+       "buried": 0.0,
+       "farOnly": 0.0,
+       "near": 1.0778,
+       "unseen": 0.0
+      },
+      "m2WithHouses": {
+       "buried": 0.0,
+       "farOnly": 0.0,
+       "near": 1.0778,
+       "unseen": 0.0
+      },
+      "nearWithoutYards": 1.0778,
+      "samples": 33,
+      "seenFrom": [
+       "lane"
+      ],
+      "views": []
+     }
+    },
+    "wl-gully/fl-1/r/pn-5": {
+     "bank": {
+      "laid": true,
+      "laidAt120m": true,
+      "laidWithHouses": true,
+      "laidWithoutYards": true,
+      "m2": {
+       "buried": 0.2772,
+       "farOnly": 3.6891,
+       "near": 0.0,
+       "unseen": 0.0
+      },
+      "m2WithHouses": {
+       "buried": 0.2772,
+       "farOnly": 3.6891,
+       "near": 0.0,
+       "unseen": 0.0
+      },
+      "nearWithoutYards": 0.0,
+      "samples": 112,
+      "seenFrom": [
+       "lane"
+      ],
+      "views": []
+     },
+     "stair": {
+      "laid": true,
+      "laidAt120m": true,
+      "laidWithHouses": true,
+      "laidWithoutYards": true,
+      "m2": {
+       "buried": 0.0,
+       "farOnly": 0.0,
+       "near": 2.7129,
+       "unseen": 0.0
+      },
+      "m2WithHouses": {
+       "buried": 0.0,
+       "farOnly": 0.0,
+       "near": 2.7129,
+       "unseen": 0.0
+      },
+      "nearWithoutYards": 2.7129,
+      "samples": 77,
+      "seenFrom": [
+       "lane"
+      ],
+      "views": []
+     }
+    },
+    "wl-gully/fl-1/r/pn-6": {
+     "bank": {
+      "laid": true,
+      "laidAt120m": true,
+      "laidWithHouses": true,
+      "laidWithoutYards": true,
+      "m2": {
+       "buried": 0.0584,
+       "farOnly": 1.4351,
+       "near": 0.0,
+       "unseen": 0.0
+      },
+      "m2WithHouses": {
+       "buried": 0.0584,
+       "farOnly": 1.4351,
+       "near": 0.0,
+       "unseen": 0.0
+      },
+      "nearWithoutYards": 0.0,
+      "samples": 46,
+      "seenFrom": [
+       "lane"
+      ],
+      "views": []
+     },
+     "stair": {
+      "laid": true,
+      "laidAt120m": true,
+      "laidWithHouses": true,
+      "laidWithoutYards": true,
+      "m2": {
+       "buried": 0.0,
+       "farOnly": 0.0,
+       "near": 1.06,
+       "unseen": 0.0
+      },
+      "m2WithHouses": {
+       "buried": 0.0,
+       "farOnly": 0.0,
+       "near": 1.06,
+       "unseen": 0.0
+      },
+      "nearWithoutYards": 1.06,
+      "samples": 33,
+      "seenFrom": [
+       "lane"
+      ],
+      "views": []
+     }
+    },
+    "wl-gully/fl-1/r/pn-7": {
+     "bank": {
+      "laid": true,
+      "laidAt120m": true,
+      "laidWithHouses": true,
+      "laidWithoutYards": true,
+      "m2": {
+       "buried": 0.2614,
+       "farOnly": 4.2236,
+       "near": 0.0,
+       "unseen": 0.0
+      },
+      "m2WithHouses": {
+       "buried": 0.2614,
+       "farOnly": 4.2236,
+       "near": 0.0,
+       "unseen": 0.0
+      },
+      "nearWithoutYards": 0.0,
+      "samples": 129,
+      "seenFrom": [
+       "lane"
+      ],
+      "views": []
+     },
+     "stair": {
+      "laid": true,
+      "laidAt120m": true,
+      "laidWithHouses": true,
+      "laidWithoutYards": true,
+      "m2": {
+       "buried": 0.0,
+       "farOnly": 0.0,
+       "near": 3.007,
+       "unseen": 0.0
+      },
+      "m2WithHouses": {
+       "buried": 0.0,
+       "farOnly": 0.0,
+       "near": 3.007,
+       "unseen": 0.0
+      },
+      "nearWithoutYards": 3.007,
+      "samples": 87,
+      "seenFrom": [
+       "lane"
+      ],
+      "views": []
+     }
+    },
+    "wl-gully/fl-1/r/pn-8": {
+     "bank": {
+      "laid": true,
+      "laidAt120m": true,
+      "laidWithHouses": true,
+      "laidWithoutYards": true,
+      "m2": {
+       "buried": 0.0369,
+       "farOnly": 2.3763,
+       "near": 0.0,
+       "unseen": 0.0
+      },
+      "m2WithHouses": {
+       "buried": 0.0369,
+       "farOnly": 2.3763,
+       "near": 0.0,
+       "unseen": 0.0
+      },
+      "nearWithoutYards": 0.0,
+      "samples": 73,
+      "seenFrom": [
+       "lane"
+      ],
+      "views": []
+     },
+     "stair": {
+      "laid": true,
+      "laidAt120m": true,
+      "laidWithHouses": true,
+      "laidWithoutYards": true,
+      "m2": {
+       "buried": 0.0,
+       "farOnly": 0.0,
+       "near": 1.5993,
+       "unseen": 0.0
+      },
+      "m2WithHouses": {
+       "buried": 0.0,
+       "farOnly": 0.0,
+       "near": 1.5993,
+       "unseen": 0.0
+      },
+      "nearWithoutYards": 1.5993,
+      "samples": 48,
+      "seenFrom": [
+       "lane"
+      ],
+      "views": []
+     }
+    },
+    "wl-gully/fl-1/r/pn-9": {
+     "bank": {
+      "laid": true,
+      "laidAt120m": true,
+      "laidWithHouses": true,
+      "laidWithoutYards": true,
+      "m2": {
+       "buried": 0.0666,
+       "farOnly": 5.3354,
+       "near": 0.0,
+       "unseen": 0.0
+      },
+      "m2WithHouses": {
+       "buried": 0.0666,
+       "farOnly": 5.3354,
+       "near": 0.0,
+       "unseen": 0.0
+      },
+      "nearWithoutYards": 0.0,
+      "samples": 153,
+      "seenFrom": [
+       "lane"
+      ],
+      "views": []
+     },
+     "stair": {
+      "laid": true,
+      "laidAt120m": true,
+      "laidWithHouses": true,
+      "laidWithoutYards": true,
+      "m2": {
+       "buried": 0.0,
+       "farOnly": 0.0,
+       "near": 3.2092,
+       "unseen": 0.0
+      },
+      "m2WithHouses": {
+       "buried": 0.0,
+       "farOnly": 0.0,
+       "near": 3.2092,
+       "unseen": 0.0
+      },
+      "nearWithoutYards": 3.2092,
+      "samples": 92,
+      "seenFrom": [
+       "lane"
+      ],
+      "views": []
+     }
+    }
+   },
+   "rangeM": 80.0,
+   "rays": {
+    "views": 5915,
+    "walkable": 120000,
+    "wide": 0,
+    "withHouses": 120000,
+    "withoutYards": 0
+   },
+   "sampleMm": 220,
+   "samples": 5244,
+   "sensitivity": {
+    "at120m": {
+     "facesChanged": []
+    },
+    "withHouses": {
+     "facesChanged": [],
+     "houses": 99,
+     "m2": {
+      "bank": {
+       "buried": 11.99,
+       "farOnly": 37.37,
+       "near": 52.03,
+       "unseen": 0.0
+      },
+      "stair": {
+       "buried": 0.02,
+       "farOnly": 0.0,
+       "near": 77.39,
+       "unseen": 0.0
+      }
+     },
+     "what": "the houses of the clay as occluders too, each a box over its footprint to its eaves (no roof)"
+    },
+    "withoutYards": {
+     "facesChanged": []
+    }
+   },
+   "totals": {
+    "bank": {
+     "buried": 11.99,
+     "faces": 34,
+     "facesLaid": 34,
+     "farOnly": 35.97,
+     "hiddenM2": 0,
+     "laidM2": 101.39,
+     "near": 53.43,
+     "unseen": 0.0
+    },
+    "stair": {
+     "buried": 0.02,
+     "faces": 34,
+     "facesLaid": 34,
+     "farOnly": 0.0,
+     "hiddenM2": 0,
+     "laidM2": 77.41,
+     "near": 77.39,
+     "unseen": 0.0
+    }
+   },
+   "what": "which panel faces are seen (tools/r1_elevations.py visibility): a face seen from any judging view or walkable point is laid stone by stone; a face seen from nowhere is hidden work, its fill not laid"
+  },
+  "working": "dry-split-1874"
  },
  "what": "R1's facts (port step 2b): the gully stair's plan and its walls' facts in integer mm, gathered by tools/r1_elevations.py facts; the laying (blender/generators/masonry.py) reads only this",
  "worldSeed": 1989

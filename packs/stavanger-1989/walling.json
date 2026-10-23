@@ -1,0 +1,118 @@
+{
+  "schemaVersion": 2,
+  "describes": "How this pack's builders laid walls of stone, by working: the sizes their stone was split or dressed to and how they laid it (the courses, the stones, the copings, the heads, the through stones, a rebuilt panel's edges, the steps' laps and joints). The wall kind's plan stage reads it (kinds/wall.json; at R1, blender/generators/masonry.py through tools/r1_elevations.py), by the working a wall's, a rebuilt panel's or a stair's facts name. A working names its material (materials/<id>.json), whose wear and cracking are the material's own. The wall's structure (its parapet, its stepped top, its heads, its panels' teeth) is the kind's; the rules of any wall (level beds, SN10's bond, SN2's sliver and acute limits) are code's.",
+  "workings": {
+    "dry-split-1874": {
+      "material": "slate",
+      "mortar": "none",
+      "built": 1874,
+      "courseMm": [
+        120,
+        260
+      ],
+      "riseOneMm": 190,
+      "foundationMm": [
+        190,
+        260
+      ],
+      "stoneMm": [
+        180,
+        850
+      ],
+      "drawnPerHeight": [
+        [
+          3,
+          2
+        ],
+        [
+          4,
+          1
+        ]
+      ],
+      "shortMm": 120,
+      "copeThickMm": [
+        70,
+        100
+      ],
+      "copeNominalMm": 85,
+      "copeLengthMm": [
+        450,
+        1000
+      ],
+      "copeLeastMm": 200,
+      "topstoneMm": [
+        200,
+        450
+      ],
+      "headTieMm": [
+        220,
+        320
+      ],
+      "headRunnerMm": [
+        450,
+        800
+      ],
+      "throughMm": [
+        200,
+        300
+      ],
+      "throughFirstMm": [
+        400,
+        700
+      ],
+      "throughEveryMm": [
+        800,
+        1000
+      ],
+      "steps": {
+        "lapMm": [
+          40,
+          60
+        ],
+        "jointMm": [
+          4,
+          10
+        ],
+        "jointClearMm": 150
+      }
+    },
+    "cement-relaid-1961": {
+      "material": "slate",
+      "mortar": "cement",
+      "built": 1961,
+      "stock": "reclaimed",
+      "edgeStonesMm": [
+        [
+          420,
+          580
+        ],
+        [
+          200,
+          270
+        ]
+      ]
+    }
+  },
+  "provenance": "authored",
+  "notes": {
+    "dry-split-1874": "The gully's cheek walls as the 1874 builders laid them: split slate, dry, in level courses, the largest low. The town's own walls (docs/references/stone/ 31 and 36) are thick split slabs in level beds, big stones low. Starting values set at R1 (port step 2b), from those photographs' form and wall.py's numbers where it had them; R2b and R3 calibrate them in grey form and light.",
+    "courseMm": "A course's height. The stair's rises (146 to 188 mm here) lie one course each (R1 round 2, the coordinator's read: the town's walls are thick split slabs, so the course covers a rise); the free courses over the last step diminish to 120; the foundation courses reach 260. wall.py's 60 to 140 mm were thin flat stones, which the photographs do not show here.",
+    "riseOneMm": "A rise up to this is one course; over it, one line between, the lower course the larger: about 190 mm, the largest rise the coordinator's read lets one course cover.",
+    "foundationMm": "The courses under the foot: larger than any rise, the largest courses low (31 and 36: the biggest stone at the foot).",
+    "stoneMm": "A face stone's length: from 180 mm (wall.py's shortest) to 850 mm, so that SN10's 4.5 times a 190 mm course can stand (wall.py's 620 mm longest was for courses to 140 mm).",
+    "drawnPerHeight": "A face stone's length is drawn from 3/2 to 4/1 times its course's height (the slabs in 31 and 36 are long for their height), within stoneMm and SN10's 4.5.",
+    "shortMm": "Where the geometry leaves a run no whole stones fill, the least a stone may be; every such stone is flagged in the laying's report.",
+    "copeThickMm": "A coping slab's thickness, split slate (wall.py's).",
+    "copeNominalMm": "Its nominal thickness: the ideal bed is the pitch line plus the kind's parapet less this.",
+    "copeLengthMm": "A coping slab's length (wall.py's).",
+    "copeLeastMm": "The least a coping slab may be where a level run or a panel leaves less than a slab; flagged.",
+    "topstoneMm": "A topstone's length at a wall's end, square by the kind's topstoneSquare.",
+    "headTieMm": "A head's tie, through the wall, as its face shows.",
+    "headRunnerMm": "A head's runner along one face.",
+    "throughMm": "A through stone's face. A dry wall is tied by through stones (docs/research/stone.md, Walls and Stones and bonding).",
+    "throughFirstMm": "The first through from a panel's start.",
+    "throughEveryMm": "And then one every 800 to 1000 mm: throughs about every 90 cm in dry double walls (docs/research/stone.md, secondary).",
+    "steps": "The stair's block steps, split slate, dry (SN3, SN5): each step's front bears lapMm on the back of the one below; a tread's joint is jointMm wide; no joint lies within jointClearMm of the joint on the step below.",
+    "cement-relaid-1961": "The 1961 rebuild of fl-0/r's middle (the facts' rebuilt: it bulged where the lane's water ran behind it): the wall's own stones reclaimed and relaid in cement, so its stones are the wall's working's; its own numbers are only its edges, long and short in alternate courses against the old work (wall.py's)."
+  }
+}

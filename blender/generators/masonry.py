@@ -1,91 +1,226 @@
 """Masonry: a stair's cheek walls and its steps laid as 2D elevations in integer millimetres, by a mason's rules, before
-any mesh (port step 2b, rung R1: reviews/lt1/port/2b/design.md, SN2, SN3, SN4, SN10). Pure Python, no bpy and no
+any mesh (port step 2b, rung R1: reviews/lt1/port/2b/design.md, SN2, SN3, SN9, SN10). Pure Python, no bpy and no
 numpy: the wall kind's stages and the stair's geometry stage call these functions later, from facts in integer mm.
 
 A wall line (wl-<token>/fl-<n>/<l|r>, the wall beside one flight on one side) is unrolled as an elevation: s along
 the flight from its foot point (mm), z up (mm, absolute). It has two faces, the stair's and the bank's, built to the
 same level course lines and through the same features. It is laid in this order, features first:
-- the course lines: every step top, at most one line between two step tops (the lower course the larger), free lines
-  over the last step and foundation lines under the foot, each course 60 to 140 mm (wall.py's COURSE);
-- the coping, raked over each flight and level over each rest, with its features: a kneeler at the foot of every
-  raked run (at the lane and at every rest-to-flight break) and every 2.4 to 3.6 m along it (Rivington 1904, p. 54;
-  Mitchell 1902), a knee at every flight-to-rest break, carrying both tops, and a square topstone where a wall ends on
-  a level; every bed under them on a course line;
-- the heads at the wall's ends: ties and runners alternating, each two courses high;
+- the course lines: one on every step top and none between (a rise is one course, up to RISE_ONE), free courses over
+  the last step, each no larger than the one below, and foundation courses under the foot, larger than any rise (the
+  largest courses low);
+- the top, by SN2's parapet: level slab copings stepped square, a whole number of courses a step (one going or two
+  each level run, `goings`), every bed on a course line, so below the last step every step falls on a step top's
+  line; over a rest the coping runs level and drops square at the next flight. Nothing is cut to a slope: no rake
+  cuts, kneelers or knee stones. A wall end's run ends in a square topstone through its top course;
+- the heads at the wall's ends: ties and runners alternating, each two courses high, under the topstone;
 - the footings: on the stair's face the steps themselves (their ends occupied cells, 150 mm into the wall), on the
   bank's face steps with the ground, each step a whole course;
-- the panels between the features (and the 1961 panel's edges), each on its own id and seed;
-- the fallen stones the facts give, the through stones, the panels' toothed boundaries, the 1961 edges' straight joints;
+- the panels between the features (and the 1961 panel's edges), each on its own id and seed; every course takes a
+  tooth at a panel's boundary and a straight joint at a 1961 edge, chosen from the line's features alone, so that a
+  panel re-lays alone;
+- the fallen stones the facts give, the through stones;
 - then each course's free lengths, filled by choosing each stone's length (never stretched), every joint kept a lap
-  from the joints below and above, the last stone under the rake long enough for the cut to leave a trapezoid.
+  from the joints below and above, the copings' joints included; a face the facts' visibility says is seen from
+  nowhere is hidden work: its fill is not laid (its heads and throughs are).
 
 The steps (SN3) are laid in plan: one or two stones a step, both ends 150 mm into the walls, the joint outside the
 middle third, alternating, lapped 40 to 60 mm on the step below; a rest two to four slabs.
 
 Seeds: blender/resolver/hashing.py, keyed on the world seed, the stable id of what a draw is for and its purpose,
-never a position. Choices are integers and the four operations (and a square root for a rake's length); outlines are
-integer mm, and no float enters a choice. Ids (schemas/naming.md; the slots 2b proposes): a panel <line>/pn-<p>; a
-face stone <panel>/<stair|bank>/co-<k>/sp-<j>; a through <panel>/co-<k>/th-<j>; a coping <panel>/cp-<c>; a head's
-stone <line>/hd-<e>/st-<m> (a tie, through the wall), its runners .../st-<m>/stair and .../st-<m>/bank, its topstone
-<line>/hd-<e>/top; <line>/kneeler-<i>, <line>/knee-<i>. A step's stones are the plan's <step>/sl-<k>; a rest's slabs
-<step>/sl-<k> counted row by row from its front (the plan names two; a rest deeper than the longest slab has four);
-a turn landing's <flight>/turn/sl-<k>.
+never a float. Choices are integers and the four operations; outlines are integer mm, and no float enters a choice.
+Ids (schemas/naming.md; the slots 2b proposes): a panel <line>/pn-<p>; a face stone <panel>/<stair|bank>/co-<k>/sp-<j>;
+a through <panel>/co-<k>/th-<j>; a coping <panel>/cp-<c>; a head's stone <line>/hd-<e>/st-<m> (a tie, through the
+wall), its runners .../st-<m>/stair and .../st-<m>/bank, its topstone <line>/hd-<e>/top. A step's stones are the
+plan's <step>/sl-<k>; a rest's slabs <step>/sl-<k> counted row by row from its front (the plan names two; a rest
+deeper than the longest slab has four); a turn landing's <flight>/turn/sl-<k>.
+
+`clock`, when given, is a dict the laying adds its seconds to, by part (time.perf_counter); it never enters the
+output, so the layout's hash is the same with or without it.
 """
-import math
 import os
 import sys
+import time
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.join(HERE, "..", "resolver"))
 import hashing as HS  # noqa: E402  (the one hash spec)
 
-# The wall's numbers (wall.py's, in mm), and SN2's and SN10's
-COURSE = (60, 140)          # a course's height
+# The rules of any wall, in code (design.md 7b: what holds whatever the stone, its working, its era or the style):
+# level beds, no rake, SN10's bond and SN2's sliver and acute limits. Every number that depends on the stone, its
+# working, its era or the style is data, read into a Rules (below): the wall kind's structure from kinds/wall.json's
+# plan params, the working's stone sizes from the pack's walling table (packs/<pack>/walling.json), by the working the
+# facts name.
 SLIVER = 50                 # no stone under 50 mm high, no face narrower (SN2)
 ACUTE = 25                  # nor more acute than 25 degrees (tested, never a choice)
-STONE = (180, 620)          # a face stone's length (wall.py STONE_LEN)
-SHORT = 120                 # where geometry leaves a run no whole stones fill, the least a stone may be (flagged)
 RATIO = (9, 2)              # no stone longer than 4.5 times its height (SN10)
 LAP_MIN = 40                # a joint is kept 0.4 of the course's height, at least 40 mm, from the joints below (SN10)
-PARAPET = 900               # the coping's top over the pitch line (wall.py PARAPET)
-COPE_T = (70, 100)          # a coping's thickness, square to its top (wall.py)
-COPE_T_LEVEL = (70, 84)     # a level run's: the raked run above it is this times the rake's secant, within COPE_T
-COPE_L = (450, 1000)        # a coping slab's length along its bed (wall.py)
-COPE_DELTA = 40             # how far a coping's top may stand off the pitch line + PARAPET, to put its bed on a line
-KNEELER_W = (250, 450)      # a kneeler's level top
-KNEELER_EVERY = (2400, 3600)  # an intermediate kneeler along a raked run, this far (8 to 12 goings) from the stop below
-KNEELER_MID_W = (250, 450)  # its bed's length: wider than it is high
-KNEELER_BACK = 2            # a kneeler's plumb back rises through at most two courses (SN10), where the lines allow
-KNEE_LEVEL = (150, 350)     # a knee's level top
-KNEE_RAKE = (150, 450)      # a knee's raked top, along s
-TOPSTONE = (220, 450)       # a topstone's length (its height near it: square)
-HEAD_TIE = (180, 260)       # a head's tie, through the wall, as its face shows
-HEAD_RUN = (400, 620)       # a head's runner along one face (wall.py HEAD_LEN, from its longest stones)
-LONG_SHORT = ((420, 580), (200, 270))   # a rebuilt panel's end stones, long and short in alternate courses (wall.py)
-THROUGH = (200, 300)        # a through stone's face
-THROUGH_FIRST = (400, 700)  # the first through from a panel's start
-THROUGH_EVERY = (800, 1000) # and then one about every metre
-THROUGH_CLEAR = 300         # never this near a panel's boundary (its teeth and their laps stay clear)
-TOOTH = (50, 90)            # a panel's boundary joint, course by course, this far either side of it, alternating
-FREE_FIRST = (100, 140)     # the free courses over the last step: the first, then each one up to 25 mm smaller
-FREE_STEP = 25
-FOUND = (110, 140)          # the foundation courses under the foot (the bank's face shows them where it is low)
-FOOT_TREAD = 300            # a bank footing's step is at least this long
-GRID = 100                  # the ground's sample spacing
-
-# The steps' (SN3), in mm
-STEP_TAIL = 150             # both ends this far into the walls
-FACE_GAP = 6                # a wall's face stands this far off the stair's edge (wall.py, W/2 + 0.006)
-STEP_LAP = (40, 60)         # a step's front bears this far on the back of the one below
-TREAD_JOINT = (4, 10)       # a tread's joint (SN5)
-STEP_JOINT_CLEAR = 150      # no joint within this of the joint on the step below
-FIRST_STEP_BED = 200        # the first step's block goes this far under the lane
+FALLS_WHEN = (9, 10)        # a stone whose bed has lost more than nine tenths of its support falls with it
+SHIFT_STEP = 5              # the through stones' search steps along the course, mm (a search's resolution only)
+OVER_TOP = 300              # the free courses are laid this far over the top, past any coping's thickness, so the
+                            # top always finds its bed (a search's reach only)
 
 FACES = ("stair", "bank")
+OPEN = ("end", "riser-open")      # a course's ends that are no joint: the wall's end, a stepped section's open end
 
 
 class Refused(ValueError):
     """A rule the facts make impossible: raised loudly, never fixed silently."""
+
+
+def _pair(v):
+    return (v[0], v[1])
+
+
+class Rules:
+    """The numbers one wall line and its flight's steps are laid by, all from data, under the names the laying uses.
+
+    `kind` is the wall kind's plan params (kinds/wall.json), the wall's structure: its parapet, its stepped top, its
+    heads, its panels' teeth, its footings, the steps' ends in the walls. `walling` is the pack's walling table
+    (packs/<pack>/walling.json); `working` names the working the wall was built in, `rebuilt` the working of the panel
+    its facts say was rebuilt (or None), `stair` the working the stair's steps were laid in. A working's numbers are
+    its stone's and its builders': the course heights the stone was split to, the stones' lengths, the copings', heads'
+    and through stones' sizes, the steps' laps and joints. A missing number raises (KeyError): nothing defaults.
+    """
+
+    def __init__(self, kind, walling, working, rebuilt=None, stair=None):
+        W = walling["workings"]
+        if working not in W:
+            raise Refused(f"the walling table has no working {working!r}")
+        w = W[working]
+        self.working, self.material = working, w["material"]
+        # the working's: the stone and how it was laid
+        self.COURSE = _pair(w["courseMm"])            # a course's height
+        self.RISE_ONE = w["riseOneMm"]                # a rise up to this is one course; over it, one line between
+        self.FOUND = _pair(w["foundationMm"])         # the foundation courses under the foot: larger than any rise
+        self.STONE = _pair(w["stoneMm"])              # a face stone's length
+        self.DRAW = tuple(_pair(p) for p in w["drawnPerHeight"])  # its drawn length, as fractions of its height
+        self.SHORT = w["shortMm"]                     # where geometry leaves a run no whole stones fill, the least
+        self.COPE_T = _pair(w["copeThickMm"])         # a coping's thickness
+        self.COPE_NOM = w["copeNominalMm"]            # its nominal: the ideal bed is the pitch line + parapet - this
+        self.COPE_L = _pair(w["copeLengthMm"])        # a coping slab's length
+        self.COPE_MIN = w["copeLeastMm"]              # the least, where a run or a panel leaves less than a slab
+        self.TOPSTONE = _pair(w["topstoneMm"])        # a topstone's length
+        self.HEAD_TIE = _pair(w["headTieMm"])         # a head's tie, through the wall, as its face shows
+        self.HEAD_RUN = _pair(w["headRunnerMm"])      # a head's runner along one face
+        self.THROUGH = _pair(w["throughMm"])          # a through stone's face
+        self.THROUGH_FIRST = _pair(w["throughFirstMm"])   # the first through from a panel's start
+        self.THROUGH_EVERY = _pair(w["throughEveryMm"])   # and then one about this often
+        # the rebuilt panel's working: its end stones, long and short in alternate courses
+        self.rebuilt = rebuilt
+        if rebuilt is not None:
+            if rebuilt not in W:
+                raise Refused(f"the walling table has no working {rebuilt!r}")
+            self.LONG_SHORT = tuple(_pair(p) for p in W[rebuilt]["edgeStonesMm"])
+        else:
+            self.LONG_SHORT = None
+        # the stair's working: its steps' laps and joints (SN3)
+        if stair is not None:
+            if stair not in W:
+                raise Refused(f"the walling table has no working {stair!r}")
+            s = W[stair]["steps"]
+            self.STEP_LAP = _pair(s["lapMm"])             # a step's front bears this far on the back of the one below
+            self.TREAD_JOINT = _pair(s["jointMm"])        # a tread's joint (SN5)
+            self.STEP_JOINT_CLEAR = s["jointClearMm"]     # no joint within this of the joint on the step below
+        # the kind's: the wall's structure
+        self.PARAPET = kind["parapetMm"]              # the coping's top over the pitch line
+        self.GOINGS = tuple(kind["copingGoings"])     # a level run of coping spans this many goings
+        self.GOINGS_LAID = kind["copingGoingsLaid"]   # the one laid unless a caller asks for another
+        self.HEAD_COURSES = kind["headCourses"]       # a head's stone is this many courses high
+        self.SQUARE = tuple(_pair(p) for p in kind["topstoneSquare"])   # a topstone's length over its height
+        self.RISER_FIRST = kind["riserFirstPerHeight"]    # a stepped section's stone at a riser: this times its height
+        self.FREE_STEP = kind["freeCourseStepMm"]     # a free course over the last step: at least this less than below
+        self.FOOT_TREAD = kind["footingTreadMm"]      # a bank footing's step is at least this long
+        self.TOOTH = _pair(kind["toothMm"])           # a panel's boundary joint, course by course, this far either side
+        self.TOOTH_WIDE = _pair(kind["toothWideMm"])  # where no tooth in TOOTH fits
+        self.THROUGH_CLEAR = kind["throughClearMm"]   # no through stone this near a panel's boundary
+        self.THROUGH_SHIFT = kind["throughShiftMm"]   # a through moves at most this far from where it is due
+        st = kind["steps"]
+        self.STEP_TAIL = st["tailMm"]                 # a step's both ends this far into the walls
+        self.FACE_GAP = st["faceGapMm"]               # a wall's face stands this far off the stair's edge
+        self.FIRST_STEP_BED = st["firstBedMm"]        # the first step's block goes this far under the lane
+        self.REST_CUT = st["restCutMm"]               # a rest's two rows meet within this of its middle
+        # derived
+        self.FALL_CLEAR = self.TOOTH_WIDE[1] + self.STONE[0]   # a fallen stone keeps this far from a boundary
+        # what the rules in code need of the numbers, checked here so a data edit cannot break them silently
+        for name, (lo, hi) in (("courseMm", self.COURSE), ("stoneMm", self.STONE), ("copeLengthMm", self.COPE_L),
+                               ("topstoneMm", self.TOPSTONE), ("toothMm", self.TOOTH)):
+            if lo > hi:
+                raise Refused(f"{working}: {name} {lo} > {hi}")
+        if self.COURSE[0] < SLIVER or self.COPE_T[0] < SLIVER:
+            raise Refused(f"{working}: a course or a coping under SN2's {SLIVER} mm")
+        if self.GOINGS_LAID not in self.GOINGS:
+            raise Refused(f"the wall kind lays {self.GOINGS_LAID} goings a level run, not one of {self.GOINGS}")
+        # two panels' free joints decouple when their teeth leave them a course's lap apart (SN10): the widest teeth
+        # either side of a boundary and the shortest stone beyond them
+        if 2 * self.STONE[0] - 2 * self.TOOTH_WIDE[1] < lap_of(self.COURSE[1]):
+            raise Refused(f"{working}: teeth to {self.TOOTH_WIDE[1]} mm and stones from {self.STONE[0]} mm leave two "
+                          f"panels' joints under the lap of a {self.COURSE[1]} mm course apart")
+
+    def longest(self, h):
+        """The longest stone a course of height h takes (SN10's 4.5, and the working's longest)."""
+        return min(self.STONE[1], RATIO[0] * h // RATIO[1])
+
+    def drawn(self, h):
+        """The range a course stone's length is drawn from (the working's fractions of its height), within its stones
+        and SN10."""
+        lo = max(self.STONE[0], self.DRAW[0][0] * h // self.DRAW[0][1])
+        return lo, max(lo, min(self.longest(h), self.DRAW[1][0] * h // self.DRAW[1][1]))
+
+    def corner(self, h):
+        """A stepped section's corner stone at a riser, in a course h high: at least RISER_FIRST times h (SN2), to the
+        course's longest."""
+        lm = self.longest(h)
+        return min(max(self.STONE[0], self.RISER_FIRST * h), lm), lm
+
+    def edge_stone(self, m, h, side):
+        """A rebuilt panel's end stone at its edge in course m (side 0 its first, 1 its last): long and short in
+        alternate courses, the two edges a course apart, to the course's longest."""
+        ls = self.LONG_SHORT[(m + side) % 2]
+        lm = self.longest(h)
+        return min(ls[0], lm), min(ls[1], lm)
+
+    def run_layable(self, n, h, first=None, last=None):
+        """Whether a run n long in a course h high can be laid in whole stones SN10 allows with its end stones' rules
+        (`first`, `last`: their ranges, or None): the fill's own search, asked only whether a laying exists."""
+        if n == 0:
+            return True
+        return fill_run(0, n, self.STONE[0], self.longest(h), [], lambda i: self.STONE[0], first, last) is not None
+
+    def square(self, h):
+        """A topstone h high is square when its length is within these (ceiling and floor), and the working's."""
+        (a, b), (c, d) = self.SQUARE
+        return max(self.TOPSTONE[0], -(-a * h // b)), min(self.TOPSTONE[1], c * h // d)
+
+
+def rules_for(facts, data, line=None):
+    """The Rules a line (or, with no line, the stair's steps) is laid by: data is {"kind": the wall kind's plan params,
+    "walling": the pack's walling table}; the workings are the facts' (walls.working, the line's rebuilt.working,
+    stair.working)."""
+    reb = line.get("rebuilt") if line else None
+    return Rules(data["kind"], data["walling"], facts["walls"]["working"],
+                 reb["working"] if reb else None, facts["stair"]["working"])
+
+
+def load_data(root, pack="stavanger-1989"):
+    """The data a wall is laid from: the wall kind's plan params and the pack's walling table, as files."""
+    import json
+    kind = json.load(open(os.path.join(root, "kinds", "wall.json")))
+    walling = json.load(open(os.path.join(root, "packs", pack, "walling.json")))
+    return dict(kind=kind["stages"]["plan"]["params"], walling=walling)
+
+
+class _Tick:
+    """Adds the seconds of a `with` block to clock[part] (nothing when the clock is None)."""
+
+    def __init__(self, clock, part):
+        self.clock, self.part = clock, part
+
+    def __enter__(self):
+        self.t0 = time.perf_counter()
+
+    def __exit__(self, *exc):
+        if self.clock is not None:
+            self.clock[self.part] = self.clock.get(self.part, 0.0) + time.perf_counter() - self.t0
 
 
 def div_round(n, d):
@@ -100,22 +235,10 @@ def lap_of(h):
     return max(LAP_MIN, (2 * h + 4) // 5)
 
 
-def longest(h):
-    """The longest stone a course of height h takes (SN10's 4.5, and wall.py's longest)."""
-    return min(STONE[1], RATIO[0] * h // RATIO[1])
-
-
-def fillable(n, h):
-    """Whether a free length n in a course of height h can be laid in whole stones of wall.py's lengths that SN10
-    allows: some count k of stones with k x 180 <= n <= k x longest(h). (A thin course has gaps: at 62 mm high no
-    run between 279 and 360 mm can be filled.)"""
-    if n == 0:
-        return True
-    lm = longest(h)
-    if n < STONE[0] or lm < STONE[0]:
-        return False
-    k = -(-n // lm)
-    return k * STONE[0] <= n
+def is_joint(end):
+    """Whether a course's end is a joint against something laid (a stone, a feature, a step's end, the ground's step,
+    a tooth or edge, the coping a stepped section rises from), not an open end."""
+    return end["type"] not in OPEN
 
 
 # ---------------------------------------------------------------------------------------------------------------
@@ -179,9 +302,7 @@ def fill_run(a, b, lmin, lmax, windows, target, first=None, last=None):
     llo, lhi = last if last else (lmin, lmax)
     # the positions from which b is one last stone away, then from which those are one stone away, and so on
     R = iv_clip(iv_minus_open([(b - lhi, b - llo)], windows), a, b - 1)
-    R = [iv for iv in R if iv[1] >= iv[0]]
-    R = iv_union([(x, y) for x, y in R if iv_contains(allowed, x) or True])
-    R = iv_union(_intersect(R, allowed))
+    R = iv_union(_intersect([iv for iv in R if iv[1] >= iv[0]], allowed))
     while True:
         P = iv_union(R + _intersect(iv_clip([(u - lmax, v - lmin) for u, v in R], a, b - 1), allowed))
         if P == R:
@@ -214,58 +335,20 @@ def _intersect(A, B):
 
 
 # ---------------------------------------------------------------------------------------------------------------
-# The rake: a raked coping's top and bed between two breaks, in integer mm
-
-class Rake:
-    """A raked coping run from (sA, CA) to (sB, CB), its top's ends: its bed is the top less tv (the thickness, plumb),
-    and a joint square to the rake rises dx back from its bed point to its top."""
-
-    def __init__(self, sA, CA, sB, CB, tv, dx, t):
-        self.sA, self.CA, self.sB, self.CB, self.tv, self.dx, self.t = sA, CA, sB, CB, tv, dx, t
-
-    @classmethod
-    def square(cls, sA, CA, sB, CB, t):
-        """Its thickness t square to the top (the rake's length by an integer square root, in thousandths of a mm)."""
-        ds, dz = sB - sA, CB - CA
-        ln = math.isqrt((ds * ds + dz * dz) * 1000000)
-        return cls(sA, CA, sB, CB, div_round(t * ln, ds * 1000), div_round(t * dz * 1000, ln), t)
-
-    @classmethod
-    def meeting(cls, sA, CA, sB, CB, t_level):
-        """Its thickness chosen so a joint square to the rake from its foot (sA, CA) meets its bed at the level run's
-        bed, t_level under CA: plumb thickness t_level(1 + k^2), the joint's run t_level k."""
-        ds, dz = sB - sA, CB - CA
-        ln = math.isqrt((ds * ds + dz * dz) * 1000000)
-        return cls(sA, CA, sB, CB, div_round(t_level * (ds * ds + dz * dz), ds * ds), div_round(t_level * dz, ds),
-                   div_round(t_level * ln, ds * 1000))
-
-    def C(self, s):
-        return self.CA + div_round((s - self.sA) * (self.CB - self.CA), self.sB - self.sA)
-
-    def B(self, s):
-        return self.C(s) - self.tv
-
-    def inv_B(self, z):
-        return self.sA + div_round((z + self.tv - self.CA) * (self.sB - self.sA), self.CB - self.CA)
-
-    def slope(self):
-        return (self.CB - self.CA, self.sB - self.sA)
-
-
-# ---------------------------------------------------------------------------------------------------------------
 # The steps, in plan
 
-def lay_steps(flight, seed, slab, width):
-    """A flight's steps (SN3): the stones of each step across, both ends STEP_TAIL into the walls, never pieced in
+def lay_steps(flight, seed, slab, width, D):
+    """A flight's steps (SN3): the stones of each step across, both ends D.STEP_TAIL into the walls, never pieced in
     depth; a rest's slabs in rows; a turn landing's under the flight's foot. x across the stair (mm, right of the
     uphill direction positive), y along it (s). Raises Refused when the longest stone the record's finish allows makes a
     two-stone step impossible with its joint outside the middle third."""
     fid = flight["id"]
-    half = width // 2 + FACE_GAP + STEP_TAIL
-    clear = width + 2 * FACE_GAP
+    half = width // 2 + D.FACE_GAP + D.STEP_TAIL
+    clear = width + 2 * D.FACE_GAP
     third = -(-clear // 6)                  # the middle third's half-width, rounded out: a joint lies at |x| >= this
     hi, lo = slab["hi"], slab["lo"]
     out = dict(id=fid, half=half, third=third, stones=[], steps=[], flags=[])
+
     def edge_window(side, jw):
         """Where a step's joint [xl, xl + jw] may start. On the left (side -1) the right stone [xl + jw, half] is at
         most hi long and the joint's edge lies outside the middle third (xl + jw <= -third); on the right the left
@@ -274,13 +357,13 @@ def lay_steps(flight, seed, slab, width):
             return (half - hi - jw, -third - jw)
         return (third, hi - half)
 
-    widest = edge_window(-1, TREAD_JOINT[1])
+    widest = edge_window(-1, D.TREAD_JOINT[1])
     if widest[0] > widest[1]:
         raise Refused(f"{fid}: a two-stone step is impossible: the stones would be {2 * half} mm across between the "
                       f"walls' tails, the longest the finish allows is {hi} mm, and the joint must lie outside the "
                       f"middle third ({third} mm either side of the walking line)")
-    out["jointWindow"] = dict(left=list(edge_window(-1, TREAD_JOINT[0])), right=list(edge_window(1, TREAD_JOINT[0])),
-                              widthMm=edge_window(-1, TREAD_JOINT[0])[1] - edge_window(-1, TREAD_JOINT[0])[0] + 1)
+    out["jointWindow"] = dict(left=list(edge_window(-1, D.TREAD_JOINT[0])), right=list(edge_window(1, D.TREAD_JOINT[0])),
+                              widthMm=edge_window(-1, D.TREAD_JOINT[0])[1] - edge_window(-1, D.TREAD_JOINT[0])[0] + 1)
     steps = flight["steps"]
     n = len(steps)
     side = 1 if HS.h(seed, fid, "joint", "side") % 2 else -1
@@ -291,16 +374,16 @@ def lay_steps(flight, seed, slab, width):
         """A rest's or landing's row: two slabs, the joint anywhere both stay within the finish's sizes, clear of the
         joint below and, on the row the next step bears on, of where that step's joint can fall."""
         rng = HS.Stream(seed, key_id, "row")
-        jw = rng.randint(*TREAD_JOINT)
+        jw = rng.randint(*D.TREAD_JOINT)
         lo_x, hi_x = half - hi - jw, hi - half          # both slabs <= hi
         lo_x, hi_x = max(lo_x, -half + lo), min(hi_x, half - lo - jw)
         allowed = [(lo_x, hi_x)]
         keep = []
         if below_x is not None:
-            keep.append((below_x - STEP_JOINT_CLEAR, below_x + STEP_JOINT_CLEAR))
+            keep.append((below_x - D.STEP_JOINT_CLEAR, below_x + D.STEP_JOINT_CLEAR))
         if ahead_side is not None:
-            w0, w1 = edge_window(ahead_side, TREAD_JOINT[1])[0], edge_window(ahead_side, TREAD_JOINT[0])[1]
-            keep.append((w0 - STEP_JOINT_CLEAR, w1 + STEP_JOINT_CLEAR))
+            w0, w1 = edge_window(ahead_side, D.TREAD_JOINT[1])[0], edge_window(ahead_side, D.TREAD_JOINT[0])[1]
+            keep.append((w0 - D.STEP_JOINT_CLEAR, w1 + D.STEP_JOINT_CLEAR))
         allowed = iv_minus_open(allowed, keep)
         if not allowed:
             raise Refused(f"{key_id}: no joint for a rest's row clear of the joints below and above")
@@ -310,7 +393,7 @@ def lay_steps(flight, seed, slab, width):
     if flight["start"] > 0:
         # the turn landing under the flight's foot, at the lane's level: the first step bears on its back
         rid = f"{fid}/turn"
-        lap = HS.Stream(seed, f"{fid}/turn", "lap").randint(*STEP_LAP)
+        lap = HS.Stream(seed, f"{fid}/turn", "lap").randint(*D.STEP_LAP)
         y0, y1 = 0, steps[0]["S"] + lap
         if y1 - y0 > hi:
             out["flags"].append(f"{fid}/turn: {y1 - y0} mm deep, over the longest slab {hi}: laid as one row anyway")
@@ -326,18 +409,18 @@ def lay_steps(flight, seed, slab, width):
     for i, st in enumerate(steps):
         sid = st["id"]
         rng = HS.Stream(seed, sid, "lay")
-        lap = rng.randint(*STEP_LAP) if i < n - 1 else 0
+        lap = rng.randint(*D.STEP_LAP) if i < n - 1 else 0
         y0 = st["S"]
         y1 = steps[i + 1]["S"] + lap if i < n - 1 else y0 + st["D"]     # (S and D were rounded apart: S rules)
         rise = T[i + 1] - T[i]
-        z0 = T[i + 1] - rise - (FIRST_STEP_BED if i == 0 and flight["start"] == 0 else 0)
+        z0 = T[i + 1] - rise - (D.FIRST_STEP_BED if i == 0 and flight["start"] == 0 else 0)
         rest = st["D"] > g + 1
         if not rest:
-            jw = rng.randint(*TREAD_JOINT)
+            jw = rng.randint(*D.TREAD_JOINT)
             wl, wh = edge_window(side, jw)
             x = rng.randint(wl, wh)
-            if below is not None and abs(x - below) < STEP_JOINT_CLEAR:
-                out["flags"].append(f"{sid}: joint within {STEP_JOINT_CLEAR} mm of the one below")
+            if below is not None and abs(x - below) < D.STEP_JOINT_CLEAR:
+                out["flags"].append(f"{sid}: joint within {D.STEP_JOINT_CLEAR} mm of the one below")
             out["stones"] += [dict(id=f"{sid}/sl-0", kind="step", step=sid, outline=[[-half, y0], [x, y0], [x, y1],
                                                                                      [-half, y1]]),
                               dict(id=f"{sid}/sl-1", kind="step", step=sid, outline=[[x + jw, y0], [half, y0],
@@ -356,7 +439,7 @@ def lay_steps(flight, seed, slab, width):
                 lo_d, hi_d = max(depth - hi, lo), min(hi, depth - lo)
                 if nrows > 2 or lo_d > hi_d:
                     raise Refused(f"{sid}: a rest {depth} mm deep cannot be laid in two rows of slabs up to {hi} mm")
-                d0 = min(max(rng.randint(depth // 2 - 300, depth // 2 + 300), lo_d), hi_d)
+                d0 = min(max(rng.randint(depth // 2 - D.REST_CUT, depth // 2 + D.REST_CUT), lo_d), hi_d)
                 cuts = [y0, y0 + d0, y1]
             rows = []
             for r_ in range(len(cuts) - 1):
@@ -388,8 +471,9 @@ def step_end_id(steps_out, step_id, side, y):
 class Line:
     """One wall line's laying: its facts, its course lines, its coping and features, its panels, its faces' courses."""
 
-    def __init__(self, line, flight, steps_out, seed, reseed=None):
+    def __init__(self, line, flight, steps_out, seed, D, reseed=None):
         self.f = line
+        self.D = D
         self.fl = flight
         self.steps_out = steps_out
         self.seed = seed
@@ -398,8 +482,6 @@ class Line:
         self.side = line["side"]
         self.s0, self.s1 = line["s0"], line["s1"]
         self.flags = []
-        self.stones = []           # every stone: face stones, throughs, copings, heads, features
-        self.cells = []            # the step ends, as the wall sees them (occupied, not the wall's)
         self.T = [flight["zFoot"]] + [st["zTop"] for st in flight["steps"]]
         self.S = [st["S"] for st in flight["steps"]]
 
@@ -412,51 +494,48 @@ class Line:
     def stream(self, owner, *purpose):
         return HS.Stream(*self.key(owner, *purpose))
 
-    def between(self, lo, hi, owner, *purpose):
-        return HS.between(HS.h(*self.key(owner, *purpose)), lo, hi)
-
     # ---- course lines
-    def course_lines(self, forced):
+    def course_lines(self):
+        """One line on every step top, none between (a rise over RISE_ONE takes one, the lower course the larger);
+        the free courses over the last step, the first no larger than the last rise and each no larger than the one
+        below; the foundation courses under the foot, each at least any rise and at least the course over it."""
+        D = self.D
         lid, T = self.id, self.T
         L = [(T[0], "step", -1)]
-        self.mid_of = {}
         for i in range(len(T) - 1):
             lo, hi = T[i], T[i + 1]
             rise = hi - lo
-            if rise < COURSE[0]:
+            if rise < D.COURSE[0]:
                 raise Refused(f"{self.fl['steps'][i]['id']}: a rise of {rise} mm is under a course's least")
-            if rise > COURSE[1]:
-                if i in forced:
-                    m = forced[i]
-                else:
-                    a, b = lo + (rise + 1) // 2, hi - COURSE[0]
-                    m = HS.between(HS.h(self.seed, lid, "course", i), a, b) if b >= a else lo + rise // 2
+            if rise > D.RISE_ONE:
+                a, b = lo + (rise + 1) // 2, hi - D.COURSE[0]
+                m = HS.between(HS.h(self.seed, lid, "course", i), a, b) if b >= a else lo + rise // 2
                 L.append((m, "mid", i))
-                self.mid_of[i] = m
             L.append((hi, "step", i))
         rng = HS.Stream(self.seed, lid, "courses", "free")
-        z, hp = T[-1], None
-        while z < T[-1] + PARAPET + 300:
-            h = rng.randint(*FREE_FIRST) if hp is None else rng.randint(max(COURSE[0], hp - FREE_STEP), hp)
+        hp = T[-1] - T[-2] if len(T) > 1 else D.COURSE[1]
+        z = T[-1]
+        while z < T[-1] + D.PARAPET + OVER_TOP:
+            h = rng.randint(max(D.COURSE[0], hp - D.FREE_STEP), max(D.COURSE[0], hp))
             z += h
             L.append((z, "free", None))
             hp = h
+        # downwards from the foot, each course at least the one over it: the largest lowest
         rng = HS.Stream(self.seed, lid, "courses", "found")
-        zlow = min(min(gz for _, gz in self.f["ground"]), T[0]) - 2 * COURSE[1]
-        z = T[0]
+        zlow = min(min(gz for _, gz in self.f["ground"]), T[0]) - D.FOUND[1]
+        z, h = T[0], D.FOUND[0]
         while z > zlow:
-            z -= rng.randint(*FOUND)
+            h = rng.randint(h, D.FOUND[1])
+            z -= h
             L.append((z, "found", None))
         L.sort()
         self.Lz = [z for z, _, _ in L]
         self.Lkind = [k for _, k, _ in L]
         self.Lsrc = [s for _, _, s in L]
 
-    def line_index(self, z):
-        return self.Lz.index(z)
-
-    def lines_in(self, lo, hi):
-        return [z for z in self.Lz if lo <= z <= hi]
+    def nearest(self, y):
+        """The index of the course line nearest y (the lower one on a tie)."""
+        return min(range(len(self.Lz)), key=lambda i: (abs(self.Lz[i] - y), i))
 
     # ---- the pitch line's runs and the panels
     def runs(self):
@@ -465,33 +544,34 @@ class Line:
         if P[0][0] > self.s0 + SLIVER:
             segs.append(dict(kind="level", s=[self.s0, P[0][0]], z=P[0][1]))
         for p, q in zip(P, P[1:]):
-            if q[1] > p[1]:
-                segs.append(dict(kind="rake", s=[p[0], q[0]], z=[p[1], q[1]]))
-            else:
-                segs.append(dict(kind="level", s=[p[0], q[0]], z=p[1]))
+            segs.append(dict(kind="rake" if q[1] > p[1] else "level", s=[p[0], q[0]], z=[p[1], q[1]]))
         if P[-1][0] < self.s1 - SLIVER:
             segs.append(dict(kind="level", s=[P[-1][0], self.s1], z=P[-1][1]))
-        if segs[-1]["kind"] != "level":
-            raise Refused(f"{self.id}: a wall ending on a rake has no head rule yet")
         return segs
 
-    def panels_make(self, segs):
-        b = [self.s0]
-        for sg in segs[1:]:
-            b.append(sg["s"][0])
-        edges = []
+    def panels_make(self, segs, xs):
+        """The panels, between the line's features (design.md, Panels: heads, rests, the rebuilt panel's edges). A
+        rest's feature in the wall (a level stretch of the pitch between two rising ones) is the coping's level run
+        over it, so its panel's boundaries are that run's risers, where every course under the run's ends must end or
+        take a tooth anyway. The wall's ends are its heads, laid as features: the panel beside a head runs to the
+        wall's end, its fill meeting the head's stones. The rebuilt panel's edges are the facts'. Every boundary that
+        is no edge takes a tooth in the courses that run across it."""
+        b = set()
+        for q, sg in enumerate(segs):
+            if sg["kind"] != "level" or q == 0 or q == len(segs) - 1:
+                continue
+            mid = (sg["s"][0] + sg["s"][1]) // 2
+            i = next(i for i in range(len(xs) - 1) if xs[i] <= mid < xs[i + 1] or i == len(xs) - 2)
+            b |= {x for x in (xs[i], xs[i + 1]) if self.s0 < x < self.s1}
         reb = self.f.get("rebuilt")
-        if reb:
-            edges = list(reb["s"])
-        bounds = sorted(set(b + edges + [self.s1]))
+        edges = list(reb["s"]) if reb else []
+        bounds = sorted(b | set(edges) | {self.s0, self.s1})
         self.edges = edges
         self.panels = []
         for p, (lo, hi) in enumerate(zip(bounds, bounds[1:])):
-            work = "1961" if reb and reb["s"][0] <= (lo + hi) // 2 <= reb["s"][1] else "built"
+            work = str(reb["year"]) if reb and reb["s"][0] <= (lo + hi) // 2 <= reb["s"][1] else "built"
             self.panels.append(dict(id=f"{self.id}/pn-{p}", s=[lo, hi], work=work))
-        self.boundaries = []      # the feature boundaries the courses under a feature are toothed at
-        for sg in segs[1:]:
-            self.boundaries.append(sg["s"][0])
+        self.boundaries = sorted(b - set(edges))     # the boundaries every course across them is toothed at
 
     def panel_at(self, s):
         for pn in self.panels:
@@ -499,403 +579,407 @@ class Line:
                 return pn
         return self.panels[-1]
 
-    # ---- the coping and its features
-    def coping(self):
-        """Features first: the coping's runs, its kneelers, knees and topstones, the beds under them on course lines.
-        Returns the ceiling the courses are laid under: pieces along s, level (a bed) or raked (a Rake)."""
-        forced = {}
-        for _ in range(4):
-            self.course_lines(forced)
-            need = self._coping(forced)
-            if need is None:
-                return
-            forced.update(need)
-        raise Refused(f"{self.id}: the coping's beds could not be put on course lines")
+    def panel_starting(self, s):
+        return next(pn for pn in self.panels if pn["s"][0] == s)
 
-    def _snap_level(self, zp, owner):
-        """A level run's top and bed: the bed on a course line, its top PARAPET + delta over the pitch, its thickness
-        in COPE_T_LEVEL; the drawn delta and thickness kept as near as a line allows."""
-        rng = HS.Stream(self.seed, owner, "cope", "level")     # (the wall's coping, not its panel's: no event re-lays it)
-        d0, t0 = rng.randint(-COPE_DELTA, COPE_DELTA), rng.randint(*COPE_T_LEVEL)
-        best = None
-        for z in self.Lz:
-            c = z - zp - PARAPET
-            dlo, dhi = max(-COPE_DELTA, COPE_T_LEVEL[0] + c), min(COPE_DELTA, COPE_T_LEVEL[1] + c)
-            if dlo > dhi:
+    def panel_ending(self, s):
+        return next(pn for pn in self.panels if pn["s"][1] == s)
+
+    # ---- the top: level slab copings stepped square (SN2's parapet)
+    def ideal_bed(self):
+        """The coping's ideal bed along the wall: the pitch line + PARAPET - COPE_NOM, level beyond its ends, as
+        integer breaks (s, y) from s0 to s1."""
+        D = self.D
+        P = self.fl["pitch"]
+
+        def at(s):
+            if s <= P[0][0]:
+                return P[0][1]
+            if s >= P[-1][0]:
+                return P[-1][1]
+            for (sa, za), (sb, zb) in zip(P, P[1:]):
+                if sa <= s <= sb:
+                    return za + div_round((s - sa) * (zb - za), sb - sa)
+        pts = [(self.s0, at(self.s0))] + [(s, z) for s, z in P if self.s0 < s < self.s1] + [(self.s1, at(self.s1))]
+        Y = [(s, z + D.PARAPET - D.COPE_NOM) for s, z in pts]
+        if any(q[1] < p[1] for p, q in zip(Y, Y[1:])):
+            raise Refused(f"{self.id}: a pitch line that falls along s has no stepped-coping rule here")
+        return Y
+
+    def place_risers(self, risers, goings, tops):
+        """Each riser from where the ideal bed puts it, moved only within its window (half a going either side of
+        that point, on the stretch the bed rises over), by two rules of the bond, in this order:
+        1. a riser near a straight joint (a rebuilt panel's edge, which runs through every course under it) leaves
+           its courses room to be laid to it: on the edge's lower side, the run from the riser to the edge takes its
+           corner stone (at least RISER_FIRST times the course's height) and, where the run is the rebuilt panel's,
+           the edge's long or short stone, in every course the riser steps over; else the riser moves to the nearest
+           place in its window where they fit, or onto the edge. On the edge's higher side within a lap (SN10) of
+           it, where the riser's joint would sit over the edge's, it lies on the edge;
+        2. where a level run of `goings` goings holds a whole coping slab (COPE_L's least), every level run between
+           two risers is one: a short run's risers move out, the higher first, each by what its window and its other
+           run allow (kept a whole slab, by pushing the risers beyond it in turn; never shrunk at the wall's ends,
+           where the topstones are laid), over as many passes as move anything. With one going a run (under a slab
+           by nature) the risers stay where the bed puts them;
+        3. each end run (the wall's first and last, `tops`: the square topstone's range in each) holds its topstone
+           and a whole slab, or is the topstone alone: else its riser moves to the nearest place in its window where
+           it does, keeping the run beyond it a whole slab where rule 2 holds (a slab's least where it does not).
+        What cannot be met is flagged, never forced."""
+        D, Lz, lid = self.D, self.Lz, self.id
+        half = self.fl["g"] // 2
+        reb = self.f.get("rebuilt")
+        edges = list(reb["s"]) if reb else []
+        H = [Lz[i + 1] - Lz[i] for i in range(len(Lz) - 1)]
+        for r in risers:
+            r["window"] = (max(r["stretch"][0], r["ideal"] - half), min(r["stretch"][1], r["ideal"] + half))
+            r["moved"], r["fixed"] = None, False
+        def room_ok(r, x, e):
+            """Whether every course riser r steps over can be laid from x to the edge e above it."""
+            return x == e or (x < e and all(
+                D.run_layable(e - x, H[m], D.corner(H[m]),
+                              D.edge_stone(m, H[m], 1) if e == reb["s"][1] and x > reb["s"][0] else None)
+                for m in range(r["lo"], r["hi"])))
+
+        for k, r in enumerate(risers):
+            lap = lap_of(H[r["lo"]])
+            lo_w = max(r["window"][0], risers[k - 1]["at"] + D.COPE_MIN if k else r["window"][0])
+            hi_w = min(r["window"][1], risers[k + 1]["at"] - D.COPE_MIN if k + 1 < len(risers) else r["window"][1])
+            below = [e for e in edges if 0 < r["at"] - e < lap]
+            above = [e for e in edges if e > r["at"]][:1]
+            for e in below:
+                if lo_w <= e <= hi_w:
+                    r["at"], r["fixed"] = e, True
+                    r["moved"] = f"onto the straight joint at {e}"
+                else:
+                    self.flags.append(f"{lid}: the riser at {r['at']} is {r['at'] - e} mm past the straight joint at "
+                                      f"{e}, which is outside its window {[lo_w, hi_w]}")
+            for e in above:
+                if room_ok(r, r["at"], e):
+                    continue
+                ok = [x for x in range(lo_w, hi_w + 1) if room_ok(r, x, e)]
+                if not ok:
+                    self.flags.append(f"{lid}: the riser at {r['at']} leaves its courses no laying to the straight "
+                                      f"joint at {e} anywhere in its window {[lo_w, hi_w]}")
+                    continue
+                x = min(ok, key=lambda v: (abs(v - r["at"]), v))
+                r["moved"] = (f"onto the straight joint at {e}" if x == e else
+                              f"{x - r['ideal']:+d} mm, so its corner stones and the edge's fit before the straight "
+                              f"joint at {e}")
+                r["at"], r["fixed"] = x, True
+        n = len(risers)
+        if n < 2:
+            return
+
+        def length(i):              # the interior run between risers i - 1 and i (1 <= i < n)
+            return risers[i]["at"] - risers[i - 1]["at"]
+
+        def push(k, want, sgn, least=D.COPE_L[0]):
+            """Moves riser k by up to `want` mm (up the wall for sgn 1, down for -1) within its window, keeping the
+            run beyond it `least` long (a whole slab), and pushing the risers beyond as that run needs. Returns the mm
+            moved."""
+            r = risers[k]
+            other = k + 1 if sgn > 0 else k          # the run on the riser's far side
+            if r["fixed"] or want <= 0 or not 1 <= other < n:
+                return 0                             # an end run is never shrunk: its topstone is laid in it
+            want = min(want, r["window"][1] - r["at"] if sgn > 0 else r["at"] - r["window"][0])
+            if length(other) - least < want:
+                push(k + sgn, want - max(0, length(other) - least), sgn, least)
+            mv = max(0, min(want, length(other) - least))
+            if mv:
+                r["at"] += sgn * mv
+                r["moved"] = f"{r['at'] - r['ideal']:+d} mm, so the runs either side are whole slabs"
+            return mv
+
+        if goings * self.fl["g"] >= D.COPE_L[0]:     # a run of `goings` goings holds a whole slab: the odd ones can
+            for _ in range(2 * n):
+                moved = 0
+                for i in range(1, n):
+                    short = D.COPE_L[0] - length(i)
+                    if short > 0:
+                        got = push(i, short, 1)
+                        moved += got + push(i - 1, short - got, -1)
+                if not moved:
+                    break
+        whole = goings * self.fl["g"] >= D.COPE_L[0]
+        beyond = D.COPE_L[0] if whole else D.COPE_MIN     # what rule 3 keeps the runs beyond an end riser
+        for e, (lo_t, hi_t) in enumerate(tops):
+            if not risers or lo_t > hi_t:
                 continue
-            d = min(max(d0, dlo), dhi)
-            t = d - c
-            cost = abs(d - d0) + abs(t - t0)
-            if best is None or cost < best[0]:
-                best = (cost, z, d, t)
-        if best is None:
-            # no line in reach: the rise under the bed takes its middle line there
-            want = zp + PARAPET + d0 - t0
-            for i in range(len(self.T) - 1):
-                lo, hi = self.T[i] + COURSE[0], self.T[i + 1] - COURSE[0]
-                wlo, whi = zp + PARAPET - COPE_DELTA - COPE_T_LEVEL[1], zp + PARAPET + COPE_DELTA - COPE_T_LEVEL[0]
-                a, b = max(lo, wlo), min(hi, whi)
-                if a <= b:
-                    self.flags.append(f"{owner}: the level coping's bed forced the middle line of rise {i} to "
-                                      f"{min(max(want, a), b)}")
-                    return dict(force={i: min(max(want, a), b)})
-            raise Refused(f"{owner}: no course line or rise can take the level coping's bed near {want}")
-        _, z, d, t = best
-        return dict(C=zp + PARAPET + d, B=z, t=t, delta=d)
+            k = 0 if e == 0 else n - 1
+            r = risers[k]
+            out = 1 if e == 0 else -1               # the move that lengthens the end run
 
-    def _coping(self, forced):
+            def end_len(x, e=e):
+                return x - self.s0 if e == 0 else self.s1 - x
+            L0_ = end_len(r["at"])
+            if L0_ >= lo_t + D.COPE_L[0] or lo_t <= L0_ <= hi_t:
+                continue
+            if r["fixed"]:
+                self.flags.append(f"{lid}: the end run at the riser {r['at']} is {L0_} mm, neither a topstone ({lo_t} "
+                                  f"to {hi_t}) nor one and a whole slab; the riser lies on a straight joint")
+                continue
+            saved = [(q["at"], q["moved"]) for q in risers]
+            opts = []
+            # a topstone and a whole slab: the riser moves away from the end, the runs beyond kept `beyond` long
+            want = lo_t + D.COPE_L[0] - L0_
+            if n > 1 and push(k, want, out, beyond) == want:
+                opts.append((want, "and a whole slab", [(q["at"], q["moved"]) for q in risers]))
+            for q, (at_, mv_) in zip(risers, saved):
+                q["at"], q["moved"] = at_, mv_
+            # the topstone alone: the riser moves toward the end, within its window and a least run from the next
+            if L0_ > hi_t:
+                x = r["at"] - out * (L0_ - hi_t)
+                lo_w, hi_w = r["window"]
+                if k > 0:
+                    lo_w = max(lo_w, risers[k - 1]["at"] + beyond)
+                if k + 1 < n:
+                    hi_w = min(hi_w, risers[k + 1]["at"] - beyond)
+                if lo_w <= x <= hi_w:
+                    opts.append((L0_ - hi_t, "alone", [(q["at"], q["moved"]) if q is not r else (x, None)
+                                                       for q in risers]))
+            if not opts:
+                self.flags.append(f"{lid}: the end run at the riser {r['at']} is {L0_} mm, neither a topstone ({lo_t} "
+                                  f"to {hi_t}) nor one and a whole slab; its window and the runs beyond allow neither")
+                continue
+            _, how, state = min(opts, key=lambda o: (o[0], o[1]))
+            for q, (at_, mv_) in zip(risers, state):
+                q["at"], q["moved"] = at_, mv_
+            r["moved"] = f"{r['at'] - r['ideal']:+d} mm, so the end run is its topstone {how}"
+            r["fixed"] = True
+        for i in range(1, n):
+            if length(i) < D.COPE_L[0]:
+                self.flags.append(f"{lid}: the level run from {risers[i - 1]['at']} to {risers[i]['at']} is "
+                                  f"{length(i)} mm, under a whole coping slab ({D.COPE_L[0]}): its windows allow no more")
+            if length(i) <= 0:
+                raise Refused(f"{lid}: two risers cross at {risers[i]['at']}")
+
+    def coping(self, goings):
+        """Features first: the coping's level runs and their risers, the topstones at the wall's ends, the slabs.
+        A riser goes where the ideal bed crosses the middle of the step, between the two beds; a step is `goings`
+        courses up to the nearest line under the next level run's ideal bed (fewer to meet it exactly), so it falls
+        on a course line and every coping lies on whole courses. Sets the ceiling the courses are laid under."""
+        D = self.D
+        if goings not in D.GOINGS:
+            raise Refused(f"{self.id}: a level run spans {' or '.join(map(str, D.GOINGS))} goings, not {goings}")
+        if self.f.get("retains"):
+            raise Refused(f"{self.id}: a retaining wall's top (SN2: the bank over a level top course) is not laid "
+                          "at R1; no line in these facts retains")
         segs = self.runs()
-        self.panels_make(segs)
-        lid = self.id
-        feats, slabs, ceil = [], [], []
-        self.features = feats
-        # the level runs' tops and beds
-        for k, sg in enumerate(segs):
-            if sg["kind"] == "level":
-                owner = f"{lid}/run-{k}"
-                if k == len(segs) - 1:
-                    rng = self.stream(f"{lid}/hd-1/top", "cope")
-                    sg["C"] = sg["z"] + PARAPET + rng.randint(-COPE_DELTA, COPE_DELTA)
-                    sg["B"] = None
-                else:
-                    r = self._snap_level(sg["z"], owner)
-                    if "force" in r:
-                        return r["force"]
-                    sg.update(r)
-        # the raked runs' tops, from the level runs either side (the lane's foot draws its own)
-        n_kneel = n_knee = 0
-        for k, sg in enumerate(segs):
-            if sg["kind"] != "rake":
-                continue
-            (sa, sb), (za, zb) = sg["s"], sg["z"]
-            if k == 0:
-                kid = f"{lid}/kneeler-{n_kneel}"
-                rng = self.stream(kid, "rake")
-                CA = za + PARAPET + rng.randint(-COPE_DELTA, COPE_DELTA)
-                t = rng.randint(80, COPE_T[1])
-                CB = segs[k + 1]["C"]
-                sg["R"] = Rake.square(sa, CA, sb, CB, t)
-            else:
-                prev = segs[k - 1]
-                sg["R"] = Rake.meeting(sa, prev["C"], sb, segs[k + 1]["C"], prev["t"])
-                if not COPE_T[0] <= sg["R"].t <= COPE_T[1]:
-                    self.flags.append(f"{lid}: a raked run's thickness {sg['R'].t} is outside {COPE_T}")
-        # walk the runs: the features at their junctions, the slabs between, the ceiling under them
+        lid, Lz = self.id, self.Lz
+        Y = self.ideal_bed()
+        self.idealBed = Y
+        k = self.nearest(Y[0][1])
+        k0 = k
+        risers = []
         x = self.s0
-        for k, sg in enumerate(segs):
-            if sg["kind"] == "rake":
-                R = sg["R"]
-                if k == 0:
-                    # the lane's kneeler, the wall's end: a level top from the end to where its square face meets
-                    # the run's bed on a course line
-                    kid = f"{lid}/kneeler-{n_kneel}"
-                    n_kneel += 1
-                    rng = self.stream(kid, "lay")
-                    w0 = rng.randint(*KNEELER_W)
-                    best = None
-                    for z in self.Lz:
-                        sq = R.inv_B(z)
-                        sk = sq - R.dx
-                        w = sk - self.s0
-                        if KNEELER_W[0] - 50 <= w <= KNEELER_W[1] + 70:
-                            if best is None or abs(w - w0) < abs(best[1] - w0):
-                                best = (z, w, sq, sk)
-                    if best is None:
-                        raise Refused(f"{kid}: no course line puts the lane kneeler's face on the run's bed")
-                    zL, w, sq, sk = best
-                    CK = R.C(sk)
-                    zb = self._kneeler_bed(CK, zL, sq - self.s0, kid)
-                    poly = [[self.s0, zb], [sq, zb], [sq, zL], [sk, CK], [self.s0, CK]]
-                    feats.append(dict(id=kid, kind="kneeler", outline=poly, bed=zb, at=sg["s"][0], lane=True,
-                                      head=0))
-                    ceil.append(dict(kind="level", s=[self.s0, sq], z=zb, owner=kid))
-                    start = sq
-                    self.head_top = {0: (zb, kid)}
-                else:
-                    start = sg["start_q"]
-                # the knee at the run's top
-                nxt = segs[k + 1]
-                knid = f"{lid}/knee-{n_knee}"
-                n_knee += 1
-                rng = self.stream(knid, "lay")
-                r0 = rng.randint(*KNEE_RAKE)
-                a0 = sg_level_a = nxt.get("knee_a")
-                sn = sg["s"][1]
-                Bn = R.B(sn)
-                cap = Bn - 56
-                if nxt.get("B") is not None:
-                    cap = min(cap, nxt["B"] - SLIVER)
-                back_top = nxt["B"] if nxt.get("B") is not None else nxt["C"]
-                best = None
-                for z in self.Lz:
-                    if z > cap:
-                        continue
-                    sp1 = R.inv_B(z)
-                    st_ = sp1 - R.dx
-                    rl = sn - st_
-                    if rl < 100 or sp1 - start < COPE_L[0]:
-                        continue
-                    back = sum(1 for L in self.Lz if z <= L < back_top)
-                    cost = 10000 * max(0, back - KNEELER_BACK) + abs(rl - r0)
-                    if best is None or cost < best[0]:
-                        best = (cost, z, rl, sp1, st_)
-                if best is None:
-                    raise Refused(f"{knid}: no course line gives the knee a bed under the run")
-                if best[0] >= 10000:
-                    self.flags.append(f"{knid}: its plumb side rises through {best[0] // 10000 + KNEELER_BACK} courses")
-                _, zx, rl, sp1, st_ = best
-                # the run's intermediate kneelers (Rivington 1904, p. 54; Mitchell 1902), every 2.4 to 3.6 m of going
-                # from the stop below, each its own stone: a level bed on a course line where the rake's bed meets
-                # it, a plumb back rising to the next line the rake's bed meets, the coping's section on its top, its
-                # faces square to the rake; the run's slabs between, bed point to bed point
-                prev = start
-                while True:
-                    kid = f"{lid}/kneeler-{n_kneel}"
-                    rng = self.stream(kid, "lay")
-                    d0 = rng.randint(*KNEELER_EVERY)
-                    w0 = rng.randint(*KNEELER_MID_W)
-                    best = None
-                    for i1, z1 in enumerate(self.Lz):
-                        sL = R.inv_B(z1)
-                        d = sL - prev
-                        if not KNEELER_EVERY[0] <= d <= KNEELER_EVERY[1]:
-                            continue
-                        for i2 in range(i1 + 1, len(self.Lz)):
-                            z2 = self.Lz[i2]
-                            sR = R.inv_B(z2)
-                            w = sR - sL
-                            if not KNEELER_MID_W[0] <= w <= KNEELER_MID_W[1] + 100 or sp1 - sR < COPE_L[0]:
-                                continue
-                            if R.C(sR - R.dx) - z1 >= w:
-                                continue                    # wider than it is high
-                            cost = abs(d - d0) + abs(w - w0) + 10000 * max(0, i2 - i1 - KNEELER_BACK)
-                            if best is None or cost < best[0]:
-                                best = (cost, z1, z2, sL, sR, d)
-                    if best is None:
-                        if sp1 - prev > KNEELER_EVERY[1]:
-                            self.flags.append(f"{kid}: a raked stretch of {sp1 - prev} mm from {prev} to the knee takes "
-                                              f"no intermediate kneeler (no course lines in reach)")
+        # each rising stretch of the ideal bed ends at a level run (a rest, a landing, the wall's end): the bed steps
+        # up to the line nearest that run's ideal bed
+        j = 0
+        while j < len(Y) - 1:
+            if Y[j + 1][1] == Y[j][1]:
+                j += 1
+                continue
+            ja = j
+            while j < len(Y) - 1 and Y[j + 1][1] > Y[j][1]:
+                j += 1
+            stretch = (Y[ja][0], Y[j][0])
+            kE = self.nearest(Y[j][1])
+            while k < kE:
+                step = min(goings, kE - k)
+                v2 = Lz[k] + Lz[k + step]
+                xr = None
+                for (sa, ya), (sb, yb) in zip(Y[ja:j], Y[ja + 1:j + 1]):
+                    if 2 * yb >= v2:
+                        xr = sa if 2 * ya >= v2 else sa + div_round((v2 - 2 * ya) * (sb - sa), 2 * (yb - ya))
                         break
-                    n_kneel += 1
-                    _, z1, z2, sL, sR, d = best
-                    poly = [[sL, z1], [sR, z1], [sR, z2], [sR - R.dx, R.C(sR - R.dx)], [sL - R.dx, R.C(sL - R.dx)]]
-                    feats.append(dict(id=kid, kind="kneeler", outline=poly, bed=z1, at=sL, mid=True, fromStop=d))
-                    self._rake_slabs(R, prev, sL, slabs)
-                    ceil.append(dict(kind="rake", s=[prev, sL], R=R, owner=f"{lid}/rake-{k}"))
-                    ceil.append(dict(kind="level", s=[sL, sR], z=z1, owner=kid))
-                    prev = sR
-                # the raked run's slabs, bed point to bed point, from its last stop's face to the knee's
-                self._rake_slabs(R, prev, sp1, slabs)
-                ceil.append(dict(kind="rake", s=[prev, sp1], R=R, owner=f"{lid}/rake-{k}"))
-                # the knee's level top: on a rest the rest's solver gives it; at the wall's end what the topstone leaves
-                C = nxt["C"]
-                if k + 1 == len(segs) - 1:
-                    a = rng.randint(*KNEE_LEVEL)
-                    room = self.s1 - sn
-                    a = min(max(a, room - TOPSTONE[1]), room - TOPSTONE[0])
-                    # the topstone square on the knee's bed where the knee's level top allows it
-                    h = C - zx
-                    lo_t, hi_t = max(TOPSTONE[0], -(-3 * h // 4), room - KNEE_LEVEL[1]), \
-                        min(TOPSTONE[1], 4 * h // 3, room - KNEE_LEVEL[0])
-                    if lo_t <= hi_t:
-                        a = room - min(max(room - a, lo_t), hi_t)
-                    if not KNEE_LEVEL[0] <= a <= KNEE_LEVEL[1]:
-                        self.flags.append(f"{knid}: its level top {a} mm is outside {KNEE_LEVEL}")
-                    snR = sn + a
-                    poly = [[sp1, zx], [snR, zx], [snR, C], [sn, C], [st_, R.C(st_)]]
-                    feats.append(dict(id=knid, kind="knee", outline=poly, bed=zx, at=sn))
-                    ceil.append(dict(kind="level", s=[sp1, snR], z=zx, owner=knid))
-                    # the topstone at the end, square: its bed the line giving it a height nearest its length
-                    tid = f"{lid}/hd-1/top"
-                    Lt = self.s1 - snR
-                    zt = zx if 3 * (C - zx) <= 4 * Lt <= 16 * (C - zx) // 3 else self._bed_for(C, zx, Lt, COPE_T[1], tid)
-                    feats.append(dict(id=tid, kind="topstone", outline=[[snR, zt], [self.s1, zt], [self.s1, C],
-                                                                        [snR, C]], bed=zt, head=1))
-                    ceil.append(dict(kind="level", s=[snR, self.s1], z=zt, owner=tid))
-                    self.head_top[1] = (zt, tid)
-                else:
-                    nxt["knee"] = dict(id=knid, sp1=sp1, st=st_, zx=zx, sn=sn, rng=rng)
+                if xr is None:
+                    xr = Y[j][0]
+                    self.flags.append(f"{lid}: a riser from {Lz[k]} to {Lz[k + step]} put at the stretch's end {xr}")
+                xr = max(xr, x)
+                risers.append(dict(at=xr, lo=k, hi=k + step, ideal=xr, stretch=stretch))
+                x = xr
+                k += step
+        merged = []
+        for r in risers:
+            if merged and merged[-1]["at"] == r["at"]:
+                merged[-1]["hi"] = r["hi"]
+                self.flags.append(f"{lid}: two risers meet at {r['at']}: one step of "
+                                  f"{merged[-1]['hi'] - merged[-1]['lo']} courses")
             else:
-                if k == len(segs) - 1:
-                    continue           # (the last level run: laid with the knee before it)
-                # a level run before a raked one: its kneeler at the break; on a rest a knee before it, at the wall's
-                # foot a topstone
-                kid = f"{lid}/kneeler-{n_kneel}"
-                n_kneel += 1
-                rng = self.stream(kid, "lay")
-                b0 = rng.randint(*KNEELER_W)
-                sk = sg["s"][1]
-                R = segs[k + 1]["R"]
-                sq = R.inv_B(sg["B"])
-                C, Bl = sg["C"], sg["B"]
-                if k == 0:
-                    tid = f"{lid}/hd-0/top"
-                    trng = self.stream(tid, "lay")
-                    Lt0 = trng.randint(250, 400)
-                    left_kind, left_len0, left_rng = "topstone", Lt0, (TOPSTONE[0], 400)
-                    ib = self.Lz.index(Bl)
-                    if ib >= KNEELER_BACK:
-                        h1, h2 = C - self.Lz[ib - 1], C - self.Lz[ib - KNEELER_BACK]
-                        lo_t, hi_t = max(TOPSTONE[0], -(-3 * h1 // 4)), min(400, 4 * h2 // 3)
-                        if lo_t <= hi_t:
-                            left_rng = (lo_t, hi_t)
-                            left_len0 = min(max(Lt0, lo_t), hi_t)
-                    x0 = self.s0
+                merged.append(dict(r))
+        risers = merged
+        beds = [k0] + [r["hi"] for r in risers]
+        t = [HS.Stream(self.seed, lid, "cope", "run", i).randint(*D.COPE_T) for i in range(len(beds))]
+        if beds[0] == 0 or beds[-1] == 0:
+            raise Refused(f"{lid}: the end run's bed is the lowest line; no course under it for a topstone")
+        # the square topstone's range at each end: through the end run's top course, to the coping's top
+        tops_sq = [D.square(Lz[beds[i]] + t[i] - Lz[beds[i] - 1]) for i in (0, len(beds) - 1)]
+        self.place_risers(risers, goings, tops_sq)
+        xs = [self.s0] + [r["at"] for r in risers] + [self.s1]
+        # the topstones at the wall's ends: square, bedded through the end run's top course; a run too short for a
+        # topstone and a slab is the topstone alone (its riser moved to make it square, flagged)
+        tops = {}
+        for e in (0, 1):
+            i = 0 if e == 0 else len(beds) - 1
+            bed = beds[i]
+            if bed == 0:
+                raise Refused(f"{lid}: the end run's bed is the lowest line; no course under it for a topstone")
+            zt = Lz[bed - 1]
+            C = Lz[bed] + t[i]
+            h = C - zt
+            lo_t, hi_t = D.square(h)
+            if lo_t > hi_t:
+                raise Refused(f"{lid}/hd-{e}/top: no square topstone {h} mm high within {D.TOPSTONE}")
+            tid = f"{lid}/hd-{e}/top"
+            run_len = xs[i + 1] - xs[i]
+            if len(beds) == 1:
+                run_len //= 2
+            Lt0 = self.stream(tid, "lay").randint(lo_t, hi_t)
+            if len(beds) > 1 and run_len < lo_t:
+                Lt, cap = lo_t, True
+                self.flags.append(f"{tid}: its run was {run_len} mm, under a square topstone; the riser moved out "
+                                  f"to {lo_t}")
+            elif len(beds) > 1 and run_len <= hi_t:
+                Lt, cap = run_len, True
+            elif run_len - lo_t >= D.COPE_L[0]:          # a topstone and a whole slab
+                Lt, cap = min(max(Lt0, lo_t), min(hi_t, run_len - D.COPE_L[0])), False
+            elif run_len - lo_t >= D.COPE_MIN:            # a topstone and a short slab, flagged with the slab
+                Lt, cap = min(max(Lt0, lo_t), min(hi_t, run_len - D.COPE_MIN)), False
+            elif len(beds) > 1:
+                Lt, cap = hi_t, True
+                self.flags.append(f"{tid}: its run was {run_len} mm, a topstone and less than a slab; the riser "
+                                  f"moved in to {hi_t}")
+            else:
+                raise Refused(f"{lid}: a wall of one run too short for two topstones and a slab")
+            if cap:
+                if e == 0:
+                    xs[1] = self.s0 + Lt
+                    risers[0]["at"] = xs[1]
                 else:
-                    kn = sg["knee"]
-                    a0 = kn["rng"].randint(*KNEE_LEVEL)
-                    left_kind, left_len0, left_rng = "knee", a0, KNEE_LEVEL
-                    x0 = kn["sn"]
-                total = sk - x0
-                a, bb = self._rest_split(total, left_len0, left_rng, b0, KNEELER_W, sg)
-                xl, xr = x0 + a, sk - bb
-                if left_kind == "topstone":
-                    zt = self._square_bed(C, Bl, a, tid)
-                    feats.append(dict(id=tid, kind="topstone", outline=[[self.s0, zt], [xl, zt], [xl, C], [self.s0, C]],
-                                      bed=zt, head=0))
-                    ceil.append(dict(kind="level", s=[self.s0, xl], z=zt, owner=tid))
-                    self.head_top = {0: (zt, tid)}
+                    xs[-2] = self.s1 - Lt
+                    risers[-1]["at"] = xs[-2]
+            tops[e] = dict(id=tid, Lt=Lt, bed=zt, top=C, cap=cap)
+        for i in range(len(beds)):
+            if xs[i + 1] - xs[i] < D.COPE_MIN and not ((i == 0 and tops[0]["cap"]) or
+                                                     (i == len(beds) - 1 and tops[1]["cap"])):
+                self.flags.append(f"{lid}: a level run of {xs[i + 1] - xs[i]} mm at {xs[i]}, under {D.COPE_MIN}")
+            if xs[i + 1] <= xs[i]:
+                raise Refused(f"{lid}: the coping's runs overlap at {xs[i]}")
+        self.risers = [dict(at=r["at"], lo=r["lo"], hi=r["hi"], courses=r["hi"] - r["lo"], ideal=r["ideal"],
+                            moved=r["moved"]) for r in risers]
+        self.panels_make(segs, xs)
+        self.cruns = [dict(s=[xs[i], xs[i + 1]], bed=Lz[beds[i]], bedIndex=beds[i], t=t[i], top=Lz[beds[i]] + t[i])
+                      for i in range(len(beds))]
+        # the ceiling the courses are laid under, and the features and slabs on it
+        ceil, feats, slabs = [], [], []
+        self.head_top = {}
+        for i in range(len(beds)):
+            a, b = xs[i], xs[i + 1]
+            z, C = Lz[beds[i]], Lz[beds[i]] + t[i]
+            pieces = []
+            if i == 0:
+                tp = tops[0]
+                pieces.append(dict(s=[a, a + tp["Lt"]], z=tp["bed"], top=tp["top"], owner=tp["id"], kind="topstone"))
+                a += tp["Lt"]
+            tail = None
+            if i == len(beds) - 1:
+                tp = tops[1]
+                tail = dict(s=[b - tp["Lt"], b], z=tp["bed"], top=tp["top"], owner=tp["id"], kind="topstone")
+                b -= tp["Lt"]
+            if b > a:
+                pieces.append(dict(s=[a, b], z=z, top=C, owner="coping", kind="coping", run=i))
+            if tail:
+                pieces.append(tail)
+            ceil += pieces
+        for e in (0, 1):
+            tp = tops[e]
+            a, b = (self.s0, self.s0 + tp["Lt"]) if e == 0 else (self.s1 - tp["Lt"], self.s1)
+            feats.append(dict(id=tp["id"], kind="topstone", outline=[[a, tp["bed"]], [b, tp["bed"]], [b, tp["top"]],
+                                                                     [a, tp["top"]]], bed=tp["bed"], head=e,
+                              at=a if e == 1 else b, cap=tp["cap"]))
+            self.head_top[e] = (tp["bed"], tp["id"])
+        # the slabs: each coping piece cut near every panel boundary and 1961 edge inside it, then into slabs of
+        # COPE_L. A piece no longer than a slab is one slab, across the boundary; a longer one is cut at the boundary,
+        # or as near it as keeps both sides a whole slab long (the cut is the line's features' alone, so either
+        # panel re-lays alone: the slab over the boundary is the panel's that holds its middle, and its own joints
+        # stay a slab from its ends, on that panel's side)
+        bounds = sorted(set(pn["s"][0] for pn in self.panels[1:]))
+        self.cope_j = {}
+        self.cope_cuts = []
+        for c in ceil:
+            if c["kind"] != "coping":
+                continue
+            a, b = c["s"]
+            cuts = [a]
+            if b - a > D.COPE_L[1]:
+                inner = [q for q in bounds if a < q < b]
+                for bi, q in enumerate(inner):
+                    lo_c = cuts[-1] + D.COPE_L[0]
+                    hi_c = b - D.COPE_L[0] * (len(inner) - bi)
+                    if lo_c > hi_c:
+                        self.cope_cuts.append(dict(at=q, cut=None, run=c["run"]))
+                        continue
+                    x_ = min(max(q, lo_c), hi_c)
+                    cuts.append(x_)
+                    self.cope_cuts.append(dict(at=q, cut=x_, run=c["run"]))
+            cuts.append(b)
+            for jj, (p, q) in enumerate(zip(cuts, cuts[1:])):
+                pn = self.panel_at((p + q) // 2)
+                if q - p <= D.COPE_L[1]:
+                    J = [p, q]
                 else:
-                    kn = sg["knee"]
-                    poly = [[kn["sp1"], kn["zx"]], [xl, kn["zx"]], [xl, C], [kn["sn"], C],
-                            [kn["st"], segs[k - 1]["R"].C(kn["st"])]]
-                    feats.append(dict(id=kn["id"], kind="knee", outline=poly, bed=kn["zx"], at=kn["sn"]))
-                    ceil.append(dict(kind="level", s=[kn["sp1"], xl], z=kn["zx"], owner=kn["id"]))
-                # the level slabs between
-                if xr > xl:
-                    self._level_slabs(xl, xr, Bl, C, slabs)
-                    ceil.append(dict(kind="level", s=[xl, xr], z=Bl, owner="coping"))
-                # the kneeler: level bed on a line, its top level to the break, its face square to the rake
-                zb = self._kneeler_bed(C, Bl, sq - xr, kid)
-                poly = [[xr, zb], [sq, zb], [sq, Bl], [sk, C], [xr, C]]
-                feats.append(dict(id=kid, kind="kneeler", outline=poly, bed=zb, at=sk))
-                ceil.append(dict(kind="level", s=[xr, sq], z=zb, owner=kid))
-                segs[k + 1]["start_q"] = sq
+                    rng = self.stream(pn["id"], "cope", c["run"], jj)
+                    J = fill_run(p, q, D.COPE_L[0], D.COPE_L[1], [], lambda i_, rng=rng: rng.randint(*D.COPE_L))
+                if q - p < D.COPE_MIN:
+                    self.flags.append(f"{pn['id']}: a coping {q - p} mm long between {p} and {q}, under {D.COPE_MIN}")
+                for u, v in zip(J, J[1:]):
+                    slabs.append(dict(panel=pn["id"], kind="coping", run=c["run"], bedIndex=beds[c["run"]],
+                                      outline=[[u, c["z"]], [v, c["z"]], [v, c["top"]], [u, c["top"]]]))
+        # the copings' joints, over the course under each run: every slab end that meets a stone (another slab, a
+        # topstone, or a stepped section's corner stone at a riser the run is the lower side of)
+        for sl in slabs:
+            i = sl["run"]
+            u, v = sl["outline"][0][0], sl["outline"][1][0]
+            for x_, left in ((u, True), (v, False)):
+                if x_ in (self.s0, self.s1):
+                    continue
+                if left and x_ == xs[i] and i > 0 and beds[i - 1] < beds[i]:
+                    continue        # the higher run's open end over its riser
+                if not left and x_ == xs[i + 1] and i < len(beds) - 1 and beds[i + 1] < beds[i]:
+                    continue
+                self.cope_j.setdefault(sl["bedIndex"] - 1, []).append((x_, lap_of(self.cruns[i]["t"])))
         self.slabs = slabs
+        self.features = feats
         self.ceiling = ceil
-        self.segs = segs
-        # the ceiling is contiguous from end to end
         for p, q in zip(ceil, ceil[1:]):
             if p["s"][1] != q["s"][0]:
                 raise Refused(f"{lid}: the coping's pieces do not meet at {p['s'][1]} / {q['s'][0]}")
-        return None
-
-    def _square_bed(self, top, under, length, owner):
-        """A topstone's bed: a course line under `under`, the stone square (its length 0.75 to 1.33 its height),
-        nearest its length, its plumb side through at most KNEELER_BACK courses under `under` where the lines allow."""
-        i = self.Lz.index(under)
-        best = None
-        for j in range(i - 1, -1, -1):
-            h = top - self.Lz[j]
-            if not 3 * h <= 4 * length <= 16 * h // 3:
-                continue
-            cost = 10000 * max(0, i - j - KNEELER_BACK) + abs(h - length)
-            if best is None or cost < best[0]:
-                best = (cost, self.Lz[j])
-        if best is None:
-            return self._bed_for(top, under - COURSE[0], length, top - under + COURSE[0], owner)
-        if best[0] >= 10000:
-            self.flags.append(f"{owner}: its plumb side rises through {best[0] // 10000 + KNEELER_BACK} courses")
-        return best[1]
-
-    def _kneeler_bed(self, top, under, width, owner):
-        """A kneeler's bed: a course line under `under` (the course line its plumb side rises to), the stone wider than
-        high, its height nearest three quarters of its width, its plumb side through at most KNEELER_BACK courses
-        where the lines allow (SN2's kneeler, SN10's two courses)."""
-        i = self.Lz.index(under)
-        best = None
-        for j in range(i - 1, -1, -1):
-            z = self.Lz[j]
-            if top - z >= width:
-                break
-            cost = 10000 * max(0, i - j - KNEELER_BACK) + abs(4 * (top - z) - 3 * width)
-            if best is None or cost < best[0]:
-                best = (cost, z)
-        if best is None:
-            self.flags.append(f"{owner}: no course line under {under} leaves it wider than high; one course under it")
-            return self.Lz[i - 1]
-        if best[0] >= 10000:
-            self.flags.append(f"{owner}: its plumb side rises through {best[0] // 10000 + KNEELER_BACK} courses")
-        return best[1]
-
-    def _bed_for(self, top, cap, length, least, owner):
-        """A feature's bed: the course line at most `cap`, giving a height of at least `least`, nearest to `length`
-        (a square stone)."""
-        best = None
-        for z in self.Lz:
-            if z > cap or top - z < least or top - z > 2 * KNEELER_W[1]:
-                continue
-            if best is None or abs((top - z) - length) < abs((top - best) - length):
-                best = z
-        if best is None:
-            raise Refused(f"{owner}: no course line gives it a bed")
-        return best
-
-    def _rest_split(self, total, a0, arange, b0, brange, sg):
-        """A level run's length between its left feature (a knee's level top or a topstone) and its kneeler: either both
-        meet, or the slabs between are at least a slab long."""
-        best = None
-        for a in range(arange[0], arange[1] + 1, 1):
-            for b in (brange[0], brange[1], min(max(b0, brange[0]), brange[1]), total - a - COPE_L[0], total - a):
-                if not brange[0] <= b <= brange[1]:
-                    continue
-                r = total - a - b
-                if r != 0 and r < COPE_L[0]:
-                    continue
-                cost = abs(a - a0) + abs(b - b0)
-                if best is None or cost < best[0]:
-                    best = (cost, a, b)
-        if best is None:
-            raise Refused(f"{self.id}: a level run of {total} mm takes no knee or topstone, kneeler and slabs")
-        return best[1], best[2]
-
-    def _rake_slabs(self, R, start, end, slabs):
-        """Raked copings from bed point `start` to `end`: joints square to the rake; a 1961 edge takes a joint."""
-        cuts = [start] + [e for e in self.edges if start + 1 < e < end - 1] + [end]
-        for a, b in zip(cuts, cuts[1:]):
-            pn = self.panel_at((a + b) // 2)
-            rng = self.stream(pn["id"], "cope", "rake", "first" if a == start else "after", a)
-            lo = COPE_L[0] if b - a >= COPE_L[0] else max(SLIVER * 4, b - a)
-            J = fill_run(a, b, lo, COPE_L[1], [], lambda i: rng.randint(*COPE_L))
-            if J is None:
-                J = [a, b]
-                self.flags.append(f"{pn['id']}: a raked coping {b - a} mm long, outside {COPE_L}")
-            for p, q in zip(J, J[1:]):
-                slabs.append(dict(panel=pn["id"], kind="coping", rake=True,
-                                  outline=[[p, R.B(p)], [q, R.B(q)], [q - R.dx, R.C(q - R.dx)],
-                                           [p - R.dx, R.C(p - R.dx)]]))
-
-    def _level_slabs(self, a, b, Bl, C, slabs):
-        pn = self.panel_at((a + b) // 2)
-        rng = self.stream(pn["id"], "cope", "level", a)
-        J = fill_run(a, b, COPE_L[0], COPE_L[1], [], lambda i: rng.randint(*COPE_L))
-        if J is None:
-            J = [a, b]
-            self.flags.append(f"{pn['id']}: a level coping {b - a} mm long, outside {COPE_L}")
-        for p, q in zip(J, J[1:]):
-            slabs.append(dict(panel=pn["id"], kind="coping", rake=False, outline=[[p, Bl], [q, Bl], [q, C], [p, C]]))
 
     def ceiling_at(self, s):
         for c in self.ceiling:
-            if c["s"][0] <= s <= c["s"][1]:
-                return c["R"].B(s) if c["kind"] == "rake" else c["z"]
-        return None
+            if c["s"][0] <= s < c["s"][1]:
+                return c["z"]
+        return self.ceiling[-1]["z"]
 
     # ---- footings
     def footings(self):
+        D = self.D
         S, T = self.S, self.T
         ff = [(self.s0, S[0], T[0], "lane" if self.fl["start"] == 0 else "turn")]
         for i in range(len(S)):
             ff.append((S[i], S[i + 1] if i + 1 < len(S) else self.s1, T[i + 1], self.fl["steps"][i]["id"]))
         self.foot = {"stair": [(a, b, z, ref) for a, b, z, ref in ff if b > a]}
         g = self.f["ground"]
+        steps_ = {sb - sa for (sa, _), (sb, _) in zip(g, g[1:-1])}     # the last sample is the line's end
+        if len(steps_) != 1 or g[-1][0] - g[-2][0] > min(steps_):
+            raise Refused(f"{self.id}: the ground is sampled at uneven spacings {sorted(steps_)}")
+        grid = steps_.pop()                         # the ground's sample spacing, from the facts
         cells = []
         for (sa, za), (sb, zb) in zip(g, g[1:]):
             m = min(za, zb)
             idx = max([i for i, z in enumerate(self.Lz) if z <= m], default=0)
             cells.append((sa, sb, idx))
         n = len(cells)
-        per = FOOT_TREAD // GRID
+        per = D.FOOT_TREAD // grid
         f = [min(cells[j][2] + abs(i - j) // per for j in range(n)) for i in range(n)]
         fb = []
         for (sa, sb, _), fi in zip(cells, f):
@@ -915,48 +999,25 @@ class Line:
 
     # ---- a course's free lengths on a face, before anything is laid in it
     def band_region(self, m, face):
-        """Course m's lengths on a face: where it stands over the footing and under the coping and its features.
-        Each run [a, b] carries its ends' causes and, when it starts under the rake, the rake's cut (sTop)."""
+        """Course m's lengths on a face: where it stands over the footing and under the coping and its topstones.
+        Each run [a, b] carries its ends' causes: the wall's end, a topstone (a feature it abuts), a riser (the end
+        of a stepped section, against the lower run's coping or topstone for part of its height, or open over it),
+        a step's end or the ground's step."""
         L, L2 = self.Lz[m], self.Lz[m + 1]
-        pieces = []
-        for c in self.ceiling:
-            p0, p1 = c["s"]
-            if c["kind"] == "level":
-                if c["z"] >= L2:
-                    pieces.append([p0, p1, None, c["owner"], c["owner"]])
-                elif c["z"] > L:
-                    self.flags.append(f"{self.id}: course {m} meets {c['owner']}'s bed {c['z']} inside it")
-            else:
-                R = c["R"]
-                if R.B(p1) <= L:
-                    continue
-                if R.B(p0) > L:
-                    a, top = p0, (None if R.B(p0) >= L2 else R.inv_B(L2))
-                    if top is not None:
-                        self.flags.append(f"{self.id}: course {m} starts under the rake at {p0} part-high")
-                else:
-                    a = R.inv_B(L)
-                    if a >= p1:
-                        continue
-                    top = R.inv_B(L2)
-                    if top > p1:
-                        self.flags.append(f"{self.id}: course {m} is cut by the rake to its run's end at {p1} (a wedge)")
-                        top = p1
-                pieces.append([a, p1, top, "rake" if a > p0 or R.B(p0) == L else c["owner"], c["owner"]])
         runs = []
-        for pc in pieces:
-            if runs and runs[-1][1] == pc[0] and pc[2] is None:
-                runs[-1][1] = pc[1]
-                runs[-1][4] = pc[4]
-            else:
-                runs.append(list(pc))
-        # the left end's cause: the piece before (the feature it abuts), the right end's: the piece after
+        for i, c in enumerate(self.ceiling):
+            if c["z"] >= L2:
+                if runs and runs[-1]["b"] == c["s"][0] and runs[-1]["ri"] == i - 1:
+                    runs[-1]["b"], runs[-1]["ri"] = c["s"][1], i
+                else:
+                    runs.append(dict(a=c["s"][0], b=c["s"][1], li=i, ri=i))
+            elif c["z"] > L:
+                self.flags.append(f"{self.id}: course {m} meets {c['owner']}'s bed {c['z']} inside it")
         out = []
-        for a, b, top, lt, rt in runs:
-            lend = dict(type="rake") if lt == "rake" else self._end_at(a, "left")
-            rend = self._end_at(b, "right")
-            out.append(dict(a=a, b=b, sTop=top, l=lend, r=rend))
-        # the footing: where the course stands on it (the footing at or under its bed), as whole stretches
+        for r in runs:
+            lend = self._nb_end(r["li"] - 1, L, L2) if r["a"] > self.s0 else dict(type="end")
+            rend = self._nb_end(r["ri"] + 1, L, L2) if r["b"] < self.s1 else dict(type="end")
+            out.append(dict(a=r["a"], b=r["b"], l=lend, r=rend))
         stand = iv_union([(a, b - 1) for a, b, z, _ in self.foot[face] if z <= L])
         res = []
         for lo0, hi0 in stand:
@@ -965,36 +1026,28 @@ class Line:
                 lo, hi = max(lo1, run["a"]), min(hi1, run["b"])
                 if lo >= hi:
                     continue
-                l = run["l"] if lo == run["a"] else self._foot_end(face, lo, "left")
-                r = run["r"] if hi == run["b"] else self._foot_end(face, hi, "right")
-                top = run["sTop"] if lo == run["a"] else None
-                if lo != run["a"] and run["sTop"] is not None and lo < run["sTop"]:
-                    top = run["sTop"]
-                    l = dict(type="ground-under-rake", ref="ground", plumb=self.ceiling_at(lo) - L)
-                    self.flags.append(f"{self.id} {face}: course {m} rises out of its footing under the rake at {lo}")
-                res.append(dict(a=lo, b=hi, sTop=top, l=l, r=r))
+                lend = run["l"] if lo == run["a"] else self._foot_end(face, lo)
+                rend = run["r"] if hi == run["b"] else self._foot_end(face, hi)
+                res.append(dict(a=lo, b=hi, l=lend, r=rend))
         res.sort(key=lambda d: d["a"])
         return res
 
-    def _end_at(self, s, which):
-        if s <= self.s0 or s >= self.s1:
-            return dict(type="end")
-        for c in self.ceiling:
-            if (which == "left" and c["s"][1] == s) or (which == "right" and c["s"][0] == s):
-                if c["owner"] != "coping" and not c["owner"].startswith(self.id + "/rake"):
-                    return dict(type="feature", ref=c["owner"])
-        for c in self.ceiling:
-            if c["s"][0] <= s <= c["s"][1] and c["owner"] != "coping" and not c["owner"].startswith(self.id + "/rake"):
-                return dict(type="feature", ref=c["owner"])
-        return dict(type="feature", ref="coping")
+    def _nb_end(self, i, L, L2):
+        """A course's end against the ceiling piece i beside it, lower than the course's top: a topstone standing
+        through it (a feature), the lower run's coping or topstone over part of its height (a riser's joint), or
+        nothing (an open end at a riser)."""
+        c = self.ceiling[i]
+        if c["top"] >= L2:
+            return dict(type="feature", ref=c["owner"])
+        if c["top"] > L:
+            return dict(type="riser", ref=c["owner"])
+        return dict(type="riser-open", ref=c["owner"])
 
-    def _foot_end(self, face, s, which):
+    def _foot_end(self, face, s):
         if face == "bank":
             return dict(type="ground", ref="ground")
-        # the stair's face: the step whose end rises over the course at s
         for i, Si in enumerate(self.S):
             if Si == s:
-                y = s if which == "right" else s - 1
                 return dict(type="step", ref=step_end_id(self.steps_out, self.fl["steps"][i]["id"], self.side, s))
         return dict(type="step", ref="step")
 
@@ -1002,51 +1055,106 @@ class Line:
 # ---------------------------------------------------------------------------------------------------------------
 # Laying a line's courses
 
-def lay_line(line, flight, steps_out, seed, reseed=None):
-    W = Line(line, flight, steps_out, seed, reseed)
-    W.coping()
-    W.footings()
-    # (panels need no clear zone: a tooth reaches at most 90 mm past its boundary and a stone is at least 180 mm long,
-    # so the free joints of two panels toothed together stand at least 180 mm apart, beyond any lap; only where a
-    # boundary takes no tooth does one panel's stone cross it, and the independence test counts what that couples)
-    clear = []
+def lay_line(line, flight, steps_out, seed, D, reseed=None, goings=None, laid=None, clock=None):
+    """One wall line, features first, then each course's free lengths. `laid` maps (panel id, face) to whether that
+    face is laid stone by stone (the facts' visibility); a face missing from it is laid."""
+    laid = laid or {}
+    goings = D.GOINGS_LAID if goings is None else goings
+    W = Line(line, flight, steps_out, seed, D, reseed)
+    with _Tick(clock, "features: course lines"):
+        W.course_lines()
+    with _Tick(clock, "features: coping"):
+        W.coping(goings)
+    with _Tick(clock, "features: footings"):
+        W.footings()
     nb = len(W.Lz) - 1
     H = [W.Lz[m + 1] - W.Lz[m] for m in range(nb)]
     lid = W.id
-    regions = {f: [W.band_region(m, f) for m in range(nb)] for f in FACES}
+    with _Tick(clock, "features: regions"):
+        regions = {f: [W.band_region(m, f) for m in range(nb)] for f in FACES}
     carved = {f: [[] for _ in range(nb)] for f in FACES}     # stones laid first in each course: (x0, x1, id)
     placed = []                                               # the stones laid first
+    cope_j = {m: W.cope_j.get(m, []) for m in range(nb)}      # the copings' joints over course m: (x, lap)
 
     def carve(face, m, x0, x1, sid):
         carved[face][m].append((x0, x1, sid))
 
-    # ---- the heads: ties and runners alternating, two courses each, under the end's topstone or kneeler
+    reb = line.get("rebuilt")
+    STONE_END = dict(type="stone", ref=None)      # a run's end against a stone laid first
+
+    def owner_of(p):
+        """The panel a run belongs to: the one a tooth or an edge at its end opens or closes, else the one holding
+        its middle."""
+        if p["l"]["type"] in ("tooth", "edge"):
+            return W.panel_starting(p["l"]["at"])
+        if p["r"]["type"] in ("tooth", "edge"):
+            return W.panel_ending(p["r"]["at"])
+        return W.panel_at((p["a"] + p["b"]) // 2)
+
+    def ends_rule(m, p):
+        """A run's first and last stones' lengths from its ends (None where free): at a riser, the stepped section's
+        corner stone; at a rebuilt panel's edge, on the panel's side, its long or short stone."""
+        h = H[m]
+        first = D.corner(h) if p["l"]["type"] in ("riser", "riser-open") else None
+        last = D.corner(h) if p["r"]["type"] in ("riser", "riser-open") else None
+        if reb and owner_of(p)["work"] != "built":
+            if p["l"]["type"] == "edge":
+                first = D.edge_stone(m, h, 0)
+            if p["r"]["type"] == "edge":
+                last = D.edge_stone(m, h, 1)
+        return first, last
+
+    def layable(m, a, b, l, r):
+        """Whether a run of course m from a to b, with these ends, can be laid in whole stones under its end
+        stones' rules: every stone laid first (a head, a tooth, a fallen stone, a through) leaves its runs so."""
+        return b >= a and D.run_layable(b - a, H[m], *ends_rule(m, dict(a=a, b=b, l=l, r=r)))
+
+    # ---- the heads: ties and runners alternating, two courses each, under the end's topstone
+    t_heads = time.perf_counter()
+
     def rooms(face, spans, e):
-        """The length each spanned course has at the wall's end on a face, with its height (none where hidden)."""
+        """The run each spanned course has at the wall's end on a face, with its course."""
         out = []
         for m in spans:
             for run in regions[face][m]:
                 if (e == 0 and run["a"] == W.s0) or (e == 1 and run["b"] == W.s1):
-                    out.append((run["b"] - run["a"], H[m]))
+                    out.append((run, m))
         return out
 
-    def head_len(drawn, nominal, wide, room_list, sid, avoid=()):
+    def room_left(run, m, e, x):
+        """Whether a head stone x long at end e leaves its course's run nothing, or a run its stones can lay."""
+        if x > run["b"] - run["a"]:
+            return False
+        if e == 0:
+            return layable(m, run["a"] + x, run["b"], STONE_END, run["r"])
+        return layable(m, run["a"], run["b"] - x, run["l"], STONE_END)
+
+    def head_len(drawn_len, nominal, wide, room_list, sid, avoid=()):
         """A head stone's length: the drawn one if it leaves every spanned course either nothing or a whole stone
-        beside it, and its inner end a lap from those of the stones under and over it (`avoid`: (length, lap)), else
-        the nearest that does, first in its own range, then in any a course takes; flagged if so."""
+        beside it, and its inner end a lap from the joints under and over it (`avoid`: (length, lap)), else the
+        nearest that does, first in its own range, then in any a course takes; flagged if so."""
         def fits(x):
-            return all(x <= r_ and fillable(r_ - x, h_) for r_, h_ in room_list) and \
+            return all(room_left(run, m, e, x) for run, m in room_list) and \
                 all(abs(x - y) >= lp for y, lp in avoid)
         for lo_, hi_ in (nominal, wide):
             ok = [x for x in range(lo_, hi_ + 1) if fits(x)]
             if ok:
-                x = min(ok, key=lambda v: (abs(v - drawn), v))
+                x = min(ok, key=lambda v: (abs(v - drawn_len), v))
                 if (lo_, hi_) != nominal:
                     W.flags.append(f"{sid}: {x} mm, outside its range {nominal}, to leave whole stones beside it")
                 return x
-        x = min([drawn] + [r_ for r_, _ in room_list])
-        W.flags.append(f"{sid}: no length leaves whole stones beside it (rooms {room_list}); {x} mm")
+        lens = [run["b"] - run["a"] for run, _ in room_list]
+        x = min([drawn_len] + lens)
+        W.flags.append(f"{sid}: no length leaves whole stones beside it (rooms {lens}); {x} mm")
         return x
+
+    def end_joints(face, m, e, s_end, lap):
+        """The joints fixed before the heads in course m on a face, as lengths from the wall's end e, each with the
+        lap a head stone's inner end keeps from it: the course's ends against a feature, a riser or a step."""
+        if not 0 <= m < nb:
+            return []
+        ys = [r_[k] for r_ in regions[face][m] for k, side in (("a", "l"), ("b", "r")) if is_joint(r_[side])]
+        return [(abs(y - s_end), lap) for y in ys]
 
     for e, s_end in ((0, W.s0), (1, W.s1)):
         top_z, top_id = W.head_top[e]
@@ -1060,19 +1168,29 @@ def lay_line(line, flight, steps_out, seed, reseed=None):
         # two courses a stone, counted from the top down, so a single course left over is the deepest, at the foot
         pairs, j = [], i1
         while j > i0:
-            pairs.append((max(j - 2, i0), j))
-            j -= 2
+            pairs.append((max(j - D.HEAD_COURSES, i0), j))
+            j -= D.HEAD_COURSES
         for k, (i, j) in enumerate(reversed(pairs)):
             h = W.Lz[j] - W.Lz[i]
             rng = HS.Stream(seed, f"{hid}/st-{k}", "lay")
             tie = (k % 2 == 0) == tie_first
             spans = list(range(i, j))
-            hi_ = longest(h)
+            hi_ = D.longest(h)
             avoid = [(top_len, lap_of(H[j]) if j < nb else LAP_MIN)] if j == i1 else []
-            avoid_f = {f: avoid + ([(prev_len[f], lap_of(H[i]))] if prev_len[f] is not None else []) for f in FACES}
-            if tie:
+            # the inner end a lap from the stone under it (the head's last, or the course's fixed joints) and from the
+            # joints fixed over it (a riser's course end, a coping's joint)
+            avoid_f = {f: avoid + ([(prev_len[f], lap_of(H[i]))] if prev_len[f] is not None else
+                                   end_joints(f, i - 1, e, s_end, lap_of(H[i]))) +
+                       end_joints(f, j, e, s_end, lap_of(H[j]) if j < nb else LAP_MIN) +
+                       [(abs(y - s_end), lp) for y, lp in cope_j[j - 1]] for f in FACES}
+            # each face's head stands on that face's own footing: a face takes the pair's courses that stand over
+            # its footing at the end (a face never stands under its footing, where the steps' ends or the ground
+            # are). A tie runs through both faces only where both stand in all its courses; elsewhere each face
+            # that stands lays its own stone, a header or a runner by the head's order, in its standing courses.
+            stand = {f: [m for run, m in rooms(f, spans, e)] for f in FACES}
+            if tie and all(stand[f] == spans for f in FACES):
                 sid = f"{hid}/st-{k}"
-                Lh = head_len(rng.randint(*HEAD_TIE), HEAD_TIE, (STONE[0], hi_),
+                Lh = head_len(rng.randint(*D.HEAD_TIE), D.HEAD_TIE, (D.STONE[0], hi_),
                               rooms("stair", spans, e) + rooms("bank", spans, e), sid,
                               avoid_f["stair"] + avoid_f["bank"])
                 prev_len = {f: Lh for f in FACES}
@@ -1084,70 +1202,228 @@ def lay_line(line, flight, steps_out, seed, reseed=None):
                         carve(f, m, x0, x1, sid)
             else:
                 for f in FACES:
-                    sid = f"{hid}/st-{k}/{f}"
-                    nominal = (min(HEAD_RUN[0], hi_), hi_)
-                    Lh = head_len(rng.randint(*nominal), nominal, (STONE[0], hi_), rooms(f, spans, e), sid, avoid_f[f])
-                    prev_len[f] = Lh
-                    if Lh < HEAD_RUN[0]:
-                        W.flags.append(f"{sid}: a runner {Lh} mm, under the {HEAD_RUN[0]} a runner should be")
-                    x0, x1 = (s_end, s_end + Lh) if e == 0 else (s_end - Lh, s_end)
-                    placed.append(dict(id=sid, kind="head", role="runner", faces=[f], bands=spans,
-                                       outline=[[x0, W.Lz[i]], [x1, W.Lz[i]], [x1, W.Lz[j]], [x0, W.Lz[j]]]))
-                    for m in spans:
-                        carve(f, m, x0, x1, sid)
-
-    def free_runs(face, m):
-        """Course m's runs on a face less what is laid first in it."""
-        out = []
-        for run in regions[face][m]:
-            pieces = [dict(run)]
-            for x0, x1, sid in sorted(carved[face][m]):
-                nxt = []
-                for p in pieces:
-                    if x1 <= p["a"] or x0 >= p["b"]:
-                        nxt.append(p)
+                    sp = stand[f]
+                    if not sp:
                         continue
-                    if x0 > p["a"]:
-                        q = dict(p)
-                        q["b"], q["r"] = x0, dict(type="stone", ref=sid)
-                        nxt.append(q)
-                    if x1 < p["b"]:
-                        q = dict(p)
-                        q["a"], q["l"], q["sTop"] = x1, dict(type="stone", ref=sid), None
-                        if p["sTop"] is not None and x1 < p["sTop"] + SLIVER:
-                            W.flags.append(f"{sid}: laid inside the rake's cut of course {m}")
-                        nxt.append(q)
-                pieces = nxt
-            out += pieces
-        return [p for p in out if p["b"] > p["a"]]
+                    if sp != list(range(sp[0], sp[-1] + 1)) or sp[-1] != j - 1:
+                        raise Refused(f"{hid}/st-{k}: {f} stands in courses {sp} of {spans}, not the pair's top")
+                    ia = sp[0]
+                    sid = f"{hid}/st-{k}/{f}"
+                    hf = W.Lz[j] - W.Lz[ia]
+                    hi_f = D.longest(hf)
+                    if tie:
+                        nominal = (min(D.HEAD_TIE[0], hi_f), min(D.HEAD_TIE[1], hi_f))
+                    else:
+                        nominal = (min(D.HEAD_RUN[0], hi_f), min(D.HEAD_RUN[1], hi_f))
+                    av = avoid_f[f] if ia == i else (avoid + end_joints(f, ia - 1, e, s_end, lap_of(H[ia])) +
+                                                     end_joints(f, j, e, s_end, lap_of(H[j]) if j < nb else LAP_MIN) +
+                                                     [(abs(y - s_end), lp) for y, lp in cope_j[j - 1]])
+                    Lh = head_len(rng.randint(*nominal), nominal, (D.STONE[0], hi_f), rooms(f, sp, e), sid, av)
+                    prev_len[f] = Lh
+                    if not tie and Lh < D.HEAD_RUN[0]:
+                        W.flags.append(f"{sid}: a runner {Lh} mm, under the {D.HEAD_RUN[0]} a runner should be")
+                    x0, x1 = (s_end, s_end + Lh) if e == 0 else (s_end - Lh, s_end)
+                    placed.append(dict(id=sid, kind="head", role="tie" if tie else "runner", faces=[f], bands=sp,
+                                       outline=[[x0, W.Lz[ia]], [x1, W.Lz[ia]], [x1, W.Lz[j]], [x0, W.Lz[j]]]))
+                    for m in sp:
+                        carve(f, m, x0, x1, sid)
+    if clock is not None:
+        clock["features: heads"] = clock.get("features: heads", 0.0) + time.perf_counter() - t_heads
+
+    def split(pieces, x0, x1, sid):
+        """The pieces less a stone laid first over [x0, x1]."""
+        nxt = []
+        for p in pieces:
+            if x1 <= p["a"] or x0 >= p["b"]:
+                nxt.append(p)
+                continue
+            if x0 > p["a"]:
+                q = dict(p)
+                q["b"], q["r"] = x0, dict(type="stone", ref=sid)
+                nxt.append(q)
+            if x1 < p["b"]:
+                q = dict(p)
+                q["a"], q["l"] = x1, dict(type="stone", ref=sid)
+                nxt.append(q)
+        return nxt
+
+    # ---- each course's lengths less the heads: the pieces every later step lays into
+    segs = {f: [] for f in FACES}
+    for f in FACES:
+        for m in range(nb):
+            pieces = [dict(r) for r in regions[f][m]]
+            for x0, x1, sid in sorted(carved[f][m]):
+                pieces = split(pieces, x0, x1, sid)
+            segs[f].append(sorted([p for p in pieces if p["b"] > p["a"]], key=lambda d: d["a"]))
+
+    def fixed_of(f, m):
+        """Course m's joints fixed before the fill: its pieces' ends that are joints, and the ends of the stones laid
+        first in it that are not the wall's or a riser's open end."""
+        out = set()
+        outer = set()
+        for r_ in regions[f][m]:
+            if not is_joint(r_["l"]):
+                outer.add(r_["a"])
+            if not is_joint(r_["r"]):
+                outer.add(r_["b"])
+        for p in segs[f][m]:
+            if is_joint(p["l"]):
+                out.add(p["a"])
+            if is_joint(p["r"]):
+                out.add(p["b"])
+        for x0, x1, _ in carved[f][m]:
+            out |= {x for x in (x0, x1) if x not in outer}
+        return sorted(out)
+
+    # ---- the teeth: every course takes a tooth at each panel boundary and a straight joint at each 1961 edge,
+    # chosen from the line's features alone (before any panel's own stones), bottom up
+    t_teeth = time.perf_counter()
+    fixed = {f: [fixed_of(f, m) for m in range(nb)] for f in FACES}
+    cut_report = []
+    bl = sorted([(e_, "edge") for e_ in W.edges] + [(sb, "tooth") for sb in W.boundaries])
+
+    def tooth_cands(f, m, sb, kind, bi, p, below_extra=()):
+        """Course m's places for the tooth (or the edge's straight joint) at sb in its piece p, in the order they are
+        tried, each with whether it keeps its laps from the joints fixed above and below it (`below_extra`: joints
+        to be fixed below it, for the look ahead): the kind's teeth, on the course's side first, then the other's;
+        then wider, to TOOTH_WIDE; then nearer the boundary than a tooth, since SN10's laps outrank the kind's
+        tooth; and only then the same places without the laps."""
+        more = any(p["a"] < sb2 < p["b"] for sb2, _ in bl[bi + 1:])
+        if kind == "edge":
+            cands = [(sb, False)]
+        else:
+            ti = W.boundaries.index(sb)
+            par = HS.h(seed, lid, "tooth", ti) % 2
+            d0 = HS.between(HS.h(seed, lid, "tooth", ti, f, m), *D.TOOTH)
+            sg = 1 if (m + par) % 2 == 0 else -1
+            ds = [sg * d0] + [sg * d for d in range(D.TOOTH[0], D.TOOTH[1] + 1) if d != d0] + \
+                 [-sg * d for d in range(D.TOOTH[0], D.TOOTH[1] + 1)] + \
+                 [s_ * d for d in range(D.TOOTH[1] + 1, D.TOOTH_WIDE[1] + 1) for s_ in (sg, -sg)] + \
+                 [s_ * d for d in range(D.TOOTH[0] - 1, 0, -1) for s_ in (sg, -sg)]
+            cands = [(sb + d, True) for d in ds] + [(sb + d, False) for d in ds]
+        below_ = list(fixed[f][m - 1]) + list(below_extra) if m > 0 else []
+        for x, with_laps in cands:
+            if with_laps:
+                if any(abs(x - y) < lap_of(H[m]) for y in below_):
+                    continue
+                if m + 1 < nb and any(abs(x - y) < lap_of(H[m + 1]) for y in fixed[f][m + 1]):
+                    continue
+                if any(abs(x - y) < lp for y, lp in cope_j[m]):
+                    continue
+            cut = dict(type=kind, at=sb)
+            if x - p["a"] < D.STONE[0] or not layable(m, p["a"], x, p["l"], cut):
+                continue
+            if p["b"] - x < D.STONE[0] or (not more and not layable(m, x, p["b"], cut, p["r"])):
+                continue
+            yield x, with_laps
+
+    def next_ok(f, m, sb, bi, x, least):
+        """Whether the course over m still has a tooth at sb that keeps its laps, at least `least` off it, once m's
+        is at x (a course's tooth is chosen looking one course ahead, so it never leaves the next one boxed in
+        between its joints)."""
+        if m + 1 >= nb:
+            return True
+        q = next((q for q in segs[f][m + 1] if q["a"] < sb < q["b"]), None)
+        if q is None:
+            return True
+        return any(wl and abs(x2 - sb) >= least for x2, wl in tooth_cands(f, m + 1, sb, "tooth", bi, q, below_extra=[x]))
+
+    for f in FACES:
+        for m in range(nb):
+            pieces = segs[f][m]
+            for bi, (sb, kind) in enumerate(bl):
+                k_ = next((k for k, q in enumerate(pieces) if q["a"] < sb < q["b"]), None)
+                if k_ is None:
+                    continue
+                p = pieces[k_]
+                got = None
+                if kind == "tooth":     # the first tooth that keeps its laps and leaves the next course a whole
+                    for least in (D.TOOTH[0], 1):     # tooth, else one nearer the boundary
+                        got = next(((x, wl) for x, wl in tooth_cands(f, m, sb, kind, bi, p)
+                                    if wl and next_ok(f, m, sb, bi, x, least)), None)
+                        if got is not None:
+                            break
+                if got is None:
+                    got = next(tooth_cands(f, m, sb, kind, bi, p), None)
+                if got is None:
+                    what = f"the {reb['year']} edge" if kind == "edge" else "the boundary"
+                    ends = [(abs(y - sb), y, q_["type"]) for y, q_ in ((p["a"], p["l"]), (p["b"], p["r"]))
+                            if is_joint(q_) and abs(y - sb) < D.STONE[0]]
+                    if ends:
+                        d_, y, t_ = min(ends)
+                        cut_report.append(f"{lid} {f} course {m}: {what} at {sb} is the course's end against the "
+                                          f"{t_} at {y}, {d_} mm off it (no stone fits between them); the stone at "
+                                          f"that end is the panel's that holds its middle")
+                    else:
+                        cut_report.append(f"{lid} {f} course {m}: {what} at {sb} takes no "
+                                          f"{'joint' if kind == 'edge' else 'tooth'} (no place the fill can lay both "
+                                          "sides of); the stone across it is the panel's that holds its middle")
+                    continue
+                x, with_laps = got
+                if kind == "tooth" and not with_laps:
+                    cut_report.append(f"{lid} {f} course {m}: the tooth at {sb} is at {x}, within a lap of a fixed "
+                                      f"joint above or below (no tooth to {D.TOOTH_WIDE[1]} mm clears them)")
+                elif kind == "tooth" and abs(x - sb) > D.TOOTH[1]:
+                    W.flags.append(f"{lid} {f} course {m}: the tooth at {sb} is {abs(x - sb)} mm off it, over {D.TOOTH[1]}")
+                elif kind == "tooth" and abs(x - sb) < D.TOOTH[0]:
+                    W.flags.append(f"{lid} {f} course {m}: the tooth at {sb} is {abs(x - sb)} mm off it, under "
+                                   f"{D.TOOTH[0]}, to keep its laps")
+                left, right = dict(p), dict(p)
+                left["b"], left["r"] = x, dict(type=kind, at=sb)
+                right["a"], right["l"] = x, dict(type=kind, at=sb)
+                pieces[k_:k_ + 1] = [left, right]
+                fixed[f][m] = sorted(set(fixed[f][m] + [x]))
+            segs[f][m] = pieces
+    if clock is not None:
+        clock["fill: teeth"] = clock.get("fill: teeth", 0.0) + time.perf_counter() - t_teeth
 
     def where(face, m, s):
-        for p in free_runs(face, m):
+        for p in segs[face][m]:
             if p["a"] <= s < p["b"]:
                 return p
         return None
 
-    def laps_clear(m, ends, faces):
-        """Whether a stone laid first in course m keeps its free ends (those not against a run's end) a lap from the
-        ends of the stones and features laid first in the courses above and below it (the fill keeps its own joints
-        clear of both)."""
+    def carve_in(face, m, x0, x1, sid):
+        carve(face, m, x0, x1, sid)
+        segs[face][m] = sorted([p for p in split(segs[face][m], x0, x1, sid) if p["b"] > p["a"]],
+                               key=lambda d: d["a"])
+
+    def lap_blocks(m, faces):
+        """The joints a stone laid first in course m keeps its free ends a lap from, with each one's lap: those fixed
+        in the courses above and below it, and the copings' joints over it (the fill keeps its own joints clear of
+        all)."""
+        out = []
         for f in faces:
             for mm, lap in ((m - 1, lap_of(H[m])), (m + 1, lap_of(H[m + 1]) if m + 1 < nb else 0)):
                 if not 0 <= mm < nb:
                     continue
-                for p in free_runs(f, mm):
+                for p in segs[f][mm]:
                     for side, y in (("l", p["a"]), ("r", p["b"])):
-                        if p[side]["type"] in ("stone", "feature") and any(abs(x - y) < lap for x in ends):
-                            return False
-        return True
+                        if is_joint(p[side]):
+                            out.append((y, lap))
+                for x0, x1, _ in carved[f][mm]:
+                    out += [(x0, lap), (x1, lap)]
+        return out + list(cope_j[m])
+
+    def clear_of(x, blocks):
+        return all(abs(x - y) >= lp for y, lp in blocks)
+
+    def laps_clear(m, ends, faces):
+        blocks = lap_blocks(m, faces)
+        return all(clear_of(x, blocks) for x in ends)
+
+    def near_boundary(x0, x1):
+        """Whether a stone over [x0, x1] comes within FALL_CLEAR of a panel's boundary or a rebuilt panel's edge."""
+        return any(x0 - D.FALL_CLEAR < sb < x1 + D.FALL_CLEAR for sb, _ in bl)
 
     # ---- the fallen stones the facts give (the stair's face; a mortared stone holds)
-    reb = line.get("rebuilt")
+    t_falls = time.perf_counter()
     fall_report = []
     for fp in line.get("falls", []):
         s, z = fp["s"], fp["z"]
         if fp["held"]:
-            fall_report.append(dict(s=s, z=z, result="held (cement: the 1961 panel or the patched hole)"))
+            fall_report.append(dict(s=s, z=z, result="held (the facts: bedded in mortar, in the rebuilt panel or a "
+                                                     "patched hole)"))
             continue
         m = max([i for i in range(nb) if W.Lz[i] <= z], default=None)
         if m is None or m >= nb:
@@ -1158,218 +1434,155 @@ def lay_line(line, flight, steps_out, seed, reseed=None):
             fall_report.append(dict(s=s, z=z, result=f"in course {m} where a feature or head stands: not placed"))
             continue
         pn = W.panel_at(s)
-        rng = W.stream(pn["id"], "fallen", s // 1)  # (the fall point is a fact; its place keys only its own draw)
+        rng = W.stream(pn["id"], "fallen", s)  # (the fall point is a fact, an integer: it keys only its own draw)
         h = H[m]
-        L0 = rng.randint(STONE[0], longest(h))
+        L0 = rng.randint(*D.drawn(h))
         o0 = rng.randint(0, L0 - 1)
-        lo = p["a"]
-        if p["sTop"] is not None:
-            lo = max(p["a"] + STONE[0], p["sTop"] + SLIVER)
         best = None
-        for Lf in range(STONE[0], longest(h) + 1):
-            for x0 in range(max(s - Lf + 1, p["a"]), min(s, p["b"] - Lf) + 1):
-                x1 = x0 + Lf
-                if x0 == p["a"]:
-                    left_ok = p["sTop"] is None or x1 >= p["sTop"] + SLIVER     # (the cut stone itself may fall)
-                else:
-                    left_ok = x0 >= lo and fillable(x0 - p["a"], h)
-                if not left_ok or not fillable(p["b"] - x1, h):
-                    continue
-                if not laps_clear(m, [x for x, e in ((x0, p["a"]), (x1, p["b"])) if x != e], ["stair"]):
-                    continue
-                cost = abs(Lf - L0) + abs((s - x0) - o0)
-                if best is None or cost < best[0]:
-                    best = (cost, x0, x1)
+        # the stone over the fall point nearest its drawn length and offset, kept from the boundaries where it can be:
+        # the least cost over every length and place, the shortest length and then the lowest place on a tie. Each
+        # end's own conditions are found once per place; for each length the places are searched outward from the
+        # drawn offset, so the first clear place found is that length's least
+        blocks = lap_blocks(m, ["stair"])
+        okL = {x0: layable(m, p["a"], x0, p["l"], STONE_END) and (x0 == p["a"] or clear_of(x0, blocks))
+               for x0 in range(max(s - D.longest(h) + 1, p["a"]), min(s, p["b"] - D.STONE[0]) + 1)}
+        okR = {x1: layable(m, x1, p["b"], STONE_END, p["r"]) and (x1 == p["b"] or clear_of(x1, blocks))
+               for x1 in range(max(s + 1, p["a"] + D.STONE[0]), min(s + D.longest(h), p["b"]) + 1)}
+        t_x = s - o0
+        for Lf in range(D.STONE[0], D.longest(h) + 1):
+            if best is not None and abs(Lf - L0) > best[0]:
+                if Lf > L0:
+                    break
+                continue
+            lo_x, hi_x = max(s - Lf + 1, p["a"]), min(s, p["b"] - Lf)
+            if lo_x > hi_x:
+                continue
+            got = None
+            for d in range(0, max(abs(t_x - lo_x), abs(hi_x - t_x)) + 1):
+                if got is not None and got[0] < 100000:
+                    break
+                for x0 in ((t_x - d, t_x + d) if d else (t_x,)):
+                    if not lo_x <= x0 <= hi_x or not okL.get(x0) or not okR.get(x0 + Lf):
+                        continue
+                    c_ = 100000 * near_boundary(x0, x0 + Lf) + abs(Lf - L0) + d
+                    if got is None or c_ < got[0]:
+                        got = (c_, x0)
+            if got is not None and (best is None or got[0] < best[0]):
+                best = (got[0], got[1], got[1] + Lf)
         if best is None:
             fall_report.append(dict(s=s, z=z, result=f"no room for a fallen stone in course {m}: not placed"))
             continue
-        _, x0, x1 = best
+        cost, x0, x1 = best
+        if cost >= 100000:
+            W.flags.append(f"{lid}: the fallen stone at {s} lies within {D.FALL_CLEAR} mm of a panel's boundary")
         sid_tmp = f"{pn['id']}/stair/co-{m}/fallen-{len(fall_report)}"
         placed.append(dict(id=sid_tmp, kind="face", faces=["stair"], bands=[m], fallen=True, panel=pn["id"],
-                           outline=_band_outline(W, m, x0, x1, p), fact=dict(s=s, z=z)))
-        carve("stair", m, x0, x1, sid_tmp)
+                           outline=[[x0, W.Lz[m]], [x1, W.Lz[m]], [x1, W.Lz[m + 1]], [x0, W.Lz[m + 1]]],
+                           fact=dict(s=s, z=z)))
+        carve_in("stair", m, x0, x1, sid_tmp)
         fall_report.append(dict(s=s, z=z, result=f"fell: course {m}, {x0} to {x1}", id=sid_tmp))
+    if clock is not None:
+        clock["features: falls"] = clock.get("features: falls", 0.0) + time.perf_counter() - t_falls
 
     # ---- the through stones: about one a metre in each panel, in the course nearest the face's middle height
+    t_thr = time.perf_counter()
     through_report = []
     for pn in W.panels:
         lo, hi = pn["s"]
         rng = W.stream(pn["id"], "throughs")
-        xc = lo + rng.randint(*THROUGH_FIRST)
+        xc = lo + rng.randint(*D.THROUGH_FIRST)
         j = 0
-        while xc < hi - THROUGH_CLEAR:
-            Lt = rng.randint(*THROUGH)
-            x0 = xc - Lt // 2
-            x1 = x0 + Lt
+        while xc < hi - D.THROUGH_CLEAR:
+            Lt = rng.randint(*D.THROUGH)
             done = False
-            if x0 >= lo + THROUGH_CLEAR and x1 <= hi - THROUGH_CLEAR:
-                ff, cc = W.foot_at("stair", xc), W.ceiling_at(xc)
-                if cc is not None:
-                    zmid = (ff + cc) // 2
-                    order = sorted(range(nb), key=lambda m: (abs((W.Lz[m] + W.Lz[m + 1]) // 2 - zmid), m))[:4]
-                    for m in order:
-                        ok = False
-                        Lm = min(Lt, longest(H[m]))
-                        if Lm < THROUGH[0]:
+            ff, cc = W.foot_at("stair", xc), W.ceiling_at(xc)
+            if xc - Lt // 2 >= lo + D.THROUGH_CLEAR and xc - Lt // 2 + Lt <= hi - D.THROUGH_CLEAR and cc > ff:
+                zmid = (ff + cc) // 2
+                order = sorted(range(nb), key=lambda m: (abs((W.Lz[m] + W.Lz[m + 1]) // 2 - zmid), m))[:4]
+                for m in order:
+                    Lm = min(Lt, D.longest(H[m]))
+                    if Lm < D.THROUGH[0]:
+                        continue
+                    x0, x1 = xc - Lm // 2, xc - Lm // 2 + Lm
+                    ok = False
+                    for dx in sorted(range(-D.THROUGH_SHIFT, D.THROUGH_SHIFT + 1, SHIFT_STEP), key=lambda v: (abs(v), v)):
+                        if x0 + dx < lo + D.THROUGH_CLEAR or x1 + dx > hi - D.THROUGH_CLEAR:
                             continue
-                        x0, x1 = xc - Lm // 2, xc - Lm // 2 + Lm
-                        for dx in sorted(range(-150, 151, 5), key=lambda v: (abs(v), v)):
-                            ok = True
-                            for f in FACES:
-                                p = where(f, m, xc)
-                                if p is None or not (p["a"] <= x0 + dx and x1 + dx <= p["b"]) or \
-                                        not fillable(x0 + dx - p["a"], H[m]) or not fillable(p["b"] - x1 - dx, H[m]) or \
-                                        (p["sTop"] is not None and x0 + dx < p["sTop"] + SLIVER):
-                                    ok = False
-                                    break
-                            if ok and not laps_clear(m, [x0 + dx, x1 + dx], FACES):
+                        ok = True
+                        for f in FACES:
+                            p = where(f, m, xc + dx)
+                            if p is None or not (p["a"] <= x0 + dx and x1 + dx <= p["b"]) or \
+                                    not layable(m, p["a"], x0 + dx, p["l"], STONE_END) or \
+                                    not layable(m, x1 + dx, p["b"], STONE_END, p["r"]):
                                 ok = False
-                            if ok:
-                                x0, x1 = x0 + dx, x1 + dx
                                 break
+                        if ok and not laps_clear(m, [x0 + dx, x1 + dx], FACES):
+                            ok = False
                         if ok:
-                            sid = f"{pn['id']}/co-{m}/th-{j}"
-                            placed.append(dict(id=sid, kind="through", faces=list(FACES), bands=[m], panel=pn["id"],
-                                               outline=[[x0, W.Lz[m]], [x1, W.Lz[m]], [x1, W.Lz[m + 1]],
-                                                        [x0, W.Lz[m + 1]]]))
-                            for f in FACES:
-                                carve(f, m, x0, x1, sid)
-                            j += 1
-                            done = True
+                            x0, x1 = x0 + dx, x1 + dx
                             break
+                    if ok:
+                        sid = f"{pn['id']}/co-{m}/th-{j}"
+                        placed.append(dict(id=sid, kind="through", faces=list(FACES), bands=[m], panel=pn["id"],
+                                           outline=[[x0, W.Lz[m]], [x1, W.Lz[m]], [x1, W.Lz[m + 1]],
+                                                    [x0, W.Lz[m + 1]]]))
+                        for f in FACES:
+                            carve_in(f, m, x0, x1, sid)
+                        j += 1
+                        done = True
+                        break
             if not done:
                 through_report.append(dict(panel=pn["id"], at=xc, result="no course with room on both faces"))
-            xc += rng.randint(*THROUGH_EVERY)
-
-    # ---- the free runs, and the joints every course must take: the panels' teeth and the 1961 edges
-    runs = {f: [free_runs(f, m) for m in range(nb)] for f in FACES}
-    fixed = {f: [[] for _ in range(nb)] for f in FACES}      # vertical joints fixed before the fill, per course
-
-    def is_joint(end):
-        return end["type"] not in ("end", "rake")
-
-    for f in FACES:
-        for m in range(nb):
-            for p in runs[f][m]:
-                if is_joint(p["l"]):
-                    fixed[f][m].append(p["a"])
-                if is_joint(p["r"]):
-                    fixed[f][m].append(p["b"])
-            # (a stone laid first against a feature leaves no run between them, but their joint is fixed all the same)
-            outer = set()
-            for r_ in regions[f][m]:
-                if r_["l"]["type"] in ("end", "rake"):
-                    outer.add(r_["a"])
-                if r_["r"]["type"] in ("end", "rake"):
-                    outer.add(r_["b"])
-            for x0, x1, _ in carved[f][m]:
-                fixed[f][m] += [x for x in (x0, x1) if x not in outer]
-            fixed[f][m] = sorted(set(fixed[f][m]))
-    cut_report = []
-
-    def feasible(a, b, m, sTop):
-        """Whether the fill can lay [a, b] in course m in whole stones, its free joints clear of the boundaries."""
-        first = (max(STONE[0], sTop + SLIVER - a), longest(H[m])) if sTop is not None else None
-        return fill_run(a, b, STONE[0], longest(H[m]), clear, lambda i: STONE[0], first) is not None
-
-    # each course, left to right: a 1961 edge takes a straight joint where it can, a feature's boundary a tooth, each
-    # only where the fill can lay both sides
-    cuts = {f: [[] for _ in range(nb)] for f in FACES}
-    segs = {f: [[] for _ in range(nb)] for f in FACES}
-    bl = sorted([(e_, "edge") for e_ in W.edges] + [(sb, "tooth") for sb in W.boundaries])
-    for f in FACES:
-        for m in range(nb):
-            pieces = sorted([dict(p) for p in runs[f][m]], key=lambda d: d["a"])
-            for bi, (sb, kind) in enumerate(bl):
-                k_ = next((k for k, q in enumerate(pieces) if q["a"] < sb < q["b"]), None)
-                if k_ is None:
-                    continue
-                p = pieces[k_]
-                more = any(p["a"] < sb2 < p["b"] for sb2, _ in bl[bi + 1:])
-                if kind == "edge":
-                    cands = [sb]
-                else:
-                    ti = W.boundaries.index(sb)
-                    par = HS.h(seed, lid, "tooth", ti) % 2
-                    d0 = HS.between(HS.h(seed, lid, "tooth", ti, f, m), *TOOTH)
-                    sg = 1 if (m + par) % 2 == 0 else -1
-                    cands = [sg * d0] + [sg * d for d in range(TOOTH[0], TOOTH[1] + 1) if d != d0] + \
-                            [-sg * d for d in range(TOOTH[0], TOOTH[1] + 1)]
-                    cands = [sb + d for d in cands]
-                got = None
-                for x in cands:
-                    if kind == "tooth":
-                        if m > 0 and any(abs(x - y) < lap_of(H[m]) for y in fixed[f][m - 1] + cuts[f][m - 1]):
-                            continue
-                        if m + 1 < nb and any(abs(x - y) < lap_of(H[m + 1]) for y in fixed[f][m + 1]):
-                            continue
-                    if not feasible(p["a"], x, m, p["sTop"]):
-                        continue
-                    if (more and p["b"] - x < STONE[0]) or (not more and not feasible(x, p["b"], m, None)):
-                        continue
-                    got = x
-                    break
-                if got is None:
-                    what = "the 1961 edge" if kind == "edge" else "the boundary"
-                    cut_report.append(f"{lid} {f} course {m}: {what} at {sb} takes no {'joint' if kind == 'edge' else 'tooth'}"
-                                      f" (no place the fill can lay both sides of, clear of the joints above and below); "
-                                      f"the stone across it is the panel's that holds its middle")
-                    continue
-                left, right = dict(p), dict(p)
-                left["b"], left["r"] = got, dict(type=kind, ref=None)
-                right["a"], right["l"], right["sTop"] = got, dict(type=kind, ref=None), None
-                pieces[k_:k_ + 1] = [left, right]
-                cuts[f][m].append(got)
-                fixed[f][m].append(got)
-            segs[f][m] = pieces
+            xc += rng.randint(*D.THROUGH_EVERY)
+    if clock is not None:
+        clock["features: throughs"] = clock.get("features: throughs", 0.0) + time.perf_counter() - t_thr
 
     # ---- the fill: each course from the foot, each free length by choosing its stones' lengths
+    t_fill = time.perf_counter()
+    fixed = {f: [fixed_of(f, m) for m in range(nb)] for f in FACES}
     stones = list(placed)
     joints = {f: [[] for _ in range(nb)] for f in FACES}
     fill_report = []
+    hidden_runs = []
+    pfill = clock.setdefault("panel fill", {}) if clock is not None else None
+
     for f in FACES:
         for m in range(nb):
             h = H[m]
             lapm = lap_of(h)
-            win = []
-            if m > 0:
-                win += [(y - lapm, y + lapm) for y in joints[f][m - 1]]
+            # every joint in the course below: its fill's, and the ends of the stones laid first in it that meet
+            # another such stone (a fallen stone against a head)
+            below = [(y - lapm, y + lapm) for y in sorted(set(joints[f][m - 1]) | set(fixed[f][m - 1]))] if m > 0 else []
+            above = []
             if m + 1 < nb:
                 lu = lap_of(H[m + 1])
-                win += [(y - lu, y + lu) for y in fixed[f][m + 1]]
+                above = [(y - lu, y + lu) for y in fixed[f][m + 1]]
+            above += [(y - lp, y + lp) for y, lp in cope_j[m]]
+            win = below + above
             ordinal = {}
-            for p in sorted(segs[f][m], key=lambda d: d["a"]):
+            for p in segs[f][m]:
                 a, b = p["a"], p["b"]
-                pn = W.panel_at((a + b) // 2)
+                pn = owner_of(p)
+                if not laid.get((pn["id"], f), True):
+                    hidden_runs.append(dict(face=f, course=m, a=a, b=b, panel=pn["id"]))
+                    continue
+                t0 = time.perf_counter()
                 o = ordinal.get(pn["id"], 0)
                 ordinal[pn["id"]] = o + 1
                 rng = W.stream(pn["id"], f, "co", m, "lay", o)
-                lmax = longest(h)
-                first = None
-                if p["sTop"] is not None:
-                    first = (max(STONE[0], p["sTop"] + SLIVER - a), lmax)
-                if p["l"]["type"] == "ground-under-rake":
-                    pass
-                last = None
-                if pn["work"] == "1961" and reb:
-                    ls = LONG_SHORT[m % 2]
-                    if p["l"]["type"] == "edge" and first is None:
-                        first = (ls[0], min(ls[1], lmax)) if ls[0] <= lmax else (min(ls[0], lmax), lmax)
-                    if p["r"]["type"] == "edge":
-                        ls2 = LONG_SHORT[(m + 1) % 2]
-                        last = (ls2[0], min(ls2[1], lmax)) if ls2[0] <= lmax else (min(ls2[0], lmax), lmax)
-                tgt = lambda i, rng=rng, lmax=lmax: rng.randint(STONE[0], lmax)  # noqa: E731
-                cut = (max(STONE[0], p["sTop"] + SLIVER - a), lmax) if p["sTop"] is not None else None
-                below = [(y - lapm, y + lapm) for y in joints[f][m - 1]] if m > 0 else []
+                lmax = D.longest(h)
+                dlo, dhi = D.drawn(h)
+                first, last = ends_rule(m, p)
+                tgt = lambda i, rng=rng: rng.randint(dlo, dhi)  # noqa: E731
                 J, how = None, None
                 for how_, lmin_, win_, first_, last_ in (
-                        ("bond", STONE[0], win + clear, first, last),
-                        ("bond, the 1961 long-and-short end dropped", STONE[0], win + clear, cut, None),
-                        ("bond below only", STONE[0], below + clear, cut, None),
-                        ("no bond", STONE[0], clear, cut, None),
-                        ("stones under 180 mm, bonded", SHORT, win + clear, cut, None),
-                        ("stones under 180 mm", SHORT, clear, cut, None)):
-                    if how_ == "bond, the 1961 long-and-short end dropped" and first == cut and last is None:
+                        ("bond", D.STONE[0], win, first, last),
+                        ("bond, the end stones' rule dropped", D.STONE[0], win, None, None),
+                        ("bond below only", D.STONE[0], below, None, None),
+                        ("no bond", D.STONE[0], [], None, None),
+                        (f"stones under {D.STONE[0]} mm, bonded", D.SHORT, win, None, None),
+                        (f"stones under {D.STONE[0]} mm", D.SHORT, [], None, None)):
+                    if how_ == "bond, the end stones' rule dropped" and first is None and last is None:
                         continue
                     J = fill_run(a, b, lmin_, lmax, win_, tgt, first_, last_)
                     if J is not None:
@@ -1383,20 +1596,23 @@ def lay_line(line, flight, steps_out, seed, reseed=None):
                     how = "one piece"
                 if how != "bond":
                     fill_report.append(dict(line=lid, face=f, course=m, a=a, b=b, h=h, how=how, l=p["l"]["type"],
-                                            r=p["r"]["type"], sTop=p["sTop"]))
-                for k, (x0, x1) in enumerate(zip(J, J[1:])):
-                    q = dict(p)
-                    q["a"], q["b"] = x0, x1
-                    q["sTop"] = p["sTop"] if k == 0 else None
-                    st = dict(id=None, kind="face", faces=[f], bands=[m], panel=pn["id"], outline=_band_outline(W, m, x0, x1, q),
-                              seg=(p["a"], p["b"]))
+                                            r=p["r"]["type"], panel=pn["id"]))
+                for x0, x1 in zip(J, J[1:]):
+                    st = dict(id=None, kind="face", faces=[f], bands=[m], panel=pn["id"],
+                              outline=[[x0, W.Lz[m]], [x1, W.Lz[m]], [x1, W.Lz[m + 1]], [x0, W.Lz[m + 1]]])
                     if how != "bond":
                         st["relaxed"] = how
                     stones.append(st)
-                joints[f][m] += [x for x in J[1:-1]] + ([a] if is_joint(p["l"]) else []) + ([b] if is_joint(p["r"]) else [])
-            joints[f][m] = sorted(set(joints[f][m]))
+                joints[f][m] += [x for x in J[1:-1]] + ([a] if is_joint(p["l"]) else []) + \
+                    ([b] if is_joint(p["r"]) else [])
+                if pfill is not None:
+                    pfill[pn["id"]] = pfill.get(pn["id"], 0.0) + time.perf_counter() - t0
+            joints[f][m] = sorted(set(joints[f][m]) | set(fixed[f][m]))
+    if clock is not None:
+        clock["fill: courses"] = clock.get("fill: courses", 0.0) + time.perf_counter() - t_fill
 
     # ---- the fall goes on: a stone whose bed lay all but wholly over a fallen one falls too
+    t_ids = time.perf_counter()
     changed = True
     while changed:
         changed = False
@@ -1404,12 +1620,12 @@ def lay_line(line, flight, steps_out, seed, reseed=None):
         for st in stones:
             if st.get("fallen") or st["kind"] != "face" or "stair" not in st["faces"] or st.get("panel") is None:
                 continue
-            if W.panel_at(_xs(st)[0])["work"] == "1961":
+            if W.panel_at(_xs(st)[0])["work"] != "built":
                 continue
             m = st["bands"][0]
             x0, x1 = _xs(st)
             lost = sum(max(0, min(x1, _xs(g)[1]) - max(x0, _xs(g)[0])) for g in gone if g["bands"][-1] == m - 1)
-            if lost * 10 > 9 * (x1 - x0):
+            if lost * FALLS_WHEN[1] > FALLS_WHEN[0] * (x1 - x0):
                 st["fallen"] = True
                 st["fallenBy"] = "its bed lost"
                 changed = True
@@ -1427,14 +1643,14 @@ def lay_line(line, flight, steps_out, seed, reseed=None):
             if fr.get("id") == old and old is not None:
                 fr["id"] = st["id"]
     cop = {}
-    for sl in W.slabs:
+    for sl in sorted(W.slabs, key=lambda d: d["outline"][0][0]):
         c = cop.get(sl["panel"], 0)
         cop[sl["panel"]] = c + 1
-        stones.append(dict(id=f"{sl['panel']}/cp-{c}", kind="coping", faces=list(FACES), bands=[], panel=sl["panel"],
-                           outline=sl["outline"], rake=sl["rake"]))
+        stones.append(dict(id=f"{sl['panel']}/cp-{c}", kind="coping", faces=list(FACES), bands=[sl["bedIndex"]],
+                           panel=sl["panel"], outline=sl["outline"], run=sl["run"]))
     for ft in W.features:
         stones.append(dict(id=ft["id"], kind=ft["kind"], faces=list(FACES), bands=_bands_of(W, ft["outline"]),
-                           outline=ft["outline"], lane=ft.get("lane", False)))
+                           outline=ft["outline"], cap=ft.get("cap", False)))
     # the step ends, as the wall's stair face sees them
     cells = []
     for st in steps_out["steps"]:
@@ -1444,32 +1660,34 @@ def lay_line(line, flight, steps_out, seed, reseed=None):
             cells.append(dict(id=step_end_id(steps_out, st["id"], W.side, y0), outline=[[y0, st["z"][0]], [y1, st["z"][0]],
                                                                                       [y1, st["z"][1]],
                                                                                       [y0, st["z"][1]]]))
-    for st in stones:
-        st.pop("seg", None)
-        if "panel" in st and st["panel"] is None:
-            st.pop("panel")
+    hidden = sorted(set((pid, f) for (pid, f), v in laid.items() if not v and pid.startswith(lid + "/")))
     out = dict(
-        id=lid, flight=flight["id"], side=W.side, s=[W.s0, W.s1],
-        regions={f: [[dict(a=p["a"], b=p["b"], l=p["l"]["type"], r=p["r"]["type"], sTop=p["sTop"]) for p in regions[f][m]]
+        id=lid, flight=flight["id"], side=W.side, s=[W.s0, W.s1], goings=goings,
+        regions={f: [[dict(a=p["a"], b=p["b"], l=p["l"]["type"], r=p["r"]["type"]) for p in regions[f][m]]
                      for m in range(nb)] for f in FACES},
-        features=[dict(id=ft["id"], kind=ft["kind"], at=ft.get("at"), mid=ft.get("mid", False), lane=ft.get("lane", False),
-                       fromStop=ft.get("fromStop"), bed=ft["bed"]) for ft in W.features],
+        features=[dict(id=ft["id"], kind=ft["kind"], at=ft.get("at"), bed=ft["bed"], head=ft.get("head"),
+                       cap=ft.get("cap", False)) for ft in W.features],
+        risers=W.risers,
+        copingRuns=W.cruns,
+        idealBed=[list(p) for p in W.idealBed],
         pitch=flight["pitch"],
         lines=[dict(z=z, kind=k_, src=s_) for z, k_, s_ in zip(W.Lz, W.Lkind, W.Lsrc)],
         panels=W.panels, edges=W.edges, boundaries=W.boundaries,
         footing={f: [[a, b, z] for a, b, z, _ in W.foot[f]] for f in FACES},
         ground=line["ground"],
-        ceiling=[dict(kind=c["kind"], s=c["s"], owner=c["owner"],
-                      **({"z": c["z"]} if c["kind"] == "level" else
-                         {"rake": [c["R"].sA, c["R"].CA, c["R"].sB, c["R"].CB, c["R"].tv, c["R"].dx, c["R"].t]}))
-                 for c in W.ceiling],
+        ceiling=[dict(s=c["s"], z=c["z"], top=c["top"], owner=c["owner"], kind=c["kind"]) for c in W.ceiling],
         stones=sorted(stones, key=lambda s: s["id"]),
         cells=cells,
+        hidden=[list(x) for x in hidden],
+        hiddenRuns=hidden_runs,
         joints={f: [list(js) for js in joints[f]] for f in FACES},
-        segments={f: [[dict(a=p["a"], b=p["b"], l=p["l"], r=p["r"], sTop=p["sTop"]) for p in sorted(segs[f][m], key=lambda d: d["a"])]
-                      for m in range(nb)] for f in FACES},
+        copingJoints={str(m): [list(v) for v in cope_j[m]] for m in range(nb) if cope_j[m]},
+        segments={f: [[dict(a=p["a"], b=p["b"], l=p["l"], r=p["r"]) for p in segs[f][m]] for m in range(nb)]
+                  for f in FACES},
         report=dict(falls=fall_report, throughs=through_report, cuts=cut_report, fills=fill_report, flags=W.flags),
     )
+    if clock is not None:
+        clock["fill: falls on, ids, output"] = clock.get("fill: falls on, ids, output", 0.0) + time.perf_counter() - t_ids
     return out
 
 
@@ -1484,33 +1702,42 @@ def _bands_of(W, poly):
     return [m for m in range(len(W.Lz) - 1) if W.Lz[m] < hi and W.Lz[m + 1] > lo]
 
 
-def _band_outline(W, m, x0, x1, p):
-    """A course stone's face: a rectangle, or under the rake (its run's first stone) the trapezoid the cut leaves."""
-    L, L2 = W.Lz[m], W.Lz[m + 1]
-    if p.get("sTop") is not None and x0 == p["a"] and p["l"]["type"] == "rake":
-        return [[x0, L], [x1, L], [x1, L2], [p["sTop"], L2]]
-    if p.get("sTop") is not None and x0 == p["a"]:
-        # (a run that starts part-high under the rake: a plumb left side, then the rake)
-        zl = W.ceiling_at(x0)
-        return [[x0, L], [x1, L], [x1, L2], [p["sTop"], L2], [x0, zl]]
-    return [[x0, L], [x1, L], [x1, L2], [x0, L2]]
-
-
 # ---------------------------------------------------------------------------------------------------------------
 # The whole: the stair's steps and its walls
 
-def lay(facts, reseed=None):
+def laid_table(facts):
+    """(panel id, face) -> laid, from the facts' visibility (walls.visibility.panels); None when the facts have none,
+    so every face is laid."""
+    vis = facts["walls"].get("visibility")
+    if not vis:
+        return None
+    return {(pid, f): bool(v[f]["laid"]) for pid, v in vis["panels"].items() for f in FACES}
+
+
+def lay(facts, data, reseed=None, goings=None, clock=None):
+    """The stair's steps and its walls from the facts and the data (load_data: the wall kind's params and the pack's
+    walling table), by the workings the facts name. `goings` overrides the kind's laid goings (the variant's)."""
     seed = facts["worldSeed"]
     slab = facts["sources"]["stepStone"]
+    Ds = rules_for(facts, data)
+    goings = Ds.GOINGS_LAID if goings is None else goings
     width = None
     steps = []
-    for fl in facts["stair"]["flights"]:
-        width = fl["width"]
-        steps.append(lay_steps(fl, seed, slab, fl["width"]))
+    with _Tick(clock, "steps"):
+        for fl in facts["stair"]["flights"]:
+            width = fl["width"]
+            steps.append(lay_steps(fl, seed, slab, fl["width"], Ds))
+    laid = laid_table(facts)
     walls = []
     for ln in facts["walls"]["lines"]:
         fl = facts["stair"]["flights"][ln["flight"]]
-        walls.append(lay_line(ln, fl, steps[ln["flight"]], seed, reseed))
+        D = rules_for(facts, data, ln)
+        w = lay_line(ln, fl, steps[ln["flight"]], seed, D, reseed, goings, laid, clock)
+        if laid is not None:
+            missing = [pn["id"] for pn in w["panels"] if (pn["id"], "stair") not in laid]
+            if missing:
+                raise Refused(f"the facts' visibility has no entry for {', '.join(missing)}")
+        walls.append(w)
     return dict(what="R1's layout (port step 2b): the gully's cheek walls as elevations and its steps in plan, integer "
                      "mm, laid by blender/generators/masonry.py from reviews/lt1/port/2b/r1/facts.json",
-                worldSeed=seed, width=width, steps=steps, walls=walls)
+                worldSeed=seed, width=width, goings=goings, steps=steps, walls=walls)

@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 2,
+  "kind": "wall",
+  "version": 1,
+  "describes": "A wall of stone beside a stair, a lane or a yard: its lines, panels, courses, stones, copings and heads, laid as elevations by a mason's rules before any mesh (port step 2b; reviews/lt1/port/2b/design.md, SN2, SN9, SN10). On paper at R1: every stage is planned, and R1 lays the gully's cheek walls from this file's plan params through tools/r1_elevations.py (blender/generators/masonry.py) until the stage is wired at step 2b's re-baseline. This file holds the wall's structure (its parapet, its stepped top, its heads, its panels' teeth, its footings, where the steps' ends sit in it); the stone's sizes and how each working laid it are the pack's walling table (packs/<pack>/walling.json), by the working a wall's facts name; the rules of any wall (level beds, SN10's bond, SN2's sliver and acute limits) are code's. The levels, budgets, slots and layers are provisional: R1 proposes the wall's L0 and L1 budgets from the faces that are seen (reviews/lt1/port/2b/r1/report.md), and the levels below them stand at the stair's ratios until step 5.",
+  "recordPrefixes": ["wl"],
+  "frame": "Each wall line is unrolled as an elevation: s along its flight from the flight's foot point (mm), z up (mm, absolute, the pack's frame). A line beside a flight is fl-<n>/<l or r>, left or right looking up the flight; its faces are the stair's and the bank's.",
+  "eventKinds": ["built", "rebuilt", "fell", "repointed"],
+  "roles": ["body", "pointing", "repair"],
+  "stages": {
+    "facts": { "status": "planned", "python": null, "csharp": null, "reads": [], "params": {} },
+    "plan": {
+      "status": "planned", "python": null, "csharp": null, "reads": ["walling"],
+      "params": {
+        "parapetMm": 900,
+        "copingGoings": [1, 2],
+        "copingGoingsLaid": 2,
+        "headCourses": 2,
+        "topstoneSquare": [[3, 4], [4, 3]],
+        "riserFirstPerHeight": 2,
+        "freeCourseStepMm": 10,
+        "footingTreadMm": 300,
+        "toothMm": [50, 90],
+        "toothWideMm": [50, 128],
+        "throughClearMm": 300,
+        "throughShiftMm": 150,
+        "steps": { "tailMm": 150, "faceGapMm": 6, "firstBedMm": 200, "restCutMm": 300 }
+      }
+    },
+    "life": { "status": "planned", "python": null, "csharp": null, "reads": ["date", "materials"], "params": {} },
+    "geometry": { "status": "planned", "python": null, "csharp": null, "reads": ["materials", "walling"], "params": {} },
+    "bake": { "status": "planned", "python": null, "csharp": null, "reads": [], "params": {} },
+    "export": { "status": "planned", "python": null, "csharp": null, "reads": [], "params": {} },
+    "checks": { "status": "planned", "python": null, "csharp": null, "reads": ["walling"], "params": {} }
+  },
+  "slots": [
+    { "rule": "wall-panel", "type": "group", "roles": {} },
+    { "rule": "wall-course", "type": "group", "roles": {} },
+    { "rule": "wall-stone", "type": "socket", "roles": { "body": ["stone"], "pointing": ["repair"], "repair": ["stone"] } },
+    { "rule": "wall-hearting", "type": "socket", "roles": { "body": ["stone"] } },
+    { "rule": "wall-backing", "type": "socket", "roles": { "body": ["ground"] } },
+    { "rule": "wall-coping", "type": "socket", "roles": { "body": ["stone"], "pointing": ["repair"], "repair": ["stone"] } }
+  ],
+  "levels": {
+    "l0": { "errorMm": 1, "triangles": 110000, "mergeUnit": "ch" },
+    "l1": { "errorMm": 4, "triangles": 45000, "mergeUnit": "ch" },
+    "l2": { "errorMm": 10, "triangles": 9000, "mergeUnit": "ce" },
+    "l3": { "errorMm": 25, "triangles": 1800, "mergeUnit": "ce" },
+    "l4": { "errorMm": 100, "triangles": 180, "mergeUnit": "bk" }
+  },
+  "budgets": {
+    "view": "street-stop",
+    "shadingOverFlatUs": { "stone": 600 },
+    "provisional": true
+  },
+  "motion": [{ "element": "body", "class": "still", "deform": "none" }],
+  "affordances": [
+    { "name": "lean", "walkable": false, "rule": "wall-coping" },
+    { "name": "sit", "walkable": false, "rule": "wall-coping" }
+  ],
+  "collision": { "roles": ["full", "proxy", "none"], "proxyLevel": "l1" },
+  "fields": { "reads": [], "writes": [] },
+  "layers": ["lichen", "moss"]
+}
