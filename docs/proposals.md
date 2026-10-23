@@ -185,17 +185,19 @@ Proposals wait here for the next milestone's fresh reviewer, who sees the plan a
 ## Q19. Materials by family, member and finish, stone first
 
 - **Evidence:**
-  - `slate.json` describes phyllite under the name of its split stone. Mica schist and gneiss are in the town's ground (`docs/research/land-rock-and-water.md`) and have no member, and the natural rock has no material.
-  - "Working" means a construction in `walling.json` (`dry-split-1874`: its member, mortar and year) and a finish in SN6 and in `CLAUDE.md`. "Kind" means a type of thing in `kinds/`, a rock in `docs/stone.md` (Kind and finish), and a class of information in `CLAUDE.md`.
-  - Parts name members (`"materials": ["slate"]`), so a new stone has to be added by hand to every part that could use it.
-  - The history law's constants are slate's until the material records hold them (`docs/building-blocks.md`).
-- **Change:** data and schemas only, in the shape of `docs/taxonomy.md`:
-  - `materials/<family>.json` at the repo root, beside `kinds/`: what a family answers for every member, its finishes and what each needs, its shader family, and its answer to each of the five changes. Stone first.
-  - `packs/<pack>/materials/<family>/<member>.json` for members. `slate.json` becomes `stone/phyllite.json` with the finishes natural and split, and `granite.json` becomes `stone/granite.json`. Mica schist and gneiss join from their research when the land (1d) or a wall needs them.
-  - `material.schema.json` gains `family`, `finishes`, the properties parts ask for (how it parts: along beds or in blocks) and the four links. A member's missing answer is read from its family; a family with a missing answer fails validation.
-  - `part.schema.json`'s `materials` becomes `takes`: a family and the properties the part needs. Naming members stays allowed, to narrow it.
-  - `walling.json`'s workings become constructions (LF3), each naming its member and finish. `schemas/naming.md` names materials `<family>/<member>`, and `docs/stone.md`'s "Kind and finish" becomes "Member and finish".
-  - It lands between R2a and R2b, proved unchanged as the data move of 23 October was: the six FBX hashes and `stones.py check`. Opus designs the schemas; Sonnet moves the files behind the hash check.
+  - `slate.json` describes phyllite under the name of its split stone. Mica schist, gneiss and erratic granite are in the town's ground (`docs/research/land-rock-and-water.md`) and have no member. Natural rock has no material, and `rubble` (`docs/systems.md`), `pine-board`, `crown-glass`, `plate-glass` and `oil-paint` (the parts) have no member file.
+  - "Working" means a construction in `walling.json` and `walling.schema.json` (`dry-split-1874`: its member, mortar and year), and a finish in SN1, SN2, SN6, `kinds/wall.json`, the part definitions' params, `docs/systems.md` and `CLAUDE.md`. "Kind" means a type of thing in `kinds/`, a rock in `docs/stone.md` (Kind and finish), and a class of information in `CLAUDE.md`.
+  - Parts name members (`"materials": ["slate"]`), so a new stone has to be added by hand to every part that could use it. The code defaults to slate (`stair_facts.py`, `stone.py`, `wall.py`).
+  - Material numbers sit outside the members: slate's history constants in `schemas/layers.json`, the pack's growth rates in `GrowthPack.cs`.
+- **Change**, in the shape of `docs/taxonomy.md` (In the data):
+  - `materials/<family>.json` at the repo root, beside `kinds/`: the family's properties, finishes and what each needs, its shader family, how each of the five changes acts, and the numbers every member must state. Stone first.
+  - Members stay flat in `packs/<pack>/materials/<member>.json`, named by a bare word as `schemas/naming.md` has it, each with a `family` field. `slate.json` becomes `phyllite.json` with the finishes natural, rough and split. Mica schist, gneiss and erratic granite join from their research when the land (1d) or a wall needs them.
+  - `material.schema.json` gains `family`, `source`, `finishes`, the family's properties and the links `yields` and `madeOf`. A member missing a number its family requires fails validation.
+  - `part.schema.json`'s `materials` becomes `takes`, a family and the properties the part needs, plus `finish`. The construction or the record names the member.
+  - Slate's history constants move from `schemas/layers.json` into the stone members; `layers.json` keeps each law's form. The growth rates move from `GrowthPack.cs` into the pack.
+  - `walling.json`'s workings become constructions (LF3), each naming its member and finish; "working" leaves SN1, SN2, SN6 and the files above. `docs/stone.md`'s "Kind and finish" becomes "Member and finish".
+  - The code follows: `blender/parts/stone/slate/stones.py`, `stair_facts.py`, `stone.py`, `wall.py` and `tools/validate_record.py` read the family and the member, and the slate defaults go. The part code under `blender/parts/stone/slate/` keeps its path until the stone's port.
+  - It lands between R2a and R2b, proved unchanged as the data move of 23 October was: the six FBX hashes and `stones.py check`. Opus, since code changes.
 - **Standing cost:** none in the always-read files.
 - **What would change our minds:** the second family (wood, with the houses) not fitting the shape without a third level or a special case.
 
@@ -203,13 +205,14 @@ Proposals wait here for the next milestone's fresh reviewer, who sees the plan a
 
 - **Evidence:**
   - `docs/` holds about 108,000 words in 22 pages. The building system's design pages alone (`building-blocks.md`, `living-fabric.md`, `stone.md`, `systems.md`, `foundations.md`, `trees.md`, `building-system.md`, `upkeep.md`, `nature.md`) hold about 34,600.
-  - Numbers live in two homes. SN4's chamfers of 10 to 12 mm are in `docs/stone.md` and in each stone part's `chamferMm`, where the wall stone's is 12 to 12. The history law's constants are in `docs/building-blocks.md` and in no material file.
-  - Design pages carry their history. `docs/building-blocks.md` refers to review files, rounds and port steps 44 times, and its step names need a key ("3.0 is the port's step 0b"). `kinds/wall.json`'s `describes` holds dates and budget figures.
-  - The docs-trim test (`reviews/docs-trim/score.md`): a closed-book reader of the In shorts alone answered 23 of 30 hinge questions as the full docs do, and 29 once the In shorts were fixed. Nuance survives a cut when the cut is tested.
+  - Numbers live in two homes. SN4's chamfers of 10 to 12 mm are in `docs/stone.md` and in each stone part's `chamferMm`, where the wall stone's is 12 to 12. Slate's history constants are in `docs/building-blocks.md` and in `schemas/layers.json`.
+  - Design pages carry their history. `docs/building-blocks.md` uses round and step names that need a key ("3.0 is the port's step 0b"), and `kinds/wall.json`'s `describes` holds dates and budget figures.
+  - `docs/systems.md`'s materials table and `docs/taxonomy.md`'s families overlap; one of them must hold the state.
+  - The docs-trim test (`reviews/docs-trim/score.md`): a fresh reader with `CLAUDE.md`, `NOW.md`, the skills and the design pages' In shorts, closed book, answered 23 of 30 hinge questions as the full docs do. After the In shorts were fixed, the same reader answered 6 of the 7 misses, for 29 against a target of 27.
 - **Change:**
-  - Each fact has one home by its type (`docs/taxonomy.md`, TX7). Design pages hold no dates, quotes, review rounds or step codes; those belong in `docs/experiments.md`. A page names a data field and leaves its value to the data.
-  - `tools/check_docs.py`, run by `tools/check.py`. In design pages it flags dates, quotes, review-round and step codes, paths that don't exist, and numbers that also appear in a data file. It fails when a material, part, kind or layer in the data is missing from `docs/taxonomy.md`, or one named there doesn't exist.
-  - Pages are cleaned one at a time when their system is next worked, `docs/stone.md` and `docs/building-blocks.md` first, since the stone is open. Each cleaned page passes the docs-trim test (a fresh reader, 30 hinge questions, closed book) at 29 of 30 or better before it merges.
+  - Each fact has one home by its type (`docs/taxonomy.md`, TX7). Design pages hold no dates, quotes, review rounds or step codes; those belong in `docs/experiments.md`. A page names a data field and leaves its value to the data. State lives in `docs/systems.md` only.
+  - `tools/check_docs.py`, joining `tools/check.py` when it lands. In design pages it flags dates, quotes, review-round and step codes, and paths that don't exist, and it warns on a number with a unit that also sits in a data field the page names. It fails when a material family named in `docs/taxonomy.md` has no file, or a family file is missing from the page.
+  - Pages are cleaned one at a time when their system is next worked, `docs/stone.md` and `docs/building-blocks.md` first, since the stone is open. Each cleaned page passes the docs-trim test (a fresh reader, 30 hinge questions, closed book) at 27 of 30 or better on first asking before it merges.
   - How-to steps (adding a member, a part or a kind) move into the skills, which load when the job needs them.
 - **Standing cost:** the check, and 30 questions written once for each cleaned page. `CLAUDE.md`'s docs table points to the map instead of listing every page.
 - **What would change our minds:** a cleaned page failing the question test twice. That nuance needs the body, so it stays there and is linked.
