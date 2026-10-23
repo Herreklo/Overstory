@@ -1,6 +1,6 @@
 {
  "rule": "SN8's share over a level: every stone of every flight's ordinary steps, as R1 laid them (masonry.lay at the pinned commit), each at its level's far edge (L0 8 m, L1 20 m) in the judging view (face-on, 20 degrees of top), its front-facing triangles pooled; every other check on each stone",
- "commit": "f84dd4295776ec7208856db495c4e40789503b0b",
+ "commit": "95dc4723c228cf4cf86fe03d2c5b647f6caffb22",
  "pinned": {
   "blender/generators/masonry.py": "63b068cac977",
   "kinds/wall.json": "d45dfcfbcf1b",
@@ -8,8 +8,8 @@
   "reviews/lt1/port/2b/r1/facts.json": "7a9f01049e35"
  },
  "code": {
-  "blender/parts/stone/slate/stones.py": "c31f9f80d513",
-  "blender/parts/stone/slate/block.py": "88dca59d5be1",
+  "blender/parts/stone/slate/stones.py": "eed59ec142c2",
+  "blender/parts/stone/slate/block.py": "d8e7d4368eca",
   "blender/generators/wear.py": "7885ed2f649e",
   "blender/resolver/hashing.py": "3fe924f914f7",
   "packs/stavanger-1989/parts/stone/step.json": "ce4df368c509",
@@ -237,7 +237,7 @@
   "pool L0: 1689 of 12298 under 2 px (13.7%), median 63.1 px"
  ],
  "shareOk": false,
- "shareRule": "SN8 sets its 10% over a level's front-facing triangles at its far edge, the fills included: the gully's whole level (walls, copings, fills and steps), which R2b lays and R3 measures. The steps alone are reported here against it, and the export is not held on it; every stone's other checks hold it (ok)",
+ "shareRule": "SN8 sets its 10% over a level's front-facing triangles at its far edge, the fills included: the gully's whole level (walls, copings, fills and steps), which R2b lays and R3 measures. The steps alone are reported here against it; the export holds the gully's pieces pooled over every part's pool (level_gate), and every stone's other checks (ok)",
  "unbuilt": [],
  "stones": [
   {

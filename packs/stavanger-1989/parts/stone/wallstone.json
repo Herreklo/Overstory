@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 2,
+  "part": "stone/wallstone",
+  "version": 1,
+  "describes": "A face stone of a dry wall of split slate (port step 2b, R2a; the design's SN2, SN4, SN5 and SN10): a rigid convex block on its natural bed, its top and bed the laminae's planes, its face split across them at the wall's batter in one plane or two (a convex bulge whose edges lie on the wall's plane), its ends split; set into its cell from R1's laying by a seeded half joint on each side. Only what is seen is drawn: the face, and of its top, bed and ends a band behind the wall's plane as deep as a joint is seen. L0 chamfers the face's arrises with its top and its ends; its bed's stays square (SN7: that chamfer would face down, a dark line beneath the edge), and the arrises that run back into the wall lie in its joints and stay square.",
+  "madeAs": "fitted",
+  "era": { "first": 1874, "last": null },
+  "sizes": { "w": [108, 846], "h": [108, 256], "d": [210, 210] },
+  "fits": ["fitted"],
+  "pivot": "bed-front-left",
+  "sockets": [],
+  "removalMark": null,
+  "levels": {
+    "l0": { "errorMm": 1, "triangles": 40, "shadow": "none", "collision": "proxy" },
+    "l1": { "errorMm": 11, "triangles": 16, "shadow": "self", "collision": "proxy" },
+    "l2": { "errorMm": 25, "triangles": 0, "shadow": "proxy", "collision": "proxy" },
+    "l3": { "errorMm": 100, "triangles": 0, "shadow": "proxy", "collision": "proxy" },
+    "l4": { "errorMm": 250, "triangles": 0, "shadow": "proxy", "collision": "proxy" }
+  },
+  "motion": [{ "element": "stone", "class": "still", "deform": "none" }],
+  "intrinsicChannels": ["face-kind", "edge-distance"],
+  "marks": [{ "name": "face-patch", "smallestFeatureMm": 2 }],
+  "shaderFamily": "stone",
+  "materials": ["slate"],
+  "function": { "python": "blender/parts/stone/slate/stones.py:wallstone", "csharp": null },
+  "lifecycle": { "state": "draft" },
+  "note": "Sizes from R1's walling table (packs/stavanger-1989/walling.json, the dry-split-1874 working) and its laying: w a cell's length (shortMm 120 where a run leaves no whole stone, to stoneMm's 850) less its two half joints (2 to 6 mm each), h a course (courseMm 120 to 260) less its two; d half the wall's top (wall.py's 420 mm), a hidden back that changes nothing drawn (only a band about 70 mm deep behind the face is). Levels: the design's SN8 budgets per piece (40 and 16); L1 is the same planes without L0's chamfers, so its error is the chamfers' (their sagitta, 8.5 mm on an arris at a 12 mm leg; up to 9.2 mm measured at the top corners, where two meet: 11, as the step's, whose corners meet three), against kinds/wall.json's 4 mm for the walls' L1 (blender.md, the conflicts); L2 to L4 are the chunk's (the port's step 5). The part's own numbers (chamfer, facets, the bed's chamfer, the band's margin, patch sets) are stones.py's PARAMS until this schema takes a params object (reviews/lt1/port/2b/r2a/stones/blender.md)."
+}

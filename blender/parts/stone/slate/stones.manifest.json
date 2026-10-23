@@ -1,4 +1,70 @@
 {
+ "coping.fbx": {
+  "tool": "mesh_hash 1",
+  "hash": "ebcb6e640f9ba4ff",
+  "triangles": 62,
+  "meshes": {
+   "coping_L0": {
+    "hash": "0c2d88ea6846d6f5",
+    "vertices": 108,
+    "corners": 108,
+    "triangles": 36,
+    "channels": {
+     "edges": "0312f0b5527562b4",
+     "indices": "3212e5db923a1b4f",
+     "normals": "50e27bd2c2d02265",
+     "other": "cb7eb6a0428adf70",
+     "positions": "4740dad0ab921f44",
+     "uv0": "d0fc63995551d5d1",
+     "uv1": "7037ac06e6bce988",
+     "uv2": "d208c14d432a34eb",
+     "uv3": "3bd5d3e3b3042acc",
+     "uv4": "a346eb070ca661c0",
+     "uv5": "800843267fcd0c94",
+     "uv6": "a31894d301dd267e",
+     "uv7": "aa629b92bb0acb33",
+     "transform": "e3b0c44298fc1c14"
+    }
+   },
+   "coping_L1": {
+    "hash": "ad51a7b958987e15",
+    "vertices": 78,
+    "corners": 78,
+    "triangles": 26,
+    "channels": {
+     "edges": "704f264a9121a26f",
+     "indices": "3f1e0f6726fad388",
+     "normals": "e45ea261c9f47fd7",
+     "other": "cb7eb6a0428adf70",
+     "positions": "1f9dcba0648c3f13",
+     "uv0": "ceef2ef2056bdffb",
+     "uv1": "d3eb5a6cb4437d12",
+     "uv2": "af4a93cc26dde038",
+     "uv3": "0fa0b4887e1f9f91",
+     "uv4": "d6393be3c345550b",
+     "uv5": "d2927061f5a2818d",
+     "uv6": "f60cce54ea6fc918",
+     "uv7": "67d2ca2d14838f3c",
+     "transform": "e3b0c44298fc1c14"
+    }
+   }
+  },
+  "levels": {
+   "coping_L0": {
+    "triangles": 36,
+    "partVertices": 23,
+    "indexedVertices": 108,
+    "fbxVertices": 108
+   },
+   "coping_L1": {
+    "triangles": 26,
+    "partVertices": 18,
+    "indexedVertices": 75,
+    "fbxVertices": 78
+   }
+  },
+  "levelsNote": "partVertices: the part's own mesh, positions shared where corners are one; indexedVertices: corners identical in every channel counted once (an exact indexed mesh, as step 5's chunks; the edge distances are each triangle's own); fbxVertices: the FBX's, three a triangle, none shared (Unity's FBX import merges near-equal corners that share one)"
+ },
  "step.fbx": {
   "tool": "mesh_hash 1",
   "hash": "04615df7f74b3455",
@@ -61,6 +127,72 @@
     "partVertices": 45,
     "indexedVertices": 204,
     "fbxVertices": 207
+   }
+  },
+  "levelsNote": "partVertices: the part's own mesh, positions shared where corners are one; indexedVertices: corners identical in every channel counted once (an exact indexed mesh, as step 5's chunks; the edge distances are each triangle's own); fbxVertices: the FBX's, three a triangle, none shared (Unity's FBX import merges near-equal corners that share one)"
+ },
+ "wallstone.fbx": {
+  "tool": "mesh_hash 1",
+  "hash": "c980b31eeaae3fd7",
+  "triangles": 28,
+  "meshes": {
+   "wallstone_L0": {
+    "hash": "7c88626f8e5703f2",
+    "vertices": 54,
+    "corners": 54,
+    "triangles": 18,
+    "channels": {
+     "edges": "0dd10518218e2bd0",
+     "indices": "2a171ea55f1575cc",
+     "normals": "9308e1794bc98abc",
+     "other": "cb7eb6a0428adf70",
+     "positions": "859c7f7eb06e78c1",
+     "uv0": "983cd86d7eb3bb57",
+     "uv1": "24157631aafddd87",
+     "uv2": "c0e3dc3b2bad629c",
+     "uv3": "2dd93d66607a00a2",
+     "uv4": "f72a4a2a89cb7a72",
+     "uv5": "dc5a224b6cea4c5a",
+     "uv6": "a130ce05da3f3e1a",
+     "uv7": "c934fabff509e612",
+     "transform": "e3b0c44298fc1c14"
+    }
+   },
+   "wallstone_L1": {
+    "hash": "ea39a0df8b3fa0d4",
+    "vertices": 30,
+    "corners": 30,
+    "triangles": 10,
+    "channels": {
+     "edges": "2c365981b684206d",
+     "indices": "6ac800db21671051",
+     "normals": "a4c0b413cbed6b02",
+     "other": "cb7eb6a0428adf70",
+     "positions": "d118a8b02f072600",
+     "uv0": "c2517bdec624375e",
+     "uv1": "2feb05f16c74ac8a",
+     "uv2": "be521f4ebb0f38b5",
+     "uv3": "f76f18e2548526a5",
+     "uv4": "f5b3b7d576bce7fd",
+     "uv5": "64fce06987f76165",
+     "uv6": "d6d9af51582a0621",
+     "uv7": "2f8fe2885e74e20e",
+     "transform": "e3b0c44298fc1c14"
+    }
+   }
+  },
+  "levels": {
+   "wallstone_L0": {
+    "triangles": 18,
+    "partVertices": 12,
+    "indexedVertices": 54,
+    "fbxVertices": 54
+   },
+   "wallstone_L1": {
+    "triangles": 10,
+    "partVertices": 8,
+    "indexedVertices": 29,
+    "fbxVertices": 30
    }
   },
   "levelsNote": "partVertices: the part's own mesh, positions shared where corners are one; indexedVertices: corners identical in every channel counted once (an exact indexed mesh, as step 5's chunks; the edge distances are each triangle's own); fbxVertices: the FBX's, three a triangle, none shared (Unity's FBX import merges near-equal corners that share one)"

@@ -41,6 +41,7 @@ import math
 import os
 import subprocess
 import sys
+from fractions import Fraction
 
 import numpy as np
 
@@ -248,6 +249,70 @@ class Data:
         names = list(self.patches["patches"])
         return names.index(name)
 
+    # R1's walling: a wall stone's working, and the fields the table has no key for yet
+    def r1_facts(self):
+        if getattr(self, "_r1", None) is None:
+            self._r1 = self.at_commit(R1_FACTS)
+        return self._r1
+
+    def panel_working(self, wall_id, panel):
+        """The working a panel of a wall was laid in, and the year: R1's facts' (the wall's working where the panel is
+        as built; the line's rebuilt working and year where the panel is its rebuild), as the pinned commit holds
+        them."""
+        W = self.r1_facts()["walls"]
+        line = next(ln for ln in W["lines"] if ln["id"] == wall_id)
+        if panel["work"] == "built":
+            return (self.note("wallWorking", W["working"], f"{R1_FACTS}: walls.working ({panel['id']} as built)"),
+                    self.note("wallLaid", W["built"], f"{R1_FACTS}: walls.built"))
+        rb = line["rebuilt"]
+        return (self.note("wallWorking", rb["working"], f"{R1_FACTS}: {wall_id} rebuilt.working ({panel['id']})"),
+                self.note("wallLaid", rb["year"], f"{R1_FACTS}: {wall_id} rebuilt.year"))
+
+    def wall_side(self, wall_id):
+        """+1 for a wall on the stair's right looking up it, -1 on its left (R1's facts: the line's side)."""
+        line = next(ln for ln in self.r1_facts()["walls"]["lines"] if ln["id"] == wall_id)
+        return line["side"]
+
+    def working(self, name):
+        if not self.walling or name not in self.walling["workings"]:
+            raise ValueError(f"no working {name!r} in {PACK}/walling.json at {self.commit[:7]}")
+        return self.walling["workings"][name]
+
+    def walling_value(self, name, key, default=None, why=""):
+        """One value of a working of R1's walling table, as the pinned commit holds it: the table's where it has the key,
+        else the documented default (a key proposed for the table: blender.md), noted with where it came from."""
+        w = self.working(name)
+        if key in w:
+            return self.note(f"{name}.{key}", w[key], f"{PACK}/walling.json: workings.{name}.{key}")
+        if default is None:
+            raise ValueError(f"{PACK}/walling.json: workings.{name} has no {key}")
+        return self.note(f"{name}.{key}", default, f"default in stones.py (proposed {PACK}/walling.json: "
+                                                   f"workings.{name}.{key}): {why}")
+
+    def wall_joint(self, name):
+        """[least, most] mm of a joint between two stones of a wall (the faces' and the copings')."""
+        return list(self.walling_value(name, "jointMm", [4, 12], "SN5's wall joints, 4 to 12 mm (the table holds the "
+                                                                 "steps' only, [4, 10])"))
+
+    def batter(self, name):
+        """How far the face leans back for its height, as whole numbers [back, up]."""
+        return list(self.walling_value(name, "batterPerHeight", [1, 6], "blender/generators/wall.py's BATTER, 1/6 "
+                                                                         "(SN2: about 1/6)"))
+
+    def top_thick(self, name):
+        """The wall's thickness at its top, under the coping (mm)."""
+        return self.walling_value(name, "topThickMm", 420, "blender/generators/wall.py's DEPTH")
+
+    def cope_over(self, name):
+        """How much wider a standing wall's coping is than the wall's top (mm), its overhangs on both faces together."""
+        return self.walling_value(name, "copeOverMm", 50, "blender/generators/wall.py (a standing wall's coping "
+                                                          "DEPTH + 0.05 wide)")
+
+    def cope_proud(self, name):
+        """[least, most] mm a coping's front stands proud of the face under it (the rest of copeOver at its back)."""
+        return list(self.walling_value(name, "copeProudMm", [15, 35], "blender/generators/wall.py (the front 15 to "
+                                                                       "35 mm proud)"))
+
 
 # The part's own numbers, by part: the defaults of the proposed `params` object (blender.md: the schema has no field;
 # the definition's params win once the schema takes them). Each is read only through param().
@@ -272,6 +337,37 @@ PARAMS = {
                                         # rest, elsewhere on the stone)
         "patches": {"top": ["bed-0", "bed-1"], "split": ["split-0", "split-1", "split-2", "split-3"],
                     "bed": ["bed-0", "bed-1"]},
+    },
+    "wallstone": {
+        "chamferMm": [12, 12],          # SN4's 10 to 12 at its top: SN4 asks at least 2 px at 8 m, and the face's end
+                                        # chamfers are seen about 50 degrees off their normal in the judging view, where
+                                        # a 10 mm leg is 1.9 px and 11 mm leaves a two-facet face's lower piece under 2
+                                        # (every sixth pool stone: 19.9%, 1.2% and 0% thin at 10, 11 and 12; blender.md)
+        "chamferMeasure": "leg",
+        "arrisMaxDeg": 160,
+        "faceFacets": [[1, 3], [2, 1]],  # SN4: most faces one plane, one in four broken once; L1's 16 triangles allow
+                                        # no third (its ends would take four each)
+        "facetStepMm": [15, 25],        # SN4: stepped at least 15 mm where laminae broke
+        "facetLeastMm": 50,             # SN9: no face under 50 mm
+        "bedChamfer": False,            # the bed's arrises square: a chamfer there faces down, the dark line beneath
+                                        # an edge SN7 forbids, and SN8's thin piece at 8 m (blender.md, the bed arris;
+                                        # True is the arm for R2a's A/B)
+        "bandMarginPerMille": 100,      # the drawn band clears SN8's 2 px by this in the gate's view (the top of a
+                                        # tall stone sits a little above the view's target, seen a little flatter)
+        "patches": {"split": ["split-0", "split-1", "split-2", "split-3"], "bed": ["bed-0", "bed-1"]},
+    },
+    "coping": {
+        "chamferMm": [10, 12],
+        "chamferMeasure": "leg",
+        "arrisMaxDeg": 160,
+        "bedChamfer": False,            # as the wall stone's (SN7)
+        "uprightChamfer": False,        # the ends' upright arrises square: each meets two of the top's at a corner, and
+                                        # three chamfers meet in a point whose tips are under SN8's 2 px at 8 m whatever
+                                        # the triangulation; two meet in a mitre (blender.md, the corners)
+        "chipChamfer": False,           # a knock is a break after the dressing: sharp, through the top's chamfers
+        "chipPerMille": 250,            # an open end's top corners knocked (SN4: chips at a coping's ends)
+        "chipLegMm": [50, 80],          # along and back; down no more than half the coping (SN9: no sliver)
+        "patches": {"split": ["split-0", "split-1", "split-2", "split-3"], "bed": ["bed-0", "bed-1"]},
     },
 }
 
@@ -930,12 +1026,14 @@ def chip_least(b, a, dz):
     return b * hi / 1000.0, a * hi / 1000.0, hi - 1000
 
 
-def corner_chip(name, side, L, H, legs, centre, **info):
+def corner_chip(name, side, L, H, legs, centre, back=None, **info):
     """A chip off a top front corner (SN4: a planar cut at a corner of the mass): the plane through the points legs
-    (m) along the top's front edge, back along the end's top and down the front's end."""
+    (m) along the top's front edge, back along the end's top and down the front's end. With back (m), the top back
+    corner instead, the back face at y = back: legs along its top edge, forward along the end's top, down its end."""
     b, a, dz = legs
     xe, sx = (0.0, 1.0) if side == "l" else (L, -1.0)
-    pts = [np.array([xe + sx * b, 0.0, H]), np.array([xe, a, H]), np.array([xe, 0.0, H - dz])]
+    y0, sy = (0.0, 1.0) if back is None else (back, -1.0)
+    pts = [np.array([xe + sx * b, y0, H]), np.array([xe, y0 + sy * a, H]), np.array([xe, y0, H - dz])]
     return through(name, pts, centre, kind=2, legsMm=[round(v * 1000) for v in legs], **info)
 
 
@@ -963,18 +1061,22 @@ def face_frames(o, defn, data):
         name = names[r.randint(0, len(names) - 1)]
         return name, data.slice_of(name), r
 
+    # a face's role: the step's top is its tread (kind 0); a level face a part names a bed (a wall stone's top and bed,
+    # a coping's top and bed: the laminae's own planes) is kind 3, in plan, as the tread; every other face is split
+    roles = o.get("faceRoles", {})
     for p in o["block"] + o["chips"]:
         if p["role"] != "exposed" or p["face"] in out:
             continue
         face = p["face"]
-        if face == "top":
-            name, sl, r = pick(face, sets["top"])
+        role = roles.get(face, "tread" if face == "top" else "split")
+        if role in ("tread", "bed"):
+            name, sl, r = pick(face, sets["top" if role == "tread" else "bed"])
             turn = r.randint(0, 359)
             th = math.radians(turn)
             u = np.array([math.cos(th), math.sin(th), 0.0])
             v = np.array([-math.sin(th), math.cos(th), 0.0])
-            out[face] = dict(kind=0, patch=name, slice=sl, o=np.zeros(3), u=u, v=v, mode=0, plan=True,
-                             offset=(r.randint(0, 1023), r.randint(0, 1023)), turnDeg=turn)
+            out[face] = dict(kind=0 if role == "tread" else 3, patch=name, slice=sl, o=np.zeros(3), u=u, v=v, mode=0,
+                             plan=True, offset=(r.randint(0, 1023), r.randint(0, 1023)), turnDeg=turn)
         else:
             name, sl, r = pick(face, sets["split"])
             base = next(q for q in o["block"] + o["chips"] if q["name"] == face)
@@ -1103,7 +1205,8 @@ def channels(o, m):
     seed = HS.unit(HS.h(facts["worldSeed"], facts["id"], "seed"))
     years = facts["years"]
     wear = o["wear"]
-    polished = {"top"} | {p["face"] for p, _s, _a in o["chamfers"] if set(p["chamfer"]) == {"top", "riser"}}
+    polished = set() if wear is None else \
+        {"top"} | {p["face"] for p, _s, _a in o["chamfers"] if set(p["chamfer"]) == {"top", "riser"}}
     for t in range(nt):
         pl = m["plane"][t]
         face = m["face"][t]
@@ -1273,6 +1376,449 @@ def step(facts, defn=None, data=None):
     return dict(outline=o, L0=L0, L1=L1, commit=data.commit)
 
 
+# -- the wall stone and the coping: their facts from R1's laying ------------------------------------------------------
+#
+# R1 lays a wall's stones as cells in the wall's elevation (s along the wall line, up the stair; z up), each from joint
+# centre to joint centre: walling.json has no wall joint, so every stone is set in from its cell on each side it shares
+# with a laid neighbour by a seeded half joint of its own (half of SN5's 4 to 12 mm, whole mm), and a joint is the sum
+# of its two stones' halves, within SN5 whatever either draws. A stone's frame is right-handed and its own: x along its
+# face from its left end as one looking at that face sees it, y back from the face, z up from its bed; so x runs up the
+# wall line (+s) on a right-hand wall's bank face and a left-hand wall's stair face, and down it (-s) on the others
+# (alongS in the facts: the placement is a turn, never a mirror).
+
+def _box(s):
+    xs = [p[0] for p in s["outline"]]
+    zs = [p[1] for p in s["outline"]]
+    return min(xs), max(xs), min(zs), max(zs)
+
+
+def _cell(s):
+    """A cell's length along the wall and its height (mm)."""
+    x0, x1, z0, z1 = _box(s)
+    return x1 - x0, z1 - z0
+
+
+def _median(v):
+    v = sorted(v)
+    n = len(v)
+    return Fraction(v[n // 2]) if n % 2 else Fraction(v[n // 2 - 1] + v[n // 2], 2)
+
+
+def _iqr(v):
+    v = sorted(v)
+    n = len(v)
+    return _median(v[(n + 1) // 2:]) - _median(v[:n // 2])
+
+
+def along_s(side, face):
+    """+1 where a stone's x runs up the wall line (s), -1 where down it: x = y cross z, y back from the face."""
+    into = side if face == "stair" else -side        # y, across the stair in the stair's x: +1 to its right
+    return -into
+
+
+def wall_sides(wall, stone, face):
+    """The kinds of the stones whose cells share a stretch of each side of a face stone's cell on its face, by the
+    cell's sides in s and z: {lo, hi, b, t}."""
+    x0, x1, z0, z1 = _box(stone)
+    out = {"lo": [], "hi": [], "b": [], "t": []}
+    for o in wall["stones"]:
+        if o is stone or face not in o["faces"]:
+            continue
+        a0, a1, b0, b1 = _box(o)
+        if a1 == x0 and min(z1, b1) > max(z0, b0):
+            out["lo"].append(o["kind"])
+        if a0 == x1 and min(z1, b1) > max(z0, b0):
+            out["hi"].append(o["kind"])
+        if b1 == z0 and min(x1, a1) > max(x0, a0):
+            out["b"].append(o["kind"])
+        if b0 == z1 and min(x1, a1) > max(x0, a0):
+            out["t"].append(o["kind"])
+    return out
+
+
+def face_pool(data):
+    """The face stones the wall stone part makes: every face stone of a panel as built whose cell has a face or
+    through stone against all four of its sides on its face (the walls' ordinary stones; one at a panel's edge, a
+    head, a step's end, the ground or a coping is R2b's). [(wall, stone, face, sides)], by stone id."""
+    out = []
+    for w in data.laying()["walls"]:
+        built = {p["id"] for p in w["panels"] if p["work"] == "built"}
+        for s in w["stones"]:
+            if s["kind"] != "face" or s.get("panel") not in built:
+                continue
+            face = s["faces"][0]
+            sides = wall_sides(w, s, face)
+            if all(v and all(k in ("face", "through") for k in v) for v in sides.values()):
+                out.append((w, s, face, sides))
+    return sorted(out, key=lambda t: t[1]["id"])
+
+
+def wallstone_facts(data, wall, stone, face, sides):
+    """A face stone's facts from R1's laying: its cell, what lies against each side (a joint: the part sets itself in
+    by half of one), its working and when it was laid (its panel's), and the frame's way along the wall."""
+    x0, x1, z0, z1 = _box(stone)
+    if len(stone["outline"]) != 4:
+        raise Failed(f"{stone['id']}: a cell of {len(stone['outline'])} corners; the part makes rectangles")
+    panel = next(p for p in wall["panels"] if p["id"] == stone["panel"])
+    working, laid = data.panel_working(wall["id"], panel)
+    a = along_s(data.wall_side(wall["id"]), face)
+    lo, hi = ("l", "r") if a > 0 else ("r", "l")
+    kinds = {lo: sides["lo"], hi: sides["hi"], "b": sides["b"], "t": sides["t"]}
+    return dict(id=stone["id"], worldSeed=data.world_seed(), part="wallstone", working=working, face=face,
+                cellMm=[x1 - x0, z1 - z0], cellS=[x0, x1], cellZ=[z0, z1], alongS=a,
+                sides={k: "joint" for k in ("l", "r", "b", "t")}, against={k: sorted(v) for k, v in kinds.items()},
+                laid=laid, years=data.show_year() - laid)
+
+
+def specimen_wallstone(data):
+    """The wall stone judged alone, chosen by a rule from R1's laying: of the face stones the part makes (face_pool:
+    in a panel as built, a face or through stone against all four sides), the one whose cell lies nearest the pool's
+    median length and height, each difference over its interquartile range (exact fractions), the lowest id on a
+    tie."""
+    pool = face_pool(data)
+    Ls = [_box(s)[1] - _box(s)[0] for _w, s, _f, _sd in pool]
+    Hs = [_box(s)[3] - _box(s)[2] for _w, s, _f, _sd in pool]
+    mL, mH, qL, qH = _median(Ls), _median(Hs), _iqr(Ls), _iqr(Hs)
+    best = min(range(len(pool)), key=lambda i: (abs(Ls[i] - mL) / qL + abs(Hs[i] - mH) / qH, pool[i][1]["id"]))
+    w, s, face, sides = pool[best]
+    facts = wallstone_facts(data, w, s, face, sides)
+    rule = dict(pool=len(pool), poolRule=face_pool.__doc__.split(": ", 1)[1].split(" [(")[0],
+                medianMm=[float(mL), float(mH)], iqrMm=[float(qL), float(qH)], cellMm=facts["cellMm"],
+                stone=s["id"], wall=w["id"], face=face, against=facts["against"],
+                laid=dict(source=data.src["laying"]["source"], stone=s))
+    data.note("specimen", s["id"], "stones.py specimen_wallstone: the rule in its docstring")
+    return facts, rule
+
+
+def coping_pool(data):
+    """Every coping R1 lays: [(wall, stone)], by stone id."""
+    return sorted(((w, s) for w in data.laying()["walls"] for s in w["stones"] if s["kind"] == "coping"),
+                  key=lambda t: t[1]["id"])
+
+
+def coping_facts(data, wall, stone):
+    """A coping's facts from R1's laying: its cell (its run's thickness), its ends (a joint where R1 lays a stone
+    against it, its run's copingJoints over the course under it; else open, a run's end over its riser, SN9's square
+    step onto the run below), its faces (both long sides seen on a standing wall), its working and when it was laid."""
+    x0, x1, z0, z1 = _box(stone)
+    run = wall["copingRuns"][stone["run"]]
+    joints = {j[0] for j in wall["copingJoints"].get(str(run["bedIndex"] - 1), [])}
+    panel = next(p for p in wall["panels"] if p["id"] == stone["panel"])
+    working, laid = data.panel_working(wall["id"], panel)
+    a = along_s(data.wall_side(wall["id"]), "stair")       # its front is its stair side
+    at = {"lo": x0, "hi": x1}
+    lo, hi = ("l", "r") if a > 0 else ("r", "l")
+    ends = {lo: "joint" if at["lo"] in joints else "open", hi: "joint" if at["hi"] in joints else "open"}
+    return dict(id=stone["id"], worldSeed=data.world_seed(), part="coping", working=working,
+                cellMm=[x1 - x0, z1 - z0], cellS=[x0, x1], cellZ=[z0, z1], alongS=a, run=stone["run"],
+                runMm=dict(s=run["s"], bed=run["bed"], t=run["t"], top=run["top"]), ends=dict(l=ends["l"], r=ends["r"]),
+                back="exposed" if "bank" in stone["faces"] else "hidden", faces=list(stone["faces"]),
+                laid=laid, years=data.show_year() - laid)
+
+
+def specimen_coping(data):
+    """The coping judged alone, by the same rule as the wall stone's: of the copings of the panels as built, the one
+    whose length and thickness lie nearest the medians, each difference over its interquartile range, the lowest id
+    on a tie."""
+    pool = []
+    for w, s in coping_pool(data):
+        built = {p["id"] for p in w["panels"] if p["work"] == "built"}
+        if s.get("panel") in built:
+            pool.append((w, s))
+    Ls = [_box(s)[1] - _box(s)[0] for _w, s in pool]
+    Ts = [_box(s)[3] - _box(s)[2] for _w, s in pool]
+    mL, mT, qL, qT = _median(Ls), _median(Ts), _iqr(Ls), _iqr(Ts)
+    best = min(range(len(pool)), key=lambda i: (abs(Ls[i] - mL) / qL + abs(Ts[i] - mT) / qT, pool[i][1]["id"]))
+    w, s = pool[best]
+    facts = coping_facts(data, w, s)
+    rule = dict(pool=len(pool), medianMm=[float(mL), float(mT)], iqrMm=[float(qL), float(qT)],
+                cellMm=facts["cellMm"], stone=s["id"], wall=w["id"], ends=facts["ends"], run=facts["runMm"],
+                laid=dict(source=data.src["laying"]["source"], stone=s))
+    data.note("specimen", s["id"], "stones.py specimen_coping: the rule in its docstring")
+    return facts, rule
+
+
+# -- the wall stone ----------------------------------------------------------------------------------------------------
+
+def set_in(facts, data, sides):
+    """Each side's half joint (whole mm, half of SN5's range each way), drawn for every side in a fixed order so a
+    side's draw never depends on another's kind; 0 where the side is not a joint."""
+    jlo, jhi = data.wall_joint(facts["working"])
+    rs = HS.Stream(facts["worldSeed"], facts["id"], "joints")
+    drawn = {k: rs.randint(-(-jlo // 2), jhi // 2) for k in sides}
+    return {k: (drawn[k] if facts_side(facts, k) == "joint" else 0) for k in sides}
+
+
+def facts_side(facts, k):
+    if k in ("l", "r") and "ends" in facts:
+        return facts["ends"][k]
+    if k == "b" and facts["part"] == "coping":
+        return "joint"
+    return facts["sides"][k]
+
+
+def bulge(H, b, ridges, steps):
+    """A split face's facets as a convex bulge on the wall's plane (SN2's batter b, SN4's facets): the face's profile
+    y(z) = max of its facets' lines, each facet below a ridge set back by its step past the line of the facet above
+    (SN4: stepped where laminae broke), both its edges on the wall's plane y = b z (so the joints above and below it
+    are the wall's, and a fill pressed in no deeper than the joint is wide meets it: SN5). ridges (m) from the top
+    down, steps (m) each ridge's. Returns [(slope, intercept)] from the top facet down, and how far proud of the
+    wall's plane each ridge stands (m)."""
+    zs = [H] + list(ridges) + [0.0]
+    delta = [s / (zs[i + 1] - zs[i + 2]) for i, s in enumerate(steps)]
+    k_bot = b - sum(d * (H - r) / H for d, r in zip(delta, ridges))
+    lines = []
+    for j in range(len(ridges) + 1):
+        lines.append((k_bot + sum(delta[j:]), -sum(d * r for d, r in zip(delta[j:], ridges[j:]))))
+    proud = [b * r - max(k * r + e for k, e in lines) for r in ridges]
+    return lines, proud
+
+
+def outline_wallstone(facts, defn=None, data=None):
+    """A wall face stone (SN2, SN4, SN5): a rigid convex block on its natural bed, its top and bed the laminae's planes
+    (bed faces, level), its face split across them at the batter, of one facet or two in a convex bulge whose edges lie
+    on the wall's plane; its ends split. Set into its cell by its half joints, seeded within SN5's range unless they
+    would draw it longer than SN10's 4.5 times its height (then the least above and below, the most at the ends;
+    a cell at R1's limit cannot be drawn within SN10 by any joint: blender.md, the conflicts). What is drawn: the face, and of its
+    top, bed and ends only a band behind the wall's plane, measured level, as deep as a joint is seen (the widest, its
+    fill no deeper than it is wide, and SN9's contact) and never less than two pixels at a level's far edge seen at the
+    gate's 20 degrees past the chamfer, with a margin (L1's sets it: 77 mm); behind the band the stone is in the wall,
+    never seen, and its back (half the wall's top, hidden) changes nothing drawn. L0 chamfers the face's arrises with
+    the top and the ends (SN4's seen arrises; the arrises running back into the wall lie in its joints), each end's
+    meeting the top's at one point; the bed's stays square (SN7: its chamfer would face down, the dark line beneath an
+    edge; bedChamfer is the arm, each end's then meeting the bed's at one point)."""
+    data = data or Data()
+    part = facts["part"]
+    world, sid = facts["worldSeed"], facts["id"]
+    P = lambda key: param(part, defn, key, data)  # noqa: E731
+    working = facts["working"]
+    half = set_in(facts, data, ("l", "r", "b", "t"))
+    Lc, Hc = facts["cellMm"]
+    sn10 = None
+    if Fraction(Lc - half["l"] - half["r"], Hc - half["b"] - half["t"]) > Fraction(*SN10_RATIO):
+        # SN10 binds the stone, not its cell: where the seeded half joints (texture within SN5's range) would draw it
+        # longer than 4.5 times its height, they are drawn the least above and below and the most at the ends
+        jlo, jhi = data.wall_joint(working)
+        half = dict(l=jhi // 2, r=jhi // 2, b=-(-jlo // 2), t=-(-jlo // 2))
+        sn10 = "SN10: the half joints the least above and below and the most at the ends"
+    Lmm = Lc - half["l"] - half["r"]
+    Hmm = Hc - half["b"] - half["t"]
+    L, H = _f(Lmm), _f(Hmm)
+    bk, bu = data.batter(working)
+    b = bk / bu
+    # the face's facets: ridges from the stone's laminae, each stepped a seeded whole mm
+    least = _f(P("facetLeastMm"))
+    counts = [(int(a), int(w)) for a, w in P("faceFacets")]
+    lam = laminae(HS.Stream(world, sid, "laminae"), H, least, max(a for a, _w in counts) - 1)
+    rng = HS.Stream(world, sid, "face")
+    nf = min(rng.weighted(counts), len(lam) + 1)
+    pool, chosen = list(lam), []
+    for _ in range(nf - 1):
+        chosen.append(pool.pop(rng.randint(0, len(pool) - 1)))
+    chosen.sort(reverse=True)
+    steps_mm = [rng.randint(*P("facetStepMm")) for _ in chosen]
+    lines, proud = bulge(H, b, [_f(z) for z in chosen], [_f(s) for s in steps_mm])
+    facets = []
+    for j, (k, e) in enumerate(lines):
+        nn = math.sqrt(1.0 + k * k)
+        info = dict(kind=2, slope=k)
+        if j:
+            info.update(ridge=_f(chosen[j - 1]), setbackMm=steps_mm[j - 1])
+        facets.append(B.plane("front" if j == 0 else f"front/facet-{j + 1}", (0.0, -1.0, k), d=-e / nn, face="front",
+                              **info))
+    back = _f(data.top_thick(working)) / 2.0
+    block = [B.plane("top", (0, 0, 1), d=H, kind=3), B.plane("bed", (0, 0, -1), d=0.0, kind=3),
+             B.plane("end-l", (-1, 0, 0), d=0.0, kind=2), B.plane("end-r", (1, 0, 0), d=L, kind=2),
+             B.plane("back", (0, 1, 0), d=back, role="hidden")] + facets
+    clo, chi = P("chamferMm")
+    c_mm = HS.Stream(world, sid, "chamfer").randint(clo, chi)
+    if P("chamferMeasure") != "leg":
+        raise ValueError(f"chamferMeasure {P('chamferMeasure')!r}: only 'leg' is built (blender.md)")
+    by = {p["name"]: p for p in block}
+    pairs = [("front", "top"), ("end-l", "front"), ("end-r", "front")] + ([("bed", "front")] if P("bedChamfer")
+                                                                          else [])
+
+    def start(pair, made):
+        # an end's chamfer through the point where the top's chamfer meets the top and the end, and the bed's through
+        # where the end's lowest piece meets the bed and the end: the arrises running back into the wall are square,
+        # so each corner is one point (else a cap c (sqrt(1 + b^2) - 1) across, 0.15 mm, between two chamfers)
+        if pair in (("end-l", "front"), ("end-r", "front")):
+            c1 = next(p for p, _s, _a in made if p["chamfer"] == ("front", "top"))
+            return B._meet([by["top"], by[pair[0]], c1])
+        if pair == ("bed", "front"):
+            low = min((p for p, _s, _a in made if p["chamfer"] == ("end-l", "front")),
+                      key=lambda p: min(p["arris"][0][2], p["arris"][1][2]))
+            return B._meet([by["bed"], by["end-l"], low])
+        return None
+
+    ch = B.chamfers(block, _f(c_mm), P("arrisMaxDeg"), pairs=pairs, start=start)
+    jmax = data.wall_joint(working)[1]
+    sin20 = math.sin(math.radians(20.0))
+    margin = 1.0 + P("bandMarginPerMille") / 1000.0
+    band_mm = max(jmax + SN9["contactMm"], c_mm + math.ceil(two_px(0) * 1000.0 * margin / sin20),
+                  math.ceil(two_px(1) * 1000.0 * margin / sin20))
+    nb = math.sqrt(1.0 + b * b)
+    seen = [dict(n=np.array([0.0, 1.0, -b]) / nb, d=_f(band_mm) / nb)]
+    regions = {f: [seen] for f in ("top", "bed", "end-l", "end-r")}
+    lv = (defn or {}).get("levels", {})
+    o = dict(facts=facts, part=part, L=L, H=H, g=0.0, D=back, skirt=0.0, block=block, covers=[], chamfers=ch,
+             chamferMm=c_mm, chips=[], wear=None, rows0=[], rows1=[], cols0=[], cols1=[], flat=0.0, flat1=0.0,
+             regions=regions, laminaeMm=lam, tol0=_f(lv.get("l0", {}).get("errorMm", 1)),
+             tol1=_f(lv.get("l1", {}).get("errorMm", 11)), y_end=back, ends=dict(l="joint", r="joint"),
+             faceRoles={"top": "bed", "bed": "bed"}, target=np.array([L / 2, b * H / 2, H / 2]), batter=b,
+             bandMm=band_mm, setInMm=half, setInRule=sn10, faceFacets=len(lines), ridgesMm=sorted(chosen, reverse=True),
+             setbacksMm=steps_mm, proudMm=[round(p * 1000, 2) for p in proud], bedChamfer=bool(P("bedChamfer")))
+    o["faces"] = face_frames(o, defn, data)
+    _unfold(o)
+    o["summary"] = dict(cellMm=facts["cellMm"], setInMm=half, setInRule=sn10, lengthMm=Lmm, heightMm=Hmm,
+                        batter=[bk, bu], faceFacets=len(lines), laminaeMm=lam, ridgesMm=o["ridgesMm"],
+                        setbacksMm=steps_mm, slopes=[round(k, 6) for k, _e in lines], ridgeProudMm=o["proudMm"],
+                        bandMm=band_mm, backMm=round(back * 1000), bedChamfer=o["bedChamfer"], chamfers=len(ch),
+                        legDriftMm=[round(p["legDrift"] * 1000, 4) for p, _s, _a in ch],
+                        faces=_faces_summary(o))
+    o["boundsNote"] = (f"the pivot is the bed's front left corner; the face's edges lie on the wall's plane (y = "
+                       f"{bk}/{bu} z back), its bulge up to {max(o['proudMm'] or [0.0]):g} mm proud of it; the top, the "
+                       f"bed and the ends are drawn only {band_mm} mm behind that plane, measured level")
+    return o
+
+
+def _faces_summary(o):
+    return {f: dict(kind=fr["kind"], patch=fr["patch"], slice=fr["slice"], mode=fr["mode"], offsetMm=list(fr["offset"]),
+                    turnDeg=fr.get("turnDeg")) for f, fr in sorted(o["faces"].items())}
+
+
+def wallstone(facts, defn=None, data=None):
+    """The wall face stone: facts in (wallstone_facts), its two levels out."""
+    data = data or Data()
+    defn = defn if defn is not None else definition("wallstone")
+    o = outline_wallstone(facts, defn, data)
+    return dict(outline=o, L0=level_mesh(o, 0), L1=level_mesh(o, 1), commit=data.commit)
+
+
+# -- the coping --------------------------------------------------------------------------------------------------------
+
+def outline_coping(facts, defn=None, data=None):
+    """A coping slab (SN2, SN4, SN9): a rigid block of split slate on its bed across the wall's top, the wall's top
+    and its overhangs wide (walling: topThick and copeOver), its run's thickness less its bed's half joint: its top and
+    bed the laminae's planes (bed faces), its long sides and ends split, one plane each (a face of 70 to 100 mm has no
+    room for a second facet of 50: SN9). Its front stands a seeded whole mm proud of the stair's face (copeProud), its
+    back the rest of the overhang (a standing wall's bank face); its bed is drawn under the overhangs and a joint's
+    band past the faces under them. An open end (a run's end over its riser) is square and drawn whole, its top
+    corners knocked by seed (SN4: chips at a coping's ends); a joint end is set in by its half joint and drawn where
+    the joint is seen: within the band below the top and behind each face, the wall's plane leaning back above the
+    bed. L0 chamfers the top's arrises, its perimeter, and those only: the bed's would face down (SN7, bedChamfer);
+    the ends' upright arrises each meet two of the top's at a corner, where three chamfers meet in a point whose tips
+    are under 2 px at 8 m whatever the triangulation (SN8), and two in a mitre that has none (uprightChamfer); a knock
+    is a break after the dressing, its arrises sharp, cutting through the top's chamfers (chipChamfer); a joint end's
+    arris with the bed is inside the joint."""
+    data = data or Data()
+    part = facts["part"]
+    world, sid = facts["worldSeed"], facts["id"]
+    P = lambda key: param(part, defn, key, data)  # noqa: E731
+    working = facts["working"]
+    half = set_in(facts, data, ("l", "r", "b"))
+    Lmm = facts["cellMm"][0] - half["l"] - half["r"]
+    Tmm = facts["cellMm"][1] - half["b"]
+    over = data.cope_over(working)
+    Wmm = data.top_thick(working) + over
+    proud = HS.Stream(world, sid, "proud").randint(*data.cope_proud(working))
+    proud_back = over - proud
+    L, T, W = _f(Lmm), _f(Tmm), _f(Wmm)
+    bk, bu = data.batter(working)
+    b = bk / bu
+    back_seen = facts["back"] == "exposed"
+    block = [B.plane("top", (0, 0, 1), d=T, kind=3), B.plane("bed", (0, 0, -1), d=0.0, kind=3),
+             B.plane("front", (0, -1, 0), d=0.0, kind=2),
+             B.plane("back", (0, 1, 0), d=W, kind=2, role="exposed" if back_seen else "hidden"),
+             B.plane("end-l", (-1, 0, 0), d=0.0, kind=2), B.plane("end-r", (1, 0, 0), d=L, kind=2)]
+    centre = np.array([L / 2, W / 2, T / 2])
+    chips = []
+    for side in ("l", "r"):
+        if facts["ends"][side] != "open":
+            continue
+        for corner in ("front", "back") if back_seen else ("front",):
+            r3 = HS.Stream(world, sid, f"chip-{side}-{corner}")
+            if r3.randint(0, 999) < P("chipPerMille"):
+                lo, hi = P("chipLegMm")
+                bb, aa = _f(r3.randint(lo, hi)), _f(r3.randint(lo, hi))
+                dz = _f(min(r3.randint(lo, hi), Tmm // 2))
+                bb, aa, grown = chip_least(bb, aa, dz)
+                chips.append(corner_chip(f"chip:{side}-{corner}", side, L, T, (bb, aa, dz), centre,
+                                         back=W if corner == "back" else None, fact="knocked (seed)",
+                                         grownPerMille=grown))
+    clo, chi = P("chamferMm")
+    c_mm = HS.Stream(world, sid, "chamfer").randint(clo, chi)
+    if P("chamferMeasure") != "leg":
+        raise ValueError(f"chamferMeasure {P('chamferMeasure')!r}: only 'leg' is built (blender.md)")
+    faces = B.polyhedron([p for p in block + chips if p["role"] in ("exposed", "hidden")])
+    every = sorted({tuple(sorted((faces[i][0]["face"], faces[j][0]["face"])))
+                    for i, j, _e, _a in B.arrises(faces, P("arrisMaxDeg"))})
+    inside = {tuple(sorted(("bed", f"end-{s}"))) for s in ("l", "r") if facts["ends"][s] == "joint"}
+    square = {}
+    for k in every:
+        if k in inside:
+            square[k] = "in the joint"
+        elif "bed" in k and not P("bedChamfer"):
+            square[k] = "the bed's (SN7)"
+        elif any(f.startswith("chip:") for f in k) and not P("chipChamfer"):
+            square[k] = "a knock's"
+        elif "top" not in k and not any(f.startswith("chip:") for f in k) and "bed" not in k \
+                and not P("uprightChamfer"):
+            square[k] = "upright (SN8: a corner of three)"
+    ch = B.chamfers(block + chips, _f(c_mm), P("arrisMaxDeg"), pairs=[k for k in every if k not in square])
+    # where it is seen: the bed under each overhang and a joint's band past the face under it; a joint end within the
+    # band below the top (seen from above into the joint) and behind each face (the wall's plane above the bed leans
+    # back b per its height: the band reaches past it at the top)
+    jmax = data.wall_joint(working)[1]
+    bed_band = jmax + SN9["contactMm"]
+    cb = max(jmax + SN9["contactMm"], c_mm + math.ceil(two_px(0) * 1000))
+    up = np.array([0.0, 0.0, 1.0])
+    ey = np.array([0.0, 1.0, 0.0])
+    regions = {"bed": [[dict(n=ey, d=_f(proud + bed_band))]] +
+                      ([[dict(n=-ey, d=-(W - _f(proud_back + bed_band)))]] if back_seen else [])}
+    lean = math.ceil(b * Tmm)
+    for side in ("l", "r"):
+        if facts["ends"][side] != "joint":
+            continue
+        below = dict(n=up, d=T - _f(cb))
+        reg = [[dict(n=-up, d=-(T - _f(cb)))], [dict(n=ey, d=_f(proud + lean + cb)), below]]
+        if back_seen:
+            reg.append([dict(n=-ey, d=-(W - _f(proud_back + lean + cb))), below])
+        regions[f"end-{side}"] = reg
+    lv = (defn or {}).get("levels", {})
+    o = dict(facts=facts, part=part, L=L, H=T, g=0.0, D=W, skirt=0.0, block=block, covers=[], chamfers=ch,
+             chamferMm=c_mm, chips=chips, wear=None, rows0=[], rows1=[], cols0=[], cols1=[], flat=0.0, flat1=0.0,
+             regions=regions, laminaeMm=[], tol0=_f(lv.get("l0", {}).get("errorMm", 1)),
+             tol1=_f(lv.get("l1", {}).get("errorMm", 11)), y_end=W, ends=dict(facts["ends"]),
+             faceRoles={"top": "bed", "bed": "bed"}, target=np.array([L / 2, 0.0, T / 2]), batter=b,
+             setInMm=half, proudMm=[proud, proud_back])
+    o["faces"] = face_frames(o, defn, data)
+    _unfold(o)
+    o["summary"] = dict(cellMm=facts["cellMm"], setInMm=half, lengthMm=Lmm, thicknessMm=Tmm, widthMm=Wmm,
+                        proudMm=dict(front=proud, back=proud_back if back_seen else None), ends=facts["ends"],
+                        back=facts["back"], bedBandMm=bed_band, jointBandMm=cb, batterLeanMm=lean,
+                        chips=[dict(name=c["name"], legsMm=c.get("legsMm"), fact=c.get("fact"),
+                                    grownPerMille=c.get("grownPerMille")) for c in chips],
+                        chamfers=len(ch), squareArrises={"|".join(k): why for k, why in sorted(square.items())},
+                        faces=_faces_summary(o))
+    o["boundsNote"] = (f"the pivot is the bed's front left corner; the front stands {proud} mm proud of the stair's "
+                       f"face, the back {proud_back} mm of the bank's; the bed is drawn under each overhang and "
+                       f"{bed_band} mm past the face under it")
+    return o
+
+
+def coping(facts, defn=None, data=None):
+    """The coping: facts in (coping_facts), its two levels out."""
+    data = data or Data()
+    defn = defn if defn is not None else definition("coping")
+    o = outline_coping(facts, defn, data)
+    return dict(outline=o, L0=level_mesh(o, 0), L1=level_mesh(o, 1), commit=data.commit)
+
+
+def build(part, facts, defn=None, data=None):
+    return {"step": step, "wallstone": wallstone, "coping": coping}[part](facts, defn, data)
+
+
 # -- checks (SN8, SN9; the export runs them and stops on any failure) -------------------------------------------------
 
 class Failed(Exception):
@@ -1282,8 +1828,9 @@ class Failed(Exception):
 def views(o, distance):
     """The stated views (plan.md, the judging set; the memory's raised views): face-on with 20 degrees of top seen,
     from eye height (1.6 m over the street the stone lies on), 40 degrees to either side at 20 up, and raised at 45;
-    each at distance (m) from the middle of the stone's drawn front, the 28 mm lens."""
-    target = np.array([o["L"] / 2, o["g"] / 2, o["H"] / 2])
+    each at distance (m) from the middle of the stone's drawn front (a part's own target where it gives one), the 28 mm
+    lens."""
+    target = o["target"] if "target" in o else np.array([o["L"] / 2, o["g"] / 2, o["H"] / 2])
     out = {}
     eye = math.degrees(math.asin(min(1.0, (1.6 - target[2]) / distance)))
     for name, az, el in (("face-on 20", 0, 20), ("eye 1.6 m", 0, eye), ("left 40", -40, 20), ("right 40", 40, 20),
@@ -1367,19 +1914,21 @@ def indexed_vertices(m):
     return int(len(np.unique(rows.view(np.dtype((np.void, rows.dtype.itemsize * rows.shape[1]))))))
 
 
-def check(part, out, defn, piece_gate=True):
-    """Every check SN8 and SN9 give a part, run on both levels: a dict of results, and the list of failures. SN8's
-    share of thin triangles is a level's (all its front-facing triangles at its far edge); piece_gate holds this one
-    piece to it alone in the judging set's view (the specimen, as Unity's harness measures it), and without it the
-    share is reported and gated over the pool it belongs to (flight_check)."""
+def check(part, out, defn):
+    """Every check SN8 and SN9 give a part, run on both levels: a dict of results, and the list of failures. Two are
+    a level's, not a piece's, and are reported here and held over the pools (level_gate): SN8's share of thin
+    triangles (a level's front-facing triangles at its far edge, the fills included) and building-blocks.md's 60%
+    (each kind's export check: L1 at most 60% of L0)."""
     o, L0, L1 = out["outline"], out["L0"], out["L1"]
     fails = []
     res = {}
     lv = defn["levels"]
     data = Data(out["commit"])
     # the facts against the working: the lap on the step below and each joint to the next stone (R1's laying's)
-    res["facts"] = facts_checks(o["facts"], data)
+    res["facts"] = facts_checks(o["facts"], data, o)
     fails += res["facts"]["fails"]
+    res["form"] = form_checks(o)
+    fails += res["form"]["fails"]
     # budgets
     res["triangles"] = dict(L0=len(L0["T"]), L1=len(L1["T"]), budget=[lv["l0"]["triangles"], lv["l1"]["triangles"]],
                             ratio=round(len(L1["T"]) / max(len(L0["T"]), 1), 3),
@@ -1390,8 +1939,7 @@ def check(part, out, defn, piece_gate=True):
         fails.append(f"budget: L0 {len(L0['T'])} > {lv['l0']['triangles']}")
     if len(L1["T"]) > lv["l1"]["triangles"]:
         fails.append(f"budget: L1 {len(L1['T'])} > {lv['l1']['triangles']}")
-    if len(L1["T"]) > 0.6 * len(L0["T"]):
-        fails.append(f"levels: L1 {len(L1['T'])} over 60% of L0's {len(L0['T'])}")
+    res["triangles"]["ratioWithin"] = bool(len(L1["T"]) <= LEVEL_RATIO * len(L0["T"]))
     for name, m in (("L0", L0), ("L1", L1)):
         r = mesh_checks(o, m)
         res[name] = r
@@ -1410,16 +1958,14 @@ def check(part, out, defn, piece_gate=True):
     for name, m, dist in (("L0", L0, GATE["l0Distance"]), ("L1", L1, GATE["l1Distance"])):
         th[name] = {vn: thin_gate(m, v) for vn, v in views(o, dist).items()}
         for vn, r in th[name].items():
-            r["gated"] = piece_gate and vn in GATED_VIEWS
-            if r["gated"] and not r["ok"]:
-                fails.append(f"thin triangles: {name} at {dist:g} m, {vn}: {r['thin']} of {r['front']} under 2 px "
-                             f"({100 * r['thinShare']:.1f}%), median {r['medianAreaPx']} px")
+            r["view"] = "the level's view (pooled)" if vn in GATED_VIEWS else "reported"
     res["thin"] = th
     # the skirts: the top drawn under the next step reaches past that step's foot (its riser set back by up to the
     # facets' largest step) and SN9's contact; the bed's skirt reaches below the worn top of the step below where this
     # riser's foot stands on it (this stone's own wear at its back, the same law) and the contact
-    res["skirts"] = skirt_checks(o, defn)
-    fails += res["skirts"]["fails"]
+    if part == "step":
+        res["skirts"] = skirt_checks(o, defn)
+        fails += res["skirts"]["fails"]
     # the chamfer's width at 8 m
     cw = {vn: chamfer_px(o, v) for vn, v in views(o, GATE["l0Distance"]).items()}
     low = [(vn, c) for vn, cs in cw.items() for c in cs if c["seenDeg"] <= 45.0 and c["px"] < SN9["chamferPx"]]
@@ -1431,7 +1977,7 @@ def check(part, out, defn, piece_gate=True):
     for vn, c in low:
         fails.append(f"chamfer: {c['face']} {c['px']} px at 8 m in {vn} (seen {c['seenDeg']} degrees off its normal)")
     # determinism
-    again = step(o["facts"], defn, Data(out["commit"]))
+    again = build(part, o["facts"], defn, Data(out["commit"]))
     same = all(np.array_equal(out[k]["V"], again[k]["V"]) and np.array_equal(out[k]["T"], again[k]["T"]) and
                np.array_equal(out[k]["UV"], again[k]["UV"]) for k in ("L0", "L1"))
     res["deterministic"] = same
@@ -1441,10 +1987,15 @@ def check(part, out, defn, piece_gate=True):
     return res
 
 
-def facts_checks(facts, data):
-    """A step's facts within its working (walling.json's steps, through Data's accessors): its lap on the step below
-    and each joint end's width. A stone the walls take at both ends has no joint; one that laps nothing (the last)
-    has no lap."""
+def facts_checks(facts, data, o=None):
+    """A stone's facts within its working, through Data's accessors (R1's laying's own rules, so a cell outside them
+    is R1's to answer, named here): a step's lap and joints; a wall stone's course and length (SN10: no longer than
+    4.5 times its height, nor than the working's longest; a short one only where a run leaves no whole stone) and its
+    half joints; a coping's thickness and length."""
+    if facts["part"] == "wallstone":
+        return wall_facts_checks(facts, data, o)
+    if facts["part"] == "coping":
+        return coping_facts_checks(facts, data, o)
     lap, joint = data.tread_lap(), data.tread_joint()
     fails = []
     if facts.get("back") == "lapped" and not lap[0] <= facts["lapMm"] <= lap[1]:
@@ -1454,6 +2005,88 @@ def facts_checks(facts, data):
         if not joint[0] <= w <= joint[1]:
             fails.append(f"facts: joint {w} mm outside {joint}")
     return dict(lapMm=facts["lapMm"], lapRangeMm=lap, jointsMm=widths, jointRangeMm=joint, fails=fails)
+
+
+SN10_RATIO = (9, 2)     # SN10: no stone longer than 4.5 times its height (masonry.py's RATIO, the rule of any wall)
+
+
+def _half_checks(o, data, working, fails):
+    jlo, jhi = data.wall_joint(working)
+    lo, hi = -(-jlo // 2), jhi // 2
+    half = o["setInMm"]
+    for k, v in sorted(half.items()):
+        if facts_side(o["facts"], k) == "joint" and not lo <= v <= hi:
+            fails.append(f"facts: the {k} half joint {v} mm outside [{lo}, {hi}]")
+    return dict(halfJointMm=half, halfRangeMm=[lo, hi], jointRangeMm=[jlo, jhi])
+
+
+def wall_facts_checks(facts, data, o):
+    name = facts["working"]
+    course = data.walling_value(name, "courseMm")
+    stone = data.walling_value(name, "stoneMm")
+    short = data.walling_value(name, "shortMm")
+    draw = data.walling_value(name, "drawnPerHeight")
+    L, H = facts["cellMm"]
+    fails = []
+    if not course[0] <= H <= course[1]:
+        fails.append(f"facts: a course {H} mm outside {course}")
+    longest = min(stone[1], SN10_RATIO[0] * H // SN10_RATIO[1])
+    if not short <= L <= longest:
+        fails.append(f"facts: a cell {L} mm long outside [{short}, {longest}] (shortMm; SN10 and stoneMm)")
+    r = dict(cellMm=[L, H], courseRangeMm=course, lengthRangeMm=[short, longest], stoneMm=stone,
+             short=L < stone[0], drawnPerHeight=draw,
+             withinDrawn=bool(Fraction(*draw[0]) <= Fraction(L, H) <= Fraction(*draw[1])))
+    if o is not None:
+        r.update(_half_checks(o, data, name, fails))
+        Ls, Hs = o["summary"]["lengthMm"], o["summary"]["heightMm"]
+        r["stoneMm"] = [Ls, Hs]
+        if Fraction(Ls, Hs) > Fraction(*SN10_RATIO):
+            fails.append(f"facts: the stone {Ls} by {Hs} mm, longer than 4.5 times its height (SN10)")
+    r["fails"] = fails
+    return r
+
+
+def coping_facts_checks(facts, data, o):
+    name = facts["working"]
+    thick = data.walling_value(name, "copeThickMm")
+    length = data.walling_value(name, "copeLengthMm")
+    least = data.walling_value(name, "copeLeastMm")
+    L, T = facts["cellMm"]
+    fails = []
+    if not thick[0] <= T <= thick[1]:
+        fails.append(f"facts: a coping {T} mm thick outside {thick}")
+    if not least <= L <= length[1]:
+        fails.append(f"facts: a coping {L} mm long outside [{least}, {length[1]}] (copeLeastMm, copeLengthMm)")
+    r = dict(cellMm=[L, T], thickRangeMm=thick, lengthRangeMm=[least, length[1]], short=L < length[0],
+             ends=facts["ends"])
+    if o is not None:
+        r.update(_half_checks(o, data, name, fails))
+        r["drawnMm"] = [o["summary"]["lengthMm"], o["summary"]["thicknessMm"]]
+    r["fails"] = fails
+    return r
+
+
+def form_checks(o):
+    """A wall stone's face against the wall it stands in (SN2, SN4, SN5): both its edges on the wall's plane (the
+    joints above and below it are the wall's), each facet a lamina high at least (folds: SN9), each ridge stepped
+    within facetStepMm, the bulge convex; and every face but the face drawn only within the band. A coping: its
+    proud fronts within copeProud and copeOver."""
+    fails = []
+    if o.get("part") != "wallstone":
+        return dict(fails=fails)
+    b, H = o["batter"], o["H"]
+    facets = [p for p in o["block"] if p.get("face") == "front"]
+    top_f = next(p for p in facets if p["name"] == "front")         # the top facet; the block lists them down
+    bot_f = facets[-1]
+    y_top = (top_f["d"] - top_f["n"][2] * H) / top_f["n"][1]       # n . (x, y, z) = d with n_x = 0, solved for y
+    y_bed = bot_f["d"] / bot_f["n"][1]
+    off = max(abs(y_top - b * H), abs(y_bed))
+    if off > 1e-9:
+        fails.append(f"form: the face's edges {off * 1000:.4f} mm off the wall's plane")
+    proud = o["proudMm"]
+    if any(p < 0 for p in proud):
+        fails.append("form: a ridge behind the wall's plane (the bulge not convex)")
+    return dict(edgesOffPlaneMm=round(off * 1000, 6), ridgeProudMm=proud, facets=len(facets), fails=fails)
 
 
 def skirt_checks(o, defn):
@@ -1790,30 +2423,84 @@ def variants(facts):
     return out
 
 
+def _extremes(items, size):
+    """The items at the least and the greatest of each of a cell's two sizes, the lowest id on a tie."""
+    out = {}
+    for k, name in ((0, "length"), (1, "height")):
+        out[f"least {name}"] = min(items, key=lambda t: (size(t)[k], t[1]["id"]))
+        out[f"greatest {name}"] = min(items, key=lambda t: (-size(t)[k], t[1]["id"]))
+    return out
+
+
+def wall_variants(part, data):
+    """The machinery on inputs the specimen does not exercise, each (facts, the definition's params it is built with):
+    R1's own stones at the pool's extremes (the least and the greatest cell length and height); for the wall stone,
+    the specimen broken once (two facets) and with its bed's arris chamfered (the arm of R2a's A/B: SN4 against SN7
+    and SN8); for the coping, the specimen with both its ends open (its corners knocked, every one), with both
+    joints, and with every arris chamfered (the arm: the bed's, the ends' upright ones and the knocks')."""
+    out = {}
+    if part == "wallstone":
+        facts, _rule = specimen_wallstone(data)
+        pool = face_pool(data)
+        for name, (w, s, face, sides) in _extremes(pool, lambda t: _cell(t[1])).items():
+            out[name] = (wallstone_facts(data, w, s, face, sides), {})
+        out["two facets"] = (dict(facts), {"faceFacets": [[2, 1]]})
+        out["bed chamfered (the arm)"] = (dict(facts), {"bedChamfer": True})
+        return out
+    facts, _rule = specimen_coping(data)
+    pool = [(w, s) for w, s in coping_pool(data)
+            if s.get("panel") in {p["id"] for p in w["panels"] if p["work"] == "built"}]
+    for name, (w, s) in _extremes(pool, lambda t: _cell(t[1])).items():
+        out[name] = (coping_facts(data, w, s), {})
+    v = json.loads(json.dumps(facts))
+    v["id"] = facts["id"] + "~open"
+    v["ends"] = dict(l="open", r="open")
+    out["both open"] = (v, {"chipPerMille": 1000})
+    v = json.loads(json.dumps(facts))
+    v["id"] = facts["id"] + "~joints"
+    v["ends"] = dict(l="joint", r="joint")
+    out["both joints"] = (v, {})
+    out["every arris chamfered (the arm)"] = (dict(facts), {"bedChamfer": True, "uprightChamfer": True,
+                                                            "chipChamfer": True})
+    return out
+
+
+def with_params(defn, params):
+    """The definition with params set (the proposed object: param() reads it before the defaults)."""
+    if not params:
+        return defn
+    d = json.loads(json.dumps(defn))
+    d.setdefault("params", {}).update(params)
+    return d
+
+
 def summary(res):
     th = res["thin"]
     lines = [f"triangles L0 {res['triangles']['L0']} / {res['triangles']['budget'][0]}, "
-             f"L1 {res['triangles']['L1']} / {res['triangles']['budget'][1]} (L1/L0 {res['triangles']['ratio']}); "
+             f"L1 {res['triangles']['L1']} / {res['triangles']['budget'][1]} (L1/L0 {res['triangles']['ratio']}, "
+             f"{'within' if res['triangles']['ratioWithin'] else 'over'} 60%: the kind's, held over the pools); "
              f"vertices L0 {res['triangles']['vertices']['L0']}, L1 {res['triangles']['vertices']['L1']} of its own "
              f"(identical in every channel {res['triangles']['indexedVertices']['L0']} and "
              f"{res['triangles']['indexedVertices']['L1']}; the FBX's {res['triangles']['fbxVertices']['L0']} and "
              f"{res['triangles']['fbxVertices']['L1']})"]
     for lvl in ("L0", "L1"):
         for vn, r in th[lvl].items():
-            verdict = ("pass" if r["ok"] else "FAIL") if r["gated"] else ("(reported) over" if not r["ok"] else
-                                                                        "(reported) within")
+            verdict = ("(the level's view) " if vn in GATED_VIEWS else "(reported) ") + ("within" if r["ok"] else
+                                                                                      "over")
             lines.append(f"  {lvl} {vn}: front {r['front']}, under 2 px {r['thin']} ({100 * r['thinShare']:.1f}%), "
                          f"median {r['medianAreaPx']} px, altitude {r['medianAltitudePx']} px {verdict}"
                          f" {r['thinFaces'] if r['thin'] else ''}")
-    sk = res["skirts"]
-    lines.append(f"skirts: {sk['skirtMm']:g} mm; under the next step needs {sk.get('coverNeedMm')}, the bed needs "
-                 f"{sk['bedNeedMm']} (worn {sk['wornUnderFootMm']} under the foot)")
+    sk = res.get("skirts")
+    if sk:
+        lines.append(f"skirts: {sk['skirtMm']:g} mm; under the next step needs {sk.get('coverNeedMm')}, the bed needs "
+                     f"{sk['bedNeedMm']} (worn {sk['wornUnderFootMm']} under the foot)")
     lines.append(f"L1 vs L0: L1->L0 {res['l1VsL0']['l1ToL0Mm']} mm, L0->L1 {res['l1VsL0']['l0ToL1Mm']} mm, "
                  f"sagitta {res['l1VsL0']['chamferSagittaMm']} mm, limit {res['l1VsL0']['limitMm']}")
     for lvl in ("L0", "L1"):
         w = res["wear"][lvl]
-        lines.append(f"wear {lvl}: error {w['maxErrorMm']} mm (share {w.get('toleranceMm')}), rows {w.get('rows')}, "
-                     f"{len(w.get('columns', []))} columns")
+        if "rows" in w:
+            lines.append(f"wear {lvl}: error {w['maxErrorMm']} mm (share {w.get('toleranceMm')}), rows "
+                         f"{w.get('rows')}, {len(w.get('columns', []))} columns")
     lines.append(f"chamfer: square on {res['chamferPx']['squareOnPx']} px, its leg face-on "
                  f"{res['chamferPx']['legFaceOnPx']} px at 8 m; ok {res['chamferPx']['ok']}")
     for lvl in ("L0", "L1"):
@@ -1824,68 +2511,150 @@ def summary(res):
     lines.append("block faces: " + ", ".join(f"{f['face']} {f['widthMm']} mm {f['angleDeg']} deg"
                                              for f in res["block"]["faces"]))
     fc = res["facts"]
-    lines.append(f"facts: lap {fc['lapMm']} mm in {fc['lapRangeMm']}, joints {fc['jointsMm']} mm in "
-                 f"{fc['jointRangeMm']}")
+    if "lapMm" in fc:
+        lines.append(f"facts: lap {fc['lapMm']} mm in {fc['lapRangeMm']}, joints {fc['jointsMm']} mm in "
+                     f"{fc['jointRangeMm']}")
+    else:
+        lines.append("facts: " + ", ".join(f"{k} {v}" for k, v in fc.items() if k != "fails"))
+    fm = res.get("form", {})
+    if len(fm) > 1:
+        lines.append("form: " + ", ".join(f"{k} {v}" for k, v in fm.items() if k != "fails"))
     lines.append(f"deterministic {res['deterministic']}")
     lines.append("FAILS: " + ("; ".join(res["fails"]) if res["fails"] else "none"))
     return "\n".join(lines)
 
 
-# -- the flight: every stone the part makes in the gully, SN8's share over them ---------------------------------------
+# -- the pools: every stone a part makes in the gully, SN8's share over them -----------------------------------------
 
 FLIGHT = "reviews/lt1/port/2b/r2a/stones/flight-check.json"
+POOLS = {"step": FLIGHT, "wallstone": "reviews/lt1/port/2b/r2a/stones/walls-check.json",
+         "coping": "reviews/lt1/port/2b/r2a/stones/copings-check.json"}
+POOL_RULES = {
+    "step": "SN8's share over a level: every stone of every flight's ordinary steps, as R1 laid them (masonry.lay at "
+            "the pinned commit), each at its level's far edge (L0 8 m, L1 20 m) in the judging view (face-on, 20 "
+            "degrees of top), its front-facing triangles pooled; every other check on each stone",
+    "wallstone": "SN8's share over a level: every face stone the part makes (face_pool: in a panel as built, a face or "
+                 "through stone against all four sides of its cell on its face), as R1 laid them (masonry.lay at the "
+                 "pinned commit), each at its level's far edge (L0 8 m, L1 20 m) in the judging view (face-on to its "
+                 "face, 20 degrees of top), its front-facing triangles pooled; every other check on each stone",
+    "coping": "SN8's share over a level: every coping of a panel as built, as R1 laid them (masonry.lay at the pinned "
+              "commit), each at its level's far edge (L0 8 m, L1 20 m) in the judging view (face-on to its stair "
+              "side, 20 degrees of top), its front-facing triangles pooled; every other check on each stone",
+}
+SHARE_RULE = ("SN8 sets its 10% over a level's front-facing triangles at its far edge, the fills included: the gully's "
+              "whole level (walls, copings, fills and steps), which R2b lays and R3 measures. This part's stones alone "
+              "are reported here against it; the export holds the gully's pieces pooled over every part's pool "
+              "(level_gate), and every stone's other checks (ok)")
+LEVEL_RATIO = 0.6       # building-blocks.md: each kind's export check, each level at most 60% of the one before
+KINDS = {"step": "stair", "wallstone": "walls", "coping": "walls"}     # the kind (kinds/) each part's stones are of
+LEVEL_RULE = ("SN8's share over the gully's pieces as R1 laid them: every part's pool (the steps, the wall face stones, "
+              "the copings), each stone at each level's far edge in the judging view, its front-facing triangles "
+              "pooled: at most 10% under 2 px, and each pool's median visible triangle at least 10 px (the fills, eight "
+              "large triangles a panel, are not built here and would only lower the share). Each kind's L1 at most 60% "
+              "of its L0 over its pools (building-blocks.md: the stair kind the steps, the walls kind the wall stones "
+              "and copings). A piece's own share and ratio are reported, never held: a coping's L0 has about a dozen "
+              "front-facing triangles, so one triangle moves its share by about nine points")
+_WORKER = {}
+
+
+def _worker_data(commit):
+    """One Data a process for a commit, so a pool's worker lays R1's walls once, not once a stone (its notes are the
+    pool's, never a sidecar's)."""
+    if commit not in _WORKER:
+        _WORKER.clear()
+        _WORKER[commit] = Data(commit)
+    return _WORKER[commit]
+
+
+def pool_jobs(part, data):
+    if part == "step":
+        return [(data.commit, part, (fid, sid, st["id"])) for fid, sid, _idx, st in flight_stones(data)]
+    if part == "wallstone":
+        return [(data.commit, part, (w["id"], s["id"])) for w, s, _f, _sd in face_pool(data)]
+    return [(data.commit, part, (w["id"], s["id"])) for w, s in coping_pool(data)
+            if s.get("panel") in {p["id"] for p in w["panels"] if p["work"] == "built"}]
+
+
+def _pool_facts(part, data, key):
+    if part == "step":
+        fid, sid, stone_id = key
+        fl = next(f for f in data.laying()["steps"] if f["id"] == fid)
+        stone = next(s for s in fl["stones"] if s["id"] == stone_id)
+        facts, _laid = step_facts(data, fid, sid, stone)
+        return facts, dict(id=stone_id, flight=fid, step=sid, lengthMm=facts["lengthMm"], riseMm=facts["riseMm"])
+    wid, stone_id = key
+    w = next(w for w in data.laying()["walls"] if w["id"] == wid)
+    s = next(s for s in w["stones"] if s["id"] == stone_id)
+    if part == "wallstone":
+        face = s["faces"][0]
+        facts = wallstone_facts(data, w, s, face, wall_sides(w, s, face))
+    else:
+        facts = coping_facts(data, w, s)
+    return facts, dict(id=stone_id, wall=wid, cellMm=facts["cellMm"])
 
 
 def _flight_one(job):
-    """One stone of the pool (a worker's): its facts from R1's laying, built and checked (every check but SN8's
-    share, which is the pool's), and its front-facing triangles' sizes in the judging view at each level's edge."""
-    commit, fid, sid, stone_id = job
-    data = Data(commit)
-    defn = definition("step")
-    fl = next(f for f in data.laying()["steps"] if f["id"] == fid)
-    stone = next(s for s in fl["stones"] if s["id"] == stone_id)
-    facts, _laid = step_facts(data, fid, sid, stone)
+    """One stone of a pool (a worker's): its facts from R1's laying, built and checked (every check but SN8's share,
+    which is the pool's), and its front-facing triangles' sizes in the judging view at each level's edge."""
+    commit, part, key = job
+    data = _worker_data(commit)
+    defn = definition(part)
+    facts, head_row = _pool_facts(part, data, key)
     try:
-        out = step(facts, defn, data)
+        out = build(part, facts, defn, data)
     except Failed as e:                 # a stone the part cannot make is the pool's failure, named, not its end
-        return dict(id=stone_id, flight=fid, step=sid, lengthMm=facts["lengthMm"], riseMm=facts["riseMm"],
-                    fails=[f"build: {e}"]), None
-    res = check("step", out, defn, piece_gate=False)
-    row = dict(id=stone_id, flight=fid, step=sid, index=data.plan["steps"][sid]["index"],
-               lengthMm=facts["lengthMm"], riseMm=facts["riseMm"], lapMm=facts["lapMm"],
-               jointsMm=res["facts"]["jointsMm"], leftMm=facts["wear"]["leftMm"],
-               ends=[facts["ends"]["l"]["kind"], facts["ends"]["r"]["kind"]],
-               corner=facts["corner"] is not None, riserFacets=out["outline"]["riserFacets"],
-               triangles=[len(out["L0"]["T"]), len(out["L1"]["T"])],
+        return dict(head_row, fails=[f"build: {e}"]), None
+    res = check(part, out, defn)
+    o = out["outline"]
+    if part == "step":
+        fid, sid, _sid = key
+        row = dict(head_row, index=data.plan["steps"][sid]["index"], lapMm=facts["lapMm"],
+                   jointsMm=res["facts"]["jointsMm"], leftMm=facts["wear"]["leftMm"],
+                   ends=[facts["ends"]["l"]["kind"], facts["ends"]["r"]["kind"]],
+                   corner=facts["corner"] is not None, riserFacets=o["riserFacets"])
+        row = {k: row[k] for k in ("id", "flight", "step", "index", "lengthMm", "riseMm", "lapMm", "jointsMm",
+                                   "leftMm", "ends", "corner", "riserFacets")}
+    elif part == "wallstone":
+        sm = o["summary"]
+        row = dict(head_row, face=facts["face"], drawnMm=[sm["lengthMm"], sm["heightMm"]], setInMm=sm["setInMm"],
+                   faceFacets=sm["faceFacets"], ridgeProudMm=sm["ridgeProudMm"], short=res["facts"]["short"],
+                   withinDrawn=res["facts"]["withinDrawn"])
+    else:
+        sm = o["summary"]
+        row = dict(head_row, drawnMm=[sm["lengthMm"], sm["thicknessMm"]], ends=[facts["ends"]["l"], facts["ends"]["r"]],
+                   proudMm=sm["proudMm"]["front"], chips=[c["name"] for c in sm["chips"]], short=res["facts"]["short"])
+    row.update(triangles=[len(out["L0"]["T"]), len(out["L1"]["T"])],
                vertices=[len(out["L0"]["V"]), len(out["L1"]["V"])],
                indexedVertices=[res["triangles"]["indexedVertices"]["L0"], res["triangles"]["indexedVertices"]["L1"]],
                smallestAltitudeMm=[res["L0"]["smallestAltitudeMm"], res["L1"]["smallestAltitudeMm"]],
-               l1VsL0Mm=max(res["l1VsL0"]["l1ToL0Mm"], res["l1VsL0"]["l0ToL1Mm"]),
-               wearErrorMm=[res["wear"]["L0"]["maxErrorMm"], res["wear"]["L1"]["maxErrorMm"]],
-               fails=res["fails"])
+               l1VsL0Mm=max(res["l1VsL0"]["l1ToL0Mm"], res["l1VsL0"]["l0ToL1Mm"]))
+    if part == "step":
+        row["wearErrorMm"] = [res["wear"]["L0"]["maxErrorMm"], res["wear"]["L1"]["maxErrorMm"]]
+    row["fails"] = res["fails"]
     sizes = {}
     for name, m, dist in (("L0", out["L0"], GATE["l0Distance"]), ("L1", out["L1"], GATE["l1Distance"])):
-        r = thin_gate(m, views(out["outline"], dist)[GATED_VIEWS[0]], keep=True)
+        r = thin_gate(m, views(o, dist)[GATED_VIEWS[0]], keep=True)
         row[name] = {k: r[k] for k in ("front", "thin", "thinShare", "medianAreaPx", "thinFaces")}
         sizes[name] = (r["altitudesPx"], r["areasPx"])
     return row, sizes
 
 
-def flight_check(data, workers=None):
-    """Every stone the step part makes in the gully (every flight's ordinary steps, both stones of each, as R1 laid
-    them), each built and put through every check; and SN8's share over their front-facing triangles, each at its
-    level's far edge in the judging set's view (face-on, 20 degrees of top), pooled. A worker per core the timing run
-    leaves (one while L5 times). Writes FLIGHT; returns its dict: ok when no stone fails a check; shareOk when the
-    pool's share and median pass at both levels (SN8 sets the share over the gully's whole level, which the steps are
-    a part of, so it is reported, not held: shareRule)."""
+def flight_check(data, workers=None, part="step"):
+    """Every stone a part makes in the gully (the step: every flight's ordinary steps, both stones of each; the wall
+    stone: face_pool's; the coping: every coping of a panel as built; all as R1 laid them), each built and put
+    through every check; and SN8's share over their front-facing triangles, each at its level's far edge in the
+    judging set's view (face-on, 20 degrees of top), pooled. A worker per core the timing run leaves (one while L5
+    times). Writes the part's POOLS file; returns its dict: ok when no stone fails a check; shareOk when the pool's
+    share and median pass at both levels (SN8 sets the share over the gully's whole level, which the part's stones
+    are a part of, so it is reported, not held: shareRule)."""
     import multiprocessing as mp
-    code = code_ids()          # the code the stones are built by, read before they are (an edit during the run shows)
-    jobs = [(data.commit, fid, sid, st["id"]) for fid, sid, _idx, st in flight_stones(data)]
+    code = code_ids(part)      # the code the stones are built by, read before they are (an edit during the run shows)
+    jobs = pool_jobs(part, data)
     if workers is None:
         workers = 1 if timing_running() else max(1, min(6, (os.cpu_count() or 2) - 2))
     if workers > 1:
         with mp.get_context("spawn").Pool(workers) as pool:
-            results = pool.map(_flight_one, jobs, chunksize=1)
+            results = pool.map(_flight_one, jobs, chunksize=max(1, len(jobs) // (8 * workers)))
     else:
         results = [_flight_one(j) for j in jobs]
     rows = [r for r, sz in results if sz is not None]
@@ -1914,10 +2683,10 @@ def flight_check(data, workers=None):
     tri = np.array([r["triangles"] for r in rows])
     ver = np.array([r["vertices"] for r in rows])
     ind = np.array([r["indexedVertices"] for r in rows])
+    head = dict(part=part) if part != "step" else {}
     res = _jsonable(dict(
-        rule="SN8's share over a level: every stone of every flight's ordinary steps, as R1 laid them (masonry.lay at "
-             "the pinned commit), each at its level's far edge (L0 8 m, L1 20 m) in the judging view (face-on, 20 "
-             "degrees of top), its front-facing triangles pooled; every other check on each stone",
+        **head,
+        rule=POOL_RULES[part],
         commit=data.commit, pinned=pinned_ids(data.commit), code=code, view=GATED_VIEWS[0], gate=GATE, pooled=pooled,
         triangles=dict(L0=dict(min=int(tri[:, 0].min()), median=float(np.median(tri[:, 0])), max=int(tri[:, 0].max())),
                        L1=dict(min=int(tri[:, 1].min()), median=float(np.median(tri[:, 1])), max=int(tri[:, 1].max())),
@@ -1932,50 +2701,101 @@ def flight_check(data, workers=None):
                            "contract); fbxTotal: the FBX route's, three a triangle"),
         smallestAltitudeMm=[min(r["smallestAltitudeMm"][0] for r in rows), min(r["smallestAltitudeMm"][1] for r in rows)],
         fails=fails, ok=not fails, shareFails=share_fails, shareOk=not share_fails,
-        shareRule="SN8 sets its 10% over a level's front-facing triangles at its far edge, the fills included: the "
-                  "gully's whole level (walls, copings, fills and steps), which R2b lays and R3 measures. The steps "
-                  "alone are reported here against it, and the export is not held on it; every stone's other checks "
-                  "hold it (ok)",
+        shareRule=SHARE_RULE.replace("This part's stones", "The steps") if part == "step" else SHARE_RULE,
         unbuilt=unbuilt, stones=rows))
-    with open(os.path.join(ROOT, FLIGHT), "w") as f:
+    with open(os.path.join(ROOT, POOLS[part]), "w") as f:
         json.dump(res, f, indent=1, sort_keys=False)
         f.write("\n")
     return res
 
 
-def flight_current():
+def flight_current(part="step"):
     """The pool's result on disk, if its code is the checkout's: (result or None, why not)."""
-    path = os.path.join(ROOT, FLIGHT)
+    rel = POOLS[part]
+    path = os.path.join(ROOT, rel)
     if not os.path.exists(path):
-        return None, f"no {FLIGHT}: run `stones.py flight`"
+        return None, f"no {rel}: run `stones.py flight {part}`"
     with open(path) as f:
         res = json.load(f)
-    if res.get("code") != code_ids():
-        return None, f"{FLIGHT} was run with other code or data: run `stones.py flight` again"
+    if res.get("code") != code_ids(part):
+        return None, f"{rel} was run with other code or data: run `stones.py flight {part}` again"
     if res.get("pinned") != pinned_ids(Data().commit):
-        return None, f"{FLIGHT} read R1's files as {res.get('commit', '?')[:7]} held them, and HEAD's differ: run " \
-                     f"`stones.py flight` again"
+        return None, f"{rel} read R1's files as {res.get('commit', '?')[:7]} held them, and HEAD's differ: run " \
+                     f"`stones.py flight {part}` again"
     return res, None
 
 
 def flight_summary(res):
     lines = []
+    what = res.get("part", "step")
     for lvl in ("L0", "L1"):
         p = res["pooled"][lvl]
-        lines.append(f"flight {lvl}: {p['stones']} stones, {p['thin']} of {p['front']} under 2 px "
+        lines.append(f"pool {what} {lvl}: {p['stones']} stones, {p['thin']} of {p['front']} under 2 px "
                      f"({100 * p['thinShare']:.1f}%), median {p['medianAreaPx']} px, altitude {p['medianAltitudePx']} "
                      f"px, {'within' if p['ok'] else 'over'} SN8's share; per stone {100 * p['perStone']['min']:.1f} to "
                      f"{100 * p['perStone']['max']:.1f}% (median {100 * p['perStone']['median']:.1f}%, "
                      f"{p['perStone']['over']} over 10%)")
-    lines.append(f"flight triangles: L0 {res['triangles']['L0']}, L1 {res['triangles']['L1']}; smallest altitude "
+    lines.append(f"pool triangles: L0 {res['triangles']['L0']}, L1 {res['triangles']['L1']}; smallest altitude "
                  f"{res['smallestAltitudeMm']} mm")
     if "vertices" in res:
-        lines.append(f"flight vertices: L0 {res['vertices']['L0']}, L1 {res['vertices']['L1']}; in all "
+        lines.append(f"pool vertices: L0 {res['vertices']['L0']}, L1 {res['vertices']['L1']}; in all "
                      f"{res['vertices']['total']} of their own (identical in every channel "
                      f"{res['vertices'].get('indexedTotal')}; the FBX route's {res['vertices']['fbxTotal']})")
-    lines.append("flight, the steps alone against SN8's share (the level's, R2b and R3): " +
+    lines.append(f"pool, the {what} stones alone against SN8's share (the level's, R2b and R3): " +
                  ("; ".join(res["shareFails"]) if res["shareFails"] else "within"))
-    lines.append("flight FAILS (every stone's checks): " + ("; ".join(res["fails"]) if res["fails"] else "none"))
+    lines.append("pool FAILS (every stone's checks): " + ("; ".join(res["fails"][:40]) if res["fails"] else "none") +
+                 (f" ... ({len(res['fails'])} in all)" if len(res["fails"]) > 40 else ""))
+    return "\n".join(lines)
+
+
+def level_gate():
+    """The checks that are a level's or a kind's, not a piece's (LEVEL_RULE), over every part's pool as it stands on
+    disk. Returns (result, None), or (None, why) when a pool is missing or was run with other code or data."""
+    pools = {}
+    for part in PARTS:
+        fr, why = flight_current(part)
+        if fr is None:
+            return None, why
+        pools[part] = fr
+    fails, share, kinds = [], {}, {}
+    for lvl in ("L0", "L1"):
+        front = sum(p["pooled"][lvl]["front"] for p in pools.values())
+        thin = sum(p["pooled"][lvl]["thin"] for p in pools.values())
+        med = {part: p["pooled"][lvl]["medianAreaPx"] for part, p in pools.items()}
+        ok = thin <= GATE["thinShare"] * front and all(m >= GATE["medianAreaPx"] for m in med.values())
+        share[lvl] = dict(front=front, thin=thin, thinShare=round(thin / front, 4), medianAreaPx=med,
+                          byPart={part: dict(thin=p["pooled"][lvl]["thin"], front=p["pooled"][lvl]["front"],
+                                             thinShare=p["pooled"][lvl]["thinShare"]) for part, p in pools.items()},
+                          ok=bool(ok))
+        if not ok:
+            fails.append(f"SN8 over the gully's pieces, {lvl}: {thin} of {front} under 2 px "
+                         f"({100 * thin / front:.1f}%), medians {med} px")
+    for part, p in pools.items():
+        k = kinds.setdefault(KINDS[part], dict(parts=[], stones=0, triangles=[0, 0]))
+        k["parts"].append(part)
+        k["stones"] += len(p["stones"])
+        k["triangles"] = [k["triangles"][0] + p["triangles"]["total"][0], k["triangles"][1] + p["triangles"]["total"][1]]
+    for name, k in sorted(kinds.items()):
+        k["ratio"] = round(k["triangles"][1] / k["triangles"][0], 4)
+        k["ok"] = bool(k["triangles"][1] <= LEVEL_RATIO * k["triangles"][0])
+        if not k["ok"]:
+            fails.append(f"levels: the {name} kind's L1 {k['triangles'][1]} over 60% of its L0 {k['triangles'][0]}")
+    return _jsonable(dict(rule=LEVEL_RULE, share=share, kinds=kinds,
+                          pools={part: dict(file=POOLS[part], stones=len(p["stones"]), commit=p["commit"])
+                                 for part, p in pools.items()}, fails=fails, ok=not fails)), None
+
+
+def level_summary(lv):
+    lines = []
+    for lvl in ("L0", "L1"):
+        sh = lv["share"][lvl]
+        by = ", ".join(f"{part} {b['thin']} of {b['front']} ({100 * b['thinShare']:.1f}%)" for part, b in sh["byPart"].items())
+        lines.append(f"level {lvl}, the gully's pieces pooled: {sh['thin']} of {sh['front']} under 2 px "
+                     f"({100 * sh['thinShare']:.1f}%; {by}), medians {sh['medianAreaPx']} px: "
+                     f"{'within' if sh['ok'] else 'OVER'}")
+    for name, k in sorted(lv["kinds"].items()):
+        lines.append(f"kind {name} ({', '.join(k['parts'])}; {k['stones']} stones): L1/L0 {k['triangles'][1]} / "
+                     f"{k['triangles'][0]} = {k['ratio']}: {'within' if k['ok'] else 'OVER'} 60%")
     return "\n".join(lines)
 
 
@@ -1988,6 +2808,18 @@ UV_LAYERS = ("uv0 face metres", "uv1 years seed", "uv2 kind water", "uv3 sky gro
 FRAME = ("the stone's frame: x along it from its left end as the street sees it, y back from its front, z up from its "
          "bed (Blender); exported forward +Z, up +Y with the space transform baked (stone.py's _export_fbx), so Unity's "
          "mesh holds x along, y up, z back with no turn on its object")
+FRAMES = {
+    "step": FRAME,
+    "wallstone": ("the stone's frame: x along its face from its left end as one looking at that face sees it, y back "
+                  "from its face (the bed's front edge on the wall's plane), z up from its bed (Blender); placed by a "
+                  "turn about z, never a mirror (its facts' alongS: +1 where x runs up the wall line); exported forward "
+                  "+Z, up +Y with the space transform baked (stone.py's _export_fbx), so Unity's mesh holds x along, y "
+                  "up, z back with no turn on its object"),
+    "coping": ("the stone's frame: x along it from its left end as the stair sees it, y back from its stair side "
+               "(its front) across the wall, z up from its bed (Blender); placed by a turn about z, never a mirror "
+               "(its facts' alongS); exported forward +Z, up +Y with the space transform baked (stone.py's "
+               "_export_fbx), so Unity's mesh holds x along, y up, z back with no turn on its object"),
+}
 
 
 def _jsonable(v):
@@ -2024,20 +2856,18 @@ def pinned_ids(commit):
     return {rel: blob(rel, commit) for rel in PINNED}
 
 
-def code_ids():
-    """The content ids of the code a stone is built by and of the data Data reads from the checkout (the step's
-    definition among them; what it reads at the pinned commit is named by the commit), so a result on disk is current
-    only while none of them has changed."""
-    return {rel: blob(rel) for rel in ("blender/parts/stone/slate/stones.py", "blender/parts/stone/slate/block.py",
-                                       "blender/generators/wear.py", "blender/resolver/hashing.py",
-                                       f"{PACK}/parts/stone/step.json", f"{PACK}/pack.json",
-                                       f"{PACK}/materials/slate.json", "kinds/stair.json",
-                                       "fixtures/records/st-gully.json", "fixtures/golden/stair/plan.json",
-                                       "fixtures/golden/stair/life.json",
-                                       "blender/parts/stone/slate/patches.manifest.json")}
+def code_ids(part="step"):
+    """The content ids of the code a part's stones are built by and of the data Data reads from the checkout for it
+    (its definition among them; what it reads at the pinned commit is named by the commit), so a result on disk is
+    current only while none of them has changed."""
+    common = ("blender/parts/stone/slate/stones.py", "blender/parts/stone/slate/block.py", "blender/generators/wear.py",
+              "blender/resolver/hashing.py", f"{PACK}/parts/stone/{part}.json", f"{PACK}/pack.json")
+    own = {"step": (f"{PACK}/materials/slate.json", "kinds/stair.json", "fixtures/records/st-gully.json",
+                    "fixtures/golden/stair/plan.json", "fixtures/golden/stair/life.json")}.get(part, ())
+    return {rel: blob(rel) for rel in common + own + ("blender/parts/stone/slate/patches.manifest.json",)}
 
 
-def sidecar(part, out, res, rule, data, defn, flight=None):
+def sidecar(part, out, res, rule, data, defn, flight=None, level=None):
     """The sidecar beside the FBX (Unity's readback, LT1R2a.Stone, reads it): the objects, the pivot and frame, each
     level's triangles and bounds, the chamfer and its form, the channels, the facts and the specimen's rule, the
     outline's numbers, the checks (the specimen's, and the pool's SN8 share over every stone the part makes in the
@@ -2051,14 +2881,34 @@ def sidecar(part, out, res, rule, data, defn, flight=None):
 
     lv = defn["levels"]
     th = res["thin"]
+    if part == "step":
+        note = (f"the pivot is the bed's front left corner; the drawn faces run {o['skirt'] * 1000:g} mm past a hidden "
+                "face or a cover (the skirts), so the riser reaches below the bed (Unity's y) where the step below is "
+                "worn, and the top runs back under the next step")
+        shape = dict(lengthMm=o["facts"]["lengthMm"], riseMm=o["facts"].get("riseMm"), ends=o["ends"],
+                     riserFacets=o["riserFacets"], riserFootMm=o["riserFootMm"], endFacets=o["endFacets"],
+                     chips=[dict(name=c["name"], legsMm=c.get("legsMm"), fact=c.get("fact"), filled=c.get("filled"),
+                                 sizeMm=c.get("sizeMm"), grownPerMille=c.get("grownPerMille"))
+                            for c in o["chips"]],
+                     chamfers=len(o["chamfers"]), skirtMm=o["skirt"] * 1000, lattice=o["lattice"],
+                     rows0Mm=[round(y * 1000) for y in o["rows0"]], rows1Mm=[round(y * 1000) for y in o["rows1"]],
+                     cols0=[[k, round(x * 1000)] for k, x in o["cols0"]],
+                     cols1=[[k, round(x * 1000)] for k, x in o["cols1"]],
+                     faces={f: dict(kind=fr["kind"], patch=fr["patch"], slice=fr["slice"], mode=fr["mode"],
+                                    offsetMm=list(fr["offset"]), turnDeg=fr.get("turnDeg"))
+                            for f, fr in sorted(o["faces"].items())})
+    else:
+        note, shape = o["boundsNote"], o["summary"]
+    extra = {}
+    if part == "step":
+        extra = dict(wear={k: {kk: vv for kk, vv in w.items() if kk != "fails"} for k, w in res["wear"].items()})
+    late = dict(skirts={k: v for k, v in res["skirts"].items() if k != "fails"}) if part == "step" else \
+        dict(form={k: v for k, v in res["form"].items() if k != "fails"})
     return _jsonable(dict(
         part=part, id=o["facts"]["id"], tool=TOOL, definition=f"{PACK}/parts/stone/{part}.json",
         objects=dict(L0=f"{part}_L0", L1=f"{part}_L1"),
-        pivot=defn["pivot"], frame=FRAME,
-        bounds=dict(L0=bounds(out["L0"]), L1=bounds(out["L1"]),
-                    note=f"the pivot is the bed's front left corner; the drawn faces run {o['skirt'] * 1000:g} mm past "
-                         "a hidden face or a cover (the skirts), so the riser reaches below the bed (Unity's y) where the "
-                         "step below is worn, and the top runs back under the next step"),
+        pivot=defn["pivot"], frame=FRAMES[part],
+        bounds=dict(L0=bounds(out["L0"]), L1=bounds(out["L1"]), note=note),
         levels={k: dict(triangles=len(out[k]["T"]), vertices=len(out[k]["V"]),
                         indexedVertices=res["triangles"]["indexedVertices"][k], fbxVertices=3 * len(out[k]["T"]),
                         errorMm=lv[k.lower()]["errorMm"]) for k in ("L0", "L1")},
@@ -2073,40 +2923,30 @@ def sidecar(part, out, res, rule, data, defn, flight=None):
                                                        "chamfer on a square arris"),
         channels=dict(zip([f"UV{c}" for c in range(8)], UV_LAYERS)),
         facts=o["facts"], rule=rule,
-        outline=dict(lengthMm=o["facts"]["lengthMm"], riseMm=o["facts"].get("riseMm"), ends=o["ends"],
-                     riserFacets=o["riserFacets"], riserFootMm=o["riserFootMm"], endFacets=o["endFacets"],
-                     chips=[dict(name=c["name"], legsMm=c.get("legsMm"), fact=c.get("fact"), filled=c.get("filled"),
-                                sizeMm=c.get("sizeMm"), grownPerMille=c.get("grownPerMille"))
-                            for c in o["chips"]],
-                     chamfers=len(o["chamfers"]), skirtMm=o["skirt"] * 1000, lattice=o["lattice"],
-                     rows0Mm=[round(y * 1000) for y in o["rows0"]], rows1Mm=[round(y * 1000) for y in o["rows1"]],
-                     cols0=[[k, round(x * 1000)] for k, x in o["cols0"]],
-                     cols1=[[k, round(x * 1000)] for k, x in o["cols1"]],
-                     faces={f: dict(kind=fr["kind"], patch=fr["patch"], slice=fr["slice"], mode=fr["mode"],
-                                    offsetMm=list(fr["offset"]), turnDeg=fr.get("turnDeg"))
-                            for f, fr in sorted(o["faces"].items())}),
+        outline=shape,
         checks=dict(fails=res["fails"], triangles=res["triangles"], l1VsL0=res["l1VsL0"],
-                    wear={k: {kk: vv for kk, vv in w.items() if kk != "fails"} for k, w in res["wear"].items()},
+                    **extra,
                     thin={lvl: {vn: {k: r[k] for k in ("front", "thin", "thinShare", "medianAreaPx",
-                                                       "medianAltitudePx", "gated", "ok")}
+                                                       "medianAltitudePx", "view", "ok")}
                                 for vn, r in th[lvl].items()} for lvl in th},
                     gate=dict(views=list(GATED_VIEWS), **GATE),
                     chamferPx=dict(squareOnPx=res["chamferPx"]["squareOnPx"],
                                    legFaceOnPx=res["chamferPx"]["legFaceOnPx"], ok=res["chamferPx"]["ok"]),
-                    skirts={k: v for k, v in res["skirts"].items() if k != "fails"},
+                    **late,
                     mesh={lvl: {k: res[lvl][k] for k in ("planarMm", "outsideBlockMm", "tJunctions", "openEdges",
                                                           "smallestAltitudeMm")} for lvl in ("L0", "L1")},
                     deterministic=res["deterministic"],
                     facts={k: v for k, v in res["facts"].items() if k != "fails"},
                     flight=None if flight is None else dict(
-                        file=FLIGHT, rule=flight["rule"], commit=flight["commit"], view=flight["view"],
+                        file=POOLS[part], rule=flight["rule"], commit=flight["commit"], view=flight["view"],
                         pooled={lvl: {k: v for k, v in p.items() if k != "worst"}
                                 for lvl, p in flight["pooled"].items()},
                         triangles=flight["triangles"], vertices=flight.get("vertices"),
                         smallestAltitudeMm=flight["smallestAltitudeMm"],
                         stones=len(flight["stones"]), ok=flight["ok"], shareOk=flight["shareOk"],
-                        shareFails=flight["shareFails"], shareRule=flight["shareRule"])),
-        data=data.src, code=code_ids(),
+                        shareFails=flight["shareFails"], shareRule=flight["shareRule"]),
+                    level=level),
+        data=data.src, code=code_ids(part),
     ))
 
 
@@ -2269,7 +3109,7 @@ def readback(path, levels):
     return notes
 
 
-def export(part, out, res, rule, data, defn, flight=None):
+def export(part, out, res, rule, data, defn, flight=None, level=None):
     """Export one stone: its checks must pass; its two levels made in an empty scene, exported to a scratch file and
     read back, then installed under the Unity lock (only when its meshes changed: an FBX's bytes change at every
     export by its header's time), its sidecar beside it, its hashes into the part code's manifest."""
@@ -2285,7 +3125,7 @@ def export(part, out, res, rule, data, defn, flight=None):
         bpy.data.objects.remove(ob, do_unlink=True)
     names = dict(L0=f"{part}_L0", L1=f"{part}_L1")
     obs = [make_object(names[k], out[k]) for k in ("L0", "L1")]
-    side = sidecar(part, out, res, rule, data, defn, flight)
+    side = sidecar(part, out, res, rule, data, defn, flight, level)
     path = os.path.join(ROOT, GENERATED, f"{part}.fbx")
     os.makedirs(os.path.dirname(path), exist_ok=True)
     scratch = tempfile.mkdtemp(prefix="stones-export-")
@@ -2356,9 +3196,10 @@ def manifest_notes(part, out, names):
 
 # -- the quick sheet (inside Blender, Workbench; it checks the machinery works and judges nothing) --------------------
 
-KIND_RGB = {0: (0.60, 0.58, 0.54), 1: (0.88, 0.52, 0.20), 2: (0.40, 0.46, 0.52)}
+KIND_RGB = {0: (0.60, 0.58, 0.54), 1: (0.88, 0.52, 0.20), 2: (0.40, 0.46, 0.52), 3: (0.56, 0.46, 0.36)}   # tread/top, chamfer, split, bed
 THIN_RGB, WIRE_RGB, INK_RGB, DEEP_RGB = (0.86, 0.10, 0.08), (0.06, 0.06, 0.06), (0.02, 0.02, 0.02), (0.10, 0.22, 0.55)
 CELL = (1280, 720)
+LABEL_CHARS = 110       # a label's longest line; fewer where its drawn width would leave the cell (_label)
 
 
 def timing_running():
@@ -2460,23 +3301,38 @@ def _fit(V, az, el, aspect=CELL[0] / CELL[1], fill=0.82):
 
 
 def _label(scene, cam, text, zoom=1.0):
-    """A line of text at the frame's top left, in front of the camera."""
+    """The text at the frame's top left, in front of the camera, wrapped to the cell's width."""
     import bpy
     from mathutils import Vector
-    cu = bpy.data.curves.new("label", "FONT")
-    cu.body = text
-    cu.size = 1.0
-    tob = bpy.data.objects.new("label", cu)
-    scene.collection.objects.link(tob)
-    dg = bpy.context.evaluated_depsgraph_get()
-    me = bpy.data.meshes.new_from_object(tob.evaluated_get(dg))
-    bpy.data.objects.remove(tob, do_unlink=True)
-    V = np.array([v.co[:] for v in me.vertices])
-    F = [tuple(p.vertices) for p in me.polygons]
+    import textwrap
+
+    def text_mesh(body):
+        cu = bpy.data.curves.new("label", "FONT")
+        cu.body = body
+        cu.size = 1.0
+        tob = bpy.data.objects.new("label", cu)
+        scene.collection.objects.link(tob)
+        dg = bpy.context.evaluated_depsgraph_get()
+        me = bpy.data.meshes.new_from_object(tob.evaluated_get(dg))
+        bpy.data.objects.remove(tob, do_unlink=True)
+        bpy.data.curves.remove(cu)
+        V = np.array([v.co[:] for v in me.vertices])
+        F = [tuple(p.vertices) for p in me.polygons]
+        bpy.data.meshes.remove(me)
+        return V, F
+
+    # a unit of the text is h below, 0.09 of the frame's half height: a line fits while it spans under 0.94 of the
+    # frame's width, 2 half_w
+    room = 0.94 * 2.0 * (CELL[0] / CELL[1]) / 0.09
+    chars = LABEL_CHARS
+    while True:
+        V, F = text_mesh("\n".join(textwrap.wrap(text, chars)))
+        if V[:, 0].max() <= room or chars <= 40:
+            break
+        chars -= 4
     tris = []
     for f in F:
         tris += [(f[0], f[i], f[i + 1]) for i in range(1, len(f) - 1)]
-    bpy.data.meshes.remove(me)
     if cam.data.type == "ORTHO":
         half_h = cam.data.ortho_scale / 2 / (CELL[0] / CELL[1])
         z = 1.0
@@ -2609,12 +3465,48 @@ def write_png(path, rgb):
                  chunk(b"IDAT", zlib.compress(bytes(raw), 9)) + chunk(b"IEND", b""))
 
 
+def sheet_path(part):
+    return SHEET if part == "step" else f"reviews/lt1/port/2b/r2a/stones/blender-sheet-{part}.png"
+
+
+def _compose(cells, rel):
+    """The cells, three across, into one PNG at rel."""
+    import bpy
+    cols, gap = 3, 6
+    rows = -(-len(cells) // cols)
+    Wd, Ht = cols * CELL[0] + (cols - 1) * gap, rows * CELL[1] + (rows - 1) * gap
+    canvas = np.ones((Ht, Wd, 4), np.float32)
+    for i, path in enumerate(cells):
+        img = bpy.data.images.load(path)
+        px = np.array(img.pixels[:], np.float32).reshape(CELL[1], CELL[0], img.channels)
+        bpy.data.images.remove(img)
+        r, c = divmod(i, cols)
+        y0 = Ht - (r + 1) * CELL[1] - r * gap         # Blender's pixels run bottom up
+        x0 = c * (CELL[0] + gap)
+        canvas[y0:y0 + CELL[1], x0:x0 + CELL[0], :3] = px[:, :, :3]
+    rgb = np.clip(np.round(canvas[::-1, :, :3] * 255.0), 0, 255).astype(np.uint8)    # top down, the cells' bytes
+    write_png(os.path.join(ROOT, rel), rgb)
+    print("SHEET", rel, f"{len(cells)} cells, {Wd} x {Ht}")
+
+
+def _band_colours(o, m):
+    """A wall stone's or a coping's faces by kind, and where a face is drawn only within its seen band (top, bed and
+    ends), a lighter shade of its kind, so the band's edge shows."""
+    out = []
+    for t in range(len(m["T"])):
+        k = KIND_RGB.get(int(m["UV"][2, t, 0, 0]), KIND_RGB[0])
+        if m["face"][t] in o["regions"]:
+            k = tuple(0.5 * a + 0.5 for a in k)
+        out.append(k)
+    return out
+
+
 def sheet(part, out, variant_outs, res):
     """The quick sheet: the specimen at both levels in the gate's view (magnified, its thin triangles red) and two
-    more, the machinery's variants, the skirts and the wear; cells composed into SHEET."""
+    more, the machinery's variants; the step's skirts and wear, a wall stone's or a coping's seen bands from behind
+    and its end square on; cells composed into sheet_path(part)."""
     import shutil
     import tempfile
-    import bpy
     _scene()
     o, L0, L1 = out["outline"], out["L0"], out["L1"]
     tmp = tempfile.mkdtemp(prefix="stones-sheet-")
@@ -2626,12 +3518,13 @@ def sheet(part, out, variant_outs, res):
             cells.append(path)
 
         th = res["thin"]
-        for name, m, dist, zoom in (("L0", L0, GATE["l0Distance"], 4.0), ("L1", L1, GATE["l1Distance"], 10.0)):
+        for name, m, dist in (("L0", L0, GATE["l0Distance"]), ("L1", L1, GATE["l1Distance"])):
+            zoom = (4.0 if name == "L0" else 10.0) if part == "step" else float(max(1, round(0.9 * dist / o["L"])))
             v = views(o, dist)["face-on 20"]
             r = th[name]["face-on 20"]
             cell(m, (v["cam"], v["target"]),
-                 f"{part} {name}, face-on 20 deg at {dist:g} m (the gate; x{zoom:g}): {r['thin']} of {r['front']} "
-                 f"under 2 px, red", colours=_gate_colours(m, v), zoom=zoom, wire_px=1.2)
+                 f"{part} {name}, face-on 20 deg at {dist:g} m (the level's view; x{zoom:g}): {r['thin']} of "
+                 f"{r['front']} under 2 px, red", colours=_gate_colours(m, v), zoom=zoom, wire_px=1.2)
             for vn, az, el in (("raised 45", 0, 45), ("left 40", -40, 20)):
                 cell(m, _fit(m["V"], az, el), f"{part} {name}, {vn}: {len(m['T'])} triangles; vertices "
                                               f"{len(m['V'])} its own, {indexed_vertices(m)} indexed, "
@@ -2641,64 +3534,99 @@ def sheet(part, out, variant_outs, res):
                  f"variant: {vname}, L0 {len(vo['L0']['T'])} triangles ({len(vo['L0']['V'])} vertices, the FBX's "
                  f"{3 * len(vo['L0']['T'])}), L1 {len(vo['L1']['T'])} ({len(vo['L1']['V'])}, "
                  f"{3 * len(vo['L1']['T'])})")
-        cell(L0, _fit(L0["V"], 150, -15), f"{part} L0 from behind, below: the skirts ({o['skirt'] * 1000:g} mm)")
-        span = max(o["L"], o["D"]) * 1.15
-        top = (np.array([o["L"] / 2, o["D"] / 2, 10.0]), np.array([o["L"] / 2, o["D"] / 2, 0.0]))
-        cell(L0, top, f"{part} L0 from above: the wear, blue the deepest ({o['lattice']['parts']} parts of the "
-                      f"flight)", colours=_depth_colours(o, L0), ortho=span, wire_px=1.0)
-        # compose: three across
-        cols, gap = 3, 6
-        rows = -(-len(cells) // cols)
-        Wd, Ht = cols * CELL[0] + (cols - 1) * gap, rows * CELL[1] + (rows - 1) * gap
-        canvas = np.ones((Ht, Wd, 4), np.float32)
-        for i, path in enumerate(cells):
-            img = bpy.data.images.load(path)
-            px = np.array(img.pixels[:], np.float32).reshape(CELL[1], CELL[0], img.channels)
-            bpy.data.images.remove(img)
-            r, c = divmod(i, cols)
-            y0 = Ht - (r + 1) * CELL[1] - r * gap         # Blender's pixels run bottom up
-            x0 = c * (CELL[0] + gap)
-            canvas[y0:y0 + CELL[1], x0:x0 + CELL[0], :3] = px[:, :, :3]
-        rgb = np.clip(np.round(canvas[::-1, :, :3] * 255.0), 0, 255).astype(np.uint8)    # top down, the cells' bytes
-        write_png(os.path.join(ROOT, SHEET), rgb)
-        print("SHEET", SHEET, f"{len(cells)} cells, {Wd} x {Ht}")
+        if part == "step":
+            cell(L0, _fit(L0["V"], 150, -15), f"{part} L0 from behind, below: the skirts ({o['skirt'] * 1000:g} mm)")
+            span = max(o["L"], o["D"]) * 1.15
+            top = (np.array([o["L"] / 2, o["D"] / 2, 10.0]), np.array([o["L"] / 2, o["D"] / 2, 0.0]))
+            cell(L0, top, f"{part} L0 from above: the wear, blue the deepest ({o['lattice']['parts']} parts of the "
+                          f"flight)", colours=_depth_colours(o, L0), ortho=span, wire_px=1.0)
+        else:
+            band = (f"the band {o['bandMm']} mm behind the wall's plane" if part == "wallstone" else
+                    f"the bed {o['summary']['bedBandMm']:g} mm past each face, a joint end within "
+                    f"{o['summary']['jointBandMm']} mm")
+            for name, m in (("L0", L0), ("L1", L1)):
+                cell(m, _fit(m["V"], 160, 30), f"{part} {name} from behind, above: drawn only where seen ({band}; "
+                                               f"lighter)", colours=_band_colours(o, m))
+            V = L0["V"]
+            span = 1.25 * max(float(np.ptp(V[:, 1])), float(np.ptp(V[:, 2])) * CELL[0] / CELL[1])   # the width
+            mid = 0.5 * (V.min(axis=0) + V.max(axis=0))
+            end = (np.array([o["L"] + 5.0, mid[1], mid[2]]), np.array([o["L"], mid[1], mid[2]]))
+            what = ((f"its face {o['faceFacets']} planes, the ridges proud {o['proudMm']} mm" if o['faceFacets'] > 1
+                     else "its face one plane") +
+                    f", the batter {o['summary']['batter'][0]}/{o['summary']['batter'][1]}"
+                    if part == "wallstone" else
+                    f"proud {o['summary']['proudMm']['front']} mm at the front, {o['summary']['proudMm']['back']} at "
+                    f"the back")
+            cell(L0, end, f"{part} L0, its right end square on (ortho): {what}", colours=_band_colours(o, L0),
+                 ortho=span, wire_px=1.0)
+        _compose(cells, sheet_path(part))
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
 
 
+SPECIMENS = {"step": specimen_step, "wallstone": specimen_wallstone, "coping": specimen_coping}
+PARTS = ("step", "wallstone", "coping")
+
+
 def main(argv):
+    """stones.py <check | flight | export | sheet> [part,part,...] (every part when none is named)."""
     cmd = argv[0] if argv else "check"
-    data = Data()
-    defn = definition("step")
+    parts = argv[1].split(",") if len(argv) > 1 else list(PARTS)
     if cmd not in ("check", "flight", "export", "sheet"):
         raise SystemExit(f"unknown command {cmd}: check, flight, export or sheet")
+    bad = [p for p in parts if p not in PARTS]
+    if bad:
+        raise SystemExit(f"unknown parts {bad}: {', '.join(PARTS)}")
+    data = Data()
     if cmd == "flight":
-        fr = flight_check(data)
-        print(flight_summary(fr))
-        return 0 if fr["ok"] else 1
-    facts, rule = specimen_step(data)
-    print(json.dumps(rule, indent=1))
-    out = step(facts, defn, data)
-    res = check("step", out, defn)
-    print(summary(res))
-    fr, why = flight_current()
-    print(flight_summary(fr) if fr else f"flight: {why}")
+        ok = True
+        for part in parts:
+            fr = flight_check(data, part=part)
+            print(flight_summary(fr))
+            ok = ok and fr["ok"]
+        return 0 if ok else 1
+    failed = []
+    for part in parts:
+        print(f"\n==== {part}")
+        pdata = Data(data.commit)
+        defn = definition(part)
+        facts, rule = SPECIMENS[part](pdata)
+        print(json.dumps({k: v for k, v in rule.items() if k != "laid"}, indent=1))
+        out = build(part, facts, defn, pdata)
+        res = check(part, out, defn)
+        print(summary(res))
+        fr, why = flight_current(part)
+        print(flight_summary(fr) if fr else f"pool: {why}")
+        lv, lwhy = level_gate()
+        print(level_summary(lv) if lv else f"level: {lwhy}")
+        if cmd == "export":
+            if fr is None or not fr["ok"]:
+                raise Failed(f"{part}: the pool's stones do not all pass: {why or fr['fails'][:10]}")
+            if lv is None or not lv["ok"]:
+                raise Failed(f"{part}: the level's checks do not pass: {lwhy or lv['fails']}")
+            side = export(part, out, res, rule, pdata, defn, flight=fr, level=lv)
+            print("readback:", json.dumps(side["readback"]))
+            continue
+        failed += [f"{part}: {f}" for f in res["fails"]] + ([f"{part}: {why}"] if fr is None else
+                                                           [f"{part}: {f}" for f in fr["fails"]])
+        failed += [f"{part}: level: {lwhy}"] if lv is None else [f"{part}: {f}" for f in lv["fails"]]
+        vouts = {}
+        if part == "step":
+            vs = {name: (v, {}) for name, v in variants(facts).items()}
+        else:
+            vs = wall_variants(part, Data(data.commit))
+        for name, (v, params) in vs.items():
+            vd = with_params(defn, params)
+            ov = build(part, v, vd, Data(data.commit))
+            rv = check(part, ov, vd)
+            print(f"\n== {part} variant {name}" + (f" (params {params})" if params else ""))
+            print(summary(rv))
+            failed += [f"{part} {name}: {f}" for f in rv["fails"]]
+            vouts[name] = ov
+        if cmd == "sheet":
+            sheet(part, out, vouts, res)
     if cmd == "export":
-        if fr is None or not fr["ok"]:
-            raise Failed(f"the flight's stones do not all pass: {why or fr['fails']}")
-        side = export("step", out, res, rule, data, defn, flight=fr)
-        print("readback:", json.dumps(side["readback"]))
         return 0
-    vouts, failed = {}, list(res["fails"]) + ([why] if fr is None else list(fr["fails"]))
-    for name, v in variants(facts).items():
-        ov = step(v, defn, Data(data.commit))
-        rv = check("step", ov, defn, piece_gate=False)
-        print(f"\n== variant {name}")
-        print(summary(rv))
-        failed += [f"{name}: {f}" for f in rv["fails"]]
-        vouts[name] = ov
-    if cmd == "sheet":
-        sheet("step", out, vouts, res)
     print("\nALL FAILS: " + ("; ".join(failed) if failed else "none"))
     return 0 if not failed else 1
 

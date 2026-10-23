@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 2,
+  "part": "stone/coping",
+  "version": 1,
+  "describes": "A coping slab of split slate across the top of a dry wall (port step 2b, R2a; the design's SN2, SN4 and SN9): a rigid block on its bed, its top and bed the laminae's planes, its long sides and ends split, one plane each; as wide as the wall's top and its overhangs, its front a seeded few mm proud of the stair's face. An open end (where its run ends over a riser) is drawn whole and may be knocked at its top corners; a joint end is set in by its half joint and drawn where the joint is seen. L0 chamfers the top's arrises, its perimeter, and only those: the bed's would face down (SN7), each end's upright arrises would make corners where three chamfers meet in a point too fine to draw (SN8), and a knock is a break after the dressing, its arrises sharp.",
+  "madeAs": "fitted",
+  "era": { "first": 1874, "last": null },
+  "sizes": { "w": [188, 1000], "h": [64, 98], "d": [470, 470] },
+  "fits": ["fitted"],
+  "pivot": "bed-front-left",
+  "sockets": [],
+  "removalMark": null,
+  "levels": {
+    "l0": { "errorMm": 1, "triangles": 120, "shadow": "none", "collision": "proxy" },
+    "l1": { "errorMm": 11, "triangles": 48, "shadow": "self", "collision": "proxy" },
+    "l2": { "errorMm": 25, "triangles": 0, "shadow": "proxy", "collision": "proxy" },
+    "l3": { "errorMm": 100, "triangles": 0, "shadow": "proxy", "collision": "proxy" },
+    "l4": { "errorMm": 250, "triangles": 0, "shadow": "proxy", "collision": "proxy" }
+  },
+  "motion": [{ "element": "stone", "class": "still", "deform": "none" }],
+  "intrinsicChannels": ["face-kind", "edge-distance"],
+  "marks": [{ "name": "face-patch", "smallestFeatureMm": 2 }],
+  "shaderFamily": "stone",
+  "materials": ["slate"],
+  "function": { "python": "blender/parts/stone/slate/stones.py:coping", "csharp": null },
+  "lifecycle": { "state": "draft" },
+  "note": "Sizes from R1's walling table (packs/stavanger-1989/walling.json, the dry-split-1874 working) and its laying: w a coping's cell (copeLeastMm 200 where a run leaves less than a slab, to copeLengthMm's 1000) less a half joint (2 to 6 mm) at each joint end; h its run's thickness (copeThickMm 70 to 100) less its bed's half joint; d the wall's top (wall.py's 420 mm) and its overhangs (50 mm on a standing wall). Levels: the design's SN8 budgets per piece (120 and 48); L1's error is L0's chamfers' (their sagitta, 8.5 mm at a 12 mm leg; up to 9.8 mm measured at a corner where two meet), 11 mm as the step's, against kinds/wall.json's 4 (blender.md, the conflicts); L2 to L4 are the chunk's. The part's own numbers (chamfer, which arrises it takes, chips, patch sets) are stones.py's PARAMS until this schema takes a params object (reviews/lt1/port/2b/r2a/stones/blender.md)."
+}

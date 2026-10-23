@@ -229,13 +229,19 @@ def _meet(planes):
     return np.linalg.solve(A, np.array([p["d"] for p in planes]))
 
 
-def chamfers(planes, leg, arris_max_deg):
+def chamfers(planes, leg, arris_max_deg, pairs=None, start=None):
     """L0's chamfers (SN4): one plane on every exposed arris of the convex block the planes bound, leg (m) along each
     face. An arris a facet's ridge breaks (the riser folding back below a lamina, under an end that does not) is one
     chamfer band, as a mason runs it: its top piece has the leg, and each piece below is set through the point where
     the band's edge above crosses the ridge on the face that folds there, so the edge runs on unbroken. (Each at its
     own leg would cross the ridge a fraction of a mm apart and leave a piece that thin; the legs below differ from
-    the stone's by the fold's turn, a few hundredths of a mm, reported as legDriftMm.) Returns
+    the stone's by the fold's turn, a few hundredths of a mm, reported as legDriftMm.)
+
+    pairs: None (every arris, by its faces' names in order), or the face pairs (sorted name tuples) to chamfer, in the
+    order given: an arris of any other pair stays square (a wall stone's arrises that run back into the wall, inside
+    its joints). start: None, or start(pair, made), called before each pair's first piece with the chamfers made so
+    far, returning None or a point the piece is set through instead of its leg (where a chamfer must meet another one
+    and a square arris at one point, so no cap a fraction of a mm across is left between them). Returns
     [(plane, sagitta, angle)]."""
     faces = polyhedron([p for p in planes if p["role"] in ("exposed", "hidden")])
     by_pair = {}
@@ -243,7 +249,7 @@ def chamfers(planes, leg, arris_max_deg):
         key = tuple(sorted((faces[i][0]["face"], faces[j][0]["face"])))
         by_pair.setdefault(key, []).append((i, j, edge, ang))
     out = []
-    for key in sorted(by_pair):
+    for key in (sorted(by_pair) if pairs is None else [tuple(sorted(k)) for k in pairs if tuple(sorted(k)) in by_pair]):
         pieces = by_pair[key]
         # the chain from its top: the piece with the highest end, then each that shares an end with the last
         left = sorted(pieces, key=lambda t: -max(t[2][0][2], t[2][1][2]))
@@ -256,6 +262,8 @@ def chamfers(planes, leg, arris_max_deg):
         prev = None
         for i, j, edge, ang in chain:
             through = None
+            if prev is None and start is not None:
+                through = start(key, out)
             if prev is not None:
                 (pi, pj, ppl, pedge) = prev
                 old = {faces[pi][0]["face"]: faces[pi][0], faces[pj][0]["face"]: faces[pj][0]}
