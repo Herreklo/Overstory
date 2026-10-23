@@ -9,7 +9,9 @@ Exit 0 when everything passes; 1 on any failure, each line naming the record and
 The checks, beyond the JSON Schema (draft 2020-12, the files' $refs resolved through `referencing`):
 - the contracts themselves: each schema is valid; every grammar pattern equals schemas/naming.md's (tools/naming.py);
   the vertex layouts add up; every layer sits on a map channel of its own name; every kind and part validates, and
-  every pack's materials, each named as its file;
+  every pack's materials, each named as its file; every pack's walling table and the test tables in its shape
+  (WALLING_TESTS) validate, each range's least no more than its most, each working's material one of the pack's, and
+  a test table's workings not the pack's own;
 - ids: well formed by naming.md, unique, under their record; events numbered 1.. and fills 0.. in date order, fills of
   one event in the kind's role order; every slot path matches one of the kind's slot rules, of the rule's type, and the
   slots and fills it is held by exist and outlive it;
@@ -46,6 +48,9 @@ import naming  # noqa: E402
 
 SCHEMAS = os.path.join(ROOT, "schemas")
 CURRENT = 2
+# test tables in the walling table's shape outside a pack, each with the pack whose table it is merged into for its
+# check (reviews/lt1/port/2b/design.md 7b: a style changed by data alone)
+WALLING_TESTS = (("reviews/lt1/port/2b/r1/granite-1930.json", "stavanger-1989"),)
 
 
 def _load_face_class():
@@ -154,6 +159,7 @@ class Contracts(object):
             if os.path.isdir(os.path.join(packs, pack)):
                 self.pack(pack)
                 self.materials(pack)
+                self.walling(pack)
                 parts = os.path.join(packs, pack, "parts")
                 for dirpath, _, files in os.walk(parts):
                     for f in sorted(files):
@@ -271,6 +277,61 @@ class Contracts(object):
                 self.fail(where, "%s: %s" % ("/".join(str(p) for p in e.absolute_path) or "(top)", e.message))
             if m.get("material") != f[:-5]:
                 self.fail(where, "names material %r, its file is %s" % (m.get("material"), f))
+
+    def walling(self, pack):
+        """The pack's walling table (packs/<pack>/walling.json), and each test table merged into it, against
+        walling.schema.json and what the schema cannot say."""
+        path = os.path.join(ROOT, "packs", pack, "walling.json")
+        if not os.path.exists(path):
+            return
+        own = read_json(path)
+        self.walling_table(own, rel(path), pack)
+        for test, into in WALLING_TESTS:
+            if into == pack:
+                self.walling_table(read_json(os.path.join(ROOT, test)), test, pack, own)
+
+    def walling_table(self, w, where, pack, own=None):
+        """One walling table: `own` is None for the pack's own table, else the pack's table a test table is merged
+        into."""
+        for e in self.schema_errors("walling.schema.json", w):
+            self.fail(where, "%s: %s" % ("/".join(str(p) for p in e.absolute_path) or "(top)", e.message))
+        if own is None and "applies" in w:
+            self.fail(where, "a pack's own walling table applies nothing; only a test table names the workings it applies")
+        if own is not None and "applies" not in w:
+            self.fail(where, "a test table names the workings it applies")
+        folder = os.path.join(ROOT, "packs", pack, "materials")
+        mats = {f[:-5] for f in os.listdir(folder) if f.endswith(".json")} if os.path.isdir(folder) else set()
+        workings = w.get("workings", {}) if isinstance(w.get("workings"), dict) else {}
+
+        def ranges(v, at):
+            if isinstance(v, dict):
+                for k, x in sorted(v.items()):
+                    ranges(x, "%s.%s" % (at, k))
+            elif isinstance(v, list) and len(v) == 2 and all(type(x) is int for x in v):
+                if at.endswith("Mm") and v[0] > v[1]:
+                    self.fail(where, "%s: its least %d is more than its most %d" % (at, v[0], v[1]))
+            elif isinstance(v, list) and len(v) == 2 and all(isinstance(x, list) and len(x) == 2 and
+                                                             all(type(y) is int for y in x) for x in v):
+                if at.endswith("Mm"):
+                    for i, x in enumerate(v):
+                        ranges(x, "%s[%d]" % (at, i))
+                elif at.endswith("PerHeight") and v[0][0] * v[1][1] > v[1][0] * v[0][1]:
+                    self.fail(where, "%s: its least %d/%d is more than its most %d/%d" % (at, v[0][0], v[0][1], v[1][0], v[1][1]))
+        for name, wk in sorted(workings.items()):
+            if not isinstance(wk, dict):
+                continue
+            at = "workings.%s" % name
+            if wk.get("material") not in mats:
+                self.fail(where, "%s: material %r is not one of the pack's (packs/%s/materials/)" % (at, wk.get("material"), pack))
+            ranges(wk, at)
+        if own is not None:
+            clash = sorted(set(workings) & set(own.get("workings", {})))
+            if clash:
+                self.fail(where, "the test table's workings %s are the pack's own" % ", ".join(clash))
+            merged = set(workings) | set(own.get("workings", {}))
+            for k, v in sorted(w.get("applies", {}).items()):
+                if v not in merged:
+                    self.fail(where, "applies.%s: %r is no working of the merged table" % (k, v))
 
     def kind(self, kind):
         if kind not in self._kinds:
@@ -924,6 +985,56 @@ def self_test():
     failed = caught = 0
     ok = Contracts()
     ok.check_contracts()
+    # the walling table's breaks: each on a copy of the pack's own table (or the test table), each must fail
+    wall_path = os.path.join(ROOT, "packs", "stavanger-1989", "walling.json")
+    wall_base = read_json(wall_path)
+    test_base = read_json(os.path.join(ROOT, WALLING_TESTS[0][0]))
+
+    def w_reversed(w):
+        w["workings"]["dry-split-1874"]["copeLengthMm"] = [1000, 450]
+
+    def w_missing(w):
+        w["workings"]["dry-split-1874"].pop("topstoneMm")
+
+    def w_float(w):
+        w["workings"]["dry-split-1874"]["courseMm"][0] = 120.5
+
+    def w_material(w):
+        w["workings"]["dry-split-1874"]["material"] = "marble"
+
+    def w_drawn(w):
+        w["workings"]["dry-split-1874"]["drawnPerHeight"] = [[4, 1], [3, 2]]
+
+    def w_applies(w):
+        w["applies"] = {"walls": "dry-split-1874"}
+
+    def w_clash(w):
+        w["workings"]["dry-split-1874"] = copy.deepcopy(wall_base["workings"]["dry-split-1874"])
+
+    wall_cases = [
+        ("a walling range backwards", w_reversed, None, "is more than its most"),
+        ("a wall's working missing a number", w_missing, None, "is a dependency of"),
+        ("a walling number not an integer", w_float, None, "is not of type 'integer'"),
+        ("a working of a material the pack lacks", w_material, None, "is not one of the pack's"),
+        ("a drawn length's fractions backwards", w_drawn, None, "is more than its most"),
+        ("a pack's own table applying workings", w_applies, None, "applies nothing"),
+        ("a test table redefining the pack's working", w_clash, "test", "are the pack's own"),
+    ]
+    for name, mutate, which, expect in wall_cases:
+        w = copy.deepcopy(test_base if which else wall_base)
+        mutate(w)
+        t = Contracts()
+        if which:
+            t.walling_table(w, WALLING_TESTS[0][0], "stavanger-1989", wall_base)
+        else:
+            t.walling_table(w, rel(wall_path), "stavanger-1989")
+        hit = [p for p in t.problems if expect in p]
+        if not hit:
+            failed += 1
+            print("FAIL %s: not caught%s" % (name, (" (it said: %s)" % t.problems[0]) if t.problems else ""))
+        else:
+            caught += 1
+            print("caught %s: %s" % (name, hit[0]))
     check_record(ok, copy.deepcopy(base), label="bld-104")
     if ok.problems:
         print("FAIL the unbroken record does not pass:")
@@ -960,7 +1071,7 @@ def self_test():
     else:
         failed += 1
         print("FAIL a slot deleted since the commit: not caught")
-    print("self-test: %d of %d breaks caught; the unbroken record %s" % (caught, len(cases) + 1, "fails" if ok.problems else "passes"))
+    print("self-test: %d of %d breaks caught; the unbroken record %s" % (caught, len(cases) + len(wall_cases) + 1, "fails" if ok.problems else "passes"))
     return 1 if failed else 0
 
 

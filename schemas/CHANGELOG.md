@@ -2,6 +2,13 @@
 
 Every change to the files in `schemas/` with its migration. The contracts' version is `schemaVersion`, carried by every record, kind, pack file and fixture. `tools/migrate.py` runs `migrations/NNN_<name>.py` in order on every file behind; `tools/migrate.py --check` fails while any is behind. `tools/validate_record.py` checks records, kinds, parts and the registries against the current version.
 
+## 2, unchanged: the walling table's schema (23 October, the gully port's step 2b, R1)
+
+No migration: the pack's one walling table already had this shape, and no record or kind changes.
+
+New:
+- `walling.schema.json`: a pack's walling table (`packs/<pack>/walling.json`, the wall kind's table `walling`), by working: a wall's working (every course, stone, coping, topstone, head and through number, required together), a rebuilt panel's (its edge stones) or a stair's (its steps' laps and joints), each naming its material, integers in millimetres. Only a test table names the workings it `applies` (design.md 7b). `tools/validate_record.py` validates every pack's `walling.json` and the test tables merged into it (`reviews/lt1/port/2b/r1/granite-1930.json`, whose provenance is now `authored`), and checks what the schema cannot say: each range's least no more than its most, each drawn length's fractions in order, each working's material one of the pack's, and a test table's workings not the pack's own. `stairs.json` still has no schema.
+
 ## 2, unchanged: history as a function (22 October, the gully port's step 3)
 
 No migration: no record, kind or part holds intervals or pages yet, and every addition is optional. Decisions D5.1, D5.4 and S2 amended, D5.10 new.

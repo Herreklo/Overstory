@@ -10,8 +10,10 @@ same level course lines and through the same features. It is laid in this order,
   largest courses low);
 - the top, by SN2's parapet: level slab copings stepped square, a whole number of courses a step (one going or two
   each level run, `goings`), every bed on a course line, so below the last step every step falls on a step top's
-  line; over a rest the coping runs level and drops square at the next flight. Nothing is cut to a slope: no rake
-  cuts, kneelers or knee stones. A wall end's run ends in a square topstone through its top course;
+  line; over a rest the coping runs level and drops square at the next flight. Where a stretch climbs other than a
+  whole number of steps, its one short step stays at the stretch's top unless the runs then cannot be laid whole,
+  and goes to the nearest place down the stretch where they can. Nothing is cut to a slope: no rake cuts, kneelers
+  or knee stones. A wall end's run ends in a square topstone through its top course;
 - the heads at the wall's ends: ties and runners alternating, each two courses high, under the topstone;
 - the footings: on the stair's face the steps themselves (their ends occupied cells, 150 mm into the wall), on the
   bank's face steps with the ground, each step a whole course;
@@ -767,53 +769,109 @@ class Line:
         lid, Lz = self.id, self.Lz
         Y = self.ideal_bed()
         self.idealBed = Y
-        k = self.nearest(Y[0][1])
-        k0 = k
-        risers = []
-        x = self.s0
-        # each rising stretch of the ideal bed ends at a level run (a rest, a landing, the wall's end): the bed steps
-        # up to the line nearest that run's ideal bed
-        j = 0
-        while j < len(Y) - 1:
-            if Y[j + 1][1] == Y[j][1]:
-                j += 1
-                continue
-            ja = j
-            while j < len(Y) - 1 and Y[j + 1][1] > Y[j][1]:
-                j += 1
-            stretch = (Y[ja][0], Y[j][0])
-            kE = self.nearest(Y[j][1])
-            while k < kE:
-                step = min(goings, kE - k)
-                v2 = Lz[k] + Lz[k + step]
-                xr = None
-                for (sa, ya), (sb, yb) in zip(Y[ja:j], Y[ja + 1:j + 1]):
-                    if 2 * yb >= v2:
-                        xr = sa if 2 * ya >= v2 else sa + div_round((v2 - 2 * ya) * (sb - sa), 2 * (yb - ya))
+        k0 = self.nearest(Y[0][1])
+
+        def setout(shorts):
+            """The risers, as a mason sets out a stepped coping: each rising stretch of the ideal bed ends at a level
+            run (a rest, a landing, the wall's end), and the bed steps up to the line nearest that run's ideal bed,
+            `goings` courses a step. Where a stretch's courses are not a whole number of such steps, one step is
+            short: `shorts` maps the stretch (its index) to the short step's place among its steps, counted from the
+            stretch's foot; by default it is the last, beside the level run above. Returns the risers, the flags,
+            the beds, the coping runs' thicknesses, each end's square topstone range, and the default places."""
+            k, x, j, si = k0, self.s0, 0, 0
+            out, fl, places = [], [], []
+            while j < len(Y) - 1:
+                if Y[j + 1][1] == Y[j][1]:
+                    j += 1
+                    continue
+                ja = j
+                while j < len(Y) - 1 and Y[j + 1][1] > Y[j][1]:
+                    j += 1
+                stretch = (Y[ja][0], Y[j][0])
+                kE = self.nearest(Y[j][1])
+                whole, short = divmod(max(0, kE - k), goings)
+                sizes = [goings] * whole
+                if short:
+                    sizes.insert(shorts.get(si, whole), short)
+                places.append(whole if short else None)
+                for step in sizes:
+                    v2 = Lz[k] + Lz[k + step]
+                    xr = None
+                    for (sa, ya), (sb, yb) in zip(Y[ja:j], Y[ja + 1:j + 1]):
+                        if 2 * yb >= v2:
+                            xr = sa if 2 * ya >= v2 else sa + div_round((v2 - 2 * ya) * (sb - sa), 2 * (yb - ya))
+                            break
+                    if xr is None:
+                        xr = Y[j][0]
+                        fl.append(f"{lid}: a riser from {Lz[k]} to {Lz[k + step]} put at the stretch's end {xr}")
+                    xr = max(xr, x)
+                    out.append(dict(at=xr, lo=k, hi=k + step, ideal=xr, stretch=stretch, stretchIndex=si,
+                                    short=step < goings))
+                    x = xr
+                    k += step
+                si += 1
+            merged = []
+            for r in out:
+                if merged and merged[-1]["at"] == r["at"]:
+                    merged[-1]["hi"] = r["hi"]
+                    fl.append(f"{lid}: two risers meet at {r['at']}: one step of "
+                              f"{merged[-1]['hi'] - merged[-1]['lo']} courses")
+                else:
+                    merged.append(dict(r))
+            beds = [k0] + [r["hi"] for r in merged]
+            if beds[0] == 0 or beds[-1] == 0:
+                raise Refused(f"{lid}: the end run's bed is the lowest line; no course under it for a topstone")
+            t = [HS.Stream(self.seed, lid, "cope", "run", i).randint(*D.COPE_T) for i in range(len(beds))]
+            # the square topstone's range at each end: through the end run's top course, to the coping's top
+            tops_sq = [D.square(Lz[beds[i]] + t[i] - Lz[beds[i] - 1]) for i in (0, len(beds) - 1)]
+            return merged, fl, beds, t, tops_sq, places
+
+        def unmet(shorts):
+            """What a set-out leaves unmet once its risers are placed: the flags (an end run neither its topstone
+            nor its topstone and a whole slab, a level run under a whole slab, a straight joint with no room), a
+            refusal counting above any number of them."""
+            rs, fl, _, _, tq, _ = setout(shorts)
+            n0 = len(self.flags)
+            try:
+                self.place_risers(rs, goings, tq)
+                got = (0, len(fl) + len(self.flags) - n0)
+            except Refused:
+                got = (1, len(fl))
+            del self.flags[n0:]
+            return got
+
+        # the short step goes at its stretch's top unless the runs cannot then be laid; then, one stretch at a time,
+        # at the nearest place down the stretch that leaves less unmet (a mason sets out the steps from the heads,
+        # so the ends' topstones and every run's whole slabs fit), the stretches in order at each distance
+        shorts = {}
+        best = unmet(shorts)
+        places = setout(shorts)[5]
+        while best != (0, 0):
+            found = None
+            for d in range(1, max([p for p in places if p is not None], default=0) + 1):
+                for si, p in enumerate(places):
+                    if p is None or si in shorts or p - d < 0:
+                        continue
+                    got = unmet({**shorts, si: p - d})
+                    if got < best:
+                        found = (si, p - d, got)
                         break
-                if xr is None:
-                    xr = Y[j][0]
-                    self.flags.append(f"{lid}: a riser from {Lz[k]} to {Lz[k + step]} put at the stretch's end {xr}")
-                xr = max(xr, x)
-                risers.append(dict(at=xr, lo=k, hi=k + step, ideal=xr, stretch=stretch))
-                x = xr
-                k += step
-        merged = []
-        for r in risers:
-            if merged and merged[-1]["at"] == r["at"]:
-                merged[-1]["hi"] = r["hi"]
-                self.flags.append(f"{lid}: two risers meet at {r['at']}: one step of "
-                                  f"{merged[-1]['hi'] - merged[-1]['lo']} courses")
-            else:
-                merged.append(dict(r))
-        risers = merged
-        beds = [k0] + [r["hi"] for r in risers]
-        t = [HS.Stream(self.seed, lid, "cope", "run", i).randint(*D.COPE_T) for i in range(len(beds))]
-        if beds[0] == 0 or beds[-1] == 0:
-            raise Refused(f"{lid}: the end run's bed is the lowest line; no course under it for a topstone")
-        # the square topstone's range at each end: through the end run's top course, to the coping's top
-        tops_sq = [D.square(Lz[beds[i]] + t[i] - Lz[beds[i] - 1]) for i in (0, len(beds) - 1)]
+                if found:
+                    break
+            if not found:
+                break
+            shorts[found[0]] = found[1]
+            best = found[2]
+        risers, fl, beds, t, tops_sq, places = setout(shorts)
+        self.flags += fl
         self.place_risers(risers, goings, tops_sq)
+        for r in risers:
+            si = r["stretchIndex"]
+            if r["short"] and si in shorts:
+                n_ = places[si] - shorts[si]
+                r["short"] = (f"the stretch's short step, set {n_} step{'s' if n_ != 1 else ''} down from its top so "
+                              f"its runs can be laid whole")
+                r["moved"] = f"{r['moved']}; {r['short']}" if r["moved"] else r["short"]
         xs = [self.s0] + [r["at"] for r in risers] + [self.s1]
         # the topstones at the wall's ends: square, bedded through the end run's top course; a run too short for a
         # topstone and a slab is the topstone alone (its riser moved to make it square, flagged)

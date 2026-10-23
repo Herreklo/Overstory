@@ -24,6 +24,7 @@ panel face is laid stone by stone, and its areas rounded to cm2.
 import json
 import math
 import os
+import re
 import statistics
 import subprocess
 import sys
@@ -79,6 +80,14 @@ READ = """**The coordinator's read (22 October, 22:20).** Not passed. The next r
 - **One course a rise.** The 140 mm maximum course came from `wall.py`. The town's own walls (`docs/references/stone/` 31 and 36) are thick split slabs, so the course range rises to cover a rise (up to about 190 mm), with one course on each step top as SN2 already allows. That roughly halves the stone count.
 - **The back faces.** All four walls are parapets (`retains: false` in the clay's ground), so both faces are seen from somewhere. Measure which back faces the five judging views and the walkable ground can see before deciding how they are laid.
 - **The budget.** SN8's 110k for the walls assumed 140 m² of face, and the walls have 212.5 m². Re-derive it from the faces that are seen, then hold to it."""
+
+# design.md's table as the coordinator set it on 23 October (aae26e7), R1's option A; kinds/wall.json's l0 and l1 hold
+# the walls' (the report checks they agree)
+BUDGET = dict(walls=(131100, 53500), stairs=(51000, 20400), gully=(182100, 73900))
+
+READ2 = """**The coordinator's read (23 October).** R1 passes at round 2 as a mason's layout (`aae26e7`): the budget follows option A (walls 131,100 and 53,500, steps 51,000 and 20,400, the gully 182,100 and 73,900), and SN2 now includes the three readings (one course a rise, as many goings as a whole coping needs, and the corner stone at twice its course). Two small things are left.
+1. **7b is not met:** the granite record fails SN2 on two copings at fl-0's top ends. Fix it the way a mason with those stones would, with no special case for granite. Ask whether the cause is a universal rule the laying lacks, or a fact of the working or style held in the wrong place. The two candidates are re-dividing the run's last slabs, and the head's end form (square topstone or not), which might be the working's rather than the kind's. Put the fix where it belongs and say why in a few lines. The slate's hash may change only if the rule is universal and the slate's layout changes for the same reason; say which.
+2. **A check for the walling table:** add `schemas/walling.schema.json`. Make `tools/validate_record.py` (or the check it already runs) validate the pack's `walling.json` and `r1/granite-1930.json` against it. Then make `kinds/wall.json`'s `l0` and `l1` triangles match the budget above, and remove the provisional mark."""
 
 ROUND1 = dict(wallStones=8620, faceStones=8301, copings=106, kneelers=22, knees=18, throughs=71, heads=96,
               topstones=6, faceM2=212.5, stepStones=170, l0Walls=370320, l0Stairs=51000, l0Gully=421320,
@@ -2230,6 +2239,8 @@ def write_report(facts, res, ind, ind1, tm, tm1, vt, sheet, var):
     t2, t1 = C2["totals"], C1["totals"]
     o = ROUND1
     D = rules(M, facts, facts["walls"]["lines"][0]["id"])
+    with open(os.path.join(ROOT, "kinds", "wall.json")) as f_:
+        kind_levels = json.load(f_)["levels"]
     flights = {f["id"]: f for f in facts["stair"]["flights"]}
     # ---- the visibility
     vis = facts["walls"]["visibility"]
@@ -2340,19 +2351,21 @@ def write_report(facts, res, ind, ind1, tm, tm1, vt, sheet, var):
     a("Port step 2b, rung R1, round 2 (`reviews/lt1/port/2b/design.md`, The ladder). The cheek walls and the steps are "
       "laid in integer millimetres by `blender/generators/masonry.py`, from `r1/facts.json` and the data "
       "(`kinds/wall.json`, `packs/stavanger-1989/walling.json`), then checked, timed and drawn by "
-      "`tools/r1_elevations.py`. This report gives numbers and faults only. It judges no look, and no reviewer has "
-      "passed anything in it.")
+      "`tools/r1_elevations.py`. This report gives numbers and faults only, and judges no look. The coordinator passed "
+      "R1 at round 2 on 23 October (`aae26e7`) and left two things, answered under The read of 23 October; no "
+      "reviewer has passed those answers yet.")
     a("")
     # ------------------------------------------------------------------------------------------------ In short
     a("## In short")
     a("")
     a(f"- **Counts against the budgets (SN8), two goings a level run (the variant laid):** {_n(t2['wallStones'])} wall "
       f"stones (round 1: {_n(o['wallStones'])}, {_pct(t2['wallStones'], o['wallStones'])}; the design's estimate "
-      f"about {_n(SN8['wallStones'])}). Walls L0 {_n(t2['l0Walls'])} triangles: the old budget is "
-      f"{_n(SN8['walls'][0])} and the re-derived one {_n(A0)}. Walls L1 {_n(t2['l1Walls'])}: old {_n(SN8['walls'][1])}, "
-      f"re-derived {_n(A1)}. Steps L0 {_n(S0)} ({t2['stepStones']} stones at {STEP_TRI[0]}) against "
-      f"{_n(SN8['stairs'][0])}. The gully L0 {_n(t2['l0Gully'])}: old {_n(SN8['gully'][0])}, re-derived {_n(G0)} "
-      f"(round 1: {_n(o['l0Gully'])}).")
+      f"about {_n(SN8['wallStones'])}). Against the budget the coordinator set on 23 October (R1's option A; SN8's "
+      f"first figures in brackets): walls L0 {_n(t2['l0Walls'])} of {_n(BUDGET['walls'][0])} "
+      f"({_n(SN8['walls'][0])}), walls L1 {_n(t2['l1Walls'])} of {_n(BUDGET['walls'][1])} ({_n(SN8['walls'][1])}), "
+      f"steps L0 {_n(S0)} ({t2['stepStones']} stones at {STEP_TRI[0]}) of {_n(BUDGET['stairs'][0])} "
+      f"({_n(SN8['stairs'][0])}), the gully L0 {_n(t2['l0Gully'])} of {_n(BUDGET['gully'][0])} "
+      f"({_n(SN8['gully'][0])}; round 1 laid {_n(o['l0Gully'])}).")
     rep2 = sorted(name for (sn, name), t in T2.t.items() if not t["checked"])
     rep1 = sorted(name for (sn, name), t in T1.t.items() if not t["checked"])
     a(f"- **Tests:** {len(T2.t) - len(rep2)} checks and {len(rep2)} report only ({', '.join(rep2) or 'none'}, as "
@@ -2390,9 +2403,16 @@ def write_report(facts, res, ind, ind1, tm, tm1, vt, sheet, var):
     if vfail:
         still.append("the granite record: " + "; ".join(f"{sn} {name} ({len(t['fails'])})" for (sn, name), t in
                                                         sorted(vfail.items())))
-    still.append(f"the walls' L0 is over the old budget ({_n(t2['l0Walls'])} against {_n(SN8['walls'][0])}) and "
-                 f"under the re-derived one by {_n(A0 - t2['l0Walls'])}; the steps' L0 is over theirs "
-                 f"({_n(S0)} against {_n(SN8['stairs'][0])})")
+    over = [f"{what} {lv} {_n(n_)} over {_n(b_)}"
+            for what, ns, bs in (("the walls", (t2["l0Walls"], t2["l1Walls"]), BUDGET["walls"]),
+                                 ("the steps", (S0, S1), BUDGET["stairs"]),
+                                 ("the gully", (t2["l0Gully"], t2["l1Gully"]), BUDGET["gully"]))
+            for lv, n_, b_ in zip(("L0", "L1"), ns, bs) if n_ > b_]
+    if over:
+        still.append("over the budget: " + "; ".join(over))
+    kind_tri = (kind_levels["l0"]["triangles"], kind_levels["l1"]["triangles"])
+    if kind_tri != BUDGET["walls"]:
+        still.append(f"`kinds/wall.json`'s l0 and l1 ({_n(kind_tri[0])}, {_n(kind_tri[1])}) are not the walls' budget")
     still.append(f"{len(flags2)} flags and {len(cuts2)} boundary cuts in the laying's own reports")
     a("- **What still fails:** " + "; ".join(still) + ". All of it is under What fails, and why.")
     a("")
@@ -2421,8 +2441,73 @@ def write_report(facts, res, ind, ind1, tm, tm1, vt, sheet, var):
       "the numbers are under The visibility measurement.")
     a(f"- **The budget: re-derived from the seen faces.** At SN8's own density ({round(d0)} L0 and {round(d1)} L1 "
       f"triangles a m² of course face), the {seen_c} m² of seen course face give the walls {_n(A0)} at L0 and "
-      f"{_n(A1)} at L1. The walls lay {_n(t2['l0Walls'])} and {_n(t2['l1Walls'])}, inside both. This is a proposal: "
-      "design.md is not edited. The derivation and a second option are under The budget, re-derived.")
+      f"{_n(A1)} at L1. The walls lay {_n(t2['l0Walls'])} and {_n(t2['l1Walls'])}, inside both. The coordinator took "
+      "it on 23 October (design.md's table), and `kinds/wall.json`'s l0 and l1 hold it. The derivation and the "
+      "option not taken are under The budget, re-derived.")
+    a("")
+    # ------------------------------------------------------------------------------------------------ the read, 23 Oct
+    a("## The read of 23 October")
+    a("")
+    a(READ2)
+    a("")
+    a("**Answers.**")
+    a("")
+    Vl = V2.get("layout", {"walls": []})
+    shorts_g = [(w["id"], r_) for w in Vl["walls"] for r_ in w["risers"] if "short step" in (r_.get("moved") or "")]
+    shorts_s = [(w["id"], r_) for w in lay2["walls"] for r_ in w["risers"] if "short step" in (r_.get("moved") or "")]
+    ends_g = {w["id"]: [st for st in w["stones"] if st["kind"] in ("topstone", "coping")] for w in Vl["walls"]}
+
+    def end_pieces(wid):
+        """The top end's topstone and the slab beside it, in a wall line of the granite layout."""
+        ss = sorted(ends_g.get(wid, []), key=lambda st: -span(st["outline"], 0)[1])[:2]
+        return [span(st["outline"], 0)[1] - span(st["outline"], 0)[0] for st in ss]
+    met = "T" in V2 and not vfail
+    a(f"1. **7b: {'met' if met else 'not met'}.** " +
+      (f"With two goings the granite record passes every check (hash `{V2['hashes'][0]}`, the same twice); "
+       f"{by_rule(vfail)[0]}." if met else
+       "With two goings the granite record still fails: " +
+       "; ".join(f"{sn} {name} ({len(t['fails'])})" for (sn, name), t in sorted(vfail.items())) + ".") +
+      " The cause was a rule of any wall that the laying lacked, not a fact held in the wrong place. With two goings "
+      "a step climbs two courses, so a stretch that climbs an odd number of courses has one step of one course, and "
+      "the laying always put it at the stretch's top, beside the level run above. At fl-0's top ends that left the "
+      "granite an end run of about 670 mm: too long for its square topstone alone (at most about 400 mm) and too "
+      "short for a topstone and a whole slab (at least 800 mm), with the risers' windows unable to close the gap. A "
+      "mason sets out a stepped coping from its heads and puts the short step where the runs come out whole. So the "
+      "short step now stays at the top unless the runs cannot then be laid, and otherwise goes to the nearest place "
+      "down the stretch where they can (`masonry.py`, `Line.coping`). The gap between a topstone alone and a topstone "
+      "and a whole slab is the topstone's least plus a whole slab less its most: 382 to 410 mm at the granite's ends "
+      "and 289 to 361 mm at the slate's, wider than a riser's window of one going (297 mm) in both, so the slate "
+      "could meet it too. In the granite the short step moves on " +
+      (" and ".join(f"{wid.split('/', 1)[1]} (the riser at {r_['at']}, set "
+                 f"{re.search(r'set ([0-9]+ steps?) down', r_['moved']).group(1)} down)"
+                 for wid, r_ in shorts_g) if shorts_g else "no wall") +
+      "; each top end is now a topstone and a whole slab (" +
+      ", ".join(f"{wid.split('/', 1)[1]}: {' and '.join(str(x) for x in end_pieces(wid))} mm"
+                for wid, _ in shorts_g) + "). " +
+      ("The slate's set-out leaves nothing unmet with its short steps at the top, so the rule changes no slate wall "
+       "and its hashes are the same as before it (two goings `818b719a368ef651`, one going `d8999b350b8e8727`)."
+       if not shorts_s else
+       f"It also moves {len(shorts_s)} of the slate's short steps, for the same reason: " +
+       ", ".join(f"{wid} riser at {r_['at']}" for wid, r_ in shorts_s) + ".") +
+      " The two candidates named in the read do not fit the cause. Re-dividing slabs cannot help: no division of a "
+      "670 mm run gives a square topstone and a whole slab, and the slabs either side of a riser lie on different "
+      "beds. The end form stays the kind's: the square topstone is the head's form in the design (design.md, Wall "
+      "ends, against fault 4's loose fan), a granite mason cuts a square block as readily as a slate waller picks "
+      "one, and nothing in the record says the granite's heads end otherwise. With one going the granite still "
+      "fails SN2's coping slabs, by the same nature as the slate's one going.")
+    a("2. **The walling table's check: done.** `schemas/walling.schema.json` holds the table's shape: a working is "
+      "a wall's (every course, stone, coping, topstone, head and through number, required together), a rebuilt "
+      "panel's (its edge stones) or a stair's (its steps), integers only, and only a test table may name the "
+      "workings it applies. `tools/validate_record.py` validates every pack's `walling.json` and the test tables "
+      "merged into it (`r1/granite-1930.json`), and checks what the schema cannot say: each range's least no more "
+      "than its most, each drawn length's fractions in order, each working's material one of the pack's, and a "
+      "test table's workings not the pack's own. Its self-test breaks the table seven ways, and each is caught. The "
+      "granite record's provenance was `test`, which the shared provenance words do not hold; it is now "
+      "`authored`, and its `applies` marks it a test table. `kinds/wall.json` now holds l0 "
+      f"{_n(kind_tri[0])} and l1 {_n(kind_tri[1])}, the walls' budget; l2 to l4 follow at the stair's ratios to L1 "
+      f"({', '.join(_n(kind_levels[k]['triangles']) for k in ('l2', 'l3', 'l4'))}). Its `budgets.provisional` is "
+      "now false (the kind schema requires the key). That flag also covers the shading figure, 600 µs, which is "
+      "the stair's and unmeasured for walls until R3's A/B; the kind's description says so.")
     a("")
     # ------------------------------------------------------------------------------------------------ the brief
     a("## The brief's five points")
@@ -2440,7 +2525,7 @@ def write_report(facts, res, ind, ind1, tm, tm1, vt, sheet, var):
       "all the walkable ground, by panel and face, with the terrain and the walls as occluders. All "
       f"{n_faces} faces are seen; {in_views} of them appear in at least one judging view. {_n(far)} m² of course "
       f"face is seen only from beyond 8 m. No face is veiled, because none is hidden.")
-    a(f"3. **The budget: answered, as a proposal.** Walls: L0 {_n(A0)} and L1 {_n(A1)} (option A), or L0 {_n(B0)} if "
+    a(f"3. **The budget: answered; option A taken on 23 October.** Walls: L0 {_n(A0)} and L1 {_n(A1)} (option A), or L0 {_n(B0)} if "
       f"the faces seen only from beyond 8 m are built at L1 alone (option B). Steps: L0 {_n(S0)} and L1 {_n(S1)}, "
       f"the table's {STEP_TRI[0]} and {STEP_TRI[1]} a stone times the {t2['stepStones']} stones the facts make. The "
       f"gully: L0 {_n(G0)} and L1 {_n(G1)}.")
@@ -2660,13 +2745,13 @@ def write_report(facts, res, ind, ind1, tm, tm1, vt, sheet, var):
     a("The sheet `visibility.png` shows each sample by its class: near, far only, unseen, or buried.")
     a("")
     # ------------------------------------------------------------------------------------------------ budget
-    a("## The budget, re-derived (a proposal)")
+    a("## The budget, re-derived (option A taken on 23 October)")
     a("")
     a(f"SN8 sets the walls at {_n(SN8['walls'][0])} L0 and {_n(SN8['walls'][1])} L1 for about {SN8['faceM2']} m² of "
       f"face. Its estimate counts {SN8['faceM2']} m² of course face for the face stones and adds the copings, so its "
       f"density is {round(d0)} L0 and {round(d1)} L1 triangles a m² of course face, copings included.")
     a("")
-    a(f"- **A (proposed): every seen face at L0.** {seen_c} m² of seen course face ({near} within 8 m plus {far} only "
+    a(f"- **A (taken): every seen face at L0.** {seen_c} m² of seen course face ({near} within 8 m plus {far} only "
       f"beyond) gives L0 {round(d0)} × {seen_c} = {_n(A0)} and L1 {round(d1)} × {seen_c} = {_n(A1)}. The buried "
       f"{buried} m² is left out: it is laid because its faces are seen, but nobody sees it. The walls lay "
       f"{_n(t2['l0Walls'])} L0 ({_n(A0 - t2['l0Walls'])} under) and {_n(t2['l1Walls'])} L1 "
@@ -2686,8 +2771,10 @@ def write_report(facts, res, ind, ind1, tm, tm1, vt, sheet, var):
     a(f"- **The gully,** A plus the steps: L0 {_n(G0)} and L1 {_n(G1)}, against SN8's {_n(SN8['gully'][0])} and "
       f"{_n(SN8['gully'][1])}. It lays {_n(t2['l0Gully'])} and {_n(t2['l1Gully'])}.")
     a("")
-    a("design.md is not edited; the reviewer decides. `kinds/wall.json`'s levels keep SN8's numbers, marked "
-      "provisional.")
+    a(f"The coordinator took A and the steps' {_n(S0)} on 23 October: design.md's table now reads walls "
+      f"{_n(BUDGET['walls'][0])} and {_n(BUDGET['walls'][1])}, steps {_n(BUDGET['stairs'][0])} and "
+      f"{_n(BUDGET['stairs'][1])}, the gully {_n(BUDGET['gully'][0])} and {_n(BUDGET['gully'][1])}, with frame time "
+      f"as the real cap. `kinds/wall.json`'s l0 and l1 hold the walls' ({_n(kind_tri[0])} and {_n(kind_tri[1])}).")
     a("")
     # ------------------------------------------------------------------------------------------------ reports
     a("## The laying's own reports")
@@ -2730,6 +2817,10 @@ def write_report(facts, res, ind, ind1, tm, tm1, vt, sheet, var):
     a(f"  2. *Whole slabs:* between two risers the run takes whole slabs ({D.COPE_L[0]} to {D.COPE_L[1]} mm), "
       "pushing the next riser along within its window where it must.")
     a(f"  3. *The end runs:* a wall's end run is either its topstone alone or a topstone and a whole slab.")
+    a("- **The short step goes where the runs can be laid** (the read of 23 October). Where a stretch climbs a number "
+      "of courses that is not a whole number of steps, its one short step stays at the stretch's top unless the "
+      "rules above then leave something unmet; otherwise it goes to the nearest place down the stretch that leaves "
+      f"less unmet. It moves no slate step ({len(shorts_s)} moved) and {len(shorts_g)} of the granite record's.")
     a("- **Panels are bounded at the rests' coping run ends** and at the rebuilt panel's edges. A wall's ends are its "
       f"heads, not panel boundaries. This gives {sum(len(w['panels']) for w in lay2['walls'])} panels where round 1 "
       f"had {o['panels']}.")
@@ -2792,9 +2883,10 @@ def write_report(facts, res, ind, ind1, tm, tm1, vt, sheet, var):
     a("- **Gone with the stepped tops:** round 1's kneelers, knees, raked copings and their numbers.")
     a("- **What the schemas cannot hold.** `schemas/material.schema.json` refuses a walling section "
       "(`additionalProperties: false`), so I did not put one into `materials/slate.json`. The walling table is a pack "
-      "table in `stairs.json`'s format instead, keyed by working, with each working naming its material. No schema "
-      "validates either table. A walling schema, or a `walling` section in the material schema, is for the reviewer "
-      "to decide. `tools/validate_record.py` passes with `kinds/wall.json` in the registry.")
+      "table in `stairs.json`'s format instead, keyed by working, with each working naming its material. Since the "
+      "read of 23 October `schemas/walling.schema.json` validates it, and the granite test table, through "
+      "`tools/validate_record.py` (see The read of 23 October); `stairs.json` still has no schema. The validator "
+      "passes with `kinds/wall.json` in the registry.")
     a("- **Joint widths** between wall stones are not modelled at R1: the stones meet at their outlines. When R2's "
       "geometry needs them, they belong in the working (a dry slate's few mm against a mortared granite's 10 to "
       "15 mm). The steps' tread joints (4 to 10 mm, SN5) are in the walling table already.")
@@ -2824,6 +2916,10 @@ def write_report(facts, res, ind, ind1, tm, tm1, vt, sheet, var):
         a(f"- **The laying's reports:** {len(V2['flags'])} flags, {len(V2['cuts'])} cuts, {len(V2['fills'])} free "
           "lengths laid with less of the rule" + (": " + "; ".join(sorted(set(x["how"] for x in V2["fills"])))
                                                   if V2["fills"] else "") + ".")
+        if shorts_g:
+            a("- **The set-out:** the short step moved down its stretch on " +
+              "; ".join(f"{wid.split('/', 1)[1]}, riser at {r_['at']} (ideal {r_['ideal']}): {r_['moved']}"
+                        for wid, r_ in shorts_g) + ". See The read of 23 October.")
         if "T" in V1:
             v1f = V1["T"].failing()
             a(f"- **One going:** hash `{V1['hashes'][0]}` ({'stable' if V1['hashes'][0] == V1['hashes'][1] else 'UNSTABLE'}); "
@@ -2859,33 +2955,33 @@ def write_report(facts, res, ind, ind1, tm, tm1, vt, sheet, var):
     a("## What fails, and why")
     a("")
     k_one = f"coping slabs {D.COPE_L[0]} to {D.COPE_L[1]} mm"
-    a(f"1. **One going a level run: {len(tget(T1, 'SN2', k_one)['fails'])} coping slabs under {D.COPE_L[0]} mm.** "
+    nfx = iter(range(1, 20))
+    a(f"{next(nfx)}. **One going a level run: {len(tget(T1, 'SN2', k_one)['fails'])} coping slabs under {D.COPE_L[0]} mm.** "
       f"A going here is {min(goings)} to {max(goings)} mm, so a level run of one going is about 300 mm long and holds "
       f"no whole slab. The laying lays each such run as one slab of its own length (never under the working's least, "
       f"{D.COPE_MIN} mm) and flags it: {sum(1 for w in lay1['walls'] for x in w['report']['flags'] if 'under a whole coping slab' in x)} "
       f"of the one-going variant's {sum(len(w['report']['flags']) for w in lay1['walls'])} flags. SN2's test fails "
       "them. This is the nature of one going with this coping, not a fault to fix; it is why two goings are laid.")
     if vfail:
-        a("2. **The granite record: two coping slabs under 500 mm at fl-0's top ends.** See The granite record: its "
-          "numbers, not the code.")
-    a(f"3. **The budgets.** The walls' L0 ({_n(t2['l0Walls'])}) is over SN8's {_n(SN8['walls'][0])} and inside the "
-      f"re-derived {_n(A0)} by {round(100 * (A0 - t2['l0Walls']) / A0, 1)}%. The steps' L0 ({_n(S0)}) is over SN8's "
-      f"{_n(SN8['stairs'][0])}, because the facts make {t2['stepStones']} stones where SN8 assumed about "
-      f"{round(SN8['steps'] * SN8['stonesAStep'])} plus the rests. Both are proposals for the reviewer.")
-    a(f"4. **The flags and cuts.** {len(flags2)} flags: "
+        a(f"{next(nfx)}. **The granite record, two goings:** " +
+          "; ".join(f"{sn} {name} ({len(t['fails'])})" for (sn, name), t in sorted(vfail.items())) +
+          ". See The granite record.")
+    if over:
+        a(f"{next(nfx)}. **Over the budget:** " + "; ".join(over) + ".")
+    a(f"{next(nfx)}. **The flags and cuts.** {len(flags2)} flags: "
       + "; ".join(x.replace("wl-gully/", "") for x in flags2)
       + f". {len(cuts2)} cuts: at each, a panel's boundary or the 1961 edge lies within one least stone "
         f"({D.STONE[0]} mm) of the course's end against the ground or a step, so no tooth fits. The course's "
         "end serves as the boundary's joint, and the stone there belongs to the panel that holds its middle. None "
         "breaks a check; each is listed under The laying's own reports.")
-    a(f"5. **The steps' 9 mm of play (SN3).** The longest slab is {slab['hi']} mm and the stair "
+    a(f"{next(nfx)}. **The steps' 9 mm of play (SN3).** The longest slab is {slab['hi']} mm and the stair "
       f"{2 * so0['half']} mm across, ends in the walls. Its joint must then start in {jw['left']} or {jw['right']} "
       f"mm, outside the middle third ({so0['third']} mm either side of the walking line): {jw['widthMm']} mm of play "
       "a side. So every step's joint lies on one of two lines about a metre apart, alternating up the stair. Every "
       "SN3 check passes. Whether the two lines read as mechanical is a look question for R2b's grey sheet, not a "
       "rule's, and I propose no change without that evidence. A longer slab is the finish's fact, from "
       "`kinds/stair.json`.")
-    a(f"6. **fl-1's rests.** {len(deep)} rests are {min(d for _, d, _ in deep)} to {max(d for _, d, _ in deep)} mm "
+    a(f"{next(nfx)}. **fl-1's rests.** {len(deep)} rests are {min(d for _, d, _ in deep)} to {max(d for _, d, _ in deep)} mm "
       f"deep, more than the longest slab ({slab['hi']}), so each takes four slabs in two rows where the plan names "
       "two. SN3's \"two to four slabs\" passes. A rest's two slabs must also meet within "
       f"{slab['hi'] - so0['half']} mm of the centre, inside the middle third. SN3 puts that rule on steps, so the "

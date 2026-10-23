@@ -1,0 +1,102 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://overstory.invalid/schemas/walling.schema.json",
+  "title": "A pack's walling table",
+  "description": "How a pack's builders laid walls of stone, by working (packs/<pack>/walling.json), read by the wall kind's plan stage as the table `walling` (kinds/wall.json; at R1, blender/generators/masonry.py through tools/r1_elevations.py) by the working a wall's, a rebuilt panel's or a stair's facts name. A working is a stone and the way it was laid: the course heights it was split or dressed to, its stones, copings, topstones, heads and through stones, a rebuilt panel's edge stones, a stair's laps and joints. The wall's structure (its parapet, its stepped top, its heads' form, its panels' teeth) is the kind's, and the rules of any wall (level beds, SN10's bond, SN2's sliver and acute limits) are code's. Integers only, in millimetres, as every fact. tools/validate_record.py also checks what this schema cannot say: each range's least is no more than its most, each working's material is one of the pack's, and a test table's workings are not the pack's own.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "describes", "workings", "provenance"],
+  "properties": {
+    "schemaVersion": { "$ref": "record.schema.json#/$defs/schemaVersion" },
+    "describes": { "type": "string", "minLength": 1 },
+    "applies": {
+      "description": "A test table's alone (design.md 7b, a style changed by data alone): the workings it sets a wall's facts to name, merged into a copy of the pack's table for the check. A pack's own table has none.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["walls"],
+      "properties": {
+        "walls": { "$ref": "record.schema.json#/$defs/word", "description": "The working the walls are laid in." },
+        "rebuilt": { "$ref": "record.schema.json#/$defs/word", "description": "The working a rebuilt panel is relaid in." }
+      }
+    },
+    "workings": {
+      "description": "The workings, each under its name (a word; the facts name a working by it).",
+      "type": "object",
+      "minProperties": 1,
+      "propertyNames": { "$ref": "record.schema.json#/$defs/word" },
+      "additionalProperties": { "$ref": "#/$defs/working" }
+    },
+    "provenance": { "$ref": "record.schema.json#/$defs/provenance" },
+    "notes": {
+      "description": "Why each number is what it is, by working or by field name.",
+      "type": "object",
+      "additionalProperties": { "type": "string" }
+    }
+  },
+  "$defs": {
+    "mm": { "type": "integer", "minimum": 0, "description": "Millimetres." },
+    "rangeMm": {
+      "type": "array", "items": { "type": "integer", "minimum": 0 }, "minItems": 2, "maxItems": 2,
+      "description": "The least and the most, in millimetres."
+    },
+    "fraction": {
+      "type": "array", "items": { "type": "integer", "minimum": 1 }, "minItems": 2, "maxItems": 2,
+      "description": "A fraction: its numerator and its denominator."
+    },
+    "working": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["material", "mortar", "built"],
+      "anyOf": [
+        { "required": ["courseMm"], "description": "a wall's working" },
+        { "required": ["edgeStonesMm"], "description": "a rebuilt panel's: only its edges are its own" },
+        { "required": ["steps"], "description": "a stair's" }
+      ],
+      "dependentRequired": {
+        "courseMm": ["riseOneMm", "foundationMm", "stoneMm", "drawnPerHeight", "shortMm", "copeThickMm", "copeNominalMm",
+                     "copeLengthMm", "copeLeastMm", "topstoneMm", "headTieMm", "headRunnerMm", "throughMm",
+                     "throughFirstMm", "throughEveryMm"]
+      },
+      "properties": {
+        "material": { "$ref": "record.schema.json#/$defs/word", "description": "Its stone: materials/<material>.json in the pack, whose wear and cracking are the material's own." },
+        "mortar": { "$ref": "record.schema.json#/$defs/word", "description": "What it was bedded in: none for a dry wall, or the mortar's name." },
+        "built": { "type": "integer", "description": "The year the builders laid it." },
+        "stock": { "$ref": "record.schema.json#/$defs/word", "description": "Where its stones came from, where not new (reclaimed: the wall's own, relaid)." },
+        "courseMm": { "$ref": "#/$defs/rangeMm", "description": "A course's height." },
+        "riseOneMm": { "$ref": "#/$defs/mm", "description": "A stair's rise up to this is one course; over it, one line between, the lower course the larger." },
+        "foundationMm": { "$ref": "#/$defs/rangeMm", "description": "The foundation courses under the foot: larger than any rise." },
+        "stoneMm": { "$ref": "#/$defs/rangeMm", "description": "A face stone's length." },
+        "drawnPerHeight": {
+          "type": "array", "items": { "$ref": "#/$defs/fraction" }, "minItems": 2, "maxItems": 2,
+          "description": "A face stone's drawn length, least and most, as fractions of its course's height (within stoneMm and SN10's 4.5)."
+        },
+        "shortMm": { "$ref": "#/$defs/mm", "description": "The least a stone may be where the geometry leaves a run no whole stones fill; flagged." },
+        "copeThickMm": { "$ref": "#/$defs/rangeMm", "description": "A coping slab's thickness." },
+        "copeNominalMm": { "$ref": "#/$defs/mm", "description": "Its nominal thickness: the ideal bed is the pitch line plus the kind's parapet less this." },
+        "copeLengthMm": { "$ref": "#/$defs/rangeMm", "description": "A whole coping slab's length." },
+        "copeLeastMm": { "$ref": "#/$defs/mm", "description": "The least a coping slab may be where a level run or a panel leaves less than a whole one; flagged." },
+        "topstoneMm": { "$ref": "#/$defs/rangeMm", "description": "A topstone's length at a wall's end (its form, square or not, is the kind's)." },
+        "headTieMm": { "$ref": "#/$defs/rangeMm", "description": "A head's tie, through the wall, as its face shows." },
+        "headRunnerMm": { "$ref": "#/$defs/rangeMm", "description": "A head's runner along one face." },
+        "throughMm": { "$ref": "#/$defs/rangeMm", "description": "A through stone's face." },
+        "throughFirstMm": { "$ref": "#/$defs/rangeMm", "description": "The first through stone from a panel's start." },
+        "throughEveryMm": { "$ref": "#/$defs/rangeMm", "description": "And then one about this often." },
+        "edgeStonesMm": {
+          "type": "array", "items": { "$ref": "#/$defs/rangeMm" }, "minItems": 2, "maxItems": 2,
+          "description": "A rebuilt panel's end stones against the old work: long, then short, in alternate courses."
+        },
+        "steps": {
+          "description": "A stair's block steps laid in this working (SN3, SN5).",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["lapMm", "jointMm", "jointClearMm"],
+          "properties": {
+            "lapMm": { "$ref": "#/$defs/rangeMm", "description": "A step's front bears this far on the back of the one below." },
+            "jointMm": { "$ref": "#/$defs/rangeMm", "description": "A tread's joint, its width." },
+            "jointClearMm": { "$ref": "#/$defs/mm", "description": "No joint within this of the joint on the step below." }
+          }
+        }
+      }
+    }
+  }
+}
