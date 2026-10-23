@@ -1898,7 +1898,44 @@ namespace Overstory.EditorTools
                 // (the mesh's own origin, its pivot, moved so the bounds sit centred on the stand, the bed on the ground)
                 var at = StreetSpace.ToUnity(stand.x, stand.y, lowest) - new Vector3(b.center.x, bedY, b.center.z);
                 float tall = b.max.y - bedY;
-                var piece = new Piece { name = name, baseZ = lowest, height = tall };
+                // with a context, the stone sits as it is laid: its neighbours below it (the course under a wall stone or
+                // a coping, the step below) would lie in the street at a bed on the ground, so the whole is lifted until
+                // the context's lowest point (its neighbours' and proxies'; the fills, behind the faces, may run on into
+                // the ground) sits on the highest ground under its footprint, burying nothing
+                float lift = 0f;
+                string lifted = "";
+                if (ctx != null)
+                {
+                    var foot = b;
+                    float low = bedY;
+                    foreach (var nb in ctx.pairs)
+                        foreach (var m in new[] { nb.l0, nb.l1 })
+                        {
+                            foot.Encapsulate(m.bounds);
+                            low = Mathf.Min(low, m.bounds.min.y);
+                        }
+                    foreach (var sg in ctx.singles)
+                        if (sg.proxy)
+                        {
+                            foot.Encapsulate(sg.mesh.bounds);
+                            low = Mathf.Min(low, sg.mesh.bounds.min.y);
+                        }
+                    float gLow = float.MaxValue, gHigh = float.MinValue;
+                    foreach (var fx in new[] { foot.min.x, foot.max.x })
+                        foreach (var fz in new[] { foot.min.z, foot.max.z })
+                        {
+                            float g = Ground(stand.x + fx - b.center.x, stand.y + fz - b.center.z);
+                            gLow = Mathf.Min(gLow, g);
+                            gHigh = Mathf.Max(gHigh, g);
+                        }
+                    lift = Mathf.Max(0f, gHigh + (bedY - low) - lowest);
+                    at.y += lift;
+                    lifted = $"; with its context lifted {lift:F3} m, so the context's lowest point ({bedY - low:F3} m under the " +
+                             $"stone's bed) sits on the highest ground under its footprint ({foot.size.x:F2} x {foot.size.z:F2} m, the " +
+                             $"ground {gLow:F3} to {gHigh:F3} m): its bed at {lowest + lift:F3}";
+                }
+                float bedZ = lowest + lift;
+                var piece = new Piece { name = name, baseZ = bedZ, height = tall };
                 piece.l0 = Make(name + " L0", l0, at, piece);
                 piece.l1 = Make(name + " L1", l1, at, piece);
                 piece.shadow = Make(name + " L1 shadow", l1, at, piece);
@@ -1937,12 +1974,12 @@ namespace Overstory.EditorTools
                                    $"as the stone's), {piece.ctxFill.Count} fill planes and {piece.ctxProxy.Count} grey proxies (the slate's " +
                                    $"grey copy) casting; drawn, never counted");
                 }
-                piece.front = new Vector3(stand.x, stand.y - halfD, lowest + tall / 2f);
+                piece.front = new Vector3(stand.x, stand.y - halfD, bedZ + tall / 2f);
                 pieces.Add(piece);
                 log.AppendLine($"{name} on the stand ({stand.x}, {stand.y}): {b.size.x:F3} x {b.size.z:F3} m in plan, {tall:F3} high over " +
                                $"its bed" + (b.min.y < bedY - 1e-5f ? $" ({bedY - b.min.y:F3} m of skirt below it, in the ground)" : "") +
                                $" (L1's bounds); the ground ({string.Join(", ", under)}) {lowest:F3} to {highest:F3} m under its " +
-                               $"corners, its bed at {lowest:F3} (sunk {highest - lowest:F3} m at the highest); its face's middle " +
+                               $"corners, its bed at {lowest:F3} (sunk {highest - lowest:F3} m at the highest){lifted}; its face's middle " +
                                $"({piece.front.x:F2}, {piece.front.y:F2}, {piece.front.z:F2}); L0 {l0.triangles.Length / 3} triangles, " +
                                $"L1 {l1.triangles.Length / 3}");
                 return piece;

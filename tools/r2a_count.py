@@ -31,7 +31,7 @@ A config is a level (L0, L1) with its changes: -noline (L1's lit line off), -fla
 
     python3.13 tools/r2a_count.py [piece ...]       counts into reviews/lt1/port/2b/r2a/stones/counts.json (merged)
     python3.13 tools/r2a_count.py --table [piece ...]      the counts as Markdown tables
-    python3.13 tools/r2a_count.py --sheets piece [...]     grey.png, material.png, levels.png, arms.png beside counts.json
+    python3.13 tools/r2a_count.py --sheets piece [...]     grey.png, material.png, levels.png, arms.png, joints.png
 
 Needs numpy (Blender's own Python has it: /Applications/Blender.app/Contents/Resources/5.2/python/bin/python3.13).
 """
@@ -900,6 +900,72 @@ def sheet_arms(piece):
     return np.concatenate([pad(body), pad(side)], 1)
 
 
+def crop_at(frame, cx, cy, w, h, z):
+    """A w x h window of the frame centred on (cx, cy), kept inside it, at native size times z (nearest)."""
+    H, W = frame.shape[:2]
+    x0, y0 = int(max(0, min(W - w, cx - w // 2))), int(max(0, min(H - h, cy - h // 2)))
+    return zoom(as_float(frame[y0:y0 + h, x0:x0 + w]), z)
+
+
+def sheet_joints(piece):
+    """joints.png (SN5): per stand and light, in grey at L0, the stone's two top corners at 1 m (x2) and the whole
+    stone at 5 m with its joints and neighbours round it, each with the measures beside it: each side's rim (the
+    chamfer less the brighter beside it), the joint less the faces either side, and the lines in the joints' ring."""
+    c = json.load(open(os.path.join(STONES, "counts.json")))
+    rows = []
+    pdir = os.path.join(FRAMES, piece)
+    for stand in ("sun", "foot"):
+        sdir = os.path.join(pdir, stand)
+        for moment in stand_moments(sdir):
+            row = []
+            notes = []
+            for view in ("1m", "5m"):
+                f = os.path.join(sdir, moment, "grey", "L0", view + ".png")
+                if not os.path.exists(f):
+                    continue
+                frame = read_png(f)
+                _, _, mask = load_ids(sdir, "L0", view)
+                ys, xs = np.nonzero(mask)
+                if view == "1m":
+                    for name, x in (("left", xs.min()), ("right", xs.max())):
+                        row.append(labelled(crop_at(frame, x, ys.min() + 40, 220, 180, 2), f"{stand} {moment} 1m top {name} x2"))
+                else:
+                    pad = 30
+                    w, h = xs.max() - xs.min() + 2 * pad, ys.max() - ys.min() + 2 * pad
+                    z = 4
+                    while z > 1 and (w * z > 900 or h * z > 560):
+                        z -= 1
+                    row.append(labelled(crop_at(frame, (xs.min() + xs.max()) // 2, (ys.min() + ys.max()) // 2, w, h, z),
+                                        f"5m x{z}"))
+                j = c.get(f"joint/{piece}/{stand}/{moment}/grey/L0/{view}")
+                if j:
+                    line = [f"{view}:"]
+                    for side in ("top", "bottom", "left", "right"):
+                        r = j[side]
+                        bits = []
+                        if r.get("rim") is not None:
+                            bits.append(f"rim {r['rim']:.1f}")
+                        if r.get("joint_vs_face") is not None:
+                            bits.append(f"j-f {r['joint_vs_face']:.1f}")
+                        if r.get("joint_vs_neighbour") is not None:
+                            bits.append(f"j-n {r['joint_vs_neighbour']:.1f}")
+                        if bits:
+                            line.append(f"{side} " + " ".join(bits))
+                    ln = j["lines"]
+                    notes.append(" ".join(line[:3]))
+                    if len(line) > 3:
+                        notes.append("   " + " ".join(line[3:]))
+                    notes.append(f"   lines bright {ln['bright_lines']} dark {ln['dark_lines']}; rings {'yes' if j['rings'] else 'no'}")
+            if row:
+                if notes:
+                    note = np.full((14 + 20 * len(notes), 30 + 12 * max(len(n_) for n_ in notes), 3), 0.12, np.float32)
+                    for i, n_ in enumerate(notes):
+                        text(note, n_, 4, 4 + 20 * i, scale=2, pad=2)
+                    row.append(note)
+                rows.append(row)
+    return grid(rows) if rows else None
+
+
 def mesh_band(piece, width):
     """A band over a sheet: each level's mesh as Unity imported it (the vertex cost beside the triangles). Every stand
     holds the same mesh; a stand whose counts differ is named."""
@@ -923,7 +989,7 @@ def mesh_band(piece, width):
 def sheets(pieces_):
     for piece in pieces_:
         made = {"grey": sheet_looks(piece, "grey"), "material": sheet_looks(piece, "material"),
-                "levels": sheet_levels(piece), "arms": sheet_arms(piece)}
+                "levels": sheet_levels(piece), "arms": sheet_arms(piece), "joints": sheet_joints(piece)}
         for name, img in made.items():
             if img is not None:
                 band = mesh_band(piece, img.shape[1])
