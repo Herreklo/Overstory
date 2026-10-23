@@ -8,3 +8,59 @@
 - tools/r0b_count.py --same frames/proof/before.png frames/proof/after.png:
   bytes identical; pixels differing 0, largest difference 0
   (both md5 63ca739befec39069ae86887cb0d9931)
+
+## 2026-10-23, the stands (LT1R2a.Stands; where a judged stone lies, its face to the street, -y)
+- foot (49.3, 22.6), the briefed stand and the main set: on the Gully Steps lane 1.8 m short of the flight's foot,
+  clear of the gully. In shade in all three lights: drizzle is overcast, at 1600 the lane lies in the houses'
+  shadow, at 1750 the sun is down. No lamp is near (the nearest, the Landing's, is 13 m up the flight), and the
+  three judging rigs have the lamps off, so the brief's "inside a lamp's pool" cannot hold in these rigs. No lamp
+  was lit in a rig copy.
+- sun (49.0, 3.0), 1600-low-sun only: the lane's mouth on Harbour Row, 21.6 m from the foot, the nearest spot to it
+  in direct sun (LT1R2a.FindSunStand, logs/sun-stand-1600-low-sun.txt). The sun stands at bearing 316, 8.06 degrees
+  up (towards it in street axes (0.713, -0.687, 0.140)) and comes in over the harbour. 16 shadow casters were given
+  colliders in memory; 14,400 spots on a 1 m grid within 60 m of the foot were tested and 1,711 pass. A pass has:
+  open sky over the spot, the ground flat within 20 mm under a 0.7 x 0.4 m footprint, the sun unblocked for 400 m
+  from the footprint's corners and long sides' middles at 50 and 300 mm, and a clear line from every judging camera
+  (1, 5 and 12 m face-on, eye height at 5 and 12 m) to the face. Raking low sun is the hardest test for relief,
+  lines and specks.
+
+## 2026-10-23, the test block (R2aBlock, a harness fixture: 0.62 x 0.34 x 0.26 m, an 11 mm chamfer, 45 degrees)
+- The main sets: Block -stand foot in 1300-drizzle, 1600-low-sun and 1750-blue-hour, and -stand sun in 1600-low-sun.
+  Configs: L0, L1, L1-noline, L0-flat, the arms L0-facets2 and L0-nominor, and the control L1-noline-nomotes. Views:
+  1, 5, 8, 10, 12, eye5 and eye12. Grey, then material. Logs: logs/block-<stand>-<moment>.txt.
+- L1's lit line, second form (Stone.shader, inside OS_PATCHES). The first form drew the strip outside the chamfer's
+  share in the face's own colour. Where the other face turns away (the left upright at the sun stand, 5 m), that
+  made a bright sliver: L1 44.4 L* where L0 is 26.2. The strip is now filled by the share L0's chamfer covers on
+  screen (fill, from the view, the face and the chamfer's angle with its equal legs), and a chamfer that has turned
+  away draws no line. The upright's profile is now 17.3 | 19.1 | 35.9 | 35.3 | 35.4 | 54.0 against L0's
+  17.4 | 26.2 | 32.5 | 34.2 | 54.2. The back top arris's dark line in L1 is gone. What still differs at the back
+  edge is the box's own silhouette pixel: L1 and L1-noline are the same there (48.1, 42.8, 33.3 against L0's 48.2,
+  39.5, 33.3). L1 was rerun with this form at both stands in every light (logs/block-<stand>-<moment>-l1.txt, -dolly).
+- The off-state proof again, after the second form: LT1R2a.Proof -tag after-fill against frames/proof/before.png,
+  tools/r0b_count.py --same: bytes identical, 0 pixels differ (both md5 63ca739befec39069ae86887cb0d9931; Stone.shader
+  md5 1656f6c113b31c76d2e06d977679405e).
+- The motes control: the speck at 10 and 12 m in the sun is the air's motes (AirMotes, 1.2 in 1600-low-sun, 0 in
+  drizzle and blue hour), gone in L1-noline-nomotes. r2a_count.py counts a speck found at the same pixel in every
+  config of a view as common, apart from the stone's.
+- The patch fade control (-tag fade: L0, L0-flat, L0-near, L0-flat-near at 1, 2, 3, 4, 5, 6, 8, 10 and 12 m, grey;
+  foot in drizzle, sun in low sun). |L0 - L0-flat| on L* box-filtered 3 x 3, mean / p95, sun stand: the split face
+  0.23 / 0.6 at 1 m, 0.09 / 0.2 at 5 m and 0.05 / 0.1 from 8 m as drawn (OS_Near's fade). With the near detail
+  forced (the mips alone) it is 0.22 to 0.24 / 0.6 from 1 to 12 m. The top (a bed patch): 0.57 / 1.4 at 1 m and
+  0.05 / 0.1 from 2 m as drawn, against 0.90 to 1.05 / 1.6 to 2.0 at every distance by the mips alone. The noise
+  floor is about 0.05. In the 20 degree view the front face's footprint is 0.633 d mm a pixel (OS_Near 1 at 1.89 m
+  and 0 at 6.31 m); the top's is 1.74 d (1 at 0.69 m, 0 at 2.30 m). So OS_Near takes the top's patch to the floor
+  by 2 m, where its bands (124 to 472 mm) and facets (80 to 150 mm) still span tens of pixels. The mips-alone
+  configs add no line or speck. Motion was not measured for them. Not tuned: a proposal for the coordinator.
+- The levels in motion (-dolly, 6 to 14 m at 1.4 m/s and 60 fps; the pop on L* box-filtered 3 x 3, p99): the sun
+  stand in material switches 3.0 at 8 m, 3.3 at 10 m and 1.4 at 12 m, against the motion's own 2.5, 2.5 and 1.4.
+  At the foot the largest switch is 3.2 (drizzle, material, 10 m) against the motion's 1.3 there: in shade the
+  dolly moves little, so the switch stands out more. Whole table: counts.json, r2a_count.py --table block.
+- SN8's triangles: the block's L0 has 68% of its front triangles under 2 px at 8 m (its chamfer strips, 22
+  triangles). That is the fixture's, not a stone's. L1: 0%.
+- Sheets: sheets/block/grey.png, material.png and levels.png. The block's arms.png (11.6 MB) stays local: the arms
+  are judged on the wall stone.
+- Kit.Place now centres a mesh's L1 bounds on the stand and sets its bed on the ground, so a stone with its own pivot
+  (the definition's bed-front-left) stands as the block does. Proof the block did not move: one frame (foot,
+  drizzle, grey, L0, 5 m) re-rendered to the scratchpad. Its ids and mask are byte-identical to the main set's. Its
+  pixels differ only by the pipeline's dither (another frame count): |L*| box 3 x 3, at most 0.42 over the frame and
+  0.30 on the block.

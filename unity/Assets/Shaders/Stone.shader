@@ -522,18 +522,33 @@ Shader "Overstory/Stone"
                     uint bits = (uint)maskBits;
                     float3 eSum = 0.0;
                     float cSum = 0.0, keep = 1.0;
+                    // (the other face at the arris, from the chamfer's angle and its equal legs: at twice the angle)
+                    float3 V = GetWorldSpaceNormalizeViewDir(input.positionWS);
+                    float vA = max(dot((float3)nGeo, V), 1e-4);
+                    float cos2 = _OS_Chamfer.y * _OS_Chamfer.y - _OS_Chamfer.z * _OS_Chamfer.z;
+                    float sin2 = 2.0 * _OS_Chamfer.y * _OS_Chamfer.z;
                     [unroll]
                     for (int k = 0; k < 3; k++)
                     {
                         if (((bits >> k) & 1u) == 0u)
                             continue;
-                        // (the share of the pixel beyond the arris is not this face's: the strip's share is of the rest)
                         float d = input.edge[k];
-                        float beyond = OS_BoxBelow(-d, dEx[k], dEy[k]);
-                        float c = saturate((OS_BoxBelow(leg - d, dEx[k], dEy[k]) - beyond) / max(1.0 - beyond, 1e-4));
                         // the arris's outward direction in the face: down the distance's surface gradient
                         float3 grad = sgn * (dEx[k] * r1 + dEy[k] * r2);
-                        eSum -= c * grad * rsqrt(max(dot(grad, grad), 1e-30));
+                        float3 eK = -grad * rsqrt(max(dot(grad, grad), 1e-30));
+                        // how much of the strip L0's chamfer fills on screen: all of it while the other face is seen;
+                        // where the other face turns away (the arris a silhouette), only the strip's inner part, by the
+                        // projected widths (the chamfer's is the two strips' sum), and none once the chamfer turns away
+                        // too. The outer part is the box's own excess over L0 (L0 shows what lies beyond the stone
+                        // there): it keeps the chamfer's shade by the share the chamfer fills, so a seen chamfer's band
+                        // still reaches the silhouette as L0's does, and a chamfer turned away draws no line at all
+                        float fill = saturate(1.0 + dot(cos2 * (float3)nGeo + sin2 * eK, V) / vA);
+                        // (the share of the pixel beyond the arris is not this face's: the strip's share is of the rest)
+                        float beyond = OS_BoxBelow(-d, dEx[k], dEy[k]);
+                        float inner = OS_BoxBelow(leg * (1.0 - fill) - d, dEx[k], dEy[k]);
+                        float c = saturate((OS_BoxBelow(leg - d, dEx[k], dEy[k]) - (1.0 - fill) * inner - fill * beyond)
+                                           / max(1.0 - beyond, 1e-4));
+                        eSum += c * eK;
                         cSum += c;
                         keep *= 1.0 - c;
                     }
