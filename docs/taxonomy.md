@@ -4,13 +4,14 @@ What the world is made of, the words for it, and where each fact lives. This is 
 
 ## In short
 
-- **TX1** A thing is a kind, built by a construction from parts, grown by its species' habit, or laid down by the land; its pieces are materials in finishes. Evidence: SY1, LF1, LF3, TR1. Reopens: a thing made none of these ways.
-- **TX2** A material family holds the rules (required fields, finishes, how each change acts); a member, one material from one source, holds every number. Evidence: the stone reads every number from data. Reopens: a member needing a rule its family lacks.
+- **TX1** A thing is a kind, made by a construction from parts, grown by a habit, or laid down by the land; its parts are materials, each face in a finish. Anything with its own history is a thing, so things nest. Evidence: LF1, LF3, TR1. Reopens: a thing made none of these ways.
+- **TX2** A material family holds the rules; a member, one material from one source, holds every number. Reopens: a member needing a rule its family lacks.
 - **TX3** A rock is a member and a finish is how a face was got: a knoll and a step can be the same phyllite. A living thing and what it yields are two linked members.
-- **TX4** Parts, growth and coats ask for properties; constructions and records name members. Evidence: growth by chemistry (`docs/nature.md`). Reopens: a choice properties can't state.
-- **TX5** Five changes act on every thing: grows, grows on, worn, weathered, worked. Each family says how each acts on it, "none" included.
+- **TX4** Parts, growth and coats ask for properties; constructions and records name members. Reopens: a choice properties can't state.
+- **TX5** Six changes: slow ones worked out from the date (grows, grows on, worn, weathered) and sudden ones dated in the record (worked, struck). Every family says how each acts on it. Evidence: D5.1, LF1.
 - **TX6** A new member, construction or pack is data only. Needing code means the family or part lacks something; fix it there.
-- **TX7** Each fact has one home by its type; others link to it. Where prose and data disagree, the data is right and the prose is fixed.
+- **TX7** Each fact has one home by its type, and others link to it. Where prose and data disagree, the data is right.
+- **TX8** Six tests place anything new (Where does it go). What none of them settles is raised before building.
 
 ## The model
 
@@ -18,12 +19,13 @@ What the world is made of, the words for it, and where each fact lives. This is 
 the system, at the repo root, for any place
   material family  stone, wood, metal              its rules: fields, finishes, changes
   kind             stair, wall, natural-stone      what a thing is
-  change           grows, grows on, worn, weathered, worked
+  change           slow: grows, grows on, worn, weathered; sudden: worked, struck
 the pack, one place and its years
   member           phyllite, Iddefjord granite     one material from one source, every number
   part             stone/step, coat/paint          a piece made from facts
   construction     block, dry-split-1874           how its builders made a kind
-a thing            one flight in the town: its record, and its life at a date
+a thing            one flight in the town: its record, and its life at a date;
+                   a thing can hold things (a house and its shopfront)
 ```
 
 One flight in the gully, read through it. It is a stair (the kind), built as `block` steps between walls laid `dry-split-1874` (the constructions). Each step is a `stone/step` part of phyllite, a member of the stone family. Its finish is split, so its top and bottom are bed faces and its front and ends split faces. Since then the feet in its record have worn it, and lichen and moss have grown on it as its place allows. Water has weathered it, and it was worked when a run was reset.
@@ -36,7 +38,9 @@ Each word has one meaning. Use it for nothing else.
 
 | Word | Means | Never means | Home |
 | --- | --- | --- | --- |
+| thing | anything with its own history: a flight, a wall, a house, its shopfront, a tree | a part | its record |
 | kind | what a thing is: stair, wall, natural-stone, house, tree, lamp | a rock or a species | `kinds/<kind>.json` |
+| making | how a thing came to be: a construction, a habit, or the land | a change | the thing's `made` |
 | construction | how a pack's builders made a kind: its parts, sizes, laying rules and what breaks in it (LF3) | a finish | the stair's in `kinds/stair.json` (`block`, `treadOnRiser`), the walls' in `walling.json` |
 | habit | how a species grows: the rules and numbers its timeline follows | a construction | `docs/trees.md`, the species' data |
 | part | a piece made by a judged mesh or function from facts; a living member brings its own (bark, twigs) | a whole thing | `packs/<pack>/parts/<path>.json`, code in `blender/parts/` |
@@ -44,7 +48,7 @@ Each word has one meaning. Use it for nothing else.
 | member | one material from one source, as a pack has it: phyllite, Iddefjord granite, slow-grown pine | | `packs/<pack>/materials/<member>.json`, naming its family |
 | finish | how a face was got: natural, rough, split, hewn, dressed, sawn for stone; sawn and planed for wood; cast and wrought for iron | a construction | its family |
 | property | what a member has that others ask for: how it breaks (in slabs or in blocks), its chemistry (acid or lime) | a number | its family lists them; the member states them |
-| change | one of the five ways a thing changes over time | a layer | its design page |
+| change | one of the six ways a thing changes over time | a layer | its design page |
 | layer | one entry of `schemas/layers.json`: a channel a change draws through on a surface (polish, lichen, moss) | a change | `schemas/layers.json` |
 | record | a thing's facts: made, keepers, uses, works, events | its look | `fixtures/`, later the engine |
 | pack | a place and its years | code | `packs/<pack>/` |
@@ -53,12 +57,25 @@ Three things are called families, so write the full name each time. A material f
 
 The seven surface layers of `docs/foundations.md` are a surface's drawing order: pigment and grain, then the finish, then the changes. "Working" is being retired: it means a finish in some places and a construction in others, and Q19 lists where it is still used.
 
+## Where does it go
+
+Six questions place anything new. Ask them before building it.
+
+| Question | The test | Example |
+| --- | --- | --- |
+| thing or part? | It has its own history (its own works or keepers): a thing. Otherwise a part. | a shopfront refitted in 1972 is a thing in its house; a step is a part of its flight |
+| kind or construction? | True in every town: the kind. This place's or era's way of building: a construction. | level beds are the wall kind's; dry-split walls are a construction |
+| family or member? | It changes by other rules: a family. The same rules with other numbers: a member. | stone and wood are families; phyllite and granite are members |
+| member or finish? | Break it open. Other stuff, or a source that ages differently: a member. The same stuff worked another way: a finish. | Iddefjord and erratic granite are two members; split and dressed granite are one member in two finishes |
+| property or name? | Another member could do the same job: ask for the property. | a step asks for a stone that breaks in slabs |
+| slow or sudden? | Worked out from the date: slow. A dated act or event: sudden. | lichen is slow; a repair or a storm is sudden |
+
 ## Stone, worked through
 
 The stone family holds the rules every member follows:
 - its pieces are rigid, placed only by moving and turning (BB3);
 - the `stone` shader family draws it, reading the place and history pages P0 and H1;
-- worn polishes and hollows it; grows on gives lichen and moss; weathered brings water, stains and cracks; worked repairs it from the era's shelf (UK1);
+- worn polishes and hollows it; grows on gives lichen and moss; weathered brings water, stains and cracks; worked repairs it from the era's shelf (UK1); struck chips and breaks it;
 - its finishes, and what each needs from a member;
 - the numbers every member must state.
 
@@ -108,7 +125,8 @@ The shape Q19 moves the data to. The values are left out here, since they live i
     "growsOn": ["lichen", "moss"],
     "worn": ["polish", "contact", "hollow"],
     "weathered": ["wash", "deposit", "splash", "carrier", "soot", "salt"],
-    "worked": "upkeep"
+    "worked": "upkeep",
+    "struck": "upkeep"
   },
   "requires": ["wearUmPerCentury", "cracksPerMille", "breaks", "chemistry"]
 }
@@ -161,15 +179,18 @@ Two links name a member:
 
 Growth and coats choose their hosts by properties, as parts do. Lichens and mosses follow the host's chemistry: crusts on acid rock, wall-rue and Tortula only where there is lime (`docs/nature.md`). A coat names the families it goes on. A new coat resets every layer whose reset names a new coat in `schemas/layers.json`, and the host's own ageing goes on under it: repainting a board leaves its rot.
 
-## The five changes
+## The six changes
+
+The slow changes are worked out from the record and the date, so a jump in time costs nothing to draw. The sudden ones are dated entries in the record, each resetting the clocks of what it touches (D5.1).
 
 | Change | What it covers | Design page | Code | What a family says |
 | --- | --- | --- | --- | --- |
-| grows | a living thing's growth, age, seasons and death | `docs/trees.md`, `docs/nature.md` | `blender/generators/tree_growth.py` | the habit's numbers each species states |
-| grows on | lichen, moss, algae and weeds settling on a host | `docs/nature.md` (Growth on surfaces) | `blender/generators/growth.py`, `Growth.hlsl` | which growth it takes, by chemistry |
-| worn | contact of use: feet, hands, boots, wheels, sitting | `docs/foundations.md` (The shared surface layers) | `blender/generators/wear.py`; layers polish and contact; the hollow | whether it hollows and polishes; members state how fast |
-| weathered | water and what it carries (wash, deposit, splash, rust runs, salt, soot); its own ageing (cracks, settling, fading, rust, rot); the weather's second clock (wet, frost, snow, leaves) | `docs/foundations.md` (The shared surface layers), `docs/upkeep.md` (damage) | `blender/generators/water.py`, `WaterPack.cs`, `blender/generators/upkeep.py`; layers wash, deposit, splash, carrier, soot, salt | which of these act; members state porosity and rates |
-| worked | what people do: build, cut, fell, prune, clean, patch, rework, renew, paint | `docs/upkeep.md` (UK2), `docs/living-fabric.md` (LF3) | `blender/generators/upkeep.py`; the record's works and events | which repairs its era used, and how each ages |
+| grows (slow) | a living thing's growth, age, seasons and death | `docs/trees.md`, `docs/nature.md` | `blender/generators/tree_growth.py` | the habit's numbers each species states |
+| grows on (slow) | lichen, moss, algae and weeds settling on a host | `docs/nature.md` (Growth on surfaces) | `blender/generators/growth.py`, `Growth.hlsl` | which growth it takes, by chemistry |
+| worn (slow) | contact of use: feet, hands, boots, wheels, sitting | `docs/foundations.md` (The shared surface layers) | `blender/generators/wear.py`; layers polish and contact; the hollow | whether it hollows and polishes; members state how fast |
+| weathered (slow) | water and what it carries (wash, deposit, splash, rust runs, salt, soot); its own ageing (cracks, settling, fading, rust, rot); the weather's second clock (wet, frost, snow, leaves) | `docs/foundations.md` (The shared surface layers), `docs/upkeep.md` (damage) | `blender/generators/water.py`, `WaterPack.cs`, `blender/generators/upkeep.py`; layers wash, deposit, splash, carrier, soot, salt | which of these act; members state porosity and rates |
+| worked (sudden) | what people do: build, cut, fell, prune, clean, patch, rework, renew, paint | `docs/upkeep.md` (UK2), `docs/living-fabric.md` (LF3) | `blender/generators/upkeep.py`; the record's works | which repairs its era used, and how each ages |
+| struck (sudden) | what happens to it without anyone choosing it: a storm, a fire, a flood, a fall, a lorry at the gate, a pipe burst | `docs/living-fabric.md` (LF1, events), `docs/upkeep.md` (damage) | the record's events | how it breaks, and what is left |
 
 One file of code can serve two changes: `upkeep.py` draws both damage and repairs. A thing left alone (UK2's first way) is worn, weathered and grown on. Being worked resets what the work touches and nothing else (`docs/stone.md`, How time works). The pack's growth rates sit in `GrowthPack.cs` and the stone's history constants in `schemas/layers.json` today; Q19 moves both into the members.
 

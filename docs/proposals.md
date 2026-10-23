@@ -190,7 +190,7 @@ Proposals wait here for the next milestone's fresh reviewer, who sees the plan a
   - Parts name members (`"materials": ["slate"]`), so a new stone has to be added by hand to every part that could use it. The code defaults to slate (`stair_facts.py`, `stone.py`, `wall.py`).
   - Material numbers sit outside the members: slate's history constants in `schemas/layers.json`, the pack's growth rates in `GrowthPack.cs`.
 - **Change**, in the shape of `docs/taxonomy.md` (In the data):
-  - `materials/<family>.json` at the repo root, beside `kinds/`: the family's properties, finishes and what each needs, its shader family, how each of the five changes acts, and the numbers every member must state. Stone first.
+  - `materials/<family>.json` at the repo root, beside `kinds/`: the family's properties, finishes and what each needs, its shader family, how each of the six changes acts, and the numbers every member must state. Stone first.
   - Members stay flat in `packs/<pack>/materials/<member>.json`, named by a bare word as `schemas/naming.md` has it, each with a `family` field. `slate.json` becomes `phyllite.json` with the finishes natural, rough and split. Mica schist, gneiss and erratic granite join from their research when the land (1d) or a wall needs them.
   - `material.schema.json` gains `family`, `source`, `finishes`, the family's properties and the links `yields` and `madeOf`. A member missing a number its family requires fails validation.
   - `part.schema.json`'s `materials` becomes `takes`, a family and the properties the part needs, plus `finish`. The construction or the record names the member.

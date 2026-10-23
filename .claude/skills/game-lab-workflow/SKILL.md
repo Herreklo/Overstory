@@ -23,7 +23,7 @@ Write a short entry at the top of `docs/experiments.md`:
 - **How it is judged:** what Øystein will look at, and what would count as a yes. Name the camera, the times of day and the seeds.
 - **What it does not test:** keep the scope honest.
 
-Then outline the build in a few lines and wait for agreement before building anything large.
+Then outline the build in a few lines and wait for agreement before building anything large. For anything new in the world, the outline's first line places it by `docs/taxonomy.md`: its kind and making, its parts, their members and finishes, and the changes that act on it. Something the taxonomy's six tests don't settle is raised then, not found later.
 
 ## Building
 

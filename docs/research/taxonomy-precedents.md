@@ -4,6 +4,7 @@ The evidence behind the shape of `docs/taxonomy.md`: how other games and tools k
 
 ## In short
 
+- The construction industry keeps an element (a wall), the system that builds it, the products in it and their materials in separate tables (Uniclass). IFC attaches materials to an element's parts and type. That is TX1's kind, construction, part and material.
 - A thing defined once and made of any material that has the right properties (RimWorld) is TX4.
 - Shared templates for materials, and a living thing that carries the material it yields (Dwarf Fortress), are TX2 and TX3.
 - A parent material with variants that change only what differs is in our own engine (Unity's Material Variants), for TX2.
@@ -11,6 +12,10 @@ The evidence behind the shape of `docs/taxonomy.md`: how other games and tools k
 - Light always-read files, detail loaded when needed, and no repeated or conflicting instructions (Anthropic's guidance for Claude 5 models) is TX7.
 
 ## What each shows
+
+**Uniclass (NBS).** The UK's classification for the built environment keeps separate tables for Elements/functions ("general elements like walls, decks, and roofs"), Systems ("collections of products brought together to operate as systems"), Products ("individual products used across the built environment, including those assembled to create systems"), and a proposed Materials table ("terracotta, Portland cement, white pine"). What we take: kind, construction, part and member as four separate things (TX1). What we leave: the tables for projects, roles and drawings, which a game doesn't need.
+
+**IFC (buildingSMART).** Materials attach to an element type or to an occurrence, and "the material associated to the element occurrence overrides the material associated to the element type". Doors and windows assign materials to named parts (lining, framing, glazing) through a constituent set. What we take: materials belong to parts, and the thing in the town can differ from its type (TX1, TX4). What we leave: the override. Our constructions and records name the member outright.
 
 **RimWorld.** A building or item can be made of a material chosen before it is made, and "the stats of the chosen material affect the stats of the end product". The building lists the categories it accepts (Stony, Woody, Metallic, Fabric, Leathery), and any material in them can be used: stony blocks include granite, limestone, marble, sandstone and slate. A new stone works in every stone building with no change to the buildings. What we take: parts ask for properties (TX4). What we leave: categories alone are too coarse for us, since a split step needs a stone that breaks in slabs, so we ask for properties within a family.
 
@@ -24,6 +29,8 @@ The evidence behind the shape of `docs/taxonomy.md`: how other games and tools k
 
 ## Sources
 
+- NBS, [Uniclass tables explained](https://www.thenbs.com/knowledge/uniclass-tables-explained)
+- buildingSMART, [IfcRelAssociatesMaterial (IFC 4.3)](https://standards.buildingsmart.org/IFC/RELEASE/IFC4_3/HTML/lexical/IfcRelAssociatesMaterial.htm)
 - RimWorld Wiki, [Stuff](https://rimworldwiki.com/wiki/Stuff)
 - Dwarf Fortress Wiki, [Inorganic material definition token](https://www.dwarffortresswiki.org/index.php/v0.34:Inorganic_material_definition_token) and [Plant token](https://dwarffortresswiki.org/index.php/Plant_token)
 - Unity Manual, [Material Variant inheritance](https://docs.unity3d.com/Manual/materialvariant-tasks.html)
