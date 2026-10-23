@@ -121,7 +121,9 @@ Some techniques for stone, each with the finish it gives and the marks it leaves
 
 Each member and technique has its own face patches (SN6), made by the technique's rules with the member's numbers. So mica schist costs one member file, its patches for the techniques it takes, and a variety sheet. The step part asks for a stone that breaks in slabs, so mica schist steps work the day the file lands.
 
-**Skill.** A maker's skill is a fact of the record (LF3: craft and means). Each technique says how skill shows. For a wall it is the regularity, the bridged joints and a true line; means shows as thickness, dressing and the stone's grade. A master and a farmhand using the same technique on the same granite leave different walls, and both are true.
+**Skill and means.** Every making and every work in the record says who did it, how skilled they were, and what money was spent (LF3: craft and means). Money buys a skilled hand, a better member and more care; an owner who builds his own shed brings his own skill. Each technique says how skill shows. For a wall it is the regularity, the bridged joints and a true line, and means shows as thickness, dressing and the stone's grade. For a board shed it would be how square and plumb it stands, how even its boards and nail lines run, and whether its roof is flashed.
+
+Skill shows twice: in the form when the thing is made, and in how it ages. A badly flashed roof lets water in, so its boards rot sooner (weathered). Low skill is drawn as a maker's real mistakes, the same ones across the whole thing (out of square by one amount, a line of nails that wanders), never as noise, since marks from one cause are one shape (`docs/living-fabric.md`). The pieces are still placed only by moving and turning (BB3). A skilled repair on a poorly built shed shows both makers, and the junction is where the history reads (LF3).
 
 ## In the data
 
