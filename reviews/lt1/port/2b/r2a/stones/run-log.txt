@@ -103,3 +103,67 @@
   export projects into the face's plane, a hair off the triangle's own: the step's worst is 0.023 mm, where L1's
   pixel is 5 mm or more.
 - L1's chamfer codes run 7 to 12 mm (the mean of the kept legs per triangle); L0's are 12 mm throughout.
+
+## 2026-10-23, the step judged
+- The set: Stones -parts step at the foot in 1300-drizzle, 1600-low-sun and 1750-blue-hour, and at the sun stand
+  (53.0, -1.0) in 1600-low-sun. Each is in grey, then material, with configs L0, L1, L1-noline and L0-flat (and
+  L1-noline-nomotes in low sun), views 1, 5, 8, 10 and 12 m, eye5 and eye12, and -dolly. Logs:
+  logs/step-<stand>-<moment>.txt.
+- The sun stand is in sun for the reason logged above: open sky, the low sun (bearing 316, 8.1 degrees up)
+  unblocked for 400 m over the harbour, and level ground under the 2.3 m stone. The foot stays in shade.
+- The frames were rendered from a split copy of the installed step.fbx (md5 4b41a2a475ac, every triangle on its
+  own control points; Stones -fbx). Then the Blender builder re-exported step.fbx the same way (48a8066, md5
+  ebbfaa247416), and it reads back with every check passing (logs/readback-step.txt; the first install's failing
+  readback is in 7e089f2). The two Unity meshes match triangle for triangle: every position, normal and UV is
+  within 1e-5 (Readback -dump of each, compared as sets). So the frames stand for the installed file.
+- The open faces' shadow. A closer (L1 with its open border capped, shadow-only: 19 open edges in one loop, fanned
+  from the loop's mean, so it lies inside L1's hull) was rendered against none (-noclose) at the sun stand in low
+  sun: grey, L0 and L1, at 5 and 12 m, eye5 and eye12. Nothing changes over 2 L* on the stone or round it; the
+  largest change is 0.8 L* at 5 m and eye5. At eye12 two pixels change by up to 4.1 L*, far from the stone: the
+  dither. Moved 0.4 m up, the closer casts a clear shadow (36,514 px change), so it is drawn. The open right end and
+  bed leak no light that any judging view sees. The closer stays on for every stone with open edges: it is a harness
+  fixture, and costs nothing visible.
+- The counts (counts.json; r2a_count.py --table step):
+  - Mesh as imported: L0 144 triangles and 432 vertices, L1 69 and 207, at both stands.
+  - SN8: L0 at 8 m has 12 of 137 front triangles thin (9%), median 100 px. L1 at 20 m has 3 of 60 (5%), median
+    41 px. Both pass. The eye views are not gated: L0 at eye12 is 33 to 34% thin, L1 13 to 18%.
+  - SN4, the chamfer at 8 m: 3 px on the top arris and 2 px on the uprights, so it passes, at the bar on the uprights.
+  - Lines and floating lines (SN9) in L0: no floating line in any frame, either reading. In material in low sun at
+    the sun stand, from 8 m (46 to 145 px; 2 to 4 lines, all on the form's edges), a dark line runs along the front
+    arris's right half. It is the tread's nosing facet, read dark against the lit face. L1-noline and L0-flat have
+    it too, so it is neither the chamfer nor the patches.
+  - Lines in L1: at the sun stand at 5 m and eye5, 2 to 3 dark fragments (27 to 37 px) lie more than 2 px from a mesh
+    edge, which fails SN9's literal reading. L1's lit line stands a chamfer's width (7 to 12 mm, 3 to 4 px at 5 m)
+    in from its arris, so the line floats wherever L1 is seen nearer than about 8 m. With the line off they are gone.
+    L1 is not shown nearer than its switch.
+  - Specks: L0 has 0 to 1 of the stone's own in every frame (the rest are the motes, common to every config). L1
+    has 4 at 1 m in drizzle and 8 at 1 m in low sun, and 1 to 2 elsewhere.
+  - The face spread (SN7, grey, L0), split face / top: 0.4 to 1.9 / 1.4 to 2.3 L* at the foot in drizzle and low
+    sun; 1.7 to 2.8 / 1.6 to 2.3 in blue hour; 0.4 to 0.9 / 1.6 to 4.6 at the sun stand. L0-flat gives the same
+    spreads to within 0.3, so the spread is the light and the geometry (the faces' few planes, the nosing), not
+    the patches.
+  - The patches by distance, |L0 - L0-flat| (L* box 3 x 3, mean / p95):
+    - the split face: 0.06 to 0.18 / 0.17 to 0.78 at 1 m, and 0.01 to 0.12 / 0.03 to 0.26 from 5 m, in every light;
+    - the top (a bed patch): 0.37 / 1.18 at 1 m in grey low sun (0.75 / 2.58 in material), and the noise floor
+      (about 0.05) from 2 m;
+    - with the near detail forced (the mips alone), the top keeps 0.55 to 0.69 / 1.43 to 1.80 at every distance from
+      1 to 12 m, but the split face only 0.12 to 0.14 / 0.33 to 0.37.
+    So on the step the split patches do not show at any distance, even unfaded, and the bed patch shows only within
+    about 1 m. Not tuned: the evidence for the coordinator's fade proposal and SN7's arms.
+  - The levels in motion (-dolly; the pop p99, L* box 3 x 3), switch against the motion's own:
+    - foot (shade), every light: at most 2.3 against 2.0 (drizzle, material, 8 m); in low sun 0.4 to 0.9 against
+      0.2 to 0.9;
+    - sun stand, material: 3.1 / 2.8 / 2.5 at 8 / 10 / 12 m, against 2.2 / 2.1 / 1.4;
+    - sun stand, grey: 5.9 / 5.2 / 5.3, against 3.2 / 1.8 / 1.6.
+    The sun stand's difference lies on the tread's front: the nosing's facets, which L1 simplifies (within 8.51 mm
+    of L0), and the front and left-end arrises, where L0's chamfer meets L1's lit line. In shade L1 passes for L0 at
+    8 m; in raking sun it does not at 12 m in grey.
+- The dolly's crop (640 x 400) is 3 px narrower than the step at 6 m (about 643 px), so the first frames cut its
+  ends by a pixel or two. The pop is read from 8 m, where the step is about 485 px wide.
+- Sheets: sheets/step/grey.png, material.png and levels.png. The 1 m views share the first row, then each light's
+  far views follow, zoomed only as far as the whole stone fits. Each sheet carries the mesh as imported. The step
+  has no arms sheet (the arms are judged on the wall stone).
+- Harness changes: Stones takes -fbx (a trial file in the installed one's place) and -measure (the ids and the
+  triangle measures alone). The triangle measures always include the main set's views and the far edges, so a short
+  run never drops them. Each level's mesh as imported goes to ids/mesh.json, and r2a_count.py carries it into
+  counts.json, the table and the sheets.

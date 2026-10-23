@@ -392,7 +392,8 @@ namespace Overstory.EditorTools
             foreach (var v in views)
                 log.AppendLine($"  view {v.name}: camera ({v.pos.x:F2}, {v.pos.y:F2}, {v.pos.z:F2}) on ({v.target.x:F2}, " +
                                $"{v.target.y:F2}, {v.target.z:F2}), {v.fov} degrees, {Vector3.Distance(v.pos, v.target):F2} m");
-            foreach (var look in looks)
+            // (-measure: no frames, only the ids and the triangle measures, which take no player render)
+            foreach (var look in Cli.Flag("-measure") ? new string[0] : looks)
             {
                 bool grey = look == "grey";
                 kit.Look(grey);
@@ -431,22 +432,28 @@ namespace Overstory.EditorTools
                 }
             }
             Triangles(stage, shot, piece, views, root, log);
-            Debug.Log($"[LT1R2a] {piece.name} in {moment}: {looks.Length * configs.Length * views.Count} frames into {root}");
+            Debug.Log($"[LT1R2a] {piece.name} in {moment}: {(Cli.Flag("-measure") ? 0 : looks.Length * configs.Length * views.Count)} frames into {root}");
         }
 
         /// <summary>
         /// SN8's triangle measures, from the mesh and the camera (no render): per level and view, the front-facing
         /// triangles on screen, the share whose smallest altitude is under 2 px (thin: at most 10% at the level's far
-        /// edge, L0 at 8 m and L1 at 20 m) and the median triangle's area in px (at least 10). The far edges are always
-        /// measured, whatever views the frames took. Into the log and &lt;root&gt;/ids/triangles.json.
+        /// edge, L0 at 8 m and L1 at 20 m) and the median triangle's area in px (at least 10). The main set's views
+        /// (1, 5, 8, 10 and 12 m, eye5, eye12) and the far edges are always measured, with whatever views the frames
+        /// took, so a run of a few views never drops the main set's measures. Into the log and &lt;root&gt;/ids/triangles.json; each level's mesh as
+        /// Unity imported it (its triangles and vertices: the vertex cost a frame-time A/B pays) into
+        /// &lt;root&gt;/ids/mesh.json.
         /// </summary>
         static void Triangles(StreetStage stage, CameraShot shot, Piece piece,
                               List<(string name, Vector3 pos, Vector3 target, float fov)> views, string root, StringBuilder log)
         {
             var all = new List<(string name, Vector3 pos, Vector3 target, float fov)>(views);
-            foreach (var edge in new[] { "8", "20" })
-                if (!all.Exists(v => v.name == edge + "m"))
-                    all.Add(piece.View(edge));
+            foreach (var std in new[] { "1", "5", "8", "10", "12", "eye5", "eye12", "20" })
+            {
+                var sv = piece.View(std);
+                if (!all.Exists(v => v.name == sv.name))
+                    all.Add(sv);
+            }
             var json = new StringBuilder("{\n");
             bool first = true;
             foreach (var level in new[] { "L0", "L1" })
@@ -464,6 +471,17 @@ namespace Overstory.EditorTools
                 }
             Directory.CreateDirectory(Path.Combine(root, "ids"));
             File.WriteAllText(Path.Combine(root, "ids", "triangles.json"), json.Append("\n}\n").ToString());
+            var mesh = new StringBuilder("{\n");
+            foreach (var level in new[] { "L0", "L1" })
+            {
+                var m = (level == "L0" ? piece.l0 : piece.l1).GetComponent<MeshFilter>().sharedMesh;
+                long tris = 0;
+                for (int sub = 0; sub < m.subMeshCount; sub++)
+                    tris += m.GetIndexCount(sub) / 3;
+                log.AppendLine($"  mesh {level} as imported: {tris} triangles, {m.vertexCount} vertices ({m.name})");
+                mesh.Append(level == "L0" ? "" : ",\n").Append($" \"{level}\": {{\"triangles\": {tris}, \"vertices\": {m.vertexCount}}}");
+            }
+            File.WriteAllText(Path.Combine(root, "ids", "mesh.json"), mesh.Append("\n}\n").ToString());
         }
 
         static string F(float v) => v.ToString("0.###", System.Globalization.CultureInfo.InvariantCulture);
@@ -607,6 +625,7 @@ namespace Overstory.EditorTools
         // The stones
 
         const string Generated = "Assets/Experiments/LT1/R2a/Generated";
+        static bool Closing => !Cli.Flag("-noclose");
         const string PackParts = "packs/stavanger-1989/parts/stone";
 
         /// <summary>
@@ -624,14 +643,7 @@ namespace Overstory.EditorTools
             {
                 var log = new StringBuilder();
                 log.AppendLine($"LT1R2a.Readback, {System.DateTime.Now:yyyy-MM-dd HH:mm}: {part}" + (trial != "" ? $", the trial file {trial}" : ""));
-                string at = null;
-                if (trial != "")
-                {
-                    at = $"{Generated}/test/{part}.fbx";
-                    Directory.CreateDirectory(Path.Combine(Repo, "unity", Generated, "test"));
-                    File.Copy(trial, Path.Combine(Repo, "unity", at), true);
-                    AssetDatabase.ImportAsset(at, ImportAssetOptions.ForceSynchronousImport);
-                }
+                string at = TrialCopy(part, trial);
                 Stone stone;
                 try
                 {
@@ -653,6 +665,19 @@ namespace Overstory.EditorTools
             }
             if (failed > 0)
                 throw new System.InvalidOperationException($"[LT1R2a] readback: {failed} failures (logs/readback-*.txt)");
+        }
+
+        /// <summary>A trial FBX copied into Generated/test/ in the part's name and imported (null when none is given);
+        /// the caller deletes Generated/test after.</summary>
+        static string TrialCopy(string part, string trial)
+        {
+            if (trial == "")
+                return null;
+            string at = $"{Generated}/test/{part}.fbx";
+            Directory.CreateDirectory(Path.Combine(Repo, "unity", Generated, "test"));
+            File.Copy(trial, Path.Combine(Repo, "unity", at), true);
+            AssetDatabase.ImportAsset(at, ImportAssetOptions.ForceSynchronousImport);
+            return at;
         }
 
         static string MeshJson(Mesh m)
@@ -686,8 +711,9 @@ namespace Overstory.EditorTools
 
         /// <summary>
         /// Stones -parts step -moments m [-stand foot|sun] [-looks grey,material] [-configs L0,L1,L1-noline,L0-flat]
-        /// [-views 1,5,8,10,12,eye5,eye12] [-dolly] [-tag t]: each stone judged as the block is (Judge, Dolly), one part
-        /// at a time, its FBX read back first (Stone.Load: the run stops on any difference). Frames into
+        /// [-views 1,5,8,10,12,eye5,eye12] [-dolly] [-tag t] [-fbx file]: each stone judged as the block is (Judge, Dolly),
+        /// one part at a time, its FBX read back first (Stone.Load: the run stops on any difference). -fbx renders a trial
+        /// file in the installed one's place (copied into Generated/test/, deleted after; the log names it). Frames into
         /// frames/&lt;part&gt;/&lt;stand&gt;/..., the log into logs/&lt;part&gt;-&lt;stand&gt;-&lt;moment&gt;[-t].txt.
         /// </summary>
         public static void Stones()
@@ -697,16 +723,20 @@ namespace Overstory.EditorTools
             var looks = Cli.Arg("-looks", "grey,material").Split(',');
             var configs = Cli.Arg("-configs", "L0,L1,L1-noline,L0-flat").Split(',');
             var viewNames = Cli.Arg("-views", "1,5,8,10,12,eye5,eye12").Split(',');
+            string trial = Cli.Arg("-fbx", "");
             foreach (var part in Cli.Arg("-parts", "step").Split(','))
             {
                 var log = new StringBuilder();
                 log.AppendLine($"LT1R2a.Stones, {System.DateTime.Now:yyyy-MM-dd HH:mm}: {part} in {moment}, the {stand.name} stand; looks " +
-                               $"{string.Join(",", looks)}; configs {string.Join(",", configs)}; views {string.Join(",", viewNames)}");
+                               $"{string.Join(",", looks)}; configs {string.Join(",", configs)}; views {string.Join(",", viewNames)}" +
+                               (trial != "" ? $"; the trial file {trial} in the installed one's place" : ""));
+                string at = null;
                 try
                 {
+                    at = TrialCopy(part, trial);
                     Run(moment, log, (stage, shot, kit) =>
                     {
-                        var stone = Stone.Load(part, log);
+                        var stone = Stone.Load(part, log, at);
                         if (stone.fails.Count > 0)
                             throw new System.InvalidOperationException($"{part}: the readback fails ({stone.fails.Count}): " +
                                                                        string.Join("; ", stone.fails));
@@ -721,6 +751,8 @@ namespace Overstory.EditorTools
                 }
                 finally
                 {
+                    if (at != null)
+                        AssetDatabase.DeleteAsset($"{Generated}/test");
                     Directory.CreateDirectory(LogDir);
                     File.WriteAllText(Path.Combine(LogDir, $"{part}-{stand.name}-{moment}{Tag}.txt"), log.ToString());
                 }
@@ -780,12 +812,13 @@ namespace Overstory.EditorTools
                     s.Fail(log, "importer: UV2 generated or the UVs swapped (UV1 and UV2 are contract channels)");
                 if (imp.importNormals != ModelImporterNormals.Import)
                     s.Fail(log, $"importer: normals {imp.importNormals}, not the file's");
-                // Unity's weld merges corners at one place whose channels differ by under about a millimetre or a degree
-                // (the step's first import: three L0 triangles took a neighbour's edge distance, 0.66 mm off, and three
-                // a neighbour's normal, up to 1.29 degrees off), so the contract's channels would not come through exact.
-                // The generated stone's own importer is set to weld nothing and the file imported again: its .meta is
-                // git-ignored with it, and no tracked asset changes. (A postprocessor would re-import every model in the
-                // project.)
+                // Unity's import merges the corners of one FBX control point whose UVs lie within about 1e-3 and whose
+                // normals within about 1.3 degrees, weld on or off (the step as first installed: three L0 triangles took
+                // a neighbour's edge distance, 0.66 mm off, and L1 normals up to 1.29 degrees off; logs/readback-step.txt).
+                // So the export gives every triangle its own control points, and the weld must be off as well, or
+                // corners at one place with equal channels merge across triangles. The generated stone's own importer
+                // is set to weld nothing and the file imported again: its .meta is git-ignored with it, and no tracked
+                // asset changes. (A postprocessor would re-import every model in the project.)
                 if (imp.weldVertices)
                 {
                     imp.weldVertices = false;
@@ -1224,6 +1257,7 @@ namespace Overstory.EditorTools
         {
             public string name;
             public MeshRenderer l0, l1, shadow;
+            public MeshRenderer closer;  // a stone with undrawn faces: a shadow-only box inside it (Kit.Closer), or null
             public Vector3 front;        // street metres: the middle of its face to the street
             public float baseZ, height;
             public readonly List<Object> made = new List<Object>();
@@ -1243,6 +1277,12 @@ namespace Overstory.EditorTools
                 l1.enabled = !isL0;
                 l1.sharedMaterial = m;
                 l1.shadowCastingMode = ShadowCastingMode.On;
+                if (closer != null)
+                {
+                    closer.enabled = Closing;
+                    closer.sharedMaterial = m;
+                    closer.shadowCastingMode = ShadowCastingMode.ShadowsOnly;
+                }
                 Shader.SetGlobalFloat("_OS_PatchLineOff", config.Contains("noline") ? 1f : 0f);
                 Shader.SetGlobalFloat("_OS_PatchFlat", config.Contains("flat") ? 1f : 0f);
                 // (-near, a control for the patch fade: OS_Near 1 everywhere in the frame, Detail.hlsl's own debug
@@ -1253,6 +1293,8 @@ namespace Overstory.EditorTools
             public void Hide()
             {
                 l0.enabled = l1.enabled = shadow.enabled = false;
+                if (closer != null)
+                    closer.enabled = false;
             }
 
             /// <summary>A judging view by name: "5" face-on from 5 m with the top seen at 20 degrees, "eye5" from 5 m
@@ -1378,7 +1420,7 @@ namespace Overstory.EditorTools
             bool IsPiece(Renderer r)
             {
                 foreach (var p in pieces)
-                    if (r == p.l0 || r == p.l1 || r == p.shadow)
+                    if (r == p.l0 || r == p.l1 || r == p.shadow || (p.closer != null && r == p.closer))
                         return true;
                 return false;
             }
@@ -1412,6 +1454,9 @@ namespace Overstory.EditorTools
                 piece.l0 = Make(name + " L0", l0, at, piece);
                 piece.l1 = Make(name + " L1", l1, at, piece);
                 piece.shadow = Make(name + " L1 shadow", l1, at, piece);
+                var box = Closer(l1, log);
+                if (box != null)
+                    piece.closer = Make(name + " closer", box, at, piece);
                 piece.front = new Vector3(stand.x, stand.y - halfD, lowest + tall / 2f);
                 pieces.Add(piece);
                 log.AppendLine($"{name} on the stand ({stand.x}, {stand.y}): {b.size.x:F3} x {b.size.z:F3} m in plan, {tall:F3} high over " +
@@ -1421,6 +1466,131 @@ namespace Overstory.EditorTools
                                $"({piece.front.x:F2}, {piece.front.y:F2}, {piece.front.z:F2}); L0 {l0.triangles.Length / 3} triangles, " +
                                $"L1 {l1.triangles.Length / 3}");
                 return piece;
+            }
+
+            /// <summary>
+            /// A stone's undrawn faces (its bed, a back or an end that its neighbours hide in the wall or the flight) let
+            /// the low sun through it: a ray that enters by an open end leaves by the open bed or back without meeting a
+            /// face turned to the light, so the stone's shadow loses that end's share. Loose on the street, the stone
+            /// is judged with its shadow closed: L1 with each open border capped, shadow-only. The open edges (an edge
+            /// with one triangle) are chained into loops, and each loop is fanned from its corners' mean, every cap
+            /// triangle running its border edge against the drawn triangle's way, so the closed surface faces out as
+            /// the drawn one does (the caster pass culls back faces). The fan's points are means of L1's corners, so
+            /// the cap lies within L1's convex hull: its shadow adds nothing the whole stone (L1, its skirts with it)
+            /// would not cast. A mesh with no open edge gets none. (-noclose: not drawn, the control; a harness
+            /// fixture, not the stone's.)
+            /// </summary>
+            Mesh Closer(Mesh l1, StringBuilder log)
+            {
+                var v = l1.vertices;
+                var t = l1.triangles;
+                // (corners by place: the export gives every triangle its own corners)
+                string K(Vector3 a) => $"{Mathf.RoundToInt(a.x * 1e5f)},{Mathf.RoundToInt(a.y * 1e5f)},{Mathf.RoundToInt(a.z * 1e5f)}";
+                var at = new Dictionary<string, Vector3>();
+                var directed = new Dictionary<(string, string), int>();
+                for (int i = 0; i < t.Length; i += 3)
+                    for (int e = 0; e < 3; e++)
+                    {
+                        Vector3 pa = v[t[i + e]], pb = v[t[i + (e + 1) % 3]];
+                        string a = K(pa), b = K(pb);
+                        at[a] = pa;
+                        at[b] = pb;
+                        directed[(a, b)] = directed.TryGetValue((a, b), out int u) ? u + 1 : 1;
+                    }
+                // an open edge: drawn one way and never the other; the cap runs it the other way (b to a)
+                var next = new Dictionary<string, List<string>>();
+                int open = 0;
+                foreach (var kv in directed)
+                    if (!directed.ContainsKey((kv.Key.Item2, kv.Key.Item1)))
+                    {
+                        open++;
+                        if (!next.TryGetValue(kv.Key.Item2, out var l))
+                            next[kv.Key.Item2] = l = new List<string>();
+                        l.Add(kv.Key.Item1);
+                    }
+                if (open == 0)
+                    return null;
+                var keys = new List<string>(next.Keys);
+                keys.Sort(string.CompareOrdinal);
+                var verts = new List<Vector3>();
+                var tris = new List<int>();
+                var loops = new List<int>();
+                int unclosed = 0;
+                foreach (var start in keys)
+                    while (next.TryGetValue(start, out var outs) && outs.Count > 0)
+                    {
+                        var loop = new List<string> { start };
+                        string cur = start;
+                        while (true)
+                        {
+                            if (!next.TryGetValue(cur, out var o) || o.Count == 0)
+                            {
+                                unclosed++;
+                                break;
+                            }
+                            string nx = o[0];
+                            o.RemoveAt(0);
+                            if (nx == start)
+                                break;
+                            loop.Add(nx);
+                            cur = nx;
+                        }
+                        if (loop.Count < 3)
+                            continue;
+                        Vector3 c = Vector3.zero;
+                        foreach (var k in loop)
+                            c += at[k];
+                        c /= loop.Count;
+                        int s0 = verts.Count;
+                        verts.Add(c);
+                        foreach (var k in loop)
+                            verts.Add(at[k]);
+                        for (int k = 0; k < loop.Count; k++)
+                            tris.AddRange(new[] { s0, s0 + 1 + k, s0 + 1 + (k + 1) % loop.Count });
+                        loops.Add(loop.Count);
+                    }
+                if (tris.Count == 0)
+                {
+                    log.AppendLine($"  closer: {open} open edges and no loop among them: the shadow stays open");
+                    return null;
+                }
+                // (each cap triangle its own corners and face normal, as the export's: the caster's normal bias moves
+                // a caster in along its normals)
+                var fv = new List<Vector3>();
+                var fn = new List<Vector3>();
+                var ft = new List<int>();
+                for (int i = 0; i < tris.Count; i += 3)
+                {
+                    Vector3 a = verts[tris[i]], b = verts[tris[i + 1]], c = verts[tris[i + 2]];
+                    var nn = Vector3.Cross(b - a, c - a);
+                    if (nn.sqrMagnitude < 1e-16f)
+                        continue;
+                    nn.Normalize();
+                    int s0 = fv.Count;
+                    fv.AddRange(new[] { a, b, c });
+                    fn.AddRange(new[] { nn, nn, nn });
+                    ft.AddRange(new[] { s0, s0 + 1, s0 + 2 });
+                }
+                // the closed caster: L1's triangles and the caps
+                var lv = new List<Vector3>(v);
+                var ln = new List<Vector3>(l1.normals);
+                var lt = new List<int>(t);
+                int baseIndex = lv.Count;
+                lv.AddRange(fv);
+                ln.AddRange(fn);
+                foreach (var i in ft)
+                    lt.Add(baseIndex + i);
+                var m = new Mesh { name = "closer", hideFlags = HideFlags.DontSave };
+                m.SetVertices(lv);
+                m.SetNormals(ln);
+                m.SetTriangles(lt, 0);
+                m.RecalculateBounds();
+                log.AppendLine($"  closer: {open} open edges in {loops.Count} loops ({string.Join(", ", loops)} corners)" +
+                               (unclosed > 0 ? $", {unclosed} chains that do not close" : "") + $"; L1 with its borders capped " +
+                               $"({ft.Count / 3} cap triangles), shadow-only; its bounds {m.bounds.min.ToString("F3")} to " +
+                               $"{m.bounds.max.ToString("F3")}, L1's {l1.bounds.min.ToString("F3")} to {l1.bounds.max.ToString("F3")}" +
+                               (Closing ? "" : "; -noclose: not drawn (the control)"));
+                return m;
             }
 
             MeshRenderer Make(string name, Mesh mesh, Vector3 at, Piece piece)

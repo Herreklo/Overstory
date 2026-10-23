@@ -1,0 +1,87 @@
+LT1R2a.Stones, 2026-10-23 05:27: step in 1600-low-sun, the sun stand; looks grey,material; configs L0,L1,L1-noline,L0-flat; views 1,5,8,10,12,eye5,eye12; the trial file /private/tmp/claude-501/-Users-oystein-code-Overstory/2e7c5731-4a7e-4b7c-8cda-584be3fc6804/scratchpad/split/step-split.fbx in the installed one's place
+light 1600-low-sun: fog density 0.0006, max opacity 0.85, mid at 300 m, far at 2500 m, haze 0.0025; OS_HAZE_OFF off: the air is on; lamps off
+patch array: 14 slices 1024 x 1024, RGBAHalf, 11 mips, 0.9765625 patches a metre (1024 texels at 1 mm), value = 0.75 + 0.5 v
+   0 split-0            mean value 1.0003, mean normal (0.0000, 0.0001, 0.9989) length 0.9989; normal ea0f8971cb13, value 63049a750adf as the manifest
+   1 split-1            mean value 0.9981, mean normal (0.0000, 0.0000, 0.9988) length 0.9988; normal b39a518ed25a, value 6483d4ac45b0 as the manifest
+   2 split-2            mean value 0.9938, mean normal (0.0000, 0.0000, 0.9992) length 0.9992; normal 49422fd24923, value 91f26fa542dd as the manifest
+   3 split-3            mean value 1.0003, mean normal (0.0000, 0.0000, 0.9995) length 0.9995; normal 44ac75a6600b, value 59097f723904 as the manifest
+   4 bed-0              mean value 0.9992, mean normal (0.0000, 0.0000, 0.9997) length 0.9997; normal c7b237748ca2, value 9e72cbb87f29 as the manifest
+   5 bed-1              mean value 0.9952, mean normal (0.0000, 0.0000, 0.9997) length 0.9997; normal 29d062634517, value 5e0edb02adf3 as the manifest
+   6 split-0-facets2    mean value 1.0003, mean normal (0.0000, 0.0001, 0.9986) length 0.9986; normal 36d9348689b9, value 63049a750adf as the manifest
+   7 split-1-facets2    mean value 0.9981, mean normal (0.0000, 0.0000, 0.9986) length 0.9986; normal ee145bf0b2a0, value 6483d4ac45b0 as the manifest
+   8 split-2-facets2    mean value 0.9938, mean normal (0.0000, 0.0000, 0.9987) length 0.9987; normal b66671036f92, value 91f26fa542dd as the manifest
+   9 split-3-facets2    mean value 1.0003, mean normal (0.0000, 0.0000, 0.9993) length 0.9993; normal 19897428003c, value 59097f723904 as the manifest
+  10 split-0-nominor    mean value 1.0003, mean normal (0.0000, 0.0001, 0.9991) length 0.9991; normal 9b4c50bdabd0, value 63049a750adf as the manifest
+  11 split-1-nominor    mean value 0.9981, mean normal (0.0000, 0.0000, 0.9991) length 0.9991; normal ce11b54d2c8d, value 6483d4ac45b0 as the manifest
+  12 split-2-nominor    mean value 0.9938, mean normal (0.0000, 0.0000, 0.9992) length 0.9992; normal 49422fd24923, value 91f26fa542dd as the manifest
+  13 split-3-nominor    mean value 1.0003, mean normal (0.0000, 0.0000, 0.9999) length 0.9999; normal fdc8210875ce, value 59097f723904 as the manifest
+  shifts: facets2 [6, 6, 6, 6, 0, 0, 0, 0]; nominor [10, 10, 10, 10, 0, 0, 0, 0]; as-built [0, 0, 0, 0, 0, 0, 0, 0]
+  built in 2.2 s
+materials: copies of Assets/Art/Stone/M_Stone_slate.mat with OS_PATCHES (True), _Grey 0 and 1; never saved
+stone step: Assets/Experiments/LT1/R2a/Generated/test/step.fbx (md5 4b41a2a475ac), its sidecar (md5 db2e8df61971), the definition packs/stavanger-1989/parts/stone/step.json (md5 1dd9b5ee6536)
+  importer: compression Off, normals Import, tangents CalculateMikk, weld True, optimise polygons True vertices True, readable False, axis conversion baked False, scale 1 (file scale True, 1), lightmap UVs False, swap UVs False, keep quads False
+  importer: weld set off on this generated file and the file imported again (its .meta is git-ignored)
+  object step_L0: mesh step_L0, local position (0.00, 0.00, 0.00), rotation (0.00, 180.00, 0.00), scale (1.00, 1.00, 1.00) (the rotation and position taken off: the mesh is in Unity's order)
+  object step_L1: mesh step_L1, local position (0.00, 0.00, 0.00), rotation (0.00, 180.00, 0.00), scale (1.00, 1.00, 1.00) (the rotation and position taken off: the mesh is in Unity's order)
+  the levels by the sidecar's objects: L0 step_L0 (step_L0), L1 step_L1 (step_L1)
+  L0 (step_L0): 144 triangles, 432 vertices, UV dimensions 2 2 2 2 2 2 2 2, normals yes
+    edges: 232; open 32 (the undrawn faces' borders); non-manifold 0; creases (turn of 20 degrees or more) 39, their turns in degrees to 5: 30: 2, 35: 1, 40: 4, 45: 17, 50: 1, 55: 2, 65: 1, 75: 9, 80: 2
+    kinds: top 77 (0.7341 m2), chamfer 19 (0.0258 m2), split 48 (0.4294 m2)
+    slices by kind: chamfer 7: 19, split 2: 7, split 3: 41, top 4: 77; chamfer codes 12 mm: 144; 0 triangles masked
+    history: years/200 0.575, seed 0.7921811, one for the stone; normals: the worst 0.000 degrees off the face; sky (UV3) the worst 7.7E-007 off 0.5 + 0.5 n_up; edge distances the worst 0.00012 mm off the corners' heights
+    triangles 144 against the sidecar's 144
+    the stone's chamfer 12 mm (L0's code), the sidecar's 12
+  L1 (step_L1): 69 triangles, 207 vertices, UV dimensions 2 2 2 2 2 2 2 2, normals yes
+    edges: 113; open 19 (the undrawn faces' borders); non-manifold 0; creases (turn of 20 degrees or more) 17, their turns in degrees to 5: 40: 1, 60: 1, 65: 1, 80: 4, 85: 2, 90: 8
+    kinds: top 38 (0.7501 m2), split 31 (0.4492 m2)
+    slices by kind: split 2: 9, split 3: 22, top 4: 38; chamfer codes 7 mm: 2, 8 mm: 5, 9 mm: 8, 10 mm: 6, 11 mm: 4, 12 mm: 44; 33 triangles masked
+    history: years/200 0.575, seed 0.7921811, one for the stone; normals: the worst 0.000 degrees off the face; sky (UV3) the worst 6.0E-008 off 0.5 + 0.5 n_up; edge distances the worst 0.00000 mm off the corners' heights; the slots that hold an arris: the worst 0.0233 mm off its distance
+    triangles 69 against the sidecar's 69
+  bounds: L1 (0.0000, -0.0300, 0.0000) to (2.2950, 0.1660, 0.3270), L0 (0.0000, -0.0300, 0.0000) to (2.2950, 0.1660, 0.3270) (pivot 'bed-front-left')
+  L0's bounds against the sidecar's (0.0000, -0.0300, 0.0000) to (2.2950, 0.1660, 0.3270): 0.000 mm off
+  L1's bounds against the sidecar's (0.0000, -0.0300, 0.0000) to (2.2950, 0.1660, 0.3270): 0.000 mm off
+  the faces' mean normals: the top (-0.002, 1.000, -0.019), the split faces (-0.025, -0.134, -0.991)
+  readback step: every check passes
+chamfer: the part's measure 'leg' (the code's mm is the leg kept along each face), at 45 degrees (an equal-legged chamfer on a square arris; the arrises' own turns are measured below); _OS_Chamfer (0.001, 0.7071, 0.7071)
+  closer: 19 open edges in 1 loops (19 corners); L1 with its borders capped (19 cap triangles), shadow-only; its bounds (0.000, -0.030, 0.000) to (2.295, 0.166, 0.327), L1's (0.000, -0.030, 0.000) to (2.295, 0.166, 0.327)
+step on the stand (53, -1): 2.295 x 0.327 m in plan, 0.166 high over its bed (0.030 m of skirt below it, in the ground) (L1's bounds); the ground (ground_heart) 1.900 to 1.900 m under its corners, its bed at 1.900 (sunk 0.000 m at the highest); its face's middle (53.00, -1.16, 1.98); L0 144 triangles, L1 69
+  view 1m: camera (53.00, -2.10, 2.33) on (53.00, -1.16, 1.98), 46.4 degrees, 1.00 m
+  view 5m: camera (53.00, -5.86, 3.69) on (53.00, -1.16, 1.98), 46.4 degrees, 5.00 m
+  view 8m: camera (53.00, -8.68, 4.72) on (53.00, -1.16, 1.98), 46.4 degrees, 8.00 m
+  view 10m: camera (53.00, -10.56, 5.40) on (53.00, -1.16, 1.98), 46.4 degrees, 10.00 m
+  view 12m: camera (53.00, -12.44, 6.09) on (53.00, -1.16, 1.98), 46.4 degrees, 12.00 m
+  view eye5: camera (53.00, -6.16, 3.50) on (53.00, -1.16, 1.98), 46.4 degrees, 5.23 m
+  view eye12: camera (53.00, -13.16, 3.50) on (53.00, -1.16, 1.98), 46.4 degrees, 12.10 m
+  ids render: shader Overstory/R2aIds supported True, errors False; renderer PC_Renderer features ScreenSpaceAmbientOcclusion off, ScreenSpaceReflection off, KeyBlock off, FogLights off, Palette off, SunBeams off; async compiling False
+  ids L0/1m: 926660 px; slice 3: 580111, slice 4: 314721, slice 7: 31828; 0 inexact
+  ids L0/5m: 63960 px; slice 3: 35540, slice 4: 26444, slice 7: 1976; 0 inexact
+  ids L0/8m: 25491 px; slice 3: 13779, slice 4: 10906, slice 7: 806; 0 inexact
+  ids L0/10m: 16472 px; slice 3: 8845, slice 4: 7005, slice 7: 622; 0 inexact
+  ids L0/12m: 11502 px; slice 3: 6093, slice 4: 4938, slice 7: 471; 0 inexact
+  ids L0/eye5: 55424 px; slice 3: 32800, slice 4: 20712, slice 7: 1912; 0 inexact
+  ids L0/eye12: 8736 px; slice 3: 6554, slice 4: 1866, slice 7: 316; 0 inexact
+  ids L1/1m: 926660 px; slice 3: 604952, slice 4: 321708; 0 inexact
+  ids L1/5m: 64072 px; slice 3: 36842, slice 4: 27230; 0 inexact
+  ids L1/8m: 25546 px; slice 3: 14336, slice 4: 11210; 0 inexact
+  ids L1/10m: 16486 px; slice 3: 9274, slice 4: 7212; 0 inexact
+  ids L1/12m: 11512 px; slice 3: 6445, slice 4: 5067; 0 inexact
+  ids L1/eye5: 55513 px; slice 3: 34341, slice 4: 21172; 0 inexact
+  ids L1/eye12: 8744 px; slice 3: 6740, slice 4: 2004; 0 inexact
+  triangles L0 1m: 130 front-facing of 144; thin (smallest altitude under 2 px) 0 = 0%; median area 6044.7 px, median smallest altitude 41.80 px
+  triangles L0 5m: 137 front-facing of 144; thin (smallest altitude under 2 px) 6 = 4%; median area 257.7 px, median smallest altitude 13.82 px
+  triangles L0 8m: 137 front-facing of 144; thin (smallest altitude under 2 px) 12 = 9%; median area 100.3 px, median smallest altitude 8.70 px
+  triangles L0 10m: 137 front-facing of 144; thin (smallest altitude under 2 px) 16 = 12%; median area 64.1 px, median smallest altitude 6.97 px
+  triangles L0 12m: 137 front-facing of 144; thin (smallest altitude under 2 px) 34 = 25%; median area 44.5 px, median smallest altitude 5.82 px
+  triangles L0 eye5: 137 front-facing of 144; thin (smallest altitude under 2 px) 7 = 5%; median area 239.9 px, median smallest altitude 13.47 px
+  triangles L0 eye12: 137 front-facing of 144; thin (smallest altitude under 2 px) 46 = 34%; median area 29.3 px, median smallest altitude 3.64 px
+  triangles L0 20m: 137 front-facing of 144; thin (smallest altitude under 2 px) 48 = 35%; median area 16.0 px, median smallest altitude 3.50 px
+  triangles L1 1m: 60 front-facing of 69; thin (smallest altitude under 2 px) 0 = 0%; median area 10368.2 px, median smallest altitude 68.34 px
+  triangles L1 5m: 60 front-facing of 69; thin (smallest altitude under 2 px) 2 = 3%; median area 657.4 px, median smallest altitude 17.12 px
+  triangles L1 8m: 60 front-facing of 69; thin (smallest altitude under 2 px) 2 = 3%; median area 256.7 px, median smallest altitude 10.64 px
+  triangles L1 10m: 60 front-facing of 69; thin (smallest altitude under 2 px) 2 = 3%; median area 164.2 px, median smallest altitude 8.52 px
+  triangles L1 12m: 60 front-facing of 69; thin (smallest altitude under 2 px) 2 = 3%; median area 114.0 px, median smallest altitude 7.13 px
+  triangles L1 eye5: 60 front-facing of 69; thin (smallest altitude under 2 px) 2 = 3%; median area 587.9 px, median smallest altitude 16.12 px
+  triangles L1 eye12: 60 front-facing of 69; thin (smallest altitude under 2 px) 8 = 13%; median area 54.3 px, median smallest altitude 3.99 px
+  triangles L1 20m: 60 front-facing of 69; thin (smallest altitude under 2 px) 3 = 5%; median area 41.0 px, median smallest altitude 4.30 px
+  mesh L0 as imported: 144 triangles, 432 vertices (step_L0)
+  mesh L1 as imported: 69 triangles, 207 vertices (step_L1)

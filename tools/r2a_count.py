@@ -5,6 +5,7 @@ copies none of them:
     frames/<piece>/<stand>/<moment>/<look>/<config>/<view>.png     the player's frames (2560 x 1440)
     frames/<piece>/<stand>/ids/<level>/<view>-{ids,normals,mask}.png   what the mesh is at each pixel (R2aIds.shader)
     frames/<piece>/<stand>/ids/triangles.json                      SN8's triangle measures, from the mesh
+    frames/<piece>/<stand>/ids/mesh.json                           each level's mesh as Unity imported it (triangles, vertices)
     frames/<piece>/<stand>/dolly/<moment>/dolly.json, <look>/<level>/NNN.png   the levels in motion (crops)
 
 A config is a level (L0, L1) with its changes: -noline (L1's lit line off), -flat (the patches off), -facets2 and
@@ -281,6 +282,9 @@ def count_piece(piece):
         tj = os.path.join(sdir, "ids", "triangles.json")
         if os.path.exists(tj):
             out[f"triangles/{piece}/{stand}"] = json.load(open(tj))
+        mj = os.path.join(sdir, "ids", "mesh.json")
+        if os.path.exists(mj):
+            out[f"mesh/{piece}/{stand}"] = json.load(open(mj))
         for level in ("L0", "L1"):
             for f in ls(os.path.join(sdir, "ids", level)):
                 if f.endswith("-ids.png"):
@@ -332,7 +336,7 @@ def run(pieces_):
     out = json.load(open(cj)) if os.path.exists(cj) else {}
     for p in pieces_:
         for k in [k for k in out if k.split("/")[0] == p
-                  or (k.split("/")[0] in ("spread", "chamfer", "triangles", "pop", "patch") and k.split("/")[1] == p)]:
+                  or (k.split("/")[0] in ("spread", "chamfer", "triangles", "mesh", "pop", "patch") and k.split("/")[1] == p)]:
             del out[k]
         out.update(count_piece(p))
     with open(cj, "w") as fh:
@@ -363,6 +367,12 @@ def table(pieces_):
         parts = k.split("/")
         if parts[0] == "chamfer" and parts[1] in pieces_:
             rows.append(f"| {'/'.join(parts[1:])} | {c[k]['top_px']} | {c[k]['upright_px']} |")
+    rows += ["", "| mesh as imported | L0 triangles | L0 vertices | L1 triangles | L1 vertices |", "| --- | --- | --- | --- | --- |"]
+    for k in sorted(c):
+        parts = k.split("/")
+        if parts[0] == "mesh" and parts[1] in pieces_:
+            rows.append(f"| {'/'.join(parts[1:])} | {c[k]['L0']['triangles']} | {c[k]['L0']['vertices']} | "
+                        f"{c[k]['L1']['triangles']} | {c[k]['L1']['vertices']} |")
     rows += ["", "| triangles | level/view | front | thin (< 2 px) | median area px | median smallest altitude px |",
              "| --- | --- | --- | --- | --- | --- |"]
     for k in sorted(c):
@@ -424,6 +434,16 @@ def tile(frame, mask, z, pad=12, cap=(900, 560)):
     return zoom(as_float(frame[y0:y0 + h, x0:x0 + w]), z)
 
 
+def fit(mask, z, cap=(900, 560), pad=12):
+    """The view's zoom, lowered until the piece's whole box fits the tile's cap (a long stone shown whole, not its
+    middle), never under 1."""
+    ys, xs = np.nonzero(mask)
+    w, h = xs.max() - xs.min() + 2 * pad, ys.max() - ys.min() + 2 * pad
+    while z > 1 and (w * z > cap[0] or h * z > cap[1]):
+        z -= 1
+    return z
+
+
 def labelled(img, s):
     img = img.copy()
     text(img, s, 0, 0, scale=2, pad=3)
@@ -454,22 +474,29 @@ VIEW_ZOOM = {"1m": 1, "5m": 3, "8m": 4, "10m": 5, "12m": 6, "eye5": 3, "eye12": 
 
 
 def sheet_looks(piece, look):
-    """grey.png / material.png: per stand and light a row, the views at native size (far views enlarged, nearest)."""
+    """grey.png / material.png: the 1 m views side by side in the first row, then per stand and light a row of the
+    others, each at native size (far views enlarged, nearest, as far as the piece fits)."""
     rows = []
     pdir = os.path.join(FRAMES, piece)
-    for stand in ("sun", "foot"):
-        sdir = os.path.join(pdir, stand)
-        for moment in stand_moments(sdir):
-            row = []
-            for view in ("1m", "5m", "12m", "eye5", "eye12"):
-                f = os.path.join(sdir, moment, look, "L0", view + ".png")
-                if not os.path.exists(f):
-                    continue
-                _, _, mask = load_ids(sdir, "L0", view)
-                z = VIEW_ZOOM.get(view, 1)
-                row.append(labelled(tile(read_png(f), mask, z), f"{piece} {stand} {moment} {view} L0" + (f" x{z}" if z > 1 else "")))
-            if row:
-                rows.append(row)
+    for views in (("1m",), ("5m", "12m", "eye5", "eye12")):
+        near = []
+        for stand in ("sun", "foot"):
+            sdir = os.path.join(pdir, stand)
+            for moment in stand_moments(sdir):
+                row = []
+                for view in views:
+                    f = os.path.join(sdir, moment, look, "L0", view + ".png")
+                    if not os.path.exists(f):
+                        continue
+                    _, _, mask = load_ids(sdir, "L0", view)
+                    z = fit(mask, VIEW_ZOOM.get(view, 1))
+                    row.append(labelled(tile(read_png(f), mask, z), f"{piece} {stand} {moment} {view} L0" + (f" x{z}" if z > 1 else "")))
+                if views == ("1m",):
+                    near += row
+                elif row:
+                    rows.append(row)
+        if near:
+            rows.append(near)
     return grid(rows) if rows else None
 
 
@@ -491,9 +518,9 @@ def sheet_levels(piece):
                 _, _, m1 = load_ids(sdir, "L1", view)
                 a, b = read_png(f0), read_png(f1)
                 d = np.clip(128 + 8 * (lstar(b) - lstar(a)), 0, 255).astype(np.uint8)
-                z = VIEW_ZOOM[view]
                 m = m0 | m1
-                row += [labelled(tile(a, m, z), f"{moment} {stand} {view} L0"), labelled(tile(b, m, z), "L1"),
+                z = fit(m, VIEW_ZOOM[view])
+                row += [labelled(tile(a, m, z), f"{moment} {stand} {view} L0" + (f" x{z}" if z > 1 else "")), labelled(tile(b, m, z), "L1"),
                         labelled(tile(np.stack([d] * 3, -1), m, z), "L1-L0 X8")]
             p = c.get(f"pop/{piece}/{stand}/{moment}/material")
             if row:
@@ -524,6 +551,10 @@ def sheet_arms(piece):
     beside it, grey then material; references 05 and 10 at the end."""
     rows = []
     pdir = os.path.join(FRAMES, piece)
+    # (a piece judged without the arms, the step and the coping, gets no arms sheet)
+    if not any(os.path.isdir(os.path.join(pdir, stand, "1600-low-sun", look, arm))
+               for stand in ("sun", "foot") for look in ("grey", "material") for arm in ("L0-facets2", "L0-nominor")):
+        return None
     for look in ("grey", "material"):
         for arm in ("L0", "L0-facets2", "L0-nominor"):
             row = []
@@ -533,6 +564,7 @@ def sheet_arms(piece):
                     f = os.path.join(sdir, moment, look, arm, view + ".png")
                     if os.path.exists(f):
                         _, _, mask = load_ids(sdir, "L0", view)
+                        z = fit(mask, z, cap=(640, 400))
                         name = {"L0": "as built", "L0-facets2": "facets x2", "L0-nominor": "minor off"}[arm]
                         row.append(labelled(tile(read_png(f), mask, z, cap=(640, 400)), f"{name} {look} {stand} {view}" + (f" x{z}" if z > 1 else "")))
             if row:
@@ -548,12 +580,35 @@ def sheet_arms(piece):
     return np.concatenate([pad(body), pad(side)], 1)
 
 
+def mesh_band(piece, width):
+    """A band over a sheet: each level's mesh as Unity imported it (the vertex cost beside the triangles). Every stand
+    holds the same mesh; a stand whose counts differ is named."""
+    c = json.load(open(os.path.join(STONES, "counts.json")))
+    seen = {}
+    for k in sorted(c):
+        parts = k.split("/")
+        if parts[0] == "mesh" and parts[1] == piece:
+            m = c[k]
+            seen.setdefault(f"L0 {m['L0']['triangles']} TRIS {m['L0']['vertices']} VERTS   "
+                            f"L1 {m['L1']['triangles']} TRIS {m['L1']['vertices']} VERTS", []).append(parts[2])
+    if not seen:
+        return None
+    lines = [f"{piece} as imported: {s}" + (f" ({', '.join(st)})" if len(seen) > 1 else "") for s, st in seen.items()]
+    band = np.full((10 + 20 * len(lines), width, 3), 0.12, np.float32)
+    for i, line in enumerate(lines):
+        text(band, line, 6, 5 + 20 * i, scale=2, pad=2)
+    return band
+
+
 def sheets(pieces_):
     for piece in pieces_:
         made = {"grey": sheet_looks(piece, "grey"), "material": sheet_looks(piece, "material"),
                 "levels": sheet_levels(piece), "arms": sheet_arms(piece)}
         for name, img in made.items():
             if img is not None:
+                band = mesh_band(piece, img.shape[1])
+                if band is not None:
+                    img = np.concatenate([band, img], 0)
                 d = os.path.join(STONES, "sheets", piece)
                 os.makedirs(d, exist_ok=True)
                 write_png(os.path.join(d, name + ".png"), np.clip(img * 255 + 0.5, 0, 255).astype(np.uint8))
