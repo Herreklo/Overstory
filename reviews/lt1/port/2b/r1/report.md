@@ -1,232 +1,140 @@
-# R1: the gully's walls and steps as elevations
+# R1 round 2: the gully's walls and steps as elevations
 
-Port step 2b, rung R1 (`reviews/lt1/port/2b/design.md`, The ladder). The cheek walls and the steps laid in integer millimetres by `blender/generators/masonry.py`, from `r1/facts.json`, checked and drawn by `tools/r1_elevations.py`. Numbers and faults only; no judgement of the look.
+Port step 2b, rung R1, round 2 (`reviews/lt1/port/2b/design.md`, The ladder). The cheek walls and the steps are laid in integer millimetres by `blender/generators/masonry.py`, from `r1/facts.json` and the data (`kinds/wall.json`, `packs/stavanger-1989/walling.json`), then checked, timed and drawn by `tools/r1_elevations.py`. This report gives numbers and faults only. It judges no look, and no reviewer has passed anything in it.
 
-## Not done; next round
+## In short
 
-Stopped here for usage (the coordinator, 22 October). The design changed at e84862e after this run was built: dry lane walls carry no raked coping, so SN2 now has a retaining wall with no coping (the bank over a level top course) and a parapet with level slab copings stepped square, a whole course a step, nothing cut to a rake.
-
-- **Stepped tops** replace this run's kneelers, knees, intermediate kneelers and raked copings (and the rake cuts under them); `masonry.py`'s `_coping` and the SN2 rake tests are to be redone, not finished.
-- **The stone count:** 8,620 wall stones (8,301 face) against the design's about 2,700; L0 421,320 triangles against 150,000 (walls 370,320 against 110,000). Why: every rise (146 to 188 mm) is over the 140 mm course, so two courses a rise, median 83 mm; stones of 180 mm to 4.5 times that height are short; and both faces are laid stone by stone (the bank face alone is about 60% of the face stones, the walls' faces 212 m2 against 140).
-- **Lap failures:** 18 laps and 5 four-stone crosses, all at the free lengths the fill relaxed (short runs in thin courses; What fails, 2).
+- **Counts against the budgets (SN8), two goings a level run (the variant laid):** 2,714 wall stones (round 1: 8,620, -69%; the design's estimate about 2,700). Walls L0 129,664 triangles: the old budget is 110,000 and the re-derived one 131,100. Walls L1 52,192: old 45,000, re-derived 53,500. Steps L0 51,000 (170 stones at 300) against 40,000. The gully L0 180,664: old 150,000, re-derived 182,100 (round 1: 421,320).
+- **Tests:** 44 checks and 1 report only (line of minimum trace, as the design asks). With two goings, 44 checks pass and 0 fail. With one going, 43 pass and 1 fails: SN2 coping slabs 450 to 1000 mm, 139 of 204. Laid twice in one run and once in a second process, the hashes are two goings `818b719a368ef651` the same three times; one going `d8999b350b8e8727` the same three times.
+- **Visibility:** all 68 panel faces are seen from somewhere, so all are laid stone by stone and none is hidden work. Of the course faces, 130.82 m² are seen from within 8 m, 35.97 m² only from beyond 8 m (all bank faces, on fl-1), none from nowhere, and 12.01 m² lie under the ground. Adding the houses as occluders changes no faces.
+- **Round 1's faults:** laps 18 to 0, four-stone crosses 5 to 0, joints through more than two courses 13 to 0. Panels that re-lay alone: 32 of 40 before, 34 of 34 now (one going: 34 of 34).
+- **Data, not code:** every number that depends on the stone, its working or its era now lives in data. A mortared granite wall of the 1930s (`r1/granite-1930.json`) is laid by the same functions with no code edit. It fails 1 check: SN2 coping slabs 500 to 1200 mm, 2 of 130. SN1, SN9 and SN10 pass.
+- **Timing (Python, one process, the CPU):** the whole gully takes 1,381 ms to lay: 7.09 ms a m² of laid wall face and 0.5088 ms a wall stone. The bond tests take 0.04 ms a m² more. The C# port will differ.
+- **What still fails:** with one going: SN2 coping slabs 450 to 1000 mm (139); the granite record: SN2 coping slabs 500 to 1200 mm (2); the walls' L0 is over the old budget (129,664 against 110,000) and under the re-derived one by 1,436; the steps' L0 is over theirs (51,000 against 40,000); 10 flags and 5 boundary cuts in the laying's own reports. All of it is under What fails, and why.
 
 **The coordinator's read (22 October, 22:20).** Not passed. The next round starts from three decisions.
 - **One course a rise.** The 140 mm maximum course came from `wall.py`. The town's own walls (`docs/references/stone/` 31 and 36) are thick split slabs, so the course range rises to cover a rise (up to about 190 mm), with one course on each step top as SN2 already allows. That roughly halves the stone count.
 - **The back faces.** All four walls are parapets (`retains: false` in the clay's ground), so both faces are seen from somewhere. Measure which back faces the five judging views and the walkable ground can see before deciding how they are laid.
 - **The budget.** SN8's 110k for the walls assumed 140 m² of face, and the walls have 212.5 m². Re-derive it from the faces that are seen, then hold to it.
 
-## In short
+**Answers.**
 
-- **Hash:** `aec969068f3406f1` (laid twice in one run: the same); the run is repeated in a second process to show it holds.
-- **Tests:** 37 checks; 34 pass, 3 fail (36 failures in all). The failures, each with its cause, are under Tests.
-- **Counts (SN8):** 8620 wall stones (8301 face stones, 106 copings, 22 kneelers of which 4 intermediate, 18 knees, 71 throughs, 96 head stones, 6 topstones), 212.5 m2 of face on both faces, 170 step stones and slabs. L0 at the design's rates: walls 370,320 triangles against 110,000, stairs 51,000 against 40,000, the gully 421,320 against 150,000.
-- **Joints through more than two courses, by cause:** 8 a tall stone's side (topstone); 5 course joints.
-- **Panels re-lay alone:** 32 of 40 panels re-laid with an event's seed change no stone outside themselves; the worst changes 35 (wl-gully/fl-1/r/pn-11).
+- **One course a rise: done.** The course range is now 120 to 260 mm, and a rise up to 190 mm is one course. The rises are 146 to 188 mm, so every rise is one course: one line on each step top and none between (0 lines between in all four walls). The courses under the last step are the rises themselves (146 to 188 mm, median 167). The free courses over it run from 174 down to 124 mm, and the foundation courses are 190 to 260 mm. The count fell from 8,620 to 2,714 wall stones, more than the read's "roughly halves", because the longer stones ride on the higher courses: a stone runs 180 to 850 mm, drawn 3/2 to 4/1 of its height, within SN10's 4.5.
+- **The back faces: measured.** Both faces of every panel are seen from somewhere: the bank faces from the lanes and places around the gully. 14 whole bank faces on fl-1 (31.64 m²) are seen only from beyond 8 m: their nearest eyes are 8.0 to 17.5 m off, on Top Terrace, the way to D (1107, empty since 1986), the Landing. So no face is hidden work, and the bank faces are laid stone by stone like the stair faces. The method and the numbers are under The visibility measurement.
+- **The budget: re-derived from the seen faces.** At SN8's own density (786 L0 and 321 L1 triangles a m² of course face), the 166.79 m² of seen course face give the walls 131,100 at L0 and 53,500 at L1. The walls lay 129,664 and 52,192, inside both. This is a proposal: design.md is not edited. The derivation and a second option are under The budget, re-derived.
+
+## The brief's five points
+
+1. **One course a rise: answered.** As above. The ranges and their reasons are in the walling table's notes (`packs/stavanger-1989/walling.json`). The town's own walls (`docs/references/stone/` 31 and 36) are thick split slabs in level beds with the biggest stones low, so a course covers a rise. The free courses diminish upwards by up to 10 mm a course, from no more than the last rise down to 120. The foundation courses are larger than any rise, and each is at least the course over it (fixed this round, see Assumed). SN2's "a line on each step top" checks 160 step tops and "one course a rise" 156 rises, with no failure. SN10's "the largest courses low" checks 44 courses, with no failure.
+2. **The back faces: answered.** I measured them from the six judging views and from standing eyes 1.6 m over all the walkable ground, by panel and face, with the terrain and the walls as occluders. All 68 faces are seen; 28 of them appear in at least one judging view. 35.97 m² of course face is seen only from beyond 8 m. No face is veiled, because none is hidden.
+3. **The budget: answered, as a proposal.** Walls: L0 131,100 and L1 53,500 (option A), or L0 106,200 if the faces seen only from beyond 8 m are built at L1 alone (option B). Steps: L0 51,000 and L1 20,400, the table's 300 and 120 a stone times the 170 stones the facts make. The gully: L0 182,100 and L1 73,900.
+4. **Stepped tops by SN2: answered.** There are no kneelers, knees or raked stones: SN9's "no rake" checks 2,714 stones, none sloped. Every coping lies on whole courses, and below the last step every coping steps from one step top's line to another's. Over each rest the coping runs level (14 rest runs, each rest on both walls, no riser on any) and drops square at the next flight. Every coping run ends at a head's topstone or at a square step (261 ends checked, none open). Both variants are laid. I pick **two goings** a level run: a going is 296 to 297 mm here (median 297), so a run over one going leaves a slab of about 300 mm, under a whole slab's 450 mm. With one going, 139 of 204 slabs are short. With two goings, all 144 slabs are 450 to 994 mm (median 592). The coping then steps 9 times by 1 course, 72 times by 2 courses, 124 to 356 mm (median 330); with one going it steps 155 times by 1 course, 124 to 188 mm. The design leaves the final choice to R2b's grey form, by how the stepped top reads; this is R1's evidence for it. The one-going variant's stair faces are on the sheet for comparison.
+5. **Round 1's other faults: answered.** Laps: 18 failures to 0. Crosses: 5 to 0. Joints through more than two courses: 13 to 0 (round 1's 13 included 8 at the topstones; now 0). Panels changing stones outside themselves: 8 of 40 to 0 of 34. The steps' 9 mm play and fl-1's rests are by the facts, and I propose no rule change for them, since nothing here is evidence against the rules. Each is under What fails, and why.
 
 ## Tests
 
-| Rule | Check | Checked | Failed |
-| --- | --- | --- | --- |
-| SN1 | convex | 8620 | 0 |
-| SN1 | integer outlines | 8620 | 0 |
-| SN10 | laps | 8144 | 18 |
-| SN10 | line of minimum trace | 0 | 0 |
-| SN10 | no four-stone cross | 8131 | 5 |
-| SN10 | no joint through more than two courses | 8139 | 13 |
-| SN10 | no stone over 4.5 x its height | 8468 | 0 |
-| SN10 | the largest courses low | 221 | 0 |
-| SN2 | a knee at every downward break | 18 | 0 |
-| SN2 | a kneeler at every upward break | 18 | 0 |
-| SN2 | a line on each step top | 160 | 0 |
-| SN2 | at most one line between step tops | 156 | 0 |
-| SN2 | bank footing in whole courses | 259 | 0 |
-| SN2 | course heights 60 to 140 | 393 | 0 |
-| SN2 | every course ends at a footing or the coping | 1516 | 0 |
-| SN2 | heads: ties and runners alternate | 8 | 0 |
-| SN2 | intermediate kneelers every 2.4 to 3.6 m | 26 | 0 |
-| SN2 | kneelers wider than high | 22 | 0 |
-| SN2 | level beds on course lines | 8514 | 0 |
-| SN2 | no angle under 25 degrees | 8620 | 0 |
-| SN2 | no face under 50 mm | 8620 | 0 |
-| SN2 | no stone under 50 mm high | 8468 | 0 |
-| SN2 | rake cuts leave trapezoids | 532 | 0 |
-| SN2 | square topstones | 6 | 0 |
-| SN3 | ends 150 mm into the walls | 81 | 0 |
-| SN3 | joint outside the middle third | 71 | 0 |
-| SN3 | joints alternate | 69 | 0 |
-| SN3 | laps 40 to 60 mm | 77 | 0 |
-| SN3 | never pieced in depth | 71 | 0 |
-| SN3 | no joint within 150 mm of the one below | 83 | 0 |
-| SN3 | one or two stones a step | 71 | 0 |
-| SN3 | rests: two to four slabs | 8 | 0 |
-| SN3 | within the finish's sizes | 170 | 0 |
-| SN4 | 4 to 7 edges | 8620 | 0 |
-| SN5 | tread joints 4 to 10 mm | 85 | 0 |
-| ids | ids are unique | 1 | 0 |
-| ids | ids follow the grammar | 8790 | 0 |
+Each check counts what it looked at and lists what failed. The one-going variant is checked by the same tests. New this round, from the self-check: SN9's overlap and contact in the elevation (each face's courses tiled with no overlap and no gap, every stone in its course's length or, if two-faced, under the other face's footing, and nothing in a step's end), and the heads' alternation counted up each face.
+
+| Rule | Check | Two goings: checked | failed | One going: checked | failed |
+| --- | --- | --- | --- | --- | --- |
+| SN1 | convex | 2714 | 0 | 2769 | 0 |
+| SN1 | integer outlines | 2714 | 0 | 2769 | 0 |
+| SN10 | laps | 2638 | 0 | 2754 | 0 |
+| SN10 | line of minimum trace | reported | - | reported | - |
+| SN10 | no four-stone cross | 2638 | 0 | 2754 | 0 |
+| SN10 | no joint through more than two courses | 2638 | 0 | 2754 | 0 |
+| SN10 | no stone over 4.5 x its height | 2562 | 0 | 2557 | 0 |
+| SN10 | the largest courses low | 44 | 0 | 44 | 0 |
+| SN2 | a line on each step top | 160 | 0 | 160 | 0 |
+| SN2 | a step falls only on a step top's line | 70 | 0 | 136 | 0 |
+| SN2 | a stepped section's corner stone at least 2 x its height | 312 | 0 | 312 | 0 |
+| SN2 | bank footing in whole courses | 156 | 0 | 156 | 0 |
+| SN2 | coping slabs 450 to 1000 mm | 144 | 0 | 204 | 139 |
+| SN2 | copings on whole courses | 83 | 0 | 157 | 0 |
+| SN2 | course heights 120 to 260 | 200 | 0 | 200 | 0 |
+| SN2 | every course ends at a feature | 710 | 0 | 710 | 0 |
+| SN2 | heads: ties and runners alternate | 16 | 0 | 16 | 0 |
+| SN2 | level beds on course lines | 2714 | 0 | 2769 | 0 |
+| SN2 | no angle under 25 degrees | 2714 | 0 | 2769 | 0 |
+| SN2 | no face under 50 mm | 2714 | 0 | 2769 | 0 |
+| SN2 | no stone under 50 mm high | 2562 | 0 | 2557 | 0 |
+| SN2 | one course a rise | 156 | 0 | 156 | 0 |
+| SN2 | over a rest the coping runs level | 14 | 0 | 14 | 0 |
+| SN2 | risers only where the pitch rises | 83 | 0 | 157 | 0 |
+| SN2 | square topstones | 8 | 0 | 8 | 0 |
+| SN3 | ends 150 mm into the walls | 81 | 0 | 81 | 0 |
+| SN3 | joint outside the middle third | 71 | 0 | 71 | 0 |
+| SN3 | joints alternate | 69 | 0 | 69 | 0 |
+| SN3 | laps 40 to 60 mm | 77 | 0 | 77 | 0 |
+| SN3 | never pieced in depth | 71 | 0 | 71 | 0 |
+| SN3 | no joint within 150 mm of the one below | 83 | 0 | 83 | 0 |
+| SN3 | one or two stones a step | 71 | 0 | 71 | 0 |
+| SN3 | rests: two to four slabs | 8 | 0 | 8 | 0 |
+| SN3 | within the finish's sizes | 170 | 0 | 170 | 0 |
+| SN4 | 4 to 7 edges | 2714 | 0 | 2769 | 0 |
+| SN5 | tread joints 4 to 10 mm | 85 | 0 | 85 | 0 |
+| SN8 | seen faces are laid | 68 | 0 | 68 | 0 |
+| SN9 | no rake | 2714 | 0 | 2769 | 0 |
+| SN9 | nothing in a step's end | 1309 | 0 | 1361 | 0 |
+| SN9 | open ends | 261 | 0 | 483 | 0 |
+| SN9 | the faces tiled: every stone in its place | 3001 | 0 | 3117 | 0 |
+| SN9 | the faces tiled: no gap | 355 | 0 | 355 | 0 |
+| SN9 | the faces tiled: no overlap | 362 | 0 | 362 | 0 |
+| ids | ids are unique | 1 | 0 | 1 | 0 |
+| ids | ids follow the grammar | 2884 | 0 | 2939 | 0 |
+
+Failures and notes, two goings unless marked:
 
 **SN10, laps.** 
 
-- FAIL wl-gully/fl-0/r stair course 35 at 5544: 30 mm from the joint below at 5574 (lap 40); where the fill was relaxed: wl-gully/fl-0/r/pn-3/stair/co-34/sp-0 bond below only; wl-gully/fl-0/r/pn-3/stair/co-34/sp-1 bond below only
-- FAIL wl-gully/fl-0/r stair course 72 at 9817: 1 mm from the joint below at 9818 (lap 40); where the fill was relaxed: wl-gully/fl-0/r/pn-4/stair/co-72/sp-0 no bond; wl-gully/fl-0/r/pn-4/stair/co-72/sp-1 no bond
-- FAIL wl-gully/fl-0/r bank course 68 at 10034: 14 mm from the joint below at 10048 (lap 40); where the fill was relaxed: wl-gully/fl-0/r/pn-5/bank/co-67/sp-0 bond below only; wl-gully/fl-0/r/pn-5/bank/co-67/sp-1 bond below only
-- FAIL wl-gully/fl-1/r stair course 20 at 6480: 36 mm from the joint below at 6516 (lap 40); where the fill was relaxed: wl-gully/fl-1/r/pn-3/stair/co-19/sp-0 bond below only; wl-gully/fl-1/r/pn-3/stair/co-19/sp-1 bond below only
-- FAIL wl-gully/fl-1/r stair course 34 at 11313: 33 mm from the joint below at 11280 (lap 40); where the fill was relaxed: wl-gully/fl-1/r/pn-5/stair/co-34/sp-0 no bond; wl-gully/fl-1/r/pn-5/stair/co-34/sp-1 no bond
-- FAIL wl-gully/fl-1/r stair course 105 at 32878: 36 mm from the joint below at 32842 (lap 40); where the fill was relaxed: wl-gully/fl-1/r/pn-13/stair/co-105/sp-0 no bond; wl-gully/fl-1/r/pn-13/stair/co-105/sp-1 no bond
-- FAIL wl-gully/fl-1/r bank course 5 at 309: 11 mm from the joint below at 320 (lap 40); where the fill was relaxed: wl-gully/fl-1/r/pn-0/bank/co-4/sp-1 bond below only; wl-gully/fl-1/r/pn-0/bank/co-4/sp-2 bond below only
-- FAIL wl-gully/fl-1/r bank course 81 at 22900: 6 mm from the joint below at 22894 (lap 48); where the fill was relaxed: wl-gully/fl-1/r/pn-10/bank/co-80/sp-0 bond below only; wl-gully/fl-1/r/pn-10/bank/co-80/sp-1 bond below only
-- FAIL wl-gully/fl-1/r bank course 81 at 25507: 7 mm from the joint below at 25514 (lap 48); where the fill was relaxed: wl-gully/fl-1/r/pn-10/bank/co-80/sp-11 bond below only; wl-gully/fl-1/r/pn-10/bank/co-80/sp-12 bond below only
-- FAIL wl-gully/fl-1/r bank course 81 at 25946: 43 mm from the joint below at 25989 (lap 48); where the fill was relaxed: wl-gully/fl-1/r/pn-10/bank/co-80/sp-13 bond below only; wl-gully/fl-1/r/pn-10/bank/co-80/sp-14 bond below only
-- FAIL wl-gully/fl-1/l stair course 4 at 1420: 35 mm from the joint below at 1385 (lap 40); where the fill was relaxed: wl-gully/fl-1/l/pn-1/stair/co-4/sp-0 no bond; wl-gully/fl-1/l/pn-1/stair/co-4/sp-1 no bond
-- FAIL wl-gully/fl-1/l stair course 26 at 3433: 28 mm from the joint below at 3461 (lap 40); where the fill was relaxed: wl-gully/fl-1/l/pn-1/stair/co-26/sp-0 no bond; wl-gully/fl-1/l/pn-1/stair/co-26/sp-1 no bond
-- FAIL wl-gully/fl-1/l stair course 58 at 20438: 28 mm from the joint below at 20410 (lap 40); where the fill was relaxed: wl-gully/fl-1/l/pn-9/stair/co-58/sp-0 no bond; wl-gully/fl-1/l/pn-9/stair/co-58/sp-1 no bond
-- FAIL wl-gully/fl-1/l stair course 62 at 18498: 33 mm from the joint below at 18465 (lap 40); where the fill was relaxed: wl-gully/fl-1/l/pn-8/stair/co-62/sp-3 no bond; wl-gully/fl-1/l/pn-8/stair/co-62/sp-4 no bond
-- FAIL wl-gully/fl-1/l stair course 86 at 27690: 32 mm from the joint below at 27722 (lap 40); where the fill was relaxed: wl-gully/fl-1/l/pn-11/stair/co-86/sp-3 no bond; wl-gully/fl-1/l/pn-11/stair/co-86/sp-4 no bond
-- FAIL wl-gully/fl-1/l bank course 63 at 20396: 24 mm from the joint below at 20420 (lap 40); where the fill was relaxed: wl-gully/fl-1/l/pn-9/bank/co-62/sp-0 bond below only; wl-gully/fl-1/l/pn-9/bank/co-62/sp-1 bond below only
-- FAIL wl-gully/fl-1/l bank course 91 at 31396: 24 mm from the joint below at 31420 (lap 42); where the fill was relaxed: wl-gully/fl-1/l/pn-13/bank/co-90/sp-0 bond below only; wl-gully/fl-1/l/pn-13/bank/co-90/sp-1 bond below only
-- FAIL wl-gully/fl-1/l bank course 107 at 33106: 12 mm from the joint below at 33118 (lap 40); where the fill was relaxed: wl-gully/fl-1/l/pn-14/bank/co-107/sp-0 no bond; wl-gully/fl-1/l/pn-14/bank/co-107/sp-1 no bond
-- wl-gully/fl-0/r stair course 18: the 1961 edge's straight joint at 1844 (a fact, exempt)
-- wl-gully/fl-0/r stair course 19: the 1961 edge's straight joint at 1844 (a fact, exempt)
-- wl-gully/fl-0/r stair course 20: the 1961 edge's straight joint at 1844 (a fact, exempt)
-- wl-gully/fl-0/r stair course 21: the 1961 edge's straight joint at 1844 (a fact, exempt)
-- wl-gully/fl-0/r stair course 22: the 1961 edge's straight joint at 1844 (a fact, exempt)
-- wl-gully/fl-0/r stair course 23: the 1961 edge's straight joint at 1844 (a fact, exempt)
-- wl-gully/fl-0/r stair course 24: the 1961 edge's straight joint at 1844 (a fact, exempt)
-- wl-gully/fl-0/r stair course 25: the 1961 edge's straight joint at 1844 (a fact, exempt)
-- wl-gully/fl-0/r stair course 40: the 1961 edge's straight joint at 6226 (a fact, exempt)
-- wl-gully/fl-0/r stair course 41: the 1961 edge's straight joint at 6226 (a fact, exempt)
-- wl-gully/fl-0/r stair course 42: the 1961 edge's straight joint at 6226 (a fact, exempt)
-- wl-gully/fl-0/r stair course 43: the 1961 edge's straight joint at 6226 (a fact, exempt)
-- wl-gully/fl-0/r stair course 44: the 1961 edge's straight joint at 6226 (a fact, exempt)
-- wl-gully/fl-0/r stair course 45: the 1961 edge's straight joint at 6226 (a fact, exempt)
-- wl-gully/fl-0/r stair course 46: the 1961 edge's straight joint at 6226 (a fact, exempt)
-- wl-gully/fl-0/r bank course 11: the 1961 edge's straight joint at 1844 (a fact, exempt)
-- wl-gully/fl-0/r bank course 12: the 1961 edge's straight joint at 1844 (a fact, exempt)
-- wl-gully/fl-0/r bank course 13: the 1961 edge's straight joint at 1844 (a fact, exempt)
-- wl-gully/fl-0/r bank course 14: the 1961 edge's straight joint at 1844 (a fact, exempt)
-- wl-gully/fl-0/r bank course 15: the 1961 edge's straight joint at 1844 (a fact, exempt)
-- wl-gully/fl-0/r bank course 16: the 1961 edge's straight joint at 1844 (a fact, exempt)
-- wl-gully/fl-0/r bank course 17: the 1961 edge's straight joint at 1844 (a fact, exempt)
-- wl-gully/fl-0/r bank course 18: the 1961 edge's straight joint at 1844 (a fact, exempt)
-- wl-gully/fl-0/r bank course 19: the 1961 edge's straight joint at 1844 (a fact, exempt)
-- wl-gully/fl-0/r bank course 20: the 1961 edge's straight joint at 1844 (a fact, exempt)
-- wl-gully/fl-0/r bank course 21: the 1961 edge's straight joint at 1844 (a fact, exempt)
-- wl-gully/fl-0/r bank course 22: the 1961 edge's straight joint at 1844 (a fact, exempt)
-- wl-gully/fl-0/r bank course 23: the 1961 edge's straight joint at 1844 (a fact, exempt)
-- wl-gully/fl-0/r bank course 24: the 1961 edge's straight joint at 1844 (a fact, exempt)
-- wl-gully/fl-0/r bank course 25: the 1961 edge's straight joint at 1844 (a fact, exempt)
-- wl-gully/fl-0/r bank course 25: the 1961 edge's straight joint at 6226 (a fact, exempt)
-- wl-gully/fl-0/r bank course 26: the 1961 edge's straight joint at 6226 (a fact, exempt)
-- wl-gully/fl-0/r bank course 27: the 1961 edge's straight joint at 6226 (a fact, exempt)
-- wl-gully/fl-0/r bank course 28: the 1961 edge's straight joint at 6226 (a fact, exempt)
-- wl-gully/fl-0/r bank course 29: the 1961 edge's straight joint at 6226 (a fact, exempt)
-- wl-gully/fl-0/r bank course 30: the 1961 edge's straight joint at 6226 (a fact, exempt)
-- wl-gully/fl-0/r bank course 31: the 1961 edge's straight joint at 6226 (a fact, exempt)
-- wl-gully/fl-0/r bank course 32: the 1961 edge's straight joint at 6226 (a fact, exempt)
-- wl-gully/fl-0/r bank course 33: the 1961 edge's straight joint at 6226 (a fact, exempt)
-- wl-gully/fl-0/r bank course 34: the 1961 edge's straight joint at 6226 (a fact, exempt)
-- ... and 12 more notes
+- wl-gully/fl-0/r bank at 1844: the rebuilt panel's edge, a straight joint by the facts (exempt), in 7 courses
+- wl-gully/fl-0/r bank at 6226: the rebuilt panel's edge, a straight joint by the facts (exempt), in 6 courses
+- wl-gully/fl-0/r stair at 1844: the rebuilt panel's edge, a straight joint by the facts (exempt), in 4 courses
+- wl-gully/fl-0/r stair at 6226: the rebuilt panel's edge, a straight joint by the facts (exempt), in 3 courses
 
-**SN10, line of minimum trace.** reported per wall panel
+**SN10, line of minimum trace.** reported per laid panel face
 
-- wl-gully/fl-0/r/pn-0 stair: 1.99 times the height over courses 5 to 25 (1751 mm; 1.00 is a straight joint)
-- wl-gully/fl-0/r/pn-1 stair: 2.12 times the height over courses 17 to 40 (2016 mm; 1.00 is a straight joint)
-- wl-gully/fl-0/r/pn-2 stair: 1.70 times the height over courses 33 to 42 (816 mm; 1.00 is a straight joint)
-- wl-gully/fl-0/r/pn-3 stair: 1.67 times the height over courses 33 to 46 (1151 mm; 1.00 is a straight joint)
-- wl-gully/fl-0/r/pn-4 stair: 2.32 times the height over courses 39 to 73 (2742 mm; 1.00 is a straight joint)
-- wl-gully/fl-0/r/pn-5 stair: 1.84 times the height over courses 66 to 76 (663 mm; 1.00 is a straight joint)
-- wl-gully/fl-0/r/pn-0 bank: 1.96 times the height over courses 3 to 25 (1912 mm; 1.00 is a straight joint)
-- wl-gully/fl-0/r/pn-1 bank: 1.88 times the height over courses 10 to 40 (2568 mm; 1.00 is a straight joint)
-- wl-gully/fl-0/r/pn-2 bank: 1.82 times the height over courses 17 to 42 (2162 mm; 1.00 is a straight joint)
-- wl-gully/fl-0/r/pn-3 bank: 1.28 times the height over courses 22 to 46 (2057 mm; 1.00 is a straight joint)
-- wl-gully/fl-0/r/pn-4 bank: 1.93 times the height over courses 24 to 73 (3982 mm; 1.00 is a straight joint)
-- wl-gully/fl-0/r/pn-5 bank: 2.05 times the height over courses 37 to 76 (3088 mm; 1.00 is a straight joint)
-- wl-gully/fl-0/l/pn-0 stair: 2.39 times the height over courses 5 to 40 (3015 mm; 1.00 is a straight joint)
-- wl-gully/fl-0/l/pn-1 stair: 1.80 times the height over courses 33 to 42 (816 mm; 1.00 is a straight joint)
-- wl-gully/fl-0/l/pn-2 stair: 2.42 times the height over courses 34 to 69 (3131 mm; 1.00 is a straight joint)
-- wl-gully/fl-0/l/pn-3 stair: 1.99 times the height over courses 63 to 72 (927 mm; 1.00 is a straight joint)
-- wl-gully/fl-0/l/pn-0 bank: 2.25 times the height over courses 3 to 40 (3176 mm; 1.00 is a straight joint)
-- wl-gully/fl-0/l/pn-1 bank: 1.88 times the height over courses 16 to 42 (2243 mm; 1.00 is a straight joint)
-- wl-gully/fl-0/l/pn-2 bank: 2.18 times the height over courses 20 to 69 (4292 mm; 1.00 is a straight joint)
-- wl-gully/fl-0/l/pn-3 bank: 1.72 times the height over courses 54 to 72 (1676 mm; 1.00 is a straight joint)
-- wl-gully/fl-1/r/pn-0 stair: 1.63 times the height over courses 3 to 12 (829 mm; 1.00 is a straight joint)
-- wl-gully/fl-1/r/pn-1 stair: 2.21 times the height over courses 4 to 26 (1883 mm; 1.00 is a straight joint)
-- wl-gully/fl-1/r/pn-2 stair: 1.61 times the height over courses 19 to 28 (836 mm; 1.00 is a straight joint)
-- wl-gully/fl-1/r/pn-3 stair: 2.14 times the height over courses 19 to 40 (1814 mm; 1.00 is a straight joint)
-- wl-gully/fl-1/r/pn-4 stair: 1.71 times the height over courses 33 to 42 (818 mm; 1.00 is a straight joint)
-- wl-gully/fl-1/r/pn-5 stair: 2.13 times the height over courses 33 to 52 (1663 mm; 1.00 is a straight joint)
-- wl-gully/fl-1/r/pn-6 stair: 1.59 times the height over courses 45 to 54 (833 mm; 1.00 is a straight joint)
-- wl-gully/fl-1/r/pn-7 stair: 2.21 times the height over courses 45 to 64 (1675 mm; 1.00 is a straight joint)
-- wl-gully/fl-1/r/pn-8 stair: 1.62 times the height over courses 57 to 66 (835 mm; 1.00 is a straight joint)
-- wl-gully/fl-1/r/pn-9 stair: 2.26 times the height over courses 57 to 80 (1990 mm; 1.00 is a straight joint)
-- wl-gully/fl-1/r/pn-10 stair: 1.66 times the height over courses 73 to 82 (834 mm; 1.00 is a straight joint)
-- wl-gully/fl-1/r/pn-11 stair: 2.21 times the height over courses 73 to 94 (1828 mm; 1.00 is a straight joint)
-- wl-gully/fl-1/r/pn-12 stair: 1.66 times the height over courses 87 to 96 (849 mm; 1.00 is a straight joint)
-- wl-gully/fl-1/r/pn-13 stair: 2.17 times the height over courses 87 to 106 (1683 mm; 1.00 is a straight joint)
-- wl-gully/fl-1/r/pn-14 stair: 1.68 times the height over courses 99 to 109 (855 mm; 1.00 is a straight joint)
-- wl-gully/fl-1/r/pn-0 bank: 1.91 times the height over courses 3 to 12 (829 mm; 1.00 is a straight joint)
-- wl-gully/fl-1/r/pn-1 bank: 2.36 times the height over courses 8 to 26 (1566 mm; 1.00 is a straight joint)
-- wl-gully/fl-1/r/pn-2 bank: 2.00 times the height over courses 12 to 28 (1410 mm; 1.00 is a straight joint)
-- wl-gully/fl-1/r/pn-3 bank: 2.17 times the height over courses 20 to 40 (1738 mm; 1.00 is a straight joint)
-- wl-gully/fl-1/r/pn-4 bank: 1.68 times the height over courses 26 to 42 (1408 mm; 1.00 is a straight joint)
-- ... and 40 more notes
-
-**SN10, no four-stone cross.** no four stones meeting at a point
-
-- FAIL wl-gully/fl-0/r stair course 72 at 9817: wl-gully/fl-0/r/pn-4/stair/co-72/sp-0, wl-gully/fl-0/r/pn-4/stair/co-72/sp-1 over wl-gully/fl-0/r/pn-4/stair/co-71/sp-1, wl-gully/fl-0/r/pn-5/stair/co-71/sp-0
-- FAIL wl-gully/fl-1/r bank course 5 at 309: wl-gully/fl-1/r/hd-0/st-1/bank, wl-gully/fl-1/r/pn-0/bank/co-5/sp-0 over wl-gully/fl-1/r/pn-0/bank/co-4/sp-1, wl-gully/fl-1/r/pn-0/bank/co-4/sp-2
-- FAIL wl-gully/fl-1/r bank course 81 at 22900: wl-gully/fl-1/r/knee-4, wl-gully/fl-1/r/pn-10/bank/co-81/sp-0 over wl-gully/fl-1/r/pn-10/bank/co-80/sp-0, wl-gully/fl-1/r/pn-10/bank/co-80/sp-1
-- FAIL wl-gully/fl-1/r bank course 81 at 25507: wl-gully/fl-1/r/pn-10/bank/co-81/sp-7, wl-gully/fl-1/r/kneeler-5 over wl-gully/fl-1/r/pn-10/bank/co-80/sp-11, wl-gully/fl-1/r/pn-10/bank/co-80/sp-12
-- FAIL wl-gully/fl-1/l bank course 107 at 33106: wl-gully/fl-1/l/pn-14/bank/co-107/sp-0, wl-gully/fl-1/l/pn-14/bank/co-107/sp-1 over wl-gully/fl-1/l/pn-13/bank/co-106/sp-1, wl-gully/fl-1/l/pn-13/bank/co-106/sp-2
+- 68 laid panel faces with a stack of three or more jointed courses: the least trace is 1.12 times the height, the median 1.93, the most 2.75 (1.00 is a straight joint). The five lowest:
+  - wl-gully/fl-0/r/pn-3 stair: 1.12 times the height over courses 19 to 23 (835 mm; 1.00 is a straight joint)
+  - wl-gully/fl-1/r/pn-3 stair: 1.35 times the height over courses 17 to 22 (993 mm; 1.00 is a straight joint)
+  - wl-gully/fl-1/l/pn-3 stair: 1.38 times the height over courses 17 to 22 (993 mm; 1.00 is a straight joint)
+  - wl-gully/fl-0/r/pn-3 bank: 1.39 times the height over courses 16 to 23 (1327 mm; 1.00 is a straight joint)
+  - wl-gully/fl-1/r/pn-11 stair: 1.47 times the height over courses 44 to 49 (1008 mm; 1.00 is a straight joint)
 
 **SN10, no joint through more than two courses.** no vertical joint through more than two courses
 
-- FAIL wl-gully/fl-0/r stair courses 74 to 76 at 10258: a joint through 3 courses: the plumb side of wl-gully/fl-0/r/hd-1/top (topstone, 3 courses high)
-- FAIL wl-gully/fl-0/r bank courses 67 to 69 at 10034: a joint through 3 courses: joints of course stones in line; relaxed: bond below only
-- FAIL wl-gully/fl-0/r bank courses 74 to 76 at 10258: a joint through 3 courses: the plumb side of wl-gully/fl-0/r/hd-1/top (topstone, 3 courses high)
-- FAIL wl-gully/fl-0/l stair courses 70 to 72 at 10247: a joint through 3 courses: the plumb side of wl-gully/fl-0/l/hd-1/top (topstone, 3 courses high)
-- FAIL wl-gully/fl-0/l bank courses 70 to 72 at 10247: a joint through 3 courses: the plumb side of wl-gully/fl-0/l/hd-1/top (topstone, 3 courses high)
-- FAIL wl-gully/fl-1/r stair courses 107 to 109 at 33427: a joint through 3 courses: the plumb side of wl-gully/fl-1/r/hd-1/top (topstone, 3 courses high)
-- FAIL wl-gully/fl-1/r bank courses 4 to 6 at 309: a joint through 3 courses: joints of course stones in line; relaxed: bond below only
-- FAIL wl-gully/fl-1/r bank courses 80 to 82 at 22894: a joint through 3 courses: joints of course stones in line; relaxed: bond below only
-- FAIL wl-gully/fl-1/r bank courses 80 to 82 at 25507: a joint through 3 courses: joints of course stones in line; relaxed: bond below only
-- FAIL wl-gully/fl-1/r bank courses 80 to 82 at 25946: a joint through 3 courses: joints of course stones in line; relaxed: bond below only
-- FAIL wl-gully/fl-1/r bank courses 107 to 109 at 33427: a joint through 3 courses: the plumb side of wl-gully/fl-1/r/hd-1/top (topstone, 3 courses high)
-- FAIL wl-gully/fl-1/l stair courses 105 to 110 at 33374: a joint through 6 courses: the plumb side of wl-gully/fl-1/l/hd-1/top (topstone, 6 courses high)
-- FAIL wl-gully/fl-1/l bank courses 105 to 110 at 33374: a joint through 6 courses: the plumb side of wl-gully/fl-1/l/hd-1/top (topstone, 6 courses high); relaxed: no bond
-- wl-gully/fl-0/r stair: the longest run of joints within a lap of each other spans 9 courses (a two-course head's side counts as two)
-- wl-gully/fl-0/r bank: the longest run of joints within a lap of each other spans 23 courses (a two-course head's side counts as two)
-- wl-gully/fl-0/l stair: the longest run of joints within a lap of each other spans 3 courses (a two-course head's side counts as two)
-- wl-gully/fl-0/l bank: the longest run of joints within a lap of each other spans 3 courses (a two-course head's side counts as two)
-- wl-gully/fl-1/r stair: the longest run of joints within a lap of each other spans 3 courses (a two-course head's side counts as two)
-- wl-gully/fl-1/r bank: the longest run of joints within a lap of each other spans 3 courses (a two-course head's side counts as two)
-- wl-gully/fl-1/l stair: the longest run of joints within a lap of each other spans 6 courses (a two-course head's side counts as two)
-- wl-gully/fl-1/l bank: the longest run of joints within a lap of each other spans 6 courses (a two-course head's side counts as two)
+- wl-gully/fl-0/r stair: the longest run of joints within a lap of each other spans 2 courses (a two-course head's side counts as two); the rebuilt panel's edge, a straight joint by the facts, runs 5
+- wl-gully/fl-0/r bank: the longest run of joints within a lap of each other spans 2 courses (a two-course head's side counts as two); the rebuilt panel's edge, a straight joint by the facts, runs 8
+- wl-gully/fl-0/l stair: the longest run of joints within a lap of each other spans 2 courses (a two-course head's side counts as two)
+- wl-gully/fl-0/l bank: the longest run of joints within a lap of each other spans 2 courses (a two-course head's side counts as two)
+- wl-gully/fl-1/r stair: the longest run of joints within a lap of each other spans 2 courses (a two-course head's side counts as two)
+- wl-gully/fl-1/r bank: the longest run of joints within a lap of each other spans 2 courses (a two-course head's side counts as two)
+- wl-gully/fl-1/l stair: the longest run of joints within a lap of each other spans 2 courses (a two-course head's side counts as two)
+- wl-gully/fl-1/l bank: the longest run of joints within a lap of each other spans 2 courses (a two-course head's side counts as two)
 
 **SN2, bank footing in whole courses.** on the bank side the footing steps with the ground, each step a whole course
 
-- wl-gully/fl-0/r: 36 footing steps, the shortest inner tread 300 mm
-- wl-gully/fl-0/l: 34 footing steps, the shortest inner tread 300 mm
-- wl-gully/fl-1/r: 93 footing steps, the shortest inner tread 300 mm
-- wl-gully/fl-1/l: 96 footing steps, the shortest inner tread 300 mm
+- wl-gully/fl-0/r: 29 footing steps, the shortest inner tread 300 mm
+- wl-gully/fl-0/l: 29 footing steps, the shortest inner tread 300 mm
+- wl-gully/fl-1/r: 50 footing steps, the shortest inner tread 300 mm
+- wl-gully/fl-1/l: 48 footing steps, the shortest inner tread 300 mm
 
-**SN2, every course ends at a footing or the coping.** each course starts on the footing uphill and ends under the coping downhill (or at the wall's head)
+**SN2, coping slabs 450 to 1000 mm.** a coping slab 450 to 1000 mm long (wall.py)
 
-- wl-gully/fl-0/r: course ends by kind {'end': 67, 'feature': 24, 'ground': 35, 'rake': 106, 'step': 60}
-- wl-gully/fl-0/l: course ends by kind {'end': 63, 'feature': 24, 'ground': 33, 'rake': 96, 'step': 60}
-- wl-gully/fl-1/r: course ends by kind {'end': 36, 'feature': 84, 'ground': 92, 'rake': 164, 'step': 96}
-- wl-gully/fl-1/l: course ends by kind {'end': 29, 'feature': 90, 'ground': 95, 'rake': 166, 'step': 96}
+- one going: 139 failures, e.g. wl-gully/fl-0/r/pn-0/cp-0 267 mm; wl-gully/fl-0/r/pn-0/cp-1 309 mm; wl-gully/fl-0/r/pn-0/cp-2 298 mm; wl-gully/fl-0/r/pn-0/cp-3 287 mm
 
-**SN2, rake cuts leave trapezoids.** 
+**SN2, every course ends at a feature.** each course ends at the wall's end, a step's end or the ground's step, a topstone, or a stepped section's end (the riser)
 
-- wl-gully/fl-0/r: 106 stones cut by the rake, 106 trapezoids and 0 pentagons; their shortest edge 50 mm, their most acute corner 29.2 degrees
-- wl-gully/fl-0/l: 96 stones cut by the rake, 96 trapezoids and 0 pentagons; their shortest edge 50 mm, their most acute corner 28.8 degrees
-- wl-gully/fl-1/r: 164 stones cut by the rake, 164 trapezoids and 0 pentagons; their shortest edge 50 mm, their most acute corner 28.4 degrees
-- wl-gully/fl-1/l: 166 stones cut by the rake, 166 trapezoids and 0 pentagons; their shortest edge 50 mm, their most acute corner 28.3 degrees
+- wl-gully/fl-0/r: course ends by kind {'end': 18, 'feature': 4, 'ground': 28, 'riser': 32, 'riser-open': 28, 'step': 30}
+- wl-gully/fl-0/l: course ends by kind {'end': 18, 'feature': 4, 'ground': 28, 'riser': 32, 'riser-open': 28, 'step': 30}
+- wl-gully/fl-1/r: course ends by kind {'end': 17, 'feature': 4, 'ground': 49, 'riser': 50, 'riser-open': 46, 'step': 48}
+- wl-gully/fl-1/l: course ends by kind {'end': 19, 'feature': 4, 'ground': 47, 'riser': 52, 'riser-open': 46, 'step': 48}
 
 **SN3, joint outside the middle third.** the joint falls outside the walking line's middle third (|x| >= 536 mm)
 
+- st-gully/fl-0: a step's joint can start only in [-548, -540] or [536, 544] mm (9 mm of play a side): two stones of at most 2300 mm across 3512 mm, the joint outside the middle third (536 mm either side of the walking line)
 - st-gully/fl-0/tr-14 row [4153, 5799]: a rest's joint at 386 lies inside the middle third (two slabs of at most 2300 across 3512 mm must meet within 544 mm of the centre; SN3 puts the rule on steps)
+- st-gully/fl-1: a step's joint can start only in [-548, -540] or [536, 544] mm (9 mm of play a side): two stones of at most 2300 mm across 3512 mm, the joint outside the middle third (536 mm either side of the walking line)
 - st-gully/fl-1/turn row [0, 1654]: a rest's joint at -65 lies inside the middle third (two slabs of at most 2300 across 3512 mm must meet within 544 mm of the centre; SN3 puts the rule on steps)
 - st-gully/fl-1/tr-7 row [3677, 4948]: a rest's joint at 241 lies inside the middle third (two slabs of at most 2300 across 3512 mm must meet within 544 mm of the centre; SN3 puts the rule on steps)
 - st-gully/fl-1/tr-7 row [4948, 6747]: a rest's joint at 427 lies inside the middle third (two slabs of at most 2300 across 3512 mm must meet within 544 mm of the centre; SN3 puts the rule on steps)
@@ -252,65 +160,200 @@ Stopped here for usage (the coordinator, 22 October). The design changed at e848
 
 ## Counts (SN8)
 
-| Wall line | Stones | By kind | Face m2 (stair, bank) | L0 triangles |
-| --- | --- | --- | --- | --- |
-| wl-gully/fl-0/r | 1407 | coping 12, face 1346, face (bank) 937, face (stair) 409, head runner 22, head tie 12, knee 2, kneeler 4, through 8, topstone 1 | 11.28, 23.12 | 61,160 |
-| wl-gully/fl-0/l | 1438 | coping 13, face 1374, face (bank) 986, face (stair) 388, head runner 24, head tie 11, knee 2, kneeler 4, through 9, topstone 1 | 11.48, 24.57 | 62,640 |
-| wl-gully/fl-1/r | 3086 | coping 41, face 2987, face (bank) 1747, face (stair) 1240, head runner 10, head tie 5, knee 7, kneeler 7, through 27, topstone 2 | 32.41, 43.3 | 131,360 |
-| wl-gully/fl-1/l | 2689 | coping 40, face 2594, face (bank) 1348, face (stair) 1246, head runner 8, head tie 4, knee 7, kneeler 7, through 27, topstone 2 | 32.12, 34.17 | 115,160 |
-| st-gully/fl-0 (steps) | 60 | step 58, rest 2 | | 18,000 |
-| st-gully/fl-1 (steps) | 110 | landing 2, step 84, rest 24 | | 33,000 |
+| Wall line | Stones | By kind | Laid face m² | L0 | L1 |
+| --- | --- | --- | --- | --- | --- |
+| wl-gully/fl-0/r | 387 | coping 18, face (bank) 220, face (stair) 132, head runner 4, head tie 3, through 8, topstone 2 | 27.09 | 18,360 | 7,392 |
+| wl-gully/fl-0/l | 364 | coping 18, face (bank) 200, face (stair) 128, head runner 5, head tie 2, through 9, topstone 2 | 26.8 | 17,488 | 7,024 |
+| wl-gully/fl-1/r | 1052 | coping 54, face (bank) 563, face (stair) 397, head runner 5, head tie 2, through 29, topstone 2 | 75.91 | 49,648 | 19,984 |
+| wl-gully/fl-1/l | 911 | coping 54, face (bank) 410, face (stair) 407, head runner 4, head tie 4, through 30, topstone 2 | 64.84 | 44,168 | 17,792 |
+| st-gully/fl-0 (steps) | 60 | step 58, rest 2 | | 18,000 | 7,200 |
+| st-gully/fl-1 (steps) | 110 | landing 2, step 84, rest 24 | | 33,000 | 13,200 |
 
-The design's estimate was about 2,700 wall stones, 140 m2 of face and 150 copings.
+| | Round 1 | Two goings | One going | Design (SN8) |
+| --- | --- | --- | --- | --- |
+| wall stones | 8,620 | 2,714 | 2,769 | about 2,700 |
+| face stones | 8,301 | 2,457 | 2,451 |  |
+| copings | 106 | 144 | 204 | about 150 |
+| kneelers and knees | 40 | 0 | 0 |  |
+| throughs | 71 | 76 | 77 |  |
+| head stones | 96 | 29 | 29 |  |
+| topstones | 6 | 8 | 8 |  |
+| laid face m² (courses, copings and topstones) | 212.50 | 194.63 | 194.80 | about 140 |
+| step stones and slabs | 170 | 170 | 170 | about 78 steps of 1.6 |
+| walls L0 | 370,320 | 129,664 | 136,744 | 110,000 |
+| walls L1 |  | 52,192 | 55,024 | 45,000 |
+| stairs L0 | 51,000 | 51,000 | 51,000 | 40,000 |
+| the gully L0 | 421,320 | 180,664 | 187,744 | 150,000 |
+| the gully L1 |  | 72,592 | 75,424 | 65,000 |
+
+The triangles are SN8's table: a face stone 40 at L0 and 16 at L1; a coping, head, through or topstone 120 and 48; a step stone or slab 300 and 120; a laid panel face's fill 8. The laid face is 85.32 m² on the stair side and 109.3 m² on the bank side, coping faces and the ground's buried strip included. That is 14.7 face stones a m² of seen course face, and 777 L0 triangles a m², against SN8's 786.
+
+**How long the laying takes.** This is CPython, in one process on one thread, on Apple M4 (Mac16,10). Each time is the median of 5 runs, measured with `time.perf_counter` around each part. The C# port will differ: it will have other data structures, no interpreter, and possibly other searches, so these numbers size the work but are not the C# cost.
+
+| | ms | ms a m² of laid face | ms a stone |
+| --- | --- | --- | --- |
+| the whole gully, walls and steps (two goings) | 1,381.3 | 7.1 | 0.479 |
+| the walls alone | 1,380.8 | 7.09 | 0.5088 |
+| the largest panel's fill (wl-gully/fl-0/l/pn-2, 11.53 m², 149 stones) | 1.24 | 0.11 | 0.0083 |
+| that panel's line re-laid for an event in it, every feature included | 54.7 | | |
+| the bond tests (SN10, in this tool, not the laying) | 8.5 | 0.04 | 0.0031 |
+| the one-going variant, the whole gully (3 runs) | 3,916.4 | 20.1 | 1.3326 |
+
+| Part of the laying | ms | share |
+| --- | --- | --- |
+| fill: teeth | 1125.7 | 82% |
+| features: heads | 132.04 | 10% |
+| features: falls | 58.57 | 4% |
+| fill: courses | 27.5 | 2% |
+| features: footings | 12.71 | 1% |
+| features: throughs | 10.9 | 1% |
+| fill: falls on, ids, output | 4.39 | 0% |
+| features: coping | 3.2 | 0% |
+| features: regions | 3.12 | 0% |
+| steps | 0.51 | 0% |
+| features: course lines | 0.13 | 0% |
+
+Features take 220.7 ms (16%), the fill 1157.6 ms (84%) and the steps 0.51 ms. The fill keeps the bond itself: each stone's length is chosen clear of the joints below and above, so the laying has no separate bond pass, and the bond tests above are only this tool's check. The other tests take 63.2 ms. For a city: 89.6 m of wall line, with 2.17 m² of laid face a metre of line (both faces, copings and the buried strip included), take 15.4 ms a metre of line to lay, so about 15 s a kilometre of such wall, in this Python. Nothing was changed for speed.
+
+## The visibility measurement
+
+`tools/r1_elevations.py visibility` measures which panel faces are seen. Its method, as written into `facts.json`:
+
+- **faces:** a sample every 220 mm along each course at its mid-height, on the face battered 1 in 6 (wall.py), 20 mm off it; a sample is buried where the ground 0.1 m outside the face stands over it.
+- **eyes:** the six judging views (LT1Stone.cs, in frame at 2560 x 1440) and standing eyes 1.6 m over the walkable ground: every lane, stair and quay of heart_layout.LANES every 1.75 m along and about 1.5 m across (0.3 m in from the edges), the Landing, the small places, the market square and the yards on a 1.5 m grid, none inside a house.
+- **ground:** the clay's carved ground on its 1.5 m grid (heart_layout.carve over centre_land.heights, as wall.py's ground_near), bilinear; inside each flight's clear width the steps' treads.
+- **rays:** from the sample to the eye, if the eye is in front of the face; blocked by another wall line (its top as a slab 0.15 to 0.57 m outside the stair's clear half-width, under its coping's top) or by the ground (marched every 0.5 m, 20 mm under it); houses do not block (sensitivity.withHouses adds them).
+- **classes:** near: seen from an eye within 8 m (L0's range); farOnly: seen only from farther, up to 80 m; unseen: from nowhere within 80 m; buried: under the ground.
+- **measuredOn:** the two-going layout's courses and copings, before any fill.
+- **counts:** 5,244 samples; 6 judging views, 4,585 eyes on lanes, stairs and quays, 164 on the places, 18 in the yards (11 dropped inside houses). 5,915 rays from the views, 120,000 from the walkable ground (each sample stops at its first clear ray, nearest eyes first).
+- **time:** 5.1 s to measure, after 65.8 s to import the clay's layout.
+
+| Face | Seen within 8 m | Seen only beyond 8 m | Seen from nowhere | Buried | Faces laid |
+| --- | --- | --- | --- | --- | --- |
+| stair | 77.39 | 0.0 | 0.0 | 0.02 | 34 of 34 |
+| bank | 53.43 | 35.97 | 0.0 | 11.99 | 34 of 34 |
+| both | 130.82 | 35.97 | 0.0 | 12.01 | 68 of 68 |
+
+The area is in m² of course face (copings and topstones are not sampled: they are 15.83 m² more, and seen from every side). **35.97 m² is seen only from beyond 8 m.** 31.64 m² of it is in 14 whole faces, every one a bank face on fl-1: fl-1/l/pn-2 bank, fl-1/l/pn-3 bank, fl-1/l/pn-4 bank, fl-1/l/pn-5 bank, fl-1/l/pn-6 bank, fl-1/l/pn-7 bank, fl-1/l/pn-8 bank, fl-1/r/pn-3 bank, fl-1/r/pn-4 bank, fl-1/r/pn-5 bank, fl-1/r/pn-6 bank, fl-1/r/pn-7 bank, fl-1/r/pn-8 bank, fl-1/r/pn-9 bank. The rest is in fl-1/l/pn-1 bank, fl-1/l/pn-9 bank, fl-1/r/pn-10 bank, fl-1/r/pn-2 bank, which are also seen from near.
+
+The far-only area is not seen from far off. Its nearest clear eye on the walkable ground is 8.0 to 17.5 m away (median 12.4), standing on Top Terrace, 20.19 m²; the way to D (1107, empty since 1986), 10.49 m²; the Landing, 5.28 m². So those faces sit in L1's range, never in L0's.
+
+**Sensitivity.** Without the yards (they may not be walkable in play), no faces change. With eyes out to 120 m, no faces change. With the clay's 99 houses as occluders too (boxes over their footprints to their eaves, roofs left out), no faces change; on the bank side the area seen within 8 m falls from 53.43 to 52.03 m², the far-only area rises to 37.37 m², and none is seen from nowhere. The result does not rest on leaving the houses out.
+
+The sheet `visibility.png` shows each sample by its class: near, far only, unseen, or buried.
+
+## The budget, re-derived (a proposal)
+
+SN8 sets the walls at 110,000 L0 and 45,000 L1 for about 140 m² of face. Its estimate counts 140 m² of course face for the face stones and adds the copings, so its density is 786 L0 and 321 L1 triangles a m² of course face, copings included.
+
+- **A (proposed): every seen face at L0.** 166.79 m² of seen course face (130.82 within 8 m plus 35.97 only beyond) gives L0 786 × 166.79 = 131,100 and L1 321 × 166.79 = 53,500. The buried 12.01 m² is left out: it is laid because its faces are seen, but nobody sees it. The walls lay 129,664 L0 (1,436 under) and 52,192 L1 (1,308 under).
+- **B: the faces seen only from beyond 8 m built at L1 alone.** L0 786 × (166.79 − 31.64) = 106,200; L1 as A. Those faces hold 497 face stones, which would have no L0, so the walls' L0 count becomes 109,672. B saves only memory and export time: L0 is drawn within 8 m anyway, so frame time does not change. It also ties the mesh to today's eyes, so B belongs to step 5's chunks, if anywhere.
+- **Steps.** SN8's 40,000 assumed 78 steps of about 1.6 stones at 250 triangles, and 8,000 for the rests. The facts give 71 steps of two stones each and 8 rests and landings of 28 slabs, so 170 stones. One stone cannot span a step: the stair is 3512 mm between the walls' faces with the ends in them, and the longest slab is 2300. Proposed: L0 51,000 and L1 20,400, the table's 300 and 120 a stone. The other way is to hold 40,000 at 235 triangles a stone, which R2b's step part would have to meet.
+- **The gully,** A plus the steps: L0 182,100 and L1 73,900, against SN8's 150,000 and 65,000. It lays 180,664 and 72,592.
+
+design.md is not edited; the reviewer decides. `kinds/wall.json`'s levels keep SN8's numbers, marked provisional.
 
 ## The laying's own reports
 
+Two goings. 10 flags, 5 boundary cuts, 0 free lengths laid with less than the full rule, 8 fall points not placed, 6 through stones not placed.
+
 **wl-gully/fl-0/r.**
-- fall at s 7344, z 7329: fell: course 55, 7281 to 7625
-- free lengths laid without the full rule: 2 bond below only, 7 bond, the 1961 long-and-short end dropped, 1 no bond
-- boundaries that took no tooth or straight joint in a course: 25
-- wl-gully/fl-0/r/knee-1: its plumb side rises through 4 courses
-- wl-gully/fl-0/r/hd-0/st-0: 300 mm, outside its range (180, 260), to leave whole stones beside it
+
+- fall at s 7344, z 7329: in course 28 where a feature or head stands: not placed
+- through stone not placed in wl-gully/fl-0/r/pn-0 at 166: no course with room on both faces
+- cut: wl-gully/fl-0/r stair course 19: the 1961 edge at 6226 is the course's end against the step at 6348, 122 mm off it (no stone fits between them); the stone at that end is the panel's that holds its middle
+- cut: wl-gully/fl-0/r bank course 5: the 1961 edge at 1844 is the course's end against the ground at 2000, 156 mm off it (no stone fits between them); the stone at that end is the panel's that holds its middle
+- flag: wl-gully/fl-0/r stair course 17: the tooth at 5664 is 117 mm off it, over 90
 
 **wl-gully/fl-0/l.**
-- fall at s 7649, z 6886: held (cement: the 1961 panel or the patched hole)
-- fall at s 2366, z 4877: fell: course 25, 2205 to 2462
-- boundaries that took no tooth or straight joint in a course: 14
-- wl-gully/fl-0/l/knee-1: its plumb side rises through 3 courses
-- wl-gully/fl-0/l/hd-0/st-0: 300 mm, outside its range (180, 260), to leave whole stones beside it
-- wl-gully/fl-0/l/hd-0/st-1/stair: no length leaves whole stones beside it (rooms [(300, 68), (597, 99)]); 300 mm
-- wl-gully/fl-0/l/hd-0/st-1/stair: a runner 300 mm, under the 400 a runner should be
+
+- fall at s 7649, z 6886: held (the facts: bedded in mortar, in the rebuilt panel or a patched hole)
+- fall at s 2366, z 4877: fell: course 13, 2147 to 2431
+- through stone not placed in wl-gully/fl-0/l/pn-2 at 10096: no course with room on both faces
+- cut: wl-gully/fl-0/l bank course 16: the boundary at 5769 is the course's end against the ground at 5800, 31 mm off it (no stone fits between them); the stone at that end is the panel's that holds its middle
+- flag: wl-gully/fl-0/l bank course 11: the tooth at 4041 is 121 mm off it, over 90
 
 **wl-gully/fl-1/r.**
-- fall at s 596, z 8643: fell: course 10, 488 to 733
-- fall at s 5953, z 10005: fell: course 27, 5774 to 6119
-- fall at s 2867, z 9237: fell: course 17, 2717 to 2995
-- free lengths laid without the full rule: 3 bond below only, 2 no bond
-- through stones not placed: 2 (10754, 12584)
-- boundaries that took no tooth or straight joint in a course: 19
-- wl-gully/fl-1/r/knee-6: its plumb side rises through 4 courses
+
+- fall at s 596, z 8643: fell: course 5, 402 to 809
+- fall at s 5953, z 10005: fell: course 14, 5740 to 6433
+- fall at s 2867, z 9237: fell: course 9, 2577 to 3105
+- through stone not placed in wl-gully/fl-1/r/pn-0 at 240: no course with room on both faces
+- through stone not placed in wl-gully/fl-1/r/pn-0 at 1116: no course with room on both faces
+- through stone not placed in wl-gully/fl-1/r/pn-8 at 22085: no course with room on both faces
+- cut: wl-gully/fl-1/r bank course 44: the boundary at 31656 is the course's end against the ground at 31700, 44 mm off it (no stone fits between them); the stone at that end is the panel's that holds its middle
+- flag: wl-gully/fl-1/r stair course 43: the tooth at 27872 is 124 mm off it, over 90
+- flag: wl-gully/fl-1/r bank course 10: the tooth at 6742 is 122 mm off it, over 90
 
 **wl-gully/fl-1/l.**
-- fall at s 32785, z 16510: fell: course 104, 32685 to 32943
-- fall at s 27662, z 15598: fell: course 94, 27572 to 27884
-- free lengths laid without the full rule: 2 bond below only, 6 no bond
-- through stones not placed: 4 (6049, 12665, 31768, 32692)
-- boundaries that took no tooth or straight joint in a course: 17
-- wl-gully/fl-1/l/knee-6: its plumb side rises through 3 courses
+
+- fall at s 32785, z 16510: fell: course 53, 32573 to 32889
+- fall at s 27662, z 15598: fell: course 47, 27418 to 27952
+- through stone not placed in wl-gully/fl-1/l/pn-8 at 22082: no course with room on both faces
+- cut: wl-gully/fl-1/l bank course 40: the boundary at 27872 is the course's end against the ground at 27900, 28 mm off it (no stone fits between them); the stone at that end is the panel's that holds its middle
+- flag: wl-gully/fl-1/l/hd-0/st-1: 193 mm, outside its range (220, 320), to leave whole stones beside it
+- flag: wl-gully/fl-1/l stair course 43: the tooth at 27872 is 124 mm off it, over 90
+- flag: wl-gully/fl-1/l bank course 6: the tooth at 3413 is 44 mm off it, under 50, to keep its laps
+- flag: wl-gully/fl-1/l bank course 25: the tooth at 15913 is 119 mm off it, over 90
+- flag: wl-gully/fl-1/l bank course 38: the tooth at 26232 is 116 mm off it, over 90
+- flag: wl-gully/fl-1/l: the fallen stone at 27662 lies within 308 mm of a panel's boundary
+
+**The rules that place the features, and why** (each found by a failure in this round's runs, fixed at its cause):
+
+- **Risers move within their window** (half a going either side of where the ideal bed puts them), by three rules in order. 10 of 83 risers moved:
+  - wl-gully/fl-0/r riser at 1844 (ideal 1798): onto the straight joint at 1844
+  - wl-gully/fl-0/r riser at 4041 (ideal 4036): +5 mm, so the runs either side are whole slabs
+  - wl-gully/fl-0/r riser at 5664 (ideal 5769): -105 mm, so its corner stones and the edge's fit before the straight joint at 6226
+  - wl-gully/fl-0/r riser at 9288 (ideal 9330): -42 mm, so the runs either side are whole slabs
+  - wl-gully/fl-0/l riser at 4041 (ideal 4036): +5 mm, so the runs either side are whole slabs
+  - wl-gully/fl-0/l riser at 9295 (ideal 9334): -39 mm, so the runs either side are whole slabs
+  - wl-gully/fl-1/r riser at 8349 (ideal 8341): +8 mm, so the runs either side are whole slabs
+  - wl-gully/fl-1/l riser at 8349 (ideal 8341): +8 mm, so the runs either side are whole slabs
+  - wl-gully/fl-1/l riser at 32123 (ideal 32196): -73 mm, so the runs either side are whole slabs
+  - wl-gully/fl-1/l riser at 32573 (ideal 32683): -110 mm, so the runs either side are whole slabs
+  1. *A straight joint:* a riser within a lap of a rebuilt panel's edge snaps onto it. If it is just above the edge, it moves until its stepped section's corner stone (at least twice the course's height) and the edge's stone both fit before the joint. Before this rule, fl-0/r's riser at 5769 left 457 mm to the 6226 edge, and the corner and the edge stone could not both be laid.
+  2. *Whole slabs:* between two risers the run takes whole slabs (450 to 1000 mm), pushing the next riser along within its window where it must.
+  3. *The end runs:* a wall's end run is either its topstone alone or a topstone and a whole slab.
+- **Panels are bounded at the rests' coping run ends** and at the rebuilt panel's edges. A wall's ends are its heads, not panel boundaries. This gives 34 panels where round 1 had 40.
+- **Teeth look one course ahead:** a boundary's tooth in a course is chosen so the course above still has a lapped tooth of at least 50 mm. Where none fits in 50 to 90, it goes up to 128 (flagged), and below 50 only to keep its laps (flagged).
+- **The end stones' rules hold for every stone laid first** (heads, teeth, falls and throughs): a stepped section's corner stone at least 2 times its height, and the rebuilt panel's edge stones long and short in alternate courses.
+- **The heads keep clear of the joints fixed above and below them**: the risers' corner joints, the stones laid first, and the coping joints over the top course.
+- **Each face's head stands on that face's own footing.** A tie runs through both faces only in courses where both faces stand at the wall's end; below the higher footing the lower face goes on alone, a header or a runner by the head's order, in its own courses. Before this rule the head started both faces at the lower footing, so at the top ends of fl-0/l and fl-1/r a stair-face stone stood under the top step's level, in the last steps' ends (st-gully/fl-0/tr-28 and tr-29, st-gully/fl-1/tr-47), and the granite record's fl-0/r tie did the same. SN9's new tiling checks found it in the self-check; no other check had looked.
 
 ## Panels re-laid one at a time
 
-- wl-gully/fl-1/r/pn-8: 271 of its stones change and 4 outside it (e.g. wl-gully/fl-1/r/pn-9/stair/co-65/sp-0, wl-gully/fl-1/r/pn-9/stair/co-65/sp-1, wl-gully/fl-1/r/pn-9/stair/co-65/sp-2)
-- wl-gully/fl-1/r/pn-9: 230 of its stones change and 5 outside it (e.g. wl-gully/fl-1/r/pn-8/bank/co-64/sp-11, wl-gully/fl-1/r/pn-8/bank/co-64/sp-12, wl-gully/fl-1/r/pn-8/bank/co-64/sp-13)
-- wl-gully/fl-1/r/pn-11: 209 of its stones change and 35 outside it (e.g. wl-gully/fl-1/r/pn-10/bank/co-80/sp-0, wl-gully/fl-1/r/pn-10/bank/co-80/sp-1, wl-gully/fl-1/r/pn-10/bank/co-80/sp-10)
-- wl-gully/fl-1/r/pn-14: 9 of its stones change and 5 outside it (e.g. wl-gully/fl-1/r/pn-13/stair/co-102/sp-2, wl-gully/fl-1/r/pn-13/stair/co-102/sp-3, wl-gully/fl-1/r/pn-13/stair/co-102/sp-4)
-- wl-gully/fl-1/l/pn-3: 187 of its stones change and 7 outside it (e.g. wl-gully/fl-1/l/pn-2/bank/co-26/sp-10, wl-gully/fl-1/l/pn-2/bank/co-26/sp-11, wl-gully/fl-1/l/pn-2/bank/co-26/sp-12)
-- wl-gully/fl-1/l/pn-5: 145 of its stones change and 6 outside it (e.g. wl-gully/fl-1/l/pn-4/bank/co-40/sp-10, wl-gully/fl-1/l/pn-4/bank/co-40/sp-11, wl-gully/fl-1/l/pn-4/stair/co-40/sp-10)
-- wl-gully/fl-1/l/pn-11: 194 of its stones change and 3 outside it (e.g. wl-gully/fl-1/l/pn-12/stair/co-93/sp-0, wl-gully/fl-1/l/pn-12/stair/co-93/sp-1, wl-gully/fl-1/l/pn-12/stair/co-94/sp-0)
-- wl-gully/fl-1/l/pn-14: 9 of its stones change and 2 outside it (e.g. wl-gully/fl-1/l/pn-13/stair/co-102/sp-3, wl-gully/fl-1/l/pn-13/stair/co-102/sp-4)
-- the others (32) change only their own stones
+Each panel is re-laid with an event's seed on its own id, and every stone that changes is counted.
+
+- **Two goings:** 34 of 34 panels change only their own stones (from 4 to 142 of them).
+- **One going:** 34 of 34 panels change only their own stones (from 7 to 151 of them).
+- Round 1: 32 of 40. The leaks were at boundaries where a course took no tooth, so one stone crossed the boundary. Now such a course ends against the ground or a step, and the report names it as a cut (above).
+
+## What lives in data, and what stays in code
+
+Changing style, era or world must be a data edit (the coordinator, for Øystein; design.md 7b). `masonry.py` reads every number that depends on the stone, its working, its era or the style into a `Rules`, from two files:
+
+- **The pack's walling table, `packs/stavanger-1989/walling.json`**, by the working a wall's facts name (`dry-split-1874`, its 1961 rebuild `cement-relaid-1961`). It holds the stone's and the builders' numbers: the course heights (`courseMm`, `riseOneMm`, `foundationMm`); the stones (`stoneMm`, `drawnPerHeight`, `shortMm`); the copings (`copeThickMm`, `copeNominalMm`, `copeLengthMm`, `copeLeastMm`); the topstones, head ties and runners (`topstoneMm`, `headTieMm`, `headRunnerMm`); the through stones (`throughMm`, `throughFirstMm`, `throughEveryMm`); a rebuilt panel's edge stones (`edgeStonesMm`); and the steps' laps and joints (`steps`). Each value has a note with its reason and source. Round 1 had all of these as module constants.
+- **The wall kind, `kinds/wall.json`**, beside `kinds/stair.json`, in `schemas/kind.schema.json`'s shape. Its plan params hold the wall's structure: the parapet's height, one or two goings a level run, a head's courses, the topstone's squareness, a stepped section's corner stone, the free courses' step, the bank footing's tread, the panels' teeth, the throughs' clearance and shift, and where the steps' ends sit in the walls.
+- **In code, the rules of any wall:** level beds and no rake; SN2's sliver (50 mm) and acute (25°) limits; SN10's bond (no stone over 4.5 times its height, a lap of 0.4 of the course and at least 40 mm, the four-stone cross, joints through more than two courses); a stone falls when nine tenths of its bed is gone. Two more numbers stay in code because they are only the search's resolution and reach (5 mm steps for a through stone, 300 mm of free courses over the top), not facts about any wall. `Rules` also checks the data against the code's rules, so a bad edit raises an error and is never laid quietly.
+- **Gone with the stepped tops:** round 1's kneelers, knees, raked copings and their numbers.
+- **What the schemas cannot hold.** `schemas/material.schema.json` refuses a walling section (`additionalProperties: false`), so I did not put one into `materials/slate.json`. The walling table is a pack table in `stairs.json`'s format instead, keyed by working, with each working naming its material. No schema validates either table. A walling schema, or a `walling` section in the material schema, is for the reviewer to decide. `tools/validate_record.py` passes with `kinds/wall.json` in the registry.
+- **Joint widths** between wall stones are not modelled at R1: the stones meet at their outlines. When R2's geometry needs them, they belong in the working (a dry slate's few mm against a mortared granite's 10 to 15 mm). The steps' tread joints (4 to 10 mm, SN5) are in the walling table already.
+
+### The granite record (design.md 7b)
+
+`r1/granite-1930.json` is a test record, not researched, in the walling table's shape. It holds two workings no gully wall has: `mortared-granite-1930` (squared granite in level mortared courses, 140 to 340 mm high, stones 300 to 1200 mm, slab copes 500 to 1200 mm) and `cement-relaid-granite-1961`. The tool merges them into a copy of the pack's table, points the facts' walls and their rebuilt panel at them, and lays and tests the same walls with the same functions. No code changes.
+
+- **Laid:** hash `bf5983379651b703`, again `bf5983379651b703` (the same). 2,275 wall stones, 130 copings, 48 throughs; walls L0 108,664 and L1 43,792.
+- **Tests:** 44 checks, 43 pass, 1 fails. SN1, SN9 and SN10 pass; SN2 fails:
+  - FAIL SN2 coping slabs 500 to 1200 mm: wl-gully/fl-0/r/pn-4/cp-6, 308 mm
+  - FAIL SN2 coping slabs 500 to 1200 mm: wl-gully/fl-0/l/pn-2/cp-7, 318 mm
+- **The laying's reports:** 19 flags, 43 cuts, 2 free lengths laid with less of the rule: stones under 300 mm, bonded.
+- **One going:** hash `90c78326332e95e1` (stable); SN2 a stepped section's corner stone at least 2 x its height fails 2; SN2 coping slabs 500 to 1200 mm fails 142.
+- **Why the slabs fail:** at fl-0's top ends, the run from the last riser to the wall's end is about 670 mm. Neither a square topstone alone (at most about 400 mm in the granite's courses) nor a topstone and a whole slab (at least 800 mm) fits, and the risers cannot move further inside their windows. The laying lays a slab of what is left (never under the working's least, `copeLeastMm`, 300) and flags it, and SN2's test fails it. This is the granite's numbers meeting the gully's goings, not the code: the slate passes with the same functions.
 
 ## The sheet
+
+Look first at `fl-0-r-stair.png` (the 1961 panel, its edges and the moved risers), `fl-1-r-bank.png` (a bank face seen only from beyond 8 m, its footing stepping with the ground) and `steps-plan.png`.
 
 - `fl-0-r-stair.png`
 - `fl-0-r-bank.png`
@@ -320,21 +363,35 @@ The design's estimate was about 2,700 wall stones, 140 m2 of face and 150 coping
 - `fl-1-r-bank.png`
 - `fl-1-l-stair.png`
 - `fl-1-l-bank.png`
+- `fl-0-r-stair-1going.png`
+- `fl-0-l-stair-1going.png`
+- `fl-1-r-stair-1going.png`
+- `fl-1-l-stair-1going.png`
 - `steps-plan.png`
+- `visibility.png`
+
+Each elevation is drawn at 1:50 in strips of 6 m. Face stones are grey, the 1961 panel's are a warmer grey; throughs, head ties, runners, topstones and copings each have their own tone. A failing check is drawn in red, and a stone the fill laid with less of the rule in magenta. On the stair faces each fall point the facts give is ringed: orange where its stone fell (the hole is black), black where the facts hold it, grey where no stone could be chosen for it. The legend is on each sheet.
 
 ## What fails, and why
 
-1. **Thin courses, the root of most of what follows.** Every rise is 146 to 188 mm, over wall.py's 140 mm course, so SN2's lines (one on each step top, at most one between) give two courses a rise: courses under the last step are 60 to 140 mm (median 83), the free courses above it 60 to 123 mm, falling upwards (the largest courses low). A stone is 180 mm to 4.5 times its height, so most are short: 8,301 face stones against the design's about 2,700, and the walls' L0 is 370,320 triangles against SN8's 110,000 (the gully 421,320 against 150,000). Undecided, not mine to decide: a course up to the largest rise (one course a rise, about a third of the stones), or the count kept and SN8's rates or budget changed.
-2. **SN10 laps (18) and four-stone crosses (5), and 5 joints through three courses**, all at the 16 free lengths the fill could not lay in whole stones clear of the joints below and above, so laid with less of the rule (marked magenta on the sheet; each is listed under The laying's own reports). They are runs of 360 to 3586 mm in courses 60 to 76 mm high, between a panel's tooth, a step end, a stone laid first or the rake: one or two joints fit at all, and the course below has a joint there. The teeth are chosen before the fill, from the boundary alone, so that a panel re-lays alone; choosing them from the fill below would couple panels. Larger courses (1) would remove most of these.
-3. **SN10 joints through more than two courses at the wall ends' topstones (8).** SN2's square topstone (220 to 450 mm, length 0.75 to 1.33 its height) at a flight's top end stands in the free courses of 60 to about 80 mm, so its plumb side passes through three courses or more (185, 193, 209, 242, 360 mm high). At wl-gully/fl-1/l the knee's level top (at most 350 mm, my own range) leaves the topstone too long to be square on the knee's bed, so its bed drops a further three courses. Undecided: a smaller topstone, larger free courses, or a topstone's side read as one stone's side rather than a joint through courses.
-4. **Panels re-laid alone: 32 of 40.** The other 8 change 2 to 35 stones beyond themselves, nearly all in courses where a boundary took no tooth (the reports' 'boundaries that took no tooth': 75 course crossings in all), so one stone crosses it and is laid by the panel holding its middle; one or two follow a fallen stone redrawn near a boundary.
-5. **Steps: L0 51,000 triangles against 40,000** (170 stones and slabs at 300). Every step test passes, but SN3's middle third leaves almost no room: with the finish's longest slab (2300 mm) across 3512 mm, a step's joint can only fall 536 to 544 mm from the centre (9 mm of play). A rest's two slabs must meet within 544 mm of the centre, so every rest joint is inside the middle third (SN3 puts the rule on steps; reported as notes). The plan names two slabs a rest; fl-1's rests are deeper than the longest slab and take four in two rows.
+1. **One going a level run: 139 coping slabs under 450 mm.** A going here is 296 to 297 mm, so a level run of one going is about 300 mm long and holds no whole slab. The laying lays each such run as one slab of its own length (never under the working's least, 200 mm) and flags it: 139 of the one-going variant's 184 flags. SN2's test fails them. This is the nature of one going with this coping, not a fault to fix; it is why two goings are laid.
+2. **The granite record: two coping slabs under 500 mm at fl-0's top ends.** See The granite record: its numbers, not the code.
+3. **The budgets.** The walls' L0 (129,664) is over SN8's 110,000 and inside the re-derived 131,100 by 1.1%. The steps' L0 (51,000) is over SN8's 40,000, because the facts make 170 stones where SN8 assumed about 125 plus the rests. Both are proposals for the reviewer.
+4. **The flags and cuts.** 10 flags: fl-0/r stair course 17: the tooth at 5664 is 117 mm off it, over 90; fl-0/l bank course 11: the tooth at 4041 is 121 mm off it, over 90; fl-1/r stair course 43: the tooth at 27872 is 124 mm off it, over 90; fl-1/r bank course 10: the tooth at 6742 is 122 mm off it, over 90; fl-1/l/hd-0/st-1: 193 mm, outside its range (220, 320), to leave whole stones beside it; fl-1/l stair course 43: the tooth at 27872 is 124 mm off it, over 90; fl-1/l bank course 6: the tooth at 3413 is 44 mm off it, under 50, to keep its laps; fl-1/l bank course 25: the tooth at 15913 is 119 mm off it, over 90; fl-1/l bank course 38: the tooth at 26232 is 116 mm off it, over 90; fl-1/l: the fallen stone at 27662 lies within 308 mm of a panel's boundary. 5 cuts: at each, a panel's boundary or the 1961 edge lies within one least stone (180 mm) of the course's end against the ground or a step, so no tooth fits. The course's end serves as the boundary's joint, and the stone there belongs to the panel that holds its middle. None breaks a check; each is listed under The laying's own reports.
+5. **The steps' 9 mm of play (SN3).** The longest slab is 2300 mm and the stair 3512 mm across, ends in the walls. Its joint must then start in [-548, -540] or [536, 544] mm, outside the middle third (536 mm either side of the walking line): 9 mm of play a side. So every step's joint lies on one of two lines about a metre apart, alternating up the stair. Every SN3 check passes. Whether the two lines read as mechanical is a look question for R2b's grey sheet, not a rule's, and I propose no change without that evidence. A longer slab is the finish's fact, from `kinds/stair.json`.
+6. **fl-1's rests.** 6 rests are 2960 to 3699 mm deep, more than the longest slab (2300), so each takes four slabs in two rows where the plan names two. SN3's "two to four slabs" passes. A rest's two slabs must also meet within 544 mm of the centre, inside the middle third. SN3 puts that rule on steps, so the rest joints are notes, not failures. No rule change: both follow from the plan's depths and the finish's sizes.
 
-## Assumed, and not laid at R1
+## Assumed
 
-- **Seeds:** every new draw keys on the pack's world seed (1989) through `HS.Stream`/`HS.h`. The stair's plan is today's set-out from the record's kind at its legacySeed (1) and wall.py's own fact draws (the 1961 panel, the fall points and which are held by cement) are at its seed 1: R1 must be re-run when 2b retires legacySeed and when those facts move into a wl-gully record.
-- **Rounding:** the stages' metres were rounded once to integer mm in `facts.json` (half away from zero) and nowhere after. The plan's S and D were rounded apart and differ by 1 mm in places; a step's depth is taken from the nosings (S), so each lap is exactly its drawn lap.
-- **Steps:** laps 40 to 60 mm by SN3 (the kind's own lap is 100 mm); the middle third on the clear width between the walls' faces with their 6 mm joints (3212 mm, so |x| at least 536); ends 1756 mm from the centre (150 mm into each wall); the turn landing at fl-1's foot one rise thick, from the landing's front to the first step's nosing plus its lap.
-- **Kneelers:** 'wider than high' is taken on the whole stone, bed to top; a kneeler's height is drawn near three quarters of its width, its plumb back through at most two courses where the lines allow; intermediate kneelers every 2.4 to 3.6 m of going (fl-1's raked runs are all under 2.4 m, so only fl-0 has them).
-- **Not laid at R1:** the coping's rebates (a 3D matter, R2); the patched holes; the 1952 campaign's reset run (the plan's output does not say which steps it moved, so it is untested); the wall's hidden work under the step ends and under the stair's surface (veiled on the sheet); the batter (in the face alone, a 3D matter).
-- **The laying's flags:** wl-gully/fl-0/r/knee-1: its plumb side rises through 4 courses; wl-gully/fl-0/r/hd-0/st-0: 300 mm, outside its range (180, 260), to leave whole stones beside it; wl-gully/fl-0/l/knee-1: its plumb side rises through 3 courses; wl-gully/fl-0/l/hd-0/st-0: 300 mm, outside its range (180, 260), to leave whole stones beside it; wl-gully/fl-0/l/hd-0/st-1/stair: no length leaves whole stones beside it (rooms [(300, 68), (597, 99)]); 300 mm; wl-gully/fl-0/l/hd-0/st-1/stair: a runner 300 mm, under the 400 a runner should be; wl-gully/fl-1/r/knee-6: its plumb side rises through 4 courses; wl-gully/fl-1/l/knee-6: its plumb side rises through 3 courses.
+- **Houses are not occluders in the measurement,** since the brief names the terrain and the walls, and the clay's houses are blockouts that will move. A sensitivity adds them as boxes to their eaves: no faces change (The visibility measurement).
+- **The eyes:** a standing eye at 1.6 m over every walkable lane, stair, quay, place and yard within 80 m, and the six judging views in their frames. A wall's occluding top is a slab 0.15 to 0.57 m outside the stair's clear half-width, up to its coping's top. L0's range is 8 m (SN8).
+- **A sample is buried** where the ground 0.1 m outside the face stands over its mid-height. Buried stones are laid, because their face is seen.
+- **Two goings** a level run is the variant laid and counted; one going is laid and tested beside it.
+- **"A whole course a step"** (SN2) is read as a whole number of courses: with two goings and one course a rise, the coping steps by two courses (up to 356 mm). Read as exactly one course, SN2's own two-going option could not exist once a course is a rise. SN2's "an extra course goes in where a step would grow too big" gives no number, and no step here is more than two rises, so none goes in; R2b's grey form judges the steps' size.
+- **A stepped section's corner stone** is at least 2 times its course's height (SN2 does not give a number).
+- **The 1961 panel's edges** are straight joints through every course by the facts, exempt from SN10's laps and chains; its edge stones are long and short in alternate courses.
+- **The foundation courses** under the foot hold no stones at R1, since no face reaches below the foot. Their lines are drawn from the largest down: each is at least the course over it (fixed this round, after the self-check found fl-0/r's at 194 under 252). SN10's test now checks every course above, as its rule says.
+- **Seeds and rounding** as round 1: every draw keys on the pack's world seed through `HS.Stream`, `HS.h` and `HS.between`. The facts were rounded once to integer mm at the boundary. wall.py's own fact draws (the 1961 panel, the fall points, which falls cement holds) are at its seed 1, so R1 is re-run when they move into a wl-gully record.
+- **`tools/check.py`** does not exist yet: it is built after the reset on 26 October. This run's own tests and `tools/validate_record.py` stand in for it.
+- **Not laid at R1:** the coping's rebates and the batter (3D, R2); the patched holes; the 1952 campaign's reset run; the hidden work under the step ends and the stair's surface.
+
