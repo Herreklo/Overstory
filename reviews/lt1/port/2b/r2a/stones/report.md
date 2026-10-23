@@ -278,7 +278,8 @@ All of them, including those that go to R2b.
 | What | Where | Why there |
 | --- | --- | --- |
 | The facts the parts are fitted to (joints, laps, courses, wear, history) | `packs/stavanger-1989/` (`walling.json`, `stairs.json`, `materials/slate.json`, `materials/granite.json`, `parts/`); R1's laying (`masonry.lay` at the pinned commit) | The setting is a pack, and a part is a function whose inputs are facts |
-| The three parts | `blender/parts/stone/slate/stones.py` (step, wall stone, coping; PARAMS read through `param()`) | Each part is built and judged one at a time |
+| The three parts' numbers | `packs/stavanger-1989/parts/stone/{step,wallstone,coping}.json`, under `params` (15, 9 and 10 keys, each with a note); the levels' errors only in `kinds/wall.json` and `kinds/stair.json` | A part is a function whose inputs are facts; the kind's table is the one source for its levels |
+| The three parts' code | `blender/parts/stone/slate/stones.py` (step, wall stone, coping), reading every number from data; a missing key is an error | Code holds only rules true everywhere: tolerances, SN8 to SN10's limits, the wear laws, the UV encodings, the hashing |
 | The contexts | `blender/parts/stone/slate/context.py` | Each specimen's neighbours within about 0.6 m, built by their own parts |
 | The materials' colours | `unity/Assets/Code/Editor/LT1Stone.cs`, as code constants (`_Stone`, `_Fresh`, `_Edge`, `_Soil`, `_Water`) | A saved material keeps its values, so they are set by code, never by shader defaults |
 | The fill, the lit line and the off-state | `unity/Assets/Shaders/Stone.shader` (kind 6; UV6 and UV7) | One shader for every stone |
@@ -286,11 +287,16 @@ All of them, including those that go to R2b.
 | The harness and the arms | `unity/Assets/Code/Editor/LT1R2a.cs` (`_OS_PatchShift`) | Experiment code, not the game's |
 | The counts | `tools/r2a_count.py`, which writes `counts.json` | Re-runnable from the frames |
 
-**Still to come, as R2a's last piece: the data move.**
-- PARAMS go into the part definitions as a `params` object, which opens the closed `part.schema.json`.
-- New keys in `walling.json`: `jointMm`, `batterPerHeight`, `topThickMm`, `copeOverMm` and `copeProudMm`.
-- A new key in `materials/slate.json`: `cornerBreak`.
-- Then the soil goes to the pack (proposal 3).
+**The data move, R2a's last piece: done** (`7bc7ec4`, `9235c99`; the details are in `blender.md`).
+- `stones.py`'s numbers are in the part definitions under `params`, an optional object `part.schema.json` now takes.
+- `walling.json` gained `jointMm`, `batterPerHeight`, `topThickMm`, `copeOverMm` and `copeProudMm` per working, and `materials/slate.json` gained `cornerBreak`, each with its schema. The granite test record carries the five walling keys as test values.
+- **Proved pure data:** all six installed meshes hash as before, and the three pools match their old results field by field. `validate_record.py` passes (self-test 32 of 32). The granite laying is unchanged (`2a4dfd6441c947a6` at two goings, twice, 0 failures).
+- **L1's error is 11 mm in both kinds,** not the 9 first ruled. 11 is the value the stones were built and judged with. At 9 the step's L1 would be rebuilt (69 to 76 triangles), and the wall stone and 912 of 1,220 pooled wall stones would fail. The review has since replaced the fixed error with the visible joint error, which R2b sets.
+- **Follow-ups for others:**
+  - The kinds' L1 of 11 now sits above their L2 of 10.
+  - Slate's new key changes the materials hash that `fixtures/golden/stair/` records, so the goldens' owner re-records it.
+  - `slab.py` and `stair_stages.py` keep their own corner-break numbers.
+- The soil goes to the pack later (proposal 3).
 
 The colour constants are material facts held as code. The soil is the one that matters now; the others follow once a material file holds colour.
 
