@@ -1,53 +1,68 @@
 {
  "step.fbx": {
   "tool": "mesh_hash 1",
-  "hash": "df9d7a1ae9f8d7ab",
+  "hash": "04615df7f74b3455",
   "triangles": 213,
   "meshes": {
    "step_L0": {
-    "hash": "04e2cb4d109d55e1",
-    "vertices": 89,
+    "hash": "399d5b8aa879fd3c",
+    "vertices": 432,
     "corners": 432,
     "triangles": 144,
     "channels": {
-     "edges": "eacf54187fd64510",
-     "indices": "dead59c8be96ace5",
+     "edges": "e422766920bacf05",
+     "indices": "88e7aea2e3d01e98",
      "normals": "365581370dfbee9b",
      "other": "cb7eb6a0428adf70",
-     "positions": "edc31748d1cce363",
-     "uv0": "ec080669dcbb2eec",
-     "uv1": "70020f5ba8f0a7f8",
-     "uv2": "0514053383d34718",
-     "uv3": "ac4d9f77754349aa",
-     "uv4": "31139922e5e9e3b3",
-     "uv5": "0e0a8a6108add35f",
-     "uv6": "5b8acf69c14f747a",
-     "uv7": "db2fe92084157b5a",
+     "positions": "8f1f6f63048f9af2",
+     "uv0": "0adce08217da31c8",
+     "uv1": "f9c6c8c28c0e1972",
+     "uv2": "86fd1fc751783331",
+     "uv3": "5381345878b630cc",
+     "uv4": "a591bead544164b6",
+     "uv5": "95eb22eb25f48281",
+     "uv6": "7fccf8a34f27b3c5",
+     "uv7": "039a88a1272766c8",
      "transform": "e3b0c44298fc1c14"
     }
    },
    "step_L1": {
-    "hash": "c10cd38df04478a1",
-    "vertices": 45,
+    "hash": "bd0de39fd98d6a7b",
+    "vertices": 207,
     "corners": 207,
     "triangles": 69,
     "channels": {
-     "edges": "34705bd0b49259d9",
-     "indices": "a177e66235e45ca3",
+     "edges": "816034910b19e508",
+     "indices": "63fef31b433d6902",
      "normals": "2e5840f42b1f3f87",
      "other": "cb7eb6a0428adf70",
-     "positions": "37d41145231ab147",
-     "uv0": "9d75caff346abdc1",
-     "uv1": "d68731e51c1fbf04",
-     "uv2": "8db9845bf4a4d502",
-     "uv3": "444cbc4d7b09a1b2",
-     "uv4": "8431f8e59694dbaf",
-     "uv5": "c1a43c9f1997593d",
-     "uv6": "0fd05edf43ba70a9",
-     "uv7": "58b85ea103c858fc",
+     "positions": "75885a60957b669b",
+     "uv0": "7ba6644ec2cdea22",
+     "uv1": "c7a25bae5d6f72b4",
+     "uv2": "fe8fc139ce3eac78",
+     "uv3": "5613469c5cbcc7c9",
+     "uv4": "d51a56cd57566b2f",
+     "uv5": "be7da9d3f175e163",
+     "uv6": "c7fc8da2845bd809",
+     "uv7": "c0b25d77f45fcd50",
      "transform": "e3b0c44298fc1c14"
     }
    }
-  }
+  },
+  "levels": {
+   "step_L0": {
+    "triangles": 144,
+    "partVertices": 89,
+    "indexedVertices": 428,
+    "fbxVertices": 432
+   },
+   "step_L1": {
+    "triangles": 69,
+    "partVertices": 45,
+    "indexedVertices": 204,
+    "fbxVertices": 207
+   }
+  },
+  "levelsNote": "partVertices: the part's own mesh, positions shared where corners are one; indexedVertices: corners identical in every channel counted once (an exact indexed mesh, as step 5's chunks; the edge distances are each triangle's own); fbxVertices: the FBX's, three a triangle, none shared (Unity's FBX import merges near-equal corners that share one)"
  }
 }

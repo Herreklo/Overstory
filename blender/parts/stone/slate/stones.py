@@ -1353,6 +1353,20 @@ def chamfer_px(o, view):
     return out
 
 
+def indexed_vertices(m):
+    """The vertices an exact indexed mesh needs for one level: its corners identical in every channel (position, the
+    face's normal and all eight UV layers, as the float32 values the export writes) counted once. Step 5's chunks
+    carry vertices exactly and may share such corners; but the edge distances (UV6, UV7) are each triangle's own, so
+    under the contract nearly every corner is its triangle's alone, and this is close to three a triangle."""
+    T = np.asarray(m["T"])
+    nt = len(T)
+    P = np.asarray(m["V"], np.float64).astype(np.float32)[T.ravel()]
+    N = np.repeat(np.asarray([p["n"] for p in m["plane"]], np.float64).astype(np.float32), 3, axis=0)
+    UV = np.asarray(m["UV"], np.float32).reshape(8, 3 * nt, 2)
+    rows = np.ascontiguousarray(np.concatenate([P, N] + list(UV), axis=1)) + np.float32(0.0)   # -0.0 as 0.0
+    return int(len(np.unique(rows.view(np.dtype((np.void, rows.dtype.itemsize * rows.shape[1]))))))
+
+
 def check(part, out, defn, piece_gate=True):
     """Every check SN8 and SN9 give a part, run on both levels: a dict of results, and the list of failures. SN8's
     share of thin triangles is a level's (all its front-facing triangles at its far edge); piece_gate holds this one
@@ -1368,7 +1382,10 @@ def check(part, out, defn, piece_gate=True):
     fails += res["facts"]["fails"]
     # budgets
     res["triangles"] = dict(L0=len(L0["T"]), L1=len(L1["T"]), budget=[lv["l0"]["triangles"], lv["l1"]["triangles"]],
-                            ratio=round(len(L1["T"]) / max(len(L0["T"]), 1), 3))
+                            ratio=round(len(L1["T"]) / max(len(L0["T"]), 1), 3),
+                            vertices=dict(L0=len(L0["V"]), L1=len(L1["V"])),
+                            indexedVertices=dict(L0=indexed_vertices(L0), L1=indexed_vertices(L1)),
+                            fbxVertices=dict(L0=3 * len(L0["T"]), L1=3 * len(L1["T"])))
     if len(L0["T"]) > lv["l0"]["triangles"]:
         fails.append(f"budget: L0 {len(L0['T'])} > {lv['l0']['triangles']}")
     if len(L1["T"]) > lv["l1"]["triangles"]:
@@ -1776,7 +1793,11 @@ def variants(facts):
 def summary(res):
     th = res["thin"]
     lines = [f"triangles L0 {res['triangles']['L0']} / {res['triangles']['budget'][0]}, "
-             f"L1 {res['triangles']['L1']} / {res['triangles']['budget'][1]} (L1/L0 {res['triangles']['ratio']})"]
+             f"L1 {res['triangles']['L1']} / {res['triangles']['budget'][1]} (L1/L0 {res['triangles']['ratio']}); "
+             f"vertices L0 {res['triangles']['vertices']['L0']}, L1 {res['triangles']['vertices']['L1']} of its own "
+             f"(identical in every channel {res['triangles']['indexedVertices']['L0']} and "
+             f"{res['triangles']['indexedVertices']['L1']}; the FBX's {res['triangles']['fbxVertices']['L0']} and "
+             f"{res['triangles']['fbxVertices']['L1']})"]
     for lvl in ("L0", "L1"):
         for vn, r in th[lvl].items():
             verdict = ("pass" if r["ok"] else "FAIL") if r["gated"] else ("(reported) over" if not r["ok"] else
@@ -1836,6 +1857,8 @@ def _flight_one(job):
                ends=[facts["ends"]["l"]["kind"], facts["ends"]["r"]["kind"]],
                corner=facts["corner"] is not None, riserFacets=out["outline"]["riserFacets"],
                triangles=[len(out["L0"]["T"]), len(out["L1"]["T"])],
+               vertices=[len(out["L0"]["V"]), len(out["L1"]["V"])],
+               indexedVertices=[res["triangles"]["indexedVertices"]["L0"], res["triangles"]["indexedVertices"]["L1"]],
                smallestAltitudeMm=[res["L0"]["smallestAltitudeMm"], res["L1"]["smallestAltitudeMm"]],
                l1VsL0Mm=max(res["l1VsL0"]["l1ToL0Mm"], res["l1VsL0"]["l0ToL1Mm"]),
                wearErrorMm=[res["wear"]["L0"]["maxErrorMm"], res["wear"]["L1"]["maxErrorMm"]],
@@ -1889,13 +1912,24 @@ def flight_check(data, workers=None):
     for r in rows:
         fails += [f"{r['id']}: {f}" for f in r["fails"]]
     tri = np.array([r["triangles"] for r in rows])
+    ver = np.array([r["vertices"] for r in rows])
+    ind = np.array([r["indexedVertices"] for r in rows])
     res = _jsonable(dict(
         rule="SN8's share over a level: every stone of every flight's ordinary steps, as R1 laid them (masonry.lay at "
              "the pinned commit), each at its level's far edge (L0 8 m, L1 20 m) in the judging view (face-on, 20 "
              "degrees of top), its front-facing triangles pooled; every other check on each stone",
         commit=data.commit, pinned=pinned_ids(data.commit), code=code, view=GATED_VIEWS[0], gate=GATE, pooled=pooled,
         triangles=dict(L0=dict(min=int(tri[:, 0].min()), median=float(np.median(tri[:, 0])), max=int(tri[:, 0].max())),
-                       L1=dict(min=int(tri[:, 1].min()), median=float(np.median(tri[:, 1])), max=int(tri[:, 1].max()))),
+                       L1=dict(min=int(tri[:, 1].min()), median=float(np.median(tri[:, 1])), max=int(tri[:, 1].max())),
+                       total=[int(tri[:, 0].sum()), int(tri[:, 1].sum())]),
+        vertices=dict(L0=dict(min=int(ver[:, 0].min()), median=float(np.median(ver[:, 0])), max=int(ver[:, 0].max())),
+                      L1=dict(min=int(ver[:, 1].min()), median=float(np.median(ver[:, 1])), max=int(ver[:, 1].max())),
+                      total=[int(ver[:, 0].sum()), int(ver[:, 1].sum())],
+                      indexedTotal=[int(ind[:, 0].sum()), int(ind[:, 1].sum())],
+                      fbxTotal=[3 * int(tri[:, 0].sum()), 3 * int(tri[:, 1].sum())],
+                      note="total: the part's own vertices (positions, shared where one); indexedTotal: corners "
+                           "identical in every channel counted once (what an exact indexed mesh needs under the "
+                           "contract); fbxTotal: the FBX route's, three a triangle"),
         smallestAltitudeMm=[min(r["smallestAltitudeMm"][0] for r in rows), min(r["smallestAltitudeMm"][1] for r in rows)],
         fails=fails, ok=not fails, shareFails=share_fails, shareOk=not share_fails,
         shareRule="SN8 sets its 10% over a level's front-facing triangles at its far edge, the fills included: the "
@@ -1935,6 +1969,10 @@ def flight_summary(res):
                      f"{p['perStone']['over']} over 10%)")
     lines.append(f"flight triangles: L0 {res['triangles']['L0']}, L1 {res['triangles']['L1']}; smallest altitude "
                  f"{res['smallestAltitudeMm']} mm")
+    if "vertices" in res:
+        lines.append(f"flight vertices: L0 {res['vertices']['L0']}, L1 {res['vertices']['L1']}; in all "
+                     f"{res['vertices']['total']} of their own (identical in every channel "
+                     f"{res['vertices'].get('indexedTotal')}; the FBX route's {res['vertices']['fbxTotal']})")
     lines.append("flight, the steps alone against SN8's share (the level's, R2b and R3): " +
                  ("; ".join(res["shareFails"]) if res["shareFails"] else "within"))
     lines.append("flight FAILS (every stone's checks): " + ("; ".join(res["fails"]) if res["fails"] else "none"))
@@ -2021,8 +2059,15 @@ def sidecar(part, out, res, rule, data, defn, flight=None):
                     note=f"the pivot is the bed's front left corner; the drawn faces run {o['skirt'] * 1000:g} mm past "
                          "a hidden face or a cover (the skirts), so the riser reaches below the bed (Unity's y) where the "
                          "step below is worn, and the top runs back under the next step"),
-        levels=dict(L0=dict(triangles=len(out["L0"]["T"]), errorMm=lv["l0"]["errorMm"]),
-                    L1=dict(triangles=len(out["L1"]["T"]), errorMm=lv["l1"]["errorMm"])),
+        levels={k: dict(triangles=len(out[k]["T"]), vertices=len(out[k]["V"]),
+                        indexedVertices=res["triangles"]["indexedVertices"][k], fbxVertices=3 * len(out[k]["T"]),
+                        errorMm=lv[k.lower()]["errorMm"]) for k in ("L0", "L1")},
+        vertices="vertices: the part's own mesh, its positions shared where corners are one; indexedVertices: its "
+                 "corners identical in every channel (position, normal, all eight UVs) counted once, what an exact "
+                 "indexed mesh such as step 5's chunks needs under the contract (the edge distances, UV6 and UV7, are "
+                 "each triangle's own, so few corners are shared); fbxVertices: the FBX's, three a triangle, none "
+                 "shared, since Unity's FBX import merges near-equal corners that share a control point (the FBX "
+                 "route's alone)",
         chamferMm=o["chamferMm"], chamferMeasure=param(part, defn, "chamferMeasure"),
         chamferForm=dict(legPerMm=1, angleDeg=45, note="the code's mm is the leg kept along each face; an equal-legged "
                                                        "chamfer on a square arris"),
@@ -2057,7 +2102,8 @@ def sidecar(part, out, res, rule, data, defn, flight=None):
                         file=FLIGHT, rule=flight["rule"], commit=flight["commit"], view=flight["view"],
                         pooled={lvl: {k: v for k, v in p.items() if k != "worst"}
                                 for lvl, p in flight["pooled"].items()},
-                        triangles=flight["triangles"], smallestAltitudeMm=flight["smallestAltitudeMm"],
+                        triangles=flight["triangles"], vertices=flight.get("vertices"),
+                        smallestAltitudeMm=flight["smallestAltitudeMm"],
                         stones=len(flight["stones"]), ok=flight["ok"], shareOk=flight["shareOk"],
                         shareFails=flight["shareFails"], shareRule=flight["shareRule"])),
         data=data.src, code=code_ids(),
@@ -2065,22 +2111,48 @@ def sidecar(part, out, res, rule, data, defn, flight=None):
 
 
 def make_object(name, m):
-    """One level as a Blender mesh: its triangles in order, flat (each corner its face's normal), the eight channels
-    as float32 UV layers set per corner (each triangle's own edge distances)."""
+    """One level as a Blender mesh for the FBX route: its triangles in order, flat (each corner its face's normal), the
+    eight channels as float32 UV layers set per corner (each triangle's own edge distances), and each triangle with
+    its own three vertices (FBX control points). The unsharing is the FBX route's alone: Unity's FBX import merges the
+    corners that share a control point when their UVs lie within about 1e-3 and their normals within about 1.3
+    degrees, whatever its weld setting (the Unity builder's proof: reviews/lt1/port/2b/r2a/stones/logs/
+    readback-step.txt: a triangle took a neighbour's edge distances or normal), and with no control point shared
+    nothing can merge. The part's own mesh (m) keeps its positions shared where corners are one; step 5's chunks
+    carry vertices exactly and may share the corners identical in every channel (few under the contract, as the edge
+    distances are each triangle's own: indexed_vertices); the sidecar, the manifest and the sheet count all three."""
     import bpy
     me = bpy.data.meshes.new(name)
-    me.from_pydata([tuple(float(c) for c in v) for v in m["V"]], [], [tuple(int(i) for i in t) for t in m["T"]])
+    nt = len(m["T"])
+    corners = np.asarray(m["V"], float)[np.asarray(m["T"]).ravel()]
+    me.from_pydata([tuple(float(c) for c in v) for v in corners], [],
+                   [(3 * t, 3 * t + 1, 3 * t + 2) for t in range(nt)])
     if me.validate(verbose=False):
         raise Failed(f"{name}: Blender's validate changed the mesh")
     loops = np.zeros(len(me.loops), dtype=np.int64)
     me.loops.foreach_get("vertex_index", loops)
-    if len(me.polygons) != len(m["T"]) or not np.array_equal(loops, m["T"].ravel()):
-        raise Failed(f"{name}: the mesh's corners are not the triangles' in order")
+    if len(me.polygons) != nt or len(me.vertices) != 3 * nt or not np.array_equal(loops, np.arange(3 * nt)):
+        raise Failed(f"{name}: the mesh is not its triangles in order, each with its own three vertices")
     for c, layer_name in enumerate(UV_LAYERS):
         layer = me.uv_layers.new(name=layer_name)
         if layer is None:
             raise Failed(f"{name}: no room for UV layer {c}")
         layer.data.foreach_set("uv", np.asarray(m["UV"][c], np.float32).ravel())
+    me.polygons.foreach_set("use_smooth", [False] * len(me.polygons))
+    me.update()
+    ob = bpy.data.objects.new(name, me)
+    bpy.context.scene.collection.objects.link(ob)
+    return ob
+
+
+def shared_object(name, m):
+    """The probe for the FBX route's check: one level as a Blender mesh on the part's own vertices, its corners
+    sharing control points where their positions are one (the first export's way, which Unity's import merges).
+    Written only to a scratch file, so that readback is seen to refuse it; never installed."""
+    import bpy
+    me = bpy.data.meshes.new(name)
+    me.from_pydata([tuple(float(c) for c in v) for v in m["V"]], [], [tuple(int(i) for i in t) for t in m["T"]])
+    for c, layer_name in enumerate(UV_LAYERS):
+        me.uv_layers.new(name=layer_name).data.foreach_set("uv", np.asarray(m["UV"][c], np.float32).ravel())
     me.polygons.foreach_set("use_smooth", [False] * len(me.polygons))
     me.update()
     ob = bpy.data.objects.new(name, me)
@@ -2119,6 +2191,12 @@ def readback(path, levels):
         nt = len(m["T"])
         if ends.sum() != nt or len(pvi) != 3 * nt or not ends[2::3].all():
             raise Failed(f"readback {name}: {int(ends.sum())} polygons of {len(pvi)} corners, not {nt} triangles")
+        # the FBX route's check: no two corners share a control point (make_object), since Unity's import merges
+        # near-equal corners that do; the file has 3 a triangle, each corner its own, in order
+        if len(Vf) != 3 * nt or not np.array_equal(corners, np.arange(3 * nt)):
+            _u, uses = np.unique(corners, return_counts=True)
+            raise Failed(f"readback {name}: {len(Vf)} control points for {3 * nt} corners, {int(uses[uses > 1].sum())} "
+                         f"corners on {int((uses > 1).sum())} shared ones: Unity's import would merge them")
         want = np.asarray(m["V"], np.float32).astype(np.float64)[m["T"].ravel()]
         want = np.stack([-want[:, 0], want[:, 2], want[:, 1]], -1)
         got = Vf[corners]
@@ -2184,7 +2262,8 @@ def readback(path, levels):
             if vals.shape != exp.shape or not np.array_equal(vals, exp):
                 diff = np.abs(vals - exp).max() if vals.shape == exp.shape else float("nan")
                 raise Failed(f"readback {name}: UV{c} differs by {diff:.3e}")
-        notes[name] = dict(triangles=nt, corners=len(pvi), fileVertices=len(Vf), unitScale=scale,
+        notes[name] = dict(triangles=nt, corners=len(pvi), fileVertices=len(Vf),
+                           controlPoints="three a triangle, its own, none shared", unitScale=scale,
                            positions="exact", normals="flat, each its triangle's own", normalsOwnMaxErr=own_err,
                            normalsOffPlaneMax=n_err, uv="all eight bit for bit")
     return notes
@@ -2219,8 +2298,24 @@ def export(part, out, res, rule, data, defn, flight=None):
         ST._export_fbx(again, obs)
         if mesh_hash.entry(again) != new:
             raise Failed(f"{part}: two exports of the same meshes hash differently")
+        # the FBX route's check seen to bite: L0 on shared control points (the first export's way) must be refused
+        probe_name = f"{names['L0']}_shared"
+        probe = shared_object(probe_name, out["L0"])
+        probe_path = os.path.join(scratch, f"{part}-shared.fbx")
+        try:
+            ST._export_fbx(probe_path, [probe])
+        finally:
+            bpy.data.objects.remove(probe, do_unlink=True)
+        try:
+            readback(probe_path, {probe_name: out["L0"]})
+        except Failed as e:
+            refused = str(e)
+        else:
+            raise Failed(f"{part}: the FBX route's check passed L0 written on shared control points")
     finally:
         shutil.rmtree(scratch, ignore_errors=True)
+    back["sharedProbe"] = dict(refused=refused, note="L0 written on the part's own vertices (shared control points) "
+                                                     "to a scratch file, so the FBX route's check is seen to refuse it")
     side["readback"] = back
     side["meshHash"] = new["hash"]
     text = json.dumps(side, indent=1) + "\n"
@@ -2235,7 +2330,28 @@ def export(part, out, res, rule, data, defn, flight=None):
             print("FBX", os.path.relpath(path, ROOT))
         ST._write_if_changed(path[:-4] + ".json", text)
     mesh_hash.write_manifest(path, manifest=os.path.join(ROOT, MANIFEST))
+    manifest_notes(part, out, names)
     return side
+
+
+def manifest_notes(part, out, names):
+    """Beside mesh_hash's entry (whose vertices are the FBX's control points, three a triangle), each level's own
+    count: the part's mesh with its corners shared where they are one, so the cost of the FBX route's unsharing shows
+    beside the triangles (mesh_hash's check reads only the hash, so the note changes nothing it compares)."""
+    mp = os.path.join(ROOT, MANIFEST)
+    with open(mp) as fh:
+        man = json.load(fh)
+    man[f"{part}.fbx"]["levels"] = {names[k]: dict(triangles=len(out[k]["T"]), partVertices=len(out[k]["V"]),
+                                                   indexedVertices=indexed_vertices(out[k]),
+                                                   fbxVertices=3 * len(out[k]["T"])) for k in ("L0", "L1")}
+    man[f"{part}.fbx"]["levelsNote"] = ("partVertices: the part's own mesh, positions shared where corners are one; "
+                                        "indexedVertices: corners identical in every channel counted once (an exact "
+                                        "indexed mesh, as step 5's chunks; the edge distances are each triangle's "
+                                        "own); fbxVertices: the FBX's, three a triangle, none shared (Unity's FBX "
+                                        "import merges near-equal corners that share one)")
+    with open(mp, "w") as fh:
+        json.dump(dict(sorted(man.items())), fh, indent=1)
+        fh.write("\n")
 
 
 # -- the quick sheet (inside Blender, Workbench; it checks the machinery works and judges nothing) --------------------
@@ -2517,10 +2633,14 @@ def sheet(part, out, variant_outs, res):
                  f"{part} {name}, face-on 20 deg at {dist:g} m (the gate; x{zoom:g}): {r['thin']} of {r['front']} "
                  f"under 2 px, red", colours=_gate_colours(m, v), zoom=zoom, wire_px=1.2)
             for vn, az, el in (("raised 45", 0, 45), ("left 40", -40, 20)):
-                cell(m, _fit(m["V"], az, el), f"{part} {name}, {vn}: {len(m['T'])} triangles")
+                cell(m, _fit(m["V"], az, el), f"{part} {name}, {vn}: {len(m['T'])} triangles; vertices "
+                                              f"{len(m['V'])} its own, {indexed_vertices(m)} indexed, "
+                                              f"{3 * len(m['T'])} the FBX's")
         for vname, vo in variant_outs.items():
             cell(vo["L0"], _fit(vo["L0"]["V"], 30, 35),
-                 f"variant: {vname}, L0 {len(vo['L0']['T'])}, L1 {len(vo['L1']['T'])} triangles")
+                 f"variant: {vname}, L0 {len(vo['L0']['T'])} triangles ({len(vo['L0']['V'])} vertices, the FBX's "
+                 f"{3 * len(vo['L0']['T'])}), L1 {len(vo['L1']['T'])} ({len(vo['L1']['V'])}, "
+                 f"{3 * len(vo['L1']['T'])})")
         cell(L0, _fit(L0["V"], 150, -15), f"{part} L0 from behind, below: the skirts ({o['skirt'] * 1000:g} mm)")
         span = max(o["L"], o["D"]) * 1.15
         top = (np.array([o["L"] / 2, o["D"] / 2, 10.0]), np.array([o["L"] / 2, o["D"] / 2, 0.0]))
