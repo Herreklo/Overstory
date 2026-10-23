@@ -226,7 +226,7 @@ Proposals wait here for the next milestone's fresh reviewer, who sees the plan a
   - No pack can use another's members, so a second world would copy every rock.
 - **Change:**
   - `techniques/<technique>.json` at the repo root: tools, marks, the finish it gives, what it needs from a member, and how skill shows. The first are the stone's: split along the bed by hand, flat wedges, plug and feathers, scrabbled, axed, boasted, frame saw, dry-stone and lime-mortared walling.
-  - A construction names its techniques and the years it was used. Face patches are made per member and technique.
+  - The pack's timeline dates when each technique arrives. A construction names its techniques and the years it was used, and a maker may keep the way they learned. Face patches are made per member and technique.
   - Each making and each work in the record names who did it, with their skill and the means spent. Each technique turns skill into its own effects, in the form and in how fast the thing ages. Until the engine sends trades and skill (a request for `docs/engine-requests.md`), fixtures author them.
   - The first test, when the houses' parts are built (plan step 2): one shed at three skills and two means, and cold readers asked who built each. It dies if readers can't tell a careless builder from a generator fault.
   - `pack.json` gains `buildsOn`. `packs/library/` holds real members and techniques, moved out of the first pack as each is made; a world adds only its own.

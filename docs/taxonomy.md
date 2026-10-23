@@ -9,7 +9,7 @@ What the world is made of, the words for it, and where each fact lives. This is 
 - **TX3** A rock is a member: a knoll and a step can be the same phyllite. A living thing and what it yields are two linked members.
 - **TX4** Parts, techniques, growth and coats ask for properties; constructions and records name members.
 - **TX5** Six changes: slow, from the date (grows, grows on, worn, weathered); sudden, dated in the record (worked, struck). Evidence: D5.1.
-- **TX6** A technique is how something is done in any world; a construction is how one world's builders did it, and when. Tool marks are history: they come from the recorded technique and the maker's skill. Evidence: LF3.
+- **TX6** A technique is how something is done in any world, and a new way is a new technique; a construction is how one world's builders did it, and when. Tool marks are history: they come from the recorded technique and the maker's skill. Evidence: LF3.
 - **TX7** A world is a pack built on other packs. Members, techniques, constructions and worlds are data; a pack never changes a rule. Evidence: `docs/town-system.md`.
 - **TX8** Each fact has one home by its type. Where prose and data disagree, the data is right.
 - **TX9** Where does it go places anything new; what it doesn't settle is raised before building.
@@ -120,6 +120,8 @@ Some techniques for stone, each with the finish it gives and the marks it leaves
 | frame saw | sawn | | the saw's lines |
 
 Each member and technique has its own face patches (SN6), made by the technique's rules with the member's numbers. So mica schist costs one member file, its patches for the techniques it takes, and a variety sheet. The step part asks for a stone that breaks in slabs, so mica schist steps work the day the file lands.
+
+**Techniques over time.** A technique is fixed once written; a new way of doing something is a new technique, and the old one stays. A world's technology is when each technique arrives, dated in the pack's timeline (frame-sawn granite from one year, cement from another). Builders then move from the old way to the new at their own pace: a construction names the years it was used, means and tradition decide who takes the new way first (LF3), and a maker works the way they learned. So a 1960s repair on an 1874 wall shows its own decade's technique beside the old one (UK1), and the town shows when each way of working reached it.
 
 **Skill and means.** Every making and every work in the record says who did it, how skilled they were, and what money was spent (LF3: craft and means). Money buys a skilled hand, a better member and more care; an owner who builds his own shed brings his own skill. Each technique says how skill shows. For a wall it is the regularity, the bridged joints and a true line, and means shows as thickness, dressing and the stone's grade. For a board shed it would be how square and plumb it stands, how even its boards and nail lines run, and whether its roof is flashed.
 
