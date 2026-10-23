@@ -38,12 +38,12 @@ Port step 2b, rung R2a, the Blender half (`plan.md` in this folder is the contra
   - `LT1R2a.cs`'s `Pivot()` will fail both new parts with "the top does not face up". It sums kind-0 triangles, and their tops are bed faces (kind 3).
   - A wall stone judged alone shows its open band: it is drawn only 77 mm behind the wall's plane. Its context (below) hides it.
 - **Contexts.** Each specimen has a context in its own frame (`context.py`): its neighbours built by their parts, SN5's fills, and proxies where no part exists yet. With the context in place, a ray at every pixel of the five judging views sees none of the specimen's open bands at either level. Details and faults are in "The contexts".
-- **Data and code.** Every fact is read from data through one function that records its source. The proposed fields have documented defaults:
-  - five for `walling.json` (`jointMm`, `batterPerHeight`, `topThickMm`, `copeOverMm`, `copeProudMm`);
+- **Data and code.** Every value is read from data through one function that records its source, and none has a default in code: a missing key is an error. The data move (23 October, the coordinator's ruling) put the last of them into the files, each with its schema:
+  - five keys per working in `walling.json` (`jointMm`, `batterPerHeight`, `topThickMm`, `copeOverMm`, `copeProudMm`), and in the granite test record;
   - `slate.json`'s `cornerBreak`;
-  - a `params` object for the part definitions, since `part.schema.json` is closed.
+  - the part's own numbers as `params` in each definition.
 
-  I wrote none of `walling.json`, `kinds/wall.json`, `slate.json` or the schema.
+  The levels' errors are now the kinds' alone, with L1 at 11 mm. The move is pure data: all six installed meshes hash as before, and the three pools give the same numbers (Data and code).
 - **Checks.** `tools/check.py` does not exist yet; it is built after the 26 October reset. I ran this note's own tests (`stones.py check`, `flight` for each part, the level gate, the export's readback and probe) and `tools/validate_record.py`, which passes. It checks a part only where a record uses one, so I also ran its own part check (`Contracts.part`) on the three definitions: no problems.
 
 ## The step
@@ -128,7 +128,7 @@ The pool (`face_pool`) is every face stone of a panel as built whose cell has a 
 - **Set in.** Each side is set in from R1's cell by a seeded half joint, 2 to 6 mm (half of SN5's 4 to 12). Where those draws would make the stone longer than SN10's 4.5 times its height, they are drawn at the least above and below and the most at the ends. That binds on two pool stones: cells 664 by 156 and 670 by 154 drew 659 by 146 and 662 by 146 (4.51 each) and are now 652 by 152 (4.29) and 658 by 150 (4.39). The sidecar's `setInRule` says when it applied.
 - **Only what is seen is drawn.** The face, and of the top, the bed and the ends only a band behind the wall's plane, measured level. The band is as deep as a joint is seen: the widest joint (12 mm) plus SN9's contact (3 mm), and never less than 2 px at a level's far edge seen at the judging view's 20° past the chamfer, with a 10% margin (`bandMarginPerMille`). L1's 20 m sets it: ceil(23.8 mm × 1.1 / sin 20°) = 77 mm. Behind the band the stone is in the wall and never seen, so its back changes nothing drawn.
 - **Chamfers at L0.** The face's arrises with the top and with each end: three chamfers, 12 mm legs. Each end's chamfer starts at the point where the top's chamfer meets the top and the end, so each top corner is one point (two chamfers in a mitre; without it a cap of c (√(1 + b²) − 1), 0.15 mm, would sit between them). The end chamfers' legs come out 0.16 mm short of 12 for it (`legDriftMm`). The arrises that run back into the wall lie in its joints and stay square. The bed's arris stays square (SN7); `bedChamfer` is the arm.
-- **Patches.** Split faces take `split-0` to `split-3` and bed faces `bed-0` and `bed-1` by seed, as the step's (`patches` in `PARAMS`).
+- **Patches.** Split faces take `split-0` to `split-3` and bed faces `bed-0` and `bed-1` by seed, as the step's (`patches` in its definition's `params`).
 
 ### What the checks hold
 
@@ -330,7 +330,7 @@ The step's sheet adds the skirts from behind and below and the wear from above, 
 
 ## Data and code
 
-Read from data, each through one function in `stones.py` (class `Data`) that records the value and its source in the sidecar's `data`:
+Every value is read from data. Each goes through one function in `stones.py` (class `Data`, and `param()` for a part's own numbers) that records the value and its source in the sidecar's `data`. None has a default in code: a missing key raises an error that names the file and the key, and the schemas require each key the parts read. This is the coordinator's ruling of 23 October, carried out in the data move.
 
 | Value | From |
 | --- | --- |
@@ -338,46 +338,55 @@ Read from data, each through one function in `stones.py` (class `Data`) that rec
 | built year, footfall by period | `fixtures/records/st-gully.json` |
 | flights, steps, set-out, width, lean | `fixtures/golden/stair/plan.json` (the plan stage's output) |
 | a stone's placed year, its broken corner and fill, the step's reset | `fixtures/golden/stair/life.json` |
-| the wear rate | `packs/stavanger-1989/materials/slate.json`: `wearUmPerCentury` |
-| the steps' lap [40, 60] and tread joint [4, 10] | `walling.json`: `workings.dry-split-1874.steps` (R1's), with `kinds/stair.json` as the fallback |
+| the steps' working, and so their material | R1's facts: `stair.working` (`dry-split-1874`), whose entry in `walling.json` names the material |
+| the wear rate, and how a step's corner breaks | that material's file, `materials/slate.json`: `wearUmPerCentury`, and `cornerBreak` (a bite of 1.3 times the break's size along and 0.75 back, 40 mm plus 0.6 of the size deep, then down to the nearest bedding plane) |
+| the steps' lap [40, 60] and tread joint [4, 10] | `walling.json`: the working's `steps` |
+| a wall's joint [4, 12], its batter (1 in 6), its thickness under the coping (420 mm), the coping's two overhangs together (50 mm) and how proud its front stands [15, 35] | `walling.json`, per working: `jointMm`, `batterPerHeight`, `topThickMm`, `copeOverMm`, `copeProudMm` |
+| course, stone and short lengths, `drawnPerHeight`, the coping's thickness, length and least length (the facts checks) | `walling.json`: `workings.dry-split-1874` (`courseMm`, `stoneMm`, `shortMm`, `drawnPerHeight`, `copeThickMm`, `copeLengthMm`, `copeLeastMm`) |
 | every stone's cell, faces, neighbours, panel and run; the copings' runs and joints | R1's laying, `masonry.lay` run in memory at the pinned commit on R1's facts, `kinds/wall.json`'s plan params and the walling table (never the git-ignored `layout.json`) |
 | a panel's working and laid year; a wall's side | R1's facts (`reviews/lt1/port/2b/r1/facts.json` at the pinned commit): `walls.working`, `walls.built`, a line's `rebuilt` and `side` |
-| course, stone and short lengths, `drawnPerHeight`, the coping's thickness, length and least length (the facts checks) | `walling.json`: `workings.dry-split-1874` (`courseMm`, `stoneMm`, `shortMm`, `drawnPerHeight`, `copeThickMm`, `copeLengthMm`, `copeLeastMm`) |
-| the patch slices | `blender/parts/stone/slate/patches.manifest.json` |
-| the levels' errors and budgets, the pivot | each part's definition in `packs/stavanger-1989/parts/stone/` |
+| the patch slices, and a patch's size (its texels times the mm a texel) | `blender/parts/stone/slate/patches.manifest.json` |
+| the levels' errors | the kind's table, the one source: `kinds/stair.json` for the step, `kinds/wall.json` (at the pinned commit) for the wall stone and the coping; L1 is 11 mm in both |
+| the levels' budgets, the pivot | each part's definition in `packs/stavanger-1989/parts/stone/`: `levels.<level>.triangles`, `pivot` |
+| the part's own numbers | each part's definition: `params`, each a `value` with the `note` that gives its reason |
 
-Proposed, with a documented default in code until the file takes the field (each read through one function; the sidecar's `data` names it as a default and where the default came from):
-- **`walling.json`, per working** (`Data.walling_value`):
-  - `jointMm` [4, 12], a wall's joints, from SN5; the table holds only the steps' [4, 10]. Read by `wall_joint()`.
-  - `batterPerHeight` [1, 6], the face's lean as whole numbers, from `wall.py`'s BATTER and SN2's "about one in six". Read by `batter()`.
-  - `topThickMm` 420, the wall's thickness under the coping, from `wall.py`'s DEPTH. Read by `top_thick()`.
-  - `copeOverMm` 50, a standing wall's coping overhangs together, from `wall.py`. Read by `cope_over()`.
-  - `copeProudMm` [15, 35], how far the coping's front stands proud of the face below, from `wall.py`. Read by `cope_proud()`.
-- **`slate.json`: `cornerBreak`** = {`alongPerMille` 1300, `backPerMille` 750, `depthMm` 40, `depthPerMille` 600}: how a corner of slate breaks off a nosing. It is read through `Data.corner_break()`. The default is `slab.py`'s and `stair_stages.py`'s numbers, the gully's broken corners as they were judged.
-- **The part's own numbers → a `params` object in the part definition.** `part.schema.json` is closed (`additionalProperties: false`), so I did not add it. `PARAMS` in `stones.py` holds the defaults, read only through `param()`, which prefers the definition's `params` the day the schema takes them. The proposal: `params`, an object of named numbers, ranges and weighted choices, free per part and documented by the part's function.
+The granite test record (`reviews/lt1/port/2b/r1/granite-1930.json`) carries the five walling keys for both its workings. Its joints, 10 to 15 mm, are R1's report's mortared granite; the other four are test values, marked as such. The record proves that a wall builds from data alone, and R1's granite laying hashes as before (`2a4dfd6441c947a6` at two goings, every check passing).
 
-  | Part | Params (defaults) |
-  | --- | --- |
-  | step | `chamferMm` [10, 12], `chamferMeasure` "leg", `arrisMaxDeg` 160, `riserFacets` [[1, 3], [2, 1]], `endFacets` [[1, 2], [2, 1], [3, 1]], `facetStepMm` [15, 25], `facetLeastMm` 50, `chipPerMille` 250, `chipLegMm` [50, 80], `skirtMm` 30, `nosingReachMm` 50, `wearGridMm` 120, `wearFlatShare` 100, `l1WearShare` 500, `patches` |
-  | wallstone | `chamferMm` [12, 12], `chamferMeasure` "leg", `arrisMaxDeg` 160, `faceFacets` [[1, 3], [2, 1]], `facetStepMm` [15, 25], `facetLeastMm` 50, `bedChamfer` false, `bandMarginPerMille` 100, `patches` |
-  | coping | `chamferMm` [10, 12], `chamferMeasure` "leg", `arrisMaxDeg` 160, `bedChamfer` false, `uprightChamfer` false, `chipChamfer` false, `chipPerMille` 250, `chipLegMm` [50, 80], `patches` |
+The part's own numbers, as the definitions now hold them:
 
-What stays in code:
-- the rules of any stone: convex, planar, level beds, no rake, rigid, only what is seen drawn;
-- SN8's, SN9's and SN10's limits as the design states them;
-- the wear's laws (`wear.py`);
-- the judging rig (the 28 mm lens at 2560 × 1440, the judging view face-on with 20° of top, 8 m and 20 m);
-- the level gate's rule and the kinds each part's stones are of (`KINDS`).
+| Part | Params |
+| --- | --- |
+| step | `chamferMm` [10, 12], `chamferMeasure` "leg", `arrisMaxDeg` 160, `riserFacets` [[1, 3], [2, 1]], `endFacets` [[1, 2], [2, 1], [3, 1]], `facetStepMm` [15, 25], `facetLeastMm` 50, `chipPerMille` 250, `chipLegMm` [50, 80], `skirtMm` 30, `nosingReachMm` 50, `wearGridMm` 120, `wearFlatShare` 100, `l1WearShare` 500, `patches` |
+| wallstone | `chamferMm` [12, 12], `chamferMeasure` "leg", `arrisMaxDeg` 160, `faceFacets` [[1, 3], [2, 1]], `facetStepMm` [15, 25], `facetLeastMm` 50, `bedChamfer` false, `bandMarginPerMille` 100, `patches` |
+| coping | `chamferMm` [10, 12], `chamferMeasure` "leg", `arrisMaxDeg` 160, `bedChamfer` false, `uprightChamfer` false, `chipChamfer` false, `chipPerMille` 250, `chipLegMm` [50, 80], `chipDepthPerMille` 500, `patches` |
 
-The design's numbers are rules of any part, not style. No style look value is set here: the look parameters are the shader's and the patches'.
+The coping's `chipDepthPerMille` is new: a knock went down at most half the slab (`Tmm // 2` in code), and 500 per mille gives the same whole millimetres.
+
+Where code and data differed, and which won:
+- **The treads' lap and joint.** `kinds/stair.json`'s geometry stage says a lap of 100 and joints of [4, 12]; the table's `steps` say [40, 60] and [4, 10]. The stones were built with the table's, and the kind was only a fallback. The fallback is gone. The kind keeps its values, which build 2a's baseline.
+- **A wall's joint** is [4, 12], SN5's for walls, built as before. It is a different fact from the treads' [4, 10]: the table now holds both, the wall's per working and the treads' under `steps`.
+- **L1's error.** The definitions said 11 and the kinds 4. The kinds now say 11, the value the stones were built and judged with, and the definitions hold no error. R2b replaces the fixed error with the visible joint error measured in context, keeping the mesh error only as a check (`review.md`, proposal 2).
+- **L2 to L4's errors.** The definitions' 25, 100 and 250 are gone; the kinds' 10, 25 and 100 stand. No mesh here reads them: the chunks make those levels (step 5).
+
+What stays in code, because it is true of any stone in any pack:
+- the rules of any stone: convex, planar, level beds, no rake, rigid, only what is seen drawn; and `block.py`'s numerical tolerances (`TOL`, `WELD`, `TINY`, `BIG`, `SLIVER`), which are about floating point and clipping, not stone;
+- SN8's, SN9's and SN10's limits as the design states them (`GATE`, `SN9`, `COLLAPSE_MM`, `SN10_RATIO` 9 in 2), and building-blocks' 60% rule between levels (`LEVEL_RATIO`);
+- the wear's laws (`wear.py`), and where the foot lands on a tread (`Wear.along`, copied from `stair_stages.put`; it belongs in `wear.py`);
+- the judging rig: the 28 mm lens at 2560 × 1440, the judging view face-on with 20° of top, the eye at 1.6 m, 8 m and 20 m;
+- the contract's encodings and the hashing: the UV layout (years / 200, slice 7 for no patch, slice + 8 × mask + 64 × chamfer), a patch's turn (0 to 359°) and its three modes, the chamfer's form (an equal-legged 45° cut), `hashing.py`;
+- `context.py`'s test rig, which says how a context is built and tested, not what a stone is: the reach (`REACH_MM` 600, the brief's), the leak views, `ERODE_MM`, `WEAR_MARGIN_MM`, `FILL_GRID_MM`, the fills' code 7 and their reach (the chamfer plus 5 mm, 10 mm under the bed);
+- which kind each part's stones are of, and its file (`KINDS`, `KIND_FILES`); the pack's name, the fixtures' paths and the variants' test inputs.
+
+Nothing could not be moved. Left for their owners: `slab.py` and `stair_stages.py` keep their own copies of the corner break's numbers, the same as `slate.json`'s, and should read the material.
 
 ## Conflicts for others to settle
 
-- **`kinds/stair.json` against R1's walling table.** The stair kind's geometry stage says `lapMm` 100 and `jointMm` [4, 12]. The walling table's `dry-split-1874` steps say [40, 60] and [4, 10]; so does SN3 for the lap, and SN5 says 4 to 10 mm between tread stones. The table is what R1 laid, so it wins in `Data.tread_lap()` and `Data.tread_joint()`, and the kind is the fallback. One of the two files should change. I wrote neither.
-- **L1's error is 11 mm in all three definitions.** The design says "about 6 mm", and `kinds/wall.json` and `kinds/stair.json` say 4. L1 is L0 without its chamfers, so its distance from L0 is the chamfer's sagitta on an arris (8.5 mm at a 12 mm leg), 9.2 to 9.8 mm where two meet, and 10.4 where three meet (the step's corners). R2a's A/B at 8, 10 and 12 m is where the number gets judged.
-- **L2 to L4's errors.** The three definitions say 25, 100 and 250 mm (step.json's, carried over); both kinds say 10, 25 and 100. The chunks (step 5) make those levels, and one side should change.
+- **`kinds/stair.json` against R1's walling table.** The stair kind's geometry stage says `lapMm` 100 and `jointMm` [4, 12]. The walling table's `dry-split-1874` steps say [40, 60] and [4, 10]; so does SN3 for the lap, and SN5 says 4 to 10 mm between tread stones. The coordinator ruled that the table governs: the stones read it alone, and the kind is no longer their fallback. The kind keeps its values because they build 2a's baseline, so it should change at the stair's re-baseline.
+- **L1's error is 11 mm, now in the kinds.** The design says "about 6 mm", and the kinds said 4. L1 is L0 without its chamfers, so its distance from L0 is the chamfer's sagitta on an arris (8.5 mm at a 12 mm leg), 9.2 to 9.8 mm where two meet, and 10.4 where three meet (the step's corners). The data move put 11 in `kinds/wall.json` and `kinds/stair.json`, the value the stones were built and judged with. R2b replaces it with the visible joint error (`review.md`, proposal 2). At 9 mm, the coordinator's earlier figure, the step's L1 would be rebuilt (69 triangles to 76), the wall stone's specimen would fail (9.21 mm) with 912 of the 1,220 wall stones, and 49 of the 136 copings would fail (up to 9.8 mm).
+- **The kinds' errors no longer rise level by level.** The definitions' 25, 100 and 250 mm for L2 to L4 are gone, and the kinds' 10, 25 and 100 stand, so L1's 11 now sits above L2's 10. The chunks (step 5) make L2 to L4, and R2b's new L1 rule decides L1: either one should restore the order.
+- **The stair goldens' chain.** `fixtures/golden/stair/life.json` and `geometry.json` record the materials table's hash (`17402143a94bf7ad`), and `slate.json`'s new `cornerBreak` moves it. A run of the stair kind gives the same outputs as the goldens through bake, and only the chain differs: it already differed at the facts stage's head before the move. The goldens' owner re-records them.
 - **SN10 binds the stone; R1 checks the cell.** R1 keeps each cell within 4.5 times its height. The stone is the cell less its joints, so a cell at R1's limit cannot be drawn within SN10 by any joint in SN5's range: even at the least above and below and the most at the ends, (4.5 H − 12) / (H − 4) > 4.5. The part's set-in rule fixes the two pool stones that broke it. R1's check should measure the cell less the least joint, or the walling table should say which SN10 means.
-- **`copeThickMm` is the course's, not the slab's.** R1's coping cells are 70 to 100 mm thick, the run's, and the slab is that less its bed's half joint (64 to 98 mm by the rule, 65 to 98 as laid). If the table means the slab, R1's runs are 2 to 6 mm too thin. A question for R1.
+- **`copeThickMm` is the slab's, and R1 lays the course's.** The coordinator ruled that the note stands: the table means the slab's thickness. R1's coping cells are 70 to 100 mm thick, the run's, and the slab is that less its bed's half joint (64 to 98 mm by the rule, 65 to 98 as laid), so R1's runs are 2 to 6 mm too thin. A question for R1.
 - **Unity's `Pivot()` and the new parts** (`LT1R2a.cs`, the Unity agent's file; I did not change it).
   - It sums the kind-0 triangles' normals and fails with "orientation: the top does not face up (+y)" when their mean is not up. The wall stone and the coping have no kind-0 triangles: their tops are bed faces (kind 3) by SN4, since a coping's top and a wall stone's top are the laminae's planes, not a walked tread.
   - The coping's split faces, front and back both drawn on a standing wall, have a mean normal near zero, so that log line says nothing for it either.

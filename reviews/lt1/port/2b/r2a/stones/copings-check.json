@@ -1,19 +1,19 @@
 {
  "part": "coping",
  "rule": "SN8's share over a level: every coping of a panel as built, as R1 laid them (masonry.lay at the pinned commit), each at its level's far edge (L0 8 m, L1 20 m) in the judging view (face-on to its stair side, 20 degrees of top), its front-facing triangles pooled; every other check on each stone",
- "commit": "95dc4723c228cf4cf86fe03d2c5b647f6caffb22",
+ "commit": "7bc7ec43246f5926ef4468de6850a90cc35bf0c7",
  "pinned": {
   "blender/generators/masonry.py": "63b068cac977",
-  "kinds/wall.json": "d45dfcfbcf1b",
-  "packs/stavanger-1989/walling.json": "f5aea3aca0e6",
+  "kinds/wall.json": "48009984069f",
+  "packs/stavanger-1989/walling.json": "03e56a806c0a",
   "reviews/lt1/port/2b/r1/facts.json": "7a9f01049e35"
  },
  "code": {
-  "blender/parts/stone/slate/stones.py": "eed59ec142c2",
+  "blender/parts/stone/slate/stones.py": "76eee0ac5326",
   "blender/parts/stone/slate/block.py": "d8e7d4368eca",
   "blender/generators/wear.py": "7885ed2f649e",
   "blender/resolver/hashing.py": "3fe924f914f7",
-  "packs/stavanger-1989/parts/stone/coping.json": "a19e15c622e5",
+  "packs/stavanger-1989/parts/stone/coping.json": "480e11c414d5",
   "packs/stavanger-1989/pack.json": "7ec9618d61d6",
   "blender/parts/stone/slate/patches.manifest.json": "166ad677e574"
  },

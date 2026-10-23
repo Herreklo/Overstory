@@ -284,7 +284,7 @@ class Data:
         return self.note("patchMm", int(self.patches["texels"] * self.patches["mmPerTexel"]),
                          "blender/parts/stone/slate/patches.manifest.json: texels x mmPerTexel")
 
-    # R1's walling: a wall stone's working, and the fields the table has no key for yet
+    # R1's walling: a wall stone's working, and the working's numbers (walling.json, required by its schema)
     def r1_facts(self):
         if getattr(self, "_r1", None) is None:
             self._r1 = self.at_commit(R1_FACTS)
