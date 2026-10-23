@@ -6,7 +6,7 @@ State: **built** (in use, reviewed), **in progress**, **designed** (a design pag
 
 ## In short
 
-- **SY1** Systems act on everything, materials give identity, kinds are generated from facts; each built once, no instance by hand. Evidence: the opening. Reopens: none named.
+- **SY1** Systems act on everything, materials give identity, kinds are generated from facts; each built once, no instance by hand. The model and its words: `docs/taxonomy.md`. Evidence: the opening. Reopens: none named.
 - **SY2** Engine: people, money, ventures, plans, works, homes, feet. Pack: land, eras, rules, species, climate. Ours: how a fact looks; derived facts until the engine has them. Evidence: Who decides. Reopens: none named.
 - **SY3** A kind joins with research, parts on a quick sheet, its material, the shared systems, facts, tiers, one foreign-pack part, a variety sheet, a strict review, Øystein; done per the plan (disputed: "birch done"). Evidence: How a new thing joins. Reopens: none named.
 - **SY4** Subject and craft first; a gap blocks building. Gaps, due before: house changes 1989–2020, step 4 (1f authored meanwhile); lamp and handrail, step 3; other street things, step 6; rooms, step 8; weather, step 9; sound, scenes. Management screens: once the first game is chosen or the greybox needs them. Evidence: Research coverage. Reopens: none named.
