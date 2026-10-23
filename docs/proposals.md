@@ -187,7 +187,7 @@ Proposals wait here for the next milestone's fresh reviewer, who sees the plan a
 - **Evidence:**
   - Øystein, 23 October, after R2a: "still very expensive to build".
   - `docs/usage-log.md`: building itself was about a fifth of usage, and research, review and docs together 59%. A request's cost is mostly the re-reading of its context: building cost $14 an hour in a fresh agent and $22 in the main session.
-  - R2a, three stones, ran in one session of 1,295 messages. It measured each switch's p99 against motion in several lights, distances and contexts, then moved every number to data and proved it pure. Its review found the wall reads as orange tiles in a near-black grid beside reference 10 (`3cde7aa`). One still beside the reference shows that. The walk's session ran to 1,223 messages.
+  - R2a, three stones, ran in one session of 1,295 messages and rendered 37,793 frames (7.7 GB) for 17 sheets. Øystein: "Three stones took one session of 1,295 messages - thats insane". It measured each switch's p99 against motion in several lights, distances and contexts, then moved every number to data and proved it pure. Its review found the wall reads as orange tiles in a near-black grid beside reference 10 (`3cde7aa`). One still beside the reference shows that. The walk's session ran to 1,223 messages.
   - Three builders drew about $28 an hour on 22 October, and the credits ran out on 23 October at 14:35.
 - **Change:** four rules for every build rung, with the bar unchanged:
   - (a) a rung's first output is one still beside its reference, in grey and in one light, and the sweep of lights, distances and p99s runs only after that still passes a quick look (the ladder of fidelity, made a gate);
