@@ -22,8 +22,9 @@ namespace Overstory.EditorTools
     /// Proof -tag before|after [-overview]: the off-state proof of Stone.shader's OS_PATCHES arm, one gully view
     ///     (eye-foot, 1600-low-sun) as the player sees it, into frames/proof/&lt;tag&gt;.png; tools/r0b_count.py --same
     ///     compares two of them.
-    /// FindSunStand [-moments 1600-low-sun] [-radius 60] [-step 1] [-size L,D,H] [-tag t]: the search that chose the sun
-    ///     stand (Stands), for a footprint (the block's 0.7 x 0.4 x 0.3 m when not given).
+    /// FindSunStand [-moments 1600-low-sun] [-radius 60] [-step 1] [-size L,D,H] [-fall mm] [-at x,y;x,y] [-tag t]: the
+    ///     search that chose the sun stands (Stands), for a footprint (the block's 0.7 x 0.4 x 0.3 m when not given) on
+    ///     ground falling at most -fall under it (20 mm when not given); -at names each given spot's first failing test.
     /// Block -moments m [-stand foot|sun] [-looks grey,material] [-configs L0,L1,L1-noline,L0-flat] [-views 1,5,8,12,eye5]:
     ///     the harness's test block (R2aBlock) on a stand, in one light per run: the patch array, the arm and L1's lit
     ///     line before the stones arrive. Frames into frames/block/&lt;stand&gt;/&lt;moment&gt;/&lt;look&gt;/&lt;config&gt;/&lt;view&gt;.png,
@@ -61,25 +62,32 @@ namespace Overstory.EditorTools
         //     gully's stones live; in shade in all three judging lights (drizzle is overcast, at 1600 the lane is in
         //     the houses' shadow, at 1750 the sun is down). No lamp is near: the nearest is the Landing's, 13 m up
         //     the flight (Art/Blockout/heart/lights.json), and the three judging rigs have the lamps off.
-        //   sun: the lane's mouth on Harbour Row, 21.6 m south of the foot, the nearest spot to it in direct sun at
-        //     1600-low-sun (FindSunStand, logs/sun-stand-1600-low-sun.txt: the sun at bearing 316, 8.1 degrees up,
-        //     comes in over the harbour, unblocked for 400 m from the footprint's corners at 50 and 300 mm; every
-        //     camera sees the face). Raking low sun is the hardest test for relief, lines and specks; judged in
-        //     1600-low-sun only.
-        static readonly (string name, Vector2 at, string moment)[] Stands =
+        //   sun: the nearest spot to the foot in direct sun at 1600-low-sun (FindSunStand: the sun at bearing 316, 8.1
+        //     degrees up, comes in over the harbour, unblocked for 400 m from the footprint's corners at 50 mm and at
+        //     its height and from the face's middle; every camera sees the face; the ground under the footprint level
+        //     within the fall). Raking low sun is the hardest test for relief, lines and specks; judged in 1600-low-sun
+        //     only. One for each footprint, as a long stone needs flatter ground than the lane's mouth gives:
+        //       the block's, the lane's mouth on Harbour Row, 21.6 m south of the foot (0.7 x 0.4 x 0.3 m, the ground
+        //         falling at most 20 mm: logs/sun-stand-1600-low-sun.txt);
+        //       the stones', on Harbour Row 4 m east and 4 m south of it, 25.9 m from the foot, for the longest stone
+        //         the kinds allow (2.3 x 0.5 x 0.2 m, the ground falling at most 5 mm, so a stone 2.3 m long lies level
+        //         and wholly on its bed: logs/sun-stand-1600-low-sun-stones.txt). At the block's stand the ground falls
+        //         47 mm under it. Under the foot stand it falls 6 mm (3 mm under the step's 0.36 m), in shade.
+        static readonly (string name, string piece, Vector2 at, string moment)[] Stands =
         {
-            ("foot", new Vector2(49.3f, 22.6f), null),
-            ("sun", new Vector2(49.0f, 3.0f), "1600-low-sun"),
+            ("foot", null, new Vector2(49.3f, 22.6f), null),
+            ("sun", "block", new Vector2(49.0f, 3.0f), "1600-low-sun"),
+            ("sun", "stones", new Vector2(53.0f, -1.0f), "1600-low-sun"),
         };
 
-        static (string name, Vector2 at, string moment) StandFor(string name, string moment)
+        static (string name, Vector2 at, string moment) StandFor(string name, string moment, string piece)
         {
-            var s = System.Array.Find(Stands, t => t.name == name);
+            var s = System.Array.Find(Stands, t => t.name == name && (t.piece == null || t.piece == piece));
             if (s.name == null)
-                throw new System.ArgumentException($"no stand '{name}'");
+                throw new System.ArgumentException($"no stand '{name}' for the {piece}");
             if (s.moment != null && s.moment != moment)
                 throw new System.ArgumentException($"the {name} stand is judged in {s.moment} only");
-            return s;
+            return (s.name, s.at, s.moment);
         }
         const float Down = 20f;         // degrees: the face-on views see about this much of the top
         const float Eye = 1.6f;         // metres: a person's eye over the ground
@@ -226,58 +234,72 @@ namespace Overstory.EditorTools
                 float halfL = float.Parse(size[0], System.Globalization.CultureInfo.InvariantCulture) / 2f;
                 float halfD = float.Parse(size[1], System.Globalization.CultureInfo.InvariantCulture) / 2f;
                 float tall = float.Parse(size[2], System.Globalization.CultureInfo.InvariantCulture);
-                log.AppendLine($"  footprint {2f * halfL} x {2f * halfD} m, {tall} m high");
+                // (-fall: how far the ground may fall under the footprint, in mm; 20 for the block, less for a long stone,
+                // which would otherwise lie sunk at one end)
+                float fall = float.Parse(Cli.Arg("-fall", "20"), System.Globalization.CultureInfo.InvariantCulture) / 1000f;
+                log.AppendLine($"  footprint {2f * halfL} x {2f * halfD} m, {tall} m high, the ground falling at most {1000f * fall:F0} mm under it");
                 var found = new List<(float dist, Vector2 at, float z, string note)>();
                 int tested = 0;
                 float x0 = Mathf.Max(groundBounds.min.x, LT1Stone.Foot.x - radius), x1 = Mathf.Min(groundBounds.max.x, LT1Stone.Foot.x + radius);
                 float y0 = Mathf.Max(groundBounds.min.z, LT1Stone.Foot.y - radius), y1 = Mathf.Min(groundBounds.max.z, LT1Stone.Foot.y + radius);
+                // (one spot's tests in turn, the first that fails named: why a spot passes or not)
+                string Test(float x, float y, out float lo, out float hi)
+                {
+                    lo = float.MaxValue; hi = float.MinValue;
+                    foreach (var dx in new[] { -halfL, halfL })
+                        foreach (var dy in new[] { -halfD, halfD })
+                        {
+                            if (!GroundAt(x + dx, y + dy, out var g))
+                                return $"the corner ({x + dx:F2}, {y + dy:F2}) is not on the ground";
+                            lo = Mathf.Min(lo, g);
+                            hi = Mathf.Max(hi, g);
+                        }
+                    if (hi - lo > fall + 1e-5f)
+                        return $"the ground falls {1000f * (hi - lo):F0} mm under the footprint (over {1000f * fall:F0})";
+                    // the sun on the footprint's corners, low and high, and on the face's middle
+                    foreach (var dx in new[] { -halfL, 0f, halfL })
+                        foreach (var dy in new[] { -halfD, halfD })
+                            foreach (var h in new[] { 0.05f, tall })
+                                if (Physics.Raycast(StreetSpace.ToUnity(x + dx, y + dy, lo + h), sun, out var hit, 400f))
+                                    return $"the sun is blocked from ({x + dx:F2}, {y + dy:F2}) at {h:F2} m by {hit.collider.gameObject.name} {hit.distance:F1} m off";
+                    // every camera sees the face's middle
+                    var face = StreetSpace.ToUnity(x, y - halfD, lo + tall / 2f);
+                    var faceStreet = new Vector3(x, y - halfD, lo + tall / 2f);
+                    float r = Down * Mathf.Deg2Rad;
+                    foreach (var dist in new[] { 1f, 5f, 12f })
+                    {
+                        var cam = faceStreet + new Vector3(0f, -Mathf.Cos(r), Mathf.Sin(r)) * dist;
+                        if (!Clear(StreetSpace.ToUnity(cam), face))
+                            return $"the {dist} m camera does not see the face";
+                    }
+                    foreach (var dist in new[] { 5f, 12f })
+                    {
+                        if (!GroundAt(x, y - halfD - dist, out var g))
+                            return $"no ground under the eye at {dist} m";
+                        if (!Clear(StreetSpace.ToUnity(x, y - halfD - dist, g + Eye), face))
+                            return $"the eye at {dist} m does not see the face";
+                    }
+                    return null;
+                }
+                foreach (var spot in Cli.Arg("-at", "").Split(new[] { ';' }, System.StringSplitOptions.RemoveEmptyEntries))
+                {
+                    var xy = spot.Split(',');
+                    float sx = float.Parse(xy[0], System.Globalization.CultureInfo.InvariantCulture);
+                    float sy = float.Parse(xy[1], System.Globalization.CultureInfo.InvariantCulture);
+                    var why = Test(sx, sy, out var slo, out var shi);
+                    log.AppendLine($"  at ({sx:F1}, {sy:F1}): {why ?? "passes"} (ground {slo:F3} to {shi:F3})");
+                }
                 for (float x = Mathf.Ceil(x0); x <= x1; x += step)
                     for (float y = Mathf.Ceil(y0); y <= y1; y += step)
                     {
                         tested++;
-                        float lo = float.MaxValue, hi = float.MinValue;
-                        bool ok = true;
-                        foreach (var dx in new[] { -halfL, halfL })
-                            foreach (var dy in new[] { -halfD, halfD })
-                            {
-                                if (!GroundAt(x + dx, y + dy, out var g)) { ok = false; break; }
-                                lo = Mathf.Min(lo, g);
-                                hi = Mathf.Max(hi, g);
-                            }
-                        if (!ok || hi - lo > 0.02f)
-                            continue;
-                        // the sun on the footprint's corners, low and high, and on the face's middle
-                        foreach (var dx in new[] { -halfL, 0f, halfL })
-                            foreach (var dy in new[] { -halfD, halfD })
-                                foreach (var h in new[] { 0.05f, tall })
-                                    if (ok && Physics.Raycast(StreetSpace.ToUnity(x + dx, y + dy, lo + h), sun, 400f))
-                                        ok = false;
-                        if (!ok)
-                            continue;
-                        // every camera sees the face's middle
-                        var face = StreetSpace.ToUnity(x, y - halfD, lo + tall / 2f);
-                        var faceStreet = new Vector3(x, y - halfD, lo + tall / 2f);
-                        float r = Down * Mathf.Deg2Rad;
-                        foreach (var dist in new[] { 1f, 5f, 12f })
-                        {
-                            var cam = faceStreet + new Vector3(0f, -Mathf.Cos(r), Mathf.Sin(r)) * dist;
-                            if (ok && !Clear(StreetSpace.ToUnity(cam), face))
-                                ok = false;
-                        }
-                        foreach (var dist in new[] { 5f, 12f })
-                        {
-                            if (!ok)
-                                break;
-                            if (!GroundAt(x, y - halfD - dist, out var g)) { ok = false; break; }
-                            if (!Clear(StreetSpace.ToUnity(x, y - halfD - dist, g + Eye), face))
-                                ok = false;
-                        }
-                        if (!ok)
+                        if (Test(x, y, out var lo, out var hi) != null)
                             continue;
                         float toFoot = Vector2.Distance(new Vector2(x, y), new Vector2(LT1Stone.Foot.x, LT1Stone.Foot.y));
                         found.Add((toFoot, new Vector2(x, y), lo, $"ground {lo:F3} to {hi:F3}"));
                     }
-                found.Sort((a, b) => a.dist.CompareTo(b.dist));
+                // (nearest first; a tie to the lower x, then the lower y)
+                found.Sort((a, b) => a.dist != b.dist ? a.dist.CompareTo(b.dist) : a.at.x != b.at.x ? a.at.x.CompareTo(b.at.x) : a.at.y.CompareTo(b.at.y));
                 log.AppendLine($"  {tested} spots tested in {clock.Elapsed.TotalSeconds:F0} s, {found.Count} pass; the nearest the foot ({LT1Stone.Foot.x}, {LT1Stone.Foot.y}):");
                 for (int i = 0; i < Mathf.Min(25, found.Count); i++)
                     log.AppendLine($"    ({found[i].at.x:F1}, {found[i].at.y:F1}): {found[i].dist:F1} m from the foot, {found[i].note}");
@@ -300,7 +322,7 @@ namespace Overstory.EditorTools
         public static void Block()
         {
             string moment = Cli.Arg("-moments", "1600-low-sun");
-            var stand = StandFor(Cli.Arg("-stand", "foot"), moment);
+            var stand = StandFor(Cli.Arg("-stand", "foot"), moment, "block");
             var looks = Cli.Arg("-looks", "grey,material").Split(',');
             var configs = Cli.Arg("-configs", "L0,L1,L1-noline").Split(',');
             var viewNames = Cli.Arg("-views", "1,5,8,12,eye5").Split(',');
@@ -618,7 +640,7 @@ namespace Overstory.EditorTools
         public static void Stones()
         {
             string moment = Cli.Arg("-moments", "1600-low-sun");
-            var stand = StandFor(Cli.Arg("-stand", "foot"), moment);
+            var stand = StandFor(Cli.Arg("-stand", "foot"), moment, "stones");
             var looks = Cli.Arg("-looks", "grey,material").Split(',');
             var configs = Cli.Arg("-configs", "L0,L1,L1-noline,L0-flat").Split(',');
             var viewNames = Cli.Arg("-views", "1,5,8,10,12,eye5,eye12").Split(',');

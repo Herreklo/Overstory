@@ -64,3 +64,19 @@
   drizzle, grey, L0, 5 m) re-rendered to the scratchpad. Its ids and mask are byte-identical to the main set's. Its
   pixels differ only by the pipeline's dither (another frame count): |L*| box 3 x 3, at most 0.42 over the frame and
   0.30 on the block.
+
+## 2026-10-23, the stones' sun stand
+- The block's sun stand (49.0, 3.0) does not hold a stone 2.3 m long, the longest the kinds allow (the step's w is
+  700 to 2300 mm; the specimen carries the walking line, about 2.3 m in R1's layout). Under a 2.3 x 0.5 m footprint
+  the ground at the lane's mouth falls 47 mm (FindSunStand -at), so a long stone there would lie sunk 47 mm at one
+  end, or float over its bed, which is not drawn.
+- FindSunStand gains -fall (how far the ground may fall under the footprint; 20 mm for the block, as before) and -at
+  (each given spot's first failing test, named). Ties in distance now go to the lower x, then the lower y.
+- The stones' sun stand is (53.0, -1.0) on Harbour Row: the nearest spot to the foot (25.9 m) that passes every test
+  for 2.3 x 0.5 x 0.2 m on ground falling at most 5 mm. Its ground is 1.900 m level under all four corners. The sun
+  (bearing 316, 8.1 degrees up) comes in over the harbour, unblocked for 400 m from the footprint's corners and the
+  face's middle at 50 mm and at 0.2 m. Every camera (1, 5 and 12 m at 20 degrees; the eye at 5 and 12 m) sees the
+  face's middle (logs/sun-stand-1600-low-sun-stones.txt). It is 4 m east and 4 m south of the block's: the same sun,
+  the same Harbour Row light, a different patch of ground.
+- The foot stand holds the stones as it is: its ground falls 6 mm under 2.3 x 0.5 m and 3 mm under 2.3 x 0.36 m (the
+  step), and it stays in shade.
