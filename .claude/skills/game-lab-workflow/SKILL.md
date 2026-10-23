@@ -23,7 +23,7 @@ Write a short entry at the top of `docs/experiments.md`:
 - **How it is judged:** what Øystein will look at, and what would count as a yes. Name the camera, the times of day and the seeds.
 - **What it does not test:** keep the scope honest.
 
-Then outline the build in a few lines and wait for agreement before building anything large. For anything new in the world, the outline's first line places it by `docs/taxonomy.md`: its kind and making, its parts, their members and finishes, and the changes that act on it. Something the taxonomy's six tests don't settle is raised then, not found later.
+Then outline the build in a few lines and wait for agreement before building anything large. For anything new in the world, the outline's first line places it by `docs/taxonomy.md`: its kind and making, its parts, their members and finishes, and the changes that act on it. Something the taxonomy's questions don't settle is raised then, not found later. What each addition costs, once Q19 and Q21 land: a member is a file copied from its nearest sibling, plus face patches; a technique is a file, plus face patches per member that takes it; a part is one function that asks for properties; a construction is data in the pack; a kind is its file and stages; a material family is the biggest step, after which every member is data; a change is one system and each family's answer; a world is a pack of data. A member, technique, construction or world that needs code means the system lacks something, and it is fixed there.
 
 ## Building
 

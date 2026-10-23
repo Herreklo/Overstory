@@ -53,21 +53,21 @@ There are two other debts:
 
 Each with its own identity from facts (where it came from, how it was worked, how it is exposed), and its own answer to water, wear, cracking and age.
 
-| Material | Variants | State |
+Each family is `docs/taxonomy.md`'s. Roofs, fronts and the rest are kinds and parts made of these: a roof of slate (stone), tile (ceramic), Eternit or felt (binder), or tin (metal).
+
+| Material family | Members | State |
 | --- | --- | --- |
-| Stone | slate (split blocks and slabs), granite (dressed, setts), rubble (the gully's own rock); bedrock and boulders as nature's | built: slate, granite, rubble; bedrock planned |
-| Mortar and cement | lime, cement pointing, dabs, screeds | built (cement, joint soil) |
-| Soil and sand | joints, beds, yards, paths | built (joints); ground planned |
-| Timber | cladding, windows, doors, fences, quays' timber | planned (houses) |
-| Paint | coats on timber, iron and render | planned (coatings) |
-| Render and brick | masonry houses, warehouses | planned |
-| Concrete | casts, steps, quay toes, 1960s blocks | planned |
-| Asphalt | patches from the 1920s, everywhere after 1960 | planned |
-| Metal | iron (rails, lamps, covers), zinc, steel | planned |
-| Roofing | slate, red tile, Eternit, felt, tin | planned (houses) |
-| Glass | windows by era, light behind them | planned (houses) |
-| Bark and leaves | the trees' own | built (birches) |
-| Water bodies | the sea, the Basin, streams, puddles | planned (plan step 6) |
+| stone | phyllite (`slate.json` today: split blocks and slabs; rough, the gully's rubble; natural, the bedrock), mica schist, gneiss, Iddefjord granite (dressed, setts), erratic granite (boulders) | built: phyllite split and rough, granite; natural rock, mica schist, gneiss and erratic granite planned |
+| binder | lime mortar, cement (pointing, dabs, screeds), render, concrete (casts, steps, quay toes, 1960s blocks), asphalt (patches from the 1920s, everywhere after 1960), Eternit, felt | built: cement; the rest planned |
+| earth | soil, sand, gravel: joints, beds, yards, paths | built: joint soil; ground planned |
+| wood | timber by source and use: cladding, joinery, fences, the quays' timber | planned (houses) |
+| coat | oil paint, limewash: coats on timber, iron and render | planned (coatings) |
+| ceramic | brick, red and flat roof tile | planned |
+| metal | cast and wrought iron (rails, lamps, covers), zinc, steel, tin | planned |
+| glass | window glass, crown and plate, by era; light behind it | planned (houses) |
+| broadleaf, conifer | the trees' species, with their bark and leaves | built: birch |
+| ground cover, surface growth | grass, heather, ferns, weeds; lichen, moss, algae | built: lichen and moss |
+| water | the sea, the Basin, streams; puddles are the weathered change's water | planned (plan step 6) |
 
 ## Kinds of things
 

@@ -5,10 +5,10 @@ The repair strand of the living fabric (`docs/living-fabric.md`: one record and 
 ## In short
 
 - **UK1** A repair follows its year's practice and materials (lime to about 1910, cement dabs from 1910, concrete casts 1940 to 1965, asphalt on paving everywhere after 1960, stone again from about 1980). After 20 to 40 years one in its own material differs in form and growth, not colour; in another material, for good (disputed). Evidence: `research/repairs.md`. Reopens: none named.
-- **UK2** Four ways: left alone, patched, a campaign, renewed. A campaign's scope is its cause's reach; spot work stays under about a quarter of a part, past that the whole part; a reset reuses its own stones (over nine in ten), then depot stone, then new. Evidence: `research/repairs.md`. Reopens: none named.
+- **UK2** Four ways: left alone, patched, a campaign, renewed. A campaign's or a renewal's scope is its cause's reach, rounded up to the set people replace together (a pane, a window, a front's windows, a wall's cladding, a roof plane, a run of steps from landing to landing); spot work stays under about a quarter of a part, past that the whole part; a reset reuses its own stones (over nine in ten), then depot stone, then new. Evidence: `research/repairs.md`. Reopens: none named.
 - **UK3** Starting rates, unverified: a tended public part has a campaign every 30 to 60 years, renewal once in 80 to 150; untended, nothing until it fails; a thirty-step flight up to one quick fix a decade before 1960, one or two after. Evidence: `research/repairs.md`. Reopens: none named.
 - **UK4** Keepers, care and works are facts (fixtures until request 6); patchwork drawn from them, seeded, claims no dated event; a repair a story needs is a fact with its cause. Evidence: `facts-contract.md`. Reopens: none named.
-- **UK5** A campaign or renewal reaches what its cause reaches, rounded up to the unit people replace together, with one choice of era, technique and style. A repair matches when the keeper can and wants to, and every mix of old and new names its cause. Evidence: `research/house-changes.md`, `research/repairs.md`. Reopens: a true mix no cause explains.
+- **UK5** No change without a cause; one work, one choice of era, technique and style; a repair matches by default and shows only for a reason the record gives; every mix of old and new names its cause. Evidence: `research/house-changes.md`, `research/repairs.md`. Reopens: a true mix no cause explains.
 
 ## What we want
 
@@ -26,13 +26,12 @@ The repair strand of the living fabric (`docs/living-fabric.md`: one record and 
 ## How a work spreads (UK5)
 
 Every thing follows one logic, so a house reads as one house with a history and never as a patchwork:
-1. **No change without a cause.** A part changes only through a work or an event in the record, or as patchwork drawn from its keepers' care (UK4).
-2. **A campaign or a renewal reaches what its cause reaches, rounded up to the unit people replace together.** Each kind names its units: a pane, a window, a front's windows, a wall's cladding, a roof plane, a run of steps from landing to landing. Spot work stays under about a quarter of a part; past that the whole part (UK2). A patch stays one piece.
-3. **One work, one choice.** Its era, technique, style and member are chosen once for its whole reach.
-4. **A repair matches when the keeper can and wants to.** It reuses the old part or a salvaged one (depot stone), or one of the same profile still made, as care, means and protection allow. Otherwise it shows, and the mismatch is a dated fact with its own technique and member (UK1).
-5. **A true mix has a cause in the record.** In a two-family house each floor's owner may restore their own floor, so the house shows two window types for years. An original attic window is often left high in the gable. A husmorvindu often replaced two old windows and made the opening smaller, and its surround went with it. Owners bought mass-produced "old style" parts, and neighbours copied the errors. A back wall shows a cheaper colour than the street front (`docs/research/house-changes.md`).
+1. **No change without a cause.** A part changes only through a work or an event in the record, or as patchwork drawn from its keepers' care (UK4). A work reaches its cause's reach, rounded up to the set people replace together (UK2); a patch stays one piece.
+2. **One work, one choice.** Its era, technique, style and member are chosen once for its whole reach.
+3. **A repair matches by default.** It reuses the old part or a salvaged one (depot stone), or one of the same profile still made; only the binder in its joints is its decade's (UK1). It shows instead only when the record says why: no match to be had, little money or care, or the decade's practice replacing the old, as concrete steps did from 1940 to 1965. The mismatch is then a dated fact with its own technique and member.
+4. **A true mix has a cause in the record.** In a two-family house each floor's owner may restore their own floor, so the house shows two window types for years. An original attic window is often left high in the gable. A husmorvindu often replaced two old windows and made the opening smaller, and its surround went with it; the resolver has to allow a work that changes an opening across two cells, where BS2 places one part per cell today. Owners bought mass-produced "old style" parts, and neighbours copied the errors. A back wall shows a cheaper colour than the street front (`docs/research/house-changes.md`).
 
-The house's resolver picks a work's cells by this reach (BS2). A machine check holds it: a part whose era or technique differs from the rest of its unit names the work that put it there, and a work smaller than its unit names why.
+The house's resolver picks a work's cells by its reach (BS2). A machine check holds it: a part whose era or technique differs from the rest of its set names the work that put it there, and a work smaller than its set names why.
 
 ## Who keeps it, and how well
 

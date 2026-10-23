@@ -185,21 +185,47 @@ Proposals wait here for the next milestone's fresh reviewer, who sees the plan a
 ## Q19. Materials by family, member and finish, stone first
 
 - **Evidence:**
-  - `slate.json` describes phyllite under the name of its split stone. Mica schist, gneiss and erratic granite are in the town's ground (`docs/research/land-rock-and-water.md`) and have no member. Natural rock has no material, and `rubble` (`docs/systems.md`), `pine-board`, `crown-glass`, `plate-glass` and `oil-paint` (the parts) have no member file.
-  - "Working" means a construction in `walling.json` and `walling.schema.json` (`dry-split-1874`: its member, mortar and year), and a finish in SN1, SN2, SN6, `kinds/wall.json`, the part definitions' params, `docs/systems.md` and `CLAUDE.md`. "Kind" means a type of thing in `kinds/`, a rock in `docs/stone.md` (Kind and finish), and a class of information in `CLAUDE.md`.
-  - Parts name members (`"materials": ["slate"]`), so a new stone has to be added by hand to every part that could use it. The code defaults to slate (`stair_facts.py`, `stone.py`, `wall.py`).
+  - `slate.json` describes phyllite under the name of its split stone. Mica schist, gneiss and erratic granite are in the town's ground (`docs/research/land-rock-and-water.md`) and have no member. Natural rock has no material, and `pine-board`, `crown-glass`, `plate-glass` and `oil-paint`, which the parts name, have no member file.
+  - "Working" means a construction in `walling.json`, `walling.schema.json`, SN2 and `kinds/wall.json`, and a finish or a technique in SN1 and SN6. "Kind" means a type of thing in `kinds/`, a rock in `docs/stone.md` (Kind and finish), and a class of information in `CLAUDE.md`.
+  - `walling.json`'s `dry-split-1874` carries a build year, and `cement-relaid-1961` is one wall's rebuild: events stored as constructions. The stair's constructions (`block`, `treadOnRiser`) sit in the system's `kinds/stair.json`.
+  - Parts name members (`"materials": ["slate"]`), so a new stone has to be added by hand to every part that could use it, and the code defaults to slate (`stair_facts.py`, `stone.py`, `wall.py`).
   - Material numbers sit outside the members: slate's history constants in `schemas/layers.json`, the pack's growth rates in `GrowthPack.cs`.
-- **Change**, in the shape of `docs/taxonomy.md` (In the data):
-  - `materials/<family>.json` at the repo root, beside `kinds/`: the family's properties and finishes, its shader family, how each of the six changes acts, and the numbers every member must state. Stone first.
-  - Members stay flat in `packs/<pack>/materials/<member>.json`, named by a bare word as `schemas/naming.md` has it, each with a `family` field. `slate.json` becomes `phyllite.json` with the finishes natural, rough and split. Mica schist, gneiss and erratic granite join from their research when the land (1d) or a wall needs them.
-  - `material.schema.json` gains `family`, `source`, `finishes`, the family's properties and the links `yields` and `madeOf`. A member missing a number its family requires fails validation.
-  - `part.schema.json`'s `materials` becomes `takes`, a family and the properties the part needs, plus `finish`. The construction or the record names the member.
-  - Slate's history constants move from `schemas/layers.json` into the stone members; `layers.json` keeps each law's form. The growth rates move from `GrowthPack.cs` into the pack.
-  - `walling.json`'s workings become constructions (LF3), each naming its member and finish; "working" leaves SN1, SN2, SN6 and the files above. `docs/stone.md`'s "Kind and finish" becomes "Member and finish".
-  - The code follows: `blender/parts/stone/slate/stones.py`, `stair_facts.py`, `stone.py`, `wall.py` and `tools/validate_record.py` read the family and the member, and the slate defaults go. The part code under `blender/parts/stone/slate/` keeps its path until the stone's port.
-  - It lands between R2a and R2b, proved unchanged as the data move of 23 October was: the six FBX hashes and `stones.py check`. Opus, since code changes.
+- **Change**, in the shape of `docs/taxonomy.md`:
+  - `families/<family>.json` at the repo root, beside `kinds/`: the family's properties, finishes and shader family, which changes act on it, and the numbers every member must state. The layers each change draws stay in `schemas/layers.json`. Stone first.
+  - Members stay flat in `packs/<pack>/materials/<member>.json`, named by a bare word as `schemas/naming.md` has it, each with `family` and `source`. `slate.json` becomes `phyllite.json`, and a migration (`migrations/NNN_phyllite.py`, run by `tools/migrate.py`) renames `slate` in every record and fixture. Mica schist, gneiss and erratic granite join from their research when the land (1d) or a wall needs them. Window glass becomes one member with the finishes crown and plate.
+  - `material.schema.json` gains `family`, `source`, the family's properties and the links `yields` and `madeOf`; a member missing a number its family requires fails validation. `part.schema.json`'s `materials` becomes `takes` (a family and the properties the part needs) with `finish`, and the construction or the record names the member.
+  - Constructions move to the pack. The walls' `dry-split` names its techniques, member, sizes and the years it was used; the 1874 build and the 1961 relay of fl-0/r become events in the walls' records. The stair's `block` and `treadOnRiser` move from `kinds/stair.json` into `packs/<pack>/stairs.json`. "Working" leaves SN1, SN2, SN6, `kinds/wall.json` and the walling files, and `docs/stone.md`'s "Kind and finish" becomes "Member and finish".
+  - Slate's history constants move from `schemas/layers.json` into the stone members, leaving each law's form there. The growth rates move from `GrowthPack.cs` into the pack's surface-growth members.
+  - The code follows: `stones.py`, `stair_facts.py`, `stone.py`, `wall.py` and `tools/validate_record.py` read the family and the member, and the slate defaults go. The part code under `blender/parts/stone/slate/` keeps its path until the stone's port.
+  - It lands between R2a and R2b, after Q22's paper check on wood, proved unchanged as the data move of 23 October was: the six FBX hashes and `stones.py check`. Opus, since code changes.
+- **The shape**, with the values left to the data. `families/stone.json`:
+
+  ```json
+  {
+    "family": "stone",
+    "shaderFamily": "stone",
+    "rigid": true,
+    "properties": { "breaks": ["slabs", "blocks"], "chemistry": ["acid", "lime"] },
+    "finishes": ["natural", "rough", "split", "hewn", "dressed", "sawn"],
+    "changes": { "grows": false, "growsOn": true, "worn": true, "weathered": true, "worked": true, "struck": true },
+    "requires": ["wearUmPerCentury", "cracksPerMille", "breaks", "chemistry"]
+  }
+  ```
+
+  `packs/stavanger-1989/materials/phyllite.json`, a member:
+
+  ```json
+  { "material": "phyllite", "family": "stone", "source": "the town's bedrock", "breaks": "slabs", "chemistry": "acid", "wearUmPerCentury": "…", "cracksPerMille": "…" }
+  ```
+
+  `techniques/split-along-bed.json` (Q21) and a part that asks for properties:
+
+  ```json
+  { "technique": "split-along-bed", "family": "stone", "gives": "split", "needs": { "breaks": "slabs" }, "tools": ["hammer", "wedge"], "marks": "flat beds; split faces of few facets", "skill": ["regularity", "a true line"] }
+  { "part": "stone/step", "takes": { "family": "stone", "breaks": "slabs" }, "finish": "split" }
+  ```
 - **Standing cost:** none in the always-read files.
-- **What would change our minds:** the second family (wood, with the houses) not fitting the shape without a third level or a special case.
+- **What would change our minds:** the paper check, or later the houses' wood, not fitting the shape without a third level or a special case.
 
 ## Q20. One home for each fact, checked
 
@@ -207,7 +233,6 @@ Proposals wait here for the next milestone's fresh reviewer, who sees the plan a
   - `docs/` holds about 108,000 words in 22 pages. The building system's design pages alone (`building-blocks.md`, `living-fabric.md`, `stone.md`, `systems.md`, `foundations.md`, `trees.md`, `building-system.md`, `upkeep.md`, `nature.md`) hold about 34,600.
   - Numbers live in two homes. SN4's chamfers of 10 to 12 mm are in `docs/stone.md` and in each stone part's `chamferMm`, where the wall stone's is 12 to 12. Slate's history constants are in `docs/building-blocks.md` and in `schemas/layers.json`.
   - Design pages carry their history. `docs/building-blocks.md` uses round and step names that need a key ("3.0 is the port's step 0b"), and `kinds/wall.json`'s `describes` holds dates and budget figures.
-  - `docs/systems.md`'s materials table and `docs/taxonomy.md`'s families overlap; one of them must hold the state.
   - The docs-trim test (`reviews/docs-trim/score.md`): a fresh reader with `CLAUDE.md`, `NOW.md`, the skills and the design pages' In shorts, closed book, answered 23 of 30 hinge questions as the full docs do. After the In shorts were fixed, the same reader answered 6 of the 7 misses, for 29 against a target of 27.
 - **Change:**
   - Each fact has one home by its type (`docs/taxonomy.md`, TX8). Design pages hold no dates, quotes, review rounds or step codes; those belong in `docs/experiments.md`. A page names a data field and leaves its value to the data. State lives in `docs/systems.md` only.
@@ -217,37 +242,35 @@ Proposals wait here for the next milestone's fresh reviewer, who sees the plan a
 - **Standing cost:** the check, and 30 questions written once for each cleaned page. `CLAUDE.md`'s docs table points to the map instead of listing every page.
 - **What would change our minds:** a cleaned page failing the question test twice. That nuance needs the body, so it stays there and is linked.
 
-## Q21. Techniques, a library pack, and histories of any length
+## Q21. Techniques, skill and means in the data
 
 - **Evidence:**
-  - The first town holds medieval stone: a cathedral of about 1125 and the monastery ruin on Gull Island (`docs/town-plan.md`; `docs/town-system.md`, the script). `pack.json`'s `firstYear` is 1800, and the shell atlas stores a piece's year in one byte from it, so it holds 256 years, to 2055 (`docs/building-blocks.md`, the map registry). `docs/research/history-pages.md` assumes reset years from 1850 to 2050.
-  - Tool marks date work. Granite split with flat wedges shows long rectangular slots and granite split with plug and feathers rows of round holes, and researchers tell the techniques apart by them (`docs/research/taxonomy-precedents.md`). The face patches are chosen per member and finish, by seed (SN6), so a mark that dates a stone can't be told from texture.
-  - Techniques live as prose in LF3's tables and `docs/stone.md`, and the builder's craft (LF3) has no field that a part reads.
-  - No pack can use another's members, so a second world would copy every rock.
+  - Tool marks date work: granite split with flat wedges shows long slots, and granite split with plug and feathers round holes (`docs/research/taxonomy-precedents.md`). The face patches are chosen per member and finish, by seed (SN6), so a mark that dates a stone can't be told from texture.
+  - Techniques live as prose in LF3's tables and `docs/stone.md`. The builder's craft and means (LF3) have no field: `record.schema.json` holds `keepers`, `care`, `use` and `events`, and nothing a part reads.
+  - The engine sends no trades or skill, and `docs/engine-requests.md` asks for none.
 - **Change:**
-  - `techniques/<technique>.json` at the repo root: tools, marks, the finish it gives, what it needs from a member, and how skill shows. The first are the stone's: split along the bed by hand, flat wedges, plug and feathers, scrabbled, axed, boasted, frame saw, dry-stone and lime-mortared walling.
-  - The pack's timeline dates when each technique arrives. A construction names its techniques and the years it was used, and a maker may keep the way they learned. Face patches are made per member and technique.
-  - Each making and each work in the record names who did it, with their skill and the means spent. Each technique turns skill into its own effects, in the form and in how fast the thing ages. Until the engine sends trades and skill (a request for `docs/engine-requests.md`), fixtures author them.
-  - `tools/check.py` gains UK5's reach check: a part whose era or technique differs from the rest of its unit names the work that put it there, and a work smaller than its unit names why.
-  - The first test, when the houses' parts are built (plan step 2): one shed at three skills and two means, and cold readers asked who built each. It dies if readers can't tell a careless builder from a generator fault.
-  - `pack.json` gains `buildsOn`. `packs/library/` holds real members and techniques, moved out of the first pack as each is made; a world adds only its own.
-  - Years: the shell index's year widens to 16 bits, and `firstYear` may be any year, before port steps 4 and 5 fix the formats. The piece table's u16 of year × 16 + month already spans 4,096 years.
-- **Standing cost:** none in the always-read files; two bytes a shell texel in the index.
-- **What would change our minds:** a second world needing a rule changed rather than data added. The rule was then wrong, and it is fixed in the system.
-
+  - `techniques/<technique>.json` at the repo root: tools, marks, the finish it gives, what it needs from a member, and how skill shows. The first are the stone's: split along the bed by hand, flat wedges, plug and feathers, scrabbled, axed, boasted, frame saw, dry-stone walling, rubble in lime mortar.
+  - A construction names its techniques and the years it was used; a technique reaches a world in the first year a construction uses it. Face patches are made per member and technique, and a piece carries its technique where one thing mixes techniques.
+  - Each making and work in the record names who did it, with their skill and the means spent. Each technique turns skill into its own effects, in the form and in how fast the thing ages. Until the engine sends trades and skill (a request for its next bundle), fixtures author them.
+  - Each kind names the sets its parts are replaced in (`kind.schema.json`), for UK5. `tools/check.py` gains UK5's reach check: a part whose era or technique differs from the rest of its set names the work that put it there, and a work smaller than its set names why.
+  - The first test, at step 2: one shed at three skills and two means, and cold readers asked who built each. It dies if readers can't tell a careless builder from a generator fault.
+  - For other worlds (step 10): `pack.json` gains `buildsOn`, and `packs/library/` holds real members and techniques for any pack to use. A world that remembers more than 256 years needs the shell index's year widened from one byte. The first town does not, since it remembers from 1870 and older stone brings its age (TS1; the piece table).
+- **Standing cost:** none in the always-read files.
+- **What would change our minds:** the shed test failing; or a second world needing a rule changed rather than data added, which means the rule was wrong, and it is fixed in the system.
 
 ## Q22. The taxonomy's work, each piece at the step that needs it
 
 - **Evidence:**
   - The order builds hardest-to-change first and nothing ahead of its need: formats change only where a written record fails, and no field is added without one (P8).
-  - `docs/taxonomy.md`, UK5 and Q19 to Q21 describe more than the next steps use. Built all at once, they would be the scope creep the plan review warned of; left unplaced, their pieces would arrive late and break formats already fixed.
+  - `docs/taxonomy.md`, UK5 and Q19 to Q21 describe more than the next steps use. Built all at once, they would be the scope creep the plan review warned of; left unplaced, their pieces would arrive after the formats are fixed.
 - **Change:** each piece joins at one step, and nothing earlier:
-  - **Now, on paper:** the taxonomy, UK5 and the precedents (branch `docs/taxonomy`), merged into `lt/1-harbour-street` between rounds. Q19 to Q22 wait for this milestone's fresh reviewer.
-  - **The port's 2b, between R2a and R2b:** Q19's stone move (the stone family file, `phyllite.json`, parts that ask for properties, the slate defaults gone, slate's history constants into the members) and the first technique, splitting along the bed, which is what "working" names today. Proved unchanged by the hashes. Q20 cleans `docs/stone.md` and `docs/building-blocks.md` as the stone's work touches them.
-  - **Before the port's steps 4 and 5 fix the formats:** a fourth written record joins P8's three, a cathedral wall stone of about 1125 with its repairs to 1989. It fails today's shell index, so the index's year widens to 16 bits and `firstYear` may be any year (Q21). `tools/check.py` gains Q20's docs check and UK5's reach check once it exists.
-  - **The landing's setts, the kerb and the plinths (the end of step 1):** granite's techniques (wedges, plug and feathers, axed, boasted), its face patches per technique, and the stone's foreign part. That part is the first to need a second pack, so `buildsOn` and `packs/library/` arrive with it.
-  - **Step 2, before House A's first part:** the pack's `metrics.json` (the standards: openings, boards, storeys and grid, by era); skill and means in each making and work; the shed test (one shed at three skills and two means, judged by cold readers); trades and skill go into the next engine request bundle, with fixtures meanwhile. UK5 drives the resolver's cells for the houses' works.
-  - **Step 6, the heart at the city view:** the cathedral and the monastery ruin, on the library's medieval techniques.
-  - **Step 10, the foreign pack:** a second world built only from data, as the proof. Invented worlds stay outside the plan until a game asks for one.
+  - **Now, on paper:** the taxonomy and its sections in `docs/stone.md`, `docs/living-fabric.md`, `docs/foundations.md` and `docs/upkeep.md` (branch `docs/taxonomy`), merged into `lt/1-harbour-street` between rounds. Q19 to Q22 wait for this milestone's fresh reviewer.
+  - **Before the stone moves:** a paper check of the shape on wood: a shed's timber written as a family, members by source, finishes, techniques and a construction. If it doesn't fit, the shape changes first (Q19's reopen).
+  - **The port's 2b, between R2a and R2b:** Q19's stone move with its migration, and the first technique, splitting along the bed, which the face patches are made by today (SN6). Proved unchanged by the hashes. Q20 cleans `docs/stone.md` and `docs/building-blocks.md` as the stone's work touches them.
+  - **Before the port's steps 4 and 5 fix the formats:** P8's House A front record carries what the formats must hold: its makings' and works' skill and means, its windows' replacement sets, a work that changes an opening across two cells, and a piece's technique where a thing mixes techniques. `tools/check.py` gains Q20's docs check and UK5's reach check once it exists.
+  - **The landing's setts, the kerb and the plinths (the end of step 1):** granite's techniques (wedges, plug and feathers, axed, boasted) and their face patches.
+  - **Step 2, before House A's first part:** the pack's `metrics.json` (the standards: openings, boards, storeys and grid, by era); the shed test; trades and skill in the next engine request bundle, with fixtures meanwhile. UK5 drives the resolver's cells for the houses' works.
+  - **Step 6, the heart at the city view:** the cathedral and the monastery ruin, entering with the age they bring (TS1), on medieval techniques as data.
+  - **Step 10, the foreign pack:** `buildsOn` and `packs/library/`, and a second world built only from data, as the proof. Invented worlds stay outside the plan until a game asks for one.
 - **Standing cost:** none in the always-read files. Each piece is boxed by the Monday session with its step.
 - **What would change our minds:** a piece needed before its step, shown by a written record that fails; it then moves earlier, and only that piece.

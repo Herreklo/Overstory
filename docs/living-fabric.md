@@ -66,6 +66,18 @@ Every element shares this. The house already does: its volumes take their materi
 
 A pack's catalogue is content; the shape of an entry and the rules for choosing and moving are the system.
 
+### Techniques, skill and means (LF3)
+
+The words are `docs/taxonomy.md`'s. A technique is how something is done, true in any world: its tools, the marks it leaves, the finish it gives, what it needs from a member, and how skill shows in it. A construction is how one world's builders did it: its techniques, members and sizes, and the years it was used.
+
+**Techniques over time.** A technique is fixed once written; a new way of doing something is a new technique, and the old one stays. A technique reaches a world in the first year one of its constructions uses it. Builders then move from the old way to the new at their own pace: means and tradition decide who takes the new way first, and a maker works the way they learned. So a 1960s repair on an 1874 wall shows its own decade's technique beside the old one (UK1), and the town shows when each way of working reached it. Old and new stand side by side only where a work's reach puts them (UK5, `docs/upkeep.md`).
+
+**Skill and means.** Every making and every work says who did it, how skilled they were, and what money was spent. Money buys a skilled hand, a better member and more care; an owner who builds his own shed brings his own skill. Each technique says how skill shows. For a wall, craft shows as regularity, bridged joints and a true line, and means as thickness, dressing and the stone's grade. For a board shed it would be how square and plumb it stands, how even its boards and nail lines run, and whether its roof is flashed.
+
+Skill is an input, never a variant: the same parts and the same assembler make every shed. Most of it sets how the assembler places the pieces (square, plumb, the gaps, the spacing, which pieces it picks), once for every part; a little sets a part's own inputs (a cut end square or ragged). Two houses of the same parts differ because their facts differ; a seed picks only among what the facts allow.
+
+Skill shows twice: in the form when the thing is made, and in how it ages. A badly flashed roof lets water in, so its boards rot sooner (weathered). Low skill is drawn as a maker's real mistakes, the same ones across the whole thing (out of square by one amount, a line of nails that wanders), never as noise, since marks from one cause are one shape (section 3). The pieces are still placed only by moving and turning (BB3). A skilled repair on a poorly built shed shows both makers, and the junction is where the history reads (rule 3 above).
+
 ### Facts, interpretations and texture (LF2)
 
 The five kinds of thing on screen (`CLAUDE.md`) sort the record's outputs:

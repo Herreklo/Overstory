@@ -51,6 +51,52 @@ The weather and the season are a second clock on top: wet (darker and glossier, 
 
 A pack brings, for each stone: its pigment and range, its grain, how it splits and dresses (the shapes of its blocks), its hardness (how fast it wears), its porosity (how much it darkens wet), what grows on it and how it stains; for each way of building, its rules and sizes by era (steps, walls, coursing and bonds, paving patterns, kerbs); and its parts. The first pack is the Norwegian west coast in 1989: the town's own slaty rock, dark blue-grey and laminated, split into slabs (flagstones, slab steps, dry-stone walls; Gamle Stavanger's, `docs/references/stone/` 02, 03, 06); Iddefjord granite, light grey, brought in (kerbs, setts, quay stone, dressed steps); a darker banded gneiss (walls, rough steps); larvikite as an accent; concrete from about 1890; dry-stone and mortared walls; field stone, then setts from about 1850, small setts in arcs from 1910 to 1950, asphalt after; kerbs 5, 8 and 12 inches wide by their year; granite quays with a narrow tide band.
 
+## Members, finishes and techniques
+
+The words are `docs/taxonomy.md`'s. The stone family holds the rules every member follows:
+- its pieces are rigid, placed only by moving and turning (BB3);
+- the `stone` shader family draws it, reading the place and history pages P0 and H1;
+- worn polishes and hollows it; grows on gives lichen and moss; weathered brings water, stains and cracks; worked repairs it from the era's shelf (UK1); struck chips and breaks it;
+- its finishes, and the numbers every member must state.
+
+A member states all of its numbers: its pigment and ranges, with its variants by place, and its grain; how it breaks, its hardness (`wearUmPerCentury`), how readily it cracks and how its corners break; its porosity (how dark it goes wet, how long it holds water); its chemistry, which decides what grows on it; and how it stains. A new member starts as a copy of its nearest sibling, with the numbers that differ changed.
+
+The first pack's members:
+
+| Member | What it is | Worked here as | Where in the town |
+| --- | --- | --- | --- |
+| phyllite | the bedrock: fine, laminated, banded grey-green to graphite-black, rusty in bands; breaks in slabs | natural (knolls, ledges), rough (rubble), split (steps, slabs, wall stones) | the old town's walls and steps; Watch Knoll |
+| mica schist | the bedrock too, alternating with phyllite over metres to centimetres; coarser, its mica visible | natural, split | the same ground |
+| gneiss | banded and hard; breaks in blocks | natural (boulders), rough (walls, rough steps) | erratics on the heath and in Tower Wood; some walls |
+| Iddefjord granite | light grey, massive and hard, brought in from about 1870 | dressed (kerbs, setts, quay stone, the better flights) | streets and quays |
+| erratic granite | boulders from the moraine, foreign to the bedrock | natural | the heath, Tower Wood; cleared ones in walls and cairns |
+
+The rock is from `docs/research/land-rock-and-water.md`. Larvikite and concrete join the same way when the pack needs them. A thing can hold several members: the bedrock bands phyllite and mica schist, and the land's geology says where each lies.
+
+**Finishes and techniques.** A finish is the class of face; a technique is how it was made. A part's geometry follows the finish: a split step has bed faces and split faces (its face patches in `packs/stavanger-1989/parts/stone/step.json`). Its marks follow the technique and the maker's skill. A work can change a face's finish, as when a face is re-dressed or rock is cut back for a lane, and it resets the layers that face held. The finishes:
+- natural: made by the land's generators, shaped by how the member breaks (phyllite plucks into thin stepped ledges, gneiss and granite into broad whalebacks);
+- rough: knocked to size, its faces as they broke;
+- split: parted along a bed or a line of wedges; split faces of few facets (SN4);
+- hewn: squared with hammer and pick;
+- dressed: tooled flat, with arrises;
+- sawn: cut by a saw.
+
+Techniques for working a face, each with the finish it gives and the marks it leaves (`docs/research/taxonomy-precedents.md`):
+
+| Technique | Gives | Needs | Marks |
+| --- | --- | --- | --- |
+| split along the bed by hand | split | a member that breaks in slabs | flat beds; split faces of few facets |
+| flat wedges in cut slots | split | | long rectangular slots along the split edge |
+| plug and feathers in drilled holes | split | | a row of round half-holes along the split edge |
+| scrabbled | rough | | irregular projections knocked off |
+| axed | dressed | a hard stone, such as granite | the axe's marks |
+| boasted | dressed | | parallel lines, level, upright or slanting |
+| frame saw | sawn | | the saw's lines |
+
+Laying is a technique too: dry-stone walling, rubble in lime mortar. A construction names the techniques it uses: the town's dry-split walls are phyllite split along the bed and laid dry, to the sizes in `walling.json`.
+
+Each member and technique has its own face patches (SN6), made by the technique's rules with the member's numbers. So mica schist costs one member file, its patches for the techniques it takes, and a variety sheet. The step part asks for a stone that breaks in slabs, so mica schist steps work the day the file lands.
+
 ## How stone is made
 
 Five steps, each with one owner.
