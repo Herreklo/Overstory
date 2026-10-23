@@ -235,3 +235,19 @@ Proposals wait here for the next milestone's fresh reviewer, who sees the plan a
 - **Standing cost:** none in the always-read files; two bytes a shell texel in the index.
 - **What would change our minds:** a second world needing a rule changed rather than data added. The rule was then wrong, and it is fixed in the system.
 
+
+## Q22. The taxonomy's work, each piece at the step that needs it
+
+- **Evidence:**
+  - The order builds hardest-to-change first and nothing ahead of its need: formats change only where a written record fails, and no field is added without one (P8).
+  - `docs/taxonomy.md`, UK5 and Q19 to Q21 describe more than the next steps use. Built all at once, they would be the scope creep the plan review warned of; left unplaced, their pieces would arrive late and break formats already fixed.
+- **Change:** each piece joins at one step, and nothing earlier:
+  - **Now, on paper:** the taxonomy, UK5 and the precedents (branch `docs/taxonomy`), merged into `lt/1-harbour-street` between rounds. Q19 to Q22 wait for this milestone's fresh reviewer.
+  - **The port's 2b, between R2a and R2b:** Q19's stone move (the stone family file, `phyllite.json`, parts that ask for properties, the slate defaults gone, slate's history constants into the members) and the first technique, splitting along the bed, which is what "working" names today. Proved unchanged by the hashes. Q20 cleans `docs/stone.md` and `docs/building-blocks.md` as the stone's work touches them.
+  - **Before the port's steps 4 and 5 fix the formats:** a fourth written record joins P8's three, a cathedral wall stone of about 1125 with its repairs to 1989. It fails today's shell index, so the index's year widens to 16 bits and `firstYear` may be any year (Q21). `tools/check.py` gains Q20's docs check and UK5's reach check once it exists.
+  - **The landing's setts, the kerb and the plinths (the end of step 1):** granite's techniques (wedges, plug and feathers, axed, boasted), its face patches per technique, and the stone's foreign part. That part is the first to need a second pack, so `buildsOn` and `packs/library/` arrive with it.
+  - **Step 2, before House A's first part:** the pack's `metrics.json` (the standards: openings, boards, storeys and grid, by era); skill and means in each making and work; the shed test (one shed at three skills and two means, judged by cold readers); trades and skill go into the next engine request bundle, with fixtures meanwhile. UK5 drives the resolver's cells for the houses' works.
+  - **Step 6, the heart at the city view:** the cathedral and the monastery ruin, on the library's medieval techniques.
+  - **Step 10, the foreign pack:** a second world built only from data, as the proof. Invented worlds stay outside the plan until a game asks for one.
+- **Standing cost:** none in the always-read files. Each piece is boxed by the Monday session with its step.
+- **What would change our minds:** a piece needed before its step, shown by a written record that fails; it then moves earlier, and only that piece.

@@ -271,4 +271,4 @@ An invented world works the same way. An invented stone or technique is a member
 
 Read a system's In short first and its data next. Page bodies, research and reviews are opened to reopen a decision or to find a rule's reason. A design page names a field and leaves its value to the data.
 
-The stone members are in `packs/stavanger-1989/materials/slate.json` (phyllite) and `granite.json` today, with no family file, and parts name members (`"materials": ["slate"]`). Proposal Q19 moves the data to this shape, Q20 gives every fact one home, and Q21 adds techniques, the library pack and histories longer than 256 years (`docs/proposals.md`).
+The stone members are in `packs/stavanger-1989/materials/slate.json` (phyllite) and `granite.json` today, with no family file, and parts name members (`"materials": ["slate"]`). Proposal Q19 moves the data to this shape, Q20 gives every fact one home, Q21 adds techniques, the library pack and histories longer than 256 years, and Q22 places each piece at the step that needs it (`docs/proposals.md`).
