@@ -31,13 +31,15 @@ The reviewer's lift: a real blue-hour sky gradient, with the fog taking its colo
 
 ## Second round (26 October)
 
-Stills in `../second-round/`, from the same cameras in the same moments. 27 stills were rendered in 21 Unity runs.
+Stills in `../second-round/`, from the same cameras in the same moments. 36 stills were rendered in 24 Unity runs.
 - **Blue hour (1):** the style's ramp no longer holds a lamp colour typed in code. Its keys come from the light: the sky's colour in shade, and above the sky's own value the colour of the lamps that are on. The sky reads blue (82 92 129; the target's is 81 92 126) and the roofs silhouette. Bands are 8 43 23 24 1 against the target's 2 29 19 26 20 2 1; the target's upper bands are its lamp pools.
 - **Fog (2):** the bank thickens away from the eye over 20 m (the pack's `air.bankClearM`) and stands 80 m high, so the far gully lifts 2 to 3 L* and the houses part by distance. It takes the sky's colour.
 - **Low sun (3):** clouds are lit as the walls are, by the sun with little sky above them, so they take its amber. The streaks gather in fields, with octaves turned off the wind, and no longer blow.
 - **Drizzle (4):** by day a cloud deck mixes towards daylight white by its cover (light-derive-2), so the pink cast is gone. Drizzle thins the air by its visibility (the pack's `air.precipitation`, by Koschmieder), so the far houses soften.
 - **Follow-ups done:** the fallback lamp colour is out of code. A record's overrides for a place are pushed after the keys when that place's rig is written.
 - **Strict review on Fable: FAIL** (narrow). Drizzle is near its intent. Still open: the blue-hour dome is flat and darkens toward the horizon from the foot, with no glow; the low-sun sky is a warm grey with no blue, and its streaks repeat; the far fog is thin in blue hour and drizzle; the blue-hour near field is a band dark. The glow over the gully and the lifts at the stair and right wall are lamplight in the target (the lamps element's).
+- **After the review:** a slow wander bends the streaks in long waves, so their rhythm loosens. Drizzle now fills the air up to the cloud: the air thins with height only by the haze's share of it, which lifts the far house 2 L*. A faster dome curve (0.35) moved the low-sun sky by under 1 L*, so it was put back.
+- **Still open, for the next round:** the low-sun sky lacks blue because the derived clear zenith is pale (single scattering with a haze of 0.3 leaves out the blue that multiple scattering adds), so the fix is in the model or a `sky.zenith` key push. Drizzle's far air needs a look push on `air` for overcast, beyond what the drizzle's visibility gives. Under a 0.9 deck the blue-hour sky follows the CIE overcast law, darker low, and its glow over the gully is the missing lanterns'. After those, the fog lights' cure, then the strict review again.
 
 For other elements:
 - Lamps: the gully lanterns are still dropped (`heart_layout.py`), so the stair and wall get no pools; that is most of the blue-hour bands' gap.

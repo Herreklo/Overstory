@@ -90,6 +90,8 @@ Shader "Overstory/Sky"
                     float2 p = _WorldSpaceCameraPos.xz + d.xz / d.y * (7000.0 - _WorldSpaceCameraPos.y);
                     float2 q = float2(dot(p, float2(0.866, 0.5)) / 3600.0, dot(p, float2(-0.5, 0.866)) / 480.0);
                     q += (float2(OS_Noise(q * 0.3 + 2.0), OS_Noise(q * 0.3 - 5.0)) - 0.5) * 0.8;
+                    // and over the whole sky the wind wanders, bending the streaks in long waves, so no motif repeats
+                    q.y += (OS_Noise(q * 0.05 + 9.7) - 0.5) * 3.0;
                     // each octave turned a little off the wind, so their lattices never line up into an even rhythm
                     float f = 0.55 * OS_Noise(q) + 0.3 * OS_Noise(mul(float2x2(0.978, -0.208, 0.208, 0.978), q) * 2.3 + 4.1)
                             + 0.15 * OS_Noise(mul(float2x2(0.978, 0.208, -0.208, 0.978), q) * 5.3 - 1.7);

@@ -251,12 +251,7 @@ namespace Overstory.Scenes
             Vector3 horizon = (sky.Radiance(Flat(across, 0.0523f)) + sky.Radiance(Flat(-across, 0.0523f))) / 2f;
             horizon = PushSky(horizon, pushes, 3f * Mathf.Deg2Rad);
             float hazeDensity = atm.AerosolAtGround550 + atm.RayleighAtGround550;
-            // falling drops and flakes thin the view as fog does, by Koschmieder from the visibility the kind gives at
-            // its heaviest, scaled by the intensity; they scatter the light round them as the haze does
-            if (!string.IsNullOrEmpty(wx.precipitation) && p.air.precipitation != null)
-                foreach (var fall in p.air.precipitation)
-                    if (fall.kind == wx.precipitation)
-                        hazeDensity += p.air.koschmieder / fall.visibilityM * (wx.intensity / 1000f);
+            hazeDensity += Fall(p, wx); // the falling drops scatter the light round them as the haze does
             var nearAir = Push(horizon, pushes, "air");
             var farAir = Push(nearAir, pushes, "air.far");
             var layers = new List<LightAirLayer>
@@ -398,7 +393,10 @@ namespace Overstory.Scenes
             r.fogMidDistance = L[0].toMm / 1000f;
             r.fogFarColour = G(Vec(L[2].rgb) * k);
             r.fogFarDistance = L[1].toMm / 1000f;
-            r.fogHeightFalloff = p.air.heightFalloff;
+            // the haze lies low and thins with height; falling drops fill the air up to the cloud, so the air thins
+            // with height only by the haze's share of it
+            float fall = Fall(p, wx) * Scale(pushes, "air");
+            r.fogHeightFalloff = p.air.heightFalloff * Mathf.Clamp01(1f - fall / Mathf.Max(L[0].density, 1e-9f));
             r.fogBaseHeight = 0f;
             r.fogMaxOpacity = p.air.maxOpacity;
             r.fogSunColour = r.sunGlow;
@@ -532,6 +530,17 @@ namespace Overstory.Scenes
         }
 
         public static float Level(IEnumerable<LightPush> pushes, string target) => Find(pushes, target)?.dLog2 ?? 0f;
+        /// <summary>How much falling drops or flakes thin the air (per metre): by Koschmieder from the visibility the
+        /// kind gives at its heaviest, scaled by the intensity.</summary>
+        static float Fall(LightPack p, LightWeather wx)
+        {
+            if (!string.IsNullOrEmpty(wx.precipitation) && p.air.precipitation != null)
+                foreach (var kind in p.air.precipitation)
+                    if (kind.kind == wx.precipitation)
+                        return p.air.koschmieder / kind.visibilityM * (wx.intensity / 1000f);
+            return 0f;
+        }
+
         public static float Scale(IEnumerable<LightPush> pushes, string target) => Mathf.Pow(2f, Level(pushes, target));
         public static float Setting(IEnumerable<LightPush> pushes, string target) => Find(pushes, target)?.add ?? 0f;
 

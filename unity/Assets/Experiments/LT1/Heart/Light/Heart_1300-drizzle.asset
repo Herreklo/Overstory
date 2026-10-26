@@ -46,7 +46,7 @@ MonoBehaviour:
   fogFarColour: {r: 0.5751923, g: 0.5708637, b: 0.5682728, a: 1}
   fogFarDistance: 1500
   fogDensity: 0.0032225577
-  fogHeightFalloff: 0.02
+  fogHeightFalloff: 0.0017908615
   fogBaseHeight: 0
   fogMaxOpacity: 0.97
   fogSunColour: {r: 0.5898452, g: 0.51737624, b: 0.434326, a: 1}
