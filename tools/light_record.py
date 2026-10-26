@@ -3,7 +3,7 @@
 
 A record's inputs are its world state, its sources and its overrides; its id is their hash (schemas/hashing.md). This
 tool writes the sources and the id from the files they name, and checks a record against the schema and the files.
-The derived block is Unity's to write (Overstory.EditorTools.LT1Light.Derive, light-derive-1), never this tool's.
+The derived block is Unity's to write (Overstory.EditorTools.LT1Light.Derive, light-derive-2), never this tool's.
 
     .venv/bin/python tools/light_record.py write [records...]   the sources and id of each (fixtures/light/*.json)
     .venv/bin/python tools/light_record.py check [records...]   schema, id and sources; exit 1 on any problem
@@ -26,7 +26,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(ROOT, "tools"))
 import hashes as HS  # noqa: E402
 
-FUNCTION = "light-derive-1"
+FUNCTION = "light-derive-2"
 HEART = os.path.join(ROOT, "unity", "Assets", "Art", "Blockout", "heart")
 LIGHT = os.path.join(ROOT, "packs", "{pack}", "light")
 RECORDS = os.path.join(ROOT, "fixtures", "light")

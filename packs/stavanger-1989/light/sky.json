@@ -25,10 +25,10 @@
     "ozoneCrossSectionM2": [1.18e-27, 2.182e-28, 2.818e-28, 6.636e-28, 1.527e-27, 2.763e-27, 5.52e-27, 8.451e-27, 1.582e-26, 2.316e-26, 3.669e-26, 4.924e-26, 7.752e-26, 9.016e-26, 1.48e-25, 1.602e-25, 2.139e-25, 2.755e-25, 3.091e-25, 3.5e-25, 4.266e-25, 4.672e-25, 4.398e-25, 4.701e-25, 5.019e-25, 4.305e-25, 3.74e-25, 3.215e-25, 2.662e-25, 2.238e-25, 1.852e-25, 1.473e-25, 1.209e-25, 9.423e-26, 7.455e-26, 6.566e-26, 5.105e-26, 4.15e-26, 4.228e-26, 3.237e-26, 2.451e-26, 2.801e-26, 2.534e-26, 1.624e-26, 1.465e-26, 2.078e-26, 1.383e-26, 7.105e-27]
   },
   "overcast": {
-    "note": "Kasten and Czeplak (1980): global light under cover N is 1 - 0.75 N^3.4 of the clear sky's; the CIE overcast sky's gradient (1 + 2 sin e) / 3; a brighter patch round the hidden sun, by the kind's sunLobe; the deck passes the colour of the light above it (its droplets scatter every wavelength alike); neutralise moves it towards white.",
+    "note": "Kasten and Czeplak (1980): global light under cover N is 1 - 0.75 N^3.4 of the clear sky's; the CIE overcast sky's gradient (1 + 2 sin e) / 3; a brighter patch round the hidden sun, by the kind's sunLobe; the deck passes the colour of the light above it (its droplets scatter every wavelength alike); by day the deck mixes the sun's and the sky's light towards daylight white (measured overcast daylight is near D65, about 6500 K, white in linear Rec. 709): neutralise is how far at full cover, scaling with the cover and gone after sunset, when only the sky's light is left to pass.",
     "loss": 0.75,
     "lossPower": 3.4,
-    "neutralise": 0.0
+    "neutralise": 1.0
   },
   "cloudKinds": [
     { "kind": "stratus", "baseMm": 300000, "topMm": 900000, "sizeM": 400.0, "softness": 0.2, "sunThrough": 0.04, "sunLobe": 0.3 },
@@ -44,7 +44,7 @@
     "groundLitShare": 0.5
   },
   "air": {
-    "note": "Fog's extinction from its visibility by Koschmieder (3.912 / V); the haze's from the aerosol at the ground. The bank thins over heightFalloff per metre above its top.",
+    "note": "Fog's extinction from its visibility by Koschmieder (3.912 / V); the haze's from the aerosol at the ground. The bank thins over heightFalloff per metre above its top, and thickens away from the eye over bankClearM (its density times 1 - exp(-d / bankClearM)), as Firewatch and Sable start their fog off the camera, so near and far houses part. Precipitation thins the air by Koschmieder from its visibility at full intensity (heavy drizzle under 500 m, heavy rain about 1 km, heavy snow about 200 m, the WMO's bands), times the intensity.",
     "koschmieder": 3.912,
     "heightFalloff": 0.02,
     "maxOpacity": 0.97,
@@ -52,7 +52,13 @@
     "farM": 1500.0,
     "bankOverLand": 300,
     "bankWisps": 450,
+    "precipitation": [
+      {"kind": "drizzle", "visibilityM": 400.0},
+      {"kind": "rain", "visibilityM": 1000.0},
+      {"kind": "snow", "visibilityM": 200.0}
+    ],
     "bankWispSizeM": 140.0,
+    "bankClearM": 20.0,
     "townGlowHeightM": 25.0,
     "motesInFog": 1.0,
     "moteSize": 0.003,

@@ -126,9 +126,9 @@ namespace Overstory.Scenes
             Shader.SetGlobalVector("_OS_Ramp", new Vector4(rampEdge, rampSoftness, shadowFloor, stroke));
             var edge = style != null ? style.turningEdge.linear : edgeTint.linear;
             Shader.SetGlobalVector("_OS_EdgeTint", new Vector4(edge.r, edge.g, edge.b, style != null ? style.turningEdgeStrength : edgeTint.a));
-            SetStyle();
             if (rig != null)
                 SetLight(rig);
+            SetStyle(); // after the light: the ramp follows the lamps that are on
             if (shot != null && view != null)
                 shot.Apply(view);
             SetShafts();
@@ -141,15 +141,32 @@ namespace Overstory.Scenes
             Shader.SetGlobalFloat("_OS_PaletteOn", st != null ? 1f : 0f);
             if (st == null)
                 return;
-            // the hour's own colours: the sky's in shade; in light the sun's, or after it sets the lamps'
+            // the hour's own colours: the sky's in shade; in light the light on a face turned to the key light. By day
+            // that is the sun through the cloud with the sky on that side, so a deck leaves the sky's colour. After
+            // sunset it is the lamps', which light only their pools: the ramp takes their colour only above the sky's
+            // own value, since nothing the sky alone lights is brighter than the sky
             Color sky = rig != null ? rig.ambientSky : st.shade;
             bool sunUp = rig != null && rig.sunElevation > 0f && rig.sunIntensity > 0.05f;
-            Color lit = rig == null ? st.light : sunUp ? rig.sunColour : new Color(1.0f, 0.70f, 0.42f);
+            Color lit = st.light;
+            Vector3 w = new Vector3(0.25f, 0.7f, 1f); // the share of the key in the low and high middle and the light
+            if (rig != null && sunUp)
+            {
+                float through = (1f - rig.cloudCover) + rig.cloudCover * rig.cloudSunThrough;
+                var face = rig.sunColour.linear * (rig.sunIntensity * through) + rig.ambientSunSide.linear;
+                lit = (face / Mathf.Max(face.maxColorComponent, 1e-6f)).gamma;
+            }
+            else if (rig != null)
+            {
+                bool lamps = townLights != null && townLights.Lit.maxColorComponent > 0f;
+                lit = lamps ? townLights.Lit : sky;
+                float v = 0.2126f * rig.horizon.r + 0.7152f * rig.horizon.g + 0.0722f * rig.horizon.b;
+                w = new Vector3(Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(v, 1f, 1f / 3f)), Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(v, 1f, 2f / 3f)), 1f);
+            }
             float f = rig != null ? st.followLight : 0f;
             Shader.SetGlobalVector("_OS_Key0", Follow(st.shade, sky, f));
-            Shader.SetGlobalVector("_OS_Key1", Follow(st.lowMiddle, Color.Lerp(sky, lit, 0.25f), f));
-            Shader.SetGlobalVector("_OS_Key2", Follow(st.highMiddle, Color.Lerp(sky, lit, 0.7f), f));
-            Shader.SetGlobalVector("_OS_Key3", Follow(st.light, lit, f));
+            Shader.SetGlobalVector("_OS_Key1", Follow(st.lowMiddle, Color.Lerp(sky, lit, w.x), f));
+            Shader.SetGlobalVector("_OS_Key2", Follow(st.highMiddle, Color.Lerp(sky, lit, w.y), f));
+            Shader.SetGlobalVector("_OS_Key3", Follow(st.light, Color.Lerp(sky, lit, w.z), f));
             Shader.SetGlobalVector("_OS_PaletteParams", new Vector4(st.ramp, st.spare, st.vibrance, st.rolloff));
             Shader.SetGlobalVector("_OS_Grouping", new Vector4(st.valueSteps, st.grouping, st.groupSoftness, st.chromaFocus));
         }
@@ -272,7 +289,7 @@ namespace Overstory.Scenes
             Shader.SetGlobalVector("_OS_FogParams", new Vector4(r.fogDensity, r.fogHeightFalloff, r.fogBaseHeight, r.fogMaxOpacity));
             var hz = Linear(r.hazeColour);
             Shader.SetGlobalVector("_OS_HazeColor", new Vector4(hz.x, hz.y, hz.z, 1f));
-            Shader.SetGlobalVector("_OS_Haze", new Vector4(r.hazeDensity, r.hazeHeight, 0f, 0f));
+            Shader.SetGlobalVector("_OS_Haze", new Vector4(r.hazeDensity, r.hazeHeight, r.bankClear, 0f));
             // shafts of sun through the shadow map replace the sun's unshadowed glow in the air (SunBeams.shader)
             Shader.SetGlobalVector("_OS_SunBeams", new Vector4(r.shafts, r.beamReach, r.beamFalloff, Mathf.Max(r.beamHaze, 1f)));
             Shader.SetGlobalVector("_OS_Bank", new Vector4(r.fogBank ? 1f : 0f, r.bankOverLand, r.bankWisps, r.bankWispSize));

@@ -28,3 +28,20 @@ The reviewer's lift: a real blue-hour sky gradient, with the fog taking its colo
 - The blue-hour fog was set to 200 m for the look.
 - For a city, the sky map and its horizon move to a window round the camera.
 - Drizzle's wet ground reads pale with dark puddles; that is the ground element's.
+
+## Second round (26 October)
+
+Stills in `../second-round/`, from the same cameras in the same moments. 27 stills were rendered in 21 Unity runs.
+- **Blue hour (1):** the style's ramp no longer holds a lamp colour typed in code. Its keys come from the light: the sky's colour in shade, and above the sky's own value the colour of the lamps that are on. The sky reads blue (82 92 129; the target's is 81 92 126) and the roofs silhouette. Bands are 8 43 23 24 1 against the target's 2 29 19 26 20 2 1; the target's upper bands are its lamp pools.
+- **Fog (2):** the bank thickens away from the eye over 20 m (the pack's `air.bankClearM`) and stands 80 m high, so the far gully lifts 2 to 3 L* and the houses part by distance. It takes the sky's colour.
+- **Low sun (3):** clouds are lit as the walls are, by the sun with little sky above them, so they take its amber. The streaks gather in fields, with octaves turned off the wind, and no longer blow.
+- **Drizzle (4):** by day a cloud deck mixes towards daylight white by its cover (light-derive-2), so the pink cast is gone. Drizzle thins the air by its visibility (the pack's `air.precipitation`, by Koschmieder), so the far houses soften.
+- **Follow-ups done:** the fallback lamp colour is out of code. A record's overrides for a place are pushed after the keys when that place's rig is written.
+- **Strict review on Fable:** pending at this commit.
+
+For other elements:
+- Lamps: the gully lanterns are still dropped (`heart_layout.py`), so the stair and wall get no pools; that is most of the blue-hour bands' gap.
+- Stone: wet treads only darken (by 4 L*). The film's gloss is capped at 0.62 by the stone board, so from the street the sheen is faint.
+- The window spill's colour is still typed in `StreetStage` (it is off: `spillCd` 0).
+
+The cost is one more exp per haze tap and one noise per sky pixel. Frame time is not measured: the full-screen run needs Øystein's Mac free. The golden baselines change with the light and need re-blessing.

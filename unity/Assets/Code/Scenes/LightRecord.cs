@@ -16,8 +16,12 @@ namespace Overstory.Scenes
         public string id;
         public LightWorld world;
         public LightSources sources;
+        public LightOverride[] overrides;
         public LightDerived derived;
     }
+
+    /// <summary>A place's own pushes, applied after the keys when that place is drawn.</summary>
+    [Serializable] public class LightOverride { public string place; public LightPush[] pushes; }
 
     [Serializable] public class LightWorld
     {
@@ -116,10 +120,12 @@ namespace Overstory.Scenes
         [Serializable] public class Surfaces { public Surface ground, town; public float wetDarkening, groundLitShare; }
         [Serializable] public class AirPack
         {
-            public float koschmieder, heightFalloff, maxOpacity, middleM, farM, bankWispSizeM, townGlowHeightM;
+            public float koschmieder, heightFalloff, maxOpacity, middleM, farM, bankWispSizeM, bankClearM, townGlowHeightM;
             public float motesInFog, moteSize, shaftsPerHaze, beamHazePerHaze, beamReachM, beamFalloff;
             public int bankOverLand, bankWisps;
+            public Precipitation[] precipitation;
         }
+        [Serializable] public class Precipitation { public string kind; public float visibilityM; }
         [Serializable] public class Photocell { public string[] circuits; public float onLux, offLux; }
         [Serializable] public class Rooms { public float windowCdPerM2, shopCdPerM2, spillCd; }
         [Serializable] public class ExposurePack { public float calibration, saturation; }
@@ -154,7 +160,7 @@ namespace Overstory.Scenes
     }
 
     /// <summary>
-    /// light-derive-1: the light at one instant from the world state and the pack (LA's thirteen points). The sun's
+    /// light-derive-2: the light at one instant from the world state and the pack (LA's thirteen points). The sun's
     /// place from the clock; its colour and illuminance through a spherical atmosphere (Rayleigh, a maritime aerosol,
     /// ozone); the clear sky by single scattering with Earth's shadow, blended with an overcast sky by the cloud; the
     /// sky's radiance as an L2 SH, from which the ambient, the dome and the air are views; the exposure from the light
@@ -163,10 +169,12 @@ namespace Overstory.Scenes
     /// </summary>
     public static class LightDerive
     {
-        public const string Function = "light-derive-1";
+        public const string Function = "light-derive-2";
         static readonly float[] Lambda = { 680f, 550f, 440f };
 
-        public static LightDerived Derive(LightRecord r, LightPack p, float streetAxisCompass)
+        /// <summary>The record's light; with a place, that place's overrides pushed after the keys (the record keeps
+        /// the light without them).</summary>
+        public static LightDerived Derive(LightRecord r, LightPack p, float streetAxisCompass, string place = null)
         {
             var w = r.world;
             var wx = w.weather;
@@ -191,6 +199,10 @@ namespace Overstory.Scenes
             float evening = (float)(0.5 + 0.5 * Math.Sin((solar - 12.0) * Math.PI / 12.0));
             int keyEl = Mathf.Max(-18000, Mathf.RoundToInt(elevation * 1000f));
             var pushes = Resolve(p, keyEl, evening, weights);
+            if (place != null && r.overrides != null)
+                foreach (var o in r.overrides)
+                    if (o.place == place && o.pushes != null)
+                        pushes.AddRange(o.pushes);
 
             // the atmosphere, and the sun through it
             var atm = Atmosphere.From(p.atmosphere, haze, p.surfaces.ground.albedo);
@@ -239,6 +251,12 @@ namespace Overstory.Scenes
             Vector3 horizon = (sky.Radiance(Flat(across, 0.0523f)) + sky.Radiance(Flat(-across, 0.0523f))) / 2f;
             horizon = PushSky(horizon, pushes, 3f * Mathf.Deg2Rad);
             float hazeDensity = atm.AerosolAtGround550 + atm.RayleighAtGround550;
+            // falling drops and flakes thin the view as fog does, by Koschmieder from the visibility the kind gives at
+            // its heaviest, scaled by the intensity; they scatter the light round them as the haze does
+            if (!string.IsNullOrEmpty(wx.precipitation) && p.air.precipitation != null)
+                foreach (var fall in p.air.precipitation)
+                    if (fall.kind == wx.precipitation)
+                        hazeDensity += p.air.koschmieder / fall.visibilityM * (wx.intensity / 1000f);
             var nearAir = Push(horizon, pushes, "air");
             var farAir = Push(nearAir, pushes, "air.far");
             var layers = new List<LightAirLayer>
@@ -393,6 +411,7 @@ namespace Overstory.Scenes
             r.bankOverLand = (fog && wx.fog.overLand >= 0 ? wx.fog.overLand : p.air.bankOverLand) / 1000f;
             r.bankWisps = (fog && wx.fog.wisps >= 0 ? wx.fog.wisps : p.air.bankWisps) / 1000f;
             r.bankWispSize = p.air.bankWispSizeM;
+            r.bankClear = p.air.bankClearM;
             // the town's light in the air: a lamp's intensity I lights the air about H above it with I / H^2, which
             // scatters a quarter of it (in display units) towards the eye per unit of optical depth
             r.townGlowHeight = p.air.townGlowHeightM;
@@ -862,7 +881,10 @@ namespace Overstory.Scenes
                 var eTop = Global(top, atm.Rgb(atm.SunAt(top, toSun)));
                 float yTop = Lum(eTop);
                 var hue = yTop > 0f ? eTop / yTop : Vector3.one;
-                deckColour = Vector3.Lerp(hue, Vector3.one, p.overcast.neutralise);
+                // by day a deck's many scatterings mix the sun's light with the sky's to daylight white, the more of the
+                // sky it covers; after sunset it has only the sky's to pass
+                float day = Mathf.Clamp01(toSun.y * 10f + 0.5f);
+                deckColour = Vector3.Lerp(hue, Vector3.one, p.overcast.neutralise * cover * day);
                 // the deck's share of the clear light, so that blended by the cover the ground gets Kasten and
                 // Czeplak's 1 - loss N^power; CIE overcast: E = 7 pi / 9 Lz, the lobe's extra light folded in
                 float share = 1f - p.overcast.loss * Mathf.Pow(Mathf.Max(cover, 1e-3f), p.overcast.lossPower - 1f);

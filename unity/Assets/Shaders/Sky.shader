@@ -39,7 +39,8 @@ Shader "Overstory/Sky"
                 half _Curve, _SunGlowPower, _HighCloud;
             CBUFFER_END
             float _OS_SkyBands;
-            float4 _OS_SunCol; // the sun's light (linear), for the clouds' lit sides // 0: a smooth gradient; n: n graded bands, the printer's bokashi (look D)
+            float4 _OS_SunCol;     // the sun's light (linear), for the clouds' lit sides
+            float4 _OS_SunSideAmb; // the sky's light on a face turned to the sun (linear): with the sun, the walls' light
 
             struct Attributes { float4 positionOS : POSITION; };
             struct Varyings { float4 positionCS : SV_POSITION; float3 dir : TEXCOORD0; };
@@ -59,6 +60,12 @@ Shader "Overstory/Sky"
                 float2 sh = _OS_SunDir.xz / max(length(_OS_SunDir.xz), 1e-4);
                 float towardsSun = dot(dh, sh) * 0.5 + 0.5;    // 1 at the sun's bearing, 0 opposite
                 float low = exp(-max(d.y, 0.0) / 0.16);         // the band just over the horizon
+                half sunUp = (half)saturate(_OS_SunDir.y * 6.0 + 0.3);
+                // a cloud is lit as the walls are, by the sun and the sky on its side; but high in the air it has little sky
+                // over it, so the sun lights it nearly alone and it takes the sun's colour more than a wall does. Its thin
+                // parts glow most towards the sun (droplets and ice scatter forward)
+                half3 sunSide = (half3)_OS_SunCol.rgb * sunUp + (half3)_OS_SunSideAmb.rgb * 0.25h;
+                half forward = (half)pow(saturate(dot(d, _OS_SunDir.xyz)), 8.0);
 
                 // the dome: lightest at the horizon, darkening to the zenith
                 float t = pow(saturate(d.y), _Curve);
@@ -83,10 +90,16 @@ Shader "Overstory/Sky"
                     float2 p = _WorldSpaceCameraPos.xz + d.xz / d.y * (7000.0 - _WorldSpaceCameraPos.y);
                     float2 q = float2(dot(p, float2(0.866, 0.5)) / 3600.0, dot(p, float2(-0.5, 0.866)) / 480.0);
                     q += (float2(OS_Noise(q * 0.3 + 2.0), OS_Noise(q * 0.3 - 5.0)) - 0.5) * 0.8;
-                    float f = 0.55 * OS_Noise(q) + 0.3 * OS_Noise(q * 2.3 + 4.1) + 0.15 * OS_Noise(q * 5.3 - 1.7);
-                    half streak = (half)smoothstep(0.62 - _HighCloud * 0.2, 0.9 - _HighCloud * 0.1, f) * 0.55h;
-                    half3 lit = _SunGlow.rgb * (0.7h + 0.9h * (half)towardsSun) + _Horizon.rgb * 0.5h;
-                    c = lerp(c, lerp(c * 1.04h, lit, 0.7h), streak * (half)saturate(d.y * 9.0));
+                    // each octave turned a little off the wind, so their lattices never line up into an even rhythm
+                    float f = 0.55 * OS_Noise(q) + 0.3 * OS_Noise(mul(float2x2(0.978, -0.208, 0.208, 0.978), q) * 2.3 + 4.1)
+                            + 0.15 * OS_Noise(mul(float2x2(0.978, 0.208, -0.208, 0.978), q) * 5.3 - 1.7);
+                    // the streaks gather in fields with open sky between, as cirrus does
+                    half fields = (half)smoothstep(0.25, 0.6, OS_Noise(p / 9000.0 + 7.3));
+                    half streak = (half)smoothstep(0.62 - _HighCloud * 0.2, 0.9 - _HighCloud * 0.1, f) * fields;
+                    // thin ice gives back under half the light on it away from the sun; after sunset the glow left on
+                    // the sun's side
+                    half3 lit = sunSide * 0.45h * (1.0h + 2.0h * forward) + _SunGlow.rgb * (0.7h + 0.9h * (half)towardsSun) * (1.0h - sunUp);
+                    c = lerp(c, lit, streak * (half)saturate(d.y * 9.0));
                 }
 
                 // the low layer: the same cloud whose shadows lie on the town
@@ -101,20 +114,23 @@ Shader "Overstory/Sky"
                     // an edge thinning towards the sun catches it: a silver lining
                     float towards = OS_CloudField(p + sh * _OS_Clouds.y * 0.12, 1.0);
                     half edge = (half)saturate(0.5 + (field - towards) * 6.0) * (1.0h - thick * 0.6h);
-                    half sunUp = (half)saturate(_OS_SunDir.y * 6.0 + 0.3);
                     // the underside is the deck's own light, lit through the cloud, falling off towards the horizon as
                     // an overcast sky does (CIE, (1 + 2 sin h) / 3); its belly a little darker than its thinner parts
                     half3 shade = _Deck.rgb * (half)((1.0 + 2.0 * d.y) / 3.0) * lerp(1.05h, 0.9h, thick);
-                    // the sun lights its thin edges; through its thick body only the kind's share comes (the shadows' share).
-                    // A deck's thinnest parts are still cloud: the more of the sky is cloud, the less its thin parts let by
+                    // its edges to the sun and, under a low sun, its undersides on the sun's side take the light on a face
+                    // turned to the sun (the walls' amber) at a cloud's albedo; through its thick body only the kind's share
+                    // of the sun comes (the shadows' share). A deck's thinnest parts are still cloud: the more of the sky is
+                    // cloud, the less its thin parts let by
                     half thin = max(1.0h - (half)_OS_Clouds.x, (half)_OS_CloudThrough);
-                    half3 sunlit = _OS_SunCol.rgb * (0.35h + 0.65h * edge) * sunUp * lerp(thin, (half)_OS_CloudThrough, thick);
-                    // a low sun lights the undersides on its side warm; after it has set the glow lingers there
                     half lowSun = (half)saturate(1.0 - _OS_SunDir.y * 5.0);
-                    half3 under = _SunGlow.rgb * (half)pow(towardsSun, 2.0) * lowSun * 0.8h;
+                    half3 lit = ((half3)_OS_SunCol.rgb * sunUp * lerp(thin, (half)_OS_CloudThrough, thick) * (1.0h + 2.0h * forward)
+                                + (half3)_OS_SunSideAmb.rgb * 0.25h) * 0.6h;
+                    half litShare = max(edge * (1.0h - thick * 0.5h), (half)pow(towardsSun, 2.0) * lowSun * 0.5h) * sunUp;
+                    // after the sun has set its glow lingers on the undersides on its side
+                    half3 under = _SunGlow.rgb * (half)pow(towardsSun, 2.0) * lowSun * 0.8h * (1.0h - sunUp);
                     // and over the town the fog's glow lights them from below
                     half3 townGlow = (half3)OS_GlowAt(float3(p.x, 0.0, p.y)) * 3.0h;
-                    half3 cloud = shade * (1.0h - 0.35h * sunUp * edge) + sunlit * 0.8h + under + townGlow;
+                    half3 cloud = lerp(shade, lit, litShare) + under + townGlow;
                     half far = (half)saturate(d.y * 7.0); // far clouds melt into the horizon's haze
                     c = lerp(c, cloud, cover * far);
                 }

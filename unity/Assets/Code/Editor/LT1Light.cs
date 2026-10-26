@@ -9,7 +9,7 @@ namespace Overstory.EditorTools
     /// <summary>
     /// The light records (fixtures/light/, schemas/light-record.schema.json) and the rigs written from them. A rig
     /// is a view of its record: every light value comes from the record's world state and the pack's light tables
-    /// through light-derive-1, never from a number typed here. tools/light_record.py writes a record's sources and
+    /// through light-derive-2, never from a number typed here. tools/light_record.py writes a record's sources and
     /// id; this writes its derived block and checks it on every load.
     ///
     ///     -executeMethod Overstory.EditorTools.LT1Light.Derive                      every record's derived block
@@ -30,10 +30,13 @@ namespace Overstory.EditorTools
                 Load(Path.GetFileNameWithoutExtension(path));
         }
 
-        /// <summary>Writes the rig at asset from the named record (fixtures/light/name.json) and returns it.</summary>
-        public static LightRig Rig(string record, string asset)
+        /// <summary>Writes the rig at asset from the named record (fixtures/light/name.json) and returns it; with a
+        /// place, the record's overrides for that place pushed after the keys.</summary>
+        public static LightRig Rig(string record, string asset, string place = null)
         {
             var (rec, pack) = Load(record);
+            if (place != null)
+                rec.derived = LightDerive.Derive(rec, pack, ScriptableObject.CreateInstance<LightRig>().streetAxisCompass, place);
             var r = AssetDatabase.LoadAssetAtPath<LightRig>(asset);
             bool made = r == null;
             if (made)

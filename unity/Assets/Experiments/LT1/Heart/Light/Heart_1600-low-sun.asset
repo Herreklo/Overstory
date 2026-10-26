@@ -27,37 +27,38 @@ MonoBehaviour:
   sunIntensity: 1.1911097
   shadowStrength: 1
   zenith: {r: 0.46459752, g: 0.5165436, b: 0.6320092, a: 1}
-  horizon: {r: 0.71330535, g: 0.65565675, b: 0.6070547, a: 1}
-  deck: {r: 0.95763975, g: 0.8903929, b: 0.87191945, a: 1}
-  belowHorizon: {r: 0.37085307, g: 0.3100931, b: 0.2926977, a: 1}
+  horizon: {r: 0.7104283, g: 0.6564265, b: 0.60903245, a: 1}
+  deck: {r: 0.9409007, g: 0.89476264, b: 0.8823382, a: 1}
+  belowHorizon: {r: 0.3687928, g: 0.31060296, b: 0.2938954, a: 1}
   skyCurve: 0.5
-  sunGlow: {r: 2.9570487, g: 2.272738, b: 1.401532, a: 1}
+  sunGlow: {r: 2.9567473, g: 2.2728374, b: 1.401946, a: 1}
   sunGlowPower: 6
-  ambientSky: {r: 0.7902192, g: 0.76022017, b: 0.78022385, a: 1}
-  ambientEquator: {r: 0.59656394, g: 0.56663465, b: 0.56438106, a: 1}
-  ambientGround: {r: 0.3238052, g: 0.28351104, b: 0.28342223, a: 1}
-  ambientSunSide: {r: 0.951536, g: 0.82715183, b: 0.7029546, a: 1}
-  townBounce: {r: 0.5351256, g: 0.41593185, b: 0.35493106, a: 1}
+  ambientSky: {r: 0.7847975, g: 0.7615848, b: 0.78329337, a: 1}
+  ambientEquator: {r: 0.5934726, g: 0.5674257, b: 0.56623185, a: 1}
+  ambientGround: {r: 0.32137534, g: 0.2840777, b: 0.2846659, a: 1}
+  ambientSunSide: {r: 0.94967216, g: 0.8276904, b: 0.70450497, a: 1}
+  townBounce: {r: 0.5334625, g: 0.41635144, b: 0.35599232, a: 1}
   sunBounce: 0.0452592
   ambientIntensity: 1
-  fogColour: {r: 0.71330535, g: 0.65565675, b: 0.6070547, a: 1}
-  fogMidColour: {r: 0.71330535, g: 0.65565675, b: 0.6070547, a: 1}
+  fogColour: {r: 0.7104283, g: 0.6564265, b: 0.60903245, a: 1}
+  fogMidColour: {r: 0.7104283, g: 0.6564265, b: 0.60903245, a: 1}
   fogMidDistance: 220
-  fogFarColour: {r: 0.71330535, g: 0.65565675, b: 0.6070547, a: 1}
+  fogFarColour: {r: 0.7104283, g: 0.6564265, b: 0.60903245, a: 1}
   fogFarDistance: 1500
   fogDensity: 0.00017605776
   fogHeightFalloff: 0.02
   fogBaseHeight: 0
   fogMaxOpacity: 0.97
-  fogSunColour: {r: 2.9570487, g: 2.272738, b: 1.401532, a: 1}
+  fogSunColour: {r: 2.9567473, g: 2.2728374, b: 1.401946, a: 1}
   fogSunPower: 8.333333
-  hazeColour: {r: 0.71330535, g: 0.65565675, b: 0.6070547, a: 1}
+  hazeColour: {r: 0.7104283, g: 0.6564265, b: 0.60903245, a: 1}
   hazeDensity: 0
   hazeHeight: 20
   fogBank: 0
   bankOverLand: 0.3
   bankWisps: 0.45
   bankWispSize: 140
+  bankClear: 20
   townGlow: 0.0004
   townGlowHeight: 25
   beamHaze: 3
@@ -76,7 +77,7 @@ MonoBehaviour:
   cloudHeight: 900
   highCloud: 0.35
   cloudSunThrough: 0.12
-  antiGlow: {r: 0.23153362, g: 0.31426755, b: 0.3213829, a: 1}
+  antiGlow: {r: 0.23080888, g: 0.31438953, b: 0.32165962, a: 1}
   windowGlow: 0.0032926379
   lampsOn: 0
   lampGlow: 3.0393581

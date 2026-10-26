@@ -2,6 +2,10 @@
 
 Every change to the files in `schemas/` with its migration. The contracts' version is `schemaVersion`, carried by every record, kind, pack file and fixture. `tools/migrate.py` runs `migrations/NNN_<name>.py` in order on every file behind; `tools/migrate.py --check` fails while any is behind. `tools/validate_record.py` checks records, kinds, parts and the registries against the current version.
 
+## 2, unchanged: light-derive-2 (26 October, the walked corner's light, second round)
+
+No migration: the records in `fixtures/light/` are derived again. light-derive-2 neutralises a cloud deck by day by the pack's `overcast.neutralise` times the cover, and not after sunset. Precipitation thins the air by the pack's `air.precipitation` (each kind's visibility at full intensity) times the intensity.
+
 ## 2, unchanged: the light record (26 October, the walked corner's first pass, light)
 
 No migration: every addition is optional or a new file, and no existing record holds a light.

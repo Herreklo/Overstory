@@ -30,6 +30,8 @@ namespace Overstory.Scenes
         Texture2D glowMap;
 
         public int Count => lights.Count;
+        /// <summary>The colour of the town's lamplight: every lit lamp's colour by its output; clear when none is on.</summary>
+        public Color Lit { get; private set; }
 
         void OnEnable() => Build();
 
@@ -84,6 +86,7 @@ namespace Overstory.Scenes
                 Build();
             var pos = new Vector4[Mathf.Max(1, lights.Count)];
             var col = new Vector4[Mathf.Max(1, lights.Count)];
+            var lit = Vector4.zero;
             for (int i = 0; i < lights.Count; i++)
             {
                 var (light, kind) = lights[i];
@@ -101,7 +104,10 @@ namespace Overstory.Scenes
                 pos[i] = new Vector4(p.x, p.y, p.z, lamp.range * 2.5f); // past this a halo is too faint to see
                 // a shop's light is a window's, not a bare lamp's: little of it reaches the fog (the kind's share)
                 col[i] = (Vector4)(lamp.colour.linear * (r.lampIntensity * lamp.intensity * lamp.fogShare));
+                lit += (Vector4)(lamp.colour.linear * lamp.intensity);
             }
+            float most = Mathf.Max(lit.x, Mathf.Max(lit.y, lit.z));
+            Lit = most > 0f ? new Color(lit.x / most, lit.y / most, lit.z / most, 1f).gamma : Color.clear;
             if (positions == null || positions.count != pos.Length)
             {
                 positions?.Release();

@@ -12,7 +12,7 @@
     {"weather": "overcast", "side": "both", "elevationMillidegrees": -18000, "pushes": [{"target": "exposure", "dLog2": -3.0}]},
     {"weather": "fog", "side": "both", "elevationMillidegrees": 60000, "pushes": []},
     {"weather": "fog", "side": "both", "elevationMillidegrees": 5000, "pushes": []},
-    {"weather": "fog", "side": "both", "elevationMillidegrees": -5000, "pushes": [{"target": "exposure", "dLog2": -2.0}, {"target": "grade.temperature", "add": 15.0}]},
+    {"weather": "fog", "side": "both", "elevationMillidegrees": -5000, "pushes": [{"target": "exposure", "dLog2": -2.0}]},
     {"weather": "fog", "side": "both", "elevationMillidegrees": -18000, "pushes": [{"target": "exposure", "dLog2": -3.0}]}
   ]
 }

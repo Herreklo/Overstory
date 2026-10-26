@@ -24,7 +24,7 @@ float4 _OS_FogMid;       // rgb: the colour of the air at middle distance (linea
 float4 _OS_FogFar;       // rgb: the colour of the air far off (linear), a: the distance at which it takes over
 float4 _OS_FogParams;    // x density per metre at the base height, y falloff per metre of height, z base height, w most it may hide
 float4 _OS_FogSun;       // rgb: extra colour towards the sun (linear), w: how tight that glow is
-float4 _OS_Haze;         // x the low haze's density per metre at sea level, y the height over which it thins to a third
+float4 _OS_Haze;         // x the low haze's density per metre at sea level, y the height over which it thins to a third, z how far from the eye a bank takes to thicken (m)
 float4 _OS_HazeColor;    // rgb: its colour (linear)
 float4 _OS_SunDir;       // xyz: towards the sun
 float4 _OS_PavingMeanUV; // xy: the palette UV of setts_mean, the tone a sett pavement averages to
@@ -279,8 +279,9 @@ void OS_HazeMarch(float3 o, float3 dir, float dist, out float tau, out float3 gl
         float s = dist * f * f;
         float ds = dist * ((i + 1.0) * (i + 1.0) - i * i) / (N * N);
         float3 p = o + dir * s;
-        float sigma = OS_HazeDensity(p);
-        glow += exp(-tau) * sigma * OS_GlowAt(p) * ds;
+        // the bank thickens away from the eye, so the near street reads clear and the houses part by distance
+        float sigma = OS_HazeDensity(p) * (_OS_Haze.z > 0.0 ? 1.0 - exp(-s / _OS_Haze.z) : 1.0);
+        glow +=  exp(-tau) * sigma * OS_GlowAt(p) * ds;
         tau += sigma * ds;
         prev = s;
     }

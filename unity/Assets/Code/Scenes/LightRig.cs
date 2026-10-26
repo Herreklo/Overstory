@@ -82,6 +82,8 @@ namespace Overstory.Scenes
         [Range(0, 1)] public float bankWisps = 0.45f;
         [Tooltip("The size of a wisp, in metres.")]
         public float bankWispSize = 140f;
+        /// <summary>How far from the eye the bank takes to thicken (m): the near street reads clear; 0 none.</summary>
+        public float bankClear = 0f;
         [Tooltip("How strongly the town's lamps and lit shops glow in the fog over the streets.")]
         public float townGlow = 0f;
         [Tooltip("How high that glow reaches into the fog, in metres.")]
@@ -130,7 +132,7 @@ namespace Overstory.Scenes
         public float windowSpill = 0f;
         [Tooltip("How strongly each lamp lights the air round it (its halo in fog); 0 none.")]
         public float lampHalo = 1f;
-        /// <summary>Each lamp kind as the town's lamps give it (light-derive-1, from the pack's lamp kinds): sRGB colour,
+        /// <summary>Each lamp kind as the town's lamps give it (light-derive-2, from the pack's lamp kinds): sRGB colour,
         /// intensity in display units, reach in metres, and the share of its light that reaches the fog.</summary>
         public LampLight[] lampKinds = new LampLight[0];
 
