@@ -21,17 +21,6 @@ namespace Overstory.Scenes
         [Serializable] class Lamp { public float x, y, z, dx, dy; public string kind; }
         [Serializable] class Lamps { public Lamp[] lamps; }
 
-        // what each kind gives (sRGB colour, intensity relative to the rig's lamp intensity, reach in metres)
-        static readonly Dictionary<string, (Color colour, float strength, float range)> Kinds = new()
-        {
-            ["warm"] = (new Color(1.0f, 0.80f, 0.56f), 0.55f, 14f),     // a 100 W bulb in a lantern: warm white
-            ["mercury"] = (new Color(0.68f, 0.92f, 0.86f), 1.0f, 22f),  // mercury vapour: blue-green
-            ["sodium"] = (new Color(1.0f, 0.50f, 0.14f), 1.5f, 28f),    // high-pressure sodium on a 7 m pole: deep orange
-            ["shop"] = (new Color(1.0f, 0.78f, 0.52f), 0.22f, 9f),      // a lit shopfront's light on the pavement
-            ["red"] = (new Color(1.0f, 0.16f, 0.10f), 2.0f, 30f),       // the breakwater's head
-            ["white"] = (new Color(0.92f, 0.95f, 1.0f), 2.0f, 30f),     // the beacon on the Pip
-        };
-
         [Tooltip("The square the town's glow is mapped over: its middle (Unity x, z) and side, as the sky map's.")]
         public Vector2 glowCentre = new Vector2(75f, -75f);
         public float glowSize = 1024f;
@@ -84,7 +73,7 @@ namespace Overstory.Scenes
                 }
                 light.shadows = LightShadows.None;
                 light.enabled = false;
-                lights.Add((light, Kinds.ContainsKey(l.kind) ? l.kind : "warm"));
+                lights.Add((light, l.kind)); // what a kind gives is the rig's (LightRig.lampKinds)
             }
         }
 
@@ -98,18 +87,20 @@ namespace Overstory.Scenes
             for (int i = 0; i < lights.Count; i++)
             {
                 var (light, kind) = lights[i];
-                var (colour, strength, range) = Kinds[kind];
-                bool on = r.lampsOn && light != null;
                 if (light == null)
                     continue;
+                bool known = r.Lamp(kind, out var lamp);
+                bool on = r.lampsOn && known;
                 light.enabled = on;
-                light.color = colour;
-                light.intensity = r.lampIntensity * strength;
-                light.range = range;
+                if (!on)
+                    continue;
+                light.color = lamp.colour;
+                light.intensity = r.lampIntensity * lamp.intensity;
+                light.range = lamp.range;
                 var p = light.transform.position;
-                pos[i] = new Vector4(p.x, p.y, p.z, range * 2.5f); // past this a halo is too faint to see
-                // a shop's light is a window's, not a bare lamp's: little of it reaches the fog
-                col[i] = on ? (Vector4)(colour.linear * (r.lampIntensity * strength * (kind == "shop" ? 0.4f : 1f))) : Vector4.zero;
+                pos[i] = new Vector4(p.x, p.y, p.z, lamp.range * 2.5f); // past this a halo is too faint to see
+                // a shop's light is a window's, not a bare lamp's: little of it reaches the fog (the kind's share)
+                col[i] = (Vector4)(lamp.colour.linear * (r.lampIntensity * lamp.intensity * lamp.fogShare));
             }
             if (positions == null || positions.count != pos.Length)
             {
@@ -146,11 +137,10 @@ namespace Overstory.Scenes
             if (r.lampsOn)
                 foreach (var (light, kind) in lights)
                 {
-                    if (light == null)
+                    if (light == null || !r.Lamp(kind, out var lamp))
                         continue;
                     var p = light.transform.position;
-                    var (colour, strength, _) = Kinds[kind];
-                    var c = colour.linear * (r.lampIntensity * strength * (kind == "shop" ? 0.6f : 1f));
+                    var c = lamp.colour.linear * (r.lampIntensity * lamp.intensity * lamp.fogShare);
                     int ci = Mathf.FloorToInt((p.x - x0) / cell), cj = Mathf.FloorToInt((p.z - z0) / cell);
                     for (int j = Mathf.Max(0, cj - reach); j <= Mathf.Min(n - 1, cj + reach); j++)
                         for (int i = Mathf.Max(0, ci - reach); i <= Mathf.Min(n - 1, ci + reach); i++)

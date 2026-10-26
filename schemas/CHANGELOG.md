@@ -2,6 +2,20 @@
 
 Every change to the files in `schemas/` with its migration. The contracts' version is `schemaVersion`, carried by every record, kind, pack file and fixture. `tools/migrate.py` runs `migrations/NNN_<name>.py` in order on every file behind; `tools/migrate.py --check` fails while any is behind. `tools/validate_record.py` checks records, kinds, parts and the registries against the current version.
 
+## 2, unchanged: the light record (26 October, the walked corner's first pass, light)
+
+No migration: every addition is optional or a new file, and no existing record holds a light.
+
+New:
+- `light-record.schema.json`: the light at one instant, its id the hash of its world state, sources and overrides; its derived block (sun, sky as an L2 SH with the dome as views, air by distance, the keys resolved, circuits on, EV100, maps) written by light-derive-1 (`Overstory.Scenes.LightDerive`) and checked within a tolerance on load. Records in `fixtures/light/`; `tools/light_record.py` writes the sources and id and checks them.
+- `light-terms.json`: the one registry of what a key may push and of the debug views (light, value).
+
+Changed:
+- `world-state.schema.json`: an optional `instantMs` on the clock; the weather's optional `cloudKind`, `cloudBaseMm`, `highCover` and `fog` (visibility, bank top, over land, wisps), absent meaning off.
+- `record.schema.json`: `signedMillidegrees` beside `millidegrees`, for an elevation below the horizon.
+- `maps.json`: the light's maps (cloud, cloud-glow, town-light, canopy, canopy-light, probes, grade-lut), each with its clock.
+- `naming.md`: the `ci-` prefix for a lamp circuit, and the term grammar.
+
 ## 2, unchanged: the stones' numbers into data, and the levels' errors from the kinds (23 October, the gully port's step 2b, R2a)
 
 No migration: every file these change was changed with them, and every installed mesh hashes as before. The readers (`blender/parts/stone/slate/stones.py`, `context.py`) keep no default: a missing key is an error.

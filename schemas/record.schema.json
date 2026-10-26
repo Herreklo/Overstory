@@ -67,6 +67,7 @@
     "vec3mm": { "type": "array", "items": { "type": "integer" }, "minItems": 3, "maxItems": 3, "description": "x, y, z in millimetres." },
     "size3mm": { "type": "array", "items": { "type": "integer", "minimum": 0 }, "minItems": 3, "maxItems": 3, "description": "Width, height, depth in millimetres." },
     "millidegrees": { "type": "integer", "minimum": 0, "maximum": 359999 },
+    "signedMillidegrees": { "type": "integer", "minimum": -180000, "maximum": 180000, "description": "An angle that may be negative (an elevation below the horizon), named as millidegrees are: elevationMillidegrees." },
     "date": {
       "description": "A year, and a month when known. The precision field says which is meant.",
       "type": "object", "additionalProperties": false, "required": ["year"],

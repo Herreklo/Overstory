@@ -1,0 +1,154 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://overstory.invalid/schemas/light-record.schema.json",
+  "title": "Light record",
+  "description": "The light at one instant (reviews/lt1/light/la-report.md, What L1 must hold). Its identity is its inputs: the world state, the sources and the overrides, hashed by schemas/hashing.md into id. Everything else is derived from them by one function (sources.function), stored for diffing and checked within a tolerance on load, never hashed. Photometric values are floats in SI units (lux, candela per square metre); angles are millidegrees. A transition is the world state changing; two records are never blended. An optional block absent means off and is never written zeroed.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "id", "world", "sources", "overrides", "derived"],
+  "properties": {
+    "schemaVersion": { "$ref": "record.schema.json#/$defs/schemaVersion" },
+    "id": { "$ref": "part.schema.json#/$defs/hash64", "description": "h over world, sources and overrides (tools/light_record.py id)." },
+    "world": { "$ref": "world-state.schema.json", "description": "The one clock and the weather, embedded. The rig's date, its clock and FabricDate read it; the sun and moon are derived from it, never stored as inputs." },
+    "sources": {
+      "type": "object", "additionalProperties": false,
+      "required": ["fabric", "people", "pack", "keys", "function"],
+      "properties": {
+        "fabric": { "$ref": "part.schema.json#/$defs/hash64", "description": "Buildings, trees, lamps, circuits and rooms at the fabric date." },
+        "people": { "$ref": "part.schema.json#/$defs/hash64", "description": "The habits that light rooms and open shops." },
+        "pack": { "$ref": "part.schema.json#/$defs/hash64", "description": "The pack's light tables: the sky's constants, the lamp kinds, albedo by cover, the lens (packs/<pack>/light/, the keys apart)." },
+        "keys": { "$ref": "part.schema.json#/$defs/hash64", "description": "The key set: the art direction by the sun's elevation, the evening and the weather (packs/<pack>/light/keys.json)." },
+        "function": { "type": "string", "pattern": "^light-derive-[1-9][0-9]*$", "description": "The derivation's version (Overstory.Scenes.LightDerive). A change to what it computes takes a new number." }
+      }
+    },
+    "overrides": {
+      "type": "array", "description": "Sparse pushes by place, applied after the keys.",
+      "items": {
+        "type": "object", "additionalProperties": false, "required": ["place", "pushes"],
+        "properties": {
+          "place": { "type": "string", "pattern": "^[a-z]+-[a-z0-9]+(-[a-z0-9]+)*$" },
+          "pushes": { "type": "array", "items": { "$ref": "#/$defs/push" } }
+        }
+      }
+    },
+    "derived": {
+      "type": "object", "additionalProperties": false,
+      "required": ["sun", "sky", "air", "keys", "circuitsOn", "exposureEv100", "maps"],
+      "properties": {
+        "sun": {
+          "type": "object", "additionalProperties": false,
+          "required": ["azimuthMillidegrees", "elevationMillidegrees", "illuminanceLux", "rgb"],
+          "properties": {
+            "azimuthMillidegrees": { "$ref": "record.schema.json#/$defs/millidegrees", "description": "Clockwise from north." },
+            "elevationMillidegrees": { "$ref": "record.schema.json#/$defs/signedMillidegrees" },
+            "illuminanceLux": { "type": "number", "minimum": 0, "description": "On a plane facing the sun, at the ground, through the air, in the cloud's gaps (the cloud map's cover and the kind's sunThrough take it the rest of the way); the keys' pushes on sun included. The Light, the clouds, the beams and the sky read this one value; no reader clamps its own copy." },
+            "rgb": { "$ref": "#/$defs/rgb", "description": "Its colour, luminance 1, linear Rec.709." }
+          }
+        },
+        "sky": {
+          "type": "object", "additionalProperties": false,
+          "required": ["model", "params", "sh", "illuminanceLux", "dome"],
+          "properties": {
+            "model": { "enum": ["single-scatter-1"], "description": "The sky's model: single scattering of the sun in a spherical atmosphere (Rayleigh, aerosol, ozone), Earth's shadow included, blended with an overcast sky by the cloud." },
+            "params": {
+              "type": "object", "additionalProperties": false,
+              "required": ["turbidity", "overcast", "groundAlbedo"],
+              "properties": {
+                "turbidity": { "type": "number", "minimum": 0, "description": "The aerosol's optical depth at 550 nm, from the haze." },
+                "overcast": { "type": "number", "minimum": 0, "maximum": 1, "description": "The share of the sky's light that comes through the cloud." },
+                "groundAlbedo": { "$ref": "#/$defs/rgb" }
+              }
+            },
+            "sh": { "type": "array", "minItems": 27, "maxItems": 27, "items": { "type": "number" }, "description": "The sky's radiance (upper hemisphere; candela per square metre) as an L2 spherical harmonic: nine coefficients, each r, g, b, in Unity's world axes (y up). The ambient, the dome and the reflections derive from it; the hemisphere colours the shaders read are views of it. The sun's disc and halo stay terms of their own." },
+            "illuminanceLux": { "type": "number", "minimum": 0, "description": "On open level ground, from the sky alone." },
+            "dome": {
+              "type": "object", "additionalProperties": false,
+              "required": ["zenith", "horizon", "towardSun", "awayFromSun", "deck"],
+              "description": "Views of the model for the dome's shader, radiance (candela per square metre): straight up between the clouds (the clear sky; the shader draws the clouds), on the horizon at right angles to the sun, towards it and away from it (the clouds there too far to draw, blended in by the cover), and the cloud deck's underside straight up, lit through the cloud.",
+              "properties": {
+                "zenith": { "$ref": "#/$defs/rgb" }, "horizon": { "$ref": "#/$defs/rgb" },
+                "towardSun": { "$ref": "#/$defs/rgb" }, "awayFromSun": { "$ref": "#/$defs/rgb" }, "deck": { "$ref": "#/$defs/rgb" }
+              }
+            }
+          }
+        },
+        "air": {
+          "type": "object", "additionalProperties": false, "required": ["phaseG", "layers"],
+          "properties": {
+            "phaseG": { "type": "number", "minimum": -1, "maximum": 1, "description": "The aerosol's forward scattering (Henyey-Greenstein g)." },
+            "layers": {
+              "type": "array", "minItems": 1,
+              "description": "The air by distance from the eye: out to toMm it has this extinction per metre and in-scatters this radiance. The last layer runs on.",
+              "items": {
+                "type": "object", "additionalProperties": false, "required": ["toMm", "density", "rgb"],
+                "properties": {
+                  "toMm": { "type": "integer", "minimum": 0 },
+                  "density": { "type": "number", "minimum": 0 },
+                  "rgb": { "$ref": "#/$defs/rgb", "description": "In-scattered radiance at full depth (candela per square metre)." }
+                }
+              }
+            }
+          }
+        },
+        "keys": {
+          "type": "object", "additionalProperties": false, "required": ["elevationMillidegrees", "evening", "weather", "pushes"],
+          "description": "Where the instant sits among the keys, and the pushes resolved there.",
+          "properties": {
+            "elevationMillidegrees": { "$ref": "record.schema.json#/$defs/signedMillidegrees", "description": "The sun's, clamped at -18000." },
+            "evening": { "type": "number", "minimum": 0, "maximum": 1, "description": "0 in the morning, 1 in the evening, from the sun's hour angle: one half at the day's highest and lowest points." },
+            "weather": {
+              "type": "object", "additionalProperties": false, "required": ["clear", "overcast", "fog"],
+              "properties": { "clear": { "type": "number" }, "overcast": { "type": "number" }, "fog": { "type": "number" } }
+            },
+            "pushes": { "type": "array", "items": { "$ref": "#/$defs/push" } }
+          }
+        },
+        "circuitsOn": { "type": "array", "items": { "type": "string", "pattern": "^ci-[a-z0-9]+(-[a-z0-9]+)*$", "$comment": "naming: circuit", "$comment": "naming: circuit" }, "description": "The street circuits on now. Lamps are held by reference: the fabric holds the lamps, the pack their kinds." },
+        "exposureEv100": { "type": "number", "description": "The global exposure from the light reaching open ground, the keys' bias included. The eye's adaptation at the camera and the probes relit over frames are camera-local warm state, outside the record." },
+        "maps": {
+          "type": "array",
+          "items": {
+            "type": "object", "additionalProperties": false, "required": ["id", "inputs"],
+            "properties": {
+              "id": { "type": "string", "pattern": "^[a-z][a-z0-9]*(-[a-z0-9]+)*$", "$comment": "naming: map", "$comment": "naming: map", "description": "Registered in schemas/maps.json." },
+              "inputs": { "$ref": "part.schema.json#/$defs/hash64" },
+              "step": { "type": "integer", "minimum": 0, "description": "For a map stepped by the sun: its step index from absolute time; its two neighbours are cross-faded." }
+            }
+          }
+        },
+        "moon": {
+          "type": "object", "additionalProperties": false, "required": ["azimuthMillidegrees", "elevationMillidegrees", "phase", "illuminanceLux"],
+          "properties": {
+            "azimuthMillidegrees": { "$ref": "record.schema.json#/$defs/millidegrees" },
+            "elevationMillidegrees": { "$ref": "record.schema.json#/$defs/signedMillidegrees" },
+            "phase": { "type": "number", "minimum": 0, "maximum": 1 },
+            "illuminanceLux": { "type": "number", "minimum": 0 }
+          }
+        },
+        "canopy": {
+          "type": "object", "additionalProperties": false, "required": ["stages"],
+          "properties": {
+            "stages": {
+              "type": "array",
+              "items": {
+                "type": "object", "additionalProperties": false, "required": ["species", "stage", "radianceRgb"],
+                "properties": { "species": { "type": "string" }, "stage": { "type": "string" }, "radianceRgb": { "$ref": "#/$defs/rgb" } }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "rgb": { "type": "array", "minItems": 3, "maxItems": 3, "items": { "type": "number", "minimum": 0 } },
+    "push": {
+      "type": "object", "additionalProperties": false, "required": ["target"],
+      "description": "Art direction on a named term (schemas/light-terms.json): a colour moved in OKLCH (dL lightness, dC chroma, dh hue in degrees), a quantity scaled by 2^dLog2 (for exposure, its EV), a setting moved by add (the grade's contrast and saturation, in their own units).",
+      "properties": {
+        "target": { "type": "string", "pattern": "^[a-z]+(-[a-z0-9]+)*(\\.[a-z]+(-[a-z0-9]+)*)*$", "$comment": "naming: term", "$comment": "naming: term" },
+        "dL": { "type": "number" }, "dC": { "type": "number" }, "dh": { "type": "number" }, "dLog2": { "type": "number" }, "add": { "type": "number" }
+      }
+    }
+  }
+}

@@ -1,0 +1,83 @@
+{
+  "schemaVersion": 2,
+  "describes": "The light's constants for this pack, read by light-derive-1 (Overstory.Scenes.LightDerive): the atmosphere the sky is scattered in, the cloud kinds, what the ground and the town give back, the air near the ground, the photocells, the rooms and the lens. Physical values in SI units; colours as CIE 1931 xy chromaticity. Hashed as the record's pack source with lamp-kinds.json.",
+  "atmosphere": {
+    "note": "Bruneton's (2017) Earth, rendered spectrally from 380 to 780 nm: Rayleigh as 1.24062e-6 / lambda(um)^4 per metre at the ground; ozone by its cross-section (square metres, 293 K) in a tent round 25 km holding the column; the solar irradiance at the top (W per square metre per nm); both tables from 360 nm by 10. The aerosol maritime, its depth at 550 nm from the haze. Multiple scattering by Hillaire's (2020) transfer.",
+    "planetRadiusM": 6360000.0,
+    "topM": 60000.0,
+    "eyeM": 20.0,
+    "rayleighAt1um": 1.24062e-6,
+    "rayleighScaleM": 8000.0,
+    "ozoneColumnDu": 300.0,
+    "ozoneCentreM": 25000.0,
+    "ozoneHalfWidthM": 15000.0,
+    "aerosolScaleM": 1200.0,
+    "aerosolDepthClear": 0.06,
+    "aerosolDepthPerHaze": 0.45,
+    "aerosolAngstrom": 0.6,
+    "aerosolAlbedo": 0.95,
+    "aerosolG": 0.76,
+    "sunDiscDegrees": 0.53,
+    "spectralStepNm": 20,
+    "spectrumFromNm": 360.0,
+    "spectrumStepNm": 10.0,
+    "solarIrradiance": [1.11776, 1.14259, 1.01249, 1.14716, 1.72765, 1.73054, 1.6887, 1.61253, 1.91198, 2.03474, 2.02042, 2.02212, 1.93377, 1.95809, 1.91686, 1.8298, 1.8685, 1.8931, 1.85149, 1.8504, 1.8341, 1.8345, 1.8147, 1.78158, 1.7533, 1.6965, 1.68194, 1.64654, 1.6048, 1.52143, 1.55622, 1.5113, 1.474, 1.4482, 1.41018, 1.36775, 1.34188, 1.31429, 1.28303, 1.26758, 1.2367, 1.2082, 1.18737, 1.14683, 1.12362, 1.1058, 1.07124, 1.04992],
+    "ozoneCrossSectionM2": [1.18e-27, 2.182e-28, 2.818e-28, 6.636e-28, 1.527e-27, 2.763e-27, 5.52e-27, 8.451e-27, 1.582e-26, 2.316e-26, 3.669e-26, 4.924e-26, 7.752e-26, 9.016e-26, 1.48e-25, 1.602e-25, 2.139e-25, 2.755e-25, 3.091e-25, 3.5e-25, 4.266e-25, 4.672e-25, 4.398e-25, 4.701e-25, 5.019e-25, 4.305e-25, 3.74e-25, 3.215e-25, 2.662e-25, 2.238e-25, 1.852e-25, 1.473e-25, 1.209e-25, 9.423e-26, 7.455e-26, 6.566e-26, 5.105e-26, 4.15e-26, 4.228e-26, 3.237e-26, 2.451e-26, 2.801e-26, 2.534e-26, 1.624e-26, 1.465e-26, 2.078e-26, 1.383e-26, 7.105e-27]
+  },
+  "overcast": {
+    "note": "Kasten and Czeplak (1980): global light under cover N is 1 - 0.75 N^3.4 of the clear sky's; the CIE overcast sky's gradient (1 + 2 sin e) / 3; a brighter patch round the hidden sun, by the kind's sunLobe; the deck passes the colour of the light above it (its droplets scatter every wavelength alike); neutralise moves it towards white.",
+    "loss": 0.75,
+    "lossPower": 3.4,
+    "neutralise": 0.0
+  },
+  "cloudKinds": [
+    { "kind": "stratus", "baseMm": 300000, "topMm": 900000, "sizeM": 400.0, "softness": 0.2, "sunThrough": 0.04, "sunLobe": 0.3 },
+    { "kind": "stratocumulus", "baseMm": 900000, "topMm": 1600000, "sizeM": 160.0, "softness": 0.12, "sunThrough": 0.12, "sunLobe": 0.6 },
+    { "kind": "cumulus", "baseMm": 1200000, "topMm": 2500000, "sizeM": 220.0, "softness": 0.08, "sunThrough": 0.06, "sunLobe": 0.4 },
+    { "kind": "altostratus", "baseMm": 3000000, "topMm": 5000000, "sizeM": 600.0, "softness": 0.3, "sunThrough": 0.3, "sunLobe": 1.2 }
+  ],
+  "surfaces": {
+    "note": "Albedo (a mean over the visible band) of open ground and of the town's walls, as xy and a reflectance; a wet surface keeps (1 - wetDarkening) of it.",
+    "ground": { "xy": [0.33, 0.335], "albedo": 0.14 },
+    "town": { "xy": [0.34, 0.34], "albedo": 0.38 },
+    "wetDarkening": 0.4,
+    "groundLitShare": 0.5
+  },
+  "air": {
+    "note": "Fog's extinction from its visibility by Koschmieder (3.912 / V); the haze's from the aerosol at the ground. The bank thins over heightFalloff per metre above its top.",
+    "koschmieder": 3.912,
+    "heightFalloff": 0.02,
+    "maxOpacity": 0.97,
+    "middleM": 220.0,
+    "farM": 1500.0,
+    "bankOverLand": 300,
+    "bankWisps": 450,
+    "bankWispSizeM": 140.0,
+    "townGlowHeightM": 25.0,
+    "motesInFog": 1.0,
+    "moteSize": 0.003,
+    "shaftsPerHaze": 4.0,
+    "beamHazePerHaze": 10.0,
+    "beamReachM": 700.0,
+    "beamFalloff": 0.7
+  },
+  "photocell": {
+    "note": "Street circuits switch on when the light on open ground falls below onLux (dusk) and off above offLux.",
+    "circuits": ["ci-street-photocell"],
+    "onLux": 35.0,
+    "offLux": 70.0
+  },
+  "rooms": {
+    "note": "A lit room seen through its window from the street, and a shopfront's glass, in candela per square metre.",
+    "windowCdPerM2": 13.0,
+    "shopCdPerM2": 45.0,
+    "spillCd": 0.0
+  },
+  "exposure": {
+    "note": "EV100 from the illuminance on open level ground, as an incident meter reads it (calibration 250); the shaders' unit is 1 / (pi * 1.2 * 2^EV100) per lux.",
+    "calibration": 250.0,
+    "saturation": 1.2
+  },
+  "dome": { "note": "the dome shader's shape: how fast the horizon's colour gives way to the zenith's, and how tight the glow round the sun is", "curve": 0.5, "glowPower": 6.0 },
+  "lens": { "bloomIntensity": 0.4, "bloomThreshold": 1.3 }
+}

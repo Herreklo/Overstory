@@ -83,11 +83,6 @@ namespace Overstory.Scenes
 
         VolumeProfile profile;
 
-        // the light each kind of lamp gives (sRGB): incandescent, mercury vapour, high-pressure sodium
-        static readonly Color Warm = new Color(1.0f, 0.74f, 0.48f);
-        static readonly Color Mercury = new Color(0.78f, 0.92f, 0.94f);
-        static readonly Color Sodium = new Color(1.0f, 0.62f, 0.27f);
-
         void OnEnable() => Apply();
 
         void OnValidate()
@@ -218,6 +213,7 @@ namespace Overstory.Scenes
             {
                 sky.SetColor("_Zenith", r.zenith);
                 sky.SetColor("_Horizon", r.horizon);
+                sky.SetColor("_Deck", r.deck);
                 sky.SetColor("_Below", r.belowHorizon);
                 sky.SetFloat("_Curve", r.skyCurve);
                 sky.SetColor("_SunGlow", r.sunGlow);
@@ -245,7 +241,7 @@ namespace Overstory.Scenes
             DynamicGI.UpdateEnvironment();
 
             Shader.SetGlobalVector("_OS_SunDir", toSun);
-            Shader.SetGlobalVector("_OS_SunCol", Linear(r.sunColour) * Mathf.Clamp(r.sunIntensity, 0.45f, 1.4f));
+            Shader.SetGlobalVector("_OS_SunCol", Linear(r.sunColour) * r.sunIntensity);
             // the shared sky term: the rig's hemisphere light, in linear light
             Shader.SetGlobalVector("_OS_SkyAmb", Linear(r.ambientSky) * r.ambientIntensity);
             Shader.SetGlobalVector("_OS_HorizonAmb", Linear(r.ambientEquator) * r.ambientIntensity);
@@ -253,9 +249,9 @@ namespace Overstory.Scenes
             var side = Linear(r.ambientSunSide) * r.ambientIntensity;
             Shader.SetGlobalVector("_OS_SunSideAmb", new Vector4(side.x, side.y, side.z, r.ambientSunSide.a > 0f ? 1f : 0f));
             Shader.SetGlobalVector("_OS_TownBounce", Linear(r.townBounce) * r.ambientIntensity);
-            // the sun bounced up from lit ground: ground of about a third albedo, about half of it in sun in a town
+            // the sun bounced up from lit ground: the ground's albedo times its share in sun (the rig's)
             float lift = Mathf.Max(0f, Mathf.Sin(r.sunElevation * Mathf.Deg2Rad));
-            Shader.SetGlobalVector("_OS_SunBounce", Linear(r.sunColour) * (r.sunIntensity * lift * 0.33f * 0.5f));
+            Shader.SetGlobalVector("_OS_SunBounce", Linear(r.sunColour) * (r.sunIntensity * lift * r.sunBounce));
             var skyLight = Linear(r.ambientSky);
             Shader.SetGlobalVector("_OS_Rim", new Vector4(skyLight.x, skyLight.y, skyLight.z, rim));
             // the air far off; a rig without a far distance keeps one colour of air
@@ -271,13 +267,14 @@ namespace Overstory.Scenes
             Shader.SetGlobalFloat("_OS_Time", r.clock);
             Shader.SetGlobalVector("_OS_Clouds", new Vector4(r.cloudCover, r.cloudSize, r.cloudSoftness, r.cloudHeight));
             Shader.SetGlobalVector("_OS_CloudDrift", Vector4.zero); // the wind will move it, from the clock
+            Shader.SetGlobalFloat("_OS_CloudThrough", r.cloudSunThrough);
             Shader.SetGlobalVector("_OS_FogColor", Linear(r.fogColour));
             Shader.SetGlobalVector("_OS_FogParams", new Vector4(r.fogDensity, r.fogHeightFalloff, r.fogBaseHeight, r.fogMaxOpacity));
             var hz = Linear(r.hazeColour);
             Shader.SetGlobalVector("_OS_HazeColor", new Vector4(hz.x, hz.y, hz.z, 1f));
             Shader.SetGlobalVector("_OS_Haze", new Vector4(r.hazeDensity, r.hazeHeight, 0f, 0f));
             // shafts of sun through the shadow map replace the sun's unshadowed glow in the air (SunBeams.shader)
-            Shader.SetGlobalVector("_OS_SunBeams", new Vector4(r.shafts, 700f, 0.7f, Mathf.Max(r.beamHaze, 1f)));
+            Shader.SetGlobalVector("_OS_SunBeams", new Vector4(r.shafts, r.beamReach, r.beamFalloff, Mathf.Max(r.beamHaze, 1f)));
             Shader.SetGlobalVector("_OS_Bank", new Vector4(r.fogBank ? 1f : 0f, r.bankOverLand, r.bankWisps, r.bankWispSize));
             Shader.SetGlobalVector("_OS_GlowParams", new Vector4(r.lampsOn ? r.townGlow : 0f, r.townGlowHeight, 0f, 0f));
             if (motes != null)
@@ -294,9 +291,10 @@ namespace Overstory.Scenes
             {
                 foreach (var (light, kind) in street.LampLights)
                 {
-                    light.enabled = r.lampsOn;
-                    light.intensity = r.lampIntensity;
-                    light.color = kind == "sodium" ? Sodium : kind == "mercury" ? Mercury : Warm;
+                    bool known = r.Lamp(kind, out var lamp);
+                    light.enabled = r.lampsOn && known;
+                    light.intensity = r.lampIntensity * lamp.intensity;
+                    light.color = lamp.colour;
                 }
                 foreach (var light in street.SpillLights)
                 {

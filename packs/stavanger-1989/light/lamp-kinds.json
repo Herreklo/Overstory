@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 2,
+  "describes": "This pack's lamp kinds, referenced by a lamp's kind (its record, or lights.json until lamps are records). Colour from the lamp's spectrum as CIE xy; output in lumens (watts by efficacy) through the luminaire, with the share sent upward; a 3 x 3 rendition matrix (row-major, on linear Rec.709) for how the kind drains colour, identity for a full spectrum; warm-up in seconds from strike to full. The glass's luminance is what the eye sees of the lamp itself. Range is where the drawn light stops (a cost bound, not physics).",
+  "kinds": [
+    { "kind": "warm", "is": "1955 lantern, 100 W incandescent bulb", "xy": [0.4599, 0.4106], "lumens": 1170.0, "upward": 0.45, "glassCdPerM2": 6000.0, "warmUpS": 0.0, "rangeM": 14.0, "fogShare": 1.0, "rendition": [1, 0, 0, 0, 1, 0, 0, 0, 1] },
+    { "kind": "mercury", "is": "1960s mercury vapour, 125 W, clear", "xy": [0.33, 0.38], "lumens": 5600.0, "upward": 0.1, "glassCdPerM2": 9000.0, "warmUpS": 240.0, "rangeM": 22.0, "fogShare": 1.0, "rendition": [0.55, 0.3, 0.15, 0.05, 0.9, 0.05, 0.05, 0.25, 0.7] },
+    { "kind": "sodium", "is": "1970s high-pressure sodium, 150 W on a 7 m pole", "xy": [0.527, 0.413], "lumens": 13500.0, "upward": 0.05, "glassCdPerM2": 12000.0, "warmUpS": 300.0, "rangeM": 28.0, "fogShare": 1.0, "rendition": [0.7, 0.3, 0.0, 0.2, 0.75, 0.05, 0.1, 0.5, 0.4] },
+    { "kind": "shop", "is": "a lit shopfront's light out onto the pavement", "xy": [0.437, 0.404], "lumens": 900.0, "upward": 0.0, "glassCdPerM2": 45.0, "warmUpS": 0.0, "rangeM": 9.0, "fogShare": 0.4, "rendition": [1, 0, 0, 0, 1, 0, 0, 0, 1] },
+    { "kind": "red", "is": "the breakwater's head", "xy": [0.69, 0.3], "lumens": 600.0, "upward": 0.5, "glassCdPerM2": 4000.0, "warmUpS": 0.0, "rangeM": 30.0, "fogShare": 1.0, "rendition": [1, 0, 0, 0, 1, 0, 0, 0, 1] },
+    { "kind": "white", "is": "the beacon on the Pip", "xy": [0.32, 0.34], "lumens": 2500.0, "upward": 0.5, "glassCdPerM2": 8000.0, "warmUpS": 0.0, "rangeM": 30.0, "fogShare": 1.0, "rendition": [1, 0, 0, 0, 1, 0, 0, 0, 1] }
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 2,
+  "describes": "The key set: art direction on top of the derived light, never in place of it (docs/research/lighting-and-colour.md, the short of it, 1 and 4). Rows are keyed by the sun's elevation (millidegrees, clamped at -18000), a side of the day (morning, evening or both, blended by the evening weight from the sun's hour angle) and a weather regime (clear, overcast, fog, blended by the weather's weights); between two rows of a regime and side a push is interpolated by elevation, and a target a row leaves out is no push there. Pushes name terms in schemas/light-terms.json. Hashed as the record's keys source.",
+  "keys": [
+    {"weather": "clear", "side": "both", "elevationMillidegrees": 60000, "pushes": []},
+    {"weather": "clear", "side": "both", "elevationMillidegrees": 5000, "pushes": []},
+    {"weather": "clear", "side": "both", "elevationMillidegrees": -5000, "pushes": [{"target": "exposure", "dLog2": -2.0}]},
+    {"weather": "clear", "side": "both", "elevationMillidegrees": -18000, "pushes": [{"target": "exposure", "dLog2": -3.0}]},
+    {"weather": "overcast", "side": "both", "elevationMillidegrees": 60000, "pushes": [{"target": "grade.temperature", "add": -16.0}]},
+    {"weather": "overcast", "side": "both", "elevationMillidegrees": 5000, "pushes": [{"target": "grade.temperature", "add": -16.0}]},
+    {"weather": "overcast", "side": "both", "elevationMillidegrees": -5000, "pushes": [{"target": "exposure", "dLog2": -2.0}]},
+    {"weather": "overcast", "side": "both", "elevationMillidegrees": -18000, "pushes": [{"target": "exposure", "dLog2": -3.0}]},
+    {"weather": "fog", "side": "both", "elevationMillidegrees": 60000, "pushes": []},
+    {"weather": "fog", "side": "both", "elevationMillidegrees": 5000, "pushes": []},
+    {"weather": "fog", "side": "both", "elevationMillidegrees": -5000, "pushes": [{"target": "exposure", "dLog2": -2.0}, {"target": "grade.temperature", "add": 15.0}]},
+    {"weather": "fog", "side": "both", "elevationMillidegrees": -18000, "pushes": [{"target": "exposure", "dLog2": -3.0}]}
+  ]
+}

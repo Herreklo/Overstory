@@ -228,175 +228,20 @@ namespace Overstory.EditorTools
         /// <summary>The colour script: four hours of 20 October 1989, the sun from the clock (Norway on winter time, UTC+1).</summary>
         public static readonly string[] Hours = { "0930-morning", "1300-drizzle", "1600-low-sun", "1750-blue-hour" };
 
-        /// <summary>Writes the four rigs. Their colours are chosen as an artist would; the sun is the clock's.</summary>
+        /// <summary>Writes the four rigs, each a view of its light record (fixtures/light/1989-10-20-hour.json).</summary>
         public static void Rigs()
         {
             Directory.CreateDirectory(Lights);
             AssetDatabase.Refresh();
-            Asset<LightRig>($"{Lights}/Heart_{Hours[0]}.asset", r =>
-            {
-                // a clear cold morning: the sun low in the south-east behind Herring Hill, the old town in its own shade,
-                // a white haze on the water
-                Clock(r, 9.5f);
-                Sun(r, C(1.0f, 0.86f, 0.70f), 2.4f, 1f);
-                Sky(r, C(0.40f, 0.55f, 0.76f), C(0.80f, 0.82f, 0.84f), C(0.25f, 0.26f, 0.28f), 0.55f, C(0.95f, 0.80f, 0.62f), 6f, Color.black);
-                Shade(r, C(0.46f, 0.57f, 0.76f), C(0.56f, 0.60f, 0.68f), C(0.82f, 0.76f, 0.66f), C(0.32f, 0.31f, 0.29f), C(0.40f, 0.38f, 0.35f), 0.7f);
-                Air(r, C(0.66f, 0.70f, 0.76f), C(0.74f, 0.77f, 0.82f), C(0.84f, 0.86f, 0.88f), 0.0006f, C(0.70f, 0.60f, 0.48f), 5f);
-                Haze(r, C(0.86f, 0.88f, 0.90f), 0.0035f, 12f);
-                Clouds(r, 0.2f, 0.12f, 0.25f);
-                Grading(r, 0.05f, 8f, 0f, 0.1f);
-                r.shafts = 1.6f;   // the low sun over Herring Hill, through the morning haze
-                r.beamHaze = 6f;
-                r.motes = 1.0f;
-            });
-            Asset<LightRig>($"{Lights}/Heart_{Hours[1]}.asset", r =>
-            {
-                // grey drizzle at midday: the sun a pale disc behind the cloud, light from the whole sky, the far shore gone
-                Clock(r, 13f);
-                Sun(r, C(0.92f, 0.94f, 0.97f), 0.45f, 0.35f);
-                Sky(r, C(0.60f, 0.63f, 0.67f), C(0.75f, 0.77f, 0.79f), C(0.30f, 0.31f, 0.32f), 0.7f, C(0.12f, 0.12f, 0.11f), 3f, Color.black);
-                // the sky's bright side, where the pale sun hides behind thin cloud, a third brighter than the side away
-                // from it (research rule 2: the sky term stylised in drizzle; evenly lit, an upright form had no lit side)
-                Shade(r, C(0.72f, 0.75f, 0.80f), C(0.56f, 0.59f, 0.64f), C(0.76f, 0.775f, 0.79f), C(0.32f, 0.33f, 0.33f), C(0.30f, 0.31f, 0.32f), 1.0f);
-                Air(r, C(0.62f, 0.66f, 0.70f), C(0.70f, 0.73f, 0.76f), C(0.76f, 0.78f, 0.80f), 0.0014f, C(0.05f, 0.05f, 0.05f), 3f);
-                r.fogMidDistance = 220f;
-                r.fogFarDistance = 1500f;
-                r.fogMaxOpacity = 0.92f;
-                Haze(r, C(0.78f, 0.80f, 0.82f), 0.004f, 25f);
-                Clouds(r, 0.97f, 0.15f, 0f);
-                r.cloudHeight = 900f;
-                r.wetness = 0.85f;
-                Grading(r, 0.2f, 4f, -5f, 0f);
-                r.shafts = 0f;
-                r.motes = 0f;
-            });
-            Asset<LightRig>($"{Lights}/Heart_{Hours[2]}.asset", r =>
-            {
-                // the corner's light: the sun 8 degrees high in the south-west after a day of showers, the cloud
-                // breaking in the west, a little haze off the fjord
-                Clock(r, 16f);
-                Sun(r, C(1.0f, 0.72f, 0.46f), 3.0f, 1f);
-                Sky(r, C(0.33f, 0.46f, 0.68f), C(0.94f, 0.80f, 0.63f), C(0.24f, 0.23f, 0.24f), 0.5f, C(1.0f, 0.62f, 0.34f), 7f, C(0.12f, 0.08f, 0.10f));
-                // shade two values below the light (value plans: the lane's foot the darkest, the sunlit wall the white)
-                Shade(r, C(0.40f, 0.51f, 0.72f), C(0.50f, 0.53f, 0.62f), C(0.80f, 0.64f, 0.50f), C(0.33f, 0.29f, 0.25f), C(0.46f, 0.38f, 0.31f), 0.42f);
-                Air(r, C(0.60f, 0.60f, 0.66f), C(0.76f, 0.69f, 0.66f), C(0.90f, 0.80f, 0.70f), 0.0006f, C(0.86f, 0.56f, 0.32f), 5f);
-                Haze(r, C(0.88f, 0.78f, 0.68f), 0.0025f, 16f);
-                Clouds(r, 0.32f, 0.12f, 0.35f);
-                r.wetness = 0.25f;
-                Grading(r, 0.45f, 12f, 0f, 0.2f);
-                r.shafts = 1.2f;   // low sun down the lanes and through the breaking cloud
-                r.beamHaze = 3f;
-                r.motes = 1.2f;
-            });
-            Asset<LightRig>($"{Lights}/Heart_{Hours[3]}.asset", r =>
-            {
-                // blue hour: the sun five degrees down, an orange glow low in the west, the pink band in the east,
-                // the high cloud still lit
-                Clock(r, 17f + 50f / 60f);
-                Sun(r, Color.black, 0f, 0f);
-                Sky(r, C(0.16f, 0.24f, 0.44f), C(0.50f, 0.46f, 0.56f), C(0.10f, 0.10f, 0.13f), 0.45f, C(0.78f, 0.42f, 0.22f), 4f, C(0.32f, 0.22f, 0.34f));
-                Shade(r, C(0.24f, 0.32f, 0.54f), C(0.26f, 0.30f, 0.46f), C(0.44f, 0.36f, 0.42f), C(0.11f, 0.11f, 0.13f), C(0.10f, 0.10f, 0.13f), 1.0f);
-                Air(r, C(0.26f, 0.30f, 0.44f), C(0.33f, 0.35f, 0.50f), C(0.48f, 0.44f, 0.56f), 0.0007f, C(0.40f, 0.24f, 0.18f), 4f);
-                Haze(r, C(0.40f, 0.42f, 0.54f), 0.003f, 18f);
-                Clouds(r, 0.3f, 0.12f, 0.45f);
-                Grading(r, 0.35f, 6f, 0f, 0f);
-                r.shafts = 0f;
-                r.motes = 0f;
-            });
-            AssetDatabase.SaveAssets();
             foreach (var h in Hours)
             {
-                var r = AssetDatabase.LoadAssetAtPath<LightRig>($"{Lights}/Heart_{h}.asset");
+                var r = LT1Light.Rig($"1989-10-20-{h}", $"{Lights}/Heart_{h}.asset");
                 Debug.Log($"[LT1Heart] {h}: sun {r.sunElevation:F1} degrees high, street bearing {r.sunBearing:F0}");
             }
+            AssetDatabase.SaveAssets();
         }
 
         static Color C(float r, float g, float b) => new Color(r, g, b);
-
-        static void Clock(LightRig r, float hour)
-        {
-            r.sunFromClock = true;
-            r.year = 1989;
-            r.month = 10;
-            r.day = 20;
-            r.hour = hour;
-            r.utcOffset = 1f; // summer time ended on 24 September 1989
-            r.latitude = 58.97f;
-            r.longitude = 5.73f;
-            r.streetAxisCompass = 190f;
-            r.SetSunFromClock();
-        }
-
-        static void Sun(LightRig r, Color colour, float intensity, float shadow)
-        {
-            r.sunColour = colour;
-            r.sunIntensity = intensity;
-            r.shadowStrength = shadow;
-        }
-
-        static void Sky(LightRig r, Color zenith, Color horizon, Color below, float curve, Color glow, float glowPower, Color anti)
-        {
-            r.zenith = zenith;
-            r.horizon = horizon;
-            r.belowHorizon = below;
-            r.skyCurve = curve;
-            r.sunGlow = glow;
-            r.sunGlowPower = glowPower;
-            r.antiGlow = anti;
-        }
-
-        static void Shade(LightRig r, Color sky, Color away, Color sunSide, Color ground, Color town, float intensity)
-        {
-            r.ambientSky = sky;
-            r.ambientEquator = away;
-            r.ambientSunSide = sunSide;
-            r.ambientGround = ground;
-            r.townBounce = town;
-            r.ambientIntensity = intensity;
-        }
-
-        static void Air(LightRig r, Color near, Color middle, Color far, float density, Color sun, float sunPower)
-        {
-            r.fogColour = near;
-            r.fogMidColour = middle;
-            r.fogMidDistance = 300f;
-            r.fogFarColour = far;
-            r.fogFarDistance = 2500f;
-            r.fogDensity = density;
-            r.fogHeightFalloff = 0.012f;
-            r.fogBaseHeight = 0f;
-            r.fogMaxOpacity = 0.85f;
-            r.fogSunColour = sun;
-            r.fogSunPower = sunPower;
-        }
-
-        static void Haze(LightRig r, Color colour, float density, float height)
-        {
-            r.hazeColour = colour;
-            r.hazeDensity = density;
-            r.hazeHeight = height;
-        }
-
-        static void Clouds(LightRig r, float cover, float softness, float high)
-        {
-            r.cloudCover = cover;
-            r.cloudSize = 2400f; // big masses, as a painter simplifies a sky; their shadows lie on the town in broad patches
-            r.cloudSoftness = softness;
-            r.cloudHeight = 1400f;
-            r.highCloud = high;
-        }
-
-        static void Grading(LightRig r, float exposure, float contrast, float saturation, float bloom)
-        {
-            r.postExposure = exposure;
-            r.contrast = contrast;
-            r.saturation = saturation;
-            r.temperature = 0f;
-            r.tint = 0f;
-            r.colourFilter = Color.white;
-            r.bloomIntensity = bloom;
-            r.bloomThreshold = 1.1f;
-        }
 
         /// <summary>
         /// The light frames (reviews/lt1/heart/light/&lt;hour&gt;/): every camera at every hour, in clay with the town's sky
@@ -447,43 +292,14 @@ namespace Overstory.EditorTools
         const string Night = "1750-sea-fog";
         public static readonly string[] Moods = { "hopeless", "hopeful", "grand", "sad", "gritty", "success" };
 
-        /// <summary>The rig: 17:50 on Friday 20 October 1989, the sun five degrees down, a bank of sea fog on the water.</summary>
+        /// <summary>The rig: 17:50 on Friday 20 October 1989, the sun five degrees down, a bank of sea fog on the water (the blue hour's record).</summary>
         internal static LightRig NightRig()
         {
             Directory.CreateDirectory(Lights);
             AssetDatabase.Refresh();
-            return Asset<LightRig>($"{Lights}/Heart_{Night}.asset", r =>
-            {
-                Clock(r, 17f + 50f / 60f);
-                Sun(r, Color.black, 0f, 0f);
-                // a sky mostly fog: blue overhead, a last dull glow low in the west, tight to where the sun went down
-                Sky(r, C(0.14f, 0.22f, 0.40f), C(0.38f, 0.45f, 0.58f), C(0.08f, 0.09f, 0.12f), 0.5f, C(0.14f, 0.09f, 0.08f), 12f, C(0.06f, 0.05f, 0.08f));
-                Shade(r, C(0.22f, 0.30f, 0.50f), C(0.24f, 0.29f, 0.42f), C(0.30f, 0.30f, 0.40f), C(0.10f, 0.10f, 0.12f), C(0.12f, 0.11f, 0.12f), 0.72f);
-                Air(r, C(0.22f, 0.31f, 0.48f), C(0.27f, 0.35f, 0.52f), C(0.34f, 0.40f, 0.55f), 0.0008f, C(0.10f, 0.07f, 0.06f), 8f);
-                r.fogMaxOpacity = 0.97f;
-                // the sea fog: a bank, thick over the cold water and thinner over the land, thinning over a dozen metres
-                // so the hills stand out of it, broken by slow wisps, with the town's glow in it over the lit streets
-                Haze(r, C(0.26f, 0.35f, 0.53f), 0.019f, 12f);
-                r.fogBank = true;
-                r.bankOverLand = 0.3f;
-                r.bankWisps = 0.45f;
-                r.bankWispSize = 140f;
-                r.townGlow = 0.0012f;
-                r.townGlowHeight = 25f;
-                Clouds(r, 0.9f, 0.2f, 0f);
-                r.wetness = 0.75f;
-                r.lampsOn = true;
-                r.lampIntensity = 10f;
-                r.lampGlow = 40f;     // the lamp's glass the one white
-                r.lampHalo = 4f;
-                r.windowGlow = 0.6f;  // windows and shopfronts a step below the lamps
-                r.windowSpill = 0f;
-                Grading(r, 0.6f, 8f, 0f, 0.5f);
-                r.bloomThreshold = 1.3f; // above the sky, so only the lamps and lit windows glow
-                r.shafts = 0f;
-                r.motes = 1.0f;     // droplets of the fog, glittering round the lamps
-                r.moteSize = 0.003f;
-            });
+            var r = LT1Light.Rig("1989-10-20-1750-blue-hour", $"{Lights}/Heart_{Night}.asset");
+            AssetDatabase.SaveAssets();
+            return r;
         }
 
         /// <summary>The moods as recipes, until target paintings give their looks (a graded strip in a painted frame).</summary>

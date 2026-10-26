@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 786fea6a47b704eeeab3813c905b0577, type: 3}
   m_Name: Heart_0930-morning
   m_EditorClassIdentifier: Assembly-CSharp::Overstory.Scenes.LightRig
-  sunFromClock: 1
+  sunFromClock: 0
   year: 1989
   month: 10
   day: 20
@@ -21,70 +21,106 @@ MonoBehaviour:
   latitude: 58.97
   longitude: 5.73
   streetAxisCompass: 190
-  sunBearing: 53.37422
-  sunElevation: 12.582903
-  sunColour: {r: 1, g: 0.86, b: 0.7, a: 1}
-  sunIntensity: 2.4
+  sunBearing: 53.373993
+  sunElevation: 12.583
+  sunColour: {r: 1.1798717, g: 0.96610385, b: 0.70440584, a: 1}
+  sunIntensity: 1.0415497
   shadowStrength: 1
-  zenith: {r: 0.4, g: 0.55, b: 0.76, a: 1}
-  horizon: {r: 0.8, g: 0.82, b: 0.84, a: 1}
-  belowHorizon: {r: 0.25, g: 0.26, b: 0.28, a: 1}
-  skyCurve: 0.55
-  sunGlow: {r: 0.95, g: 0.8, b: 0.62, a: 1}
+  zenith: {r: 0.43775693, g: 0.4755304, b: 0.57291305, a: 1}
+  horizon: {r: 0.6476157, g: 0.6005175, b: 0.5642376, a: 1}
+  deck: {r: 0.9564164, g: 0.89762026, b: 0.88142824, a: 1}
+  belowHorizon: {r: 0.38213062, g: 0.31941402, b: 0.29527387, a: 1}
+  skyCurve: 0.5
+  sunGlow: {r: 2.3638341, g: 1.9184302, b: 1.3585309, a: 1}
   sunGlowPower: 6
-  ambientSky: {r: 0.46, g: 0.57, b: 0.76, a: 1}
-  ambientEquator: {r: 0.56, g: 0.6, b: 0.68, a: 1}
-  ambientGround: {r: 0.32, g: 0.31, b: 0.29, a: 1}
-  ambientSunSide: {r: 0.82, g: 0.76, b: 0.66, a: 1}
-  townBounce: {r: 0.4, g: 0.38, b: 0.35, a: 1}
-  ambientIntensity: 0.7
-  fogColour: {r: 0.66, g: 0.7, b: 0.76, a: 1}
-  fogMidColour: {r: 0.74, g: 0.77, b: 0.82, a: 1}
-  fogMidDistance: 300
-  fogFarColour: {r: 0.84, g: 0.86, b: 0.88, a: 1}
-  fogFarDistance: 2500
-  fogDensity: 0.0006
-  fogHeightFalloff: 0.012
+  ambientSky: {r: 0.7428272, g: 0.717127, b: 0.733746, a: 1}
+  ambientEquator: {r: 0.5544066, g: 0.529496, b: 0.5287675, a: 1}
+  ambientGround: {r: 0.3123111, g: 0.27435577, b: 0.27330065, a: 1}
+  ambientSunSide: {r: 0.9180093, g: 0.8186811, b: 0.71517634, a: 1}
+  townBounce: {r: 0.5002545, g: 0.39700493, b: 0.34396288, a: 1}
+  sunBounce: 0.0545664
+  ambientIntensity: 1
+  fogColour: {r: 0.6476157, g: 0.6005175, b: 0.5642376, a: 1}
+  fogMidColour: {r: 0.6476157, g: 0.6005175, b: 0.5642376, a: 1}
+  fogMidDistance: 220
+  fogFarColour: {r: 0.6476157, g: 0.6005175, b: 0.5642376, a: 1}
+  fogFarDistance: 1500
+  fogDensity: 0.00023230775
+  fogHeightFalloff: 0.02
   fogBaseHeight: 0
-  fogMaxOpacity: 0.85
-  fogSunColour: {r: 0.7, g: 0.6, b: 0.48, a: 1}
-  fogSunPower: 5
-  hazeColour: {r: 0.86, g: 0.88, b: 0.9, a: 1}
-  hazeDensity: 0.0035
-  hazeHeight: 12
+  fogMaxOpacity: 0.97
+  fogSunColour: {r: 2.3638341, g: 1.9184302, b: 1.3585309, a: 1}
+  fogSunPower: 8.333333
+  hazeColour: {r: 0.6476157, g: 0.6005175, b: 0.5642376, a: 1}
+  hazeDensity: 0
+  hazeHeight: 20
   fogBank: 0
-  bankOverLand: 0.35
+  bankOverLand: 0.3
   bankWisps: 0.45
   bankWispSize: 140
-  townGlow: 0
+  townGlow: 0.0004
   townGlowHeight: 25
-  beamHaze: 6
-  shafts: 1.6
+  beamHaze: 4.5
+  beamReach: 700
+  beamFalloff: 0.7
+  shafts: 1.4399999
   shaftReach: 0.6
   shaftDecay: 0.965
-  motes: 1
-  moteSize: 0.004
+  motes: 0
+  moteSize: 0.003
   shaftThreshold: 0.5
-  wetness: 0
+  wetness: 0.1
   cloudCover: 0.2
-  cloudSize: 2400
-  cloudSoftness: 0.12
-  cloudHeight: 1400
+  cloudSize: 220
+  cloudSoftness: 0.08
+  cloudHeight: 1200
   highCloud: 0.25
-  antiGlow: {r: 0, g: 0, b: 0, a: 1}
-  windowGlow: 0
+  cloudSunThrough: 0.06
+  antiGlow: {r: 0.10194779, g: 0.20934519, b: 0.248896, a: 1}
+  windowGlow: 0.0018306031
   lampsOn: 0
-  lampGlow: 0
-  lampIntensity: 0
+  lampGlow: 1.6897875
+  lampIntensity: 1
   windowSpill: 0
-  lampHalo: 1
-  postExposure: 0.05
-  contrast: 8
+  lampHalo: 3.1415927
+  lampKinds:
+  - kind: warm
+    colour: {r: 1.3499694, g: 0.90813893, b: 0.47513914, a: 1}
+    intensity: 0.004590602
+    range: 14
+    fogShare: 1
+  - kind: mercury
+    colour: {r: 0.9530284, g: 1.0294826, b: 0.8272222, a: 1}
+    intensity: 0.035954364
+    range: 22
+    fogShare: 1
+  - kind: sodium
+    colour: {r: 1.5236027, g: 0.82408, b: 0.15440503, a: 1}
+    intensity: 0.09149102
+    range: 28
+    fogShare: 1
+  - kind: shop
+    colour: {r: 1.2969223, g: 0.92804223, b: 0.55849576, a: 1}
+    intensity: 0.0064204223
+    range: 9
+    fogShare: 0.4
+  - kind: red
+    colour: {r: 2.0214038, g: 0, b: 0, a: 1}
+    intensity: 0.0021401409
+    range: 30
+    fogShare: 1
+  - kind: white
+    colour: {r: 1.0063993, g: 1.0024285, b: 0.95719963, a: 1}
+    intensity: 0.008917253
+    range: 30
+    fogShare: 1
+  postExposure: 0
+  contrast: 0
   saturation: 0
   temperature: 0
   tint: 0
   colourFilter: {r: 1, g: 1, b: 1, a: 1}
-  bloomIntensity: 0.1
-  bloomThreshold: 1.1
+  bloomIntensity: 0.4
+  bloomThreshold: 1.3
   reflectionStrength: 1
   clock: 0

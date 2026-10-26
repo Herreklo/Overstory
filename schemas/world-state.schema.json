@@ -12,6 +12,7 @@
     "fabric": { "$ref": "record.schema.json#/$defs/date", "description": "The fabric date: which fills stand and how far every layer has run. Year and month." },
     "dayOfYear": { "type": "integer", "minimum": 1, "maximum": 366, "description": "The day, for the sun and the season. Its month must agree with the fabric date's when that has one." },
     "timeOfDayS": { "type": "integer", "minimum": 0, "maximum": 86399, "description": "Local time in seconds since midnight. With the day and the place it gives the sun's position; with the day and the year it is the absolute time the wind and every motion read (D10.7)." },
+    "instantMs": { "type": "integer", "minimum": 0, "maximum": 999, "description": "The milliseconds past timeOfDayS, so a frame can be replayed (the light record's one clock, LA 1). Absent: 0." },
     "weather": {
       "type": "object", "additionalProperties": false, "required": ["cover", "precipitation", "intensity", "surfacesWet", "haze"],
       "properties": {
@@ -19,7 +20,20 @@
         "precipitation": { "enum": ["none", "drizzle", "rain", "sleet", "snow"] },
         "intensity": { "$ref": "record.schema.json#/$defs/perMille" },
         "surfacesWet": { "$ref": "record.schema.json#/$defs/perMille", "description": "How wet open surfaces are now, from the hours before: the 16:00 low sun after showers is wet under a clear sky." },
-        "haze": { "$ref": "record.schema.json#/$defs/perMille" }
+        "haze": { "$ref": "record.schema.json#/$defs/perMille" },
+        "cloudKind": { "enum": ["stratus", "stratocumulus", "cumulus", "altostratus"], "description": "The low cloud's kind, for its size, softness and how much sun it lets through (the pack's light/sky.json, cloudKinds). Absent: stratocumulus." },
+        "cloudBaseMm": { "type": "integer", "minimum": 0, "description": "The low cloud's base above the sea. Absent: the kind's own." },
+        "highCover": { "$ref": "record.schema.json#/$defs/perMille", "description": "High cloud (cirrus) over the low. Absent: none." },
+        "fog": {
+          "description": "Fog over the water and land: how far one sees in it, the top of its bank, and how it lies. Absent: no fog (the air's haze alone).",
+          "type": "object", "additionalProperties": false, "required": ["visibilityMm", "bankTopMm"],
+          "properties": {
+            "visibilityMm": { "type": "integer", "minimum": 1 },
+            "bankTopMm": { "type": "integer", "minimum": 0, "description": "Its top above the sea; the hills stand out of it above." },
+            "overLand": { "$ref": "record.schema.json#/$defs/perMille", "description": "How thick it lies over land against the water. Absent: 300." },
+            "wisps": { "$ref": "record.schema.json#/$defs/perMille", "description": "How broken it is. Absent: 450." }
+          }
+        }
       }
     },
     "wind": {

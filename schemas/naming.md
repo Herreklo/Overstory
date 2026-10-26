@@ -22,7 +22,7 @@ An id is a path. After the record come segments, each a name (`tr-3`, `bed`) or 
 - **Seed keys** (`hashing.py`): an id alone seeds the part function that makes its thing; every other draw adds its purpose, words and integers saying what it decides (`"lay"`, `"crack", "gap"`, `"campaign", 1961`). A purpose never stands for a thing: what can be replaced, picked or pinned has a slot. A tread's slabs and a row's setts are keyed on their fill and its pieces, so a stone laid anew draws anew; the other stones on their slot, which stands for its first fill until upkeep gives it a second.
 - A record's token is minted, never made from a display name. `stone.py` and `wall.py` still fall back to the lane's name when a stair's facts carry no id, and eight of the plan's stairs come out with `--`, which the record rule refuses: three passages at a negative x (`st-passage-at--172`) and five ways whose names hold a comma or brackets (`st-the-way-to-d--1107--empty-since-1986`). They are a defect, minted afresh at step 2b's re-baseline.
 
-**Record prefixes.** Engine-owned: `p` person, `h` household, `pl` place, `v` venture, `g` group, `e` engine event. Ours: `bld` building, `st` stair or flight of steps, `wl` wall, `way` street, lane, square or quay, `plot`, `unit` plan unit, `lamp`, `tree`, `plant` other planted thing, `sign`, `room`, `doc` poster, paper or deed, `photo`, `item` carried thing or garment, `trace` social trace, `org` a keeper that is not a person (a department, a firm), `ug` underground run, `rock` natural stone, `act` ground act. A new prefix is added here before its first record.
+**Record prefixes.** Engine-owned: `p` person, `h` household, `pl` place, `v` venture, `g` group, `e` engine event. Ours: `bld` building, `st` stair or flight of steps, `wl` wall, `way` street, lane, square or quay, `plot`, `unit` plan unit, `lamp`, `tree`, `plant` other planted thing, `sign`, `room`, `doc` poster, paper or deed, `photo`, `item` carried thing or garment, `trace` social trace, `org` a keeper that is not a person (a department, a firm), `ug` underground run, `rock` natural stone, `act` ground act, `ci` a lamp circuit (a street's lamps switched together: `ci-street-photocell`). A new prefix is added here before its first record.
 
 ## The stair's slots
 
@@ -107,6 +107,8 @@ map: [a-z][a-z0-9]*(-[a-z0-9]+)*
 page: (pg|ce)-{unit-index}-{unit-index}/{map}
 generation: (-g{ordinal})?
 stair-flight: fl-{count}
+circuit: ci-[a-z0-9]+(-[a-z0-9]+)*
+term: {word}(\.{word})*
 stair-turn: {stair-flight}/turn
 stair-step: {stair-flight}/tr-{count}
 stair-landing: {stair-step}/ld

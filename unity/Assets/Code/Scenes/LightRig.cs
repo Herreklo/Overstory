@@ -33,6 +33,7 @@ namespace Overstory.Scenes
         [Header("Sky")]
         public Color zenith = new Color(0.55f, 0.6f, 0.66f);
         public Color horizon = new Color(0.7f, 0.73f, 0.76f);
+        public Color deck = new Color(0.62f, 0.64f, 0.66f);   // the cloud deck's underside straight up
         public Color belowHorizon = new Color(0.3f, 0.32f, 0.32f);
         [Range(0.2f, 4f)] public float skyCurve = 0.6f;
         public Color sunGlow = Color.black;
@@ -46,6 +47,8 @@ namespace Overstory.Scenes
         public Color ambientSunSide = Color.clear;
         [Tooltip("What the town's own walls and ground give back into its lanes and yards, in place of the sky they hide.")]
         public Color townBounce = new Color(0.3f, 0.3f, 0.3f);
+        /// <summary>The sun given back by the ground: its albedo times the share of it in sun.</summary>
+        public float sunBounce = 0.165f;
         public float ambientIntensity = 1f;
 
         [Header("Air")]
@@ -85,6 +88,8 @@ namespace Overstory.Scenes
         public float townGlowHeight = 25f;
         [Tooltip("For the sun's beams: how much more the air scatters than it hides (dust, humidity; a cinematographer's haze).")]
         public float beamHaze = 1f;
+        /// <summary>How far the beams reach (m) and how they fade along it.</summary>
+        public float beamReach = 700f, beamFalloff = 0.7f;
 
         [Header("Light rays")]
         [Tooltip("How strongly the sky's light streams past what stands against it, looking towards the sun.")]
@@ -108,6 +113,8 @@ namespace Overstory.Scenes
         public float cloudHeight = 900f;
         [Tooltip("A high, thin layer (cirrus): it casts no shadow but catches a low sun.")]
         [Range(0, 1)] public float highCloud = 0f;
+        /// <summary>The share of the sun's light that comes through the cloud (the cloud kind's).</summary>
+        [Range(0, 1)] public float cloudSunThrough = 0.12f;
         [Tooltip("The glow low in the sky opposite a low sun (the belt of Venus).")]
         public Color antiGlow = Color.black;
 
@@ -123,6 +130,23 @@ namespace Overstory.Scenes
         public float windowSpill = 0f;
         [Tooltip("How strongly each lamp lights the air round it (its halo in fog); 0 none.")]
         public float lampHalo = 1f;
+        /// <summary>Each lamp kind as the town's lamps give it (light-derive-1, from the pack's lamp kinds): sRGB colour,
+        /// intensity in display units, reach in metres, and the share of its light that reaches the fog.</summary>
+        public LampLight[] lampKinds = new LampLight[0];
+
+        [System.Serializable] public struct LampLight { public string kind; public Color colour; public float intensity, range, fogShare; }
+
+        public bool Lamp(string kind, out LampLight lamp)
+        {
+            foreach (var l in lampKinds)
+                if (l.kind == kind)
+                {
+                    lamp = l;
+                    return true;
+                }
+            lamp = default;
+            return false;
+        }
 
         [Header("Grade")]
         public float postExposure = 0f;

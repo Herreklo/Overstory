@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 2,
+  "describes": "The light's one registry of terms (reviews/lt1/light/la-report.md, L1 point 12): each id is a key target (what a push may move: colour in OKLCH, a level by 2^dLog2, a setting by add) and names the debug view that shows it. A new term arrives here with its push and its view; Overstory.Scenes.LightDerive refuses a push on an id not listed.",
+  "terms": [
+    { "id": "sun", "is": "the sun's light at the ground: its colour and its illuminance", "push": ["colour", "level"], "view": "light" },
+    { "id": "sky", "is": "the whole sky's radiance, before the SH, the dome, the ambient and the air are taken from it", "push": ["colour", "level"], "view": "light" },
+    { "id": "sky.zenith", "is": "the sky high up, falling to nothing at the horizon (sin of the elevation)", "push": ["colour", "level"], "view": "light" },
+    { "id": "sky.horizon", "is": "the sky low down, falling to nothing overhead", "push": ["colour", "level"], "view": "light" },
+    { "id": "ground", "is": "what open ground gives back: its albedo", "push": ["colour", "level"], "view": "light" },
+    { "id": "town", "is": "what the town's walls give back where they hide the sky: their albedo", "push": ["colour", "level"], "view": "light" },
+    { "id": "air", "is": "the air's in-scattered colour and its density, near to far", "push": ["colour", "level"], "view": "value" },
+    { "id": "air.far", "is": "the air beyond the middle distance", "push": ["colour", "level"], "view": "value" },
+    { "id": "fog", "is": "the fog bank's density", "push": ["level"], "view": "value" },
+    { "id": "lamps", "is": "every lamp's output (the kinds' own colours kept)", "push": ["colour", "level"], "view": "light" },
+    { "id": "windows", "is": "lit rooms seen through their windows, and their light out", "push": ["level"], "view": "light" },
+    { "id": "halo", "is": "a lamp's halo in the air", "push": ["level"], "view": "value" },
+    { "id": "exposure", "is": "the global exposure, in EV", "push": ["level"], "view": "value" },
+    { "id": "grade.contrast", "is": "the grade's contrast on the whole picture", "push": ["setting"], "view": "value" },
+    { "id": "grade.saturation", "is": "the grade's saturation on the whole picture", "push": ["setting"], "view": "value" },
+    { "id": "grade.temperature", "is": "the camera's white balance: where the eye settles between the sky's light and the lamps'", "push": ["setting"], "view": "value" },
+    { "id": "bloom", "is": "the lens's glow round the brightest lights", "push": ["level"], "view": "value" },
+    { "id": "shafts", "is": "sunbeams through the shadow map", "push": ["level"], "view": "light" },
+    { "id": "motes", "is": "droplets and dust lit in the air", "push": ["level"], "view": "light" }
+  ],
+  "views": [
+    { "id": "light", "shows": "the light alone: every surface a mid grey (albedo 0.5), lit by the terms marked light, through the air and the grade" },
+    { "id": "value", "shows": "the finished picture's value in false colour: ten bands of L* (CIELAB lightness) from the darkest dark to the white, so a value plan reads at a glance" }
+  ]
+}
