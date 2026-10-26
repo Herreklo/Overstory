@@ -94,6 +94,8 @@ Also: build more, write less. Docs only where a decision needs recording; the bu
 
 ## The order (agreed 22 October, reviewed by Fable; amended by the plan review of 22 October)
 
+**Amended 26 October (Øystein):** before the rest of step 1, the walked corner's first pass: the light and grade, the houses' materials, the ground and the lamps, each at the full bar, judged together against the target frames (`NOW.md`, Next job).
+
 Every system is treated the same way:
 - research of the subject and the craft;
 - a reference board, a design doc and a target;
