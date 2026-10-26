@@ -97,7 +97,7 @@ Each row: the mark, the rule, where, how much it matters, and the fix. Paths are
 
 ## The order
 
-Each step names what it changes; none changes the picture or the frame time unmeasured.
+Each step names what it changes; none changes the picture or the frame time unmeasured. Each measured change is decided in a line when its build reaches it, with its harness A/B.
 
 1. **Now, no picture change.**
    - *The Unity audit in `tools/check.py`* when it lands: (a) settings: the expected values of U1, U2, U11, U12's stripping (once the Drawer is chosen), U14's dither (once chosen), U15, U18 and U23, each with its reason, read from the YAML; (b) shaders: the `UnityPerMaterial` block, the three depth and shadow passes on opaque shaders, no harness keyword as `multi_compile` outside a stripped list, the template's pragmas once 3.4 lands; (c) code: no `Random` or frame time in visible choices, no renderer `MaterialPropertyBlock`, every `Shader.Find` referenced, no synchronous readback outside `Editor/`, `Perf/` and editor-only probes; (d) the build's variant count against a ceiling. It reports, and fails only on rules already met, so it passes on the project as it stands.
