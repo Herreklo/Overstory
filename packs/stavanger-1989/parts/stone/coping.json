@@ -1,8 +1,8 @@
 {
   "schemaVersion": 2,
   "part": "stone/coping",
-  "version": 1,
-  "describes": "A coping slab of split slate across the top of a dry wall (port step 2b, R2a; the design's SN2, SN4 and SN9): a rigid block on its bed, its top and bed the laminae's planes, its long sides and ends split, one plane each; as wide as the wall's top and its overhangs, its front a seeded few mm proud of the stair's face. An open end (where its run ends over a riser) is drawn whole and may be knocked at its top corners; a joint end is set in by its half joint and drawn where the joint is seen. L0 chamfers the top's arrises, its perimeter, and only those: the bed's would face down (SN7), each end's upright arrises would make corners where three chamfers meet in a point too fine to draw (SN8), and a knock is a break after the dressing, its arrises sharp.",
+  "version": 2,
+  "describes": "A coping slab of split slate across the top of a dry wall (port step 2b, R2b; references 29 and 33): the step's slab laid flat, its top and bed bedding planes, a little thicker at one end and to one side; its front and back split across the laminae, each lamina a little in or out of the next; its top's arris rounded unevenly by the weather, here and there a flake of the top lost from a side; an open end (where its run ends, square at a rest) split and knocked, a joint end near square and ragged against the next; as wide as the wall's top and its overhangs, its front a seeded few mm proud of the face under it. Rigid: the run lays it level on the wall's levelled top, on pinnings, a little off true, and never bends it.",
   "madeAs": "fitted",
   "era": { "first": 1874, "last": null },
   "sizes": { "w": [188, 1000], "h": [64, 98], "d": [470, 470] },
@@ -11,8 +11,8 @@
   "sockets": [],
   "removalMark": null,
   "levels": {
-    "l0": { "triangles": 120, "shadow": "none", "collision": "proxy" },
-    "l1": { "triangles": 48, "shadow": "self", "collision": "proxy" },
+    "l0": { "triangles": 240, "shadow": "none", "collision": "proxy" },
+    "l1": { "triangles": 240, "shadow": "self", "collision": "proxy" },
     "l2": { "triangles": 0, "shadow": "proxy", "collision": "proxy" },
     "l3": { "triangles": 0, "shadow": "proxy", "collision": "proxy" },
     "l4": { "triangles": 0, "shadow": "proxy", "collision": "proxy" }
@@ -22,7 +22,7 @@
   "marks": [{ "name": "face-patch", "smallestFeatureMm": 2 }],
   "shaderFamily": "stone",
   "materials": ["slate"],
-  "function": { "python": "blender/parts/stone/slate/stones.py:coping", "csharp": null },
+  "function": { "python": "blender/parts/stone/slate/slabstep.py:coping", "csharp": null },
   "lifecycle": { "state": "draft" },
   "params": {
     "chamferMm": { "value": [10, 12], "note": "SN4: the top's arrises chamfered, a seeded leg of 10 to 12 mm per slab." },
@@ -34,7 +34,33 @@
     "chipPerMille": { "value": 250, "note": "An open end's top corners knocked, per mille of corners (SN4: chips at a coping's ends)." },
     "chipLegMm": { "value": [50, 80], "note": "A knock's legs along and back, least and most: at least SN9's 50 mm (no sliver)." },
     "patches": { "value": {"split": ["split-0", "split-1", "split-2", "split-3"], "bed": ["bed-0", "bed-1"]}, "note": "The face patches (blender/parts/stone/slate/patches.manifest.json; SN6) each kind of face draws one from by seed: a split face from the split ones, the top and bed (bed faces) from the bed ones." },
-    "chipDepthPerMille": { "value": 500, "note": "And down at most this share of the slab's thickness, per mille: a knock takes no more than half the coping." }
+    "chipDepthPerMille": { "value": 500, "note": "And down at most this share of the slab's thickness, per mille: a knock takes no more than half the coping." },
+    "laminae": { "value": [[1, 1], [2, 3], [3, 2]], "note": "R2b: the laminae a coping's split sides show, [count, weight] (references 29 and 33: a thin slab, one to three layers)." },
+    "laminaLeastMm": { "value": 25, "note": "R2b: no lamina thinner than this." },
+    "frontPointMm": { "value": [110, 240], "note": "R2b: each side's points along the slab, this far apart: its line wanders between them (the step's)." },
+    "frontPointsMost": { "value": 7, "note": "R2b: at most this many points along each side, a lost piece's included." },
+    "frontWanderMm": { "value": 14, "note": "R2b: how far each side's line wanders from straight: a coping was chosen for its straight sides, but split, not sawn (reference 33's run)." },
+    "frontWanderStepMm": { "value": 9, "note": "R2b: the most it wanders from one point to the next." },
+    "laminaOutMm": { "value": 12, "note": "R2b: each lamina's side in or out of the slab's line by up to this: the line of light or shadow between laminae (the step's)." },
+    "laminaOutStepMm": { "value": 8, "note": "R2b: a lamina's offset wanders along the side by up to this from point to point." },
+    "laminaFlushShare": { "value": 0.45, "note": "R2b: where a lamina's offset is under this share of its most, it is flush with the next." },
+    "laminaJitterMm": { "value": 1.5, "note": "R2b: and each of its points a little more." },
+    "laminaWaveMm": { "value": 7, "note": "R2b: the beds between laminae not quite level, by up to this." },
+    "taperMm": { "value": [[-14, 14], [-8, 8]], "note": "R2b: how much thicker its right end is than its left, and its back than its front: a split slab is never even (reference 33: each slab's top a line of its own)." },
+    "endSlant": { "value": {"open": 0.05, "joint": 0.04, "walled": 0.0}, "note": "R2b: an end's slant in plan, as a share of the slab's depth (reference 29: the run's end square at a rest)." },
+    "endOutMm": { "value": {"open": 8, "joint": 6, "walled": 0}, "note": "R2b: each lamina's end in or out by up to this, by its end: a joint between two split ends ragged (reference 33)." },
+    "knockMm": { "value": {"open": [20, 50], "joint": [3, 10], "walled": [0, 0]}, "note": "R2b: the top lamina's corners knocked by this, by its end." },
+    "lossChance": { "value": 0.25, "note": "R2b: the chance a side has lost a flake of its top lamina (frost on an exposed arris)." },
+    "lossMm": { "value": [120, 350], "note": "R2b: the lost flake's length." },
+    "lossDepthMm": { "value": [30, 90], "note": "R2b: how far back into the top it goes, at its deepest." },
+    "lossThickMm": { "value": [10, 22], "note": "R2b: the flake's thickness: the top lamina split there." },
+    "lossPoints": { "value": 4, "note": "R2b: points along the break's back line." },
+    "lossRagged": { "value": [0.8, 1.0], "note": "R2b: each of them this share of its arch's depth." },
+    "lossEdgeMm": { "value": [25, 60], "note": "R2b: the break's ends slanted over this length." },
+    "roundMm": { "value": [14, 30], "note": "R2b: the top's arris rounded by the weather alone, no feet (references 29 and 33: a soft, uneven line of light along the top; less than a walked nosing's)." },
+    "roundVary": { "value": [0.45, 1.25], "note": "R2b: the round's share at each point, so it comes and goes." },
+    "breakRoundMm": { "value": 3, "note": "R2b: a break's arris, fresh." },
+    "endRoundMm": { "value": {"open": [12, 24], "joint": [3, 8], "walled": [0, 0]}, "note": "R2b: an end's top arris round, by its end." }
   },
-  "note": "Sizes from R1's walling table (packs/stavanger-1989/walling.json, the dry-split-1874 working) and its laying: w a coping's cell (copeLeastMm 200 where a run leaves less than a slab, to copeLengthMm's 1000) less a half joint (2 to 6 mm) at each joint end; h its run's thickness (copeThickMm 70 to 100) less its bed's half joint; d the wall's top (wall.py's 420 mm) and its overhangs (50 mm on a standing wall). Levels: the design's SN8 budgets per piece (120 and 48); their errors are the wall kind's (kinds/wall.json: levels), the one source (design.md SN8): L1's is L0's chamfers' (8.5 mm at a 12 mm leg; up to 9.8 mm at a corner where two meet). L2 to L4 are the chunk's. The part's own numbers are its params, each with its reason; the working's (joints, batter, the top's thickness, the overhang and how proud the front stands) are walling.json's (reviews/lt1/port/2b/r2a/stones/blender.md, Data and code)."
+  "note": "Sizes from R1's walling table (packs/stavanger-1989/walling.json, the dry-split-1874 working) and its laying: w a coping's cell (copeLeastMm 200 where a run leaves less than a slab, to copeLengthMm's 1000) less a half joint (2 to 6 mm) at each joint end; h its run's thickness (copeThickMm 70 to 100) less its bed's half joint; d the wall's top (wall.py's 420 mm) and its overhangs (50 mm on a standing wall). Levels (R2b): L0 is 36 to 220 triangles measured over 600 slabs (median 116; seven points a side, four laminae), under 240. L1 is L0: its laminae and its round's middle facet each show from 6 to 18 m in low sun (the coping run alone, without only that facet 1.4 to 6.9% of its pixels change by more than 3 L*, with one lamina 5.8 to 16.8%; reviews/lt1/port/2b/r2b/coping/switch-d9-l0-noring-diff.jpg). R2a's params (chamferMm to chipDepthPerMille) are stones.py's, which the gully's export builds until slabstep.py is wired in. L2 to L4 are the chunk's. The part's own numbers are its params, each with its reason; the working's (joints, batter, the top's thickness, the overhang and how proud the front stands) are walling.json's (reviews/lt1/port/2b/r2a/stones/blender.md, Data and code)."
 }

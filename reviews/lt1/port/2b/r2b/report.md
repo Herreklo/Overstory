@@ -20,3 +20,12 @@
 - **Switch:** L1 is L0. In low sun from 6 to 18 m, an L1 of one lamina, a one-facet round and no wear rows changed 8.6 to 28% of the flight's pixels by more than 3 L*. With its laminae and flake kept it changed 2.8 to 15%, and with only the round's middle facet dropped, 1.1 to 5.6% (`switch-d9-l0-round1facet-diff.jpg`). The step hands over to the chunk's L2.
 - **Open:** `slabstep.py` is not yet wired into `context.py`. The joints between a tread's slabs are straight slots, where reference 06's are cracks.
 - **Cost:** about 45 messages and 76 rendered frames.
+
+## The coping: done, 26 October
+
+- **The part:** `slabstep.py:coping`, the step's slab laid flat across a wall's top, sharing the step's faces and round, which stay byte-identical. Its front and back are split across one to three laminae. Its top's arris is rounded by the weather alone, and here and there a flake of the top is lost. It is thicker at one end and to one side. An open end is square and knocked; a joint end is ragged against the next. `r2b_wall.py --coping` lays the run level on the wall's top, which flat pinnings bring level, with voids between them. Its values are the coping's definition's and the working's (`copeVaryMm`, `copeSetDeg`, `copeBedMm`, `pin*`).
+- **The look:** `coping/round01-sheet.jpg` is the start: a precast cap, ruler-straight. `round03` read as extruded plates. `round06` is the final round, beside study reference 33's level run in grey and in drizzle; `round06-end-sheet.jpg` shows the run's square end beside reference 29. In `lights-sheet.jpg` it holds in morning shade, low sun and blue hour, from eye level to near-isometric.
+- **Budget:** L0 measured 36 to 220 triangles over 600 slabs (median 116), under 240 (R2a's 120 had no laminae). `r2b_wall.py` fails any slab over it.
+- **Switch:** L1 is L0. On the run alone, in low sun from 6 to 18 m, dropping only the round's middle facet changed 6.9 to 1.4% of its pixels by more than 3 L*, and one lamina changed 16.8 to 5.8% (`switch-d9-l0-noring-diff.jpg`).
+- **Open:** `slabstep.py:coping` is not yet wired into `context.py`. The wall's end in the panel is a cut, not a head.
+- **Cost:** about 40 messages and 50 rendered frames.

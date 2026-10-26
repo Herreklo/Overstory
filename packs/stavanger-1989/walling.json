@@ -100,6 +100,26 @@
         15,
         35
       ],
+      "copeVaryMm": 5,
+      "copeSetDeg": [
+        0.8,
+        1.2,
+        1.0
+      ],
+      "copeBedMm": [
+        2,
+        10
+      ],
+      "pinLeastMm": 12,
+      "pinLengthMm": [
+        60,
+        220
+      ],
+      "pinGapMm": [
+        30,
+        220
+      ],
+      "pinShortMm": 10,
       "steps": {
         "lapMm": [
           40,
@@ -202,6 +222,13 @@
     "topThickMm": "The wall's thickness at its top, under the coping (wall.py's DEPTH, 0.42 m): a coping spans it and its overhangs, and a face stone's hidden back is half of it.",
     "copeOverMm": "How much wider a standing wall's coping is than the wall's top, its overhangs on both faces together (wall.py: a standing wall's coping DEPTH + 0.05 m wide).",
     "copeProudMm": "How far a coping's front stands proud of the face under it, least and most (wall.py's 15 to 35 mm); its back stands the rest of copeOverMm.",
+    "copeVaryMm": "How much a coping slab's thickness differs from its run's, at most: a mason picks a run's slabs to one thickness so its top runs level (R2b).",
+    "copeSetDeg": "How far a coping slab sits off true on the wall's top, most, [pitch, roll, yaw] in degrees: laid dry on the top stones, it rocks onto them (R2b).",
+    "copeBedMm": "How far a coping slab's bed stands over the wall's levelled top, least and most: laid dry, it sits on pinnings, and the gap under it is dark (R2b; reference 33).",
+    "pinLeastMm": "Under a coping the top course is brought level with flat pinnings: the least low place that takes one; a shallower one is left to the coping's bed (R2b).",
+    "pinLengthMm": "A pinning's length, least and most: small flat pieces of the same stone (R2b).",
+    "pinGapMm": "The void between two pinnings, least and most: they are wedged in where the coping rocked, not laid as a course (R2b).",
+    "pinShortMm": "How far a pinning's top may fall short of the levelled top, most (R2b).",
     "steps": "The stair's block steps, split slate, dry (SN3, SN5): each step's front bears lapMm on the back of the one below; a tread's joint is jointMm wide; no joint lies within jointClearMm of the joint on the step below. R2b: a tread is piecesPerTread slabs ([count, weight]; reference 06, one to three a step), none shorter than pieceLeastMm, each its rise within thickMm; a step's front line in or out by frontOutMm; settled since 1874 (the front sunk about the back's bed by settlePitchDeg, a roll of settleRollDeg, a turn of settleYawDeg, the whole down by settleDropMm: reference 06's stair that has settled). The feet keep to a walking line walkLineShare across the flight, spreading walkHalfMm about it, their wear greatest wearPeakMm back from the nosing and spreading wearSpreadMm along the tread. Moss's weights (the growth layer's): the back of each tread under the next riser (backMm deep), the ledges between laminae and the joints between a tread's pieces (reference 06's green line at the back of each tread).",
     "cement-relaid-1961": "The 1961 rebuild of fl-0/r's middle (the facts' rebuilt: it bulged where the lane's water ran behind it): the wall's own stones reclaimed and relaid in cement, so its stones are the wall's working's; its own numbers are only its edges, long and short in alternate courses against the old work (wall.py's). Relaid on the wall's own line, so its joints, its batter, its top's thickness and its copings' overhang are the old work's either side (the same values as dry-split-1874's), its joints mortared within SN5's 4 to 12 mm for the walls."
   }

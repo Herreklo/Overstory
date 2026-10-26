@@ -3,7 +3,10 @@ dry-split-1874 working) with the split wall stone (blender/parts/stone/slate/spl
 written as a triangle soup for LT1R2b.cs to draw (positions in Unity's frame: x along, y up, z into the wall; then
 UV0 to UV7 as Stone.shader's contract has them).
 
-    python3 tools/r2b_wall.py OUT.bin [--length 8] [--height 1.8] [--seed 1989]
+    python3 tools/r2b_wall.py OUT.bin [--length 8] [--height 1.8] [--seed 1989] [--coping]
+
+--coping lays a run of coping slabs on its top (slabstep.py's coping, its params the coping's definition), a standing
+wall's: the run's ends open.
 """
 
 import argparse
@@ -19,6 +22,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(ROOT, "blender", "parts", "stone", "slate"))
 sys.path.insert(0, os.path.join(ROOT, "blender", "resolver"))
 import hashing as HS  # noqa: E402
+import slabstep  # noqa: E402
 import split  # noqa: E402
 
 PACK = os.path.join(ROOT, "packs", "stavanger-1989")
@@ -33,11 +37,12 @@ def load():
     return walling, p
 
 
-def lay(seed, W, length, height):
+def lay(seed, W, length, height, level=False):
     """Random coursed, as a mason builds it: always on the lowest place along the wall's top so far, a stone as long
     as the place allows, its top brought level with a neighbour's where it nearly is (so courses form and break), no
     end over a joint below it; a slot too short for a stone filled with flat pieces to its lower neighbour. Returns
-    the cells (rectangles: bed left, bed right, top right, top left)."""
+    the cells (rectangles: bed left, bed right, top right, top left). Level (under a coping): the top's low places
+    brought up to the height with flat pinnings, where they are deep enough for one."""
     rng = HS.Stream(seed, "r2b-panel")
     ph = W["stonePerHeight"]
     p0, p1 = W["courseDrawPower"]
@@ -94,6 +99,17 @@ def lay(seed, W, length, height):
             else:
                 merged.append(sgm)
         sky = merged
+    if level:
+        for u0, u1, base, _ in sky:
+            if height - base < W["pinLeastMm"] * MM:
+                continue
+            # (wedged in where the coping rocked, voids between them; each a little short of the top)
+            u = u0 + rng.uniform(*W["pinGapMm"]) * MM
+            while u1 - u > W["pinLengthMm"][0] * MM:
+                l = min(rng.uniform(*W["pinLengthMm"]) * MM, u1 - u)
+                t = height - rng.uniform(0.0, min(W["pinShortMm"] * MM, 0.5 * (height - base)))
+                cells.append(((u, base), (u + l, base), (u + l, t), (u, t)))
+                u += l + rng.uniform(*W["pinGapMm"]) * MM
     return cells
 
 
@@ -128,6 +144,74 @@ def rigid(P, piv, pitch, yaw, dw):
     return np.column_stack([du, dv, dww + dw]) + piv
 
 
+def coping(a, W, batter, years, Ps, Ns, A):
+    """A run of coping slabs along the wall's top, laid as the working lays them: each as long as the working allows
+    and no shorter than its least, a joint between; the run's thickness one, each slab a little off it; its front proud
+    of the face under it, the rest of the overhang behind; the run level on the wall's levelled top, each slab on
+    its pinnings and sat a little off true. Its corners'
+    attributes go on as the stones' do (flat, per triangle). Returns each slab's triangles and L0's budget."""
+    defn = json.load(open(os.path.join(PACK, "parts", "stone", "coping.json")))
+    p = {k: v["value"] for k, v in defn["params"].items()}
+    rng = HS.Stream(HS.h(a.seed, "coping"), "lay")
+    run = rng.uniform(*W["copeThickMm"]) * MM
+    D = (W["topThickMm"] + W["copeOverMm"]) * MM
+    lo, hi, least = (v * MM for v in (*W["copeLengthMm"], W["copeLeastMm"]))
+    xs = [0.0]
+    while a.length - xs[-1] > hi:
+        l = rng.uniform(lo, hi)
+        xs.append(xs[-1] + (l if a.length - xs[-1] - l >= least else 0.5 * (a.length - xs[-1])))
+    xs.append(a.length)
+    face = -a.height * batter
+    counts = []
+    for i, (x0, x1) in enumerate(zip(xs[:-1], xs[1:])):
+        key = HS.h(a.seed, "coping", i)
+        st = HS.Stream(key, "set")
+        g0 = 0.0 if i == 0 else 0.5 * st.uniform(*W["jointMm"]) * MM
+        g1 = 0.0 if i == len(xs) - 2 else 0.5 * st.uniform(*W["jointMm"]) * MM
+        ends = ("open" if i == 0 else "joint", "open" if i == len(xs) - 2 else "joint")
+        H = run + st.uniform(-1.0, 1.0) * W["copeVaryMm"] * MM
+        L = x1 - x0 - g0 - g1
+        s = slabstep.coping(key, L, H, D, ends, p)
+        # (its frame: z back from the front; the panel's: z out of the wall) its bed on the top, its front proud
+        pitch, roll, yaw = (math.radians(st.uniform(-1.0, 1.0) * d) for d in W["copeSetDeg"])
+        Pl = s["P"]
+        q = Pl - np.array([L / 2, 0.0, D / 2])
+        y1 = q[:, 1] * math.cos(pitch) - q[:, 2] * math.sin(pitch)
+        z1 = q[:, 1] * math.sin(pitch) + q[:, 2] * math.cos(pitch)
+        x2 = q[:, 0] * math.cos(roll) - y1 * math.sin(roll)
+        y2 = q[:, 0] * math.sin(roll) + y1 * math.cos(roll)
+        x3 = x2 * math.cos(yaw) + z1 * math.sin(yaw)
+        z3 = -x2 * math.sin(yaw) + z1 * math.cos(yaw)
+        proud = st.uniform(*W["copeProudMm"]) * MM
+        bed = a.height + st.uniform(*W["copeBedMm"]) * MM
+        P = np.column_stack([x3 + L / 2 + x0 + g0, y2 + bed + abs(math.sin(roll)) * L / 2, face + proud - (z3 + D / 2)])
+        # (the mirror in z turns each triangle inward: its corners the other way round)
+        P = P.reshape(-1, 3, 3)[:, [0, 2, 1]].reshape(-1, 3)
+        Ns.append(normals(P, s["soft"]))
+        counts.append(len(P) // 3)
+        var = st.random()
+        ou, ov = st.uniform(0, 8), st.uniform(0, 8)
+        for t in range(len(P) // 3):
+            a3, b3, c3 = P[3 * t:3 * t + 3]
+            nrm = np.cross(b3 - a3, c3 - a3)
+            nrm /= np.linalg.norm(nrm)
+            k = int(s["kind"][t])
+            ax = int(np.argmax(np.abs(nrm)))
+            for qq in (a3, b3, c3):
+                uv0 = (qq[0] + ou, qq[1] + ov) if ax == 2 else ((qq[0] + ou, qq[2] + ov) if ax == 1 else (qq[2] + ou, qq[1] + ov))
+                open_ = 0.4 if k == 3 else 1.0
+                A[0].append(uv0)
+                A[1].append((years, var))
+                A[2].append((k, 0.0))
+                A[3].append(((0.5 + 0.5 * nrm[1]) * open_, (0.5 - 0.5 * nrm[1]) * open_))
+                A[4].append((0.0, years))
+                A[5].append((0.05 if k in (1, 2) else 0.25, 0.0))
+                A[6].append((1.0, 1.0))
+                A[7].append((1.0, 7.0))
+        Ps.append(P)
+    return counts, defn["levels"]["l0"]["triangles"]
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("out")
@@ -135,11 +219,12 @@ def main():
     ap.add_argument("--height", type=float, default=1.8)
     ap.add_argument("--seed", default="1989")
     ap.add_argument("--year", type=int, default=1989)
+    ap.add_argument("--coping", action="store_true")
     a = ap.parse_args()
     W, p = load()
     batter = W["batterPerHeight"][0] / W["batterPerHeight"][1]
     gap = 0.5 * (W["jointMm"][0] + W["jointMm"][1]) * MM
-    cells = lay(HS.h(a.seed, "panel"), W, a.length, a.height)
+    cells = lay(HS.h(a.seed, "panel"), W, a.length, a.height, level=a.coping)
     years = (a.year - W["built"]) / 200.0
     Ps, Ns, A = [], [], {k: [] for k in range(8)}
     tri_counts = []
@@ -179,9 +264,10 @@ def main():
                 A[6].append((1.0, 1.0))
                 A[7].append((1.0, 7.0))
         Ps.append(P)
+    cope = coping(a, W, batter, years, Ps, Ns, A) if a.coping else None
     # the joints' fill behind the faces: soil and the dark of the hearting, kind 6
     back = 0.045
-    top = max(c[2][1] for c in cells) - 0.03
+    top = max(c[2][1] for c in cells) + (0.02 if a.coping else -0.03)
     q = [(0.0, -0.3), (a.length, -0.3), (a.length, top), (0.0, top)]
     Q = [np.array([u, v, -back - v * batter]) for u, v in q]
     soil = np.array([Q[0], Q[1], Q[2], Q[0], Q[2], Q[3]])
@@ -210,7 +296,13 @@ def main():
     budget = json.load(open(os.path.join(PACK, "parts", "stone", "wallstone.json")))["levels"]["l0"]["triangles"]
     print(f"{len(cells)} stones, triangles per stone {tc.min()} to {tc.max()} (mean {tc.mean():.1f}; L0's budget "
           f"{budget}: {'pass' if tc.max() <= budget else 'FAIL'}), {len(U) // 3} in all; {a.out}")
-    if tc.max() > budget:
+    fail = tc.max() > budget
+    if cope:
+        cc, cb = np.array(cope[0]), cope[1]
+        print(f"{len(cc)} copings, triangles per slab {cc.min()} to {cc.max()} (mean {cc.mean():.1f}; L0's budget {cb}: "
+              f"{'pass' if cc.max() <= cb else 'FAIL'})")
+        fail = fail or cc.max() > cb
+    if fail:
         sys.exit(1)
 
 
