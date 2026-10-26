@@ -95,9 +95,9 @@ half3 OS_LichenAt(float2 q, half years, half seed, half spread, float footprint)
         }
     }
 #endif
-    // further off (from past the street stop), each stone's lichen as a film over it, as much as its own years and
+    // further off (by the street stop), each stone's lichen as a film over it, as much as its own years and
     // quiet give: a wall reads by its stones and a flight by its quiet ends, never by blobs that cross the joints
-    half mid = saturate((half)((footprint - 0.005) / 0.006));
+    half mid = saturate((half)((footprint - 0.003) / 0.004));
     cover = lerp(cover, share, mid);
     return half3(cover, age * (1.0h - mid), rim * (1.0h - mid));
 }
@@ -127,21 +127,19 @@ OSGrowth OS_GrowthLayer(half3 albedo, half smoothness, float2 q, half lichenYear
 #else
     float footprint = max(length(ddx(positionWS)), length(ddy(positionWS)));
     half3 li = OS_LichenAt(q, lichenYears, seed, spread, footprint);
-    // near, the crust cracked into tiny plates (areoles) a millimetre or two across, greyer in places, flecked dark:
-    // its fruit (black discs a millimetre or two across) and the dark lines between its plates and colonies, about a
-    // tenth of it; further off one pale value with its flecks' mean, older and greyer towards a colony's middle
+    // near, the crust cracked into tiny plates (areoles) a millimetre or two across, greyer in places, its fruit a
+    // few black discs a millimetre or two across where it is old (an even fleck everywhere reads as granite); further
+    // off one pale value, older and greyer towards a colony's middle
     half near = OS_Near(footprint);
     half mottle = (half)OS_Noise(q * 9.0 + seed * 2.1);
     half3 lich = lerp(_OS_Lichen.rgb, _OS_LichenOld.rgb, saturate(li.y * 0.8h + (mottle - 0.5h) * 0.4h));
-    lich = lerp(lich, _OS_LichenRim.rgb, 0.1h);
     if (near > 0.01h)
     {
         half areole = (half)OS_Noise(q * 700.0 + seed * 3.3);
         half mot = (half)OS_Noise(q * 28.0 + seed * 2.1);
-        half dots = smoothstep(0.82h, 0.86h, (half)OS_Noise(q * 160.0 + seed * 5.3));
-        half fleck = smoothstep(0.69h, 0.73h, (half)OS_Noise(q * 55.0 + seed * 8.9));
+        half dots = smoothstep(0.86h, 0.89h, (half)OS_Noise(q * 160.0 + seed * 5.3)) * saturate(li.y * 1.5h);
         half3 crust = lerp(_OS_Lichen.rgb, _OS_LichenOld.rgb, saturate(li.y + (mot - 0.5h) * 0.8h)) * (0.96h + 0.06h * areole);
-        crust = lerp(crust, _OS_LichenRim.rgb, max(dots, fleck * 0.8h));
+        crust = lerp(crust, _OS_LichenRim.rgb, dots * 0.8h);
         lich = lerp(lich, crust, near);
     }
     lich = lerp(lich, _OS_LichenRim.rgb, li.z);

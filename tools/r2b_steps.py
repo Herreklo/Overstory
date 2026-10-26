@@ -49,9 +49,10 @@ def cuts(rng, W, S, below):
     return []
 
 
-def piece(key, X0, L, H, D, going, zf, bed, ends, p, S, walk, wear_mm, years, A):
+def piece(key, X0, L, H, D, going, zf, bed, ends, p, S, walk, wear_mm, years, A, feet=None):
     """One slab of a tread, its front at zf up the flight and its bed at bed, made, worn where the walking line
-    keeps (wear_mm at the nosing) and settled, its corners' attributes appended to A. Returns its corners and their
+    keeps (wear_mm at the nosing) and settled, its corners' attributes appended to A; lichen kept off its tread
+    where feet fall (feet: any foot's share against the walking line's, by x). Returns its corners and their
     normals in the flight's frame (x across, y up, z up the flight). Its seed for the material (UV1.y) is drawn from
     its key."""
     def wear(x, z, X0=X0):
@@ -113,7 +114,9 @@ def piece(key, X0, L, H, D, going, zf, bed, ends, p, S, walk, wear_mm, years, A)
             A[2].append((k, 0.3 * wd))
             open_ *= s["sky"][3 * t + ci]
             A[3].append(((0.5 + 0.5 * nrm[1]) * open_, (0.5 - 0.5 * nrm[1]) * open_))
-            A[4].append((worn * min(1.0, wear_mm / 8.0), years * (1.0 - 0.95 * worn)))
+            # (lichen keeps only where feet are rare: a quarter of the walking line's footfall keeps a tread clean)
+            clean = min(1.0, feet(fx) / 0.25) if feet and k in (0, 1) and nrm[1] > 0.3 and lz < going else 0.0
+            A[4].append((worn * min(1.0, wear_mm / 8.0), years * (1.0 - 0.95 * worn) * (1.0 - clean)))
             A[5].append((moss, max(0.5 * wd, 0.5 * foot)))
             A[6].append((1.0, 1.0))
             A[7].append((1.0, 7.0))
@@ -144,6 +147,9 @@ def main():
     def walk(x):
         return math.exp(-((x - xw) / half) ** 2)
 
+    def feet(x):
+        return math.exp(-((x - xw) / (S["feetHalfMm"] * MM)) ** 2)
+
     Ps, Ns, A = [], [], {k: [] for k in range(8)}
     tri_counts = []
     below = []
@@ -164,7 +170,7 @@ def main():
             ends = ("open" if pi_ == 0 else "joint", "open" if pi_ == len(edges) - 2 else "joint")
             key = HS.h(a.seed, "step", i, pi_)
 
-            P, N = piece(key, X0, L, H, D, going, zf, bed, ends, p, S, walk, a.wear, years, A)
+            P, N = piece(key, X0, L, H, D, going, zf, bed, ends, p, S, walk, a.wear, years, A, feet)
             Ns.append(N)
             tri_counts.append(len(P) // 3)
             Ps.append(P)

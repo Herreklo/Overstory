@@ -50,3 +50,17 @@
 - **The lichen:** `Growth.hlsl` now uses `_OS_LichenRate.z` (0.85) as what its comment says it is, the share of a quiet surface. The code had held it to a third. On a century's quiet stone the crust is now the surface, flecked dark with fruit and plate lines, with rock showing through in gaps. `growth-old-gully.jpg` shows the old gully's slate and rubble under it, with nothing broken. Only the variety sheet places granite, and it writes tracked frames, so granite was not rendered. It shares the same code path.
 - **Open:** in the gully's shade the walls read darker and bluer than the target's, which is painted in lamplight. The wall stone still wears the rubble material (the set's open point above). At middling cover, the lichen on the treads still falls into fields. At each step, the copings read as thin plates.
 - **Cost:** about 115 messages and 34 rendered frames.
+
+## The gully, round 03: grounded, 26 October
+
+Øystein on round 02: "looks a bit floaty?"
+
+- **The foot:** each wall's and flight's bottom course is now set 50 mm into the ground. Within 250 mm of the ground, the stone darkens towards the sky's 0.4 and takes moss and wet. A soil strip 140 mm wide runs along every foot. The amounts are in `walling.json`'s `foot`.
+- **The beds:** the bed joints are now 1 to 4 mm (`bedJointMm`), where they had been the open ends' 4 to 12. The top course under each coping is picked flat to the line (`pickedKnockMm`), so each stone bears on the one below and no longer hangs over a void.
+- **The copings:** they never overhung (measured within about 1 cm of the faces and of each step's end). They read as shelves for two reasons:
+  - a joint-soil column that straddled a step-up took the upper run's height and stood up out of the lower run's end, as a dark slot at each corner. The columns now break where the top or the footing steps;
+  - R1's laying steps the top every 0.45 to 0.6 m, with 73 rises of 200 to 300 mm. The target paints a raking coping. That is a laying question, beyond this round.
+- **The lichen:** treads stay clean across the walking line's 800 mm (`steps.feetHalfMm`). The even fleck is gone from the shared `Growth.hlsl`: only old crust bears a few fruit. The film now takes over by about 7 mm footprint (it was 11), so the street stop sees a few marks.
+- **Still dark:** from the target's camera the flight is a dark mass beside pale clay. That is the wet slate's value in drizzle against untextured surroundings, the shared material and light, not the gully.
+- **Stills:** `gully/round03-sheet.jpg` (the target's camera, grey and drizzle) and `round03-eye-foot.jpg`. New hashes: walls `78c7f1154f8e8571` (125,242 triangles) and slabs `bb3d65a591fb36a1` (50,834).
+- **Cost:** about 60 messages and 12 rendered frames.

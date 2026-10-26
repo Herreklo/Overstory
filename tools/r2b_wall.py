@@ -34,6 +34,7 @@ def load():
     defn = json.load(open(os.path.join(PACK, "parts", "stone", "wallstone.json")))
     p = {k: v["value"] for k, v in defn["params"].items()}
     p["jointHalfMm"] = [walling["jointMm"][0] / 2, walling["jointMm"][1] / 2]
+    p["bedJointHalfMm"] = [walling["bedJointMm"][0] / 2, walling["bedJointMm"][1] / 2]
     return walling, p
 
 

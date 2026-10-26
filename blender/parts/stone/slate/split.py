@@ -37,7 +37,8 @@ def outline(rng, cell, p):
     bl, br, tr, tl = (np.array(c, float) for c in cell)
     H = min(tl[1] - bl[1], tr[1] - br[1])
     # the half joints: the stone smaller than its cell by a joint's half at each side, the ends along the wall
-    jb, jt = (_between(rng, p["jointHalfMm"]) * MM for _ in range(2))
+    # (a bed bears on the stone below: its joint the working's bed joint where it gives one, the ends' open)
+    jb, jt = (_between(rng, p.get("bedJointHalfMm", p["jointHalfMm"])) * MM for _ in range(2))
     jl, jr = (_between(rng, p["jointHalfMm"]) * MM for _ in range(2))
     bl = bl + (jl, jb)
     br = br + (-jr, jb)

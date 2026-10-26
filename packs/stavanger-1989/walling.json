@@ -68,6 +68,10 @@
         4,
         12
       ],
+      "bedJointMm": [
+        1,
+        4
+      ],
       "batterPerHeight": [
         1,
         6
@@ -115,6 +119,10 @@
         15,
         35
       ],
+      "pickedKnockMm": [
+        4,
+        10
+      ],
       "pinLeastMm": 12,
       "pinLengthMm": [
         60,
@@ -129,6 +137,14 @@
         30
       ],
       "pinShortMm": 6,
+      "foot": {
+        "sinkMm": 50,
+        "reachMm": 250,
+        "sky": 0.4,
+        "moss": 0.55,
+        "water": 0.5,
+        "skirtMm": 140
+      },
       "steps": {
         "lapMm": [
           40,
@@ -158,6 +174,7 @@
         "frontOutMm": 25,
         "walkLineShare": 0.45,
         "walkHalfMm": 320,
+        "feetHalfMm": 800,
         "wearPeakMm": 110,
         "wearSpreadMm": 150,
         "settlePitchDeg": [
@@ -227,6 +244,7 @@
     "throughFirstMm": "The first through from a panel's start.",
     "throughEveryMm": "And then one every 800 to 1000 mm: throughs about every 90 cm in dry double walls (docs/research/stone.md, secondary).",
     "jointMm": "A joint's width between two of the wall's stones, its faces' and its copings' (SN5: 4 to 12 mm in the walls); a stone is set into its cell by a seeded half joint on each side, 2 to 6 mm. R1 lays the cells with none (the stones meet at their outlines); R2a's stones draw them (reviews/lt1/port/2b/r2a/stones/blender.md). Not the steps' tread joints, which are steps.jointMm (4 to 10 mm).",
+    "bedJointMm": "A bed joint's width, where a stone bears on the one below: dry beds bear, stone on stone, so they close to 1 to 4 mm while the head joints stay open (jointMm). Wider beds read as each stone hung over a gap (the gully's round 02).",
     "batterPerHeight": "How far the face leans back for its height, back then up: about one in six (SN2; wall.py's BATTER, 1/6). Only the face is cut at it; the beds stay level.",
     "topThickMm": "The wall's thickness at its top, under the coping (wall.py's DEPTH, 0.42 m): a coping spans it and its overhangs, and a face stone's hidden back is half of it.",
     "copeOverMm": "How much wider a standing wall's coping is than the wall's top, its overhangs on both faces together (wall.py: a standing wall's coping DEPTH + 0.05 m wide).",
@@ -242,6 +260,9 @@
     "pinThickMm": "A pinning piece's thickness, least and most: a low place is packed with a stack of thin pieces, not one block (R2b, after its strict review).",
     "pinShortMm": "How far a pinning's top may fall short of the levelled top, most (R2b).",
     "steps": "The stair's block steps, split slate, dry (SN3, SN5): each step's front bears lapMm on the back of the one below; a tread's joint is jointMm wide; no joint lies within jointClearMm of the joint on the step below. R2b: a tread is piecesPerTread slabs ([count, weight]; reference 06, one to three a step), none shorter than pieceLeastMm, each its rise within thickMm; a step's front line in or out by frontOutMm; settled since 1874 (the front sunk about the back's bed by settlePitchDeg, a roll of settleRollDeg, a turn of settleYawDeg, the whole down by settleDropMm: reference 06's stair that has settled). The feet keep to a walking line walkLineShare across the flight, spreading walkHalfMm about it, their wear greatest wearPeakMm back from the nosing and spreading wearSpreadMm along the tread. Moss's weights (the growth layer's): the back of each tread under the next riser (backMm deep), the ledges between laminae and the joints between a tread's pieces (reference 06's green line at the back of each tread).",
-    "cement-relaid-1961": "The 1961 rebuild of fl-0/r's middle (the facts' rebuilt: it bulged where the lane's water ran behind it): the wall's own stones reclaimed and relaid in cement, so its stones are the wall's working's; its own numbers are only its edges, long and short in alternate courses against the old work (wall.py's). Relaid on the wall's own line, so its joints, its batter, its top's thickness and its copings' overhang are the old work's either side (the same values as dry-split-1874's), its joints mortared within SN5's 4 to 12 mm for the walls."
+    "cement-relaid-1961": "The 1961 rebuild of fl-0/r's middle (the facts' rebuilt: it bulged where the lane's water ran behind it): the wall's own stones reclaimed and relaid in cement, so its stones are the wall's working's; its own numbers are only its edges, long and short in alternate courses against the old work (wall.py's). Relaid on the wall's own line, so its joints, its batter, its top's thickness and its copings' overhang are the old work's either side (the same values as dry-split-1874's), its joints mortared within SN5's 4 to 12 mm for the walls.",
+    "foot": "Where a wall or flight meets the ground: its bottom course and first step sunk sinkMm into it; within reachMm of the ground the sky a stone sees closes to sky of its open share, and its skin is damp (water) and mossed (moss) from the splash; a skirt of soil skirtMm wide lies against its foot. Without them a dark flight reads as set on the street (the gully's round 02).",
+    "feetHalfMm": "How wide any foot falls about the walking line (a Gaussian's half width), against walkHalfMm's polish: lichen keeps only where feet are rare (a quarter of the walking line's footfall keeps a tread clean), so a public flight's treads are clean but at their ends.",
+    "pickedKnockMm": "Under a coping, or a step in the wall's top, the top course is picked to the line: stones with a flat, square top (no slope or step), their top corners knocked only this much, so the coping bears on them, never on a dark slot."
   }
 }
