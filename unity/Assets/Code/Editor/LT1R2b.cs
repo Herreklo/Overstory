@@ -170,6 +170,124 @@ namespace Overstory.EditorTools
             }
         }
 
+        [System.Serializable] class PieceData { public float valueLstar; public float lichenSpread; }
+        [System.Serializable] class RockData { public PieceData piece; }
+
+        /// <summary>
+        /// R2b's stones in the gully (tools/r2b_gully.py: R1's laying built with R2b's parts, in Unity's frame), drawn
+        /// in place of the stair and cheek walls the heart stages (the regression reference: hidden in memory, never
+        /// removed), from one of the gully's views (LT1Stone.Views; the target frame's street stop when not given), in
+        /// grey and in its material, and a sheet of the two beside the target frame.
+        ///
+        ///     Unity -batchmode -quit -projectPath unity -executeMethod Overstory.EditorTools.LT1R2b.Gully
+        ///         -mesh cache/r2b/gully -out reviews/lt1/port/2b/r2b/gully/round01 [-moment 1300-drizzle,...] [-dry]
+        ///         [-view street,...] [-looks grey,material] [-ref reviews/lt1/heart/target/3-street-gully-steps-target.png]
+        ///         [-old]
+        ///
+        /// The walls are drawn in the rubble's material, the steps and copings in the slate's, each stone its own value
+        /// and lichen by the slate's piece (packs/stavanger-1989/materials/slate.json). -old draws the old gully instead.
+        /// </summary>
+        public static void Gully()
+        {
+            string repo = Path.GetFullPath(Path.Combine(Application.dataPath, "..", ".."));
+            string outBase = Path.Combine(repo, Cli.Arg("-out", "reviews/lt1/port/2b/r2b/gully/still"));
+            Directory.CreateDirectory(Path.GetDirectoryName(outBase));
+            var urp = (UniversalRenderPipelineAsset)GraphicsSettings.currentRenderPipeline;
+            float reach = urp.shadowDistance;
+            bool async = ShaderUtil.allowAsyncCompilation;
+            ShaderUtil.allowAsyncCompilation = false;
+            var (stage, go) = LT1Stone.Stage(false);
+            var shot = ScriptableObject.CreateInstance<CameraShot>();
+            var made = new List<Object>();
+            var root = new GameObject("r2b gully") { hideFlags = HideFlags.DontSave };
+            try
+            {
+                // -old: the old gully as it stands, to see the shared layers on its stones
+                bool old = Cli.Flag("-old");
+                foreach (var r in Object.FindObjectsByType<MeshRenderer>(FindObjectsSortMode.None))
+                    if (!old && r.transform.root.name.StartsWith("stone_gully"))
+                        r.enabled = false;
+                string mesh = Cli.Arg("-mesh", "cache/r2b/gully");
+                var drawn = new List<(MeshRenderer mr, Material mat, Material grey)>();
+                // (the working's rock: the town's slate, its pieces' spread)
+                var piece = JsonUtility.FromJson<RockData>(File.ReadAllText(
+                    Path.Combine(repo, "packs/stavanger-1989/materials/slate.json"))).piece;
+                foreach (var (part, rock) in old ? new (string, string)[0] : new[] { ("walls", "rubble"), ("slabs", "slate") })
+                {
+                    var m = Load(Path.Combine(repo, $"{mesh}-{part}.bin"));
+                    made.Add(m);
+                    var g = new GameObject(part);
+                    g.transform.SetParent(root.transform, false);
+                    g.AddComponent<MeshFilter>().sharedMesh = m;
+                    var mr = g.AddComponent<MeshRenderer>();
+                    mr.shadowCastingMode = ShadowCastingMode.On;
+                    var saved = AssetDatabase.LoadAssetAtPath<Material>($"Assets/Art/Stone/M_Stone_{rock}.mat");
+                    var mat = new Material(saved) { hideFlags = HideFlags.DontSave };
+                    mat.DisableKeyword("OS_PATCHES");
+                    mat.SetFloat("_Grey", 0f);
+                    // each stone its own value and lichen, the rock's (its per-piece value the pack's alone)
+                    var grain = mat.GetVector("_Grain");
+                    mat.SetVector("_Grain", new Vector4(grain.x, grain.y, 0f, grain.w));
+                    mat.SetVector("_Piece", new Vector4(piece.valueLstar, piece.lichenSpread, 0f, 0f));
+                    var grey = new Material(mat) { hideFlags = HideFlags.DontSave };
+                    grey.SetFloat("_Grey", 1f);
+                    made.Add(mat);
+                    made.Add(grey);
+                    drawn.Add((mr, mat, grey));
+                    Debug.Log($"[LT1R2b] gully {part}: {m.vertexCount / 3} triangles, {rock}");
+                }
+                // (several views or moments: OUT-moment-view-look.png, for tools/r2b_sheet.py)
+                var viewNames = Cli.Arg("-view", "street").Split(',');
+                var moments = Cli.Arg("-moment", "1300-drizzle").Split(',');
+                var looks = Cli.Arg("-looks", "grey,material").Split(',');
+                var files = new List<string>();
+                foreach (var moment in moments)
+                {
+                    var rig = AssetDatabase.LoadAssetAtPath<LightRig>($"{Lights}/Heart_{moment}.asset");
+                    if (rig == null)
+                        throw new FileNotFoundException($"no rig {moment}");
+                    if (Cli.Flag("-dry"))
+                    {
+                        rig = Object.Instantiate(rig);
+                        rig.hideFlags = HideFlags.DontSave;
+                        rig.wetness = 0f;
+                        made.Add(rig);
+                    }
+                    stage.rig = rig;
+                    stage.Apply();
+                    foreach (var viewName in viewNames)
+                    {
+                        var view = System.Array.Find(LT1Stone.Views, v => v.name == viewName);
+                        if (view.name == null)
+                            throw new System.ArgumentException($"no gully view {viewName}");
+                        LT1Stone.Aim(stage, shot, view);
+                        foreach (var look in looks)
+                        {
+                            foreach (var (mr, mat, grey) in drawn)
+                                mr.sharedMaterial = look == "grey" ? grey : mat;
+                            string file = outBase + (moments.Length > 1 || viewNames.Length > 1 ? $"-{moment}-{viewName}" : "")
+                                        + "-" + look + ".png";
+                            LT1Render.Still(stage.view, file, grey: true, eighth: false, msaa: 4);
+                            files.Add(file);
+                        }
+                    }
+                }
+                string refFile = Cli.Arg("-ref", "reviews/lt1/heart/target/3-street-gully-steps-target.png");
+                if (refFile != "" && files.Count == 2)
+                    Sheet(Path.Combine(repo, refFile), Fs(Cli.Arg("-crop", "0,0,1920,1080")), files[1], files[0], $"{outBase}-sheet.png");
+            }
+            finally
+            {
+                Object.DestroyImmediate(root);
+                foreach (var o in made)
+                    Object.DestroyImmediate(o);
+                ShaderUtil.allowAsyncCompilation = async;
+                urp.shadowDistance = reach;
+                Object.DestroyImmediate(go);
+                Object.DestroyImmediate(shot);
+            }
+        }
+
         /// <summary>tools/r2b_wall.py's triangle soup: each triangle its own three corners, their normals given (the face
         /// soft, the sides flat), its winding turned for Unity's.</summary>
         static Mesh Load(string path)

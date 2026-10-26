@@ -45,6 +45,7 @@ Material:
     - _LichenRate: {r: 0.0007, g: 0.11, b: 0.85, a: 0}
     - _Moss: {r: 0.3, g: 0.38, b: 0.13, a: 1}
     - _MossDark: {r: 0.13, g: 0.17, b: 0.07, a: 1}
+    - _Piece: {r: 0, g: 0.35, b: 0, a: 0}
     - _Polish: {r: 0.08, g: 0.45, b: 0, a: 0}
     - _Quiet: {r: 0.023, g: 0.385, b: 0.108, a: 0}
     - _QuietAge: {r: 0.555, g: 0.269, b: 0, a: 0}

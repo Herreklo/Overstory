@@ -18,6 +18,7 @@ Shader "Overstory/Stone"
         _Edge ("Its split faces: the laminae, a little warmer", Color) = (0.38, 0.37, 0.36, 1)
         _GrainMap ("The rock's painted grain (r a bedding plane's lightness, g its relief, b a split face's lightness, a its relief; a metre a tile)", 2D) = "grey" {}
         _Grain ("Grain: x the bedding plane's contrast, y the split face's, z per-piece value, w per-piece hue", Vector) = (1.0, 1.0, 0.10, 0)
+        _Piece ("Each piece its own, from its seed: x its value, L* either way; y its lichen cover, a share either way", Vector) = (0, 0.35, 0, 0)
         _Weather ("Years for the rock to weather to its pigment", Float) = 60
         _Polish ("Polish: x how much darker the worn skin, y its smoothness", Vector) = (0.18, 0.42, 0, 0)
         _Relief ("Relief: x the grain's depth (m), y lichen's crust (m)", Vector) = (0.0015, 0.0012, 0, 0)
@@ -41,6 +42,7 @@ Shader "Overstory/Stone"
         half4 _Fresh;
         half4 _Edge;
         float4 _Grain;
+        float4 _Piece;
         float _Weather;
         float4 _Polish;
         float4 _Relief;
@@ -152,6 +154,14 @@ Shader "Overstory/Stone"
         // weathering: fresh rock dark and blue, weathered to its paler grey skin over the years
         rock = lerp(_Fresh.rgb, rock, saturate(years / _Weather));
         rock *= saturate(1.0h + tone * 2.0h + ((half)var - 0.5h) * (half)_Grain.z * 2.0h);
+        // each piece its own value, up to _Piece.x L* either way (its skin, its bed in the quarry), so that neighbours
+        // read as stones and a wall never as one band
+        {
+            half Y = max(dot(rock, half3(0.2126h, 0.7152h, 0.0722h)), 1e-4h);
+            half Ls = 116.0h * pow(Y, 1.0h / 3.0h) - 16.0h + (half)((frac(var * 13.17) * 2.0 - 1.0) * _Piece.x);
+            half Lt = max(Ls + 16.0h, 0.0h) / 116.0h;
+            rock *= Lt * Lt * Lt / Y;
+        }
         rock = lerp(rock, rock * half3(1.18h, 0.98h, 0.80h), rust * 0.6h);
         // each piece its own hue where the stone is mixed (rubble: rusty, greenish, blue-grey; a quarry's chosen slabs
         // stay one rock, w = 0)
@@ -258,7 +268,7 @@ Shader "Overstory/Stone"
         if (_OS_R0b_Flat > 6.5)
             moss = 0.0h;
 #endif
-        OSGrowth gr = OS_GrowthLayer(rock, smooth, q, lichenYears, moss, sky, var, positionWS);
+        OSGrowth gr = OS_GrowthLayer(rock, smooth, q, lichenYears, moss, sky, var, (half)_Piece.y, positionWS);
         rock = gr.albedo;
 #if defined(OS_R0B)
         if (_OS_R0b_Flat > 3.5 && _OS_R0b_Flat < 4.5)

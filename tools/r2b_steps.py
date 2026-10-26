@@ -49,6 +49,77 @@ def cuts(rng, W, S, below):
     return []
 
 
+def piece(key, X0, L, H, D, going, zf, bed, ends, p, S, walk, wear_mm, years, A):
+    """One slab of a tread, its front at zf up the flight and its bed at bed, made, worn where the walking line
+    keeps (wear_mm at the nosing) and settled, its corners' attributes appended to A. Returns its corners and their
+    normals in the flight's frame (x across, y up, z up the flight). Its seed for the material (UV1.y) is drawn from
+    its key."""
+    def wear(x, z, X0=X0):
+        along = 1.0 if z < 0.0 else math.exp(-((z - S["wearPeakMm"] * MM) / (S["wearSpreadMm"] * MM)) ** 2)
+        return wear_mm * walk(X0 + x) * (0.25 + 0.75 * along) if z < going else 0.0
+    s = slabstep.step(key, L, H, D, going, ends, p, wear)
+    Pl = s["P"]
+    # settled: the front sunk as the fill under it went, about the back's bed; a roll; the whole a little down
+    st = HS.Stream(key, "settle")
+    pitch = math.radians(st.uniform(*S["settlePitchDeg"]))
+    roll = math.radians(st.uniform(-1.0, 1.0) * S["settleRollDeg"])
+    drop = st.uniform(0.0, S["settleDropMm"]) * MM
+    d = Pl - np.array([L / 2, 0.0, D])
+    y1 = d[:, 1] * math.cos(pitch) + d[:, 2] * math.sin(pitch)
+    z1 = -d[:, 1] * math.sin(pitch) + d[:, 2] * math.cos(pitch)
+    yaw = math.radians(st.uniform(-1.0, 1.0) * S["settleYawDeg"])
+    x2 = d[:, 0] * math.cos(roll) - y1 * math.sin(roll)
+    y2 = d[:, 0] * math.sin(roll) + y1 * math.cos(roll)
+    x3 = x2 * math.cos(yaw) + z1 * math.sin(yaw)
+    z3 = -x2 * math.sin(yaw) + z1 * math.cos(yaw)
+    P = np.column_stack([x3 + L / 2 + X0, y2 + bed - drop, z3 + D + zf])
+    soft = s["soft"]
+    N = normals(P, soft)
+    n = len(P)
+    var = st.random()
+    ou, ov = st.uniform(0, 8), st.uniform(0, 8)
+    for t in range(n // 3):
+        a3, b3, c3 = P[3 * t:3 * t + 3]
+        nrm = np.cross(b3 - a3, c3 - a3)
+        nrm /= np.linalg.norm(nrm)
+        k = int(s["kind"][t])
+        ax = int(np.argmax(np.abs(nrm)))
+        for ci, q in enumerate((a3, b3, c3)):
+            lx, ly, lz = Pl[3 * t + ci]
+            uv0 = (q[0] + ou, q[2] + ov) if ax == 1 else ((q[0] + ou, q[1] + ov) if ax == 2 else (q[2] + ou, q[1] + ov))
+            fx = X0 + lx
+            worn = walk(fx) * (1.0 if lz < going else 0.0) if k in (0, 1) and nrm[1] > 0.3 else 0.0
+            wd = wear(lx, lz) / max(wear_mm, 1e-6) if k == 0 else 0.0
+            # (the sky a corner sees: less at the foot of the next riser and of its own front)
+            open_ = 1.0
+            if k == 0 and nrm[1] > 0.5:
+                open_ = 0.5 + 0.5 * min(1.0, max(0.0, (going - lz) / 0.12))
+            elif k == 2 and abs(nrm[1]) < 0.5:
+                open_ = 0.5 + 0.5 * min(1.0, ly / 0.10)
+            elif k == 3:
+                open_ = 0.4
+            moss = S["moss"]["base"]
+            if k == 0 and lz > going - S["moss"]["backMm"] * MM:
+                moss = S["moss"]["back"]
+            elif k == 0 and nrm[1] > 0.5 and ly < H - 0.01:
+                moss = S["moss"]["ledge"]
+            if ends[0] == "joint" and lx < 0.02 or ends[1] == "joint" and lx > L - 0.02:
+                moss = max(moss, S["moss"]["joint"])
+            # (at the foot of a lamina standing back, as at the tread's back: the corner holds moss and water)
+            foot = 2.0 * (1.0 - s["sky"][3 * t + ci])
+            moss = max(moss, S["moss"]["back"] * foot)
+            A[0].append(uv0)
+            A[1].append((years, var))
+            A[2].append((k, 0.3 * wd))
+            open_ *= s["sky"][3 * t + ci]
+            A[3].append(((0.5 + 0.5 * nrm[1]) * open_, (0.5 - 0.5 * nrm[1]) * open_))
+            A[4].append((worn * min(1.0, wear_mm / 8.0), years * (1.0 - 0.95 * worn)))
+            A[5].append((moss, max(0.5 * wd, 0.5 * foot)))
+            A[6].append((1.0, 1.0))
+            A[7].append((1.0, 7.0))
+    return P, N
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("out")
@@ -93,70 +164,9 @@ def main():
             ends = ("open" if pi_ == 0 else "joint", "open" if pi_ == len(edges) - 2 else "joint")
             key = HS.h(a.seed, "step", i, pi_)
 
-            def wear(x, z, X0=X0):
-                along = 1.0 if z < 0.0 else math.exp(-((z - S["wearPeakMm"] * MM) / (S["wearSpreadMm"] * MM)) ** 2)
-                return a.wear * walk(X0 + x) * (0.25 + 0.75 * along) if z < going else 0.0
-            s = slabstep.step(key, L, H, D, going, ends, p, wear)
-            Pl = s["P"]
-            # settled: the front sunk as the fill under it went, about the back's bed; a roll; the whole a little down
-            st = HS.Stream(key, "settle")
-            pitch = math.radians(st.uniform(*S["settlePitchDeg"]))
-            roll = math.radians(st.uniform(-1.0, 1.0) * S["settleRollDeg"])
-            drop = st.uniform(0.0, S["settleDropMm"]) * MM
-            d = Pl - np.array([L / 2, 0.0, D])
-            y1 = d[:, 1] * math.cos(pitch) + d[:, 2] * math.sin(pitch)
-            z1 = -d[:, 1] * math.sin(pitch) + d[:, 2] * math.cos(pitch)
-            yaw = math.radians(st.uniform(-1.0, 1.0) * S["settleYawDeg"])
-            x2 = d[:, 0] * math.cos(roll) - y1 * math.sin(roll)
-            y2 = d[:, 0] * math.sin(roll) + y1 * math.cos(roll)
-            x3 = x2 * math.cos(yaw) + z1 * math.sin(yaw)
-            z3 = -x2 * math.sin(yaw) + z1 * math.cos(yaw)
-            P = np.column_stack([x3 + L / 2 + X0, y2 + bed - drop, z3 + D + zf])
-            soft = s["soft"]
-            Ns.append(normals(P, soft))
-            n = len(P)
-            tri_counts.append(n // 3)
-            var = st.random()
-            ou, ov = st.uniform(0, 8), st.uniform(0, 8)
-            for t in range(n // 3):
-                a3, b3, c3 = P[3 * t:3 * t + 3]
-                nrm = np.cross(b3 - a3, c3 - a3)
-                nrm /= np.linalg.norm(nrm)
-                k = int(s["kind"][t])
-                ax = int(np.argmax(np.abs(nrm)))
-                for ci, q in enumerate((a3, b3, c3)):
-                    lx, ly, lz = Pl[3 * t + ci]
-                    uv0 = (q[0] + ou, q[2] + ov) if ax == 1 else ((q[0] + ou, q[1] + ov) if ax == 2 else (q[2] + ou, q[1] + ov))
-                    fx = X0 + lx
-                    worn = walk(fx) * (1.0 if lz < going else 0.0) if k in (0, 1) and nrm[1] > 0.3 else 0.0
-                    wd = wear(lx, lz) / max(a.wear, 1e-6) if k == 0 else 0.0
-                    # (the sky a corner sees: less at the foot of the next riser and of its own front)
-                    open_ = 1.0
-                    if k == 0 and nrm[1] > 0.5:
-                        open_ = 0.5 + 0.5 * min(1.0, max(0.0, (going - lz) / 0.12))
-                    elif k == 2 and abs(nrm[1]) < 0.5:
-                        open_ = 0.5 + 0.5 * min(1.0, ly / 0.10)
-                    elif k == 3:
-                        open_ = 0.4
-                    moss = S["moss"]["base"]
-                    if k == 0 and lz > going - S["moss"]["backMm"] * MM:
-                        moss = S["moss"]["back"]
-                    elif k == 0 and nrm[1] > 0.5 and ly < H - 0.01:
-                        moss = S["moss"]["ledge"]
-                    if ends[0] == "joint" and lx < 0.02 or ends[1] == "joint" and lx > L - 0.02:
-                        moss = max(moss, S["moss"]["joint"])
-                    # (at the foot of a lamina standing back, as at the tread's back: the corner holds moss and water)
-                    foot = 2.0 * (1.0 - s["sky"][3 * t + ci])
-                    moss = max(moss, S["moss"]["back"] * foot)
-                    A[0].append(uv0)
-                    A[1].append((years, var))
-                    A[2].append((k, 0.3 * wd))
-                    open_ *= s["sky"][3 * t + ci]
-                    A[3].append(((0.5 + 0.5 * nrm[1]) * open_, (0.5 - 0.5 * nrm[1]) * open_))
-                    A[4].append((worn * min(1.0, a.wear / 8.0), years * (1.0 - 0.95 * worn)))
-                    A[5].append((moss, max(0.5 * wd, 0.5 * foot)))
-                    A[6].append((1.0, 1.0))
-                    A[7].append((1.0, 7.0))
+            P, N = piece(key, X0, L, H, D, going, zf, bed, ends, p, S, walk, a.wear, years, A)
+            Ns.append(N)
+            tri_counts.append(len(P) // 3)
             Ps.append(P)
     # the fill under the flight seen past its open ends, and the rest behind its top step: soil, kind 6
     quads = []

@@ -28,15 +28,16 @@ float2 OS_GrowthHash2(float2 p)
 // Lichen in a surface's own plane (metres), as crustose lichen covers a quiet stone over a century (the board, 06, 05;
 // map lichen): crusts a few centimetres to a hand across, lobed, most of them old colonies grown into one another,
 // with a few small young ones between; a thin dark rim where a crust meets bare stone (map lichen's prothallus, a
-// pigment of the lichen, never a shade). How much is covered grows with the quiet years to about a third of a quiet
-// place after a century; none where it is trodden or cleaned, fading with the quiet. Once a pixel covers more than a
+// pigment of the lichen, never a shade). How much is covered grows with the quiet years to most of a quiet place
+// after a century (the pack's share), the rock showing through in gaps and the crust flecked dark with its fruit
+// (references 10, 06: a pale crust with dark specks); none where it is trodden or cleaned, fading with the quiet. Once a pixel covers more than a
 // crust it is seen as its mean, as a lens would average it. x coverage, y how old (0 young to 1), z the rim.
-half3 OS_LichenAt(float2 q, half years, half seed, float footprint)
+half3 OS_LichenAt(float2 q, half years, half seed, half spread, float footprint)
 {
-    // how much of a quiet surface it covers after its years, each stone its own (its skin, its tilt to the rain),
-    // about a third either way
-    half share = saturate((years - 10.0h) / 110.0h) * 0.34h * (half)_OS_LichenRate.z / 0.85h
-               * (0.65h + 0.7h * frac(seed * 7.31h));
+    // how much of a quiet surface it covers after its years: on a century's quiet stone the crust is the surface and
+    // the rock shows through it (references 10, 06), each stone its own (its skin, its tilt to the rain), spread either way
+    half share = saturate(saturate((years - 10.0h) / 110.0h) * (half)_OS_LichenRate.z
+               * (1.0h + spread * (frac(seed * 7.31h) * 2.0h - 1.0h)));
     // the colonies: crustose lichen grows as rosettes, each from a point in its own year, spreading about a third of a
     // millimetre a year (a century's rosette a few centimetres across), merging where they meet and stopping at a
     // stone's edge; so a stone carries round colonies of many ages and sizes (a noise field's meandering edge read as
@@ -112,7 +113,7 @@ struct OSGrowth
 // The thin growth on a surface: its pigment and smoothness in, the same with lichen and moss on it out. q the
 // surface's own plane (metres); lichenYears the years lichen has grown here (0 to 200); moss the baked moss potential
 // (0 to 1); sky what the point sees of the sky in the town (moss takes more where it is hidden); seed per piece.
-OSGrowth OS_GrowthLayer(half3 albedo, half smoothness, float2 q, half lichenYears, half moss, half sky, half seed,
+OSGrowth OS_GrowthLayer(half3 albedo, half smoothness, float2 q, half lichenYears, half moss, half sky, half seed, half spread,
                         float3 positionWS)
 {
     OSGrowth g;
@@ -125,19 +126,22 @@ OSGrowth OS_GrowthLayer(half3 albedo, half smoothness, float2 q, half lichenYear
     return g;
 #else
     float footprint = max(length(ddx(positionWS)), length(ddy(positionWS)));
-    half3 li = OS_LichenAt(q, lichenYears, seed, footprint);
-    // near, the crust cracked into tiny plates (areoles) a millimetre or two across, greyer in places, a few dark
-    // fruiting dots; further off one pale value, older and greyer towards a colony's middle, broadly
+    half3 li = OS_LichenAt(q, lichenYears, seed, spread, footprint);
+    // near, the crust cracked into tiny plates (areoles) a millimetre or two across, greyer in places, flecked dark:
+    // its fruit (black discs a millimetre or two across) and the dark lines between its plates and colonies, about a
+    // tenth of it; further off one pale value with its flecks' mean, older and greyer towards a colony's middle
     half near = OS_Near(footprint);
     half mottle = (half)OS_Noise(q * 9.0 + seed * 2.1);
     half3 lich = lerp(_OS_Lichen.rgb, _OS_LichenOld.rgb, saturate(li.y * 0.8h + (mottle - 0.5h) * 0.4h));
+    lich = lerp(lich, _OS_LichenRim.rgb, 0.1h);
     if (near > 0.01h)
     {
         half areole = (half)OS_Noise(q * 700.0 + seed * 3.3);
         half mot = (half)OS_Noise(q * 28.0 + seed * 2.1);
-        half dots = smoothstep(0.87h, 0.9h, (half)OS_Noise(q * 140.0 + seed * 5.3));
+        half dots = smoothstep(0.82h, 0.86h, (half)OS_Noise(q * 160.0 + seed * 5.3));
+        half fleck = smoothstep(0.69h, 0.73h, (half)OS_Noise(q * 55.0 + seed * 8.9));
         half3 crust = lerp(_OS_Lichen.rgb, _OS_LichenOld.rgb, saturate(li.y + (mot - 0.5h) * 0.8h)) * (0.96h + 0.06h * areole);
-        crust *= 1.0h - 0.3h * dots;
+        crust = lerp(crust, _OS_LichenRim.rgb, max(dots, fleck * 0.8h));
         lich = lerp(lich, crust, near);
     }
     lich = lerp(lich, _OS_LichenRim.rgb, li.z);

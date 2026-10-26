@@ -1,0 +1,322 @@
+"""R2b's stones in the gully: R1's laying (blender/generators/masonry.py, made from its facts at the pinned commit,
+through stones.Data) built with R2b's parts and set in the street, each stone rigid (moved and turned, never bent).
+
+- each face stone, through stone and head, on each face it shows: split.py's wall stone in its cell, set as the
+  working sets it (r2b_wall.stone); a head at a wall's end shows on the end too, and where the top steps up the
+  upper run's end is closed by end stones, a course or two;
+- each coping run and topstone: slabstep.py's coping, laid as the working lays a run (r2b_wall.coping);
+- each step, rest and landing slab: slabstep.py's step, worn and settled (r2b_steps.piece);
+- behind each face, the joints' soil (kind 6).
+
+A battered face over a climbing foot is a plane whose line at any height runs in a little uphill, so each stone is
+turned about the vertical to lie in it. Every stone's seed (its key, from which its material seed on UV1.y is drawn)
+is the world seed and its stable id, through hashing.py.
+
+Written as two R2B2 triangle soups in Unity's frame for LT1R2b.Gully: <out>-walls.bin (the rubble walls) and
+<out>-slabs.bin (the slate: steps and copings). Fails on any piece over its part's L0 budget.
+
+    $PY tools/r2b_gully.py cache/r2b/gully [--year 1989] [--wear 8]
+"""
+
+import argparse
+import hashlib
+import json
+import math
+import os
+import struct
+import sys
+import types
+
+import numpy as np
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, os.path.join(ROOT, "blender", "parts", "stone", "slate"))
+sys.path.insert(0, os.path.join(ROOT, "blender", "resolver"))
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import hashing as HS  # noqa: E402
+import stones as ST  # noqa: E402  (stones.Data: R1's laying and facts at the pinned commit)
+import r2b_steps  # noqa: E402
+import r2b_wall  # noqa: E402
+
+PACK = os.path.join(ROOT, "packs", "stavanger-1989")
+MM = 0.001
+Z = np.array([0.0, 0.0, 1.0])
+
+
+def _defn(part):
+    d = json.load(open(os.path.join(PACK, "parts", "stone", f"{part}.json")))
+    return {k: v["value"] for k, v in d["params"].items()}, d["levels"]["l0"]["triangles"]
+
+
+def _yaw(P, psi):
+    """Turned about the local vertical through x = 0, w = 0 (x along, y up, w out)."""
+    c, s = math.cos(psi), math.sin(psi)
+    return np.column_stack([P[:, 0] * c - P[:, 2] * s, P[:, 1], P[:, 0] * s + P[:, 2] * c])
+
+
+class Soup:
+    """Triangles in the street's frame (x east, y north, z up), each its own three corners, outward by the right hand,
+    with their normals and the eight UV pairs (Stone.shader's contract)."""
+
+    def __init__(self):
+        self.P, self.N, self.A = [], [], {k: [] for k in range(8)}
+
+    def add(self, P, N, A, O, U, V, W):
+        """Corners in a local frame (x, y, w) put at O with axes U, V, W; mirrored frames have their winding turned."""
+        M = np.column_stack([U, V, W])
+        Pw = P @ M.T + O
+        Nw = N @ M.T
+        order = np.arange(len(P)).reshape(-1, 3)
+        if np.linalg.det(M) < 0:
+            order = order[:, [0, 2, 1]]
+        order = order.reshape(-1)
+        self.P.append(Pw[order])
+        self.N.append(Nw[order])
+        for k in range(8):
+            self.A[k] += [A[k][i] for i in order]
+
+    def write(self, path):
+        P, N = np.vstack(self.P), np.vstack(self.N)
+        # Unity's frame (x, z, y): a mirror, so LT1R2b.Load's turn of the winding sets it right
+        U = P[:, [0, 2, 1]].astype(np.float32)
+        Nu = N[:, [0, 2, 1]].astype(np.float32)
+        with open(path, "wb") as f:
+            f.write(struct.pack("<4si", b"R2B2", len(U)))
+            f.write(U.tobytes())
+            f.write(Nu.tobytes())
+            for k in range(8):
+                f.write(np.array(self.A[k], dtype=np.float32).tobytes())
+        return len(U) // 3, hashlib.sha256(open(path, "rb").read()).hexdigest()[:16]
+
+
+class Line:
+    """A wall line in the street: its flight's foot, uphill and right, its side, its faces' planes (d: the distance
+    from the flight's middle line, at s along the flight and z up), smoothed through its stepped footing and top."""
+
+    def __init__(self, ln, w, fl, W):
+        self.w = w
+        self.a = np.array(fl["a"], float) * MM
+        d = (np.array(fl["b"], float) - np.array(fl["a"], float))[:2]
+        self.up = np.array([*(d / np.hypot(*d)), 0.0])
+        self.right = np.array([self.up[1], -self.up[0], 0.0])
+        self.sd = ln["side"]
+        self.hw = fl["width"] * MM / 2 + 0.006
+        self.b = W["batterPerHeight"][0] / W["batterPerHeight"][1]
+        self.T = W["topThickMm"] * MM
+        f = w["footing"]["stair"]
+        self.fs = np.array([(a + b) / 2 for a, b, z in f]) * MM
+        self.fz = np.array([z for a, b, z in f]) * MM
+        self.cs = np.array([(c["s"][0] + c["s"][1]) / 2 for c in w["ceiling"]]) * MM
+        self.ct = np.array([c["top"] for c in w["ceiling"]]) * MM
+
+    def zf(self, s):
+        return float(np.interp(s, self.fs, self.fz))
+
+    def top(self, s):
+        return float(np.interp(s, self.cs, self.ct))
+
+    def d(self, face, s, z):
+        if face == "stair":
+            return self.hw + (z - self.zf(s)) * self.b
+        return self.hw + (self.top(s) - self.zf(s)) * self.b + self.T + (self.top(s) - z) * self.b
+
+    def out(self, face):
+        """The face's outward normal in plan: the stair's towards the flight, the bank's away."""
+        return (-1.0 if face == "stair" else 1.0) * self.sd * self.right
+
+    def frame(self, face, s, z):
+        """A face's frame at (s, z): its origin on the face's plane, x along it (so that x, up, out is right-handed),
+        and the turn about the vertical that lays a stone in the plane."""
+        n = self.out(face)
+        sig = 1.0 if np.dot(np.cross(self.up, Z), n) > 0 else -1.0
+        O = self.a + s * self.up + self.sd * self.d(face, s, z) * self.right
+        O[2] = z
+        e = 1e-3
+        # (w = the face's outward distance from O; its slope along x)
+        sign = -1.0 if face == "stair" else 1.0
+        slope = sign * (self.d(face, s + sig * e, z) - self.d(face, s, z)) / e
+        return O, sig * self.up, n, math.atan(slope), sig
+
+
+def build(a):
+    data = ST.Data()
+    lay = data.laying()
+    facts = data.r1_facts()
+    seed = facts["worldSeed"]
+    W = data.walling["workings"]["dry-split-1874"]
+    pw, bw = _defn("wallstone")
+    pw["jointHalfMm"] = [W["jointMm"][0] / 2, W["jointMm"][1] / 2]
+    pc, bc = _defn("coping")
+    ps, bs = _defn("step")
+    S = W["steps"]
+    years = (a.year - W["built"]) / 200.0
+    gap = 0.5 * (W["jointMm"][0] + W["jointMm"][1]) * MM
+    walls, slabs = Soup(), Soup()
+    counts = dict(wallstone=[], coping=[], step=[])
+    flights = facts["stair"]["flights"]
+
+    def end_stone(L, key, s_end, n, z0, z1):
+        """A stone whose end shows across the wall at s_end, facing n along the line, the wall's thickness wide, plumb."""
+        zm = (z0 + z1) / 2
+        r = sorted((L.sd * L.d("stair", s_end, zm), L.sd * L.d("bank", s_end, zm)))
+        U = np.cross(Z, n)
+        U = U if np.dot(np.cross(U, Z), n) > 0 else -U
+        rc = (r[0] + r[1]) / 2
+        O = L.a + s_end * L.up + rc * L.right
+        O[2] = z0
+        ux = sorted((np.dot(L.right, U) * (r[0] - rc), np.dot(L.right, U) * (r[1] - rc)))
+        cell = ((ux[0], 0.0), (ux[1], 0.0), (ux[1], z1 - z0), (ux[0], z1 - z0))
+        A = {k: [] for k in range(8)}
+        P, N = r2b_wall.stone(key, cell, pw, W, 0.0, years, gap, A)
+        walls.add(P, N, A, O, U, Z, n)
+        counts["wallstone"].append(len(P) // 3)
+
+    for ln, w in zip(facts["walls"]["lines"], lay["walls"]):
+        L = Line(ln, w, flights[ln["flight"]], W)
+        s_lo, s_hi = w["s"][0] * MM, w["s"][1] * MM
+        for st in w["stones"]:
+            if st["kind"] not in ("face", "through", "head"):
+                continue
+            o = np.array(st["outline"], float) * MM
+            s0, s1, z0, z1 = o[:, 0].min(), o[:, 0].max(), o[:, 1].min(), o[:, 1].max()
+            sc = (s0 + s1) / 2
+            for face in st["faces"]:
+                O, U, n, psi, sig = L.frame(face, sc, z0)
+                x0, x1 = sorted((sig * (s0 - sc), sig * (s1 - sc)))
+                cell = ((x0, 0.0), (x1, 0.0), (x1, z1 - z0), (x0, z1 - z0))
+                A = {k: [] for k in range(8)}
+                P, N = r2b_wall.stone(HS.h(seed, st["id"], face), cell, pw, W, L.b, years, gap, A)
+                walls.add(_yaw(P, psi), _yaw(N, psi), A, O, U, Z, n)
+                counts["wallstone"].append(len(P) // 3)
+            # a head at the wall's end shows on the end too, the wall's thickness wide, plumb
+            for end, s_end, n in (("lo", s_lo, -L.up), ("hi", s_hi, L.up)):
+                if st["kind"] != "head" or abs((s0 if end == "lo" else s1) - s_end) > 1e-6:
+                    continue
+                end_stone(L, HS.h(seed, st["id"], "end"), s_end, n, z0, z1)
+        # where the top steps up, the upper run's end shows below its coping: closed by end stones, a course or two
+        for c, c2 in zip(w["ceiling"][:-1], w["ceiling"][1:]):
+            lo, hi = c["top"] * MM, c2["z"] * MM
+            if abs(hi - lo) < 0.02:
+                continue
+            n = -L.up if hi > lo else L.up
+            lo, hi = (lo, hi) if hi > lo else (c2["top"] * MM, c["z"] * MM)
+            rows = max(1, int(math.ceil((hi - lo) / 0.28)))
+            for r in range(rows):
+                end_stone(L, HS.h(seed, w["id"], "step", c["s"][1], r), c["s"][1] * MM,
+                          n, lo + (hi - lo) * r / rows, lo + (hi - lo) * (r + 1) / rows)
+        # the copings and topstones, each run laid on its bed from the stair face's top
+        for i, c in enumerate(w["ceiling"]):
+            c0, c1 = c["s"][0] * MM, c["s"][1] * MM
+            zb = c["z"] * MM
+            # (the run's x from 0 at its start: its s end where the face's x runs from)
+            O, U, n, psi, sig = L.frame("stair", c0, zb)
+            if sig < 0:
+                O, U, n, psi, sig = L.frame("stair", c1, zb)
+            run = types.SimpleNamespace(seed=HS.h(seed, c.get("owner") or f"{w['id']}/ceiling-{i}"), length=c1 - c0,
+                                        height=0.0)
+            Wc = W if c["kind"] == "coping" else dict(W, copeThickMm=[c["top"] - c["z"]] * 2, copeVaryMm=0.0)
+            A = {k: [] for k in range(8)}
+            Ps, Ns = [], []
+            cnt, _ = r2b_wall.coping(run, Wc, L.b, years, Ps, Ns, A)
+            slabs.add(_yaw(np.vstack(Ps), psi), _yaw(np.vstack(Ns), psi), A, O, U, Z, n)
+            counts["coping"] += cnt
+        # the joints' soil behind each face, a column a quarter metre wide from its footing to its top's bed
+        for face in ("stair", "bank"):
+            foot = w["footing"][face]
+            for k in range(int(math.ceil((s_hi - s_lo) / 0.25))):
+                sa, sb = s_lo + k * 0.25, min(s_hi, s_lo + (k + 1) * 0.25)
+                sm = (sa + sb) / 2
+                zl = min((z for p, q, z in foot if p * MM <= sm <= q * MM), default=None)
+                zt = min((c["z"] for c in w["ceiling"] if c["s"][0] * MM <= sm <= c["s"][1] * MM), default=None)
+                if zl is None or zt is None:
+                    continue
+                zl, zt = zl * MM - 0.05, zt * MM + 0.02
+                back = 0.045 * (1.0 if face == "stair" else -1.0)
+
+                def at(s, z):
+                    q = L.a + s * L.up + L.sd * (L.d(face, s, z) + back) * L.right
+                    q[2] = z
+                    return q
+                Q = [at(sa, zl), at(sb, zl), at(sb, zt), at(sa, zt)]
+                n = L.out(face)
+                T = []
+                for t in ((Q[0], Q[1], Q[2]), (Q[0], Q[2], Q[3])):
+                    t = np.array(t)
+                    if np.dot(np.cross(t[1] - t[0], t[2] - t[0]), n) < 0:
+                        t = t[[0, 2, 1]]
+                    T.append(t)
+                F = np.vstack(T)
+                A = {0: [(np.dot(q, L.up), q[2]) for q in F], 1: [(years, 0.5)] * 6, 2: [(6.0, 0.0)] * 6,
+                     3: [(0.2, 0.1)] * 6, 4: [(0.0, years)] * 6, 5: [(0.6, 0.0)] * 6, 6: [(1.0, 1.0)] * 6,
+                     7: [(1.0, 7.0)] * 6}
+                walls.add(F, np.tile(n, (6, 1)), A, np.zeros(3), np.array([1.0, 0, 0]), np.array([0, 1.0, 0]), Z)
+
+    # the steps, rests and landings: each slab worn where the walking line keeps, and settled
+    for fl, f in zip(lay["steps"], flights):
+        a0 = np.array([f["a"][0], f["a"][1], 0.0]) * MM     # (a slab's corners are at their own heights)
+        d = (np.array(f["b"], float) - np.array(f["a"], float))[:2]
+        up = np.array([*(d / np.hypot(*d)), 0.0])
+        right = np.array([up[1], -up[0], 0.0])
+        width = f["width"] * MM
+        xw = width * S["walkLineShare"]
+        half = S["walkHalfMm"] * MM
+
+        def walk(x):
+            return math.exp(-((x - xw) / half) ** 2)
+        steps = {s["id"]: s for s in fl["steps"]}
+        for s in fl["steps"]:
+            if "y" not in s:
+                s["y"] = [s["rows"][0]["y"][0], s["rows"][-1]["y"][1]]     # (a turn's landing: its rows')
+        y0s = sorted(s["y"][0] for s in fl["steps"])
+        for st in fl["stones"]:
+            o = np.array(st["outline"], float) * MM
+            x0, x1, y0, y1 = o[:, 0].min(), o[:, 0].max(), o[:, 1].min(), o[:, 1].max()
+            sp = steps[st["step"]]
+            top = sp["z"][1] * MM
+            nxt = [y for y in y0s if y > sp["y"][0]]
+            going = (nxt[0] - sp["y"][0]) * MM if nxt else y1 - y0
+            key = HS.h(seed, st["id"])
+            rng = HS.Stream(key, "cut")
+            rise = (sp["z"][1] - sp["z"][0]) * MM if st["kind"] == "step" else 0.165
+            H = min(rise, 0.2) + rng.uniform(-1.0, 1.0) * S["thickMm"] * MM
+            # (an end in the wall is unseen: drawn as a joint's, near square)
+            ends = ("joint", "joint")
+            A = {k: [] for k in range(8)}
+            P, N = r2b_steps.piece(key, x0 + width / 2, x1 - x0, H, y1 - y0, going, y0, top - H, ends, ps, S, walk,
+                                   a.wear, years, A)
+            P = P - np.array([width / 2, 0.0, 0.0])
+            slabs.add(P, N, A, a0, right, Z, up)
+            counts["step"].append(len(P) // 3)
+    return walls, slabs, counts, dict(wallstone=bw, coping=bc, step=bs)
+
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("out")
+    ap.add_argument("--year", type=int, default=1989)
+    ap.add_argument("--wear", type=float, default=8.0, help="mm the feet took at the walking line's nosing")
+    a = ap.parse_args()
+    os.makedirs(os.path.dirname(os.path.abspath(a.out)), exist_ok=True)
+    walls, slabs, counts, budget = build(a)
+    fail = False
+    for part, c in counts.items():
+        c = np.array(c)
+        ok = c.max() <= budget[part]
+        fail = fail or not ok
+        print(f"{part}: {len(c)} pieces, {c.min()} to {c.max()} triangles (mean {c.mean():.1f}; L0's budget "
+              f"{budget[part]}: {'pass' if ok else 'FAIL'}), {c.sum()} in all")
+    kw = json.load(open(os.path.join(ROOT, "kinds", "wall.json")))["levels"]["l0"]["triangles"]
+    ks = json.load(open(os.path.join(ROOT, "kinds", "stair.json")))["levels"]["l0"]["triangles"]
+    tw = sum(counts["wallstone"]) + sum(counts["coping"])
+    print(f"the walls' stones and copings: {tw} triangles (the wall kind's L0 {kw}: {'pass' if tw <= kw else 'FAIL'}); "
+          f"the steps: {sum(counts['step'])} (the stair kind's L0 {ks}: {'pass' if sum(counts['step']) <= ks else 'FAIL'})")
+    fail = fail or tw > kw or sum(counts["step"]) > ks
+    for name, soup in (("walls", walls), ("slabs", slabs)):
+        n, h = soup.write(f"{a.out}-{name}.bin")
+        print(f"{a.out}-{name}.bin: {n} triangles, sha256 {h}")
+    if fail:
+        sys.exit(1)
+
+
+if __name__ == "__main__":
+    main()

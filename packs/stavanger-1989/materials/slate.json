@@ -11,10 +11,15 @@
     "depthPerMille": 600,
     "toBed": true
   },
+  "piece": {
+    "valueLstar": 12,
+    "lichenSpread": 0.35
+  },
   "provenance": "authored",
   "notes": {
     "wearUmPerCentury": "How deep feet wear it, in micrometres a century at 100,000 footfalls a year on a flight 3.2 m wide (blender/generators/wear.py, depth): granite about 1,500 to 3,000, soft stone about 15,000; the slaty rock between, unverified (docs/research/stone.md).",
     "cracksPerMille": "How readily a slab cracks, against this stone (1000): the rate upkeep.py's crack draws are scaled by. Slate parts along its beds.",
+    "piece": "How each stone differs from its neighbours, from its own seed: its value up to valueLstar L* either way (its skin, its bed in the quarry), and its lichen cover up to lichenSpread of the quiet share either way (its tilt to the rain). Without them a wall of one rock reads as one band from 6 m (R2b's strict review).",
     "cornerBreak": "How a corner breaks off a step's nosing, the chip rule's material half (the record gives the break and its size): its bite along the step and back from the nosing per mille of its size, and how deep, depthMm plus depthPerMille of its size, then down to the bedding plane nearest that depth (toBed: the stone parts along its beds). The numbers are blender/parts/stone/slate/slab.py's (the bite 1.3 times the size along, 0.75 back) and blender/generators/stair_stages.py's (down to 40 mm plus 0.6 times the size), the gully's broken corners as judged at 2a; the part's own chip rules (a seeded knock's odds and legs) are the part's (parts/stone/step.json: params)."
   }
 }

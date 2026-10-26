@@ -157,6 +157,46 @@ def rigid(P, piv, pitch, yaw, dw):
     return np.column_stack([du, dv, dww + dw]) + piv
 
 
+def stone(key, cell, p, W, batter, years, gap, A):
+    """One wall stone in its cell, set as the working sets it (its face leaning back by the batter from its bed's
+    front, pitched, turned and set out a little), its corners' attributes appended to A. Returns its corners and
+    their normals, in the panel's frame (x along, y up, z out of the wall). Its seed for the material (UV1.y) is
+    drawn from its key."""
+    s = split.wallstone(key, cell, p)
+    rng = HS.Stream(key, "set")
+    piv = np.array([s["centre"][0], s["bed"], 0.0])
+    pitch = math.atan(batter) + math.radians(rng.uniform(*W["setPitchDeg"]))
+    yaw = math.radians(rng.uniform(*W["setYawDeg"]))
+    dw = -s["bed"] * batter + rng.uniform(*W["setOutMm"]) * MM
+    P = rigid(s["P"], piv, pitch, yaw, dw)
+    n = len(P)
+    N = normals(P, s["soft"])
+    var = rng.random()
+    ou, ov = rng.uniform(0, 8), rng.uniform(0, 8)
+    # the corners' attributes, per triangle (flat: each triangle its own three corners)
+    for t in range(n // 3):
+        a3, b3, c3 = P[3 * t:3 * t + 3]
+        nrm = np.cross(b3 - a3, c3 - a3)
+        nrm /= np.linalg.norm(nrm)
+        k = int(s["kind"][t])
+        for ci, q in enumerate((a3, b3, c3)):
+            ax = int(np.argmax(np.abs(nrm)))
+            uv0 = (q[0] + ou, q[1] + ov) if ax == 2 else ((q[0] + ou, q[2] + ov) if ax == 1 else (q[2] + ou, q[1] + ov))
+            # (the sky a corner sees: in its joint, a slit a joint wide, the share a slit lets in at that depth)
+            slit = float(s["slit"][3 * t + ci])
+            open_ = gap / (gap + 2.0 * slit)
+            A[0].append(uv0)
+            A[1].append((years, var))
+            A[2].append((k, 0.0))
+            A[3].append(((0.5 + 0.5 * nrm[1]) * open_, (0.5 - 0.5 * nrm[1]) * open_))
+            # (lichen needs light: none deeper in a joint than the sky reaches)
+            A[4].append((0.0, years * max(0.0, 1.0 - slit / 0.03)))
+            A[5].append((0.05 if k in (1, 2) else 0.25, 0.0))
+            A[6].append((1.0, 1.0))
+            A[7].append((1.0, 7.0))
+    return P, N
+
+
 def coping(a, W, batter, years, Ps, Ns, A):
     """A run of coping slabs along the wall's top, laid as the working lays them: each as long as the working allows
     and no shorter than its least, a joint between; the run's thickness one, each slab a little off it; its front proud
@@ -243,42 +283,11 @@ def main():
     Ps, Ns, A = [], [], {k: [] for k in range(8)}
     tri_counts = []
     for i, cell in enumerate(cells):
-        key = HS.h(a.seed, "stone", i)
-        s = split.wallstone(key, cell, p)
-        rng = HS.Stream(key, "set")
-        piv = np.array([s["centre"][0], s["bed"], 0.0])
-        pitch = math.atan(batter) + math.radians(rng.uniform(*W["setPitchDeg"]))
-        yaw = math.radians(rng.uniform(*W["setYawDeg"]))
-        dw = -s["bed"] * batter + rng.uniform(*W["setOutMm"]) * MM
-        P = rigid(s["P"], piv, pitch, yaw, dw)
-        n = len(P)
-        Ns.append(normals(P, s["soft"]))
-        tri_counts.append(n // 3)
-        var = rng.random()
-        ou, ov = rng.uniform(0, 8), rng.uniform(0, 8)
-        # the corners' attributes, per triangle (flat: each triangle its own three corners)
-        for t in range(n // 3):
-            a3, b3, c3 = P[3 * t:3 * t + 3]
-            nrm = np.cross(b3 - a3, c3 - a3)
-            nrm /= np.linalg.norm(nrm)
-            k = int(s["kind"][t])
-            for ci, q in enumerate((a3, b3, c3)):
-                ax = int(np.argmax(np.abs(nrm)))
-                uv0 = (q[0] + ou, q[1] + ov) if ax == 2 else ((q[0] + ou, q[2] + ov) if ax == 1 else (q[2] + ou, q[1] + ov))
-                # (the sky a corner sees: in its joint, a slit a joint wide, the share a slit lets in at that depth)
-                slit = float(s["slit"][3 * t + ci])
-                open_ = gap / (gap + 2.0 * slit)
-                A[0].append(uv0)
-                A[1].append((years, var))
-                A[2].append((k, 0.0))
-                A[3].append(((0.5 + 0.5 * nrm[1]) * open_, (0.5 - 0.5 * nrm[1]) * open_))
-                # (lichen needs light: none deeper in a joint than the sky reaches)
-                A[4].append((0.0, years * max(0.0, 1.0 - slit / 0.03)))
-                A[5].append((0.05 if k in (1, 2) else 0.25, 0.0))
-                A[6].append((1.0, 1.0))
-                A[7].append((1.0, 7.0))
+        P, N = stone(HS.h(a.seed, "stone", i), cell, p, W, batter, years, gap, A)
+        Ns.append(N)
+        tri_counts.append(len(P) // 3)
         Ps.append(P)
-    cope = coping(a, W, batter, years, Ps, Ns, A) if a.coping else None
+    cope =coping(a, W, batter, years, Ps, Ns, A) if a.coping else None
     # the joints' fill behind the faces: soil and the dark of the hearting, kind 6
     back = 0.045
     top = max(c[2][1] for c in cells) + (0.02 if a.coping else -0.03)
