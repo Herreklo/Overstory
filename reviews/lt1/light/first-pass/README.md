@@ -37,11 +37,24 @@ Stills in `../second-round/`, from the same cameras in the same moments. 27 stil
 - **Low sun (3):** clouds are lit as the walls are, by the sun with little sky above them, so they take its amber. The streaks gather in fields, with octaves turned off the wind, and no longer blow.
 - **Drizzle (4):** by day a cloud deck mixes towards daylight white by its cover (light-derive-2), so the pink cast is gone. Drizzle thins the air by its visibility (the pack's `air.precipitation`, by Koschmieder), so the far houses soften.
 - **Follow-ups done:** the fallback lamp colour is out of code. A record's overrides for a place are pushed after the keys when that place's rig is written.
-- **Strict review on Fable:** pending at this commit.
+- **Strict review on Fable: FAIL** (narrow). Drizzle is near its intent. Still open: the blue-hour dome is flat and darkens toward the horizon from the foot, with no glow; the low-sun sky is a warm grey with no blue, and its streaks repeat; the far fog is thin in blue hour and drizzle; the blue-hour near field is a band dark. The glow over the gully and the lifts at the stair and right wall are lamplight in the target (the lamps element's).
 
 For other elements:
 - Lamps: the gully lanterns are still dropped (`heart_layout.py`), so the stair and wall get no pools; that is most of the blue-hour bands' gap.
 - Stone: wet treads only darken (by 4 L*). The film's gloss is capped at 0.62 by the stone board, so from the street the sheen is faint.
 - The window spill's colour is still typed in `StreetStage` (it is off: `spillCd` 0).
 
-The cost is one more exp per haze tap and one noise per sky pixel. Frame time is not measured: the full-screen run needs Øystein's Mac free. The golden baselines change with the light and need re-blessing.
+**Frame time** (26 October, 23:05 to 23:16, on a quiet machine with Understory paused: load 1.5 to 5.5; one run of the walk's nine views in three lights, `reviews/perf/2026-10-26/playable/light-r2/run-2`, and a pass split at the foot and the street stop, `light-r2-passes/passes.md`). Numbers taken earlier under load 20 were rough and are replaced.
+
+| Light | Frame (ms) | Frames a second | Against W7 |
+| --- | --- | --- | --- |
+| Drizzle | 14.9 to 27.3 | 37 to 67 | 4 to 6 ms cheaper |
+| Low sun | 16.3 to 27.2 | 37 to 61 | 5 to 9 ms cheaper |
+| Blue hour | 41.8 to 51.1 | 20 to 24 | 23 to 28 ms dearer |
+
+What the terms cost (offscreen, at the foot and the street stop):
+- Blue hour's lamps in the fog (FogLights): 21.5 to 21.9 ms. The pass loops over all 403 of the town's lamps at every pixel, and since the first pass put blue hour in sea fog, the halos are on. That is the whole regression. The cure is to cull the lamps to the view each frame and draw the halos at a quarter of the pixels, as the beams are.
+- The fog bank on surfaces and sky (the 12-tap march; the `haze-off` arm): 9 to 11 ms at blue hour, about 1 ms by day.
+- The sky: 1 to 2 ms. The four full-screen passes by day: 3 to 5 ms.
+
+The golden baselines change with the light and need re-blessing.
