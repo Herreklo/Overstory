@@ -65,7 +65,7 @@ One line and one reason per rule. The architecture is `docs/building-blocks.md` 
 - One shade rule (`StreetLooks.hlsl`): shade is pigment times the light falling on it; how much sky colour shade takes is the light's setting (`_OS_ShadowChroma`), never a material's. *Why:* light painted into colour breaks when the light changes (`docs/research/colour-and-shading.md`, rule 1).
 - No reliance on real-time GI, no baked lightmaps or probes for generated places; the generator places reflection probes. *Why:* generated places change.
 - History is read from maps against the date through one `OS_History(address, layer)`; the date is a global; maps hold inputs, never years since; every shader gains `_OS_BAKE` at 3.1 (none has it yet). *Why:* a jump costs one uniform.
-- Check any light or colour change in morning, drizzle, low sun and blue hour. *Why:* a fix for one light breaks another.
+- A look is first judged in grey and one light (make, look, fix); once it holds, it is checked in morning, a grey afternoon and evening. *Why:* one still finds most faults cheaply, and a fix for one light can break another.
 
 ## Performance and timing
 
