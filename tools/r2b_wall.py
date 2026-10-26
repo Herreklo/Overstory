@@ -1,0 +1,218 @@
+"""R2b's look loop: a panel of dry wall laid from the pack's walling (packs/stavanger-1989/walling.json, the
+dry-split-1874 working) with the split wall stone (blender/parts/stone/slate/split.py, its params the definition's),
+written as a triangle soup for LT1R2b.cs to draw (positions in Unity's frame: x along, y up, z into the wall; then
+UV0 to UV7 as Stone.shader's contract has them).
+
+    python3 tools/r2b_wall.py OUT.bin [--length 8] [--height 1.8] [--seed 1989]
+"""
+
+import argparse
+import json
+import math
+import os
+import struct
+import sys
+
+import numpy as np
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, os.path.join(ROOT, "blender", "parts", "stone", "slate"))
+sys.path.insert(0, os.path.join(ROOT, "blender", "resolver"))
+import hashing as HS  # noqa: E402
+import split  # noqa: E402
+
+PACK = os.path.join(ROOT, "packs", "stavanger-1989")
+MM = 0.001
+
+
+def load():
+    walling = json.load(open(os.path.join(PACK, "walling.json")))["workings"]["dry-split-1874"]
+    defn = json.load(open(os.path.join(PACK, "parts", "stone", "wallstone.json")))
+    p = {k: v["value"] for k, v in defn["params"].items()}
+    p["jointHalfMm"] = [walling["jointMm"][0] / 2, walling["jointMm"][1] / 2]
+    return walling, p
+
+
+def lay(seed, W, length, height):
+    """Random coursed, as a mason builds it: always on the lowest place along the wall's top so far, a stone as long
+    as the place allows, its top brought level with a neighbour's where it nearly is (so courses form and break), no
+    end over a joint below it; a slot too short for a stone filled with flat pieces to its lower neighbour. Returns
+    the cells (rectangles: bed left, bed right, top right, top left)."""
+    rng = HS.Stream(seed, "r2b-panel")
+    ph = W["stonePerHeight"]
+    p0, p1 = W["courseDrawPower"]
+    snap = W["snapMm"] * MM
+    bond = W["bondLeastMm"] * MM
+    short = W["shortMm"] * MM
+    least = W["courseMm"][0] * MM * 0.5
+    # the top so far: segments [u0, u1, top, the joints below that top inside the segment]
+    sky = [[0.0, length, 0.0, []]]
+    cells = []
+    while True:
+        i = min(range(len(sky)), key=lambda k: (sky[k][2], sky[k][0]))
+        u0, u1, base, joints = sky[i]
+        if base > height - least:
+            break
+        w = u1 - u0
+        left = sky[i - 1][2] if i > 0 else None
+        right = sky[i + 1][2] if i + 1 < len(sky) else None
+        lo, hi = (W["foundationMm"] if base < 1e-6 else W["courseMm"])
+        h = (lo + (hi - lo) * rng.random() ** (p0 + (p1 - p0) * base / height)) * MM
+        for nb in (left, right):
+            if nb is not None and abs(base + h - nb) < snap and nb - base >= least:
+                h = nb - base
+                break
+        if w < max(short, ph[0] * h):
+            # a slot: flat pieces up to the lower neighbour, as long as the slot
+            tops = [t for t in (left, right) if t is not None]
+            h = min(min(tops) - base, max(least, w / ph[0])) if tops else h
+        h = min(h, height - base) if height - base - h < least else h
+        lmin = max(W["stoneMm"][0] * MM, ph[0] * h, short)
+        lmax = min(W["stoneMm"][1] * MM, ph[1] * h)
+        l = math.exp(rng.uniform(math.log(min(lmin, lmax)), math.log(max(lmin, lmax))))
+        if l >= w or w - l < max(short, lmin * 0.8):
+            l = w
+        else:
+            for _ in range(4):
+                near = [j for j in joints if abs(j - (u0 + l)) < bond]
+                if not near:
+                    break
+                l = near[0] + bond - u0
+            if l >= w or w - l < max(short, lmin * 0.8):
+                l = w
+        cells.append(((u0, base), (u0 + l, base), (u0 + l, base + h), (u0, base + h)))
+        # the top raised over the stone; the rest of the segment keeps its own joints
+        seg = [[u0, u0 + l, base + h, []]]
+        if l < w:
+            seg.append([u0 + l, u1, base, [j for j in joints if j > u0 + l]])
+        sky[i:i + 1] = seg
+        # level neighbours run together, their meeting a joint below their top
+        merged = [sky[0]]
+        for sgm in sky[1:]:
+            if abs(sgm[2] - merged[-1][2]) < 1e-6:
+                merged[-1] = [merged[-1][0], sgm[1], sgm[2], merged[-1][3] + [sgm[0]] + sgm[3]]
+            else:
+                merged.append(sgm)
+        sky = merged
+    return cells
+
+
+def normals(P, soft):
+    """Each corner's normal: its triangle's, or on the soft triangles (the face and its arris) the area-weighted
+    mean of the soft triangles meeting at its point."""
+    T = P.reshape(-1, 3, 3)
+    F = np.cross(T[:, 1] - T[:, 0], T[:, 2] - T[:, 0])
+    N = np.repeat(F / np.linalg.norm(F, axis=1)[:, None], 3, axis=0)
+    acc = {}
+    keys = [tuple(np.round(q, 5)) for q in P]
+    for t in np.nonzero(soft)[0]:
+        for c in range(3):
+            acc[keys[3 * t + c]] = acc.get(keys[3 * t + c], 0) + F[t]
+    for t in np.nonzero(soft)[0]:
+        for c in range(3):
+            m = acc[keys[3 * t + c]]
+            N[3 * t + c] = m / np.linalg.norm(m)
+    return N
+
+
+def rigid(P, piv, pitch, yaw, dw):
+    """The stone moved and turned as one: pitched about the u axis through its bed's front (positive: its face looks
+    up, its top goes back), turned about the v axis through its middle, then set out by dw."""
+    d = P - piv
+    cp, sp = math.cos(pitch), math.sin(pitch)
+    dv = d[:, 1] * cp + d[:, 2] * sp
+    dwp = d[:, 2] * cp - d[:, 1] * sp
+    cy, sy = math.cos(yaw), math.sin(yaw)
+    du = d[:, 0] * cy - dwp * sy
+    dww = d[:, 0] * sy + dwp * cy
+    return np.column_stack([du, dv, dww + dw]) + piv
+
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("out")
+    ap.add_argument("--length", type=float, default=8.0)
+    ap.add_argument("--height", type=float, default=1.8)
+    ap.add_argument("--seed", default="1989")
+    ap.add_argument("--year", type=int, default=1989)
+    a = ap.parse_args()
+    W, p = load()
+    batter = W["batterPerHeight"][0] / W["batterPerHeight"][1]
+    gap = 0.5 * (W["jointMm"][0] + W["jointMm"][1]) * MM
+    cells = lay(HS.h(a.seed, "panel"), W, a.length, a.height)
+    years = (a.year - W["built"]) / 200.0
+    Ps, Ns, A = [], [], {k: [] for k in range(8)}
+    tri_counts = []
+    for i, cell in enumerate(cells):
+        key = HS.h(a.seed, "stone", i)
+        s = split.wallstone(key, cell, p)
+        rng = HS.Stream(key, "set")
+        piv = np.array([s["centre"][0], s["bed"], 0.0])
+        pitch = math.atan(batter) + math.radians(rng.uniform(*W["setPitchDeg"]))
+        yaw = math.radians(rng.uniform(*W["setYawDeg"]))
+        dw = -s["bed"] * batter + rng.uniform(*W["setOutMm"]) * MM
+        P = rigid(s["P"], piv, pitch, yaw, dw)
+        n = len(P)
+        Ns.append(normals(P, s["soft"]))
+        tri_counts.append(n // 3)
+        var = rng.random()
+        ou, ov = rng.uniform(0, 8), rng.uniform(0, 8)
+        # the corners' attributes, per triangle (flat: each triangle its own three corners)
+        for t in range(n // 3):
+            a3, b3, c3 = P[3 * t:3 * t + 3]
+            nrm = np.cross(b3 - a3, c3 - a3)
+            nrm /= np.linalg.norm(nrm)
+            k = int(s["kind"][t])
+            for ci, q in enumerate((a3, b3, c3)):
+                ax = int(np.argmax(np.abs(nrm)))
+                uv0 = (q[0] + ou, q[1] + ov) if ax == 2 else ((q[0] + ou, q[2] + ov) if ax == 1 else (q[2] + ou, q[1] + ov))
+                # (the sky a corner sees: in its joint, a slit a joint wide, the share a slit lets in at that depth)
+                slit = float(s["slit"][3 * t + ci])
+                open_ = gap / (gap + 2.0 * slit)
+                A[0].append(uv0)
+                A[1].append((years, var))
+                A[2].append((k, 0.0))
+                A[3].append(((0.5 + 0.5 * nrm[1]) * open_, (0.5 - 0.5 * nrm[1]) * open_))
+                # (lichen needs light: none deeper in a joint than the sky reaches)
+                A[4].append((0.0, years * max(0.0, 1.0 - slit / 0.03)))
+                A[5].append((0.05 if k in (1, 2) else 0.25, 0.0))
+                A[6].append((1.0, 1.0))
+                A[7].append((1.0, 7.0))
+        Ps.append(P)
+    # the joints' fill behind the faces: soil and the dark of the hearting, kind 6
+    back = 0.045
+    top = max(c[2][1] for c in cells) - 0.03
+    q = [(0.0, -0.3), (a.length, -0.3), (a.length, top), (0.0, top)]
+    Q = [np.array([u, v, -back - v * batter]) for u, v in q]
+    soil = np.array([Q[0], Q[1], Q[2], Q[0], Q[2], Q[3]])
+    for qq in soil:
+        A[0].append((qq[0], qq[1]))
+        A[1].append((years, 0.5))
+        A[2].append((6.0, 0.0))
+        A[3].append((0.2, 0.1))
+        A[4].append((0.0, years))
+        A[5].append((0.6, 0.0))
+        A[6].append((1.0, 1.0))
+        A[7].append((1.0, 7.0))
+    Ps.append(soil)
+    Ns.append(normals(soil, np.zeros(2, bool)))
+    P = np.vstack(Ps)
+    N = np.vstack(Ns)
+    # Unity's frame: z into the wall
+    U = np.column_stack([P[:, 0], P[:, 1], -P[:, 2]]).astype(np.float32)
+    with open(a.out, "wb") as f:
+        f.write(struct.pack("<4si", b"R2B2", len(U)))
+        f.write(U.tobytes())
+        f.write(np.column_stack([N[:, 0], N[:, 1], -N[:, 2]]).astype(np.float32).tobytes())
+        for k in range(8):
+            f.write(np.array(A[k], dtype=np.float32).tobytes())
+    tc = np.array(tri_counts)
+    budget = json.load(open(os.path.join(PACK, "parts", "stone", "wallstone.json")))["levels"]["l0"]["triangles"]
+    print(f"{len(cells)} stones, triangles per stone {tc.min()} to {tc.max()} (mean {tc.mean():.1f}; L0's budget "
+          f"{budget}: {'pass' if tc.max() <= budget else 'FAIL'}), {len(U) // 3} in all; {a.out}")
+    if tc.max() > budget:
+        sys.exit(1)
+
+
+if __name__ == "__main__":
+    main()

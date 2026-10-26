@@ -2,7 +2,7 @@
   "schemaVersion": 2,
   "part": "stone/wallstone",
   "version": 1,
-  "describes": "A face stone of a dry wall of split slate (port step 2b, R2a; the design's SN2, SN4, SN5 and SN10): a rigid convex block on its natural bed, its top and bed the laminae's planes, its face split across them at the wall's batter in one plane or two (a convex bulge whose edges lie on the wall's plane), its ends split; set into its cell from R1's laying by a seeded half joint on each side. Only what is seen is drawn: the face, and of its top, bed and ends a band behind the wall's plane as deep as a joint is seen. L0 chamfers the face's arrises with its top and its ends; its bed's stays square (SN7: that chamfer would face down, a dark line beneath the edge), and the arrises that run back into the wall lie in its joints and stay square.",
+  "describes": "A face stone of a dry wall of split slate (port step 2b, R2b; reference 10): laid on its natural bed, only its split end in the wall's face; its outline the cell the mason fitted it to, its top sloping, its ends split on a slant and broken once, its top sometimes stepped where a lamina was lost, its top corners knocked; its face split across the laminae, out to one or two points; its arrises weathered round; its sides running back into the wall as deep as a joint is seen, a little narrower behind. Rigid: the laying moves and turns it, never bends it.",
   "madeAs": "fitted",
   "era": { "first": 1874, "last": null },
   "sizes": { "w": [108, 846], "h": [108, 256], "d": [210, 210] },
@@ -11,8 +11,8 @@
   "sockets": [],
   "removalMark": null,
   "levels": {
-    "l0": { "triangles": 40, "shadow": "none", "collision": "proxy" },
-    "l1": { "triangles": 16, "shadow": "self", "collision": "proxy" },
+    "l0": { "triangles": 52, "shadow": "none", "collision": "proxy" },
+    "l1": { "triangles": 52, "shadow": "self", "collision": "proxy" },
     "l2": { "triangles": 0, "shadow": "proxy", "collision": "proxy" },
     "l3": { "triangles": 0, "shadow": "proxy", "collision": "proxy" },
     "l4": { "triangles": 0, "shadow": "proxy", "collision": "proxy" }
@@ -22,9 +22,22 @@
   "marks": [{ "name": "face-patch", "smallestFeatureMm": 2 }],
   "shaderFamily": "stone",
   "materials": ["slate"],
-  "function": { "python": "blender/parts/stone/slate/stones.py:wallstone", "csharp": null },
+  "function": { "python": "blender/parts/stone/slate/split.py:wallstone", "csharp": null },
   "lifecycle": { "state": "draft" },
   "params": {
+    "endJagMm": { "value": [5, 22], "note": "R2b: how far an end's split runs in from its slant where it breaks once (reference 10: no end is one straight cut)." },
+    "topSlope": { "value": [0.0, 0.18], "note": "R2b: the top's fall from one end to the other as a share of the stone's height (reference 10: few tops run parallel to their beds)." },
+    "endSlant": { "value": [0.0, 0.15], "note": "R2b: each end's slant, its top or bed corner set in by this share of the height." },
+    "topStepChance": { "value": 0.35, "note": "R2b: the share of stones with a lamina lost from one end of the top, the top stepped down there (reference 10, the slabs' stepped tops)." },
+    "topStepMm": { "value": [6, 30], "note": "R2b: that step's depth, at most 0.22 of the stone's height." },
+    "knockMm": { "value": {"top": [22, 55]}, "note": "R2b: a top corner knocked off, along each of its edges, for a stone 160 mm high or more (less in proportion below); weather and handling take the upper arrises. The bed's corners lie protected, and a knock smaller than the bed's chamfer is never seen." },
+    "bedChamferShare": { "value": 0.5, "note": "R2b: the bed arris's weathering as a share of the face's chamfer." },
+    "bulgeMm": { "value": [6, 18], "note": "R2b: how far the split face's ridge stands out of the wall's plane, for a stone 160 mm high or more." },
+    "faceModes": { "value": {"one": 0.35}, "note": "R2b: the share of faces split from one proud point; the rest from two, each off the middle at its own height (a split face never mirrors itself)." },
+    "rimMm": { "value": 4, "note": "R2b: the face's edge off the wall's plane by up to this, in or out, for a stone 160 mm high or more." },
+    "arrisMm": { "value": [20, 36], "note": "R2b: the face's arrises weathered round, the band's width, at most a fifth of the stone's height (reference 10: each stone a pillow, its face rounding back into the joint)." },
+    "seenMm": { "value": 80, "note": "R2b: how deep the sides run back into the wall: as deep as a joint is seen (R2a's 77 mm band)." },
+    "taperMm": { "value": 6, "note": "R2b: the sides narrower behind by this much, so a joint opens into the wall." },
     "chamferMm": { "value": [12, 12], "note": "SN4's 10 to 12 at its top. SN4 asks at least 2 px at 8 m, and the face's end chamfers are seen about 50 degrees off their normal in the judging view, where a 10 mm leg is 1.9 px and 11 mm leaves a two-facet face's lower piece under 2 (every sixth pool stone: 19.9%, 1.2% and 0% thin at 10, 11 and 12; reviews/lt1/port/2b/r2a/stones/blender.md)." },
     "chamferMeasure": { "value": "leg", "note": "Measured along each face, as a mason gives it (C10); 'face' (the chamfer's width) is not built." },
     "arrisMaxDeg": { "value": 160, "note": "Two faces meeting at a turn of 20 degrees or more meet at an arris (a face's own facets never do: they are one face)." },
@@ -35,5 +48,5 @@
     "bandMarginPerMille": { "value": 100, "note": "The drawn band clears SN8's 2 px by this, per mille, in the gate's view (the top of a tall stone sits a little above the view's target, seen a little flatter)." },
     "patches": { "value": {"split": ["split-0", "split-1", "split-2", "split-3"], "bed": ["bed-0", "bed-1"]}, "note": "The face patches (blender/parts/stone/slate/patches.manifest.json; SN6) each kind of face draws one from by seed: a split face from the split ones, the top and bed (bed faces) from the bed ones." }
   },
-  "note": "Sizes from R1's walling table (packs/stavanger-1989/walling.json, the dry-split-1874 working) and its laying: w a cell's length (shortMm 120 where a run leaves no whole stone, to stoneMm's 850) less its two half joints (2 to 6 mm each), h a course (courseMm 120 to 260) less its two; d half the wall's top (wall.py's 420 mm), a hidden back that changes nothing drawn (only a band about 70 mm deep behind the face is). Levels: the design's SN8 budgets per piece (40 and 16); their errors are the wall kind's (kinds/wall.json: levels), the one source (design.md SN8): L1 is the same planes without L0's chamfers, so its error is the chamfers' (8.5 mm on an arris at a 12 mm leg, 9.2 mm at the top corners, where two meet). L2 to L4 are the chunk's (the port's step 5). The part's own numbers are its params, each with its reason; the working's (joints, batter, the top's thickness) are walling.json's (reviews/lt1/port/2b/r2a/stones/blender.md, Data and code)."
+  "note": "Sizes from R1's walling table (packs/stavanger-1989/walling.json, the dry-split-1874 working) and its laying: w a cell's length (shortMm 120 where a run leaves no whole stone, to stoneMm's 850) less its two half joints (2 to 6 mm each), h a course (courseMm 120 to 260) less its two; d half the wall's top (wall.py's 420 mm), a hidden back that changes nothing drawn (only a band about 70 mm deep behind the face is). Levels (R2b): L0 is 40 to 52 triangles (mean 45; five per outline point: the face's fan, the round arris, the sides), and L1 is L0: from an eye along the wall each end's side shows where the stone stands proud of its neighbour, a few pixels wide at any distance, so no cheaper level switches unseen (reviews/lt1/port/2b/r2b/wallstone/switch: without its sides 4% of the wall's pixels change by more than 3 L* from 6 to 18 m). R2a's params (chamferMm to patches) are stones.py's, which the gully's export builds until split.py is wired in. L2 to L4 are the chunk's (the port's step 5). The part's own numbers are its params, each with its reason; the working's (joints, batter, the top's thickness) are walling.json's (reviews/lt1/port/2b/r2a/stones/blender.md, Data and code)."
 }

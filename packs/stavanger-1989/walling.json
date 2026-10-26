@@ -72,6 +72,28 @@
         1,
         6
       ],
+      "stonePerHeight": [
+        1.7,
+        3.8
+      ],
+      "courseDrawPower": [
+        0.45,
+        1.2
+      ],
+      "snapMm": 40,
+      "bondLeastMm": 90,
+      "setOutMm": [
+        -14,
+        14
+      ],
+      "setPitchDeg": [
+        -5,
+        4
+      ],
+      "setYawDeg": [
+        -1.5,
+        1.5
+      ],
       "topThickMm": 420,
       "copeOverMm": 50,
       "copeProudMm": [
@@ -123,7 +145,7 @@
   },
   "provenance": "authored",
   "notes": {
-    "dry-split-1874": "The gully's cheek walls as the 1874 builders laid them: split slate, dry, in level courses, the largest low. The town's own walls (docs/references/stone/ 31 and 36) are thick split slabs in level beds, big stones low. Starting values set at R1 (port step 2b), from those photographs' form and wall.py's numbers where it had them; R2b and R3 calibrate them in grey form and light.",
+    "dry-split-1874": "The gully's cheek walls as the 1874 builders laid them: split slate, dry, in level courses, the largest low. The town's own walls (docs/references/stone/ 31 and 36) are thick split slabs in level beds, big stones low. Starting values set at R1 (port step 2b), from those photographs' form and wall.py's numbers where it had them; R2b and R3 calibrate them in grey form and light. R2b lays it random coursed, as reference 10 is (tools/r2b_wall.py): always on the lowest place along the top so far, a course's height drawn smaller higher up (courseDrawPower), a stone 1.7 to 3.8 times as long as it is high, its top brought level with a neighbour's within snapMm so courses form and break, no end within bondLeastMm of a joint below; each stone set out, pitched and turned a little (setOutMm, setPitchDeg, setYawDeg), as a dry stone sits on what is under it.",
     "courseMm": "A course's height. The stair's rises (146 to 188 mm here) lie one course each (R1 round 2, the coordinator's read: the town's walls are thick split slabs, so the course covers a rise); the free courses over the last step diminish to 120; the foundation courses reach 260. wall.py's 60 to 140 mm were thin flat stones, which the photographs do not show here.",
     "riseOneMm": "A rise up to this is one course; over it, one line between, the lower course the larger: about 190 mm, the largest rise the coordinator's read lets one course cover.",
     "foundationMm": "The courses under the foot: larger than any rise, the largest courses low (31 and 36: the biggest stone at the foot).",
