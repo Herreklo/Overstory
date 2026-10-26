@@ -145,6 +145,14 @@
         "water": 0.5,
         "skirtMm": 140
       },
+      "rake": {
+        "leastMm": 40,
+        "headOverMm": 30,
+        "endSlant": [
+          0.0,
+          0.04
+        ]
+      },
       "steps": {
         "lapMm": [
           40,
@@ -263,6 +271,7 @@
     "cement-relaid-1961": "The 1961 rebuild of fl-0/r's middle (the facts' rebuilt: it bulged where the lane's water ran behind it): the wall's own stones reclaimed and relaid in cement, so its stones are the wall's working's; its own numbers are only its edges, long and short in alternate courses against the old work (wall.py's). Relaid on the wall's own line, so its joints, its batter, its top's thickness and its copings' overhang are the old work's either side (the same values as dry-split-1874's), its joints mortared within SN5's 4 to 12 mm for the walls.",
     "foot": "Where a wall or flight meets the ground: its bottom course and first step sunk sinkMm into it; within reachMm of the ground the sky a stone sees closes to sky of its open share, and its skin is damp (water) and mossed (moss) from the splash; a skirt of soil skirtMm wide lies against its foot. Without them a dark flight reads as set on the street (the gully's round 02).",
     "feetHalfMm": "How wide any foot falls about the walking line (a Gaussian's half width), against walkHalfMm's polish: lichen keeps only where feet are rare (a quarter of the walking line's footfall keeps a tread clean), so a public flight's treads are clean but at their ends.",
-    "pickedKnockMm": "Under a coping, or a step in the wall's top, the top course is picked to the line: stones with a flat, square top (no slope or step), their top corners knocked only this much, so the coping bears on them, never on a dark slot."
+    "pickedKnockMm": "Under a coping, or a step in the wall's top, the top course is picked to the line: stones with a flat, square top (no slope or step), their top corners knocked only this much, so the coping bears on them, never on a dark slot.",
+    "rake": "A cheek wall's top along a flight: its coping raked on one line set out from the flight's bed corners, never closer than leastMm to a bed (a raking stone's thin end, split slate), leaving the rest below at a knee level with that rest's coping top and eased onto the rest above; under it each run's top course brought up to the line by a raking stone, its bed level, its top cut to the line and its ends dressed near square (endSlant, of its least height: the part's slant on a stone this tall opens the joint's soil at the wall's end); at a head the raking stone runs headOverMm past the end, a quoin over the end stone, so its broken end never opens the corner (research-masonry.md, 1 and 5; Rivington's ramped wall). Stepped at every two treads, the thin copings read as plates over a void (the gully's round 03)."
   }
 }

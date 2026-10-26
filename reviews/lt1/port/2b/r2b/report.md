@@ -64,3 +64,12 @@
 - **Still dark:** from the target's camera the flight is a dark mass beside pale clay. That is the wet slate's value in drizzle against untextured surroundings, the shared material and light, not the gully.
 - **Stills:** `gully/round03-sheet.jpg` (the target's camera, grey and drizzle) and `round03-eye-foot.jpg`. New hashes: walls `78c7f1154f8e8571` (125,242 triangles) and slabs `bb3d65a591fb36a1` (50,834).
 - **Cost:** about 60 messages and 12 rendered frames.
+
+## The gully, round 04: raked, 26 October
+
+Round 03 still stepped the copings at every two treads, thin plates over each step.
+
+- **The rake:** along a flight, the coping now lies on one line set from its runs' bed corners and kept 40 mm above each (`walling.json`'s `rake`), the way a ramped wall is coped (`research-masonry.md`, 5). The rests stay level. The rake leaves each rest at a knee, level with the rest's coping top, and over a flight's last run it eases from about 29° to about 21° onto the next rest. Under the line, a raking stone brings each run's top course up to it: its bed level, its top cut to the line. No coping bears on a void, and the end stones at the step-ups are gone. At the wall's foot the rake runs over the head to the wall's end. An end stone closes the end, and the head's raking stone turns the corner (`headOverMm`).
+- **Also fixed:** a top-course stone now counts under every run it reaches. A long head stone had left the left wall's corner open to the soil.
+- **Stills:** `gully/round04-sheet.jpg` (the target's camera, grey and drizzle) and `round04-eye-foot.jpg`. New hashes: walls `b71fba7146a1c82a` (128,854 triangles) and slabs `6ef9a79b4fe81aa9` (52,272). Every piece is within its L0. The gully's whole (181,126) is under R1's 182,100. The walls and copings come to 146,244 against the wall kind's L0 of 131,100, so the script still fails that line, as it did at round 03 (141,258).
+- **Cost:** about 50 messages and 9 rendered frames.

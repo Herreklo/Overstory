@@ -220,9 +220,11 @@ def coping(a, W, batter, years, Ps, Ns, A):
     for i, (x0, x1) in enumerate(zip(xs[:-1], xs[1:])):
         key = HS.h(a.seed, "coping", i)
         st = HS.Stream(key, "set")
-        g0 = 0.0 if i == 0 else 0.5 * st.uniform(*W["jointMm"]) * MM
-        g1 = 0.0 if i == len(xs) - 2 else 0.5 * st.uniform(*W["jointMm"]) * MM
-        ends = ("open" if i == 0 else "joint", "open" if i == len(xs) - 2 else "joint")
+        # (a run's own ends open unless it meets another coping or a stone there: a.ends)
+        e0, e1 = (i == 0 and getattr(a, "ends", "oo")[0] == "o", i == len(xs) - 2 and getattr(a, "ends", "oo")[1] == "o")
+        g0 = 0.0 if e0 else 0.5 * st.uniform(*W["jointMm"]) * MM
+        g1 = 0.0 if e1 else 0.5 * st.uniform(*W["jointMm"]) * MM
+        ends = ("open" if e0 else "joint", "open" if e1 else "joint")
         H = run + st.uniform(-1.0, 1.0) * W["copeVaryMm"] * MM
         L = x1 - x0 - g0 - g1
         s = slabstep.coping(key, L, H, D, ends, p)

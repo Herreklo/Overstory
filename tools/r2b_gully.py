@@ -164,6 +164,89 @@ class Line:
         return O, sig * self.up, n, math.atan(slope), sig
 
 
+class Rake:
+    """A wall's top under its copings, as masons set out a ramped wall (research-masonry.md, 1 and 5; the working's
+    rake): level on each rest and wherever the laying keeps it level; along a flight, one line set from its runs' bed
+    corners, kept leastMm above each, leaving the rest below at a knee level with that rest's coping top, its last run
+    easing it onto the rest above's coping top. Under the line each run's top course is brought up to it by a raking
+    stone, its bed level, its top cut to the line. segs: the coping's bed (s0, s1, t0, t1); pieces: the coping's straight
+    runs (s0, t0, s1, t1, ends, key); wedges: the raking stones (run, s0, s1, h0, h1, key)."""
+
+    def __init__(self, w, W, seed):
+        C = w["ceiling"]
+        e = W["rake"]["leastMm"] * MM
+        cop = [i for i, c in enumerate(C) if c["kind"] == "coping"]
+        s0 = {i: C[i]["s"][0] * MM for i in cop}
+        s1 = {i: C[i]["s"][1] * MM for i in cop}
+        z = {i: C[i]["z"] * MM for i in cop}
+        self.key = {i: HS.h(seed, C[i].get("owner") or f"{w['id']}/ceiling-{i}") for i in cop}
+        bed = 0.5 * sum(W["copeBedMm"]) * MM
+        th = {i: HS.Stream(HS.h(self.key[i], "coping"), "lay").uniform(*W["copeThickMm"]) * MM + bed for i in cop}
+        med = float(np.median([s1[i] - s0[i] for i in cop]))
+        self.flight = {i: i + 1 in z and z[i + 1] > z[i] + 0.02 and s1[i] - s0[i] < 2.0 * med for i in cop}
+        fl = self.flight
+        self.segs, self.pieces, self.wedges, knee, head = [], [], [], {}, set()
+        self.ends = {}
+        for i in cop:
+            if not fl[i] or fl.get(i - 1, False):
+                continue
+            run = [i]
+            while fl.get(run[-1] + 1, False):
+                run.append(run[-1] + 1)
+            k, at = run[-1], run[-1] + 1
+            m = (np.polyfit([s0[r] for r in run], [z[r] for r in run], 1)[0] if len(run) > 1
+                 else (z[at] - z[i]) / (s0[at] - s0[i]))
+            b = max(z[r] + e - m * s0[r] for r in run)
+            P = (s0[at], z[at] + th[at])
+            head.add(at)
+            p = i - 1
+            foot = (s0[i], m * s0[i] + b)
+            if p == 0 and C[0]["kind"] == "topstone":
+                # (a flight from the wall's foot: the rake carried down over the head to the wall's end, a raking stone
+                # under it, the end closed to the coping's bed; never a coping's foot hung over a lower head)
+                a0, a1, zp = C[0]["s"][0] * MM, C[0]["s"][1] * MM, C[0]["z"] * MM
+                foot = (a0, m * a0 + b)
+                self.ends[0] = (zp, foot[1])
+                ov = W["rake"]["headOverMm"] * MM
+                self.wedges.append((0, a0 - ov, a1, foot[1] - m * ov - zp, m * a1 + b - zp,
+                                    HS.h(seed, w["id"], "rake-head")))
+                self.segs.append((a0, a1, foot[1], m * a1 + b))
+            elif p in z and not fl[p]:
+                sk = min(max((z[p] + th[p] - b) / m, s0[p] + 0.15), s1[p])
+                if sk < s1[p] - 0.01:
+                    knee[p] = sk
+                    foot = (sk, m * sk + b)
+                    self.wedges.append((p, sk, s1[p], foot[1] - z[p], m * s1[p] + b - z[p], HS.h(self.key[p], "knee")))
+                    self.segs.append((sk, s1[p], foot[1], m * s1[p] + b))
+            knot = (s0[k], m * s0[k] + b)
+            sid = HS.h(seed, w["id"], "rake", round(foot[0] / MM))
+            if knot[0] - foot[0] > 0.01:
+                self.pieces.append((*foot, *knot, ("j" if p in knee else "o") + "j", sid))
+                self.segs.append((foot[0], knot[0], foot[1], knot[1]))
+            self.pieces.append((*knot, *P, ("j" if knot[0] - foot[0] > 0.01 or p in knee else "o") + "o",
+                                HS.h(sid, "ease")))
+            self.segs.append((knot[0], P[0], knot[1], P[1]))
+            for r in run:
+                t = (lambda s: m * s + b) if r != k else (lambda s: knot[1] + (P[1] - knot[1]) * (s - knot[0]) / (P[0] - knot[0]))
+                self.wedges.append((r, s0[r], s1[r], t(s0[r]) - z[r], t(s1[r]) - z[r], HS.h(self.key[r], "rake")))
+        # the level runs: on their own bed, to their knee if a rake leaves them
+        for i in cop:
+            if fl[i]:
+                continue
+            se = knee.get(i, s1[i])
+            self.pieces.append((s0[i], z[i], se, z[i], ("j" if i in head else "o") + ("j" if i in knee else "o"),
+                                self.key[i]))
+            self.segs.append((s0[i], se, z[i], z[i]))
+        self.covered = {i for i in cop if fl[i] or i in knee} | set(self.ends)
+        self.knees = sorted(knee.values())
+
+    def bed(self, s, default):
+        for a, b, t0, t1 in self.segs:
+            if a - 1e-6 <= s <= b + 1e-6:
+                return t0 + (t1 - t0) * (s - a) / max(b - a, 1e-9)
+        return default
+
+
 def build(a):
     data = ST.Data()
     lay = data.laying()
@@ -178,6 +261,7 @@ def build(a):
     pw["bedJointHalfMm"] = [W["bedJointMm"][0] / 2, W["bedJointMm"][1] / 2]
     # (the top course under a coping picked to the line: flat and square on top)
     picked = dict(pw, topSlope=[0.0, 0.0], topStepChance=0.0, knockMm=dict(pw["knockMm"], top=W["pickedKnockMm"]))
+    raking = dict(picked, endSlant=W["rake"]["endSlant"])
     FT = W["foot"]
     sink = FT["sinkMm"] * MM
     pc, bc = _defn("coping")
@@ -208,8 +292,10 @@ def build(a):
     lines, fronts = [], []
     for ln, w in zip(facts["walls"]["lines"], lay["walls"]):
         L = Line(ln, w, flights[ln["flight"]], W)
+        R = Rake(w, W, seed)
         s_lo, s_hi = w["s"][0] * MM, w["s"][1] * MM
         lines.append((L, s_lo, s_hi))
+        tops = {}
         for st in w["stones"]:
             if st["kind"] not in ("face", "through", "head"):
                 continue
@@ -218,6 +304,10 @@ def build(a):
             sc = (s0 + s1) / 2
             zc = min((c["z"] for c in w["ceiling"] if c["s"][0] * MM <= sc <= c["s"][1] * MM), default=1e9) * MM
             p = picked if z1 > zc - 0.005 else pw
+            # (the faces each run's top course shows: a stone counts under every run it reaches whose bed it is under)
+            for ci, c in enumerate(w["ceiling"]):
+                if c["s"][0] * MM < s1 - 0.01 and c["s"][1] * MM > s0 + 0.01 and z1 > c["z"] * MM - 0.005:
+                    tops.setdefault(ci, set()).update(st["faces"])
             for face in st["faces"]:
                 # (the bottom course set into the ground, its bed hidden: a wall stands in it, never on it)
                 zb = z0 - sink if abs(z0 - L.foot(face, sc)) < 0.005 else z0
@@ -236,7 +326,9 @@ def build(a):
                 end_stone(L, HS.h(seed, st["id"], "end"), s_end, n, z0 - sink if street else z0, z1,
                           picked if z1 > zc - 0.005 else pw, L.ground("stair") if street else None)
         # where the top steps up, the upper run's end shows below its coping: closed by end stones, a course or two
-        for c, c2 in zip(w["ceiling"][:-1], w["ceiling"][1:]):
+        for ci, (c, c2) in enumerate(zip(w["ceiling"][:-1], w["ceiling"][1:])):
+            if ci in R.covered:
+                continue
             lo, hi = c["top"] * MM, c2["z"] * MM
             if abs(hi - lo) < 0.02:
                 continue
@@ -246,8 +338,43 @@ def build(a):
             for r in range(rows):
                 end_stone(L, HS.h(seed, w["id"], "step", c["s"][1], r), c["s"][1] * MM,
                           n, lo + (hi - lo) * r / rows, lo + (hi - lo) * (r + 1) / rows)
-        # the copings and topstones, each run laid on its bed from the stair face's top
+        # the raking stones: on each face the run's top course shows, a level bed, the top cut to the rake
+        for r, sa, sb, h0, h1, key in R.wedges:
+            zb, sc = w["ceiling"][r]["z"] * MM, (sa + sb) / 2
+            for face in sorted(tops.get(r, {"stair"})):
+                O, U, n, psi, sig = L.frame(face, sc, zb)
+                x0, x1 = sorted((sig * (sa - sc), sig * (sb - sc)))
+                ha, hb = (h0, h1) if sig > 0 else (h1, h0)
+                A = {k: [] for k in range(8)}
+                P, N = r2b_wall.stone(HS.h(key, face), ((x0, 0.0), (x1, 0.0), (x1, hb), (x0, ha)), raking, W, L.b,
+                                      years, gap, A)
+                walls.add(_yaw(P, psi), _yaw(N, psi), A, O, U, Z, n)
+                counts["wallstone"].append(len(P) // 3)
+        # the copings along the top, each straight run laid on its bed from the stair face's top, the rake's turned
+        # to it (rigid: each slab only moved and turned)
+        for sa, ta, sb, tb, ends, key in R.pieces:
+            def face(s, t):
+                q = L.a + s * L.up + L.sd * L.d("stair", s, t) * L.right
+                q[2] = t
+                return q
+            sig = L.frame("stair", sa, ta)[4]
+            A0, A1 = (face(sa, ta), face(sb, tb)) if sig > 0 else (face(sb, tb), face(sa, ta))
+            U = A1 - A0
+            run = types.SimpleNamespace(seed=key, length=float(np.linalg.norm(U)), height=0.0,
+                                        ends=ends if sig > 0 else ends[::-1])
+            U = U / run.length
+            n = L.out("stair") - np.dot(L.out("stair"), U) * U
+            n = n / np.linalg.norm(n)
+            A = {k: [] for k in range(8)}
+            Ps, Ns = [], []
+            cnt, _ = r2b_wall.coping(run, W, L.b, years, Ps, Ns, A)
+            slabs.add(np.vstack(Ps), np.vstack(Ns), A, A0, U, np.cross(n, U), n)
+            counts["coping"] += cnt
+        for i, (zp, zt) in R.ends.items():
+            end_stone(L, HS.h(seed, w["id"], "rake-end"), s_lo, -L.up, zp, zt)
         for i, c in enumerate(w["ceiling"]):
+            if c["kind"] == "coping" or i in R.ends:
+                continue
             c0, c1 = c["s"][0] * MM, c["s"][1] * MM
             zb = c["z"] * MM
             # (the run's x from 0 at its start: its s end where the face's x runs from)
@@ -256,7 +383,7 @@ def build(a):
                 O, U, n, psi, sig = L.frame("stair", c1, zb)
             run = types.SimpleNamespace(seed=HS.h(seed, c.get("owner") or f"{w['id']}/ceiling-{i}"), length=c1 - c0,
                                         height=0.0)
-            Wc = W if c["kind"] == "coping" else dict(W, copeThickMm=[c["top"] - c["z"]] * 2, copeVaryMm=0.0)
+            Wc = dict(W, copeThickMm=[c["top"] - c["z"]] * 2, copeVaryMm=0.0)
             A = {k: [] for k in range(8)}
             Ps, Ns = [], []
             cnt, _ = r2b_wall.coping(run, Wc, L.b, years, Ps, Ns, A)
@@ -268,6 +395,7 @@ def build(a):
             foot = w["footing"][face]
             cuts = [s_lo + k * 0.25 for k in range(int(math.ceil((s_hi - s_lo) / 0.25)))] + [s_hi]
             cuts += [v * MM for c in w["ceiling"] for v in c["s"]] + [v * MM for p, q, z in foot for v in (p, q)]
+            cuts += R.knees
             cuts = sorted(v for v in set(cuts) if s_lo <= v <= s_hi)
             for sa, sb in zip(cuts[:-1], cuts[1:]):
                 if sb - sa < 0.005:
@@ -277,14 +405,15 @@ def build(a):
                 zt = min((c["z"] for c in w["ceiling"] if c["s"][0] * MM <= sm <= c["s"][1] * MM), default=None)
                 if zl is None or zt is None:
                     continue
-                zl, zt = zl * MM - 0.05, zt * MM + 0.02
+                zl = zl * MM - 0.05
+                za, zb = (R.bed(v, zt * MM) + 0.02 for v in (sa + 1e-4, sb - 1e-4))
                 back = 0.045 * (1.0 if face == "stair" else -1.0)
 
                 def at(s, z):
                     q = L.a + s * L.up + L.sd * (L.d(face, s, z) + back) * L.right
                     q[2] = z
                     return q
-                Q = [at(sa, zl), at(sb, zl), at(sb, zt), at(sa, zt)]
+                Q = [at(sa, zl), at(sb, zl), at(sb, zb), at(sa, za)]
                 n = L.out(face)
                 T = []
                 for t in ((Q[0], Q[1], Q[2]), (Q[0], Q[2], Q[3])):
