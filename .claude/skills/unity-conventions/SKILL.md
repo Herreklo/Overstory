@@ -77,7 +77,7 @@ A thing holds slots (openings, sockets, surface regions), never deleted; a slot 
 - It must not depend on true real-time global illumination. URP's real-time GI is a preview; if it becomes stable it is an extra layer on top.
 - No baked lightmaps or baked probes for generated places: they change. The generator places reflection probes.
 - **History is read from maps against the date.** Every shader reads layers through one `OS_History(address, layer)` in one include; the fabric date is a shader global, so a jump costs one uniform. The maps hold inputs (rates, reset years, age offsets), never years since. Every shader has the `_OS_BAKE` mode (unlit albedo at the date, normal, history, ids).
-- Every look is checked in morning, grey afternoon and evening light.
+- A look is first judged in grey and one light (make, look, fix). Once it holds, it is checked in morning, a grey afternoon and evening.
 
 ## Performance
 

@@ -15,7 +15,7 @@ Parts are Python generators, not hand-modelled `.blend` files: a part is its cod
 - **A stone is rigid** (BB3 in `docs/building-blocks.md`). A fitted course chooses and cuts its stones, then places each by moving and turning it. Never bend, shear or stretch a rigid piece's mesh to make it fit: no per-vertex height from a curve, no `z += x * k`. Only parts that really flex deform, from their rest position.
 - The generator chooses, fits and places them, and invents no geometry outside a judged part or function.
 - Each family has a definition (`schemas/part.schema.json`): `made_as`, era, sizes, fits, pivot, sockets, removal mark, levels, roles, lifecycle.
-- A part joins the corner only after its sheet, checks, a fresh reviewer and Øystein's judgement.
+- A part joins the corner once it holds beside its reference (make, look, fix: the `game-lab-workflow` skill) and its budgets pass. Øystein judges it at the milestone, after one strict review.
 - **Repetition:** libraries only for what was mass-produced (bricks, roof tiles, factory windows and doors, catalogue houses, setts), each varied by placement, wear and history. Everything made by hand for one place is its own.
 
 ## Kinds and stages
@@ -63,16 +63,13 @@ The same building looks the same until its history changes it.
 - **Chunks are never FBX:** fitted geometry becomes a binary chunk (`schemas/chunk-format.md`) in `cache/chunks/`, built in the player once the kind is ported.
 - **Generated meshes stay out of git,** rebuilt from their generators; the hash manifest stays. Never add a new generated FBX.
 
-## Checks (after every generator change)
+## Checks
 
-- Records (`tools/validate_record.py`), ids, plan validity, budgets per level; refused fits are never silent.
-- The kit validator per family (buildings: `blender/generators/validate.py` and `blender/tools/stress.py`).
-- Mesh hashes on every export, golden views with FLIP, motion sheets with their shimmer index (`docs/measuring.md`).
-- A failure is fixed at its cause in the rules, never hidden with a special case.
+Records (`tools/validate_record.py`), ids, budgets per level, mesh hashes and the kit validators (buildings: `blender/generators/validate.py`, `blender/tools/stress.py`) run by script after a change; `tools/check.py` gathers them. Refused fits are never silent. Golden views with FLIP and motion sheets (`docs/measuring.md`) run only once the look holds, never per round. A failure is fixed at its cause in the rules, never hidden with a special case.
 
-## Contact sheets
+## Stills
 
-A quick sheet in Blender checks that a generator works; it judges nothing. Judged frames are rendered in Unity at the player's size, one sample a pixel, never supersampled: grey light first, then three lights, with motion sheets for anything that moves or carries fine marks. Sheets go in `reviews/<experiment>/`.
+Each round is one still in Unity beside its reference, at the player's size, one sample a pixel, never supersampled, in grey and one light. Look, fix, repeat. A quick Blender render checks that a generator works and judges nothing. Only once the look holds: the other lights, distances and motion, in one sheet for the milestone, in `reviews/<experiment>/`.
 
 ## Honest limits
 
