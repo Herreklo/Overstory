@@ -111,8 +111,10 @@ OSBake OS_ReadBake(half4 c)
     return b;
 }
 
-// The sky colour a face sees: the zenith for roofs; for walls the horizon, warm on the sun's side and cool away.
-half3 OS_SkyFor(half3 n)
+// The sky colour a face sees: the zenith for roofs; for walls the horizon, warm on the sun's side and cool away. The
+// bright sky round the sun is hidden by whatever hides the sun (sunSeen, its shadow and cloud), so a face in cast
+// shadow sees the horizon's own colour on that side.
+half3 OS_SkyFor(half3 n, half sunSeen)
 {
     half3 horizon = _OS_HorizonAmb.rgb;
     float2 h = n.xz;
@@ -121,10 +123,12 @@ half3 OS_SkyFor(half3 n)
     {
         float2 sun = _OS_SunDir.xz / max(length(_OS_SunDir.xz), 1e-4);
         half toward = (half)(dot(h / hl, sun) * 0.5 + 0.5);
-        horizon = lerp(_OS_HorizonAmb.rgb, _OS_SunSideAmb.rgb, toward * toward);
+        horizon = lerp(_OS_HorizonAmb.rgb, _OS_SunSideAmb.rgb, toward * toward * sunSeen);
     }
     return lerp(horizon, _OS_SkyAmb.rgb, saturate(n.y));
 }
+
+half3 OS_SkyFor(half3 n) { return OS_SkyFor(n, 1.0h); }
 
 // The shared sky term, unshaped: what reaches a face from the sky the town leaves open, from the town itself where it
 // hides the sky, and from open ground, plus a little for crevices. Look A uses it as is; look B shapes the split
@@ -403,7 +407,9 @@ half3 OS_ShadeP(InputData id, StreetSurface s, OSBake b, float3 positionWS)
     half sunShadow = main.shadowAttenuation * OS_CloudLight(positionWS, main.direction);
 
     // the sky term, shade in the sky's colour; the ground's light as the face sees it
-    half3 skyPart = b.sky * (b.town * OS_SkyFor(n) + (1.0h - b.town) * _OS_TownBounce.rgb);
+    // (after sunset the glow on the sun's side is a wide arch, which no shadow hides: as the sky's sunUp)
+    half sunSeen = lerp(1.0h, sunShadow, (half)saturate(_OS_SunDir.y * 6.0 + 0.3));
+    half3 skyPart = b.sky * (b.town * OS_SkyFor(n, sunSeen) + (1.0h - b.town) * _OS_TownBounce.rgb);
     half3 sky = (skyPart + b.ground * OS_GroundLight(n, sunShadow, main.color)) * lerp(0.55h, 1.0h, b.open);
     sky *= ao.indirectAmbientOcclusion;
     half skyLum = dot(sky, half3(0.2126h, 0.7152h, 0.0722h));
