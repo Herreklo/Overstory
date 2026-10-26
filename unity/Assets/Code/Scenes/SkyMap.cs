@@ -24,9 +24,14 @@ namespace Overstory.Scenes
         [Tooltip("Read the map's v from the top. Off on every platform so far: the GPU projection for render textures " +
                  "already turns it the right way up; LT1Heart.CheckSkyMap proves it against a known tower.")]
         public bool flipV = false;
+        [Tooltip("The horizon worked out from the map once (TownHorizon.shader): texels a side, heights over the ground, " +
+                 "and the top height in metres, the levels spaced closer near the ground, where the sky changes fastest.")]
+        public int horizonResolution = 1024;
+        public int horizonLevels = 6;
+        public float horizonTop = 40f;
 
-        RenderTexture map;
-        Material heightMaterial;
+        RenderTexture map, horizon0, horizon1, ground;
+        Material heightMaterial, horizonMaterial;
 
         public bool Built => map != null && map.IsCreated();
 
@@ -35,15 +40,19 @@ namespace Overstory.Scenes
         void OnDisable()
         {
             Shader.SetGlobalFloat("_OS_SkyMapOn", 0f);
-            if (map != null)
-            {
-                map.Release();
-                DestroyImmediate(map);
-            }
+            Shader.SetGlobalVector("_OS_HorizonInfo", Vector4.zero);
+            foreach (var rt in new[] { map, horizon0, horizon1, ground })
+                if (rt != null)
+                {
+                    rt.Release();
+                    DestroyImmediate(rt);
+                }
             if (heightMaterial != null)
                 DestroyImmediate(heightMaterial);
-            map = null;
-            heightMaterial = null;
+            if (horizonMaterial != null)
+                DestroyImmediate(horizonMaterial);
+            map = horizon0 = horizon1 = ground = null;
+            heightMaterial = horizonMaterial = null;
         }
 
         /// <summary>Draws the map from the town as it stands now, and hands it to the shaders.</summary>
@@ -97,19 +106,85 @@ namespace Overstory.Scenes
                 for (int i = 0; i < mf.sharedMesh.subMeshCount; i++)
                     cmd.DrawRenderer(r, heightMaterial, i, 0);
             }
+            DrawHorizon(cmd);
             Graphics.ExecuteCommandBuffer(cmd);
             cmd.Release();
             Bind();
         }
+
+        /// <summary>
+        /// The horizon from the map just drawn, once per town: for every texel its ground and, at each height over it,
+        /// the horizon's angle in eight directions, so a surface reads its open sky in twelve taps, not sixty-four.
+        /// </summary>
+        void DrawHorizon(CommandBuffer cmd)
+        {
+            var shader = Shader.Find("Hidden/Overstory/TownHorizon");
+            if (shader == null)
+            {
+                Debug.LogWarning("[SkyMap] the horizon shader is missing");
+                return;
+            }
+            if (horizonMaterial == null)
+                horizonMaterial = new Material(shader) { hideFlags = HideFlags.DontSave };
+            int n = horizonResolution;
+            RenderTexture Make(string name, RenderTextureFormat format, int depth)
+            {
+                var rt = new RenderTexture(n, n, 0, format, RenderTextureReadWrite.Linear)
+                {
+                    name = name, filterMode = FilterMode.Bilinear, wrapMode = TextureWrapMode.Clamp, hideFlags = HideFlags.DontSave,
+                };
+                if (depth > 1)
+                {
+                    rt.dimension = TextureDimension.Tex3D;
+                    rt.volumeDepth = depth;
+                }
+                rt.Create();
+                return rt;
+            }
+            if (ground == null || ground.width != n || horizon0.volumeDepth != horizonLevels)
+            {
+                foreach (var rt in new[] { horizon0, horizon1, ground })
+                    if (rt != null)
+                    {
+                        rt.Release();
+                        DestroyImmediate(rt);
+                    }
+                ground = Make("town ground", RenderTextureFormat.RHalf, 1);
+                horizon0 = Make("town horizon 0-3", RenderTextureFormat.ARGB32, horizonLevels);
+                horizon1 = Make("town horizon 4-7", RenderTextureFormat.ARGB32, horizonLevels);
+            }
+            cmd.SetGlobalTexture("_OS_SkyMap", map);
+            cmd.SetGlobalVector("_OS_SkyMapRect", MapRect());
+            cmd.SetGlobalVector("_OS_HorizonInfo", Info());
+            cmd.SetRenderTarget(ground);
+            cmd.DrawProcedural(Matrix4x4.identity, horizonMaterial, 1, MeshTopology.Triangles, 3);
+            for (int level = 0; level < horizonLevels; level++)
+                for (int half = 0; half < 2; half++)
+                {
+                    cmd.SetRenderTarget(half == 0 ? horizon0 : horizon1, 0, CubemapFace.Unknown, level);
+                    cmd.SetGlobalVector("_OS_HorizonBuild", new Vector4(level, half, 0f, 0f));
+                    cmd.DrawProcedural(Matrix4x4.identity, horizonMaterial, 0, MeshTopology.Triangles, 3);
+                }
+        }
+
+        // uv = (xz - corner) / size, v read from the top when flipped
+        Vector4 MapRect() => new Vector4(centre.x - size / 2, centre.y - size / 2, 1f / size, flipV ? 1f : 0f);
+        Vector4 Info() => new Vector4(horizonResolution, horizonLevels, horizonTop, ground != null && ground.IsCreated() ? 1f : 0f);
 
         public void Bind()
         {
             if (!Built)
                 return;
             Shader.SetGlobalTexture("_OS_SkyMap", map);
-            // uv = (xz - corner) / size, v read from the top when flipped
-            Shader.SetGlobalVector("_OS_SkyMapRect", new Vector4(centre.x - size / 2, centre.y - size / 2, 1f / size, flipV ? 1f : 0f));
+            Shader.SetGlobalVector("_OS_SkyMapRect", MapRect());
             Shader.SetGlobalFloat("_OS_SkyMapOn", 1f);
+            if (ground != null)
+            {
+                Shader.SetGlobalTexture("_OS_HorizonGround", ground);
+                Shader.SetGlobalTexture("_OS_Horizon0", horizon0);
+                Shader.SetGlobalTexture("_OS_Horizon1", horizon1);
+            }
+            Shader.SetGlobalVector("_OS_HorizonInfo", Info());
         }
 
         /// <summary>

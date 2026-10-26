@@ -160,18 +160,45 @@ void OS_CardClip(float2 card, float3 positionWS)
 // The weather's cloud layer, one pattern for the sky and for the shadows it casts on the town.
 float4 _OS_Clouds;      // x cover (0 none, 1 overcast), y feature size (m), z softness, w layer height (m)
 float4 _OS_CloudDrift;  // xy how far the wind has moved the layer (m), from the scene's clock
+float _OS_CloudThrough;  // the share of the sun's light that comes through the cloud (the cloud kind's)
 
-// Cloud density at a point on the layer (world xz, metres), 0..1, before cover is applied. Shaped as a painter
-// simplifies a sky: big billows (the field warped by a slower one), stretched along the wind so the layer reads as
-// bands foreshortening to the horizon, a little finer detail at their edges. The same field casts the shadows.
-float OS_CloudField(float2 layerXZ, float detail)
+// The field drawn once into a map over the town (Overstory.Scenes.SunBeamsFeature, CloudMapPass) on the layer's own
+// grid, which drifts with the wind: drawn again only when the camera or the wind carries the point it is read at a
+// quarter of the way to its edge, so the shadows and the beams read one texel where they computed seven noises
+TEXTURE2D(_OS_CloudMap);
+SAMPLER(sampler_OS_CloudMap);
+float4 _OS_CloudMapRect;  // xy the map's corner on the drifting layer (m), z 1 / its side (m), w its side in texels; 0 none
+
+// Cloud density at a point on the drifting layer (world xz plus the wind's drift, metres), 0..1, before cover is
+// applied. Shaped as a painter simplifies a sky: big billows (the field warped by a slower one), stretched along the
+// wind so the layer reads as bands foreshortening to the horizon, a little finer detail at their edges. The same
+// field casts the shadows.
+float OS_CloudFieldOn(float2 drifted, float detail)
 {
-    float2 q = (layerXZ + _OS_CloudDrift.xy) / max(_OS_Clouds.y, 1.0);
+    float2 q = drifted / max(_OS_Clouds.y, 1.0);
     q = float2(dot(q, float2(0.906, 0.423)), dot(q, float2(-0.423, 0.906)) * 2.2);
     float2 w = float2(OS_Noise(q * 0.5 + 11.3), OS_Noise(q * 0.5 - 7.1)) - 0.5;
     q += w * 1.1;
     float c = 0.5 * OS_Noise(q) + 0.28 * OS_Noise(q * 2.07 + 5.3) + 0.14 * OS_Noise(q * 4.3 - 2.7) + 0.08 * OS_Noise(q * 8.9 + 1.3);
     return c + detail * (OS_Noise(q * 17.0 + 3.7) - 0.5) * 0.06;
+}
+
+// The same at a point on the layer (world xz, metres)
+float OS_CloudField(float2 layerXZ, float detail)
+{
+    return OS_CloudFieldOn(layerXZ + _OS_CloudDrift.xy, detail);
+}
+
+// The field without its finest detail, from the map between texel centres where it reaches, computed where it does not
+float OS_CloudFieldMapped(float2 layerXZ)
+{
+    float2 drifted = layerXZ + _OS_CloudDrift.xy;
+    float2 uv = (drifted - _OS_CloudMapRect.xy) * _OS_CloudMapRect.z;
+    float edge = 0.5 / max(_OS_CloudMapRect.w, 1.0);
+    [branch]
+    if (_OS_CloudMapRect.w > 0.0 && all(uv >= edge) && all(uv <= 1.0 - edge))
+        return SAMPLE_TEXTURE2D_LOD(_OS_CloudMap, sampler_OS_CloudMap, uv, 0).r;
+    return OS_CloudFieldOn(drifted, 0.0);
 }
 
 // How much cloud there is at a point on the layer, 0 clear to 1 cloud, with the rig's cover and softness.
@@ -187,6 +214,13 @@ TEXTURE2D(_OS_SkyMap);
 SAMPLER(sampler_OS_SkyMap);
 float4 _OS_SkyMapRect;  // xy the map's corner (world x, z), z 1 / its size, w 1 when v reads from the top
 float _OS_SkyMapOn;
+// and the horizon worked out from it once (TownHorizon.shader): each texel's ground, and the horizon's angle in eight
+// directions at heights over it
+TEXTURE2D(_OS_HorizonGround);
+SAMPLER(sampler_OS_HorizonGround);
+TEXTURE3D(_OS_Horizon0);
+TEXTURE3D(_OS_Horizon1);
+float4 _OS_HorizonInfo;  // x texels a side, y height levels, z the top level (m over the ground), w on
 
 // The town's glow (Overstory.Scenes.TownLights): its lamps and lit shops summed and spread on a map from above,
 // so fog over lit streets glows from below

@@ -11,6 +11,7 @@ Shader "Overstory/Sky"
     {
         _Zenith ("Zenith", Color) = (0.55, 0.6, 0.66, 1)
         _Horizon ("Horizon", Color) = (0.7, 0.73, 0.76, 1)
+        _Deck ("Cloud deck", Color) = (0.62, 0.64, 0.66, 1)
         _Below ("Below the horizon", Color) = (0.3, 0.32, 0.32, 1)
         _Curve ("Gradient curve", Range(0.2, 4)) = 0.6
         _SunGlow ("Sun glow", Color) = (0, 0, 0, 1)
@@ -34,7 +35,7 @@ Shader "Overstory/Sky"
             #include "StreetSurface.hlsl" // the shared cloud layer: the clouds here cast the shadows on the town
 
             CBUFFER_START(UnityPerMaterial)
-                half4 _Zenith, _Horizon, _Below, _SunGlow, _AntiGlow;
+                half4 _Zenith, _Horizon, _Deck, _Below, _SunGlow, _AntiGlow;
                 half _Curve, _SunGlowPower, _HighCloud;
             CBUFFER_END
             float _OS_SkyBands;
@@ -101,8 +102,13 @@ Shader "Overstory/Sky"
                     float towards = OS_CloudField(p + sh * _OS_Clouds.y * 0.12, 1.0);
                     half edge = (half)saturate(0.5 + (field - towards) * 6.0) * (1.0h - thick * 0.6h);
                     half sunUp = (half)saturate(_OS_SunDir.y * 6.0 + 0.3);
-                    half3 shade = lerp(_Horizon.rgb, _Zenith.rgb, 0.45h) * lerp(0.98h, 0.6h, thick);
-                    half3 sunlit = _OS_SunCol.rgb * (0.35h + 0.65h * edge) * sunUp;
+                    // the underside is the deck's own light, lit through the cloud, falling off towards the horizon as
+                    // an overcast sky does (CIE, (1 + 2 sin h) / 3); its belly a little darker than its thinner parts
+                    half3 shade = _Deck.rgb * (half)((1.0 + 2.0 * d.y) / 3.0) * lerp(1.05h, 0.9h, thick);
+                    // the sun lights its thin edges; through its thick body only the kind's share comes (the shadows' share).
+                    // A deck's thinnest parts are still cloud: the more of the sky is cloud, the less its thin parts let by
+                    half thin = max(1.0h - (half)_OS_Clouds.x, (half)_OS_CloudThrough);
+                    half3 sunlit = _OS_SunCol.rgb * (0.35h + 0.65h * edge) * sunUp * lerp(thin, (half)_OS_CloudThrough, thick);
                     // a low sun lights the undersides on its side warm; after it has set the glow lingers there
                     half lowSun = (half)saturate(1.0 - _OS_SunDir.y * 5.0);
                     half3 under = _SunGlow.rgb * (half)pow(towardsSun, 2.0) * lowSun * 0.8h;

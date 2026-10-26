@@ -47,7 +47,7 @@ Shader "Overstory/SunBeams"
                     return 1.0;
                 float up = max(toSun.y, 0.05);
                 float2 q = p.xz + toSun.xz * ((_OS_Clouds.w - p.y) / up);
-                return lerp(1.0, 0.12, OS_CloudCover(OS_CloudField(q, 0.0), 0.0));
+                return lerp(1.0, _OS_CloudThrough, OS_CloudCover(OS_CloudField(q, 0.0), 0.0));
             }
 
             half4 Frag(Varyings input) : SV_Target

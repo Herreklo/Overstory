@@ -34,6 +34,7 @@ namespace Overstory.Scenes
         [System.NonSerialized] public string arm = "";
 
         Material material;
+        CloudMapPass cloudPass;
         BeamsPass pass;
         FullScreenPassRendererFeature full;
 
@@ -41,7 +42,8 @@ namespace Overstory.Scenes
         {
             if (material == null && shader != null)
                 material = CoreUtils.CreateEngineMaterial(shader);
-            pass?.Dispose();
+            cloudPass?.Dispose();
+            cloudPass = new CloudMapPass(material) { renderPassEvent = RenderPassEvent.BeforeRenderingOpaques };
             pass = new BeamsPass(material) { renderPassEvent = RenderPassEvent.BeforeRenderingPostProcessing };
 
             if (full == null)
@@ -62,6 +64,9 @@ namespace Overstory.Scenes
             var type = renderingData.cameraData.cameraType;
             if (type == CameraType.Preview || type == CameraType.Reflection)
                 return;
+            // the clouds' map, for their shadows on the town, whether the beams are drawn or not
+            if (material != null)
+                renderer.EnqueuePass(cloudPass);
             if (fullSize)
             {
                 full.passMaterial = fullMaterial;
@@ -83,7 +88,7 @@ namespace Overstory.Scenes
 
         protected override void Dispose(bool disposing)
         {
-            pass?.Dispose();
+            cloudPass?.Dispose();
             CoreUtils.Destroy(material);
             material = null;
             if (full != null)
@@ -91,13 +96,100 @@ namespace Overstory.Scenes
             full = null;
         }
 
+        /// <summary>
+        /// The cloud layer's field into a small map before the opaques (SunBeamsQuarter.shader, pass 0), for the shadows
+        /// the clouds cast on the town (StreetLooks.hlsl, OS_CloudLight) and for the beams' march alike: 512², 8 m a
+        /// texel over a 4 km square of the layer's own grid, which drifts with the wind, round where the camera's air
+        /// meets the layer. It is drawn again only when that point strays a quarter of the way to the square's edge or
+        /// the clouds' size changes, so neither the wind nor the camera draws anything new until then. Where the map
+        /// does not reach, the shaders compute the field themselves.
+        /// </summary>
+        class CloudMapPass : ScriptableRenderPass
+        {
+            internal static readonly int CloudMapId = Shader.PropertyToID("_OS_CloudMap");
+            internal static readonly int CloudMapRectId = Shader.PropertyToID("_OS_CloudMapRect");
+            static readonly int CloudsId = Shader.PropertyToID("_OS_Clouds");
+            static readonly int DriftId = Shader.PropertyToID("_OS_CloudDrift");
+            static readonly int SunDirId = Shader.PropertyToID("_OS_SunDir");
+            static readonly int BlitScaleBiasId = Shader.PropertyToID("_BlitScaleBias");
+            static readonly MaterialPropertyBlock Block = new MaterialPropertyBlock();
+
+            const int Res = 512;
+            const float Side = 4096f, Texel = Side / Res;
+
+            readonly Material material;
+            RTHandle map;
+            bool drawn;
+            Vector2 centre;
+            float size;
+
+            class PassData
+            {
+                public Material material;
+                public Vector4 rect;
+            }
+
+            public CloudMapPass(Material material)
+            {
+                this.material = material;
+                profilingSampler = new ProfilingSampler("SunBeams cloud map");
+            }
+
+            public void Dispose()
+            {
+                map?.Release();
+                map = null;
+                drawn = false;
+                Shader.SetGlobalVector(CloudMapRectId, Vector4.zero);
+            }
+
+            public override void RecordRenderGraph(RenderGraph graph, ContextContainer frameData)
+            {
+                var clouds = Shader.GetGlobalVector(CloudsId);
+                if (clouds.x <= 0.001f)
+                {
+                    Shader.SetGlobalVector(CloudMapRectId, Vector4.zero);
+                    return;
+                }
+                var eye = frameData.Get<UniversalCameraData>().worldSpaceCameraPos;
+                var toSun = Shader.GetGlobalVector(SunDirId);
+                float up = Mathf.Max(toSun.y, 0.05f), reach = (clouds.w - eye.y) / up;
+                var at = new Vector2(eye.x + toSun.x * reach, eye.z + toSun.z * reach) + (Vector2)Shader.GetGlobalVector(DriftId);
+                if (map == null)
+                    map = RTHandles.Alloc(new RenderTextureDescriptor(Res, Res, GraphicsFormat.R16_SFloat, GraphicsFormat.None),
+                                          FilterMode.Bilinear, TextureWrapMode.Clamp, name: "_OS_CloudMap");
+                bool stray = !drawn || Mathf.Abs(at.x - centre.x) > Side / 4f || Mathf.Abs(at.y - centre.y) > Side / 4f;
+                if (stray)
+                    centre = new Vector2(Mathf.Round(at.x / Texel) * Texel, Mathf.Round(at.y / Texel) * Texel);
+                var rect = new Vector4(centre.x - Side / 2f, centre.y - Side / 2f, 1f / Side, Res);
+                if (stray || clouds.y != size || !map.rt.IsCreated())
+                {
+                    drawn = true;
+                    size = clouds.y;
+                    using (var builder = graph.AddRasterRenderPass<PassData>("SunBeams cloud map", out var data, profilingSampler))
+                    {
+                        data.material = material;
+                        data.rect = rect;
+                        builder.SetRenderAttachment(graph.ImportTexture(map), 0, AccessFlags.WriteAll);
+                        builder.AllowPassCulling(false);
+                        builder.SetRenderFunc(static (PassData d, RasterGraphContext ctx) =>
+                        {
+                            Block.Clear();
+                            Block.SetVector(BlitScaleBiasId, new Vector4(1f, 1f, 0f, 0f));
+                            Block.SetVector(CloudMapRectId, d.rect);
+                            ctx.cmd.DrawProcedural(Matrix4x4.identity, d.material, 0, MeshTopology.Triangles, 3, 1, Block);
+                        });
+                    }
+                }
+                Shader.SetGlobalTexture(CloudMapId, map.rt);
+                Shader.SetGlobalVector(CloudMapRectId, rect);
+            }
+        }
+
         class BeamsPass : ScriptableRenderPass
         {
             internal static readonly int SunBeamsId = Shader.PropertyToID("_OS_SunBeams");
             internal static readonly int SunColId = Shader.PropertyToID("_OS_SunCol");
-            static readonly int CloudsId = Shader.PropertyToID("_OS_Clouds");
-            static readonly int DriftId = Shader.PropertyToID("_OS_CloudDrift");
-            static readonly int SunDirId = Shader.PropertyToID("_OS_SunDir");
             static readonly int BeamTexId = Shader.PropertyToID("_OS_BeamTex");
             static readonly int BeamSizeId = Shader.PropertyToID("_OS_BeamSize");
             static readonly int CloudMapId = Shader.PropertyToID("_OS_CloudMap");
@@ -109,19 +201,7 @@ namespace Overstory.Scenes
 
             public string arm = "";
 
-            // The cloud map: the layer's field on a fixed world grid of 8 m texels, over a 4 km square round where the
-            // camera's air meets the layer; moved by whole texels only when the camera's point strays a quarter of the
-            // way to its edge, so a texel always holds the field at the same place and a moved map draws nothing new.
-            // The march computes the field itself where the map does not reach.
-            const int CloudRes = 512;
-            const float CloudSide = 4096f;
-            const float CloudTexel = CloudSide / CloudRes;
-
             readonly Material material;
-            RTHandle cloudMap;
-            bool cloudDrawn;
-            Vector2 cloudCentre, cloudDrift;
-            float cloudSize;
 
             // (the render graph pools these: every field is set for every pass)
             class PassData
@@ -148,12 +228,6 @@ namespace Overstory.Scenes
                 profilingSampler = new ProfilingSampler("SunBeams");
             }
 
-            public void Dispose()
-            {
-                cloudMap?.Release();
-                cloudMap = null;
-            }
-
             public override void RecordRenderGraph(RenderGraph graph, ContextContainer frameData)
             {
                 var resources = frameData.Get<UniversalResourceData>();
@@ -165,44 +239,9 @@ namespace Overstory.Scenes
                 int lw = (w + 1) / 2, lh = (h + 1) / 2;
                 var size = new Vector4(w, h, lw, lh);
 
-                // the cloud layer, when there is one
-                var clouds = Shader.GetGlobalVector(CloudsId);
-                var cloudRect = Vector4.zero;
+                // the cloud layer's map (CloudMapPass, before the opaques): the march reads it as the shadows do
+                var cloudRect = Shader.GetGlobalVector(CloudMapPass.CloudMapRectId);
                 var cloud = TextureHandle.nullHandle;
-                if (clouds.x > 0.001f)
-                {
-                    var toSun = Shader.GetGlobalVector(SunDirId);
-                    var drift = Shader.GetGlobalVector(DriftId);
-                    var eye = camera.worldSpaceCameraPos;
-                    float up = Mathf.Max(toSun.y, 0.05f);
-                    var at = new Vector2(eye.x + toSun.x * (clouds.w - eye.y) / up, eye.z + toSun.z * (clouds.w - eye.y) / up);
-                    if (cloudMap == null)
-                    {
-                        var desc = new RenderTextureDescriptor(CloudRes, CloudRes, GraphicsFormat.R16_SFloat, GraphicsFormat.None);
-                        cloudMap = RTHandles.Alloc(desc, FilterMode.Bilinear, TextureWrapMode.Clamp, name: "_OS_BeamCloudMap");
-                    }
-                    // what the map holds depends on its square, the clouds' size and the wind's drift, never on cover
-                    bool stray = !cloudDrawn || Mathf.Abs(at.x - cloudCentre.x) > CloudSide / 4f
-                                 || Mathf.Abs(at.y - cloudCentre.y) > CloudSide / 4f;
-                    bool dirty = stray || clouds.y != cloudSize || (Vector2)drift != cloudDrift || !cloudMap.rt.IsCreated();
-                    if (stray)
-                        cloudCentre = new Vector2(Mathf.Round(at.x / CloudTexel) * CloudTexel, Mathf.Round(at.y / CloudTexel) * CloudTexel);
-                    cloudRect = new Vector4(cloudCentre.x - CloudSide / 2f, cloudCentre.y - CloudSide / 2f, 1f / CloudSide, CloudRes);
-                    cloud = graph.ImportTexture(cloudMap);
-                    if (dirty)
-                    {
-                        cloudDrawn = true;
-                        cloudSize = clouds.y;
-                        cloudDrift = drift;
-                        using (var builder = graph.AddRasterRenderPass<PassData>("SunBeams cloud map", out var data, profilingSampler))
-                        {
-                            data.Set(material, CloudPass, size, cloudRect, TextureHandle.nullHandle, TextureHandle.nullHandle);
-                            builder.SetRenderAttachment(cloud, 0, AccessFlags.WriteAll);
-                            builder.AllowPassCulling(false);
-                            builder.SetRenderFunc(static (PassData d, RasterGraphContext ctx) => Draw(ctx.cmd, d));
-                        }
-                    }
-                }
 
                 var low = new TextureDesc(lw, lh)
                 {

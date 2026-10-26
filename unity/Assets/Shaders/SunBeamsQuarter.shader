@@ -2,8 +2,9 @@
 // light as SunBeams.shader, which stays as the full-size reference (SunBeamsFeature.fullSize): for each view ray the air
 // is marched, and at each step the sun's shadow map says whether sunlight reaches that point; lit air scatters the
 // sun's light towards the camera, shadowed air does not. Only the cost changes:
-//   0 CloudMap   the cloud layer's field once into a small map over the town (512², 8 m a texel on a fixed world grid,
-//                drawn again only when its square or the clouds change), so a step reads one texel, not seven noises;
+//   0 CloudMap   the cloud layer's field once into a small map over the town (512², 8 m a texel on the layer's own
+//                grid, drifting with the wind; drawn again only when its square or the clouds change, before the opaques,
+//                for the shadows on the town and for the march alike), so a step reads one texel, not seven noises;
 //   1 March      at half the width and half the height: 16 steps a ray, one hard shadow tap a step (the softness comes
 //                from the march and the blur, not from a filter at every step), each pixel's steps offset by a 4×4
 //                ordered pattern; each half-size pixel marches through one of its four full-size pixels, the nearest on
@@ -66,12 +67,10 @@ Shader "Overstory/SunBeamsQuarter"
             #pragma fragment Frag
             #include "StreetSurface.hlsl"   // the cloud layer
 
-            float4 _OS_CloudMapRect;   // xy the map's corner on the layer (world x, z), z 1 / its side (m), w its side in texels
-
             float Frag(Varyings input) : SV_Target
             {
                 float texel = 1.0 / (_OS_CloudMapRect.z * _OS_CloudMapRect.w);
-                return OS_CloudField(_OS_CloudMapRect.xy + input.positionCS.xy * texel, 0.0);
+                return OS_CloudFieldOn(_OS_CloudMapRect.xy + input.positionCS.xy * texel, 0.0);
             }
             ENDHLSL
         }
@@ -89,8 +88,6 @@ Shader "Overstory/SunBeamsQuarter"
             #include "StreetSurface.hlsl"   // the air's parameters, the cloud layer
 
             float4 _OS_SunBeams;       // x strength (0 off), y how far the march reaches (m), z forward scattering g, w beam haze
-            float4 _OS_CloudMapRect;   // xy the map's corner on the layer (world x, z), z 1 / its side (m), w its side in texels; 0 no map
-            TEXTURE2D(_OS_CloudMap);
 
             float AirDensity(float3 p)
             {
@@ -102,15 +99,7 @@ Shader "Overstory/SunBeamsQuarter"
             // not reach (rays high over the town)
             float CloudLight(float2 q)
             {
-                float2 uv = (q - _OS_CloudMapRect.xy) * _OS_CloudMapRect.z;
-                float edge = 0.5 / max(_OS_CloudMapRect.w, 1.0);
-                float c;
-                [branch]
-                if (_OS_CloudMapRect.w > 0.0 && all(uv >= edge) && all(uv <= 1.0 - edge))
-                    c = SAMPLE_TEXTURE2D_LOD(_OS_CloudMap, sampler_LinearClamp, uv, 0).r;
-                else
-                    c = OS_CloudField(q, 0.0);
-                return lerp(1.0, 0.12, OS_CloudCover(c, 0.0));
+                return lerp(1.0, _OS_CloudThrough, OS_CloudCover(OS_CloudFieldMapped(q), 0.0));
             }
 
             // The sun's shadow along a straight ray o + v s. A directional light's shadow coordinate is affine in s, so
