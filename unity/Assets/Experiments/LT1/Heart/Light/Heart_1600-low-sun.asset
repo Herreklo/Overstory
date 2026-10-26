@@ -24,34 +24,34 @@ MonoBehaviour:
   sunBearing: 316.029
   sunElevation: 8.055
   sunColour: {r: 1.2343916, g: 0.95167166, b: 0.6005595, a: 1}
-  sunIntensity: 1.1911097
+  sunIntensity: 1.1902722
   shadowStrength: 1
-  zenith: {r: 0.46459752, g: 0.5165436, b: 0.6320092, a: 1}
-  horizon: {r: 0.7104283, g: 0.6564265, b: 0.60903245, a: 1}
-  deck: {r: 0.9409007, g: 0.89476264, b: 0.8823382, a: 1}
-  belowHorizon: {r: 0.3687928, g: 0.31060296, b: 0.2938954, a: 1}
+  zenith: {r: 0.41343746, g: 0.52123916, b: 0.7006026, a: 1}
+  horizon: {r: 0.7179608, g: 0.6597524, b: 0.6114614, a: 1}
+  deck: {r: 1.0519274, g: 0.85452574, b: 0.8224333, a: 1}
+  belowHorizon: {r: 0.36610845, g: 0.30929366, b: 0.31459168, a: 1}
   skyCurve: 0.5
-  sunGlow: {r: 2.9567473, g: 2.2728374, b: 1.401946, a: 1}
+  sunGlow: {r: 2.978142, g: 2.2751484, b: 1.3919832, a: 1}
   sunGlowPower: 6
-  ambientSky: {r: 0.7847975, g: 0.7615848, b: 0.78329337, a: 1}
-  ambientEquator: {r: 0.5934726, g: 0.5674257, b: 0.56623185, a: 1}
-  ambientGround: {r: 0.32137534, g: 0.2840777, b: 0.2846659, a: 1}
-  ambientSunSide: {r: 0.94967216, g: 0.8276904, b: 0.70450497, a: 1}
-  townBounce: {r: 0.5334625, g: 0.41635144, b: 0.35599232, a: 1}
+  ambientSky: {r: 0.77779716, g: 0.75812703, b: 0.83620363, a: 1}
+  ambientEquator: {r: 0.59176004, g: 0.56647116, b: 0.59139645, a: 1}
+  ambientGround: {r: 0.318238, g: 0.2826419, b: 0.30610454, a: 1}
+  ambientSunSide: {r: 0.9652855, g: 0.8221251, b: 0.70588326, a: 1}
+  townBounce: {r: 0.5324727, g: 0.4158038, b: 0.37046325, a: 1}
   sunBounce: 0.0452592
   ambientIntensity: 1
-  fogColour: {r: 0.7104283, g: 0.6564265, b: 0.60903245, a: 1}
-  fogMidColour: {r: 0.7104283, g: 0.6564265, b: 0.60903245, a: 1}
+  fogColour: {r: 0.7179608, g: 0.6597524, b: 0.6114614, a: 1}
+  fogMidColour: {r: 0.7179608, g: 0.6597524, b: 0.6114614, a: 1}
   fogMidDistance: 220
-  fogFarColour: {r: 0.7104283, g: 0.6564265, b: 0.60903245, a: 1}
+  fogFarColour: {r: 0.7179608, g: 0.6597524, b: 0.6114614, a: 1}
   fogFarDistance: 1500
   fogDensity: 0.00017605776
   fogHeightFalloff: 0.02
   fogBaseHeight: 0
   fogMaxOpacity: 0.97
-  fogSunColour: {r: 2.9567473, g: 2.2728374, b: 1.401946, a: 1}
+  fogSunColour: {r: 2.978142, g: 2.2751484, b: 1.3919832, a: 1}
   fogSunPower: 8.333333
-  hazeColour: {r: 0.7104283, g: 0.6564265, b: 0.60903245, a: 1}
+  hazeColour: {r: 0.7179608, g: 0.6597524, b: 0.6114614, a: 1}
   hazeDensity: 0
   hazeHeight: 20
   fogBank: 0
@@ -75,46 +75,53 @@ MonoBehaviour:
   cloudSize: 160
   cloudSoftness: 0.12
   cloudHeight: 900
+  cloudAlbedo: 0.6
   highCloud: 0.35
   cloudSunThrough: 0.12
-  antiGlow: {r: 0.23080888, g: 0.31438953, b: 0.32165962, a: 1}
-  windowGlow: 0.0032926379
+  antiGlow: {r: 0.23431253, g: 0.31119376, b: 0.30777904, a: 1}
+  windowGlow: 0.003290323
   lampsOn: 0
-  lampGlow: 3.0393581
+  lampGlow: 3.0372214
   lampIntensity: 1
   windowSpill: 0
   lampHalo: 3.1415927
   lampKinds:
   - kind: warm
     colour: {r: 1.3499694, g: 0.90813893, b: 0.47513914, a: 1}
-    intensity: 0.008256946
+    intensity: 0.008251141
     range: 14
     fogShare: 1
+    upward: 0.0456835
   - kind: mercury
     colour: {r: 0.9530284, g: 1.0294826, b: 0.8272222, a: 1}
-    intensity: 0.06466978
+    intensity: 0.06462432
     range: 22
     fogShare: 1
+    upward: 0.07069722
   - kind: sodium
     colour: {r: 1.5236027, g: 0.82408, b: 0.15440503, a: 1}
-    intensity: 0.1645615
+    intensity: 0.1644458
     range: 28
     fogShare: 1
+    upward: 0.11947557
   - kind: shop
     colour: {r: 1.2969223, g: 0.92804223, b: 0.55849576, a: 1}
-    intensity: 0.011548175
+    intensity: 0.011540056
     range: 9
     fogShare: 0.4
+    upward: 0.004568024
   - kind: red
     colour: {r: 2.0214038, g: 0, b: 0, a: 1}
-    intensity: 0.0038493918
+    intensity: 0.0038466856
     range: 30
     fogShare: 1
+    upward: 0.025692113
   - kind: white
     colour: {r: 1.0063993, g: 1.0024285, b: 0.95719963, a: 1}
-    intensity: 0.016039133
+    intensity: 0.016027857
     range: 30
     fogShare: 1
+    upward: 0.10705047
   postExposure: 0
   contrast: 0
   saturation: 0

@@ -76,7 +76,9 @@ namespace Overstory.Perf
     ///
     /// The beams' A/B (W5; reviews/lt1/playable/walk/w5-report.md): 'beams-full' leaves every pass on and draws the sun's
     /// beams as they were before W5 (SunBeamsFeature.fullSize: the full-size pass), so A and B are measured in one build;
-    /// 'beams-copy' and 'beams-nocomposite' set SunBeamsFeature.arm (how the beams meet the frame).
+    /// 'beams-copy' and 'beams-nocomposite' set SunBeamsFeature.arm (how the beams meet the frame). The fog lights' A/B:
+    /// 'foglights-full' draws the lamps' halos as they were before the light's third round (FogLightsFeature.fullSize:
+    /// every lit lamp at every full-size pixel).
     /// </summary>
     public class PerfRunner : MonoBehaviour
     {
@@ -381,6 +383,8 @@ namespace Overstory.Perf
                         Debug.LogError($"[PerfRunner] the quad has no keyword for '{a.option}'");
             }
 
+            if (configs.Contains("foglights-full") && !(features.TryGetValue("FogLights", out var flf) && flf.feature is FogLightsFeature))
+                Debug.LogError("[PerfRunner] the 'foglights-full' arm needs the FogLights feature (FogLightsFeature)");
             if (configs.Any(c => c.StartsWith("beams-")) && !(features.TryGetValue("SunBeams", out var sbf) && sbf.feature is SunBeamsFeature))
                 Debug.LogError("[PerfRunner] the 'beams-' arms need the SunBeams feature (SunBeamsFeature)");
 
@@ -433,6 +437,11 @@ namespace Overstory.Perf
                 {
                     sb.fullSize = config == "beams-full";
                     sb.arm = config.StartsWith("beams-") && config != "beams-full" ? config.Substring("beams-".Length) : "";
+                }
+                if (features.TryGetValue("FogLights", out var fog) && fog.feature is FogLightsFeature fl)
+                {
+                    fl.fullSize = config == "foglights-full";
+                    TownLights.cullToView = !fl.fullSize; // (as it was: every lamp at every pixel)
                 }
             }
 

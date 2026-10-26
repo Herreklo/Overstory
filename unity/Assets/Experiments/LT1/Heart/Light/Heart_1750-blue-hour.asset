@@ -26,33 +26,33 @@ MonoBehaviour:
   sunColour: {r: 1, g: 1, b: 1, a: 1}
   sunIntensity: 0
   shadowStrength: 1
-  zenith: {r: 0.44584984, g: 0.5347847, b: 0.77869457, a: 1}
-  horizon: {r: 0.27100885, g: 0.31160566, b: 0.43268833, a: 1}
-  deck: {r: 0.3999624, g: 0.46536517, b: 0.65346694, a: 1}
-  belowHorizon: {r: 0.12002047, g: 0.1302031, b: 0.19034204, a: 1}
+  zenith: {r: 0.4454069, g: 0.5346805, b: 0.7797126, a: 1}
+  horizon: {r: 0.27147007, g: 0.31255424, b: 0.43477935, a: 1}
+  deck: {r: 0.39965332, g: 0.4653126, b: 0.6543083, a: 1}
+  belowHorizon: {r: 0.119895585, g: 0.13018787, b: 0.19065085, a: 1}
   skyCurve: 0.5
-  sunGlow: {r: 0.10012355, g: 0.0613418, b: 0.045484617, a: 1}
+  sunGlow: {r: 0.10022972, g: 0.06202372, b: 0.047398284, a: 1}
   sunGlowPower: 6
-  ambientSky: {r: 0.37862983, g: 0.44025308, b: 0.61734605, a: 1}
-  ambientEquator: {r: 0.24933988, g: 0.29011258, b: 0.40922067, a: 1}
-  ambientGround: {r: 0.12002047, g: 0.1302031, b: 0.19034204, a: 1}
-  ambientSunSide: {r: 0.2718977, g: 0.31136894, b: 0.430216, a: 1}
-  townBounce: {r: 0.166987, g: 0.17032495, b: 0.23438483, a: 1}
+  ambientSky: {r: 0.37832037, g: 0.4402123, b: 0.6181923, a: 1}
+  ambientEquator: {r: 0.24917647, g: 0.2901752, b: 0.40996587, a: 1}
+  ambientGround: {r: 0.119895585, g: 0.13018787, b: 0.19065085, a: 1}
+  ambientSunSide: {r: 0.27164698, g: 0.31134337, b: 0.4308622, a: 1}
+  townBounce: {r: 0.16686785, g: 0.17036584, b: 0.2348494, a: 1}
   sunBounce: 0.006664001
   ambientIntensity: 1
-  fogColour: {r: 0.27100885, g: 0.31160566, b: 0.43268833, a: 1}
-  fogMidColour: {r: 0.27100885, g: 0.31160566, b: 0.43268833, a: 1}
+  fogColour: {r: 0.27147007, g: 0.31255424, b: 0.43477935, a: 1}
+  fogMidColour: {r: 0.27147007, g: 0.31255424, b: 0.43477935, a: 1}
   fogMidDistance: 220
-  fogFarColour: {r: 0.27100885, g: 0.31160566, b: 0.43268833, a: 1}
+  fogFarColour: {r: 0.27147007, g: 0.31255424, b: 0.43477935, a: 1}
   fogFarDistance: 1500
   fogDensity: 0.00028855776
   fogHeightFalloff: 0.02
   fogBaseHeight: 0
   fogMaxOpacity: 0.97
-  fogSunColour: {r: 0.10012355, g: 0.0613418, b: 0.045484617, a: 1}
+  fogSunColour: {r: 0.10022972, g: 0.06202372, b: 0.047398284, a: 1}
   fogSunPower: 8.333333
-  hazeColour: {r: 0.2916416, g: 0.33715007, b: 0.4759546, a: 1}
-  hazeDensity: 0.01956
+  hazeColour: {r: 0.2913887, g: 0.33710977, b: 0.47661084, a: 1}
+  hazeDensity: 0.031681404
   hazeHeight: 80
   fogBank: 1
   bankOverLand: 0.7
@@ -75,46 +75,53 @@ MonoBehaviour:
   cloudSize: 400
   cloudSoftness: 0.2
   cloudHeight: 300
+  cloudAlbedo: 0.7
   highCloud: 0
   cloudSunThrough: 0.04
-  antiGlow: {r: 0.027678626, g: 0.052334405, b: 0.09799547, a: 1}
-  windowGlow: 1.1616033
+  antiGlow: {r: 0.025994377, g: 0.050308377, b: 0.09591686, a: 1}
+  windowGlow: 1.1546574
   lampsOn: 1
-  lampGlow: 1072.2493
+  lampGlow: 1065.8376
   lampIntensity: 1
   windowSpill: 0
   lampHalo: 3.1415927
   lampKinds:
   - kind: warm
     colour: {r: 1.3499694, g: 0.90813893, b: 0.47513914, a: 1}
-    intensity: 2.912952
+    intensity: 2.8955336
     range: 14
     fogShare: 1
+    upward: 15.77679
   - kind: mercury
     colour: {r: 0.9530284, g: 1.0294826, b: 0.8272222, a: 1}
-    intensity: 22.814728
+    intensity: 22.678305
     range: 22
     fogShare: 1
+    upward: 22.814552
   - kind: sodium
     colour: {r: 1.5236027, g: 0.82408, b: 0.15440503, a: 1}
-    intensity: 58.055336
+    intensity: 57.708187
     range: 28
     fogShare: 1
+    upward: 36.85072
   - kind: shop
     colour: {r: 1.2969223, g: 0.92804223, b: 0.55849576, a: 1}
-    intensity: 4.0740585
+    intensity: 4.049697
     range: 9
     fogShare: 0.4
+    upward: 1.246805
   - kind: red
     colour: {r: 2.0214038, g: 0, b: 0, a: 1}
-    intensity: 1.3580196
+    intensity: 1.349899
     range: 30
     fogShare: 1
+    upward: 8.897268
   - kind: white
     colour: {r: 1.0063993, g: 1.0024285, b: 0.95719963, a: 1}
-    intensity: 5.658415
+    intensity: 5.6245794
     range: 30
     fogShare: 1
+    upward: 37.07195
   postExposure: 0
   contrast: 0
   saturation: 0

@@ -113,6 +113,8 @@ namespace Overstory.Scenes
         public float cloudSize = 160f;
         [Range(0.01f, 0.5f)] public float cloudSoftness = 0.08f;
         public float cloudHeight = 900f;
+        /// <summary>The share of the light on the cloud's base that it gives back down (the cloud kind's).</summary>
+        public float cloudAlbedo = 0.6f;
         [Tooltip("A high, thin layer (cirrus): it casts no shadow but catches a low sun.")]
         [Range(0, 1)] public float highCloud = 0f;
         /// <summary>The share of the sun's light that comes through the cloud (the cloud kind's).</summary>
@@ -136,7 +138,9 @@ namespace Overstory.Scenes
         /// intensity in display units, reach in metres, and the share of its light that reaches the fog.</summary>
         public LampLight[] lampKinds = new LampLight[0];
 
-        [System.Serializable] public struct LampLight { public string kind; public Color colour; public float intensity, range, fogShare; }
+        /// <summary>A kind as a light: its colour; its intensity below the lamp; how far it is drawn; its share in the fog; and
+        /// the light it sends to the sky (display units times square metres), straight up or given back by the street.</summary>
+        [System.Serializable] public struct LampLight { public string kind; public Color colour; public float intensity, range, fogShare, upward; }
 
         public bool Lamp(string kind, out LampLight lamp)
         {

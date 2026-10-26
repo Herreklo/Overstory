@@ -24,34 +24,34 @@ MonoBehaviour:
   sunBearing: 53.373993
   sunElevation: 12.583
   sunColour: {r: 1.1798717, g: 0.96610385, b: 0.70440584, a: 1}
-  sunIntensity: 1.0415504
+  sunIntensity: 1.03914
   shadowStrength: 1
-  zenith: {r: 0.43775707, g: 0.47553056, b: 0.5729133, a: 1}
-  horizon: {r: 0.64649904, g: 0.60081315, b: 0.5649879, a: 1}
-  deck: {r: 0.9472609, g: 0.89999425, b: 0.8871177, a: 1}
-  belowHorizon: {r: 0.3814077, g: 0.31959355, b: 0.29570946, a: 1}
+  zenith: {r: 0.39970154, g: 0.47906435, b: 0.6330499, a: 1}
+  horizon: {r: 0.6555777, g: 0.606696, b: 0.57121754, a: 1}
+  deck: {r: 1.0494353, g: 0.8633684, b: 0.83117956, a: 1}
+  belowHorizon: {r: 0.38058832, g: 0.31836888, b: 0.3109451, a: 1}
   skyCurve: 0.5
-  sunGlow: {r: 2.363752, g: 1.9184564, b: 1.3586224, a: 1}
+  sunGlow: {r: 2.3825984, g: 1.9242971, b: 1.3559477, a: 1}
   sunGlowPower: 6
-  ambientSky: {r: 0.74082243, g: 0.7176305, b: 0.7348916, a: 1}
-  ambientEquator: {r: 0.5532498, g: 0.52979064, b: 0.5294588, a: 1}
-  ambientGround: {r: 0.31138813, g: 0.27457055, b: 0.27377748, a: 1}
-  ambientSunSide: {r: 0.9173588, g: 0.8188631, b: 0.7156849, a: 1}
-  townBounce: {r: 0.49963695, g: 0.39715672, b: 0.3443418, a: 1}
+  ambientSky: {r: 0.7389491, g: 0.71446264, b: 0.77488506, a: 1}
+  ambientEquator: {r: 0.55435693, g: 0.5290936, b: 0.5492427, a: 1}
+  ambientGround: {r: 0.31052566, g: 0.2732193, b: 0.29042405, a: 1}
+  ambientSunSide: {r: 0.93418443, g: 0.81370527, b: 0.710582, a: 1}
+  townBounce: {r: 0.5000065, g: 0.39665207, b: 0.35516432, a: 1}
   sunBounce: 0.0545664
   ambientIntensity: 1
-  fogColour: {r: 0.64649904, g: 0.60081315, b: 0.5649879, a: 1}
-  fogMidColour: {r: 0.64649904, g: 0.60081315, b: 0.5649879, a: 1}
+  fogColour: {r: 0.6555777, g: 0.606696, b: 0.57121754, a: 1}
+  fogMidColour: {r: 0.6555777, g: 0.606696, b: 0.57121754, a: 1}
   fogMidDistance: 220
-  fogFarColour: {r: 0.64649904, g: 0.60081315, b: 0.5649879, a: 1}
+  fogFarColour: {r: 0.6555777, g: 0.606696, b: 0.57121754, a: 1}
   fogFarDistance: 1500
   fogDensity: 0.00023230775
   fogHeightFalloff: 0.02
   fogBaseHeight: 0
   fogMaxOpacity: 0.97
-  fogSunColour: {r: 2.363752, g: 1.9184564, b: 1.3586224, a: 1}
+  fogSunColour: {r: 2.3825984, g: 1.9242971, b: 1.3559477, a: 1}
   fogSunPower: 8.333333
-  hazeColour: {r: 0.64649904, g: 0.60081315, b: 0.5649879, a: 1}
+  hazeColour: {r: 0.6555777, g: 0.606696, b: 0.57121754, a: 1}
   hazeDensity: 0
   hazeHeight: 20
   fogBank: 0
@@ -75,46 +75,53 @@ MonoBehaviour:
   cloudSize: 220
   cloudSoftness: 0.08
   cloudHeight: 1200
+  cloudAlbedo: 0.7
   highCloud: 0.25
   cloudSunThrough: 0.06
-  antiGlow: {r: 0.10136949, g: 0.2094121, b: 0.24902487, a: 1}
-  windowGlow: 0.0018306044
+  antiGlow: {r: 0.10727192, g: 0.20112333, b: 0.2360717, a: 1}
+  windowGlow: 0.0018263678
   lampsOn: 0
-  lampGlow: 1.6897887
+  lampGlow: 1.685878
   lampIntensity: 1
   windowSpill: 0
   lampHalo: 3.1415927
   lampKinds:
   - kind: warm
     colour: {r: 1.3499694, g: 0.90813893, b: 0.47513914, a: 1}
-    intensity: 0.0045906054
+    intensity: 0.0045799813
     range: 14
     fogShare: 1
+    upward: 0.025478516
   - kind: mercury
     colour: {r: 0.9530284, g: 1.0294826, b: 0.8272222, a: 1}
-    intensity: 0.03595439
+    intensity: 0.035871178
     range: 22
     fogShare: 1
+    upward: 0.0401887
   - kind: sodium
     colour: {r: 1.5236027, g: 0.82408, b: 0.15440503, a: 1}
-    intensity: 0.09149108
+    intensity: 0.09127934
     range: 28
     fogShare: 1
+    upward: 0.06872641
   - kind: shop
     colour: {r: 1.2969223, g: 0.92804223, b: 0.55849576, a: 1}
-    intensity: 0.0064204265
+    intensity: 0.0064055678
     range: 9
     fogShare: 0.4
+    upward: 0.0027046234
   - kind: red
     colour: {r: 2.0214038, g: 0, b: 0, a: 1}
-    intensity: 0.0021401423
+    intensity: 0.0021351893
     range: 30
     fogShare: 1
+    upward: 0.014317332
   - kind: white
     colour: {r: 1.0063993, g: 1.0024285, b: 0.95719963, a: 1}
-    intensity: 0.008917259
+    intensity: 0.008896623
     range: 30
     fogShare: 1
+    upward: 0.059655547
   postExposure: 0
   contrast: 0
   saturation: 0

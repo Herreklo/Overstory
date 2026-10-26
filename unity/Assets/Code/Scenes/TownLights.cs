@@ -10,7 +10,8 @@ namespace Overstory.Scenes
     /// The town's lamps as lights: each one where the layout put it (lights.json, written with the heart's meshes), the
     /// kind its street was lit with (warm lanterns of 1955, mercury of the 1960s, sodium of the 1970s, the harbour's
     /// red and white lights). The stage turns them on and off with the light rig, and hands them to the fog so each
-    /// lamp lights the air round it (FogLights.shader).
+    /// lamp lights the air round it (FogLights.shader): for each camera, only the lit lamps whose reach meets its view,
+    /// first in the buffers.
     /// </summary>
     [ExecuteAlways]
     public class TownLights : MonoBehaviour
@@ -27,19 +28,31 @@ namespace Overstory.Scenes
 
         readonly List<(Light light, string kind)> lights = new();
         GraphicsBuffer positions, colours;
-        Texture2D glowMap;
+        Vector4[] allPos = new Vector4[0], allCol = new Vector4[0], seenPos = new Vector4[0], seenCol = new Vector4[0];
+        readonly Plane[] planes = new Plane[6];
+        Texture2D glowMap, deckMap;
 
         public int Count => lights.Count;
+        /// <summary>Cull the fog's lamps to each camera's view; off, every lit lamp is handed over (FogLightsFeature's
+        /// full-size reference).</summary>
+        public static bool cullToView = true;
         /// <summary>The colour of the town's lamplight: every lit lamp's colour by its output; clear when none is on.</summary>
         public Color Lit { get; private set; }
 
-        void OnEnable() => Build();
+        void OnEnable()
+        {
+            Build();
+            RenderPipelineManager.beginCameraRendering += Cull;
+        }
 
         void OnDisable()
         {
+            RenderPipelineManager.beginCameraRendering -= Cull;
             if (glowMap != null)
                 DestroyImmediate(glowMap);
-            glowMap = null;
+            if (deckMap != null)
+                DestroyImmediate(deckMap);
+            glowMap = deckMap = null;
             positions?.Release();
             colours?.Release();
             positions = colours = null;
@@ -115,13 +128,43 @@ namespace Overstory.Scenes
                 positions = new GraphicsBuffer(GraphicsBuffer.Target.Structured, pos.Length, 16);
                 colours = new GraphicsBuffer(GraphicsBuffer.Target.Structured, col.Length, 16);
             }
-            positions.SetData(pos);
-            colours.SetData(col);
+            allPos = pos;
+            allCol = col;
+            seenPos = new Vector4[pos.Length];
+            seenCol = new Vector4[col.Length];
             Shader.SetGlobalBuffer("_OS_FogLampPos", positions);
             Shader.SetGlobalBuffer("_OS_FogLampColour", colours);
-            Shader.SetGlobalInt("_OS_FogLampCount", r.lampsOn ? lights.Count : 0);
+            Shader.SetGlobalInt("_OS_FogLampCount", 0); // set for each camera (Cull)
             Shader.SetGlobalFloat("_OS_FogLampStrength", r.lampsOn ? r.lampHalo : 0f);
             SetGlow(r);
+            SetDeck(r);
+        }
+
+        /// <summary>The lit lamps whose reach meets the camera's view, packed first into the fog's buffers.</summary>
+        void Cull(ScriptableRenderContext context, Camera cam)
+        {
+            if (positions == null)
+                return;
+            GeometryUtility.CalculateFrustumPlanes(cam, planes);
+            int n = 0;
+            for (int i = 0; i < allPos.Length; i++)
+            {
+                var p = allPos[i];
+                if (p.w <= 0f)
+                    continue; // off
+                var c = new Vector3(p.x, p.y, p.z);
+                bool seen = true;
+                for (int k = 0; k < 6 && seen && cullToView; k++)
+                    seen = planes[k].GetDistanceToPoint(c) >= -p.w;
+                if (!seen)
+                    continue;
+                seenPos[n] = p;
+                seenCol[n] = allCol[i];
+                n++;
+            }
+            positions.SetData(seenPos, 0, 0, Mathf.Max(n, 1));
+            colours.SetData(seenCol, 0, 0, Mathf.Max(n, 1));
+            Shader.SetGlobalInt("_OS_FogLampCount", n);
         }
 
         /// <summary>
@@ -159,6 +202,43 @@ namespace Overstory.Scenes
             glowMap.Apply();
             Shader.SetGlobalTexture("_OS_GlowMap", glowMap);
             Shader.SetGlobalVector("_OS_GlowRect", new Vector4(x0, z0, 1f / glowSize, 0f));
+        }
+
+        /// <summary>
+        /// The cloud's base lit from below: each lit lamp's light to the sky (LightRig.LampLight.upward) falls on the base
+        /// h above it as from a face turned up, Phi / pi * h^2 / (h^2 + r^2)^2, and the base gives back the cloud's albedo
+        /// of it. It spreads over hundreds of metres, so a coarse map three times the glow's square holds it.
+        /// </summary>
+        void SetDeck(LightRig r)
+        {
+            const int n = 32;
+            if (deckMap == null)
+                deckMap = new Texture2D(n, n, TextureFormat.RGBAHalf, false, true)
+                {
+                    name = "deck glow", wrapMode = TextureWrapMode.Clamp, filterMode = FilterMode.Bilinear, hideFlags = HideFlags.DontSave,
+                };
+            var px = new Color[n * n];
+            float size = glowSize * 3f, cell = size / n;
+            float x0 = glowCentre.x - size / 2f, z0 = glowCentre.y - size / 2f;
+            if (r.lampsOn)
+                foreach (var (light, kind) in lights)
+                {
+                    if (light == null || !r.Lamp(kind, out var lamp) || lamp.upward <= 0f)
+                        continue;
+                    var p = light.transform.position;
+                    float h = Mathf.Max(r.cloudHeight - p.y, 1f), h2 = h * h;
+                    var c = lamp.colour.linear * (r.lampIntensity * lamp.upward * r.cloudAlbedo / Mathf.PI * h2);
+                    for (int j = 0; j < n; j++)
+                        for (int i = 0; i < n; i++)
+                        {
+                            float dx = (i + 0.5f) * cell + x0 - p.x, dz = (j + 0.5f) * cell + z0 - p.z, q = h2 + dx * dx + dz * dz;
+                            px[j * n + i] += c / (q * q);
+                        }
+                }
+            deckMap.SetPixels(px);
+            deckMap.Apply();
+            Shader.SetGlobalTexture("_OS_DeckGlowMap", deckMap);
+            Shader.SetGlobalVector("_OS_DeckGlowRect", new Vector4(x0, z0, 1f / size, 0f));
         }
     }
 }

@@ -296,6 +296,22 @@ float OS_MeanDensity(float3 v, float k, float base)
     return abs(kdh) > 1e-3 ? a * (1.0 - exp(-kdh)) / kdh : a;
 }
 
+// How much of a surface the air hides, cheaply: the same air and haze or bank as OS_Atmosphere, the bank's thickening
+// off the eye taken whole (its density times d - c (1 - e^(-d / c))) and its wisps left out. For the style's pass,
+// which leaves the light from the air alone as it leaves the sky's.
+float OS_Hidden(float3 positionWS)
+{
+    float3 v = positionWS - _WorldSpaceCameraPos;
+    float d = length(v);
+    float tau = _OS_FogParams.x * d * OS_MeanDensity(v, max(_OS_FogParams.y, 1e-4), _OS_FogParams.z);
+    bool bank = _OS_Bank.x > 0.5;
+    float c = bank ? _OS_Haze.z : 0.0;
+    float reach = c > 0.0 ? max(d - c * (1.0 - exp(-d / c)), 0.0) : d;
+    float land = bank ? lerp(1.0, _OS_Bank.y, OS_LandUnder(positionWS.xz)) : 1.0;
+    tau += _OS_Haze.x * reach * land * OS_MeanDensity(v, 1.0 / max(_OS_Haze.y, 1.0), 0.0);
+    return min(1.0 - exp(-tau), _OS_FogParams.w);
+}
+
 // Aerial perspective and height fog: the air thickens with distance and thins with height, and glows
 // towards the sun; a low haze lies on the water and thins quickly up the hill. Applied the same way to
 // every look, to water and to emissive light. OS_HAZE_OFF (the harness's haze-off, docs/measuring.md, declared by

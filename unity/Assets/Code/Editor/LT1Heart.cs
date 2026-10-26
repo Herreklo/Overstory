@@ -141,7 +141,7 @@ namespace Overstory.EditorTools
             lamps.Build();
             EnsureFogLights();
             EnsurePass("Palette", "Overstory/Palette", FullScreenPassRendererFeature.InjectionPoint.AfterRenderingPostProcessing,
-                       ScriptableRenderPassInput.None);
+                       ScriptableRenderPassInput.Depth);
             EnsurePass("SunBeams", "Overstory/SunBeams", FullScreenPassRendererFeature.InjectionPoint.BeforeRenderingPostProcessing,
                        ScriptableRenderPassInput.Depth);
             var air = new GameObject("Air").AddComponent<AirMotes>();
@@ -489,7 +489,7 @@ namespace Overstory.EditorTools
             AssetDatabase.SaveAssets();
             EditorSceneManager.OpenScene(ScenePath, OpenSceneMode.Single);
             EnsurePass("Palette", "Overstory/Palette", FullScreenPassRendererFeature.InjectionPoint.AfterRenderingPostProcessing,
-                       ScriptableRenderPassInput.None);
+                       ScriptableRenderPassInput.Depth);
             var stage = Object.FindAnyObjectByType<StreetStage>();
             stage.clay = true;
             stage.look = "P";
@@ -673,26 +673,18 @@ namespace Overstory.EditorTools
             return i < 0 || i + 1 >= args.Length || System.Array.IndexOf(args[i + 1].Split(','), mood) >= 0;
         }
 
-        /// <summary>The fog's lamps: a full-screen pass after the opaque scene, before post-processing, on the renderer.</summary>
+        /// <summary>The fog's lamps: their halos at a quarter of the pixels before post-processing, on the renderer
+        /// (FogLightsFeature).</summary>
         static void EnsureFogLights()
         {
             const string renderer = "Assets/Settings/PC_Renderer.asset";
             var data = AssetDatabase.LoadAssetAtPath<UniversalRendererData>(renderer);
-            if (data == null || data.rendererFeatures.Exists(f => f != null && f.name == "FogLights"))
+            if (data == null || data.rendererFeatures.Exists(f => f is FogLightsFeature))
                 return;
-            const string path = Materials + "/M_FogLights.mat";
-            var mat = AssetDatabase.LoadAssetAtPath<Material>(path);
-            if (mat == null)
-            {
-                mat = new Material(Shader.Find("Overstory/FogLights") ?? throw new FileNotFoundException("FogLights.shader did not compile"));
-                AssetDatabase.CreateAsset(mat, path);
-            }
-            var feature = ScriptableObject.CreateInstance<FullScreenPassRendererFeature>();
+            var feature = ScriptableObject.CreateInstance<FogLightsFeature>();
             feature.name = "FogLights";
-            feature.passMaterial = mat;
-            feature.injectionPoint = FullScreenPassRendererFeature.InjectionPoint.BeforeRenderingPostProcessing;
-            feature.requirements = ScriptableRenderPassInput.Depth;
-            feature.fetchColorBuffer = true;
+            feature.shader = Shader.Find("Overstory/FogLights") ?? throw new FileNotFoundException("FogLights.shader did not compile");
+            feature.fullShader = Shader.Find("Overstory/FogLightsFull");
             AssetDatabase.AddObjectToAsset(feature, data);
             AssetDatabase.TryGetGUIDAndLocalFileIdentifier(feature, out string _, out long id);
             var so = new SerializedObject(data);

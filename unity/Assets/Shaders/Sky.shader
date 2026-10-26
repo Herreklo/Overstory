@@ -41,6 +41,9 @@ Shader "Overstory/Sky"
             float _OS_SkyBands;
             float4 _OS_SunCol;     // the sun's light (linear), for the clouds' lit sides
             float4 _OS_SunSideAmb; // the sky's light on a face turned to the sun (linear): with the sun, the walls' light
+            TEXTURE2D(_OS_DeckGlowMap);  // the cloud's base lit by the town's lamps (linear), over the square below
+            SAMPLER(sampler_OS_DeckGlowMap);
+            float4 _OS_DeckGlowRect;     // xy the map's corner (world x, z), z 1 / its size
 
             struct Attributes { float4 positionOS : POSITION; };
             struct Varyings { float4 positionCS : SV_POSITION; float3 dir : TEXCOORD0; };
@@ -88,15 +91,17 @@ Shader "Overstory/Sky"
                 if (_HighCloud > 0.001 && d.y > 0.01)
                 {
                     float2 p = _WorldSpaceCameraPos.xz + d.xz / d.y * (7000.0 - _WorldSpaceCameraPos.y);
-                    float2 q = float2(dot(p, float2(0.866, 0.5)) / 3600.0, dot(p, float2(-0.5, 0.866)) / 480.0);
+                    // the streaks' width changes over the sky, so no two fields' dashes are alike
+                    float width = lerp(300.0, 800.0, OS_Noise(p / 21000.0 - 3.3));
+                    float2 q = float2(dot(p, float2(0.866, 0.5)) / 3600.0, dot(p, float2(-0.5, 0.866)) / width);
                     q += (float2(OS_Noise(q * 0.3 + 2.0), OS_Noise(q * 0.3 - 5.0)) - 0.5) * 0.8;
                     // and over the whole sky the wind wanders, bending the streaks in long waves, so no motif repeats
                     q.y += (OS_Noise(q * 0.05 + 9.7) - 0.5) * 3.0;
                     // each octave turned a little off the wind, so their lattices never line up into an even rhythm
                     float f = 0.55 * OS_Noise(q) + 0.3 * OS_Noise(mul(float2x2(0.978, -0.208, 0.208, 0.978), q) * 2.3 + 4.1)
                             + 0.15 * OS_Noise(mul(float2x2(0.978, 0.208, -0.208, 0.978), q) * 5.3 - 1.7);
-                    // the streaks gather in fields with open sky between, as cirrus does
-                    half fields = (half)smoothstep(0.25, 0.6, OS_Noise(p / 9000.0 + 7.3));
+                    // the streaks gather in fields of uneven shape with wide open sky between, as cirrus does
+                    half fields = (half)(smoothstep(0.4, 0.72, OS_Noise(p / 13000.0 + 7.3)) * smoothstep(0.3, 0.6, OS_Noise(p / 4700.0 - 2.1)));
                     half streak = (half)smoothstep(0.62 - _HighCloud * 0.2, 0.9 - _HighCloud * 0.1, f) * fields;
                     // thin ice gives back under half the light on it away from the sun; after sunset the glow left on
                     // the sun's side
@@ -130,8 +135,9 @@ Shader "Overstory/Sky"
                     half litShare = max(edge * (1.0h - thick * 0.5h), (half)pow(towardsSun, 2.0) * lowSun * 0.5h) * sunUp;
                     // after the sun has set its glow lingers on the undersides on its side
                     half3 under = _SunGlow.rgb * (half)pow(towardsSun, 2.0) * lowSun * 0.8h * (1.0h - sunUp);
-                    // and over the town the fog's glow lights them from below
-                    half3 townGlow = (half3)OS_GlowAt(float3(p.x, 0.0, p.y)) * 3.0h;
+                    // and over the town its lamps light the base from below (TownLights.SetDeck)
+                    float2 deckUv = (p - _OS_DeckGlowRect.xy) * _OS_DeckGlowRect.z;
+                    half3 townGlow = all(deckUv > 0.0) && all(deckUv < 1.0) ? (half3)SAMPLE_TEXTURE2D_LOD(_OS_DeckGlowMap, sampler_OS_DeckGlowMap, deckUv, 0).rgb : 0.0h;
                     half3 cloud = lerp(shade, lit, litShare) + under + townGlow;
                     half far = (half)saturate(d.y * 7.0); // far clouds melt into the horizon's haze
                     c = lerp(c, cloud, cover * far);

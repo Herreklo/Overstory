@@ -115,7 +115,7 @@ namespace Overstory.Scenes
             public float aerosolDepthClear, aerosolDepthPerHaze, aerosolAngstrom, aerosolAlbedo, aerosolG;
         }
         [Serializable] public class Overcast { public float loss, lossPower, neutralise; }
-        [Serializable] public class CloudKind { public string kind; public int baseMm, topMm; public float sizeM, softness, sunThrough, sunLobe; }
+        [Serializable] public class CloudKind { public string kind; public int baseMm, topMm; public float sizeM, softness, sunThrough, sunLobe, albedo; }
         [Serializable] public class Surface { public float[] xy; public float albedo; }
         [Serializable] public class Surfaces { public Surface ground, town; public float wetDarkening, groundLitShare; }
         [Serializable] public class AirPack
@@ -160,16 +160,16 @@ namespace Overstory.Scenes
     }
 
     /// <summary>
-    /// light-derive-2: the light at one instant from the world state and the pack (LA's thirteen points). The sun's
+    /// light-derive-3: the light at one instant from the world state and the pack (LA's thirteen points). The sun's
     /// place from the clock; its colour and illuminance through a spherical atmosphere (Rayleigh, a maritime aerosol,
-    /// ozone); the clear sky by single scattering with Earth's shadow, blended with an overcast sky by the cloud; the
+    /// ozone); the clear sky by single and multiple scattering (Hillaire 2020) with Earth's shadow, blended with an overcast sky by the cloud; the
     /// sky's radiance as an L2 SH, from which the ambient, the dome and the air are views; the exposure from the light
     /// on open ground; the key set's pushes resolved by the sun's elevation, the evening and the weather. Every
     /// number that depends on the place, the era or the look is the pack's.
     /// </summary>
     public static class LightDerive
     {
-        public const string Function = "light-derive-2";
+        public const string Function = "light-derive-3";
         static readonly float[] Lambda = { 680f, 550f, 440f };
 
         /// <summary>The record's light; with a place, that place's overrides pushed after the keys (the record keeps
@@ -348,6 +348,7 @@ namespace Overstory.Scenes
             r.cloudSoftness = kind.softness;
             r.cloudHeight = (wx.cloudBaseMm > 0 ? wx.cloudBaseMm : kind.baseMm) / 1000f;
             r.cloudSunThrough = kind.sunThrough;
+            r.cloudAlbedo = kind.albedo;
             r.highCloud = wx.highCover / 1000f;
             float through = (1f - cover) + cover * kind.sunThrough;
 
@@ -433,7 +434,11 @@ namespace Overstory.Scenes
             {
                 // the light below the lamp: the share that is not thrown up, spread over the lower hemisphere
                 float cd = lk.lumens * (1f - lk.upward) / (2f * Mathf.PI);
-                kinds.Add(new LightRig.LampLight { kind = lk.kind, colour = G(XyToRgb(lk.xy)), intensity = cd * u * lamps, range = lk.rangeM, fogShare = lk.fogShare });
+                // the light that leaves for the sky: the share thrown up, and of the rest what the wet ground gives back
+                // through the street's open share
+                float up = lk.lumens * (lk.upward + (1f - lk.upward) * Lum(groundAlbedo) * lit);
+                kinds.Add(new LightRig.LampLight { kind = lk.kind, colour = G(XyToRgb(lk.xy)), intensity = cd * u * lamps, range = lk.rangeM, fogShare = lk.fogShare,
+                                                   upward = up * u * lamps });
                 if (lk.kind == glassKind)
                     glass = lk;
             }
@@ -728,8 +733,7 @@ namespace Overstory.Scenes
                     for (int c = 0; c < W; c++)
                     {
                         double sca = Ray[c] * rd + AerSca[c] * ad;
-                        double view = Math.Exp(-(tau[c] + e[c] * ds / 2.0));
-                        sum[c] += ((Ray[c] * rd * phaseR + AerSca[c] * ad * phaseA) * T[c] + sca * psi[c]) * view * ds;
+                        sum[c] += ((Ray[c] * rd * phaseR + AerSca[c] * ad * phaseA) * T[c] + sca * psi[c]) * Math.Exp(-tau[c]) * Step(e[c], ds);
                         tau[c] += e[c] * ds;
                     }
                 }
@@ -783,9 +787,9 @@ namespace Overstory.Scenes
                                 for (int c = 0; c < W; c++)
                                 {
                                     double sca = Ray[c] * rd + AerSca[c] * ad;
-                                    double view = Math.Exp(-(tau[c] + e[c] * ds / 2.0));
-                                    L[c] += view * sca * Ts[c] * ds / (4.0 * Math.PI);
-                                    F[c] += view * sca * ds;
+                                    double seen = Math.Exp(-tau[c]) * Step(e[c], ds);
+                                    L[c] += seen * sca * Ts[c] / (4.0 * Math.PI);
+                                    F[c] += seen * sca;
                                     tau[c] += e[c] * ds;
                                 }
                             }
@@ -807,6 +811,11 @@ namespace Overstory.Scenes
                         ms[hi, si] = psi;
                     }
             }
+
+            /// <summary>The light a step of length ds lets through from along it, (1 - e^-e ds) / e (Hillaire 2015): the
+            /// midpoint rule overstates a step's loss many times over where the step is optically thick, as the long
+            /// steps along the horizon are.</summary>
+            static double Step(double e, double ds) => e * ds > 1e-6 ? (1.0 - Math.Exp(-e * ds)) / e : ds;
 
             double[] MultipleAt(float h, float muSun)
             {

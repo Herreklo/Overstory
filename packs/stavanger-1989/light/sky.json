@@ -25,16 +25,16 @@
     "ozoneCrossSectionM2": [1.18e-27, 2.182e-28, 2.818e-28, 6.636e-28, 1.527e-27, 2.763e-27, 5.52e-27, 8.451e-27, 1.582e-26, 2.316e-26, 3.669e-26, 4.924e-26, 7.752e-26, 9.016e-26, 1.48e-25, 1.602e-25, 2.139e-25, 2.755e-25, 3.091e-25, 3.5e-25, 4.266e-25, 4.672e-25, 4.398e-25, 4.701e-25, 5.019e-25, 4.305e-25, 3.74e-25, 3.215e-25, 2.662e-25, 2.238e-25, 1.852e-25, 1.473e-25, 1.209e-25, 9.423e-26, 7.455e-26, 6.566e-26, 5.105e-26, 4.15e-26, 4.228e-26, 3.237e-26, 2.451e-26, 2.801e-26, 2.534e-26, 1.624e-26, 1.465e-26, 2.078e-26, 1.383e-26, 7.105e-27]
   },
   "overcast": {
-    "note": "Kasten and Czeplak (1980): global light under cover N is 1 - 0.75 N^3.4 of the clear sky's; the CIE overcast sky's gradient (1 + 2 sin e) / 3; a brighter patch round the hidden sun, by the kind's sunLobe; the deck passes the colour of the light above it (its droplets scatter every wavelength alike); by day the deck mixes the sun's and the sky's light towards daylight white (measured overcast daylight is near D65, about 6500 K, white in linear Rec. 709): neutralise is how far at full cover, scaling with the cover and gone after sunset, when only the sky's light is left to pass.",
+    "note": "Kasten and Czeplak (1980): global light under cover N is 1 - 0.75 N^3.4 of the clear sky's; the CIE overcast sky's gradient (1 + 2 sin e) / 3; a brighter patch round the hidden sun, by the kind's sunLobe; the deck passes the colour of the light above it (its droplets scatter every wavelength alike); by day the deck mixes the sun's and the sky's light towards daylight white (measured overcast daylight is near D65, about 6500 K, white in linear Rec. 709): neutralise is how far at full cover, scaling with the cover and gone after sunset, when only the sky's light is left to pass. A kind's albedo is the share of the light on its base that a deck gives back down (thick cloud scatters every wavelength alike, so from below as from above): how its base takes the town's lamps at night.",
     "loss": 0.75,
     "lossPower": 3.4,
     "neutralise": 1.0
   },
   "cloudKinds": [
-    { "kind": "stratus", "baseMm": 300000, "topMm": 900000, "sizeM": 400.0, "softness": 0.2, "sunThrough": 0.04, "sunLobe": 0.3 },
-    { "kind": "stratocumulus", "baseMm": 900000, "topMm": 1600000, "sizeM": 160.0, "softness": 0.12, "sunThrough": 0.12, "sunLobe": 0.6 },
-    { "kind": "cumulus", "baseMm": 1200000, "topMm": 2500000, "sizeM": 220.0, "softness": 0.08, "sunThrough": 0.06, "sunLobe": 0.4 },
-    { "kind": "altostratus", "baseMm": 3000000, "topMm": 5000000, "sizeM": 600.0, "softness": 0.3, "sunThrough": 0.3, "sunLobe": 1.2 }
+    { "kind": "stratus", "baseMm": 300000, "topMm": 900000, "sizeM": 400.0, "softness": 0.2, "sunThrough": 0.04, "sunLobe": 0.3, "albedo": 0.7 },
+    { "kind": "stratocumulus", "baseMm": 900000, "topMm": 1600000, "sizeM": 160.0, "softness": 0.12, "sunThrough": 0.12, "sunLobe": 0.6, "albedo": 0.6 },
+    { "kind": "cumulus", "baseMm": 1200000, "topMm": 2500000, "sizeM": 220.0, "softness": 0.08, "sunThrough": 0.06, "sunLobe": 0.4, "albedo": 0.7 },
+    { "kind": "altostratus", "baseMm": 3000000, "topMm": 5000000, "sizeM": 600.0, "softness": 0.3, "sunThrough": 0.3, "sunLobe": 1.2, "albedo": 0.5 }
   ],
   "surfaces": {
     "note": "Albedo (a mean over the visible band) of open ground and of the town's walls, as xy and a reflectance; a wet surface keeps (1 - wetDarkening) of it.",

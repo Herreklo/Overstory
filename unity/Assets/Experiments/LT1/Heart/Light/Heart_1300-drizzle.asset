@@ -24,34 +24,34 @@ MonoBehaviour:
   sunBearing: 0.0039978027
   sunElevation: 20.214
   sunColour: {r: 1.1371782, g: 0.9753228, b: 0.7885259, a: 1}
-  sunIntensity: 2.5352964
+  sunIntensity: 2.5222745
   shadowStrength: 1
-  zenith: {r: 0.6766137, g: 0.7180772, b: 0.84524953, a: 1}
-  horizon: {r: 0.5751923, g: 0.5708637, b: 0.5682728, a: 1}
-  deck: {r: 0.87654763, g: 0.8746493, b: 0.87384284, a: 1}
-  belowHorizon: {r: 0.29954752, g: 0.2678811, b: 0.2559412, a: 1}
+  zenith: {r: 0.67851764, g: 0.7207279, b: 0.8500736, a: 1}
+  horizon: {r: 0.5760237, g: 0.5718044, b: 0.56949484, a: 1}
+  deck: {r: 0.8766474, g: 0.8747624, b: 0.87399346, a: 1}
+  belowHorizon: {r: 0.299509, g: 0.26788795, b: 0.25602564, a: 1}
   skyCurve: 0.5
-  sunGlow: {r: 0.5898452, g: 0.51737624, b: 0.434326, a: 1}
+  sunGlow: {r: 0.59198445, g: 0.5197781, b: 0.43695787, a: 1}
   sunGlowPower: 6
-  ambientSky: {r: 0.7997331, g: 0.7969794, b: 0.7977501, a: 1}
-  ambientEquator: {r: 0.5295063, g: 0.5271589, b: 0.52723485, a: 1}
-  ambientGround: {r: 0.28162995, g: 0.25588703, b: 0.24863607, a: 1}
-  ambientSunSide: {r: 0.58557826, g: 0.57468754, b: 0.56546724, a: 1}
-  townBounce: {r: 0.39569506, g: 0.34087062, b: 0.31737167, a: 1}
+  ambientSky: {r: 0.7998703, g: 0.7971726, b: 0.7981024, a: 1}
+  ambientEquator: {r: 0.5296898, g: 0.52739656, b: 0.5276206, a: 1}
+  ambientGround: {r: 0.28168398, g: 0.25595754, b: 0.24876148, a: 1}
+  ambientSunSide: {r: 0.58565485, g: 0.57485145, b: 0.5658092, a: 1}
+  townBounce: {r: 0.3956985, g: 0.34093842, b: 0.31755617, a: 1}
   sunBounce: 0.0031785588
   ambientIntensity: 1
-  fogColour: {r: 0.5751923, g: 0.5708637, b: 0.5682728, a: 1}
-  fogMidColour: {r: 0.5751923, g: 0.5708637, b: 0.5682728, a: 1}
+  fogColour: {r: 0.7633366, g: 0.7578648, b: 0.7548696, a: 1}
+  fogMidColour: {r: 0.7633366, g: 0.7578648, b: 0.7548696, a: 1}
   fogMidDistance: 220
-  fogFarColour: {r: 0.5751923, g: 0.5708637, b: 0.5682728, a: 1}
+  fogFarColour: {r: 0.7633366, g: 0.7578648, b: 0.7548696, a: 1}
   fogFarDistance: 1500
-  fogDensity: 0.0032225577
-  fogHeightFalloff: 0.0017908615
+  fogDensity: 0.006013505
+  fogHeightFalloff: 0.0017908604
   fogBaseHeight: 0
   fogMaxOpacity: 0.97
-  fogSunColour: {r: 0.5898452, g: 0.51737624, b: 0.434326, a: 1}
+  fogSunColour: {r: 0.59198445, g: 0.5197781, b: 0.43695787, a: 1}
   fogSunPower: 8.333333
-  hazeColour: {r: 0.5751923, g: 0.5708637, b: 0.5682728, a: 1}
+  hazeColour: {r: 0.7633366, g: 0.7578648, b: 0.7548696, a: 1}
   hazeDensity: 0
   hazeHeight: 20
   fogBank: 0
@@ -75,46 +75,53 @@ MonoBehaviour:
   cloudSize: 400
   cloudSoftness: 0.2
   cloudHeight: 300
+  cloudAlbedo: 0.7
   highCloud: 0
   cloudSunThrough: 0.04
-  antiGlow: {r: 0.13377437, g: 0.14133829, b: 0.14800319, a: 1}
-  windowGlow: 0.0028578057
+  antiGlow: {r: 0.13264519, g: 0.14034337, b: 0.14719874, a: 1}
+  windowGlow: 0.002843127
   lampsOn: 0
-  lampGlow: 2.6379745
+  lampGlow: 2.624425
   lampIntensity: 1
   windowSpill: 0
   lampHalo: 3.1415927
   lampKinds:
   - kind: warm
     colour: {r: 1.3499694, g: 0.90813893, b: 0.47513914, a: 1}
-    intensity: 0.007166517
+    intensity: 0.0071297074
     range: 14
     fogShare: 1
+    upward: 0.038721945
   - kind: mercury
     colour: {r: 0.9530284, g: 1.0294826, b: 0.8272222, a: 1}
-    intensity: 0.05612936
+    intensity: 0.055841062
     range: 22
     fogShare: 1
+    upward: 0.05519414
   - kind: sodium
     colour: {r: 1.5236027, g: 0.82408, b: 0.15440503, a: 1}
-    intensity: 0.14282918
+    intensity: 0.14209557
     range: 28
     fogShare: 1
+    upward: 0.0882381
   - kind: shop
     colour: {r: 1.2969223, g: 0.92804223, b: 0.55849576, a: 1}
-    intensity: 0.0100231
+    intensity: 0.009971618
     range: 9
     fogShare: 0.4
+    upward: 0.002894593
   - kind: red
     colour: {r: 2.0214038, g: 0, b: 0, a: 1}
-    intensity: 0.0033410334
+    intensity: 0.0033238728
     range: 30
     fogShare: 1
+    upward: 0.021849373
   - kind: white
     colour: {r: 1.0063993, g: 1.0024285, b: 0.95719963, a: 1}
-    intensity: 0.013920973
+    intensity: 0.013849471
     range: 30
     fogShare: 1
+    upward: 0.091039054
   postExposure: 0
   contrast: 0
   saturation: 0

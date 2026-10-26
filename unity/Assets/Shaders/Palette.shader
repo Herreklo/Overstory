@@ -21,6 +21,8 @@ Shader "Overstory/Palette"
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
             #include "Packages/com.unity.render-pipelines.core/Runtime/Utilities/Blit.hlsl"
             #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Color.hlsl"
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DeclareDepthTexture.hlsl"
+            #include "StreetSurface.hlsl" // the air, for how much of a surface it hides
 
             float _OS_PaletteOn;
             float4 _OS_Key0, _OS_Key1, _OS_Key2, _OS_Key3; // the ramp's colours (perceptual, sRGB), dark to light
@@ -58,10 +60,20 @@ Shader "Overstory/Palette"
                     v = v2;
                 }
 
+                // the ramp and the placing of chroma act on what the light falls on; the sky is the light itself, and
+                // the air's light over a far wall is the sky's, so both keep the colour the light gives them
+                float raw = SampleSceneDepth(input.texcoord);
+                #if UNITY_REVERSED_Z
+                    bool sky = raw <= 0.0;
+                #else
+                    bool sky = raw >= 1.0;
+                #endif
+                float lit = sky ? 0.0 : 1.0 - OS_Hidden(ComputeWorldSpacePosition(input.texcoord, raw, UNITY_MATRIX_I_VP));
+
                 // colour by value: the ramp's hue and chroma at this value, at this value's lightness
                 float hi = max(g.r, max(g.g, g.b)), lo = min(g.r, min(g.g, g.b));
                 float sat = (hi - lo) / max(hi, 1e-4);
-                float amount = _OS_PaletteParams.x * (1.0 - _OS_PaletteParams.y * smoothstep(0.35, 0.75, sat * smoothstep(0.25, 0.6, v)));
+                float amount = lit * _OS_PaletteParams.x * (1.0 - _OS_PaletteParams.y * smoothstep(0.35, 0.75, sat * smoothstep(0.25, 0.6, v)));
                 float3 r = Ramp(v);
                 r *= v / max(Luma(r), 1e-4);
                 g = lerp(g, r, amount);
@@ -74,7 +86,7 @@ Shader "Overstory/Palette"
                 // chroma placed, not spread: strong colour (the lights and their warmth) kept, dull colour drained
                 float hi2 = max(g.r, max(g.g, g.b)), lo2 = min(g.r, min(g.g, g.b));
                 float sat2 = (hi2 - lo2) / max(hi2, 1e-4);
-                chroma *= lerp(1.0 - 0.45 * _OS_Grouping.w, 1.0 + 0.25 * _OS_Grouping.w, smoothstep(0.18, 0.5, sat2));
+                chroma *= lerp(1.0, lerp(1.0 - 0.45 * _OS_Grouping.w, 1.0 + 0.25 * _OS_Grouping.w, smoothstep(0.18, 0.5, sat2)), lit);
                 g = grey + chroma;
 
                 colour.rgb = SRGBToLinear(saturate(g));
