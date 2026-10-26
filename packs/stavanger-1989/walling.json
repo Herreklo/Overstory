@@ -109,7 +109,42 @@
           4,
           10
         ],
-        "jointClearMm": 150
+        "jointClearMm": 150,
+        "piecesPerTread": [
+          [
+            1,
+            2
+          ],
+          [
+            2,
+            3
+          ],
+          [
+            3,
+            1
+          ]
+        ],
+        "pieceLeastMm": 500,
+        "thickMm": 8,
+        "frontOutMm": 25,
+        "walkLineShare": 0.45,
+        "walkHalfMm": 320,
+        "wearPeakMm": 110,
+        "wearSpreadMm": 150,
+        "settlePitchDeg": [
+          0.5,
+          3.5
+        ],
+        "settleRollDeg": 2.0,
+        "settleDropMm": 20,
+        "moss": {
+          "base": 0.05,
+          "back": 0.85,
+          "ledge": 0.3,
+          "joint": 0.6,
+          "backMm": 45
+        },
+        "settleYawDeg": 2.0
       }
     },
     "cement-relaid-1961": {
@@ -167,7 +202,7 @@
     "topThickMm": "The wall's thickness at its top, under the coping (wall.py's DEPTH, 0.42 m): a coping spans it and its overhangs, and a face stone's hidden back is half of it.",
     "copeOverMm": "How much wider a standing wall's coping is than the wall's top, its overhangs on both faces together (wall.py: a standing wall's coping DEPTH + 0.05 m wide).",
     "copeProudMm": "How far a coping's front stands proud of the face under it, least and most (wall.py's 15 to 35 mm); its back stands the rest of copeOverMm.",
-    "steps": "The stair's block steps, split slate, dry (SN3, SN5): each step's front bears lapMm on the back of the one below; a tread's joint is jointMm wide; no joint lies within jointClearMm of the joint on the step below.",
+    "steps": "The stair's block steps, split slate, dry (SN3, SN5): each step's front bears lapMm on the back of the one below; a tread's joint is jointMm wide; no joint lies within jointClearMm of the joint on the step below. R2b: a tread is piecesPerTread slabs ([count, weight]; reference 06, one to three a step), none shorter than pieceLeastMm, each its rise within thickMm; a step's front line in or out by frontOutMm; settled since 1874 (the front sunk about the back's bed by settlePitchDeg, a roll of settleRollDeg, a turn of settleYawDeg, the whole down by settleDropMm: reference 06's stair that has settled). The feet keep to a walking line walkLineShare across the flight, spreading walkHalfMm about it, their wear greatest wearPeakMm back from the nosing and spreading wearSpreadMm along the tread. Moss's weights (the growth layer's): the back of each tread under the next riser (backMm deep), the ledges between laminae and the joints between a tread's pieces (reference 06's green line at the back of each tread).",
     "cement-relaid-1961": "The 1961 rebuild of fl-0/r's middle (the facts' rebuilt: it bulged where the lane's water ran behind it): the wall's own stones reclaimed and relaid in cement, so its stones are the wall's working's; its own numbers are only its edges, long and short in alternate courses against the old work (wall.py's). Relaid on the wall's own line, so its joints, its batter, its top's thickness and its copings' overhang are the old work's either side (the same values as dry-split-1874's), its joints mortared within SN5's 4 to 12 mm for the walls."
   }
 }

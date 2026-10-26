@@ -11,3 +11,12 @@
   - The faces' fan creases show faintly in grey under look P's ramp.
   - `split.py` is not yet wired into `context.py`, so the gully's export still builds R2a's stone.
 - **Cost:** about 125 messages and 144 rendered frames, against R2a's 1,295 messages and 37,793 frames for all three stones.
+
+## The step: done, 26 October
+
+- **The part:** `blender/parts/stone/slate/slabstep.py`, a slab step of split slate as reference 06 shows one. It is a slab the rise thick, laid on its bed. Its front and open ends are split across one to three laminae, each in or out of the next along the step, so their line comes and goes. Its nosing is rounded unevenly, more where the feet wear it. Sometimes a thin flake of the top is lost from the nosing: the break is sharp and the lamina beneath shows. Its corners are knocked. **The flight** (`tools/r2b_steps.py`) lays one to three slabs a tread, its joints clear of those below, each slab settled (its front sunk, rolled, turned). Every number is in the definition (`step.json`) or the working (`walling.json`, its steps).
+- **The look:** `step/round01-sheet.jpg` is the start: plywood laminae, sharp nosings, a machined notch. `round08` is the final round, beside reference 06 in grey and in drizzle. In `lights-sheet.jpg` it holds in morning shade, low sun and blue hour, from eye level and the street stop to 12 m raised and near-isometric.
+- **Budget:** L0 is at most 292 triangles by construction (nine front points at most). Over three seeds of 14 steps on a 2.3 m flight it is 62 to 262, under the 300 budget; `r2b_steps.py` fails any slab over it.
+- **Switch:** L1 is L0. In low sun from 6 to 18 m, an L1 of one lamina, a one-facet round and no wear rows changed 8.6 to 28% of the flight's pixels by more than 3 L*. With its laminae and flake kept it changed 2.8 to 15%, and with only the round's middle facet dropped, 1.1 to 5.6% (`switch-d9-l0-round1facet-diff.jpg`). The step hands over to the chunk's L2.
+- **Open:** `slabstep.py` is not yet wired into `context.py`. The joints between a tread's slabs are straight slots, where reference 06's are cracks.
+- **Cost:** about 45 messages and 76 rendered frames.
