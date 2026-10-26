@@ -41,8 +41,8 @@ def lay(seed, W, length, height, level=False):
     """Random coursed, as a mason builds it: always on the lowest place along the wall's top so far, a stone as long
     as the place allows, its top brought level with a neighbour's where it nearly is (so courses form and break), no
     end over a joint below it; a slot too short for a stone filled with flat pieces to its lower neighbour. Returns
-    the cells (rectangles: bed left, bed right, top right, top left). Level (under a coping): the top's low places
-    brought up to the height with flat pinnings, where they are deep enough for one."""
+    the cells (rectangles: bed left, bed right, top right, top left). Level (under a coping): the top course
+    picked to the height, and where a stone falls short, brought up to it with flat pinnings, where deep enough."""
     rng = HS.Stream(seed, "r2b-panel")
     ph = W["stonePerHeight"]
     p0, p1 = W["courseDrawPower"]
@@ -71,7 +71,13 @@ def lay(seed, W, length, height, level=False):
             # a slot: flat pieces up to the lower neighbour, as long as the slot
             tops = [t for t in (left, right) if t is not None]
             h = min(min(tops) - base, max(least, w / ph[0])) if tops else h
-        h = min(h, height - base) if height - base - h < least else h
+        if height - base - h < least:
+            h = min(h, height - base)
+            if level:
+                # (under a coping the top course is picked to the line; now and then one falls short, and is pinned)
+                h = height - base
+                if rng.random() < W["topShortChance"]:
+                    h -= min(rng.uniform(*W["topShortMm"]) * MM, 0.5 * h)
         lmin = max(W["stoneMm"][0] * MM, ph[0] * h, short)
         lmax = min(W["stoneMm"][1] * MM, ph[1] * h)
         l = math.exp(rng.uniform(math.log(min(lmin, lmax)), math.log(max(lmin, lmax))))
@@ -103,12 +109,19 @@ def lay(seed, W, length, height, level=False):
         for u0, u1, base, _ in sky:
             if height - base < W["pinLeastMm"] * MM:
                 continue
-            # (wedged in where the coping rocked, voids between them; each a little short of the top)
+            # (wedged in where the coping rocked, short voids between them; each a stack of thin pieces of varied
+            # thickness, a little short of the top)
             u = u0 + rng.uniform(*W["pinGapMm"]) * MM
             while u1 - u > W["pinLengthMm"][0] * MM:
                 l = min(rng.uniform(*W["pinLengthMm"]) * MM, u1 - u)
                 t = height - rng.uniform(0.0, min(W["pinShortMm"] * MM, 0.5 * (height - base)))
-                cells.append(((u, base), (u + l, base), (u + l, t), (u, t)))
+                y = base
+                while t - y > 1e-6:
+                    h = rng.uniform(*W["pinThickMm"]) * MM
+                    h = t - y if t - y - h < W["pinThickMm"][0] * MM else h
+                    a, b = u + rng.uniform(0.0, 0.15) * l, u + l - rng.uniform(0.0, 0.15) * l
+                    cells.append(((a, y), (b, y), (b, y + h), (a, y + h)))
+                    y += h
                 u += l + rng.uniform(*W["pinGapMm"]) * MM
     return cells
 
@@ -187,6 +200,7 @@ def coping(a, W, batter, years, Ps, Ns, A):
         P = np.column_stack([x3 + L / 2 + x0 + g0, y2 + bed + abs(math.sin(roll)) * L / 2, face + proud - (z3 + D / 2)])
         # (the mirror in z turns each triangle inward: its corners the other way round)
         P = P.reshape(-1, 3, 3)[:, [0, 2, 1]].reshape(-1, 3)
+        sky = s["sky"].reshape(-1, 3)[:, [0, 2, 1]].reshape(-1)
         Ns.append(normals(P, s["soft"]))
         counts.append(len(P) // 3)
         var = st.random()
@@ -197,9 +211,9 @@ def coping(a, W, batter, years, Ps, Ns, A):
             nrm /= np.linalg.norm(nrm)
             k = int(s["kind"][t])
             ax = int(np.argmax(np.abs(nrm)))
-            for qq in (a3, b3, c3):
+            for ci, qq in enumerate((a3, b3, c3)):
                 uv0 = (qq[0] + ou, qq[1] + ov) if ax == 2 else ((qq[0] + ou, qq[2] + ov) if ax == 1 else (qq[2] + ou, qq[1] + ov))
-                open_ = 0.4 if k == 3 else 1.0
+                open_ = (0.4 if k == 3 else 1.0) * sky[3 * t + ci]
                 A[0].append(uv0)
                 A[1].append((years, var))
                 A[2].append((k, 0.0))

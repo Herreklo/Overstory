@@ -145,12 +145,16 @@ def main():
                         moss = S["moss"]["ledge"]
                     if ends[0] == "joint" and lx < 0.02 or ends[1] == "joint" and lx > L - 0.02:
                         moss = max(moss, S["moss"]["joint"])
+                    # (at the foot of a lamina standing back, as at the tread's back: the corner holds moss and water)
+                    foot = 2.0 * (1.0 - s["sky"][3 * t + ci])
+                    moss = max(moss, S["moss"]["back"] * foot)
                     A[0].append(uv0)
                     A[1].append((years, var))
                     A[2].append((k, 0.3 * wd))
+                    open_ *= s["sky"][3 * t + ci]
                     A[3].append(((0.5 + 0.5 * nrm[1]) * open_, (0.5 - 0.5 * nrm[1]) * open_))
                     A[4].append((worn * min(1.0, a.wear / 8.0), years * (1.0 - 0.95 * worn)))
-                    A[5].append((moss, 0.5 * wd))
+                    A[5].append((moss, max(0.5 * wd, 0.5 * foot)))
                     A[6].append((1.0, 1.0))
                     A[7].append((1.0, 7.0))
             Ps.append(P)

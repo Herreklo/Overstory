@@ -81,25 +81,34 @@ def _front(rng, L, p):
     return np.array(xs), np.array(zs), lost
 
 
+def _broken(lost, x):
+    """Whether a point at x along a side is on its break, the slanted ends included (all of it sharp, fresh)."""
+    return lost is not None and lost[3] - 1e-6 <= x <= lost[3] + lost[4] + 1e-6
+
+
 class _Soup:
-    """Triangles facing out of the stone (cross(b - a, c - a)), each with its kind and whether it is shaded soft."""
+    """Triangles facing out of the stone (cross(b - a, c - a)), each with its kind, whether it is shaded soft, and
+    each corner's share of the sky its place leaves it (1 in the open, less in a concave corner)."""
 
     def __init__(self):
-        self.tris, self.kinds, self.soft = [], [], []
+        self.tris, self.kinds, self.soft, self.sky = [], [], [], []
 
-    def tri(self, a, b, c, kd, sf, outward):
+    def tri(self, a, b, c, kd, sf, outward, sky=(1.0, 1.0, 1.0)):
         nrm = np.cross(b - a, c - a)
         if np.linalg.norm(nrm) < 1e-12:
             return
         if np.dot(nrm, outward) < 0:
             b, c = c, b
+            sky = (sky[0], sky[2], sky[1])
         self.tris.append((a, b, c))
         self.kinds.append(kd)
         self.soft.append(sf)
+        self.sky.extend(sky)
 
     def result(self, **kw):
         P = np.array([v for t in self.tris for v in t])
-        return dict(P=P, kind=np.array(self.kinds, dtype=np.int8), soft=np.array(self.soft), **kw)
+        return dict(P=P, kind=np.array(self.kinds, dtype=np.int8), soft=np.array(self.soft), sky=np.array(self.sky),
+                    **kw)
 
 
 def _outn(band, s):
@@ -112,12 +121,25 @@ def _P3(q, y):
     return np.array([q[0], y, q[1]])
 
 
-def _faces(out, bands, Y, closed):
+def _faces(out, bands, Y, closed, foot=0.5, footMm=40.0, line=10.0):
     """The laminae's split faces, each lamina from its bed to the next's, each facet flat; and between laminae the
     ledge where one stands out of the next: lit from above where the lower stands out, a line of shadow where the
-    upper overhangs (split where they cross). An open outline leaves out its last segment (a step's back)."""
+    upper overhangs (split where they cross). An open outline leaves out its last segment (a step's back). Where a
+    lamina stands back of the one below, the corner at its foot sees less sky: half (a concave right angle's) once the
+    ledge is footMm deep, so a break's back is a dark line (a strip line mm wide at its foot) and a lamina's a faint
+    one."""
     k, m = len(bands), len(bands[0])
     segs = m if closed else m - 1
+
+    def back(j, s):
+        """The sky at lamina j's foot at point s: less as the lamina below stands out of it."""
+        if j == 0:
+            return 1.0
+        lo, up = bands[j - 1], bands[j]
+        o = _outn(lo, s if closed or s < m - 1 else s - 1)
+        o = o / max(np.linalg.norm(o), 1e-12)
+        d = float(np.dot(np.array([lo[s][0] - up[s][0], 0, lo[s][1] - up[s][1]]), o))
+        return 1.0 - foot * min(1.0, max(0.0, d) / (footMm * MM))
     for j in range(k):
         b = bands[j]
         for s in range(segs):
@@ -125,8 +147,9 @@ def _faces(out, bands, Y, closed):
             a0, a1 = _P3(b[s], Y[j][s]), _P3(b[s1], Y[j][s1])
             t0, t1 = _P3(b[s], Y[j + 1][s]), _P3(b[s1], Y[j + 1][s1])
             o = _outn(b, s)
-            out.tri(a0, a1, t1, 2, False, o)
-            out.tri(a0, t1, t0, 2, False, o)
+            f0, f1 = back(j, s), back(j, s1)
+            out.tri(a0, a1, t1, 2, False, o, (f0, f1, 1.0))
+            out.tri(a0, t1, t0, 2, False, o, (f0, 1.0, 1.0))
     for j in range(1, k):
         lo, up = bands[j - 1], bands[j]
         for s in range(segs):
@@ -136,17 +159,28 @@ def _faces(out, bands, Y, closed):
             d1 = float(np.dot(np.array([lo[s1][0] - up[s1][0], 0, lo[s1][1] - up[s1][1]]), o))
             L0, L1 = _P3(lo[s], Y[j][s]), _P3(lo[s1], Y[j][s1])
             U0, U1 = _P3(up[s], Y[j][s]), _P3(up[s1], Y[j][s1])
-            if d0 * d1 >= 0:
+            g0, g1 = back(j, s), back(j, s1)
+            ln = max(float(np.linalg.norm(o)), 1e-12)
+            if d0 > 1.5 * line * MM * ln and d1 > 1.5 * line * MM * ln:
+                # (a deep ledge, a break's floor: its foot a strip a line wide, so the dark at the foot is a line)
+                M0 = U0 + (L0 - U0) * (line * MM * ln / d0)
+                M1 = U1 + (L1 - U1) * (line * MM * ln / d1)
+                f = np.array([0, 1.0, 0])
+                out.tri(L0, L1, M1, 0, False, f)
+                out.tri(L0, M1, M0, 0, False, f)
+                out.tri(M0, M1, U1, 0, False, f, (1.0, 1.0, g1))
+                out.tri(M0, U1, U0, 0, False, f, (1.0, g1, g0))
+            elif d0 * d1 >= 0:
                 f = np.array([0, 1.0 if d0 + d1 > 0 else -1.0, 0])
                 kd = 0 if f[1] > 0 else 3
-                out.tri(L0, L1, U1, kd, False, f)
-                out.tri(L0, U1, U0, kd, False, f)
+                out.tri(L0, L1, U1, kd, False, f, (1.0, 1.0, g1))
+                out.tri(L0, U1, U0, kd, False, f, (1.0, g1, g0))
             else:
                 t = d0 / (d0 - d1)
                 X = L0 + t * (L1 - L0)
-                for (A, B, dd) in ((L0, U0, d0), (L1, U1, d1)):
+                for (A, B, dd, g) in ((L0, U0, d0, g0), (L1, U1, d1, g1)):
                     f = np.array([0, 1.0 if dd > 0 else -1.0, 0])
-                    out.tri(A, B, X, 0 if dd > 0 else 3, False, f)
+                    out.tri(A, B, X, 0 if dd > 0 else 3, False, f, (1.0, g, 1.0))
 
 
 def _round(out, top, I, y0, y1, y2, broke, closed):
@@ -233,7 +267,7 @@ def step(seed, L, H, D, tread, ends, p, wear=None):
         wpt[s] = wear(x, max(z, 0.0)) * MM
         if s == 0 or s == m - 1:
             ch[s] = ce[ends[0] if s == 0 else ends[1]]
-        elif lost is not None and lost[0] < x < lost[1]:
+        elif _broken(lost, x):
             ch[s] = p["breakRoundMm"] * MM
         else:
             ch[s] = c0 * vary[s] + p["roundPerWear"] * wpt[s]
@@ -246,7 +280,7 @@ def step(seed, L, H, D, tread, ends, p, wear=None):
     _faces(out, bands, Y, closed=False)
     # the rounded arris: a quarter round from the top lamina's face to the top, pulled in by its round (a ring at its
     # middle, 45 degrees round); a break's arris is fresh and sharp, not shaded round with the top
-    broke = [lost is not None and lost[0] < top[s][0] < lost[1] for s in range(m)]
+    broke = [_broken(lost, top[s][0]) for s in range(m)]
     _round(out, top, I, Y[k], H - wpt - 0.293 * ch, [H - wear(*I[s]) * MM for s in range(m)], broke, closed=False)
     # the top, a bedding plane worn by the feet: rows back from the round, fine where the wear is, to the back
     rows_z = [z for z in p["topRowsMm"]] + [tread * 1000 - p["mossRowMm"], tread * 1000]
@@ -349,7 +383,7 @@ def coping(seed, L, H, D, ends, p):
     ce = {e: _between(rng, p["endRoundMm"][e]) * MM for e in ("open", "joint", "walled")}
     vary = [rng.uniform(*p["roundVary"]) for _ in range(m)]
     side_lost = [flost] * nf + [blost] * nb
-    broke = [lo is not None and lo[0] < top[s][0] < lo[1] for s, lo in enumerate(side_lost)]
+    broke = [_broken(lo, top[s][0]) for s, lo in enumerate(side_lost)]
     ch = np.array([p["breakRoundMm"] * MM if broke[s] else c0 * vary[s] for s in range(m)])
     for s, e in ((0, ends[0]), (m - 1, ends[0]), (nf - 1, ends[1]), (nf, ends[1])):
         ch[s] = 0.5 * (ch[s] + ce[e])
