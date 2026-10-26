@@ -5,83 +5,74 @@ description: Use when writing C#, shaders or scenes in the Game Lab's Unity proj
 
 # Unity conventions for the Game Lab
 
-The architecture behind these conventions is `docs/building-blocks.md`; it holds the detail and wins where they differ.
+One line and one reason per rule. The architecture is `docs/building-blocks.md` and wins where they differ; the craft and the audit behind the settings, shader and build rules are `docs/research/unity-craft.md` (finding numbers U1 to U31).
 
 ## Setup
 
-- Unity 6 (6000.6), Universal Render Pipeline (URP 17.6). Not HDRP, not the Built-in pipeline. Burst, Collections and Mathematics are listed in `manifest.json`; no Entities.
-- Linear colour space. Shaders in Shader Graph or HLSL; custom render passes through URP renderer features.
-- For editor work use the Unity skills (`unity-cli`, `urp-postprocessing`, `shader-graph-create-custom-node`, `validate-urp-render-graph-renderer-feature`) and the Unity MCP server when it is connected.
+- Unity 6000.6, URP 17.6, Forward+, linear colour, Render Graph. *Why:* the Resident Drawer needs Forward+; Compatibility Mode is gone.
+- Burst and Collections arrive as built-in dependencies, not through `manifest.json`; the only Burst job today is the scale bench (`Assets/Code/Perf/DistrictBench.cs`). Name them in the manifest with the first game job. *Why:* the dependency should not hang on another package's (U30).
+- Use the Unity skills (`unity-cli`, `urp-postprocessing`, `validate-urp-render-graph-renderer-feature`) and the Unity MCP when connected.
 
-## Using Unity
+## Running Unity
 
-Several sessions and agents share `unity/` on one Mac, and Unity opens a project only once. Every command that runs Unity on `unity/`, or writes into it, goes through `tools/unity_lock.py`, which runs them one at a time. It waits while another job holds the lock or a Unity outside it has the project open (Øystein's editor too), and prints who every 30 s. `tools/perf.sh` and `tools/golden.sh` take it themselves in timing mode (`--timing`: they also wait for any Blender batch process or player of ours, and write the machine's background load as `machine.json` beside their results), `tools/motion.sh` plainly, and the Blender exports for their install step only. Wait on the lock, never on a `pgrep -f` pattern, which matches the waiting shell itself.
+- Every command that runs Unity on `unity/` or writes into it goes through `tools/unity_lock.py`; wait on the lock, never on `pgrep -f`. *Why:* sessions share one Mac and Unity opens a project once.
+- The lock waits while another job holds it or any Unity outside it has the project open (Øystein's editor too), and prints who every 30 s; `python3 tools/unity_lock.py status` prints the holder or `free`. *Why:* never open the project twice.
+- `tools/perf.sh` and `tools/golden.sh` take the lock in timing mode (`--timing`), which also waits for Blender batches and our players and writes `machine.json`; `tools/motion.sh` takes it plainly, the Blender exports for their install step only. *Why:* timings need a quiet machine.
 
-    UNITY_LOCK_OWNER="gully port" zsh tools/perf.sh -perf-only street
-    python3 tools/unity_lock.py run --owner "gully port" --purpose "the hash vectors" -- \
-        /Applications/Unity/Hub/Editor/6000.6.6f1/Unity.app/Contents/MacOS/Unity -batchmode -quit \
-        -projectPath $PWD/unity -executeMethod Overstory.EditorTools.HashVectors.Check -logFile -
-
-`python3 tools/unity_lock.py status` prints the holder, or `free`.
+      UNITY_LOCK_OWNER="gully port" zsh tools/perf.sh -perf-only street
+      python3 tools/unity_lock.py run --owner "gully port" --purpose "the hash vectors" -- \
+          /Applications/Unity/Hub/Editor/6000.6.6f1/Unity.app/Contents/MacOS/Unity -batchmode -quit \
+          -projectPath $PWD/unity -executeMethod Overstory.EditorTools.HashVectors.Check -logFile -
 
 ## Folders
 
-```
-Assets/
-  Art/<family>/            imported library parts (FBX plus sidecar, from blender-generators)
-  Art/Palette/             the shared palette texture and its materials
-  Code/Core/               the hash (Hash.cs) and shared types
-  Code/World/              reading engine data and records
-  Code/Assembly/           the assembler: records to chunks, fits and placement
-  Code/Parts/              C# twins of fitted parts, at each kind's port
-  Code/Scenes/             staging, cameras, lights, interaction
-  Shaders/                 the shading model, OS_History and post effects
-  Experiments/<LTn>/       one folder and scene per experiment
-kinds/, schemas/, packs/   kinds as data, the contracts, setting packs (repo root)
-cache/                     untracked: chunks, tree timelines, library meshes
-fixtures/                  records, golden fixtures and the engine run
-reviews/<LTn>/             contact sheets and renders
-```
+`Assets/Art/<family>/` imported parts · `Art/Palette/` · `Code/Core/` the hash · `Code/World/` records · `Code/Assembly/` the assembler · `Code/Parts/` fitted parts' C# twins (when they come) · `Code/Scenes/` staging, light, passes · `Code/Play/` · `Code/Perf/` the harness · `Code/Editor/` · `Shaders/` · `Experiments/<LTn>/`. Repo root: `kinds/`, `schemas/`, `packs/`, `fixtures/`, `reviews/`; `cache/` untracked.
 
 ## Determinism
 
-The same world, seed and history must always give the same picture.
+- Nothing visible uses `UnityEngine.Random`, `System.Random`, frame time, load order or what the camera saw first. *Why:* the same world, seed and history must give the same picture (U26).
+- One hash: `Code/Core/Hash.cs` matches `blender/resolver/hashing.py` (FNV-1a over UTF-8, SplitMix64 from `0x2545F4914F6CDD1D`, `unit = (h>>11)/2^53`) and `fixtures/golden/hash-vectors.json`; `HashVectors.Check` tests it. *Why:* Blender and Unity must agree.
+- Seed from stable ids (record, slot, fill, part path), never positions; integers, the four operations and square root; sort by id. *Why:* a moved or rebuilt part keeps its look.
 
-- Never use `UnityEngine.Random` or `System.Random` for anything visible. There is one hash spec, Python's `blender/resolver/hashing.py`: FNV-1a over UTF-8, SplitMix64 from `0x2545F4914F6CDD1D`, `unit = (h>>11)/2^53`. `Code/Core/Hash.cs` matches it and both reproduce `fixtures/golden/hash-vectors.json`. `Overstory.EditorTools.HashVectors.Check` is its test, in batch mode.
-- Seed every visual choice from stable ids (record, slot and fill ids, part path and purpose), never from positions. A replaced part takes a new id and so a new seed. Choices use integers, the four operations and square root; sort by stable id.
-- No visual choice may depend on frame time, load order or what the camera saw first.
+## Facts and assembly
 
-## Unity assembles, and never invents a fact
+- Unity never invents a fact; a missing one goes to `docs/engine-requests.md` with a marked fixture meanwhile; player actions go back to the engine as events. *Why:* the engine decides.
+- The assembler reads the records and `kinds/<kind>.json` and builds 4 m chunks, choosing library parts and fitting fitted parts, in C# in the player. *Why:* play can change the town.
+- Building and business are separate records; slots are never deleted, fills are dated; every choice names its driving fact or is marked seed-only and claims no history. *Why:* anything that reads as history must be a fact.
 
-Plan, life, placement, fitted geometry, the extrinsic bakes and the cheap checks run in C# in the player, so play can change the town. Unity never invents a fact (who is in the bar, whether a shop is open, how a gig went). Player actions go back to the engine as events. If something needs a fact the engine does not have, add a line to `docs/engine-requests.md` and use a clearly marked fixture value meanwhile.
+## Levels and instancing
 
-## Assembling a place
+- Five levels per kind, switched by pixel error at 1440p; `lodBias` must be 1 or folded into the error (today 2 on PC). *Why:* otherwise every level sits twice as far as designed (U15).
+- Hand-over is a dithered cross-fade, never animated; every shader implements `LOD_FADE_CROSSFADE` before levels land. *Why:* URP's cross-fade is on but no shader has it yet, so levels would pop (U14).
+- L0 and L1 never cast shadows, nor do small parts, tufts and litter; casters are proxies. *Why:* the cascades draw the town twice more.
+- The GPU Resident Drawer is **off**; it is turned on at step 3.4 only if the harness's player A/B shows a gain, with BatchRendererGroup variants set to Keep All. *Why:* it saves CPU and costs GPU, and the frame is GPU-bound (U12).
+- New shaders carry, through the shader template once it exists (`docs/research/unity-craft.md`, The order, step 1): `#pragma target 4.5`, `DOTS_INSTANCING_ON`, `LOD_FADE_CROSSFADE`, `unity_RendererUserValue`. Existing shaders (target 3.5, none of these) gain them at 3.4 behind golden views. *Why:* the Drawer only draws DOTS-instanced shaders (U13).
+- Swarms (setts, slates, tufts, litter) draw through our own BatchRendererGroup; no Entities. *Why:* one buffer per swarm, no ECS to maintain.
+- Per-instance data goes through the user value and the cell's facts buffer, never a `MaterialPropertyBlock` on a renderer. *Why:* a block excludes the renderer from the Drawer and the SRP Batcher (U16).
+- Picking: the user value is the pick index; chunks pick through UV3's piece index and the chunk's table, shells per triangle; ids come from a small id render round the cursor, read back a few frames late. *Why:* no synchronous readback in play (U28).
 
-A building and the business in it are separate:
+## Shaders and passes
 
-- **Building:** footprint, storeys, era of construction, later extensions (each with its own era), condition.
-- **Business:** kind, owner, opening year, state (thriving, struggling, closed), sign, fit-out.
-
-A thing holds slots (openings, sockets, surface regions), never deleted; a slot holds dated fills (`docs/building-blocks.md`, Records and ids). The assembler reads the records and the kind files (`kinds/<kind>.json`) and builds 4 m chunks, choosing library parts and fitting fitted parts. Every choice says which fact drives it. A choice with no driving fact uses the seed only, is marked as such, and claims no history.
-
-## Levels and views
-
-- Five levels per kind (L0 close, L1 near, L2 street, L3 shell, L4 block), each switching where its error is under about a pixel at 1440p, not at fixed distances. The judging views (eye level, the street stop, 12 m, the city camera) are bands to judge in, not switch points.
-- Hand-over is a dithered cross-fade (`LOD_FADE_CROSSFADE`), never animated.
-- Shadows come from caster proxies: L0 and L1 never cast; small parts, tufts and litter never cast.
+- Every material property in one `UnityPerMaterial` block; opaque shaders carry DepthOnly, DepthNormals and ShadowCaster. *Why:* the SRP Batcher, SSAO and depth need them (U20).
+- Harness and look-test switches never ship: a stripper (`IPreprocessShaders`, step 1 of the study's order) removes them from game builds, and check builds log their variant count; until then, add no new `multi_compile` switch. *Why:* on Metal each new variant is a hitch (U17, U18).
+- Custom passes are render-graph raster passes (the pattern is `SunBeamsFeature.cs`, the template to come), read the same pixel by framebuffer fetch, skip themselves when idle, and are checked in the Render Graph Viewer. *Why:* on a tile GPU every pass and copy costs bandwidth (U3, U4).
+- Alpha test only where needed, depth first; no `clip()` in an expensive colour pass (the tree shader still does, until `performance-craft.md` item 4). *Why:* discard defeats hidden-surface removal (U21).
+- A shader found by name needs a serialised reference in the build. *Why:* otherwise it is missing from players (U27).
 
 ## Light and shading
 
-- The look lives in our own shading model, not in engine defaults: light ramps, gradient fog by distance, a ground-bounce colour, and a colour script per time of day and weather.
-- One shade rule for every surface (`StreetLooks.hlsl`): shade is the surface's own pigment times the light falling on it (the sky term, the sun, bounce, lamps), and how much of the sky's colour shade takes is the light's setting (`_OS_ShadowChroma`, from the stage and style), never a material's. No per-material shadow tint, no shade hue shifted per object, no colour held against the light at dusk (SEASON's lesson, `docs/research/colour-and-shading.md`, rule 1). A material sets its pigment and its form; the light sets everything else. Mud on grey days is answered by the pigment's own strength and by value, never by a tint. Test any light or colour change in drizzle, low sun and blue hour.
-- It must not depend on true real-time global illumination. URP's real-time GI is a preview; if it becomes stable it is an extra layer on top.
-- No baked lightmaps or baked probes for generated places: they change. The generator places reflection probes.
-- **History is read from maps against the date.** Every shader reads layers through one `OS_History(address, layer)` in one include; the fabric date is a shader global, so a jump costs one uniform. The maps hold inputs (rates, reset years, age offsets), never years since. Every shader has the `_OS_BAKE` mode (unlit albedo at the date, normal, history, ids).
-- Every look is checked in morning, grey afternoon and evening light.
+- The look lives in our shading model: light ramps, gradient fog, ground bounce, a colour script per hour and weather. *Why:* fog, light and grade carry the look; materials stay cheap.
+- One shade rule (`StreetLooks.hlsl`): shade is pigment times the light falling on it; how much sky colour shade takes is the light's setting (`_OS_ShadowChroma`), never a material's. *Why:* light painted into colour breaks when the light changes (`docs/research/colour-and-shading.md`, rule 1).
+- No reliance on real-time GI, no baked lightmaps or probes for generated places; the generator places reflection probes. *Why:* generated places change.
+- History is read from maps against the date through one `OS_History(address, layer)`; the date is a global; maps hold inputs, never years since; every shader gains `_OS_BAKE` at 3.1 (none has it yet). *Why:* a jump costs one uniform.
+- Check any light or colour change in morning, drizzle, low sun and blue hour. *Why:* a fix for one light breaks another.
 
-## Performance
+## Performance and timing
 
-- Budgets are per pass in GPU ms, then triangles, memory and disk (`docs/building-blocks.md`, Budgets); the frame is pixel-bound today, so shaders are A/B'd in the harness first.
-- Kit parts and street things draw through the GPU Resident Drawer with the 32-bit Renderer Shader User Value; swarms (setts, slates, tufts, litter) through our own BatchRendererGroup. Shaders use `#pragma target 4.5`, `DOTS_INSTANCING_ON`, `LOD_FADE_CROSSFADE` and `unity_RendererUserValue`.
-- **Picking:** the user value is the pick index (unit and piece or instance), which also indexes the cell's facts buffer. Chunks pick through UV3's piece index and the chunk's table, shells per triangle. Ids come from a small id render round the cursor, read back a few frames late, and resolve to a record and part path. One highlight function compares hover and selected ids.
-- Crowds: full characters only near the camera or when they matter to the story; the rest instanced with animation baked into textures.
+- Budgets are per pass in GPU ms (`docs/building-blocks.md`, Budgets); anything that changes the picture or the frame time is A/B'd in the harness first. *Why:* the frame is pixel-bound and estimates have been wrong.
+- Time built players, never the editor; Frame Timing Stats are switched on by the build script (`LT1Perf.BuildPlayer`). *Why:* editor numbers mislead (U23).
+- Timing players run Mono; IL2CPP on Apple silicon is A/B'd once Øystein allows the module. *Why:* time the backend that ships (U22).
+- Until pipeline states are warmed from a traced `GraphicsStateCollection` (to be measured), read first visits as hitches, apart from the frame time. *Why:* Metal compiles per pipeline state (U19).
+- Unity's Metal validation setting checks the editor only; Apple's needs an Xcode Debug run, worth one per new render feature. *Why:* binding errors hide in players (U25).
+- Every loop over parts or vertices in play is a Burst job. *Why:* 0.68 ms against 9.1 per 100,000 triangles.
+- Crowds: full characters only near the camera or where the story is; the rest instanced with baked animation. *Why:* simulate the few, show the many.
