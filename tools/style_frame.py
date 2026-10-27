@@ -513,6 +513,11 @@ def value_plan(img, plan, dist, sky, pool, focus_w, lit, local, glow_l, ps):
         # [from, to, L*]: the sky darkening upwards (degrees above the horizon), away from the town's light
         tl = np.where(sky, tl + up[2] * smoothstep(up[0], up[1], ps["elev"]), tl)
     tl = merge_masses(tl, plan, ps, pool)
+    bl = plan.get("by_light")
+    if bl and ps.get("sun") is not None:
+        # low sun's two values: what the sun reaches lifted, what only the sky reaches held down
+        lifted = np.maximum(tl, np.minimum(tl + bl["sun"], bl.get("sun_max", 100.0)))
+        tl = np.where(sky, tl, (tl + bl["shade"]) * (1 - ps["sun"]) + lifted * ps["sun"])
     # named masses: one the design holds to a value of its own (a curtain of rock), whatever its planes do
     for m in ps.get("masses", []):
         a, b = m["from"]
@@ -554,7 +559,7 @@ def accents(cs, P, ps):
     return k
 
 
-def colour_script(img, cs, focus_w, pool, lit, sky, glow, accent=None):
+def colour_script(img, cs, focus_w, pool, lit, sky, glow, accent=None, sun=None):
     """Colour by value: each pixel keeps its value and takes its hue between the shade's colour (darks) and the
     light's (lights), mixed with its own by the script's strength; chroma placed at the focus, drained away."""
     y = np.maximum(luma(img), 1e-5)
@@ -566,7 +571,15 @@ def colour_script(img, cs, focus_w, pool, lit, sky, glow, accent=None):
     cols = cols / np.maximum(luma(cols)[:, None], 1e-5)
     ramp = np.stack([np.interp(v, xs, cols[:, k]) for k in range(3)], -1)
     strength = cs["strength"] * (1 - np.where(lit, cs["keep_lit"], 0.0)) * (1 - pool * cs.get("keep_pool", 0.0))
+    strength = np.where(sky, cs.get("strength_sky", cs["strength"]), strength)
     hue = own * (1 - strength[..., None]) + ramp * strength[..., None]
+    bl = cs.get("by_light")
+    if bl and sun is not None:
+        # the sun's gold on what it reaches, the sky's blue in every shade, whatever their value
+        sc, hc = (hexlin(bl[k]) for k in ("sun_srgb", "shade_srgb"))
+        lh = (hc / luma(hc)) * (1 - sun[..., None]) + (sc / luma(sc)) * sun[..., None]
+        k = np.where(sky, 0.0, bl["share"])[..., None]
+        hue = hue * (1 - k) + lh * k
     if cs.get("glow_srgb"):
         # the town's light held in the fog: its own warm hue where the air glows, the more the stronger it is
         gc = hexlin(cs["glow_srgb"])
@@ -664,6 +677,10 @@ def main():
     rf = np.sqrt(((xx - fx) / w) ** 2 + ((yy - fy) / h) ** 2)
     focus_w = np.exp(-(rf / view["focus_radius"]) ** 2).astype(np.float32)
     ps["lit"] = lit_panes(img, ps, frame.get("lit_from", 0.08))
+    if frame.get("sun_warm"):
+        g = load_render(a.view, a.moment, "grey")
+        warm = (g[..., 0] - g[..., 2]) / np.maximum(g.mean(-1), 1e-3)
+        ps["sun"] = blur(smoothstep(*frame["sun_warm"], warm), 1.0) * (~ps["sky"])
     # each lamp's kind with this moment's art over it (a painter's subordination of one lamp to another)
     lamps = [{**l, "_kind": {**recipe["lamp_kinds"][l["kind"]], **frame.get("lamp_art", {}).get(l["id"], {})}}
              for l in recipe["lamps"]]
@@ -686,7 +703,7 @@ def main():
     if a.values_only:
         print("values", value_study(img, out))
         return
-    img = colour_script(img, frame["colour"], focus_w, pool, ps["lit"], ps["sky"], glow_l, accents(frame["colour"], P, ps))
+    img = colour_script(img, frame["colour"], focus_w, pool, ps["lit"], ps["sky"], glow_l, accents(frame["colour"], P, ps), ps.get("sun"))
     img = edges_and_marks(img, ps["dist"], ps["sky"], focus_w, pool, frame["edges"])
     img = lens(img, frame["lens"], h, w)
     write_png(f"{out}.png", (srgb(img) * 255).round())
