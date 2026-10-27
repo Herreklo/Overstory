@@ -8,7 +8,7 @@ Overstory: the game and visual lab built on the Understory engine (`Herreklo/Und
 
 ## What it is for
 
-Understory asks what a persistent world of developing people makes possible (its `WHY.md`). Overstory's part of that question: **can someone read people and history better from the world on screen than from the engine's page?** Beauty serves that. A look that is stunning but tells nothing true has failed; a world that is consistent but feels empty has failed too.
+Understory asks what a persistent world of developing people makes possible (its `WHY.md`). Overstory's part of that question: **can the town be affected by its people and its environment over the years?** (Øystein, 27 October: "The test is if the town can be affected by the people and the envrionment over the years.") Beauty serves that. A look that is stunning but tells nothing true has failed; a world that is consistent but feels empty has failed too.
 
 **Everything we build passes four tests** (Øystein, 22 October). It looks amazing, in our style with clear references. It is economical: 60 fps at 1440p on an ordinary M4 Mac mini (F3), never a gaming PC. Its subject and craft were researched before it was built. It fits the living world: it can wear, break, be repaired, carry a history and be affected (non-semantic texture apart). When two tests collide, find a cheaper way to the bar, never a lower bar.
 
