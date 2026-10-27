@@ -49,7 +49,7 @@
     "paired-glazed": { "leaves": 2, "wMm": 1200, "hMm": 2150, "thresholdMm": 110, "frameMm": 75, "setBackMm": 70, "leafMm": 45, "stileMm": 115, "railMm": 110, "bottomRailMm": 210, "lockRailMm": 160, "panelRows": 3, "glazedRows": 1, "fieldMm": 16, "raiseMm": 32, "lightMm": 420, "lightCols": 2, "barMm": 24, "handleMm": [32, 120, 55], "handleAtMm": 1000, "step": { "riserMm": [140, 200], "treadMm": 340, "overhangMm": 120 } }
   },
   "lostTrims": { "widthMm": 68, "proudMm": 14, "sillMm": 34, "sillProudMm": 40 },
-  "boarding": { "thickMm": 22, "overlapMm": 70 },
+  "boarding": { "thickMm": 22, "widthMm": [95, 175], "gapMm": [0, 9], "sideOverMm": [15, 55], "endOverMm": [10, 80], "setOutMm": [0, 5], "outOfTrueShare": 0.5, "outOfTrueDeg": [2, 5] },
   "provenance": "authored",
   "notes": {
     "levels": "A house's levels, each from the same facts and seed (tools/houses.py --tiers): near draws every piece; street (from 20 m) one board a run, the stones' faces without their arrises, a door's panels flat, and a box shallower than errMm its front alone; city (from 80 m) a wall's planes around its openings, the plinth one face, a window its glass and casing, a door one face. errMm is the error under a pixel at 1440p where the tier begins (0.48 mm a pixel per metre: docs/building-blocks.md, Levels).",
@@ -58,6 +58,6 @@
     "exposureMm": "No source gave a Stavanger board width: classical widths vary within a wall (the range is drawn per course), sveitser boards are machine-run and even. Board thickness 25-32 mm.",
     "husmor": "Its size and the patch of new boards where the old, larger opening was are this pack's reading of 'openings were often made smaller' and 'the trims were usually lost' (the note's (inf.)).",
     "storeyMm": "No source gave storey heights: a classical cottage's lower rooms and a sveitser house's taller ones, an assumption; the loft's floor a storey and a floor's depth over the ground floor's.",
-    "boarding": "No source on how an empty house was boarded: rough sawn boards nailed across the casings, unpainted, an assumption."
+    "boarding": "No source on how an empty house here was boarded; common practice, assumed: rough sawn formwork boards (forskalingsbord, 22 mm thick, 98-148 mm and wider when reused) nailed upright over the casing at its head and sill, butted with uneven gaps, ends left ragged, now and then one out of true; unpainted (round 3: horizontal boards evenly spaced read as louvred shutters)."
   }
 }

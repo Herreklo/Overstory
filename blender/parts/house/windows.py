@@ -1,6 +1,6 @@
 """Windows, fitted to their hole: the frame, the sashes, the glazing bars (modelled, never cut out), and the glass,
 which carries the pane's place in the window and the room's seed so the shader can draw a room behind it. A boarded
-window is covered by rough boards nailed across its casing. The window's kind is the pack's (timber.json, windows),
+window is covered by rough boards nailed upright over its casing. The window's kind is the pack's (timber.json, windows),
 chosen by the house's era or by the year its windows were replaced.
 """
 
@@ -101,19 +101,57 @@ def window(soup, f, hole, spec, out_w, rng, lit, scheme):
         glass(soup, f, hole, p, wg, lit, centre)
 
 
+def _plank(soup, f, sc, zc, w, h, w0, t, turn):
+    """One rough board standing on the wall from w0 out by t, its centre (sc, zc), w wide and h long, turned in the
+    wall's plane by turn (radians): its face and its four edges (its back lies on the casing). Rigid: only turned."""
+    import math
+    c, s_ = math.cos(turn), math.sin(turn)
+
+    def at(a, z, d):
+        return f.at(sc + a * c - z * s_, zc + a * s_ + z * c, d)
+    q = ((-w / 2, -h / 2), (w / 2, -h / 2), (w / 2, h / 2), (-w / 2, h / 2))
+    front = [at(a, z, w0 + t) for a, z in q]
+    # the grain runs up the board: its surface coordinates along (s) its length
+    soup.quad(*front, ta=[(z + zc, a) for a, z in q])
+    if soup.level > 0 and t < soup.err:
+        return
+    back = [at(a, z, w0) for a, z in q]
+    for i in range(4):
+        j = (i + 1) % 4
+        soup.quad(back[i], back[j], front[j], front[i], ta=[(q[i][1], 0.0), (q[j][1], 0.0), (q[j][1], t), (q[i][1], t)])
+
+
 def boarded(soup, f, outline, out_w, proud, bd, rng, year):
-    """Rough boards nailed across a casing's outline, a little apart, each its own: unpainted, put up that year."""
+    """An empty house's opening boarded up: rough sawn boards, reused and of mixed widths, nailed upright over the
+    casing at its head and sill, butted with uneven gaps, their ends ragged, now and then one set out of true; left
+    unpainted, put up that year (timber.json, boarding). The boards draw from their own stream (one draw of the
+    wall's), so the wall's other parts keep their seeds."""
+    import hashing as HS
+    import math
+    brng = HS.Stream("boarding", rng.randint(0, 2 ** 31 - 1))
     s0, s1, z0, z1 = outline
     t = bd["thickMm"] * MM
     w0 = out_w + proud + 0.002
-    h = z1 - z0
-    n = max(2, round(h / 0.19))
-    over = bd["overlapMm"] * MM
     soup.use(kind="boarding", scheme="none", year=year, lap=0.5)
-    for i in range(n):
-        za = z0 + h * i / n + 0.008
-        zb = z0 + h * (i + 1) / n - 0.008
-        soup.use(seed=rng.random())
-        dz = rng.uniform(-0.012, 0.012)
-        soup.box(f, s0 - over * rng.uniform(0.3, 1.0), s1 + over * rng.uniform(0.3, 1.0), za + dz, zb + dz, w0,
-                 w0 + t)
+    if soup.level >= 2:
+        # (from the city the boarding is one face over the casing)
+        soup.use(seed=brng.random())
+        soup.quad(f.at(s0, z0, w0 + t), f.at(s1, z0, w0 + t), f.at(s1, z1, w0 + t), f.at(s0, z1, w0 + t),
+                  ta=[(z0, s0), (z0, s1), (z1, s1), (z1, s0)])
+        return
+    a = s0 - brng.uniform(*bd["sideOverMm"]) * MM
+    end = s1 + brng.uniform(*bd["sideOverMm"]) * MM
+    planks = []
+    while a < end - 0.04:
+        w = min(brng.uniform(*bd["widthMm"]) * MM, end - a)
+        if end - a - w < bd["widthMm"][0] * MM * 0.6:
+            w = end - a
+        planks.append((a, w))
+        a += w + brng.uniform(*bd["gapMm"]) * MM
+    skew = brng.randint(0, len(planks) - 1) if brng.random() < bd["outOfTrueShare"] else -1
+    for i, (a, w) in enumerate(planks):
+        lo = z0 - brng.uniform(*bd["endOverMm"]) * MM
+        hi = z1 + brng.uniform(*bd["endOverMm"]) * MM
+        turn = math.radians(brng.uniform(*bd["outOfTrueDeg"]) * (1 if brng.random() < 0.5 else -1)) if i == skew else 0.0
+        soup.use(seed=brng.random())
+        _plank(soup, f, a + w / 2, 0.5 * (lo + hi), w, hi - lo, w0 + brng.uniform(*bd["setOutMm"]) * MM, t, turn)
