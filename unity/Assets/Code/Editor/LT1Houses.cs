@@ -73,10 +73,16 @@ namespace Overstory.EditorTools
             public Gloss glossCurve;
             public Peel peel;
             public Weather weather;
+            public Soil soil;
+            public float[] greySpread;
+            public NailStain nailStain;
+            public float boardingValueSpread;
             public Room room;
             public Daylight daylight;
             public Wave wave;
         }
+        [System.Serializable] class Soil { public string srgb; public float perDecade, most, openShare; }
+        [System.Serializable] class NailStain { public string srgb; public float most, downM, fromTopM, acrossM; public float[] widthMm; }
         [System.Serializable] class Daylight { public float window, backWall, ceiling, curtains; }
         [System.Serializable] class Wave { public float tiltDeg; public float[] perM; }
 
@@ -279,6 +285,9 @@ namespace Overstory.EditorTools
             mat.SetVector("_PineNew", With(Linear(pine.srgbNew), pine.weatherHalfYears));
             mat.SetVector("_PineOld", With(Linear(pine.srgbWeathered), pine.gloss));
             mat.SetVector("_WaterPine", Water(pine));
+            mat.SetVector("_Boarding", new Vector4(pine.greySpread[0], pine.greySpread[1], pine.nailStain.downM, pine.nailStain.most));
+            mat.SetVector("_Nails", With(Linear(pine.nailStain.srgb), pine.nailStain.fromTopM));
+            mat.SetVector("_BoardingB", new Vector4(pine.nailStain.acrossM, pine.nailStain.widthMm[0] * 0.001f, pine.nailStain.widthMm[1] * 0.001f, pine.boardingValueSpread));
             var stone = Read("materials/fieldstone.json");
             mat.SetVector("_Stone", With(Linear(stone.srgb), stone.valueSpread));
             mat.SetVector("_StoneB", new Vector4(stone.warmSpread, stone.gloss, 0f, 0f));
@@ -309,7 +318,10 @@ namespace Overstory.EditorTools
             var cu = room.curtains;
             mat.SetVector("_Curtain", With(Linear(cu.srgb), cu.share));
             mat.SetVector("_CurtainB", new Vector4(cu.opacity, cu.depthM, cu.valanceShare, cu.foldsPerM));
-            var w = Read(paintRule).weather;
+            var rule = Read(paintRule);
+            var w = rule.weather;
+            mat.SetVector("_Soil", new Vector4(rule.soil.perDecade, rule.soil.most, rule.soil.openShare, 0f));
+            mat.SetColor("_SoilColour", Linear(rule.soil.srgb));
             mat.SetVector("_Weather", new Vector4(w.southFactor, w.footM, w.footFactor, w.lapFactor));
             mat.SetVector("_WeatherB", new Vector4(w.boardSpread, 0f, 0f, 0f));
             mat.SetVector("_WeatherC", new Vector4(w.dripFactor, w.endFactor, w.rainFactor, w.rainFromDeg * Mathf.Deg2Rad));

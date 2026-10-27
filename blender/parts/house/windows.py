@@ -111,8 +111,8 @@ def _plank(soup, f, sc, zc, w, h, w0, t, turn):
         return f.at(sc + a * c - z * s_, zc + a * s_ + z * c, d)
     q = ((-w / 2, -h / 2), (w / 2, -h / 2), (w / 2, h / 2), (-w / 2, h / 2))
     front = [at(a, z, w0 + t) for a, z in q]
-    # the grain runs up the board: its surface coordinates along (s) its length
-    soup.quad(*front, ta=[(z + zc, a) for a, z in q])
+    # the grain runs up the board: its surface coordinates along (s) its length; its lap, how far below its top
+    soup.quad(*front, ta=[(z + zc, a) for a, z in q], laps=[h / 2 - z for a, z in q])
     if soup.level > 0 and t < soup.err:
         return
     back = [at(a, z, w0) for a, z in q]

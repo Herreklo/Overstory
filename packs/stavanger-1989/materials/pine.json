@@ -5,6 +5,9 @@
   "srgbNew": "D2B68A",
   "srgbWeathered": "8F8B82",
   "weatherHalfYears": 1.5,
+  "greySpread": [0.4, 5.0],
+  "nailStain": { "srgb": "4E3A2C", "most": 0.7, "downM": 0.22, "fromTopM": 0.17, "acrossM": 0.03, "widthMm": [9, 20] },
+  "boardingValueSpread": 0.18,
   "gloss": 0.08,
   "water": [
     0.7,
@@ -15,6 +18,9 @@
   "provenance": "authored",
   "notes": {
     "srgb": "New pine and weathered grey wood as screen colours, judged by look against the research's photographs; to check against a measured swatch.",
+    "greySpread": "Boards reused (an empty house's boarding of old formwork) grey at their own pace: weatherHalfYears times between these, by each board's seed, so a new boarding is grey and brown together and silvered all over in a decade or so. Judged by look: [0.6, 3.0] left every board of a three-year boarding the same grey once the near air was over it (round 3).",
+    "nailStain": "Steel nails rust and the rust runs down the grain below them, a little further each year up to downM (6 years), two nails fromTopM below a board's top (into the head casing under its cap: a board runs past the cap by its end over) and acrossM either side of its middle; the streak widthMm wide at the nail, spreading to the second at its end. Common knowledge, assumed; judged by look (6 mm was under a pixel at eye level, round 3).",
+    "boardingValueSpread": "Reused boards come from mixed stock (heart and sap, planed and rough, a film of cement on some): each a share lighter or darker than the next, by its seed. Judged by look: without it the near air over a dark boarding left one flat grey (round 3).",
     "weatherHalfYears": "Bare wood greys in sunlight within one to three years: half the way in this many years at full weather.",
     "water": "Its water profile as the town's (Shaders/Water.hlsl, Overstory.World.WaterPack): how much it darkens wet, how glossy its wet film, how long it holds water, how readily run-off stains it. Bare weathered wood drinks rain and goes dark, stays wet, stains. Judged by look."
   }

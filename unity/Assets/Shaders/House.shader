@@ -37,6 +37,11 @@ Shader "Overstory/House"
         _JointFar ("The share a joint shows as one face where no stone sides are drawn (lime-mortar.json)", Float) = 1
         _Weather ("Paint weather: x south, y foot (m), z foot, w lap (paint.json)", Vector) = (0, 1, 0, 0)
         _WeatherB ("Paint weather: x how far one board's paint runs ahead of or behind another's (paint.json)", Vector) = (0, 0, 0, 0)
+        _Soil ("Soiling: x share a decade at full weather, y most, z its share on the open wall (paint.json, soil)", Vector) = (0, 0, 0, 0)
+        _SoilColour ("Soiling: its colour (linear)", Color) = (0.4, 0.42, 0.36, 1)
+        _Boarding ("Bare boarding: x, y how much slower or faster a board greys (pine.json, greySpread), z a nail's stain down (m), w its most", Vector) = (1, 1, 0, 0)
+        _Nails ("Bare boarding: rgb the nails' stain (linear), a the nails' distance from a board's top (m)", Vector) = (0.3, 0.22, 0.16, 0.07)
+        _BoardingB ("Bare boarding: x the nails' distance either side of a board's middle (m), y the stain's width at the nail, z at its end (m), w each board's value apart (share)", Vector) = (0.03, 0.009, 0.02, 0)
         _WeatherC ("Paint weather: x a sill's run-off, y end grain, z the rain's side, w the rain's bearing (rad) (paint.json)", Vector) = (0, 0, 0, 0)
         [Toggle] _Grey ("Grey light: every pigment one grey (to judge form)", Float) = 0
         _Debug ("Debug: 1 the kind as colour, 2 the bake, 3 the normal, 4 the coat's age, 5 its loss, 6 a pane: its facing, its window half width and height, 7 its room unlit by the air", Float) = 0
@@ -74,6 +79,11 @@ Shader "Overstory/House"
         float4 _Weather;
         float4 _WeatherB;
         float4 _WeatherC;
+        float4 _Soil;
+        float4 _SoilColour;
+        float4 _Boarding;
+        float4 _Nails;
+        float4 _BoardingB;
         half _Grey;
         half _Debug;
     CBUFFER_END
@@ -250,6 +260,7 @@ Shader "Overstory/House"
                 half ao;        // its corners' and edges' share
                 half ceiling;   // 1 on the ceiling
                 half cloth;     // how much of it the curtains cover, where the ray passes them
+                half fold;      // the light on the cloth's folds there
                 half f;         // what the glass reflects (Schlick, glass's 0.04)
                 float th, tz;
                 float3 nf;
@@ -295,10 +306,13 @@ Shader "Overstory/House"
                 r.ao = (half)lerp(_RoomFurniture2.z, 1.0, saturate(edge));
                 // the curtains: a sheer cloth gathered in folds
                 r.pc = r.ro + r.rd * (_CurtainB.y / r.rd.z);
-                float side = smoothstep(hw * (1.0 - _Curtain.a) - 0.02, hw * (1.0 - _Curtain.a) + 0.02, abs(r.pc.x));
+                float edgeX = hw * (1.0 - _Curtain.a) + 0.012 * sin(r.pc.y * 9.0 + k * 40.0);
+                float side = smoothstep(edgeX - 0.006, edgeX + 0.006, abs(r.pc.x));
                 float top = smoothstep(hh * (1.0 - _CurtainB.z) - 0.02, hh * (1.0 - _CurtainB.z) + 0.02, r.pc.y);
-                float fold = 0.75 + 0.25 * sin(r.pc.x * _CurtainB.w * 6.2832);
-                r.cloth = (half)(saturate(max(side, top)) * _CurtainB.x * fold);
+                float fold = sin(r.pc.x * _CurtainB.w * 6.2832 + 1.7 * sin(r.pc.x * _CurtainB.w * 2.1));
+                r.cloth = (half)(saturate(max(side, top)) * _CurtainB.x * (0.8 + 0.2 * fold));
+                // its folds turn to and from the window's light: the cloth's ridges lighter, its hollows darker
+                r.fold = (half)(1.0 + 0.35 * fold * side);
                 r.f = 0.04h + 0.96h * pow(1.0h - (half)saturate(r.rd.z), 5.0h);
                 return r;
             }
@@ -320,7 +334,7 @@ Shader "Overstory/House"
                     room = _RoomShade.yzw;
                 float3 lc = lamp - r.pc;
                 float c2 = dot(lc, lc);
-                half3 cloth = _Curtain.rgb * (half)(_Room.a * saturate(lc.z * rsqrt(c2)) / (1.0 + c2) + _RoomShape.y);
+                half3 cloth = _Curtain.rgb * r.fold * (half)(_Room.a * saturate(lc.z * rsqrt(c2)) / (1.0 + c2) + _RoomShape.y);
                 room = lerp(room, cloth, r.cloth);
                 // the glass passes what it does not reflect
                 return room * _Room.rgb * (1.0h - r.f);
@@ -335,7 +349,7 @@ Shader "Overstory/House"
                 RoomHit r = OS_RoomRay(input, n, k, t);
                 half deep = (half)saturate(r.h.z / max(_RoomWall.a, 0.1));
                 half3 room = r.albedo * r.ao * lerp(_GlassDay.x, _GlassDay.y, deep) * lerp(1.0h, _GlassDay.z, r.ceiling);
-                room = lerp(room, _Curtain.rgb * _GlassDay.w, r.cloth);
+                room = lerp(room, _Curtain.rgb * _GlassDay.w * r.fold, r.cloth);
                 return room * (1.0h - r.f);
             }
 
@@ -393,13 +407,16 @@ Shader "Overstory/House"
                 e *= 1.0h + (half)_Weather.x * saturate(-n.z);
                 // the side the rain is driven at (x east, z north; its bearing from north, clockwise)
                 e *= 1.0h + (half)_WeatherC.z * saturate(dot(n.xz, half2(sin(_WeatherC.w), cos(_WeatherC.w))));
+                // how much more water works in here than on the open wall: dirt gathers by this (soil, below)
+                half water = 1.0h;
                 if (kind == K_BOARD)
                 {
                     // where water works in: under a sill's run-off, and the end grain at the board's ends
-                    e *= (1.0h + (half)_WeatherC.x * input.marks.x) * (1.0h + (half)_WeatherC.y * input.marks.y);
-                    e *= 1.0h + (half)_Weather.z * saturate(1.0h - (half)(input.uv.y / _Weather.y));
+                    water *= (1.0h + (half)_WeatherC.x * input.marks.x) * (1.0h + (half)_WeatherC.y * input.marks.y);
+                    water *= 1.0h + (half)_Weather.z * saturate(1.0h - (half)(input.uv.y / _Weather.y));
                     half lap = 1.0h - input.place.x;
-                    e *= 1.0h + (half)_Weather.w * lap * lap * lap;
+                    water *= 1.0h + (half)_Weather.w * lap * lap * lap;
+                    e *= water;
                     // each board its own: one takes paint better than the next (its seed, claiming nothing)
                     e *= 1.0h + (half)_WeatherB.x * (frac((half)input.piece.z * 7.77h) * 2.0h - 1.0h);
                 }
@@ -410,6 +427,10 @@ Shader "Overstory/House"
                 half chalk = 1.0h - exp(-(half)chalkP.x * ea / 10.0h);
                 half3 toward = lerp((half3)chalkP.y, top, (half)chalkP.z);
                 half3 c = lerp(top, toward, chalk);
+                // dirt and green growth gather where water runs and stands, more each year the coat is up, and only a
+                // little on the open wall (paint.json, soil)
+                half wet = age * (1.0h - input.place.y) * (water - 1.0h + (half)_Soil.z);
+                c = lerp(c, (half3)_SoilColour.rgb, (1.0h - exp(-(half)_Soil.x * wet / 10.0h)) * (half)_Soil.y);
                 gloss = lerp((half)glossP.y, (half)glossP.x, exp2(-ea / max(0.5h, (half)glossP.z)));
                 loss = saturate((ea - (half)peelP.x) / max(1.0h, (half)peelP.y));
                 if (loss <= 0.0h)
@@ -419,7 +440,7 @@ Shader "Overstory/House"
                     (half)chalkP.z), saturate(2.0h * chalk)) : OS_Bare(age, seed);
                 half3 wood = OS_Bare(age, seed);
                 float2 q = float2(input.uv.x / (peelP.z * peelP.w), input.uv.y / peelP.z) + seed * 17.0;
-                float h = 0.65 * OS_Noise(q) + 0.35 * OS_Noise(q * 2.7 + 5.1);
+                float h = 0.45 * OS_Noise(q) + 0.25 * OS_Noise(q * 2.7 + 5.1) + 0.3 * OS_Noise(q * 0.31 + 2.3);
                 h = saturate((h - 0.2) / 0.6);
                 // flakes are marks centimetres across, so they hold to twice the distance of the fine marks
                 // (Detail.hlsl), and by the street stop are the coat's painted shape: its mean
@@ -428,8 +449,10 @@ Shader "Overstory/House"
                 half off = (half)step(h, loss);
                 // a flake goes to the wood as often as the paint lets go of it there, not of the coat under (glossP.w)
                 half deep = (half)step(h, loss * glossP.w);
-                half lifted = (half)(step(h, loss + 0.03) - off) * 0.25h;
-                half3 flaked = lerp(lerp(c * (1.0h - lifted), below, off), wood, deep);
+                // round a flake the film has let go: a dark line where it stands off the wood, then its lifted edge
+                half shadow = (half)(step(h, loss + 0.012) - off);
+                half lifted = (half)(step(h, loss + 0.045) - off) - shadow;
+                half3 flaked = lerp(lerp(c * (1.0h - 0.45h * shadow + 0.1h * lifted), below, off), wood, deep);
                 half3 mean = lerp(lerp(c, below, loss), wood, loss * (half)glossP.w);
                 return lerp(mean, flaked, near);
             }
@@ -493,10 +516,12 @@ Shader "Overstory/House"
                     half3 sky = GlossyEnvironmentReflection((half3)r, input.positionWS, rough, 1.0h, suv);
                     half3 skyH = GlossyEnvironmentReflection((half3)rh, input.positionWS, rough, 1.0h, suv);
                     half3 lum = half3(0.2126h, 0.7152h, 0.0722h);
+                    // the sky as the eye would see it that way: through the air (StreetSurface.hlsl, OS_Atmosphere)
+                    half3 skySeen = OS_Atmosphere(sky, _WorldSpaceCameraPos + r * 3000.0);
                     half3 town = (half3)_OS_TownBounce.rgb * dot(skyH, lum) / max(dot(OS_SkyFor((half3)rh), lum), 1e-4h);
                     half f1 = 0.04h + 0.96h * pow(1.0h - saturate(dot(s.normalWS, (half3)v)), 5.0h);
                     half f2 = 2.0h * f1 / (1.0h + f1);
-                    s.emission += s.smoothness * s.smoothness * (f2 * lerp(sky, town, hidden) - OS_REFL_SHARE * f1 * sky);
+                    s.emission += s.smoothness * s.smoothness * (f2 * lerp(skySeen, town, hidden) - OS_REFL_SHARE * f1 * sky);
                 }
                 else if (kind == K_ROOM)
                 {
@@ -549,6 +574,21 @@ Shader "Overstory/House"
                     // when put up, grey in a few years in the weather
                     age = (half)max(0.0, _OS_Date.x - input.piece.w);
                     s.albedo = OS_Bare(age, seed);
+                    if (kind == K_BOARDING)
+                    {
+                        // reused boards of mixed stock: each greys at its own pace and is its own value (its seed); the
+                        // rust of its two nails at its head runs down the grain, longer with its years up (place x: its
+                        // distance from its top, m)
+                        s.albedo = OS_Bare(age / lerp((half)_Boarding.x, (half)_Boarding.y, frac(seed * 7.31h)), seed)
+                                 * (1.0h + (half)_BoardingB.w * (2.0h * frac(seed * 3.17h) - 1.0h));
+                        half below = (half)input.place.x - (half)_Nails.a;
+                        half across = abs(abs((half)input.uv.y) - (half)_BoardingB.x);
+                        half run = (half)_Boarding.z * saturate(age / 6.0h);
+                        half width = 0.5h * lerp((half)_BoardingB.y, (half)_BoardingB.z, saturate(below / max(run, 0.01h)));
+                        half stain = saturate(1.0h - across / width) * saturate(below / 0.01h + 1.0h)
+                                   * saturate(1.0h - below / max(run, 0.01h)) * (half)_Boarding.w;
+                        s.albedo = lerp(s.albedo, (half3)_Nails.rgb, stain);
+                    }
                     s.smoothness = _PineOld.a;
                     water = _WaterPine;
                 }
