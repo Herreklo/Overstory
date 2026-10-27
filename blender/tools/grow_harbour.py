@@ -51,7 +51,7 @@ SITE = dict(
     tilt=dict(cell=80.0, amp=0.2),                       # the slope's change along the bay: contours drawn in and out
     noise=[(46.0, 2.2), (17.0, 0.6)],                    # (lattice m, amplitude m): the contours' own wander
     gully=dict(x=50.0, width=12.0, depth=4.4, s0=4.0, s1=100.0),
-    knoll=dict(x=114.0, s=54.0, rx=26.0, rs=20.0, h=6.0),
+    knoll=dict(x=114.0, s=54.0, rx=40.0, rs=28.0, h=3.0),
     # beyond the quay's ends the hill meets the water as rock: the blend's run along x, the bank's height and reach
     banks=dict(fade=22.0, height=9.0, reach=9.0),
     lanes=[  # oldest first: contour lanes at a height between two x; a climbing lane from a lane at a grade
@@ -69,6 +69,11 @@ SITE = dict(
              laid=1912, built=(1898, 1932), grain="villa"),
     ],
     smau=[-6.0, 23.7, 50.0, 85.5, 134.0],               # where the stairs run up the fall line (x at the row)
+    # the sea side of the quay: sjøhus on its edge in groups, gable to the water, built out on stone; between them
+    # open quay with jetties; the steamer pier before the square (x of its middle, length, width)
+    sea=dict(x=(-30.0, 147.0), open=[(18.0, 48.0)], run=[(1, 2), (2, 4), (3, 3), (4, 1)], within=(0.0, 0.3),
+             gap=(9.0, 22.0), width=[((6.5, 8.5), 2), ((8.5, 11.0), 3)], depth=(11.0, 17.0), built=(1770, 1885),
+             pier=dict(x=33.0, length=20.0, width=7.0), jetty=0.75),
     square=dict(lane="lane-1", x=32.0, w=14.0, d=10.0),  # Torget: on Strandgata at Kirkebakken's foot
     church=dict(id=900, x=114.0, s=54.0, built=1854, nave=(19.0, 11.0), tower=5.6),
     forest=dict(above=14.0, cell=5.0),                   # the wild trees: starting above the top lane, on a lattice
@@ -79,16 +84,21 @@ SITE = dict(
 )
 
 GRID = dict(x0=-90.0, y0=-90.0, x1=210.0, y1=330.0, step=1.0)
+# a lane's bank: its width per metre it climbs, and the widest it gets
+BANK = dict(run=1.6, widest=6.0)
 COARSE = dict(x0=-1400.0, y0=-1200.0, x1=1500.0, y1=1800.0, step=25.0)
 
 GRAIN = {  # how a lane's plots are cut, by the age of the lane
-    "old": dict(run=[(2, 3), (3, 4), (4, 3), (5, 2), (6, 1)], within=0.2, passage=(1.0, 2.6), yard=(0.15, 0.8),
+    "old": dict(run=[(3, 3), (4, 4), (5, 3), (6, 2), (8, 1)], within=0.2, passage=(0.9, 2.2), yard=(0.15, 0.8), turn=2.5,
+                fence=dict(gate=1.9, front=0.0),
                 width=[((5.5, 7.5), 1), ((7.5, 10.5), 5), ((10.5, 14.0), 4)], depth=(5.8, 7.8), wing=0.5,
                 outhouse=0.45, back=0.3, garden=0.4),
-    "mid": dict(run=[(1, 3), (2, 4), (3, 2)], within=0.3, passage=(1.6, 4.0), yard=(0.6, 2.6),
+    "mid": dict(run=[(2, 3), (3, 4), (4, 2)], within=0.3, passage=(1.4, 3.2), yard=(0.6, 2.6), turn=1.5,
+                fence=dict(gate=1.6, front=1.0),
                 width=[((6.5, 8.5), 2), ((8.5, 11.0), 5), ((11.0, 13.0), 2)], depth=(6.4, 8.4), wing=0.4,
                 outhouse=0.35, back=0.12, garden=0.7),
-    "villa": dict(run=[(1, 1)], within=0.0, passage=(5.0, 12.0), yard=(3.0, 6.0),
+    "villa": dict(run=[(1, 1)], within=0.0, passage=(5.0, 12.0), yard=(3.0, 6.0), turn=4.0,
+                  fence=dict(gate=0.0, front=1.0),
                   width=[((8.5, 11.0), 1)], depth=(8.0, 10.0), wing=0.15, outhouse=0.25, back=0.0, garden=1.4),
 }
 
@@ -98,7 +108,7 @@ SPECIES = {
     "birch": (16.0, 20.0, 0.26, "tall"),
     "rowan": (9.0, 15.0, 0.38, "round"),
     "apple": (6.0, 12.0, 0.55, "round"),
-    "spruce": (24.0, 40.0, 0.17, "cone"),
+    "spruce": (24.0, 40.0, 0.2, "cone"),
     "pine": (15.0, 40.0, 0.32, "flat"),
 }
 
@@ -181,8 +191,11 @@ def natural(x, y, gully=True):
         along_ = min(1.0, (s - g["s0"]) / 14.0) * max(0.0, min(1.0, (g["s1"] - s) / 30.0))
         if across < 1.6:
             z -= g["depth"] * along_ * max(0.0, 1.0 - across * across / 2.56)
+    # the knoll: a rock rise with a level top, the slope drawn up to it and falling away steeper round its front
     k = SITE["knoll"]
-    z += k["h"] * math.exp(-((x - k["x"]) / k["rx"]) ** 2 - ((s - k["s"]) / k["rs"]) ** 2) * min(1.0, max(0.0, s / 12.0))
+    d2 = ((x - k["x"]) / k["rx"]) ** 2 + ((s - k["s"]) / k["rs"]) ** 2
+    w = math.exp(-d2 ** 1.2) * min(1.0, max(0.0, s / 12.0))
+    z = z * (1.0 - w) + (rise(k["s"] * tilt(k["x"])) + k["h"]) * w
     sh = y - shore_y(x)
     e = bank_weight(x)
     if e > 0.0:
@@ -467,7 +480,7 @@ def diary(hid, built, era, rs, character, storeys_w):
 
 
 def storey_height(storeys, era):
-    return {1000: 3.0, 1500: 4.3, 2000: 5.7, 2500: 6.9}[storeys] + (0.2 if era == "chalet" else 0.0)
+    return {1000: 3.0, 1500: 4.3, 2000: 5.7, 2500: 6.9, 3000: 8.2}[storeys] + (0.2 if era == "chalet" else 0.0)
 
 
 STOREYS = {"old": [(1000, 2), (1500, 6), (2000, 3)], "mid": [(1500, 4), (2000, 5)],
@@ -530,9 +543,169 @@ def yard_things(house, fp, grain, base, built, ground, placements, gardens, rs, 
         gardens.append(dict(of=hid, n=i, x=x, y=y, built=built, grain=grain))
 
 
+BOATS = {  # length, beam (m) and what the boat has on deck
+    "faering": ((4.2, 5.4), (1.4, 1.7), "open"),
+    "snekke": ((5.8, 8.0), (2.0, 2.5), "open"),
+    "sjark": ((9.0, 12.5), (3.0, 3.8), "wheelhouse"),
+    "cruiser": ((7.5, 10.0), (2.6, 3.2), "cabin"),
+}
+
+
+def waterfront(buildings, placements, ground):
+    """The quay's sea side: the sjøhus in groups along its edge, each built out over the water on stone with its gable
+    to the sea; the open stretches between with a jetty for the small boats; the steamer pier before the square. The
+    boats are the evening's: moored along the jetties and the open quay, and out on their buoys facing the wind
+    (seeded scene, not facts)."""
+    sea = SITE["sea"]
+    q = SITE["quay"]
+    edge = [(x, shore_y(x), 0.0) for x in [q["x0"] + 1.0 * i for i in range(int(q["x1"] - q["x0"]) + 1)]]
+    acc = along(edge)
+    piers, boats = [], []
+    rs = HS.Stream(WORLD, "harbour-sea", "plots")
+    t = t_at_x(edge, acc, sea["x"][0])
+    t_end = t_at_x(edge, acc, sea["x"][1])
+    sid = 700
+    open_ = [(t_at_x(edge, acc, a), t_at_x(edge, acc, b)) for a, b in sea["open"]]
+    while t < t_end - 6.0:
+        n = rs.weighted(sea["run"])
+        for _ in range(n):
+            w = rs.uniform(*rs.weighted(sea["width"]))
+            if t + w > t_end or any(a - 1.0 < t + w and t < b + 1.0 for a, b in open_):
+                break
+            d = rs.uniform(*sea["depth"])
+            (cx, cy, _), (ux, uy) = at(edge, acc, t + w / 2)
+            # the front on the quay's edge, facing the Row; the back d out over the water
+            fp = rect(cx, cy, -ux, -uy, w, d)
+            ground.claim(fp)
+            sid += 1
+            rh = HS.Stream(WORLD, sid, "diary")
+            built = int(rh.uniform(*sea["built"]))
+            era = "classical" if built < 1870 else era_for(built, HS.h(WORLD, sid, "era"))
+            dy = diary(sid, built, era, rh, "sea", [(2000, 2), (2500, 4), (3000, 2)])
+            dy["type"] = "warehouse"
+            buildings.append(dy)
+            st = dy["events"][0]["params"]["storeys"]
+            placements.append(placement(sid, "warehouse", 0, "quay", "sea", fp, 0.3, 0.3 + storey_height(st, era),
+                                        rh.uniform(38, 46), "gable"))
+            t += w + rs.uniform(*sea["within"])
+        g0 = t
+        t += rs.uniform(*sea["gap"])
+        for a, b in open_:
+            if a - 1.0 < t and g0 < b + 1.0:
+                t = max(t, b + 1.0)
+    # the open stretches: every run of the edge with no sjøhus on it
+    stretches = []
+    t0 = t_at_x(edge, acc, sea["x"][0])
+    taken = []
+    for p_ in placements:
+        if p_["kind"] == "warehouse" and p_["lane"] == "quay":
+            xs = [p_["footprint"][i] / 1000.0 for i in (0, 2)]
+            taken.append((t_at_x(edge, acc, min(xs)), t_at_x(edge, acc, max(xs))))
+    taken.sort()
+    cur = t0
+    for a, b in taken:
+        if a - cur > 6.0:
+            stretches.append((cur, a))
+        cur = max(cur, b)
+    if t_end - cur > 6.0:
+        stretches.append((cur, t_end))
+    # the open quay before the square is a stretch of its own
+    for oa, ob in open_:
+        split = []
+        for a, b in stretches:
+            for lo, hi in ((a, min(b, oa)), (max(a, oa), min(b, ob)), (max(a, ob), b)):
+                if hi - lo > 6.0:
+                    split.append((lo, hi))
+        stretches = split
+
+    def moor(bid, kind, x, y, heading, rb):
+        (l0, l1), (b0, b1), deck = BOATS[kind]
+        boats.append(dict(id=bid, kind=kind, deck=deck, x=mm(x), y=mm(y), angle=round(heading, 1),
+                          length=mm(rb.uniform(l0, l1)), beam=mm(rb.uniform(b0, b1))))
+
+    pr = sea["pier"]
+    (px, py, _), (pux, puy) = at(edge, acc, t_at_x(edge, acc, pr["x"]))
+    out = (puy, -pux)
+    piers.append(dict(id="pier-steamer", kind="pier", width=mm(pr["width"]), z=mm(-0.05),
+                      points=[mm(px - out[0] * 0.5), mm(py - out[1] * 0.5),
+                              mm(px + out[0] * pr["length"]), mm(py + out[1] * pr["length"])]))
+    bn = 0
+    for k, (a, b) in enumerate(stretches):
+        rb = HS.Stream(WORLD, "harbour-sea", "stretch", k)
+        mid = (a + b) / 2
+        (ex, ey, _), (ux, uy) = at(edge, acc, mid)
+        ox, oy = uy, -ux                                  # seaward
+        steamer = a <= t_at_x(edge, acc, pr["x"]) <= b
+        if not steamer and b - a > 9.0 and rb.random() < sea["jetty"]:
+            L = rb.uniform(12.0, 24.0)
+            piers.append(dict(id=f"jetty-{k + 1}", kind="jetty", width=mm(rb.uniform(1.8, 2.4)), z=mm(SITE["water"] + 0.45),
+                              points=[mm(ex), mm(ey), mm(ex + ox * L), mm(ey + oy * L)]))
+            # small boats moored along both sides, bow out
+            for side in (-1.0, 1.0):
+                f = rb.uniform(2.0, 4.0)
+                while f < L - 2.0:
+                    if rb.random() < 0.7:
+                        kind = rb.weighted([("faering", 3), ("snekke", 5), ("cruiser", 2)])
+                        bn += 1
+                        off = 1.0 + BOATS[kind][1][1] / 2
+                        moor(f"boat-{bn}", kind, ex + ox * f + ux * side * off, ey + oy * f + uy * side * off,
+                             math.degrees(math.atan2(oy, ox)) + rb.uniform(-4, 4), rb)
+                    f += rb.uniform(3.4, 5.5)
+        else:
+            # alongside the quay's face, bow east or west
+            f = a + rb.uniform(1.0, 4.0)
+            while f < b - 6.0:
+                if rb.random() < (0.85 if steamer else 0.6):
+                    kind = rb.weighted([("sjark", 4), ("snekke", 2), ("cruiser", 1)])
+                    (bx, by, _), (bux, buy) = at(edge, acc, f + 5.0)
+                    if steamer and abs(bx - pr["x"]) < pr["width"] / 2 + 3.0:
+                        f += 6.0
+                        continue
+                    bn += 1
+                    off = 1.4 + BOATS[kind][1][1] / 2
+                    hd = math.degrees(math.atan2(buy, bux)) + (0.0 if rb.random() < 0.5 else 180.0)
+                    moor(f"boat-{bn}", kind, bx + buy * off, by - bux * off, hd + rb.uniform(-2, 2), rb)
+                f += rb.uniform(10.0, 15.0)
+    # out on their buoys, all swung to the wind from the south-west
+    for i in range(16):
+        rb = HS.Stream(WORLD, "harbour-sea", "buoy", i)
+        x = rb.uniform(q["x0"] + 10.0, q["x1"] - 10.0)
+        y = shore_y(x) - rb.uniform(26.0, 80.0)
+        if any(math.hypot(x - bb["x"] / 1000.0, y - bb["y"] / 1000.0) < 9.0 for bb in boats):
+            continue
+        bn += 1
+        moor(f"boat-{bn}", rb.weighted([("snekke", 4), ("sjark", 2), ("cruiser", 2), ("faering", 1)]), x, y,
+             225.0 + rb.uniform(-9, 9), rb)
+    return piers, boats
+
+
+def chimneys(p):
+    """Where a building's chimneys stand on its ridge, from its kind and era (seeded by its id): flat, as along the
+    ridge from its middle, off the ridge towards the back, size and rise above the ridge (mm)."""
+    rs = HS.Stream(WORLD, p["id"], "chimneys")
+    kind = p["kind"]
+    ridge = (p["w"] if p["roof"] != "gable" else p["d"]) / 1000.0
+    out = []
+    if kind in ("house", "church"):
+        n = 1 if ridge < 9.0 else rs.weighted([(1, 2), (2, 3)])
+        if kind == "church":
+            n = 1
+        size = rs.uniform(0.7, 1.0) if ridge > 7.0 else rs.uniform(0.55, 0.7)
+        for k in range(n):
+            along_ = 0.0 if n == 1 else (-1 if k == 0 else 1) * ridge * rs.uniform(0.18, 0.3)
+            along_ += rs.uniform(-0.12, 0.12) * ridge * (0.5 if n == 1 else 0.2)
+            out += [mm(along_), 0, mm(size), mm(rs.uniform(0.7, 1.2))]
+    elif kind in ("wing", "outhouse") and rs.random() < (0.45 if kind == "wing" else 0.25):
+        out += [mm(rs.uniform(-0.3, 0.3) * ridge), mm(rs.uniform(0.0, 0.8)), mm(rs.uniform(0.4, 0.55)),
+                mm(rs.uniform(0.5, 0.8))]
+    elif kind == "warehouse" and rs.random() < 0.12:
+        out += [mm(rs.uniform(-0.3, 0.3) * ridge), mm(rs.uniform(0.3, 1.5)), mm(0.35), mm(0.9)]
+    return out
+
+
 def grow():
     lanes, placements, buildings, stairs = [], [], [], []
-    gardens = []
+    gardens, fences = [], []
     ground = Ground()
     street = json.load(open(os.path.join(ROOT, "fixtures", "lt1-street.json")))
     authored = {b["id"]: b for b in street["buildings"]}
@@ -603,7 +776,7 @@ def grow():
                 return math.hypot(x - cxk, y - cyk) < 20.0 or z > cbase - 0.3
             line = climb_line(px, py, pz, spec["grade"], spec["heading"], stop)
         lines[spec["id"]] = line
-        lanes.append(dict(id=spec["id"], name=spec["name"], surface=spec["surface"], laid=spec["laid"],
+        lanes.append(dict(id=spec["id"], name=spec["name"], surface=spec["surface"], grain=spec["grain"], laid=spec["laid"],
                           z=mm(line[0][2]), width=mm(spec["width"]),
                           points=[v for x, y, z in line for v in (mm(x), mm(y), mm(z))]))
         strips[spec["id"]] = len(ground.strips)
@@ -670,6 +843,8 @@ def grow():
             else:
                 t += 1.5
 
+    piers, boats = waterfront(buildings, placements, ground)
+
     # the lanes' houses: the authored ones first at their x, then the plots packed along both sides
     for spec in SITE["lanes"]:
         line = lines[spec["id"]]
@@ -681,8 +856,9 @@ def grow():
         b0, b1 = spec["built"]
         strip_n = strips[lid]
 
-        def site_house(t, w, d, yardd, side):
-            """The footprint of a house fronting the lane at arc length t (its front's centre), or None."""
+        def site_house(t, w, d, yardd, side, turn=0.0):
+            """The footprint of a house fronting the lane at arc length t (its front's centre), turned a little off the
+            lane as old plots are, or None."""
             (cx, cy, cz), (ux, uy) = at(line, acc, t)
             nx, ny = -uy, ux                                   # left of the lane's run
             if ny < 0:
@@ -691,7 +867,9 @@ def grow():
             off = spec["width"] / 2 + yardd
             fx, fy = cx + nx * off * sgn, cy + ny * off * sgn
             # the front runs so that its left, where rect puts the back, points away from the lane
-            return rect(fx, fy, ny * sgn, -nx * sgn, w, d), cz
+            ca, sa = math.cos(math.radians(turn)), math.sin(math.radians(turn))
+            fux, fuy = ny * sgn, -nx * sgn
+            return rect(fx, fy, fux * ca - fuy * sa, fux * sa + fuy * ca, w, d), cz
 
         def blocked(t, w):
             return any(abs(t - c_) < w / 2 + 2.0 for c_ in crossings.get(lid, []))
@@ -736,16 +914,20 @@ def grow():
         # first plot at or past its authored x
         queue = sorted((b for b in street["buildings"] if spec.get("authored") and
                         b["id"] // 100 == spec["authored"] // 100), key=lambda b: b["plot"]["x"])
+        fence = g["fence"]
         for side in ("up", "down"):
             rs = HS.Stream(WORLD, lid, side, "plots")
             t = rs.uniform(1.0, 4.0)
             run = 0
+            prev = None                                        # the last house's front corner ahead along the lane
             while t < acc[-1] - 4.0:
                 if run == 0:
                     run = rs.weighted(g["run"])
+                    run_turn = rs.uniform(-g["turn"], g["turn"])  # a run is built along one line
                 w = rs.uniform(*rs.weighted(g["width"]))
                 d = rs.uniform(*g["depth"])
                 yardd = rs.uniform(*g["yard"])
+                turn = run_turn + rs.uniform(-0.4, 0.4)
                 (px, _, _), _ = at(line, acc, t + w / 2)
                 auth = queue[0] if side == "up" and queue and px >= queue[0]["plot"]["x"] / 1000.0 else None
                 if auth:
@@ -755,15 +937,39 @@ def grow():
                     mid = t + nudge + w / 2
                     if blocked(mid, w):
                         break
-                    fp, cz = site_house(mid, w, d, yardd, side)
+                    fp, cz = site_house(mid, w, d, yardd, side, turn)
                     if ground.free(fp, 0.12 if g["within"] else 0.6, 0.5, strip_n):
                         t += nudge
                         break
                     fp = None
                 if fp is None:
                     run = 0
+                    prev = None
                     t += 1.5
                     continue
+                # the fences: a plank fence and gate across the passage from the last house, and a front fence along
+                # the lane before a front garden
+                _, (tux, tuy) = at(line, acc, mid)
+                behind, ahead = sorted(fp[:2], key=lambda q: q[0] * tux + q[1] * tuy)
+                fid = f"fence-{lid}-{side}-{len(fences)}"
+                if fence["gate"] and prev and 0.6 < math.hypot(behind[0] - prev[0], behind[1] - prev[1]) < 4.5:
+                    fences.append(dict(id=fid, kind="plank", height=mm(fence["gate"]),
+                                       points=[mm(prev[0]), mm(prev[1]), mm(behind[0]), mm(behind[1])]))
+                if fence["front"] and yardd > fence["front"]:
+                    bx_, by_ = fp[3][0] - fp[0][0], fp[3][1] - fp[0][1]
+                    bl = math.hypot(bx_, by_)
+                    bx_, by_ = bx_ / bl * (yardd - 0.3), by_ / bl * (yardd - 0.3)
+                    ex_, ey_ = ahead[0] - behind[0], ahead[1] - behind[1]
+                    el = math.hypot(ex_, ey_)
+                    ex_, ey_ = ex_ / el, ey_ / el
+                    a_ = (behind[0] - bx_ - ex_ * 0.9, behind[1] - by_ - ey_ * 0.9)
+                    b_ = (ahead[0] - bx_ + ex_ * 0.9, ahead[1] - by_ + ey_ * 0.9)
+                    gm = rs.uniform(0.3, 0.7)
+                    g0 = (a_[0] + (b_[0] - a_[0]) * gm, a_[1] + (b_[1] - a_[1]) * gm)
+                    for q0, q1 in ((a_, (g0[0] - ex_ * 0.6, g0[1] - ey_ * 0.6)), ((g0[0] + ex_ * 0.6, g0[1] + ey_ * 0.6), b_)):
+                        fences.append(dict(id=f"{fid}-{len(fences)}", kind="picket", height=mm(1.0),
+                                           points=[mm(q0[0]), mm(q0[1]), mm(q1[0]), mm(q1[1])]))
+                prev = ahead
                 if auth:
                     queue.pop(0)
                     rh = HS.Stream(WORLD, auth["id"], "harbour", "plot")
@@ -778,7 +984,10 @@ def grow():
                     add_house(hid, fp, cz, side, built, era, dy, rh, 0.55 if spec["grain"] == "villa" else 0.45)
                 run -= 1
                 t += w + (g["within"] if run > 0 else rs.uniform(*g["passage"]))
-    return lanes, stairs, buildings, placements, lines, gardens, ground, (yard, square, cbase, platform)
+    for p in placements:
+        p["chimneys"] = chimneys(p)
+    return lanes, stairs, buildings, placements, lines, gardens, ground, (yard, square, cbase, platform), piers, boats, \
+        fences
 
 
 # -- trees ------------------------------------------------------------------------------------------------------------------
@@ -836,8 +1045,8 @@ def plant(gardens, ground, places, top_line):
                 rs = HS.Stream(WORLD, pl["id"], iu, iv)
                 if rs.random() > 0.88:
                     continue
-                u = -pl["w"] / 2 + (iu + 0.5 + rs.uniform(-0.15, 0.15)) * row
-                v = -pl["d"] / 2 + (iv + 0.5 + rs.uniform(-0.15, 0.15)) * row
+                u = -pl["w"] / 2 + (iu + 0.5 + rs.uniform(-0.3, 0.3)) * row
+                v = -pl["d"] / 2 + (iv + 0.5 + rs.uniform(-0.3, 0.3)) * row
                 x = pl["x"] + u * math.cos(a) - v * math.sin(a)
                 s_ = pl["s"] + u * math.sin(a) + v * math.cos(a)
                 y = building_line(x) + s_
@@ -866,7 +1075,7 @@ def plant(gardens, ground, places, top_line):
                 # the heath, grazed until the 1950s: birch coming up in groves along the town's edge and the hollows,
                 # a few pines and rowans out on it
                 grove = patch > 0.15 and above < 70
-                p = (0.5 if grove else 0.035) - (0.15 if above < 10 else 0.0)
+                p = (0.5 if grove else 0.006) - (0.15 if above < 10 else 0.0)
                 pool = [("birch", 6), ("rowan", 1)] if grove else [("pine", 3), ("birch", 2), ("rowan", 1)]
                 age = rs.uniform(15, 40) if grove else rs.uniform(20, 90)
                 cause = "birch coming up as grazing stopped" if grove else "self-seeded on the heath"
@@ -888,9 +1097,98 @@ def plant(gardens, ground, places, top_line):
     return trees
 
 
+def stands():
+    """The spruce plantings as stands: each block's corners and its trees' mean height in 1989, for the closed canopy
+    the rows make once they have grown together."""
+    out = []
+    hmax, k, _, _ = SPECIES["spruce"]
+    for pl in SITE["plantings"]:
+        a = math.radians(pl["angle"])
+        pts = []
+        for u, v in ((-1, -1), (1, -1), (1, 1), (-1, 1)):
+            u_, v_ = u * pl["w"] / 2, v * pl["d"] / 2
+            x = pl["x"] + u_ * math.cos(a) - v_ * math.sin(a)
+            s_ = pl["s"] + u_ * math.sin(a) + v_ * math.cos(a)
+            pts += [mm(x), mm(building_line(x) + s_)]
+        out.append(dict(id=pl["id"], planted=pl["planted"], h=mm(hmax * (1.0 - math.exp(-(WORLD - pl["planted"]) / k))),
+                        points=pts))
+    return out
+
+
+def walls(poly, level, parapet, step=2.0):
+    """A retaining wall round a level place, a little outside its edge: at each point its foot and its top, holding
+    the slope back where the place is cut in and standing a parapet above it where the place is built up (mm, flat:
+    x, y, foot, top)."""
+    pts = []
+    cx = sum(p[0] for p in poly) / len(poly)
+    cy = sum(p[1] for p in poly) / len(poly)
+    for i in range(len(poly)):
+        a, b = poly[i], poly[(i + 1) % len(poly)]
+        L = math.hypot(b[0] - a[0], b[1] - a[1])
+        n = max(1, int(round(L / step)))
+        for k in range(n):
+            u = k / n
+            x, y = a[0] + (b[0] - a[0]) * u, a[1] + (b[1] - a[1]) * u
+            ox, oy = x - cx, y - cy
+            o = math.hypot(ox, oy) or 1.0
+            x, y = x + ox / o * 0.3, y + oy / o * 0.3
+            outside = natural(x + ox / o * 1.4, y + oy / o * 1.4)
+            foot = min(level, outside) - 0.3
+            top = max(level + parapet, outside + 0.25)
+            pts += [mm(x), mm(y), mm(foot), mm(top)]
+    return pts
+
+
 # -- the ground, carved where the town stands ----------------------------------------------------------------------------
 
-def carve(lines, placements, places):
+COVER = ["grass", "garden", "heath", "rock", "forest floor", "made"]
+
+
+def cover(Z, kind, gardens, top_line):
+    """What covers the ground at each point, for its tone (index in COVER) and a patch value 0-15 from the land's
+    own lattice: made ground; the rock of the banks and of slopes too steep to hold soil; the spruce stands' needles;
+    the heath above the top lane; the gardens behind the houses; grass on the rest of the town's slopes."""
+    g = GRID
+    ny, nx = len(Z), len(Z[0])
+    tacc = along(top_line)
+    top_y = []
+    for i in range(nx):
+        x = g["x0"] + i * g["step"]
+        tt = t_at_x(top_line, tacc, x)
+        top_y.append(at(top_line, tacc, tt)[0][1] if tt is not None else building_line(x) + 150.0)
+    garden = set()
+    for gd in gardens:
+        ci, cj = int(round((gd["x"] - g["x0"]) / g["step"])), int(round((gd["y"] - g["y0"]) / g["step"]))
+        for dj in range(-4, 5):
+            for di in range(-4, 5):
+                if di * di + dj * dj <= 16:
+                    garden.add((ci + di, cj + dj))
+    out = []
+    for j in range(ny):
+        y = g["y0"] + j * g["step"]
+        for i in range(nx):
+            x = g["x0"] + i * g["step"]
+            k = kind[j][i]
+            zc = Z[j][i]
+            slope = max(abs(Z[j][min(nx - 1, i + 1)] - Z[j][max(0, i - 1)]), abs(Z[min(ny - 1, j + 1)][i] - Z[max(0, j - 1)][i])) / 2
+            if k not in (0, 3):
+                c = 5
+            elif y < shore_y(x) or bank_weight(x) > 0.25 or slope > 0.95:
+                c = 3
+            elif any(in_planting(pl, x, y) for pl in SITE["plantings"]):
+                c = 4
+            elif y > top_y[i] + 6.0:
+                c = 2
+            elif (i, j) in garden:
+                c = 1
+            else:
+                c = 0
+            patch = noise(x, y, [(23.0, 0.7), (7.0, 0.3)])
+            out.append(c * 16 + max(0, min(15, int((patch + 1.0) * 7.5))))
+    return out
+
+
+def carve(lines, placements, places, gardens, top_line):
     g = GRID
     nx = int(round((g["x1"] - g["x0"]) / g["step"])) + 1
     ny = int(round((g["y1"] - g["y0"]) / g["step"])) + 1
@@ -911,9 +1209,12 @@ def carve(lines, placements, places):
                     kind[j][i] = 1
 
     def bench(pts, hw, shoulder, mark):
-        """A level strip along pts (x, y, z): within hw level at the nearest point's z, easing back over the shoulder."""
+        """A level strip along pts (x, y, z): within hw level at the nearest point's z, easing back over a bank as
+        wide as the height it climbs needs (no steeper than about one in one, so the grid draws it smooth).
+        Each cell takes the nearest segment only, so overlapping segments never ripple the shoulder."""
+        best = {}
         for a, b in zip(pts, pts[1:]):
-            r = hw + shoulder + 1
+            r = hw + BANK["widest"] + 1
             i0, j0 = cell(min(a[0], b[0]) - r, min(a[1], b[1]) - r)
             i1, j1 = cell(max(a[0], b[0]) + r, max(a[1], b[1]) + r)
             for j in range(max(0, j0), min(ny, j1 + 1)):
@@ -924,12 +1225,17 @@ def carve(lines, placements, places):
                     u = max(0.0, min(1.0, ((px - a[0]) * dx + (py - a[1]) * dy) / L2))
                     d = math.hypot(px - a[0] - dx * u, py - a[1] - dy * u)
                     zl = a[2] + (b[2] - a[2]) * u
-                    if d <= hw:
-                        Z[j][i] = zl
-                        kind[j][i] = mark
-                    elif d <= hw + shoulder and kind[j][i] in (0, 3):
-                        v = (d - hw) / shoulder
-                        Z[j][i] = zl + (Z[j][i] - zl) * v * v
+                    if d <= hw + BANK["widest"] and ((i, j) not in best or d < best[(i, j)][0]):
+                        best[(i, j)] = (d, zl)
+        for (i, j), (d, zl) in best.items():
+            if d <= hw:
+                Z[j][i] = zl
+                kind[j][i] = mark
+            elif kind[j][i] in (0, 3):
+                wide = min(BANK["widest"], max(shoulder, BANK["run"] * abs(Z[j][i] - zl)))
+                if d - hw < wide:
+                    v = (d - hw) / wide
+                    Z[j][i] = zl + (Z[j][i] - zl) * v * v * (3 - 2 * v)
 
     for k, spec in enumerate(SITE["lanes"]):
         line = lines[spec["id"]]
@@ -949,8 +1255,8 @@ def carve(lines, placements, places):
                 if dd == 0.0:
                     Z[j][i] = z
                     kind[j][i] = 5
-                elif dd < 5.0 and kind[j][i] == 0:
-                    v = dd / 5.0
+                elif dd < 1.2 and kind[j][i] == 0:
+                    v = dd / 1.2
                     Z[j][i] = z + (Z[j][i] - z) * v * v
     # each house's ground: its floor's platform where the land stands above it (cut); where it falls away the
     # plinth goes down to it (left as it is)
@@ -969,7 +1275,8 @@ def carve(lines, placements, places):
                     if kind[j][i] == 0:
                         kind[j][i] = 3
     return dict(x0=mm(g["x0"]), y0=mm(g["y0"]), step=mm(g["step"]), nx=nx, ny=ny,
-                z=[mm(v) for row in Z for v in row], kind=[v for row in kind for v in row])
+                z=[mm(v) for row in Z for v in row], kind=[v for row in kind for v in row],
+                cover=cover(Z, kind, gardens, top_line))
 
 
 def coarse():
@@ -999,10 +1306,10 @@ def main(argv):
     out = os.path.join(ROOT, "fixtures", "lt1-harbour-town.json")
     if "--out" in argv:
         out = argv[argv.index("--out") + 1]
-    lanes, stairs, buildings, placements, lines, gardens, ground, places = grow()
+    lanes, stairs, buildings, placements, lines, gardens, ground, places, piers, boats, fences = grow()
     top = max(SITE["lanes"], key=lambda s: s.get("z", 0.0))["id"]
     trees = plant(gardens, ground, places, lines[top])
-    grid = carve(lines, placements, places)
+    grid = carve(lines, placements, places, gardens, lines[top])
     fixture = dict(
         schemaVersion=1,
         note="LT1's harbour town grown by blender/tools/grow_harbour.py from its site (a stand-in for the engine's "
@@ -1017,6 +1324,9 @@ def main(argv):
                   top=0, water=mm(SITE["water"]),
                   row=mm(SITE["quay"]["width"] + SITE["row"]["carriageway"] + SITE["row"]["pavement"])),
         lanes=lanes, stairs=stairs, buildings=buildings, placements=placements, trees=trees,  # points flat: x, y, z, ...
+        piers=piers, boats=boats, stands=stands(), fences=fences,
+        walls=[dict(id="churchyard-wall", points=walls(places[3], places[2] - 0.3, 0.9)),
+               dict(id="square-wall", points=walls(places[1], lines["lane-1"][0][2], 0.0))],
         places=[dict(id="square", name="Torget", z=mm(lines["lane-1"][0][2]),
                      points=[v for x, y in places[1] for v in (mm(x), mm(y))]),
                 dict(id="churchyard", name="the church's platform", z=mm(places[2] - 0.3),
@@ -1028,7 +1338,8 @@ def main(argv):
     kinds = {}
     for p in placements:
         kinds[p["kind"]] = kinds.get(p["kind"], 0) + 1
-    print(f"[grow_harbour] {kinds}, {len(trees)} trees, {len(lanes)} lanes, {len(stairs)} smau -> "
+    print(f"[grow_harbour] {kinds}, {len(trees)} trees, {len(lanes)} lanes, {len(stairs)} smau, "
+          f"{len(piers)} piers, {len(boats)} boats, {len(fences)} fences -> "
           f"{os.path.relpath(out, ROOT)} ({os.path.getsize(out) // 1024} KB)")
 
 

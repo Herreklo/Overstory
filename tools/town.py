@@ -4,6 +4,7 @@
 pipeline's settings), so other sessions' edits in them stay.
 
     python3 tools/town.py grey -- -out reviews/lt1/town/r01 [-views mid,midhigh]
+    python3 tools/town.py light -- -out reviews/lt1/town/r07 [-moment 1750-sea-fog] [-style Style_game]
 
 The fixture (fixtures/lt1-harbour-town.json) is regrown first by blender/tools/grow_harbour.py: it is deterministic and
 untracked. The log goes to unity/Builds/Town/unity.log (untracked); the lines that matter are printed.
@@ -26,7 +27,7 @@ GUARDED = [
     "unity/ProjectSettings/ProjectSettings.asset",
     "unity/ProjectSettings/EditorBuildSettings.asset",
 ]
-METHODS = {"grey": "Grey", "compose": "Compose", "stills": "Stills", "build": "Build"}
+METHODS = {"grey": "Grey", "light": "Light", "compose": "Compose", "stills": "Stills", "build": "Build"}
 
 
 def main(argv):

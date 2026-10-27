@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "describes": "The town seen whole from the city camera (unity/Assets/Code/Editor/Town/LT1Town.cs, Light): one mean colour for each thing no single material record holds at that distance. That covers the ground's cover, the trees' crowns in late October, the lanes' surfaces and the boats' paints. It also says which paints and roofs the houses take from paint.json and materials/*.json. Nearer tiers draw the materials themselves.",
+  "provenance": "authored",
+  "cover": {
+    "grass": {"srgb": "6B7446", "spread": 0.08},
+    "garden": {"srgb": "5C6A3A", "spread": 0.05},
+    "heath": {"srgb": "6B5846", "spread": 0.14},
+    "rock": {"srgb": "7A7970", "spread": 0.12},
+    "forest floor": {"srgb": "4B4535", "spread": 0.06},
+    "made": {"srgb": "8B8577", "spread": 0.04}
+  },
+  "land": "5E5A44",
+  "crowns": {
+    "spruce": ["27382B", "2E3D2E", "233226"],
+    "pine": ["35432F", "3C4A33"],
+    "birch": ["A68A3E", "94803A", "7C7A3E"],
+    "rowan": ["8A4E2C", "7A5A30"],
+    "sycamore": ["7E7A3A", "8E7034"],
+    "apple": ["66703A", "7A7438"]
+  },
+  "stand": "2A392C",
+  "trunk": "4A443C",
+  "surfaces": {"setts": "7E7B73", "asphalt": "4D4D4B", "gravel": "8F897B", "row": "575652", "square": "7E7B73", "churchyard": "8F897B"},
+  "boats": ["titanhvit", "titanhvit", "titanhvit", "stavangerblaa", "falunroed", "mosegroenn", "kremhvit"],
+  "fences": "titanhvit",
+  "scheme": {"name": "the old town's white", "grains": ["old"]},
+  "warehouses": "back",
+  "roofs": [{"to": 1880, "material": "clay-pantile"}, {"to": 9999, "material": "roof-slate"}],
+  "neglect": {"toward": "soil", "share": 0.22},
+  "notes": "Cover tones are wet ground in late October on the Rogaland coast: olive grass, heather and dead bracken going brown, grey gneiss with lichen. Birch is past its yellow peak, rowan has turned, and sycamore and apple are half green. The old lanes keep the old town's white (paint.json, schemes). A warehouse takes its period's back-of-house paints, falun red and ochre. A roof takes the covering of its year built. A neglected house's paint goes part way toward the soil's colour, as grime and chalking read from afar."
+}
