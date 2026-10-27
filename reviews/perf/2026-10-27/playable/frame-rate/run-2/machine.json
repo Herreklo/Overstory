@@ -1,0 +1,239 @@
+{
+ "what": "the machine's background load around a timing run (tools/unity_lock.py --timing): the busiest processes by ps's %CPU (of one core), before the run and sampled during it, the run's own processes apart",
+ "owner": "frame-rate agent",
+ "purpose": "the frame-time harness: tools/perf.sh playable -out reviews/perf/2026-10-27/playable/frame-rate",
+ "command": [
+  "zsh",
+  "/Users/oystein/code/Overstory/tools/perf.sh",
+  "playable",
+  "-out",
+  "reviews/perf/2026-10-27/playable/frame-rate"
+ ],
+ "started": "2026-10-27T11:48:50+01:00",
+ "ended": "2026-10-27T13:43:17+01:00",
+ "seconds": 6868,
+ "exit": 0,
+ "cpus": 10,
+ "memory_gb": 24.0,
+ "open": [
+  "Blender, interactive"
+ ],
+ "before": {
+  "load": [
+   3.62,
+   4.11,
+   4.86
+  ],
+  "top": [
+   {
+    "name": "mediaanalysisd",
+    "pid": 73988,
+    "cpu": 78.1,
+    "mem": 0.6
+   },
+   {
+    "name": "mds_stores",
+    "pid": 4319,
+    "cpu": 26.2,
+    "mem": 0.8
+   },
+   {
+    "name": "mediaanalysisd-access",
+    "pid": 73999,
+    "cpu": 24.6,
+    "mem": 1.2
+   },
+   {
+    "name": "Claude Helper",
+    "pid": 90165,
+    "cpu": 20.9,
+    "mem": 0.9
+   },
+   {
+    "name": "Claude",
+    "pid": 90137,
+    "cpu": 7.4,
+    "mem": 1.6
+   },
+   {
+    "name": "Creative Cloud UI Helper (Renderer)",
+    "pid": 41696,
+    "cpu": 4.9,
+    "mem": 1.2
+   },
+   {
+    "name": "mds",
+    "pid": 4129,
+    "cpu": 1.9,
+    "mem": 0.1
+   },
+   {
+    "name": "claude",
+    "pid": 93636,
+    "cpu": 1.8,
+    "mem": 2.4
+   },
+   {
+    "name": "Claude Helper (Renderer)",
+    "pid": 90158,
+    "cpu": 1.6,
+    "mem": 4.1
+   },
+   {
+    "name": "opendirectoryd",
+    "pid": 4140,
+    "cpu": 1.3,
+    "mem": 0.0
+   },
+   {
+    "name": "Blender",
+    "pid": 58659,
+    "cpu": 1.3,
+    "mem": 0.3
+   },
+   {
+    "name": "aned",
+    "pid": 4261,
+    "cpu": 1.2,
+    "mem": 0.0
+   }
+  ],
+  "spotlight": [
+   {
+    "name": "mds_stores",
+    "pid": 4319,
+    "cpu": 26.2,
+    "mem": 0.8
+   },
+   {
+    "name": "mds",
+    "pid": 4129,
+    "cpu": 1.9,
+    "mem": 0.1
+   },
+   {
+    "name": "mdworker_shared",
+    "pid": 6786,
+    "cpu": 0.4,
+    "mem": 0.1
+   }
+  ],
+  "spotlight_cpu": 28.5
+ },
+ "during": {
+  "samples": 73,
+  "every_s": 30.0,
+  "load": {
+   "min": 2.26,
+   "mean": 7.2,
+   "max": 26.5
+  },
+  "top": [
+   {
+    "name": "mediaanalysisd",
+    "pid": 73988,
+    "cpu_mean": 56.8,
+    "cpu_max": 101.9
+   },
+   {
+    "name": "mds_stores",
+    "pid": 4319,
+    "cpu_mean": 31.7,
+    "cpu_max": 120.2
+   },
+   {
+    "name": "mediaanalysisd-access",
+    "pid": 73999,
+    "cpu_mean": 14.5,
+    "cpu_max": 56.0
+   },
+   {
+    "name": "Creative Cloud UI Helper (Renderer)",
+    "pid": 41696,
+    "cpu_mean": 10.4,
+    "cpu_max": 276.0
+   },
+   {
+    "name": "python3.13",
+    "pid": 12035,
+    "cpu_mean": 8.1,
+    "cpu_max": 100.0
+   },
+   {
+    "name": "claude",
+    "pid": 93636,
+    "cpu_mean": 6.9,
+    "cpu_max": 45.5
+   },
+   {
+    "name": "python3.13",
+    "pid": 10960,
+    "cpu_mean": 6.8,
+    "cpu_max": 100.0
+   },
+   {
+    "name": "XprotectService",
+    "pid": 1538,
+    "cpu_mean": 5.5,
+    "cpu_max": 103.3
+   },
+   {
+    "name": "coreaudiod",
+    "pid": 4186,
+    "cpu_mean": 4.3,
+    "cpu_max": 8.1
+   },
+   {
+    "name": "python3.13",
+    "pid": 12853,
+    "cpu_mean": 4.1,
+    "cpu_max": 100.0
+   },
+   {
+    "name": "python3.13",
+    "pid": 13191,
+    "cpu_mean": 4.1,
+    "cpu_max": 99.2
+   },
+   {
+    "name": "python3.13",
+    "pid": 13642,
+    "cpu_mean": 2.7,
+    "cpu_max": 100.0
+   }
+  ],
+  "spotlight_cpu_mean": 34.0,
+  "run": [
+   {
+    "name": "UnityShaderCompiler",
+    "pid": 7063,
+    "cpu_mean": 22.2,
+    "cpu_max": 97.2
+   },
+   {
+    "name": "UnityShaderCompiler",
+    "pid": 7035,
+    "cpu_mean": 22.2,
+    "cpu_max": 96.4
+   },
+   {
+    "name": "UnityShaderCompiler",
+    "pid": 7062,
+    "cpu_mean": 22.1,
+    "cpu_max": 95.1
+   },
+   {
+    "name": "UnityShaderCompiler",
+    "pid": 7032,
+    "cpu_mean": 22.1,
+    "cpu_max": 95.1
+   },
+   {
+    "name": "UnityShaderCompiler",
+    "pid": 7033,
+    "cpu_mean": 22.1,
+    "cpu_max": 97.5
+   }
+  ]
+ }
+}
