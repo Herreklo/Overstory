@@ -92,14 +92,17 @@ GRAIN = {  # how a lane's plots are cut, by the age of the lane
     "old": dict(run=[(3, 3), (4, 4), (5, 3), (6, 2), (8, 1)], within=0.2, passage=(0.9, 2.2), yard=(0.15, 0.8), turn=2.5,
                 fence=dict(gate=1.9, front=0.0),
                 width=[((5.5, 7.5), 1), ((7.5, 10.5), 5), ((10.5, 14.0), 4)], depth=(5.8, 7.8), wing=0.5,
-                outhouse=0.45, back=0.3, garden=0.4),
+                outhouse=0.45, back=0.3, garden=0.4,
+                close=[("plank", 4), ("picket", 2), ("hedge", 2), ("stone", 2), (None, 2)]),
     "mid": dict(run=[(2, 3), (3, 4), (4, 2)], within=0.3, passage=(1.4, 3.2), yard=(0.6, 2.6), turn=1.5,
                 fence=dict(gate=1.6, front=1.0),
                 width=[((6.5, 8.5), 2), ((8.5, 11.0), 5), ((11.0, 13.0), 2)], depth=(6.4, 8.4), wing=0.4,
-                outhouse=0.35, back=0.12, garden=0.7),
+                outhouse=0.35, back=0.12, garden=0.7,
+                close=[("picket", 4), ("hedge", 4), ("plank", 1), ("stone", 1), (None, 2)]),
     "villa": dict(run=[(1, 1)], within=0.0, passage=(5.0, 12.0), yard=(3.0, 6.0), turn=4.0,
                   fence=dict(gate=0.0, front=1.0),
-                  width=[((8.5, 11.0), 1)], depth=(8.0, 10.0), wing=0.15, outhouse=0.25, back=0.0, garden=1.4),
+                  width=[((8.5, 11.0), 1)], depth=(8.0, 10.0), wing=0.15, outhouse=0.25, back=0.0, garden=1.4,
+                  close=[("hedge", 6), ("picket", 3), (None, 1)]),
 }
 
 # trees: their height at full age, how fast they get there (years), crown radius per metre of height, kind of crown
@@ -449,6 +452,11 @@ def era_for(year, key):
     return "chalet"
 
 
+def roof_material(year):
+    """The covering a roof laid in this year takes (town.json, roofs)."""
+    return next(r["material"] for r in TOWN_PACK["roofs"] if year < r["to"])
+
+
 def diary(hid, built, era, rs, character, storeys_w):
     """A grown house's life to 1989: what the town's history puts on a house of its age and kind (a stand-in for the
     engine's fabric pass). The coats are the care rule's (paint.json), not events, unless the house was let go."""
@@ -475,6 +483,15 @@ def diary(hid, built, era, rs, character, storeys_w):
         ev.append(dict(id=n, year=int(rs.uniform(1979, 1988)), kind="restored", params=dict(amount=400),
                        cause="a young family buys it and does it up"))
         n += 1
+    # the roof relaid as its covering's life comes round (its own stream, so the rest of the life stays as it was)
+    rr = HS.Stream(WORLD, hid, "roof")
+    life = ROOF_LIFE[roof_material(built)]
+    laid = built + int(rr.uniform(*life))
+    while laid < 1989:
+        ev.append(dict(id=n, year=laid, kind="roof_retiled", params=dict(),
+                       cause="the roof stripped and relaid on new battens, its good tiles cleaned and put back"))
+        n += 1
+        laid += int(rr.uniform(*life))
     ev.sort(key=lambda e: (e["year"], e["id"]))
     return dict(id=hid, type="house", character=character, events=ev)
 
@@ -498,7 +515,11 @@ def placement(pid, kind, of, lane, side, fp, base, eave, pitch, roof):
 
 PACK = os.path.join(ROOT, "packs", "stavanger-1989")
 TIMBER = json.load(open(os.path.join(PACK, "timber.json")))
-WORKING_OF = json.load(open(os.path.join(PACK, "town.json")))["workingOf"]
+TOWN_PACK = json.load(open(os.path.join(PACK, "town.json")))
+WORKING_OF = TOWN_PACK["workingOf"]
+# how many years each roof covering lies before it is relaid (materials/*.json, relaidYears)
+ROOF_LIFE = {r["material"]: json.load(open(os.path.join(PACK, "materials", r["material"] + ".json")))["relaidYears"]
+             for r in TOWN_PACK["roofs"]}
 
 # how a house grows over its life (a stand-in for the engine's fabric pass): the share of houses of an era that were
 # built with the part, the share that had it added later and when. An ark through the long eave of a low house; a porch
@@ -818,6 +839,122 @@ def chimneys(p):
     return out
 
 
+BACK_OF = {}   # a back house's id: the house whose plot it was built on
+
+
+def close_plots(placements, buildings, ground, fences):
+    """Each house's back plot, closed as its lane's grain closes them: a plank or picket fence, a hedge, a dry-stone
+    wall, or left open. The plot runs back from the house to the lane or place behind it, or halfway to the next
+    house that is not its own (its wing, outhouse and back house are). A back line across a fall of more than 0.6 m
+    is a terrace wall whatever the grain. A hedge left since the house was let go has grown out. Returns the plots,
+    with whether each is kept, for the ground's cover."""
+    grain_of = {s["id"]: s["grain"] for s in SITE["lanes"]}
+    grain_of["harbour-row"] = "old"
+    diaries = {b["id"]: b for b in buildings}
+
+    def owner(p):
+        o = p["of"] or p["id"]
+        return BACK_OF.get(o, o)
+
+    def fp_of(p):
+        return [(p["footprint"][i] / 1000.0, p["footprint"][i + 1] / 1000.0) for i in range(0, 8, 2)]
+
+    cell = 12.0
+    index = {}
+    for p in placements:
+        fp = fp_of(p)
+        x0, y0, x1, y1 = box(fp)
+        for i in range(int(math.floor(x0 / cell)), int(math.floor(x1 / cell)) + 1):
+            for j in range(int(math.floor(y0 / cell)), int(math.floor(y1 / cell)) + 1):
+                index.setdefault((i, j), []).append((fp, owner(p)))
+
+    def let_go(hid):
+        d = diaries.get(hid)
+        if not d:
+            return False
+        last = {}
+        for e in d["events"]:
+            last[e["kind"]] = e["year"]
+        return last.get("neglected", 0) > last.get("restored", 0)
+
+    plots = []
+    for p in placements:
+        if p["kind"] != "house" or p["side"] == "back" or p["lane"] not in grain_of:
+            continue
+        hid = p["id"]
+        f0, f1, b1, b0 = fp_of(p)
+        w = math.hypot(f1[0] - f0[0], f1[1] - f0[1])
+        ux, uy = (f1[0] - f0[0]) / w, (f1[1] - f0[1]) / w
+        nx, ny = -uy, ux
+        mx, my = (b0[0] + b1[0]) / 2, (b0[1] + b1[1]) / 2
+        near = [(a, b, hw) for pts, hw in ground.strips for a, b in zip(pts, pts[1:])
+                if seg_dist(mx, my, a, b) < 22.0 + hw]
+        depth, hit = 16.0, None
+        s_ = 0.5
+        while s_ <= 16.0 and hit is None:
+            for lat in (-(w / 2 - 0.4), 0.0, w / 2 - 0.4):
+                qx, qy = mx + nx * s_ + ux * lat, my + ny * s_ + uy * lat
+                if any(seg_dist(qx, qy, a, b) < hw + 0.5 for a, b, hw in near) or \
+                        any(inside(pl, qx, qy) for pl in ground.places):
+                    hit, depth = "way", s_ - 0.4
+                    break
+                k = (int(math.floor(qx / cell)), int(math.floor(qy / cell)))
+                if any(o != hid and inside(fp, qx, qy) for fp, o in index.get(k, ())):
+                    hit, depth = "house", s_ / 2
+                    break
+            s_ += 0.5
+        if depth < 1.2:
+            continue
+        rs = HS.Stream(WORLD, hid, "plot", "close")
+        close = GRAIN[grain_of[p["lane"]]]["close"]
+        back = rs.weighted(close)
+        sides = back if rs.random() < 0.6 else rs.weighted(close)
+        # across a fall the back line is a terrace wall
+        bx, by = mx + nx * depth, my + ny * depth
+        if abs(natural(bx + nx * 0.7, by + ny * 0.7) - natural(bx - nx * 0.7, by - ny * 0.7)) > 0.6:
+            back = "stone"
+        plots.append(dict(hid=hid, b0=b0, b1=b1, n=(nx, ny), depth=depth, back=back, sides=sides,
+                          kept=not let_go(hid), rs=rs, grain=grain_of[p["lane"]]))
+
+    def run(kind, a, b, rs, kept, pid):
+        if kind is None:
+            return
+        rec = dict(id=f"close-{pid}-{len(fences)}", kind=kind, points=[mm(a[0]), mm(a[1]), mm(b[0]), mm(b[1])])
+        if kind == "picket":
+            rec["height"] = mm(1.0)
+        elif kind == "plank":
+            rec["height"] = mm(rs.uniform(1.5, 1.9))
+        elif kind == "hedge":
+            grown = 0.0 if kept else rs.uniform(0.6, 1.0)
+            rec["height"] = mm(rs.uniform(1.2, 1.8) + grown)
+            rec["width"] = mm(rs.uniform(0.7, 0.9) + grown)
+        else:
+            rec["height"] = mm(rs.uniform(0.8, 1.1))
+            rec["width"] = mm(0.55)
+        fences.append(rec)
+
+    # neighbours share a side: the left side is left out where the plot before closes its right
+    for q in plots:
+        b0 = q["b0"]
+        q["left"] = not any(o is not q and math.hypot(o["b1"][0] - b0[0], o["b1"][1] - b0[1]) < 1.2 for o in plots)
+        for o in plots:
+            if o is not q and math.hypot(o["b1"][0] - b0[0], o["b1"][1] - b0[1]) < 1.2:
+                o["right"] = max(o.get("right", o["depth"]), q["depth"])
+    yards = []
+    for q in plots:
+        (nx, ny), d = q["n"], q["depth"]
+        b0, b1 = q["b0"], q["b1"]
+        e0, e1 = (b0[0] + nx * d, b0[1] + ny * d), (b1[0] + nx * d, b1[1] + ny * d)
+        run(q["back"], e0, e1, q["rs"], q["kept"], q["hid"])
+        dr = q.get("right", d)
+        run(q["sides"] if q["sides"] != "stone" else "plank", b1, (b1[0] + nx * dr, b1[1] + ny * dr), q["rs"], q["kept"],
+            q["hid"])
+        if q["left"]:
+            run(q["sides"] if q["sides"] != "stone" else "plank", b0, e0, q["rs"], q["kept"], q["hid"])
+        yards.append(dict(poly=[b0, b1, e1, e0], kept=q["kept"], patch=int(HS.unit(HS.h(WORLD, q["hid"], "plot", "tone")) * 16)))
+    return yards
+
+
 def grow():
     lanes, placements, buildings, stairs = [], [], [], []
     gardens, fences = [], []
@@ -915,8 +1052,10 @@ def grow():
                 continue
             acc = along(line)
             t = t_at_x(line, acc, sx)
-            (px, py, pz), _ = at(line, acc, t)
-            pts.append((px, py, pz))
+            (px, py, pz), (lux, luy) = at(line, acc, t)
+            # level across the lane: the flight starts and ends at its edges
+            reach = spec["width"] / 2 / max(abs(lux), 0.3) + 0.3
+            pts += [(px, py - reach, pz), (px, py, pz), (px, py + reach, pz)]
             crossings.setdefault(spec["id"], []).append(t)
         pts.sort(key=lambda p: p[1])
         gully = abs(sx - SITE["gully"]["x"]) < 1
@@ -1021,6 +1160,7 @@ def grow():
                     buildings.append(bdy)
                     bb = natural(cx, cy) + 0.2
                     bst = bdy["events"][0]["params"]["storeys"]
+                    BACK_OF[hid] = hid_
                     placements.append(placement(hid, "house", 0, lid, "back", bfp, bb, bb + storey_height(bst, bera),
                                                 rb.uniform(34, 44), "eaves"))
             yard_things(house, fp, spec["grain"], base, built, ground, placements, gardens, rs_, lid, side)
@@ -1100,10 +1240,11 @@ def grow():
                     add_house(hid, fp, cz, side, built, era, dy, rh, 0.55 if spec["grain"] == "villa" else 0.45, yardd)
                 run -= 1
                 t += w + (g["within"] if run > 0 else rs.uniform(*g["passage"]))
+    yards = close_plots(placements, buildings, ground, fences)
     for p in placements:
         p["chimneys"] = chimneys(p)
     return lanes, stairs, buildings, placements, lines, gardens, ground, (yard, square, cbase, platform), piers, boats, \
-        fences
+        fences, yards
 
 
 # -- trees ------------------------------------------------------------------------------------------------------------------
@@ -1262,7 +1403,7 @@ def walls(poly, level, parapet, step=2.0):
 COVER = ["grass", "garden", "heath", "rock", "forest floor", "made"]
 
 
-def cover(Z, kind, gardens, top_line):
+def cover(Z, kind, gardens, top_line, yards=()):
     """What covers the ground at each point, for its tone (index in COVER) and a patch value 0-15 from the land's
     own lattice: made ground; the rock of the banks and of slopes too steep to hold soil; the spruce stands' needles;
     the heath above the top lane; the gardens behind the houses; grass on the rest of the town's slopes."""
@@ -1281,6 +1422,13 @@ def cover(Z, kind, gardens, top_line):
             for di in range(-4, 5):
                 if di * di + dj * dj <= 16:
                     garden.add((ci + di, cj + dj))
+    plot = {}
+    for yd in yards:
+        x0, y0, x1, y1 = box(yd["poly"])
+        for j in range(max(0, int(math.floor((y0 - g["y0"]) / g["step"]))), min(ny, int(math.ceil((y1 - g["y0"]) / g["step"])) + 1)):
+            for i in range(max(0, int(math.floor((x0 - g["x0"]) / g["step"]))), min(nx, int(math.ceil((x1 - g["x0"]) / g["step"])) + 1)):
+                if inside(yd["poly"], g["x0"] + i * g["step"], g["y0"] + j * g["step"]):
+                    plot[(i, j)] = yd
     out = []
     for j in range(ny):
         y = g["y0"] + j * g["step"]
@@ -1295,6 +1443,10 @@ def cover(Z, kind, gardens, top_line):
                 c = 3
             elif any(in_planting(pl, x, y) for pl in SITE["plantings"]):
                 c = 4
+            elif (i, j) in plot:
+                yd = plot[(i, j)]
+                out.append((1 if yd["kept"] else 2) * 16 + yd["patch"])
+                continue
             elif y > top_y[i] + 6.0:
                 c = 2
             elif (i, j) in garden:
@@ -1306,7 +1458,7 @@ def cover(Z, kind, gardens, top_line):
     return out
 
 
-def carve(lines, placements, places, gardens, top_line):
+def carve(lines, placements, places, gardens, top_line, yards=(), stairs=()):
     g = GRID
     nx = int(round((g["x1"] - g["x0"]) / g["step"])) + 1
     ny = int(round((g["y1"] - g["y0"]) / g["step"])) + 1
@@ -1326,7 +1478,7 @@ def carve(lines, placements, places, gardens, top_line):
                     Z[j][i] = 0.0
                     kind[j][i] = 1
 
-    def bench(pts, hw, shoulder, mark):
+    def bench(pts, hw, shoulder, mark, keep=()):
         """A level strip along pts (x, y, z): within hw level at the nearest point's z, easing back over a bank as
         wide as the height it climbs needs (no steeper than about one in one, so the grid draws it smooth).
         Each cell takes the nearest segment only, so overlapping segments never ripple the shoulder."""
@@ -1346,6 +1498,8 @@ def carve(lines, placements, places, gardens, top_line):
                     if d <= hw + BANK["widest"] and ((i, j) not in best or d < best[(i, j)][0]):
                         best[(i, j)] = (d, zl)
         for (i, j), (d, zl) in best.items():
+            if kind[j][i] in keep:
+                continue
             if d <= hw:
                 Z[j][i] = zl
                 kind[j][i] = mark
@@ -1359,6 +1513,11 @@ def carve(lines, placements, places, gardens, top_line):
         line = lines[spec["id"]]
         if line:
             bench(line, spec["width"] / 2, 1.5, 2)
+    # the smau: the ground follows each flight between the lanes it joins, the lanes left level
+    for st in stairs:
+        p = st["points"]
+        bench([(p[i] / 1000.0, p[i + 1] / 1000.0, p[i + 2] / 1000.0) for i in range(0, len(p), 3)],
+              st["width"] / 2000.0 + 0.3, 1.0, 4, keep=(1, 2))
     # the level places: the square at Strandgata's level, the churchyard at the church's floor
     churchyard, square, cbase, platform = places
     l1 = lines["lane-1"]
@@ -1394,7 +1553,7 @@ def carve(lines, placements, places, gardens, top_line):
                         kind[j][i] = 3
     return dict(x0=mm(g["x0"]), y0=mm(g["y0"]), step=mm(g["step"]), nx=nx, ny=ny,
                 z=[mm(v) for row in Z for v in row], kind=[v for row in kind for v in row],
-                cover=cover(Z, kind, gardens, top_line))
+                cover=cover(Z, kind, gardens, top_line, yards))
 
 
 def coarse():
@@ -1424,10 +1583,10 @@ def main(argv):
     out = os.path.join(ROOT, "fixtures", "lt1-harbour-town.json")
     if "--out" in argv:
         out = argv[argv.index("--out") + 1]
-    lanes, stairs, buildings, placements, lines, gardens, ground, places, piers, boats, fences = grow()
+    lanes, stairs, buildings, placements, lines, gardens, ground, places, piers, boats, fences, yards = grow()
     top = max(SITE["lanes"], key=lambda s: s.get("z", 0.0))["id"]
     trees = plant(gardens, ground, places, lines[top])
-    grid = carve(lines, placements, places, gardens, lines[top])
+    grid = carve(lines, placements, places, gardens, lines[top], yards, stairs)
     fixture = dict(
         schemaVersion=1,
         note="LT1's harbour town grown by blender/tools/grow_harbour.py from its site (a stand-in for the engine's "

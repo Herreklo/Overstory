@@ -8,3 +8,7 @@ We started from 17:50 sea fog, as the brief asked. With the street's rig it give
 
 - r10: windows, doors, corner boards and lit panes from the diaries; arks, porches and lean-tos grown on the houses.
 - r11: trees as three to five faceted masses in clumps; birch past its peak, one in four bare. Small stills in `r11/small/`.
+- r12: the harbour's water as a designed colour (the sky's hue, light over the shallows, dark at the foot of made things), a light line at every waterline.
+- r13: wet bands on the quay and sjøhus feet; roofs relaid on their materials' cycles, so old roofs come back near new.
+- r14: yards closed from the plots: hedges, plank and picket fences, dry-stone walls where the plot falls.
+- r15: lanes and setts lighter and warmer than the grass, so the net of lanes reads from the hill; steps on the smau, cut into benched ground. Small stills in `r15/small/`.

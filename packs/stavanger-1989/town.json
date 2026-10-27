@@ -4,20 +4,20 @@
   "provenance": "authored",
   "cover": {
     "grass": {
-      "srgb": "6B7446",
+      "srgb": "66803E",
       "spread": 0.08
     },
     "garden": {
-      "srgb": "5C6A3A",
+      "srgb": "587236",
       "spread": 0.05
     },
     "heath": {
       "srgb": "6B5846",
-      "spread": 0.14
+      "spread": 0.07
     },
     "rock": {
-      "srgb": "7A7970",
-      "spread": 0.12
+      "srgb": "6F6E66",
+      "spread": 0.05
     },
     "forest floor": {
       "srgb": "4B4535",
@@ -61,12 +61,12 @@
   "stand": "2A392C",
   "trunk": "4A443C",
   "surfaces": {
-    "setts": "7E7B73",
+    "setts": "948F84",
     "asphalt": "4D4D4B",
-    "gravel": "8F897B",
-    "row": "575652",
-    "square": "7E7B73",
-    "churchyard": "8F897B"
+    "gravel": "A69E8B",
+    "row": "66645F",
+    "square": "948F84",
+    "churchyard": "A69E8B"
   },
   "boats": [
     "titanhvit",
@@ -78,6 +78,12 @@
     "kremhvit"
   ],
   "fences": "titanhvit",
+  "hedges": [
+    "3E4B2E",
+    "3E4B2E",
+    "4A5232",
+    "7A5634"
+  ],
   "scheme": {
     "name": "the old town's white",
     "grains": [
@@ -98,6 +104,20 @@
   "neglect": {
     "toward": "soil",
     "share": 0.22
+  },
+  "water": {
+    "shallow": "748C86",
+    "open": "5E7686",
+    "foot": "2B3740",
+    "line": "D9DBD2",
+    "deepM": 8.0,
+    "footM": 5.0,
+    "lineM": 0.45,
+    "wetM": 0.6,
+    "wet": 0.45,
+    "smoothness": 0.45,
+    "waveScale": 0.35,
+    "waveStrength": 0.1
   },
   "glass": {
     "srgb": "1B2024"
@@ -189,5 +209,5 @@
     "functionalist": "chalet",
     "seventies": "chalet"
   },
-  "notes": "Cover tones are wet ground in late October on the Rogaland coast: olive grass, heather and dead bracken going brown, grey gneiss with lichen. Birch is past its yellow peak and one in four is bare (its twigs a grey-violet mass from afar), rowan has turned, and sycamore and apple are half green. The old lanes keep the old town's white (paint.json, schemes). A warehouse takes its period's back-of-house paints, falun red and ochre. A roof takes the covering of its year built. A neglected house's paint goes part way toward the soil's colour, as grime and chalking read from afar. A sjøhus has small windows along its sides and a stack of loading hatches in each gable, the port at the quay; the church tall windows along its sides and its door in the west gable. A porch has its door in its gable to the lane, glazed sides where its era glazed them; a lean-to one small window at its back. At 17:50 in late October most households are home and a room in two is lit: a lit window is the moment's (local scene state, seeded, claiming nothing), never in a house its diary says is empty or boarded; its light is the room's lamp on its walls and curtains (materials/glass.json), pane its brightness at a window glow of 1. By day a pane is dark glass. An era timber.json has no working for yet is drawn at this tier by the nearest one it names (workingOf), until its own is written."
+  "notes": "Cover tones are wet ground in late October on the Rogaland coast: grass still green in the mild wet autumn, heather and dead bracken going brown, grey gneiss with lichen. Birch is past its yellow peak and one in four is bare (its twigs a grey-violet mass from afar), rowan has turned, and sycamore and apple are half green. The old lanes keep the old town's white (paint.json, schemes). A warehouse takes its period's back-of-house paints, falun red and ochre. A roof takes the covering of its year built. A neglected house's paint goes part way toward the soil's colour, as grime and chalking read from afar. A sjøhus has small windows along its sides and a stack of loading hatches in each gable, the port at the quay; the church tall windows along its sides and its door in the west gable. A porch has its door in its gable to the lane, glazed sides where its era glazed them; a lean-to one small window at its back. At 17:50 in late October most households are home and a room in two is lit: a lit window is the moment's (local scene state, seeded, claiming nothing), never in a house its diary says is empty or boarded; its light is the room's lamp on its walls and curtains (materials/glass.json), pane its brightness at a window glow of 1. By day a pane is dark glass. An era timber.json has no working for yet is drawn at this tier by the nearest one it names (workingOf), until its own is written. The harbour's water at this tier is a designed colour, not a mirror: the sky's hue, greener and lighter where the bed shows through shallow water, deepening to open water by deepM, darkest at the foot of a made thing (footM) as its shade and reflection lie there; one light line lineM wide at every waterline, round the shore, the quay, the piers, the sjøhus and every boat; above it on the quay's face, the piers and the feet of the sjøhus, a band wetM high darkened to wet of the stone's colour. Its smoothness stays under the screen's reflections, so no blurred mirror lies under the houses. Hedges in late October: privet dark and still in leaf (two in four), hawthorn olive going thin, beech holding its copper leaves through the winter. The lanes' setts and gravel are lighter and warmer than the grass round them, as dry stone is, so the town's net of lanes and steps reads from the hill."
 }

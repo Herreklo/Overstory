@@ -2,6 +2,8 @@
 // colour where the mass carries one (the ground's cover, a tree's crown, a boat's paint), lit and aired exactly as the
 // street is (StreetLooks.hlsl, StreetSurface.hlsl): the same sun, sky, shade, brush, rain and air, its own colours. A
 // pane (_Pane 1) gives out its room's light where its vertex alpha says the room is lit, as bright as the rig's windows.
+// Water (_Water 1) is opaque: its colour baked in its vertex colours, its vertex alpha its distance from the nearest
+// waterline (-1 to 3 m), from which one light line is drawn round everything standing in it, crisp at any distance.
 Shader "Overstory/Town"
 {
     Properties
@@ -13,6 +15,11 @@ Shader "Overstory/Town"
         _Ground ("The share of the ground's light a face sees (the bake's green)", Range(0, 1)) = 0.35
         _Pane ("A window's pane: lit by its vertex alpha (0 or 1)", Float) = 0
         [HDR] _PaneLit ("A lit room's light through its pane, at a window glow of 1", Color) = (1, 0.7, 0.4, 1)
+        _Water ("Water: baked colour, a light line by its vertex alpha (0 or 1)", Float) = 0
+        _LineColor ("The light line at every waterline", Color) = (0.85, 0.86, 0.82, 1)
+        _LineWidth ("The light line's width (m)", Float) = 0.45
+        _WaveScale ("Wave scale (per metre)", Float) = 0.35
+        _WaveStrength ("Wave strength", Float) = 0.1
     }
 
     HLSLINCLUDE
@@ -26,13 +33,29 @@ Shader "Overstory/Town"
         half _Ground;
         half _Pane;
         half4 _PaneLit;
+        half _Water;
+        half4 _LineColor;
+        half _LineWidth;
+        half _WaveScale;
+        half _WaveStrength;
     CBUFFER_END
 
     #include "StreetSurface.hlsl"
 
-    StreetSurface OS_TownSurface(half4 tint, half3 normalWS)
+    StreetSurface OS_TownSurface(half4 tint, half3 normalWS, float3 positionWS)
     {
         StreetSurface s;
+        if (_Water > 0.5)
+        {
+            s = OS_WaterSurface(positionWS, half4(tint.rgb, 1), _Smoothness, _WaveScale, _WaveStrength);
+            float d = tint.a * 4.0 - 1.0;
+            float aa = max(fwidth(d), 1e-3);
+            half rim = (half)(1.0 - smoothstep(_LineWidth - aa, _LineWidth + aa, d));
+            s.albedo = lerp(_OS_Clay > 0.5 ? half3(0.10h, 0.10h, 0.10h) : tint.rgb, _LineColor.rgb, rim);
+            s.smoothness = lerp(_Smoothness, 0.1h, rim);
+            s.normalWS = normalize(lerp(s.normalWS, half3(0, 1, 0), rim));
+            return s;
+        }
         half3 albedo = _BaseColor.rgb * lerp(half3(1, 1, 1), tint.rgb, _Tinted);
         half smoothness = _Smoothness;
         if (_OS_Clay > 0.5)
@@ -128,7 +151,7 @@ Shader "Overstory/Town"
             {
                 UNITY_SETUP_INSTANCE_ID(input);
                 UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(input);
-                StreetSurface s = OS_TownSurface(input.color, NormalizeNormalPerPixel(input.normalWS));
+                StreetSurface s = OS_TownSurface(input.color, NormalizeNormalPerPixel(input.normalWS), input.positionWS);
 
                 InputData id = (InputData)0;
                 id.positionWS = input.positionWS;
@@ -291,6 +314,7 @@ Shader "Overstory/Town"
                 float4 positionCS : SV_POSITION;
                 half3 normalWS : TEXCOORD0;
                 half4 color : TEXCOORD1;
+                float3 positionWS : TEXCOORD2;
                 UNITY_VERTEX_OUTPUT_STEREO
             };
 
@@ -299,7 +323,8 @@ Shader "Overstory/Town"
                 Varyings o = (Varyings)0;
                 UNITY_SETUP_INSTANCE_ID(input);
                 UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(o);
-                o.positionCS = TransformObjectToHClip(input.positionOS.xyz);
+                o.positionWS = TransformObjectToWorld(input.positionOS.xyz);
+                o.positionCS = TransformWorldToHClip(o.positionWS);
                 o.normalWS = TransformObjectToWorldNormal(input.normalOS);
                 o.color = input.color;
                 return o;
@@ -311,7 +336,7 @@ Shader "Overstory/Town"
             #endif
             )
             {
-                StreetSurface s = OS_TownSurface(input.color, normalize(input.normalWS));
+                StreetSurface s = OS_TownSurface(input.color, normalize(input.normalWS), input.positionWS);
             #if defined(_GBUFFER_NORMALS_OCT)
                 float2 oct = PackNormalOctQuadEncode(s.normalWS);
                 outNormalWS = half4(PackFloat2To888(saturate(oct * 0.5 + 0.5)), 0.0);

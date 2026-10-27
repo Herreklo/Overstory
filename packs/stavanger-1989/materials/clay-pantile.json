@@ -5,6 +5,7 @@
   "srgbNew": "A9532F",
   "srgbOld": "6E4134",
   "oldYears": 60,
+  "relaidYears": [55, 95],
   "gloss": 0.18,
   "water": [
     0.55,
@@ -18,6 +19,7 @@
     "laid": "How the tile is laid: its cover width (one roll and one trough, across the slope), the course's length up the slope (the batten gauge), the roll's height (the S's depth, crest to trough), the tile's thickness, and how far a course's foot stands proud of the tile under it; the half-round ridge tiles, each lapping the next; at the verge the tiles run over the barge board and past its face. Single-lap pantiles as on Stavanger's classical houses: about 4 to the metre across and 3.3 courses up; the roll is the tile's own, not pushed (its shadow holds at the street stop).",
     "srgb": "Screen colours judged by look; the old one is the tile under a century of the town's soot and moss.",
     "oldYears": "The tile is halfway to its old colour at half these years since it was laid (the house's building, unless a 'roof_retiled' event).",
+    "relaidYears": "How many years a roof of it lies before it is stripped and relaid, the battens renewed and broken tiles replaced: the tiles are cleaned and go back up, so a relaid roof comes back near its new colour.",
     "water": "Its water profile as the town's (Shaders/Water.hlsl, Overstory.World.WaterPack): how much it darkens wet, how glossy its wet film, how long it holds water, how readily run-off stains it. Fired clay soaks and darkens, slowly dries. Judged by look."
   }
 }

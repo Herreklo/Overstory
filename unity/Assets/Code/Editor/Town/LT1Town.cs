@@ -48,7 +48,7 @@ namespace Overstory.EditorTools.Town
         [Serializable] public class Boat { public string id, kind, deck; public int x, y, length, beam; public float angle; }
         [Serializable] public class Stand { public string id; public int planted, h; public int[] points; }
         [Serializable] public class Wall { public string id; public int[] points; }
-        [Serializable] public class Fence { public string id, kind; public int height; public int[] points; }
+        [Serializable] public class Fence { public string id, kind; public int height, width; public int[] points; }
         [Serializable]
         public class Town
         {
@@ -153,7 +153,25 @@ namespace Overstory.EditorTools.Town
             else
                 covered = Mat(0f, white, tinted: true, porosity: 0.8f, smooth: 0.04f);
             var paved = Mat(0.47f, white, tinted: true, porosity: 0.45f, smooth: 0.12f);
-            var water = moment == null ? Mat(0.30f, white) : AssetDatabase.LoadAssetAtPath<Material>("Assets/Art/Materials/M_Water.mat");
+            Material water;
+            if (moment == null)
+                water = Mat(0.30f, white);
+            else
+            {
+                // opaque, its colour baked into the mesh (Water); under the screen's reflections, so no blurred mirror
+                var look = facts.water;
+                water = new Material(townShader) { name = "water", hideFlags = HideFlags.DontSave };
+                water.SetColor("_BaseColor", white);
+                water.SetFloat("_Water", 1f);
+                water.SetFloat("_Porosity", 0f);
+                water.SetFloat("_Smoothness", F(look["smoothness"]));
+                water.SetFloat("_Ground", 0f);
+                water.SetColor("_LineColor", Hex((string)look["line"]));
+                water.SetFloat("_LineWidth", F(look["lineM"]));
+                water.SetFloat("_WaveScale", F(look["waveScale"]));
+                water.SetFloat("_WaveStrength", F(look["waveStrength"]));
+                made.Add(water);
+            }
             var fenceM = Mat(0.70f, tones?.fence ?? white, porosity: 0.2f, smooth: 0.15f);
             var plinth = Mat(0.36f, tones?.stone ?? white, porosity: 0.6f, smooth: 0.08f);
             var crown = Mat(0.34f, white, tinted: true, porosity: 0.3f, smooth: 0.08f, ground: 0.2f);
@@ -181,13 +199,23 @@ namespace Overstory.EditorTools.Town
 
             Add(root, "ground", GroundMesh(town.ground, true, tones), town.ground.cover != null ? covered : ground, made);
             Add(root, "paving", Paving(town, tones), paved, made);
+            if (town.stairs != null)
+                Add(root, "stairs", Stairs(town.stairs, tones), paved, made);
             Add(root, "land", GroundMesh(town.coarse, false, null), ground, made);
-            Add(root, "water", Plane(-1600f, -1400f, 1700f, 1900f, town.quay.water * M), water, made);
+            Add(root, "water", moment == null ? Plane(-1600f, -1400f, 1700f, 1900f, town.quay.water * M) : Water(town, facts.water), water, made);
             Add(root, "quay wall", QuayWall(town.quay), plinth, made);
+            if (tones != null)
+                Add(root, "wet bands", WetBands(town, F(facts.water["wetM"])), Mat(0.2f, tones.stone * F(facts.water["wet"]), porosity: 0f, smooth: 0.3f), made);
             if (town.walls != null)
                 Add(root, "walls", Walls(town.walls), plinth, made);
             if (town.fences != null)
-                Add(root, "fences", Fences(town.fences, town.ground), fenceM, made);
+            {
+                var (pickets, planks, hedges, stones) = Fences(town.fences, town.ground, tones);
+                Add(root, "fences", pickets, fenceM, made);
+                Add(root, "plank fences", planks, timber, made);
+                Add(root, "hedges", hedges, crown, made);
+                Add(root, "dry-stone walls", stones, plinth, made);
+            }
             if (town.piers != null)
             {
                 var (stone, deck) = Piers(town.piers, town.quay);
@@ -312,7 +340,7 @@ namespace Overstory.EditorTools.Town
             public readonly Color land, stand, trunk, fence, stone;
             readonly Dictionary<string, Color[]> crowns = new Dictionary<string, Color[]>();
             readonly Dictionary<string, Color> surfaces = new Dictionary<string, Color>();
-            readonly Color[] boats;
+            readonly Color[] boats, hedges;
             readonly Dictionary<string, object> paint, schemeOf, town;
             readonly Dictionary<string, Color> paints = new Dictionary<string, Color>();
             readonly Dictionary<int, Dictionary<string, object>> diaries = new Dictionary<int, Dictionary<string, object>>();
@@ -320,7 +348,7 @@ namespace Overstory.EditorTools.Town
             readonly string pack;
             const int Year = 1989;
 
-            public readonly Dictionary<string, object> timber, openings;
+            public readonly Dictionary<string, object> timber, openings, water;
             public readonly Color glass, boards;
             /// <summary>A lit room's light through its pane at a window glow of 1, linear.</summary>
             public readonly Vector4 paneLit;
@@ -337,6 +365,7 @@ namespace Overstory.EditorTools.Town
                 openings = Obj(town["openings"]);
                 evening = Obj(town["evening"]);
                 glass = Hex((string)Obj(town["glass"])["srgb"]);
+                water = Obj(town["water"]);
                 // the room behind a lit pane: its lamp on its walls and its curtains, half each (materials/glass.json)
                 var room = Obj(Read("materials/glass.json")["room"]);
                 Color lamp = Hex((string)room["srgbLamp"]).linear, walls = Hex((string)room["srgbWalls"]).linear,
@@ -367,6 +396,7 @@ namespace Overstory.EditorTools.Town
                 foreach (var kv in Obj(town["surfaces"]))
                     surfaces[kv.Key] = Hex((string)kv.Value);
                 boats = Arr(town["boats"]).ConvertAll(o => paints[(string)o]).ToArray();
+                hedges = Arr(town["hedges"]).ConvertAll(o => Hex((string)o)).ToArray();
                 var scheme = Obj(town["scheme"]);
                 foreach (var o in Arr(paint["schemes"]))
                     if ((string)Obj(o)["name"] == (string)scheme["name"])
@@ -577,6 +607,7 @@ namespace Overstory.EditorTools.Town
             public Color Surface(string name) => surfaces.TryGetValue(name, out var c) ? c : surfaces["setts"];
 
             public Color Boat(Boat b) => Pick(boats, Hash.Of($"town.boat.{b.id}"));
+            public Color Hedge(Fence f) => Pick(hedges, Hash.Of($"town.hedge.{f.id}"));
         }
 
         static void Add(GameObject parent, string name, Mesh mesh, Material mat, List<Object> made)
@@ -658,12 +689,8 @@ namespace Overstory.EditorTools.Town
             var t = new List<int>();
             float top = q.top * M, foot = q.water * M - 2.5f;
             int count = q.edge.Length / 2;
-            Vector2 E(int i) => new Vector2(q.edge[2 * i] * M, q.edge[2 * i + 1] * M);
-            Vector2 Out(int i)
-            {
-                var d = E(Mathf.Min(i + 1, count - 1)) - E(Mathf.Max(i - 1, 0));
-                return new Vector2(d.y, -d.x).normalized;      // seaward: the right of the edge's run east
-            }
+            Vector2 E(int i) => QuayAt(q, i);
+            Vector2 Out(int i) => QuayOut(q, i);
             for (int i = 0; i + 1 < count; i++)
             {
                 Vector2 a = E(i) + Out(i) * 1.0f, b = E(i + 1) + Out(i + 1) * 1.0f;
@@ -681,6 +708,300 @@ namespace Overstory.EditorTools.Town
             m.RecalculateNormals();
             DoubleSided(m);
             return m;
+        }
+
+        static Vector2 QuayAt(Quay q, int i) => new Vector2(q.edge[2 * i] * M, q.edge[2 * i + 1] * M);
+
+        /// <summary>Seaward at the quay's i-th point: the right of the edge's run east.</summary>
+        static Vector2 QuayOut(Quay q, int i)
+        {
+            int count = q.edge.Length / 2;
+            var d = QuayAt(q, Mathf.Min(i + 1, count - 1)) - QuayAt(q, Mathf.Max(i - 1, 0));
+            return new Vector2(d.y, -d.x).normalized;
+        }
+
+        // -- the water ---------------------------------------------------------------------------------------------------
+
+        /// <summary>The ground's height as its mesh draws it: two triangles a cell, split from its (i+1, j) corner to its
+        /// (i, j+1), so a waterline found on it is the one on screen.</summary>
+        static float GroundTri(Grid g, float x, float y)
+        {
+            float fx = (x - g.x0 * M) / (g.step * M), fy = (y - g.y0 * M) / (g.step * M);
+            int i = Mathf.Clamp(Mathf.FloorToInt(fx), 0, g.nx - 2), j = Mathf.Clamp(Mathf.FloorToInt(fy), 0, g.ny - 2);
+            float tx = Mathf.Clamp01(fx - i), ty = Mathf.Clamp01(fy - j);
+            float a = g.z[j * g.nx + i], b = g.z[j * g.nx + i + 1], c = g.z[(j + 1) * g.nx + i], d = g.z[(j + 1) * g.nx + i + 1];
+            return (tx + ty <= 1f ? a + (b - a) * tx + (c - a) * ty : d + (c - d) * (1f - tx) + (b - d) * (1f - ty)) * M;
+        }
+
+        /// <summary>Each cell's distance, in cells, to the nearest source cell: a two-pass chamfer (1 and the root of 2).</summary>
+        static float[] Chamfer(bool[] source, int W, int H)
+        {
+            const float D = 1.4142136f;
+            var d = new float[W * H];
+            for (int k = 0; k < d.Length; k++)
+                d[k] = source[k] ? 0f : 1e9f;
+            for (int j = 0; j < H; j++)
+                for (int i = 0; i < W; i++)
+                {
+                    int k = j * W + i;
+                    float v = d[k];
+                    if (i > 0) v = Mathf.Min(v, d[k - 1] + 1f);
+                    if (j > 0)
+                    {
+                        v = Mathf.Min(v, d[k - W] + 1f);
+                        if (i > 0) v = Mathf.Min(v, d[k - W - 1] + D);
+                        if (i < W - 1) v = Mathf.Min(v, d[k - W + 1] + D);
+                    }
+                    d[k] = v;
+                }
+            for (int j = H - 1; j >= 0; j--)
+                for (int i = W - 1; i >= 0; i--)
+                {
+                    int k = j * W + i;
+                    float v = d[k];
+                    if (i < W - 1) v = Mathf.Min(v, d[k + 1] + 1f);
+                    if (j < H - 1)
+                    {
+                        v = Mathf.Min(v, d[k + W] + 1f);
+                        if (i < W - 1) v = Mathf.Min(v, d[k + W + 1] + D);
+                        if (i > 0) v = Mathf.Min(v, d[k + W - 1] + D);
+                    }
+                    d[k] = v;
+                }
+            return d;
+        }
+
+        /// <summary>The harbour's water, opaque (Town.shader, _Water). Its colour is baked from the depth under it, the
+        /// sky's hue lightening where the bed shows through, and darkest at the foot of a made thing (the quay, a pier, a
+        /// house standing in the water). Its vertex alpha is its distance from the nearest waterline, -1 to 3 m, from which
+        /// the shader draws one light line round everything standing in it: shore, quay, piers, jetties and boats. Half a
+        /// metre over the town's ground grid, where the waterlines are, on a quarter-metre raster of what stands in the
+        /// water; beyond it the land's grid, a few centimetres lower so the fine water always wins.</summary>
+        static Mesh Water(Town town, Dictionary<string, object> look)
+        {
+            Grid g = town.ground, cg = town.coarse;
+            float w = town.quay.water * M;
+            Color shallow = Hex((string)look["shallow"]).linear, open = Hex((string)look["open"]).linear, foot = Hex((string)look["foot"]).linear;
+            float deep = F(look["deepM"]), reach = F(look["footM"]);
+
+            // what stands in the water, on a quarter-metre raster over the ground grid; the made things apart
+            const float r = 0.25f;
+            float X0 = g.x0 * M, Y0 = g.y0 * M;
+            int W = Mathf.RoundToInt((g.nx - 1) * g.step * M / r), H = Mathf.RoundToInt((g.ny - 1) * g.step * M / r);
+            var solid = new bool[W * H];
+            var made = new bool[W * H];
+            for (int j = 0; j < H; j++)
+                for (int i = 0; i < W; i++)
+                    solid[j * W + i] = GroundTri(g, X0 + (i + 0.5f) * r, Y0 + (j + 0.5f) * r) > w;
+            void Fill(IList<Vector2> poly, bool isMade)
+            {
+                float x0 = float.MaxValue, y0 = float.MaxValue, x1 = float.MinValue, y1 = float.MinValue;
+                foreach (var q in poly) { x0 = Mathf.Min(x0, q.x); y0 = Mathf.Min(y0, q.y); x1 = Mathf.Max(x1, q.x); y1 = Mathf.Max(y1, q.y); }
+                int i0 = Mathf.Max(0, Mathf.FloorToInt((x0 - X0) / r)), i1 = Mathf.Min(W - 1, Mathf.CeilToInt((x1 - X0) / r));
+                int j0 = Mathf.Max(0, Mathf.FloorToInt((y0 - Y0) / r)), j1 = Mathf.Min(H - 1, Mathf.CeilToInt((y1 - Y0) / r));
+                for (int j = j0; j <= j1; j++)
+                    for (int i = i0; i <= i1; i++)
+                    {
+                        float x = X0 + (i + 0.5f) * r, y = Y0 + (j + 0.5f) * r;
+                        bool inside = false;
+                        for (int a = 0, b = poly.Count - 1; a < poly.Count; b = a++)
+                            if ((poly[a].y > y) != (poly[b].y > y) && x < (poly[b].x - poly[a].x) * (y - poly[a].y) / (poly[b].y - poly[a].y) + poly[a].x)
+                                inside = !inside;
+                        if (!inside)
+                            continue;
+                        solid[j * W + i] = true;
+                        made[j * W + i] |= isMade;
+                    }
+            }
+            // the quay from two metres in to its face a metre out (QuayWall)
+            var quay = town.quay;
+            for (int i = 0; i + 1 < quay.edge.Length / 2; i++)
+                Fill(new[] { QuayAt(quay, i) - QuayOut(quay, i) * 2f, QuayAt(quay, i + 1) - QuayOut(quay, i + 1) * 2f,
+                             QuayAt(quay, i + 1) + QuayOut(quay, i + 1), QuayAt(quay, i) + QuayOut(quay, i) }, true);
+            if (town.piers != null)
+                foreach (var p in town.piers)
+                {
+                    Vector2 a = new Vector2(p.points[0], p.points[1]) * M, b = new Vector2(p.points[2], p.points[3]) * M;
+                    Vector2 d = (b - a).normalized, sd = new Vector2(-d.y, d.x) * (p.width * M / 2);
+                    if (p.kind != "pier")
+                        a += d * 4f;    // a jetty's deck floats from four metres out (Piers)
+                    Fill(new[] { a - sd, a + sd, b + sd, b - sd }, p.kind == "pier");
+                }
+            foreach (var p in town.placements)
+            {
+                var fp = new Vector2[4];
+                for (int k = 0; k < 4; k++)
+                    fp[k] = new Vector2(p.footprint[2 * k], p.footprint[2 * k + 1]) * M;
+                Fill(fp, true);
+            }
+            if (town.boats != null)
+                foreach (var bt in town.boats)
+                    Fill(HullPlan(bt), false);
+            var toSolid = Chamfer(solid, W, H);
+            var toWater = Chamfer(Array.ConvertAll(solid, x => !x), W, H);
+            var toMade = Chamfer(made, W, H);
+            // the boundary lies half a cell from a cell's centre: signed, in metres, out of the water negative
+            var signed = new float[W * H];
+            for (int k = 0; k < signed.Length; k++)
+                signed[k] = solid[k] ? -(toWater[k] - 0.5f) * r : (toSolid[k] - 0.5f) * r;
+            float Sample(float[] f, float x, float y)
+            {
+                float fx = (x - X0) / r - 0.5f, fy = (y - Y0) / r - 0.5f;
+                int i = Mathf.Clamp(Mathf.FloorToInt(fx), 0, W - 2), j = Mathf.Clamp(Mathf.FloorToInt(fy), 0, H - 2);
+                float tx = Mathf.Clamp01(fx - i), ty = Mathf.Clamp01(fy - j);
+                return Mathf.Lerp(Mathf.Lerp(f[j * W + i], f[j * W + i + 1], tx), Mathf.Lerp(f[(j + 1) * W + i], f[(j + 1) * W + i + 1], tx), ty);
+            }
+            Color Tone(float depth, float fromMade, float d)
+            {
+                var c = Color.Lerp(shallow, open, Mathf.SmoothStep(0f, 1f, depth / deep));
+                float f = Mathf.Clamp01(1f - fromMade / reach);
+                c = Color.Lerp(c, foot, f * (2f - f));
+                c.a = Mathf.Clamp01((d + 1f) / 4f);
+                return c;
+            }
+
+            var v = new List<Vector3>();
+            var col = new List<Color>();
+            var t = new List<int>();
+            // fine: half a metre, wherever water is within three quarters of a metre
+            const float s = 0.5f;
+            int nx = Mathf.RoundToInt(W * r / s) + 1, ny = Mathf.RoundToInt(H * r / s) + 1;
+            var dv = new float[nx * ny];
+            var index = new int[nx * ny];
+            for (int j = 0; j < ny; j++)
+                for (int i = 0; i < nx; i++)
+                {
+                    dv[j * nx + i] = Sample(signed, X0 + i * s, Y0 + j * s);
+                    index[j * nx + i] = -1;
+                }
+            int V(int i, int j)
+            {
+                int k = j * nx + i;
+                if (index[k] < 0)
+                {
+                    float x = X0 + i * s, y = Y0 + j * s;
+                    index[k] = v.Count;
+                    v.Add(U(x, y, w));
+                    col.Add(Tone(w - GroundTri(g, x, y), Mathf.Max(0f, (Sample(toMade, x, y) - 0.5f) * r), dv[k]));
+                }
+                return index[k];
+            }
+            for (int j = 0; j + 1 < ny; j++)
+                for (int i = 0; i + 1 < nx; i++)
+                {
+                    int k = j * nx + i;
+                    if (Mathf.Max(Mathf.Max(dv[k], dv[k + 1]), Mathf.Max(dv[k + nx], dv[k + nx + 1])) < -0.75f)
+                        continue;
+                    int a = V(i, j), b = V(i + 1, j), c = V(i, j + 1), d = V(i + 1, j + 1);
+                    t.AddRange(new[] { a, c, b, b, c, d });
+                }
+            // coarse: the bay beyond, on the land's grid, its colour from the land's depth and no line
+            const float cs = 25f;
+            float cx0 = -1600f, cy0 = -1400f;
+            int cnx = Mathf.RoundToInt(3300f / cs) + 1, cny = Mathf.RoundToInt(3300f / cs) + 1;
+            int n0 = v.Count;
+            for (int j = 0; j < cny; j++)
+                for (int i = 0; i < cnx; i++)
+                {
+                    float x = cx0 + i * cs, y = cy0 + j * cs;
+                    v.Add(U(x, y, w - 0.03f));
+                    col.Add(Tone(w - GroundAt(cg, x, y), reach, 3f));
+                }
+            for (int j = 0; j + 1 < cny; j++)
+                for (int i = 0; i + 1 < cnx; i++)
+                {
+                    int a = n0 + j * cnx + i, b = a + 1, c = a + cnx, d = c + 1;
+                    t.AddRange(new[] { a, c, b, b, c, d });
+                }
+            var m = new Mesh { name = "water", indexFormat = IndexFormat.UInt32, hideFlags = HideFlags.DontSave };
+            m.SetVertices(v);
+            m.SetColors(col);
+            m.SetTriangles(t, 0);
+            var up = new Vector3[v.Count];
+            for (int k = 0; k < up.Length; k++)
+                up[k] = Vector3.up;
+            m.normals = up;
+            m.RecalculateBounds();
+            return m;
+        }
+
+        /// <summary>The wet band above the water on what is built in it: the quay's face, the stone pier's sides and the
+        /// feet of the houses standing in the water, a hair out from each face.</summary>
+        static Mesh WetBands(Town town, float high)
+        {
+            var mb = new MB();
+            float w = town.quay.water * M, z0 = w - 0.1f, z1 = w + high;
+            void Band(Vector2 a, Vector2 b, Vector2 outward)
+            {
+                Vector2 a1 = a + outward * 0.02f, b1 = b + outward * 0.02f;
+                mb.Quad(U(a1.x, a1.y, z0), U(b1.x, b1.y, z0), U(b1.x, b1.y, z1), U(a1.x, a1.y, z1));
+            }
+            var q = town.quay;
+            for (int i = 0; i + 1 < q.edge.Length / 2; i++)
+                Band(QuayAt(q, i) + QuayOut(q, i), QuayAt(q, i + 1) + QuayOut(q, i + 1), (QuayOut(q, i) + QuayOut(q, i + 1)).normalized);
+            void Ring(IList<Vector2> poly)
+            {
+                Vector2 c = Vector2.zero;
+                foreach (var p in poly) c += p;
+                c /= poly.Count;
+                for (int i = 0; i < poly.Count; i++)
+                {
+                    Vector2 a = poly[i], b = poly[(i + 1) % poly.Count], mid = (a + b) / 2;
+                    // only a face whose foot stands in the water
+                    if (GroundAt(town.ground, mid.x, mid.y) > w + 0.1f && GroundAt(town.ground, a.x, a.y) > w + 0.1f && GroundAt(town.ground, b.x, b.y) > w + 0.1f)
+                        continue;
+                    var n = new Vector2(b.y - a.y, a.x - b.x).normalized;
+                    Band(a, b, Vector2.Dot(n, mid - c) < 0f ? -n : n);
+                }
+            }
+            if (town.piers != null)
+                foreach (var p in town.piers)
+                {
+                    if (p.kind != "pier")
+                        continue;
+                    Vector2 a = new Vector2(p.points[0], p.points[1]) * M, b = new Vector2(p.points[2], p.points[3]) * M;
+                    Vector2 d = (b - a).normalized, sd = new Vector2(-d.y, d.x) * (p.width * M / 2);
+                    Ring(new[] { a - sd, a + sd, b + sd, b - sd });
+                }
+            foreach (var p in town.placements)
+            {
+                var fp = new Vector2[4];
+                for (int k = 0; k < 4; k++)
+                    fp[k] = new Vector2(p.footprint[2 * k], p.footprint[2 * k + 1]) * M;
+                Ring(fp);
+            }
+            return mb.Make("wet bands");
+        }
+
+        /// <summary>The smau's flights: on each sloping run between the lanes it joins, steps of about 16.5 cm, each a
+        /// block whose top is the run's ground at its upper end, so the risers stand out of the benched slope and the
+        /// treads lie on it. Level runs across the lanes are the lanes'.</summary>
+        static Mesh Stairs(Stair[] stairs, Tones tones)
+        {
+            var mb = new MB { tint = tones == null ? Color.white : tones.Surface("setts").linear };
+            foreach (var st in stairs)
+            {
+                float hw = st.width * M / 2;
+                for (int i = 0; i + 5 < st.points.Length; i += 3)
+                {
+                    var a = new Vector3(st.points[i], st.points[i + 1], st.points[i + 2]) * M;
+                    var b = new Vector3(st.points[i + 3], st.points[i + 4], st.points[i + 5]) * M;
+                    float dz = b.z - a.z;
+                    var plan = new Vector2(b.x - a.x, b.y - a.y);
+                    float L = plan.magnitude;
+                    if (Mathf.Abs(dz) < 0.05f || L < 0.1f)
+                        continue;
+                    Vector2 d = plan / L, n = new Vector2(-d.y, d.x) * hw, a2 = new Vector2(a.x, a.y);
+                    int count = Mathf.Max(1, Mathf.RoundToInt(Mathf.Abs(dz) / 0.165f));
+                    for (int k = 0; k < count; k++)
+                    {
+                        Vector2 p0 = a2 + d * (L * k / count), p1 = a2 + d * (L * (k + 1) / count);
+                        float z0 = a.z + dz * k / count, z1 = a.z + dz * (k + 1) / count;
+                        mb.Add(Prism(new[] { p0 - n, p1 - n, p1 + n, p0 + n }, Mathf.Min(z0, z1) - 0.15f, Mathf.Max(z0, z1)));
+                    }
+                }
+            }
+            return mb.Make("stairs");
         }
 
         // -- paving: the Row, the lanes and the level places as their own surfaces, a few centimetres over the ground ----
@@ -971,23 +1292,96 @@ namespace Overstory.EditorTools.Town
             }
         }
 
-        /// <summary>The fences: a panel from the ground to its height along each run, a post at each end.</summary>
-        static Mesh Fences(Fence[] fences, Grid g)
+        /// <summary>What closes a plot: a fence as a panel from the ground to its height along each run, a post at each
+        /// end (white pickets, plank fences in the weathered boards); a hedge as one faceted mass along its run, its top
+        /// a little uneven; a dry-stone wall to its height, or across a fall a terrace wall from the low side's foot to a
+        /// little over the high side.</summary>
+        static (Mesh pickets, Mesh planks, Mesh hedges, Mesh stones) Fences(Fence[] fences, Grid g, Tones tones)
         {
-            var mb = new MB();
+            var pickets = new MB();
+            var planks = new MB();
+            var hedges = new MB();
+            var stones = new MB();
             foreach (var f in fences)
             {
-                float h = f.height * M;
+                float h = f.height * M, hw = f.width * M / 2;
+                ulong seed = Hash.Of($"town.fence.{f.id}");
                 for (int i = 0; i + 3 < f.points.Length; i += 2)
                 {
                     Vector2 a = new Vector2(f.points[i], f.points[i + 1]) * M, b = new Vector2(f.points[i + 2], f.points[i + 3]) * M;
                     float za = GroundAt(g, a.x, a.y), zb = GroundAt(g, b.x, b.y);
+                    if (f.kind == "hedge")
+                    {
+                        hedges.tint = tones == null ? Color.white : tones.Hedge(f).linear;
+                        Hedge(hedges, a, b, h, hw, g, seed);
+                        continue;
+                    }
+                    if (f.kind == "stone")
+                    {
+                        Vector2 d = (b - a).normalized, n = new Vector2(-d.y, d.x);
+                        float Top(Vector2 q)
+                        {
+                            float l = GroundAt(g, q.x - n.x * 0.8f, q.y - n.y * 0.8f), r = GroundAt(g, q.x + n.x * 0.8f, q.y + n.y * 0.8f);
+                            return Mathf.Abs(l - r) > 0.5f ? Mathf.Max(l, r) + 0.35f : GroundAt(g, q.x, q.y) + h;
+                        }
+                        float Foot(Vector2 q) => Mathf.Min(GroundAt(g, q.x - n.x * 0.8f, q.y - n.y * 0.8f), GroundAt(g, q.x + n.x * 0.8f, q.y + n.y * 0.8f)) - 0.2f;
+                        Vector2 s0 = n * hw;
+                        float ta = Top(a), tb = Top(b), fa = Foot(a), fb = Foot(b);
+                        stones.Quad(U(a.x - s0.x, a.y - s0.y, fa), U(b.x - s0.x, b.y - s0.y, fb), U(b.x - s0.x, b.y - s0.y, tb), U(a.x - s0.x, a.y - s0.y, ta));
+                        stones.Quad(U(a.x + s0.x, a.y + s0.y, fa), U(b.x + s0.x, b.y + s0.y, fb), U(b.x + s0.x, b.y + s0.y, tb), U(a.x + s0.x, a.y + s0.y, ta));
+                        stones.Quad(U(a.x - s0.x, a.y - s0.y, ta), U(b.x - s0.x, b.y - s0.y, tb), U(b.x + s0.x, b.y + s0.y, tb), U(a.x + s0.x, a.y + s0.y, ta));
+                        stones.Quad(U(a.x - s0.x, a.y - s0.y, fa), U(a.x - s0.x, a.y - s0.y, ta), U(a.x + s0.x, a.y + s0.y, ta), U(a.x + s0.x, a.y + s0.y, fa));
+                        stones.Quad(U(b.x - s0.x, b.y - s0.y, fb), U(b.x - s0.x, b.y - s0.y, tb), U(b.x + s0.x, b.y + s0.y, tb), U(b.x + s0.x, b.y + s0.y, fb));
+                        continue;
+                    }
+                    var mb = f.kind == "plank" ? planks : pickets;
                     mb.Quad(U(a.x, a.y, za - 0.1f), U(b.x, b.y, zb - 0.1f), U(b.x, b.y, zb + h), U(a.x, a.y, za + h));
                     foreach (var (q, zq) in new[] { (a, za), (b, zb) })
                         mb.Add(Prism(new[] { q + new Vector2(-0.06f, -0.06f), q + new Vector2(0.06f, -0.06f), q + new Vector2(0.06f, 0.06f), q + new Vector2(-0.06f, 0.06f) }, zq - 0.1f, zq + h + 0.1f));
                 }
             }
-            return mb.Make("fences");
+            return (pickets.Make("fences"), planks.Make("plank fences"), hedges.Make("hedges"), stones.Make("dry-stone walls"));
+        }
+
+        /// <summary>A clipped hedge along a run: stations about a metre and a half apart, each a section of five points
+        /// (its foot, its swelling sides, its flat top), the top's height and the sides' swell a little apart from
+        /// station to station, so the planes between them catch the light unevenly, as a clipped hedge does.</summary>
+        static void Hedge(MB mb, Vector2 a, Vector2 b, float h, float hw, Grid g, ulong seed)
+        {
+            float L = (b - a).magnitude;
+            if (L < 0.1f)
+                return;
+            Vector2 d = (b - a) / L, n = new Vector2(-d.y, d.x);
+            int count = Mathf.Max(1, Mathf.RoundToInt(L / 1.5f));
+            var ring = new Vector3[count + 1][];
+            for (int k = 0; k <= count; k++)
+            {
+                // a hedge ends a little short of its run's ends, rounded off
+                float t = Mathf.Lerp(Mathf.Min(0.3f, L * 0.2f), L - Mathf.Min(0.3f, L * 0.2f), k / (float)count);
+                var q = a + d * t;
+                float z = GroundAt(g, q.x, q.y);
+                ulong sk = Hash.Then(seed, $"{Mathf.RoundToInt(q.x * 10)},{Mathf.RoundToInt(q.y * 10)}");
+                float top = h * Hash.Range(Hash.Then(sk, "h"), 0.9f, 1.08f), swell = hw * Hash.Range(Hash.Then(sk, "w"), 0.9f, 1.12f);
+                bool end = k == 0 || k == count;
+                float sw = end ? swell * 0.8f : swell;
+                ring[k] = new[]
+                {
+                    U(q.x - n.x * sw * 0.85f, q.y - n.y * sw * 0.85f, z - 0.1f),
+                    U(q.x - n.x * sw, q.y - n.y * sw, z + top * 0.55f),
+                    U(q.x - n.x * sw * 0.6f, q.y - n.y * sw * 0.6f, z + top),
+                    U(q.x + n.x * sw * 0.6f, q.y + n.y * sw * 0.6f, z + top),
+                    U(q.x + n.x * sw, q.y + n.y * sw, z + top * 0.55f),
+                    U(q.x + n.x * sw * 0.85f, q.y + n.y * sw * 0.85f, z - 0.1f),
+                };
+            }
+            for (int k = 0; k < count; k++)
+                for (int e = 0; e < 5; e++)
+                    mb.Quad(ring[k][e], ring[k + 1][e], ring[k + 1][e + 1], ring[k][e + 1]);
+            foreach (var r in new[] { ring[0], ring[count] })
+            {
+                mb.Quad(r[0], r[1], r[4], r[5]);
+                mb.Quad(r[1], r[2], r[3], r[4]);
+            }
         }
 
         /// <summary>Retaining walls round the level places: the face from its foot to its top at each point, a coping
@@ -1045,17 +1439,39 @@ namespace Overstory.EditorTools.Town
 
         /// <summary>The boats: a hull lofted through five stations from the transom to the stem (a færing pointed at
         /// both ends), its sheer rising to the bow; a wheelhouse or a cabin on deck by its kind.</summary>
+        static readonly float[] Stations = { 0f, 0.14f, 0.48f, 0.8f, 1f };
+
+        /// <summary>A hull's half-beam at each station, as a share of its beam: a færing pointed at both ends.</summary>
+        static float[] HalfBeams(Boat bt) =>
+            bt.kind == "faering" ? new[] { 0.06f, 0.62f, 1f, 0.62f, 0.04f } : new[] { 0.8f, 0.96f, 1f, 0.72f, 0.03f };
+
+        /// <summary>A boat's outline at its gunwale, in plan.</summary>
+        static Vector2[] HullPlan(Boat bt)
+        {
+            float L = bt.length * M, B = bt.beam * M, ang = bt.angle * Mathf.Deg2Rad;
+            Vector2 f = new Vector2(Mathf.Cos(ang), Mathf.Sin(ang)), sd = new Vector2(-f.y, f.x), o = new Vector2(bt.x, bt.y) * M;
+            var hb = HalfBeams(bt);
+            var plan = new Vector2[2 * Stations.Length];
+            for (int k = 0; k < Stations.Length; k++)
+            {
+                var c = o + f * ((Stations[k] - 0.5f) * L);
+                plan[k] = c + sd * (hb[k] * B / 2);
+                plan[plan.Length - 1 - k] = c - sd * (hb[k] * B / 2);
+            }
+            return plan;
+        }
+
         static Mesh Boats(Boat[] boats, float water, Tones tones)
         {
             var mb = new MB();
-            float[] st = { 0f, 0.14f, 0.48f, 0.8f, 1f };
+            var st = Stations;
             foreach (var bt in boats)
             {
                 mb.tint = tones == null ? Color.white : tones.Boat(bt).linear;
                 float L = bt.length * M, B = bt.beam * M, ang = bt.angle * Mathf.Deg2Rad;
                 Vector2 f = new Vector2(Mathf.Cos(ang), Mathf.Sin(ang)), sd = new Vector2(-f.y, f.x), o = new Vector2(bt.x, bt.y) * M;
                 bool faering = bt.kind == "faering";
-                float[] hb = faering ? new[] { 0.06f, 0.62f, 1f, 0.62f, 0.04f } : new[] { 0.8f, 0.96f, 1f, 0.72f, 0.03f };
+                var hb = HalfBeams(bt);
                 float fb = bt.kind == "sjark" ? 1.05f : bt.kind == "cruiser" ? 0.85f : bt.kind == "snekke" ? 0.6f : 0.45f;
                 float draft = fb * 0.5f;
                 Vector3 G(int k, float side, float lift = 0f)
