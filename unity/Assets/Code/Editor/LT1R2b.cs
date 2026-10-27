@@ -290,7 +290,7 @@ namespace Overstory.EditorTools
 
         /// <summary>tools/r2b_wall.py's triangle soup: each triangle its own three corners, their normals given (the face
         /// soft, the sides flat), its winding turned for Unity's.</summary>
-        static Mesh Load(string path)
+        internal static Mesh Load(string path)
         {
             using var br = new BinaryReader(File.OpenRead(path));
             if (new string(br.ReadChars(4)) != "R2B2")
