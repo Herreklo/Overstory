@@ -13,10 +13,11 @@
     "halfYears": 3
   },
   "peel": {
-    "onsetYears": 8,
-    "spanYears": 30,
+    "onsetYears": 14,
+    "spanYears": 24,
     "flakeMm": 9,
-    "alongGrain": 3.0
+    "alongGrain": 3.0,
+    "toWood": 0.3
   },
   "water": [
     0.25,
@@ -28,7 +29,7 @@
   "notes": {
     "chalk": "How far a decade at full weather draws the coat towards its chalk: a flat, paler or greyer coat whose value goes towards towardValue (linear) and which keeps keepChroma of its colour; light colours drift grey, dark ones fade (the research). Linseed chalks most of the three. Judged by look.",
     "gloss": "Smoothness when new and when old, and the years it takes to lose half the difference: a fresh oil coat has a soft sheen that goes in a few seasons. Judged by look.",
-    "peel": "Its loss at full weather begins onsetYears after the coat and is whole spanYears later; it goes in flakes about flakeMm across, alongGrain times longer along the board. Linseed scales late and small, a coat lasting 8-15 years before a repaint (the research). Judged by look.",
+    "peel": "Its loss at full weather begins onsetYears after the coat and is whole spanYears later; it goes in flakes about flakeMm across, alongGrain times longer along the board. Linseed scales late and small, a coat lasting 8-15 years before a repaint (the research). toWood: the share of what is lost that goes to the wood rather than to the coat under (it scales off the coat under it more than off the wood); judged by look. The onset is the open wall's; where water works in (paint.json, weather) it comes two to three times sooner.",
     "water": "Its water profile as the town's (Shaders/Water.hlsl, Overstory.World.WaterPack): how much it darkens wet, how glossy its wet film, how long it holds water, how readily run-off stains it. An oil film sheds water but a chalked one drinks a little. Judged by look."
   }
 }

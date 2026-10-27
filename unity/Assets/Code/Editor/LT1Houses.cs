@@ -51,8 +51,8 @@ namespace Overstory.EditorTools
         // the pack's records the house shader reads (paint.json, materials/*.json): one shape for every simple material
         [System.Serializable] class Chalk { public float perDecade, towardValue, keepChroma; }
         [System.Serializable] class Gloss { public float @new, old, halfYears; }
-        [System.Serializable] class Peel { public float onsetYears, spanYears, flakeMm, alongGrain; }
-        [System.Serializable] class Weather { public float southFactor, footM, footFactor, lapFactor, boardSpread; }
+        [System.Serializable] class Peel { public float onsetYears, spanYears, flakeMm, alongGrain, toWood; }
+        [System.Serializable] class Weather { public float southFactor, footM, footFactor, lapFactor, boardSpread, dripFactor, endFactor, rainFactor, rainFromDeg; }
         [System.Serializable] class Curtains { public string srgb; public float share, opacity, depthM, valanceShare, foldsPerM; }
         [System.Serializable] class Room
         {
@@ -252,7 +252,8 @@ namespace Overstory.EditorTools
             {
                 var m = Read($"materials/{paints[i]}.json");
                 chalk[i] = new Vector4(m.chalk.perDecade, m.chalk.towardValue, m.chalk.keepChroma, 0f);
-                gloss[i] = new Vector4(m.glossCurve.@new, m.glossCurve.old, m.glossCurve.halfYears, 0f);
+                // w: the share of the lost paint that goes to the wood, not to the coat under it
+                gloss[i] = new Vector4(m.glossCurve.@new, m.glossCurve.old, m.glossCurve.halfYears, m.peel.toWood);
                 peel[i] = new Vector4(m.peel.onsetYears, m.peel.spanYears, m.peel.flakeMm * 0.001f, m.peel.alongGrain);
                 paintWater[i] = Water(m);
             }
@@ -311,6 +312,7 @@ namespace Overstory.EditorTools
             var w = Read(paintRule).weather;
             mat.SetVector("_Weather", new Vector4(w.southFactor, w.footM, w.footFactor, w.lapFactor));
             mat.SetVector("_WeatherB", new Vector4(w.boardSpread, 0f, 0f, 0f));
+            mat.SetVector("_WeatherC", new Vector4(w.dripFactor, w.endFactor, w.rainFactor, w.rainFromDeg * Mathf.Deg2Rad));
             mat.SetFloat("_Grey", 0f);
             mat.SetFloat("_Debug", float.Parse(Cli.Arg("-debug", "0"), CultureInfo.InvariantCulture));
             var grey = new Material(mat) { hideFlags = HideFlags.DontSave };

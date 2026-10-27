@@ -61,6 +61,51 @@ def _intervals(s0, s1, blocks):
     return [(a, b) for a, b in out if b - a > 0.03]
 
 
+def _marks(sv, z, s, end, sills, mk):
+    """Where water works into a board at (sv, z): how much of a sill's run-off reaches it (1 under the sill's foot,
+    fading over dripReachM below and dripSideM to its sides) and how near it is to its own end grain (1 at its end,
+    0 past endReachM)."""
+    drip = 0.0
+    for a, b, zs in sills:
+        if z < zs - 1e-4:
+            side = max(0.0, 1.0 - max(a - sv, sv - b, 0.0) / mk["dripSideM"])
+            drip = max(drip, side * max(0.0, 1.0 - (zs - z) / mk["dripReachM"]))
+    near = max(0.0, 1.0 - min(sv - s, end - sv) / mk["endReachM"])
+    return (drip, near)
+
+
+def _face(soup, f, edges, zf, zt, dep, lz, s, end, sills, mk):
+    """A board's face from zf to zt between its edges (sa0, sa1 at its foot, sb0, sb1 at its top: a gable's rake
+    cuts its ends), cut across where its marks change (near its ends and at the sides of a sill's run-off over it), so
+    each corner carries its own (uv7)."""
+    sa0, sa1, sb0, sb1 = edges
+    lo, hi = min(sa0, sb0), max(sa1, sb1)
+    cuts = {lo, hi}
+    if soup.level == 0:
+        r = mk["endReachM"]
+        cuts |= {c for c in (s + r, end - r) if lo < c < hi}
+    if soup.level < 2:
+        for a, b, zs in sills:
+            if zt < zs and zs - zf < mk["dripReachM"]:
+                cuts |= {c for c in (a - mk["dripSideM"], a, b, b + mk["dripSideM"]) if lo < c < hi}
+    cuts = sorted(cuts)
+
+    def mark(sv, z):
+        # from the street a board's end grain is a few pixels, and the face is not cut for it: none drawn
+        if soup.level >= 2:
+            return (0.0, 0.0)
+        m = _marks(sv, z, s, end, sills, mk)
+        return m if soup.level == 0 else (m[0], 0.0)
+    for c0, c1 in zip(cuts, cuts[1:]):
+        a0, a1 = min(max(c0, sa0), sa1), min(max(c1, sa0), sa1)
+        b0, b1 = min(max(c0, sb0), sb1), min(max(c1, sb0), sb1)
+        if a1 - a0 < 1e-4 and b1 - b0 < 1e-4:
+            continue
+        soup.quad(f.at(a0, zf, dep(zf)), f.at(a1, zf, dep(zf)), f.at(b1, zt, dep(zt)), f.at(b0, zt, dep(zt)),
+                  ta=[(a0, zf), (a1, zf), (b1, zt), (b0, zt)], laps=(lz(zf), lz(zf), lz(zt), lz(zt)),
+                  marks=(mark(a0, zf), mark(a1, zf), mark(b1, zt), mark(b0, zt)))
+
+
 def clad(soup, f, wall, openings, lines, cl, rng, shelter, patches=()):
     """Rebated boards over the wall, course by course. A single-rebated board's face leans back by its step, so each
     course stands proud of the one above it; a double-rebated board's faces lie in one plane, a groove at each joint.
@@ -83,6 +128,8 @@ def clad(soup, f, wall, openings, lines, cl, rng, shelter, patches=()):
         # the wall as planes: up to the eave, and the gable over it, the openings cut out of them
         top_ = ridge - 0.08 if ridge is not None else lines[-1]
         lines = [lines[0], eave, top_] if ridge is not None and top_ > eave + 0.1 else [lines[0], lines[-1]]
+    # the sills water runs off: each casing's foot, over its width
+    sills = [(o[0], o[1], o[2]) for o in openings]
     prev_joints = []
     boards = 0
     for i in range(len(lines) - 1):
@@ -150,10 +197,8 @@ def clad(soup, f, wall, openings, lines, cl, rng, shelter, patches=()):
                 sa0, sa1 = clip(zf, s), clip(zf, end)
                 sb0, sb1 = clip(zt, s), clip(zt, end)
                 if sa1 - sa0 > 0.02 or sb1 - sb0 > 0.02:
-                    p = [f.at(sa0, zf, dep(zf)), f.at(sa1, zf, dep(zf)), f.at(sb1, zt, dep(zt)), f.at(sb0, zt, dep(zt))]
-                    t = [(sa0, zf), (sa1, zf), (sb1, zt), (sb0, zt)]
                     lz = lambda z: (z - za) / max(1e-6, zb - za)
-                    soup.quad(*p, ta=t, laps=(lz(zf), lz(zf), lz(zt), lz(zt)))
+                    _face(soup, f, (sa0, sa1, sb0, sb1), zf, zt, dep, lz, s, end, sills, cl["marks"])
                     soup.use(kind="underside")
                     if notch or soup.level >= 2:
                         pass    # (its foot sits on the casing's head)

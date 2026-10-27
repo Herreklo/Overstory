@@ -16,7 +16,8 @@
     "onsetYears": 30,
     "spanYears": 50,
     "flakeMm": 4,
-    "alongGrain": 1.5
+    "alongGrain": 1.5,
+    "toWood": 0.6
   },
   "water": [
     0.45,
@@ -27,7 +28,7 @@
   "provenance": "authored",
   "notes": {
     "chalk": "Slam paint has no film: its binder washes out and the pigment powders off, so it chalks fast but keeps its red (a binder-poor paint keeps its hue as it pales). Judged by look.",
-    "peel": "It does not flake as a film does; past decades the wood shows through in fine powdered patches, drawn here as small, late, soft losses.",
+    "peel": "It does not flake as a film does; past decades the wood shows through in fine powdered patches, drawn here as small, late, soft losses. toWood: the share of what is lost that goes to the wood rather than to the coat under (one thin coat: what goes shows the wood).",
     "water": "Porous and matt: darkens wet, takes no glaze, stains readily."
   }
 }

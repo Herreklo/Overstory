@@ -11,7 +11,7 @@ The vertex layout (eight float2 sets; the house shader, unity/Assets/Shaders/Hou
   uv4  bake2     openness, and a lit window's own seed (0 when it is not lit)
   uv5  place     where on its piece: the board's height from its lap edge (0) to its top (1); how sheltered it is
   uv6  coat      which coat scheme paints it (SCHEMES), and its storey band
-  uv7  spare
+  uv7  marks     where water works into a board: how much a sill's run-off reaches it, how near it is to its end grain
 Only piece constants and intrinsic geometry sit on vertices; the house's coats and care are the buffer's.
 """
 
@@ -80,8 +80,8 @@ class Soup:
             self.a[k] = v
         return self
 
-    def tri(self, a, b, c, ta=(0.0, 0.0), tb=(0.0, 0.0), tc=(0.0, 0.0), laps=None, ns=None):
-        """ns: the corners' own normals (a rounded surface), else the face's."""
+    def tri(self, a, b, c, ta=(0.0, 0.0), tb=(0.0, 0.0), tc=(0.0, 0.0), laps=None, ns=None, marks=None):
+        """ns: the corners' own normals (a rounded surface), else the face's. marks: the corners' uv7, else none."""
         n = cross(sub(b, a), sub(c, a))
         if dot(n, n) < 1e-16:
             return
@@ -91,17 +91,20 @@ class Soup:
             self.p.append(p)
             self.nrm.append(n if ns is None else ns[i])
             lap = A["lap"] if laps is None else laps[i]
+            mk = (0.0, 0.0) if marks is None else marks[i]
             self.ch.append((t[0], t[1], A["kind"], A["house"], A["seed"], A["year"], lap, A["shelter"],
-                            A["scheme"], A["band"], A["lit"]))
+                            A["scheme"], A["band"], A["lit"], mk[0], mk[1]))
 
-    def quad(self, a, b, c, d, ta=None, laps=None, ns=None):
-        """a b c d counter-clockwise seen from outside; ta their surface coordinates; ns their own normals."""
+    def quad(self, a, b, c, d, ta=None, laps=None, ns=None, marks=None):
+        """a b c d counter-clockwise seen from outside; ta their surface coordinates; ns their own normals; marks
+        their uv7."""
         ta = ta or ((0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0))
         la = laps or (None, None, None, None)
+        mk = marks or (None, None, None, None)
         self.tri(a, b, c, ta[0], ta[1], ta[2], None if laps is None else (la[0], la[1], la[2]),
-                 None if ns is None else (ns[0], ns[1], ns[2]))
+                 None if ns is None else (ns[0], ns[1], ns[2]), None if marks is None else (mk[0], mk[1], mk[2]))
         self.tri(a, c, d, ta[0], ta[2], ta[3], None if laps is None else (la[0], la[2], la[3]),
-                 None if ns is None else (ns[0], ns[2], ns[3]))
+                 None if ns is None else (ns[0], ns[2], ns[3]), None if marks is None else (mk[0], mk[2], mk[3]))
 
     def box(self, f, s0, s1, z0, z1, w0, w1, skip=("back",), grain="s"):
         """A box in frame f's (s, z, w) space; its faces outward. skip names faces not drawn (back: the w0 face).
@@ -153,7 +156,7 @@ class Soup:
                 lambda i, c: (bake[i][2] if bake else 1.0, c[10]),
                 lambda i, c: (c[6], c[7]),
                 lambda i, c: (c[8], c[9]),
-                lambda i, c: (0.0, 0.0),
+                lambda i, c: (c[11], c[12]),
             ]
             for fn in sets:
                 f.write(b"".join(struct.pack("<2f", *fn(i, c)) for i, c in enumerate(self.ch)))

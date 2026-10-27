@@ -206,7 +206,7 @@ def build(b, facts, timber, ground, date, index, seed, lit_share, tier="near"):
         wall = dict(length=L, eave=eave, ridge=ridge_u if gable else None,
                     left=cb["widthMm"] * MM, right=cb["widthMm"] * MM, year=facts["built"],
                     scheme="back" if name == "back" else "body")
-        n = C.clad(soup, f, wall, outlines, lines, cl, rng, shelter, patches)
+        n = C.clad(soup, f, wall, outlines, lines, dict(cl, marks=timber["marks"]), rng, shelter, patches)
         ext = cl["butMm"] * MM + cb["proudMm"] * MM if name in ("front", "back") else 0.0
         C.corner_boards(soup, f, wall, z0, eave, cb, out_w, ext, ext, rng)
         C.drip_board(soup, f, -ext, L + ext, zdrip, db, out_w, rng)

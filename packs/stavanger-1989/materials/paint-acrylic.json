@@ -13,10 +13,11 @@
     "halfYears": 6
   },
   "peel": {
-    "onsetYears": 14,
-    "spanYears": 36,
+    "onsetYears": 25,
+    "spanYears": 30,
     "flakeMm": 25,
-    "alongGrain": 2.0
+    "alongGrain": 2.0,
+    "toWood": 0.5
   },
   "water": [
     0.15,
@@ -26,6 +27,7 @@
   ],
   "provenance": "authored",
   "notes": {
+    "peel": "toWood: the share of what is lost that goes to the wood rather than to the coat under (it blisters off the wood where water is trapped behind it); judged by look. The onset is the open wall's; where water works in (paint.json, weather) it comes two to three times sooner.",
     "all": "No source dated or measured it for this town; the values are an assumption judged by look, kept apart so a source can replace them.",
     "water": "Its water profile as the town's (Shaders/Water.hlsl, Overstory.World.WaterPack): how much it darkens wet, how glossy its wet film, how long it holds water, how readily run-off stains it. An open film: sheds water, a soft sheen. Judged by look."
   }

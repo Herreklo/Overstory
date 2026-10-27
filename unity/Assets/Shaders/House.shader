@@ -37,6 +37,7 @@ Shader "Overstory/House"
         _JointFar ("The share a joint shows as one face where no stone sides are drawn (lime-mortar.json)", Float) = 1
         _Weather ("Paint weather: x south, y foot (m), z foot, w lap (paint.json)", Vector) = (0, 1, 0, 0)
         _WeatherB ("Paint weather: x how far one board's paint runs ahead of or behind another's (paint.json)", Vector) = (0, 0, 0, 0)
+        _WeatherC ("Paint weather: x a sill's run-off, y end grain, z the rain's side, w the rain's bearing (rad) (paint.json)", Vector) = (0, 0, 0, 0)
         [Toggle] _Grey ("Grey light: every pigment one grey (to judge form)", Float) = 0
         _Debug ("Debug: 1 the kind as colour, 2 the bake, 3 the normal, 4 the coat's age, 5 its loss, 6 a pane: its facing, its window half width and height, 7 its room unlit by the air", Float) = 0
     }
@@ -72,6 +73,7 @@ Shader "Overstory/House"
         half _JointFar;
         float4 _Weather;
         float4 _WeatherB;
+        float4 _WeatherC;
         half _Grey;
         half _Debug;
     CBUFFER_END
@@ -177,6 +179,7 @@ Shader "Overstory/House"
                 float2 uv4 : TEXCOORD4;
                 float2 uv5 : TEXCOORD5;
                 float2 uv6 : TEXCOORD6;
+                float2 uv7 : TEXCOORD7;
                 UNITY_VERTEX_INPUT_INSTANCE_ID
             };
 
@@ -192,6 +195,7 @@ Shader "Overstory/House"
                 nointerpolation float4 coat : TEXCOORD6;    // the top coat: rgb, the year; a roof's covering: rgb, its smoothness
                 nointerpolation half4 under : TEXCOORD7;    // the coat under it: rgb, 1 if any
                 nointerpolation half4 info : TEXCOORD8;     // x the paint's index (-1 unpainted), y the coats, z a covering's index
+                half2 marks : TEXCOORD9;                    // x a sill's run-off over it, y how near its end grain
                 UNITY_VERTEX_INPUT_INSTANCE_ID
                 UNITY_VERTEX_OUTPUT_STEREO
             };
@@ -210,6 +214,7 @@ Shader "Overstory/House"
                 o.piece = float4(input.uv1, input.uv2);
                 o.bake = half4(input.uv3, input.uv4);
                 o.place = half4(input.uv5, input.uv6);
+                o.marks = (half2)input.uv7;
                 // the house's coat for this part, or its roof's covering as weathered on the date
                 int kind = (int)(input.uv1.x + 0.5);
                 int row = (int)(input.uv1.y + 0.5) * OS_HOUSE_ROWS;
@@ -386,8 +391,12 @@ Shader "Overstory/House"
                 age = (half)max(0.0, _OS_Date.x - input.coat.w);
                 half e = 1.0h - input.place.y;
                 e *= 1.0h + (half)_Weather.x * saturate(-n.z);
+                // the side the rain is driven at (x east, z north; its bearing from north, clockwise)
+                e *= 1.0h + (half)_WeatherC.z * saturate(dot(n.xz, half2(sin(_WeatherC.w), cos(_WeatherC.w))));
                 if (kind == K_BOARD)
                 {
+                    // where water works in: under a sill's run-off, and the end grain at the board's ends
+                    e *= (1.0h + (half)_WeatherC.x * input.marks.x) * (1.0h + (half)_WeatherC.y * input.marks.y);
                     e *= 1.0h + (half)_Weather.z * saturate(1.0h - (half)(input.uv.y / _Weather.y));
                     half lap = 1.0h - input.place.x;
                     e *= 1.0h + (half)_Weather.w * lap * lap * lap;
@@ -417,10 +426,11 @@ Shader "Overstory/House"
                 float footprint = max(length(ddx(input.positionWS)), length(ddy(input.positionWS)));
                 half near = OS_Near(0.5 * footprint);
                 half off = (half)step(h, loss);
-                half deep = (half)step(h, loss * 0.3);
+                // a flake goes to the wood as often as the paint lets go of it there, not of the coat under (glossP.w)
+                half deep = (half)step(h, loss * glossP.w);
                 half lifted = (half)(step(h, loss + 0.03) - off) * 0.25h;
                 half3 flaked = lerp(lerp(c * (1.0h - lifted), below, off), wood, deep);
-                half3 mean = lerp(lerp(c, below, loss), wood, loss * 0.3h);
+                half3 mean = lerp(lerp(c, below, loss), wood, loss * (half)glossP.w);
                 return lerp(mean, flaked, near);
             }
 
@@ -498,7 +508,8 @@ Shader "Overstory/House"
                     // a painted face: its top coat chalked and dulled by its years in the weather, and where the
                     // weather has worn it through, the coat under it, then the wood (OS_Coat)
                     s.albedo = OS_Coat(input, n, kind, s.smoothness, age, loss);
-                    water = lerp((half4)_OS_PaintWater[(int)(input.info.x + 0.5h)], _WaterPine, loss * 0.3h);
+                    water = lerp((half4)_OS_PaintWater[(int)(input.info.x + 0.5h)], _WaterPine,
+                                 loss * (half)_OS_PaintGloss[(int)(input.info.x + 0.5h)].w);
                     if (kind == K_ENDGRAIN)
                         s.albedo *= 0.78h;
                     if (kind == K_METAL)
