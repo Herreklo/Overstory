@@ -51,7 +51,7 @@ namespace Overstory.EditorTools
         [System.Serializable] class Chalk { public float perDecade, towardValue, keepChroma; }
         [System.Serializable] class Gloss { public float @new, old, halfYears; }
         [System.Serializable] class Peel { public float onsetYears, spanYears, flakeMm, alongGrain; }
-        [System.Serializable] class Weather { public float southFactor, footM, footFactor, lapFactor; }
+        [System.Serializable] class Weather { public float southFactor, footM, footFactor, lapFactor, boardSpread; }
         [System.Serializable] class Curtains { public string srgb; public float share, opacity, depthM, valanceShare, foldsPerM; }
         [System.Serializable] class Room
         {
@@ -300,6 +300,7 @@ namespace Overstory.EditorTools
             mat.SetVector("_CurtainB", new Vector4(cu.opacity, cu.depthM, cu.valanceShare, cu.foldsPerM));
             var w = Read(paintRule).weather;
             mat.SetVector("_Weather", new Vector4(w.southFactor, w.footM, w.footFactor, w.lapFactor));
+            mat.SetVector("_WeatherB", new Vector4(w.boardSpread, 0f, 0f, 0f));
             mat.SetFloat("_Grey", 0f);
             mat.SetFloat("_Debug", float.Parse(Cli.Arg("-debug", "0"), CultureInfo.InvariantCulture));
             var grey = new Material(mat) { hideFlags = HideFlags.DontSave };

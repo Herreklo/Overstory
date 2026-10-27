@@ -15,8 +15,8 @@
   "peel": {
     "onsetYears": 12,
     "spanYears": 30,
-    "flakeMm": 55,
-    "alongGrain": 2.2
+    "flakeMm": 80,
+    "alongGrain": 3.5
   },
   "water": [
     0.1,

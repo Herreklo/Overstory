@@ -33,6 +33,7 @@ Shader "Overstory/House"
         _WaterRender ("Chimney render's water profile", Vector) = (0, 0, 0, 0)
         _Joint ("The share of the light a mortar joint's back sees between its stones (lime-mortar.json)", Float) = 1
         _Weather ("Paint weather: x south, y foot (m), z foot, w lap (paint.json)", Vector) = (0, 1, 0, 0)
+        _WeatherB ("Paint weather: x how far one board's paint runs ahead of or behind another's (paint.json)", Vector) = (0, 0, 0, 0)
         [Toggle] _Grey ("Grey light: every pigment one grey (to judge form)", Float) = 0
         _Debug ("Debug: 1 the kind as colour, 2 the bake, 3 the normal, 4 the coat's age, 5 its loss, 6 a pane: its facing, its window half width and height, 7 its room unlit by the air", Float) = 0
     }
@@ -64,6 +65,7 @@ Shader "Overstory/House"
         half4 _WaterRender;
         half _Joint;
         float4 _Weather;
+        float4 _WeatherB;
         half _Grey;
         half _Debug;
     CBUFFER_END
@@ -297,6 +299,8 @@ Shader "Overstory/House"
                     e *= 1.0h + (half)_Weather.z * saturate(1.0h - (half)(input.uv.y / _Weather.y));
                     half lap = 1.0h - input.place.x;
                     e *= 1.0h + (half)_Weather.w * lap * lap * lap;
+                    // each board its own: one takes paint better than the next (its seed, claiming nothing)
+                    e *= 1.0h + (half)_WeatherB.x * (frac((half)input.piece.z * 7.77h) * 2.0h - 1.0h);
                 }
                 half ea = age * e;
                 half seed = (half)input.piece.z;
