@@ -130,14 +130,46 @@ namespace Overstory.EditorTools
                         var sun = corner.stage.sun;
                         var (clear0, post0, colour0, msaa0) = (cam.clearFlags, camData.renderPostProcessing, camData.requiresColorOption, urp.msaaSampleCount);
                         var shadows0 = sun != null ? sun.shadows : LightShadows.None;
-                        // an arm is what it turns off, joined by '+'
+                        // an arm is what it turns off, joined by '+'; 'hard' gives the sun hard shadows; 'Name.path=value'
+                        // sets a serialized field of that renderer feature (e.g. ScreenSpaceAmbientOcclusion.m_Settings.Downsample=1)
+                        var set0 = new Dictionary<(ScriptableRendererFeature f, string path), string>();
+                        void Set(ScriptableRendererFeature f, string path, string value)
+                        {
+                            var so = new SerializedObject(f);
+                            var prop = so.FindProperty(path) ?? throw new System.ArgumentException($"no {path} in {f.name}");
+                            string was = prop.propertyType switch
+                            {
+                                SerializedPropertyType.Float => prop.floatValue.ToString(CultureInfo.InvariantCulture),
+                                SerializedPropertyType.Boolean => prop.boolValue ? "1" : "0",
+                                SerializedPropertyType.Enum => prop.intValue.ToString(),
+                                _ => prop.intValue.ToString(),
+                            };
+                            if (!set0.ContainsKey((f, path)))
+                                set0[(f, path)] = was;
+                            if (prop.propertyType == SerializedPropertyType.Float)
+                                prop.floatValue = float.Parse(value, CultureInfo.InvariantCulture);
+                            else if (prop.propertyType == SerializedPropertyType.Boolean)
+                                prop.boolValue = value == "1";
+                            else
+                                prop.intValue = int.Parse(value);
+                            so.ApplyModifiedPropertiesWithoutUndo();
+                            f.Create();
+                        }
                         void Arm(string arm)
                         {
                             var off = arm.Split('+');
+                            foreach (var kv in set0.ToList())
+                                Set(kv.Key.f, kv.Key.path, kv.Value);
+                            foreach (var item in off.Where(o => o.Contains('=')))
+                            {
+                                int dot = item.IndexOf('.'), eq = item.IndexOf('=');
+                                var f = features.First(x => x.name == item.Substring(0, dot));
+                                Set(f, item.Substring(dot + 1, eq - dot - 1), item.Substring(eq + 1));
+                            }
                             for (int i = 0; i < features.Count; i++)
                                 features[i].SetActive(on0[i] && !off.Contains("-" + features[i].name) && !(off.Contains("march") && features[i] is HazeVolumeFeature));
                             if (sun != null)
-                                sun.shadows = off.Contains("shadows") ? LightShadows.None : shadows0;
+                                sun.shadows = off.Contains("shadows") ? LightShadows.None : off.Contains("hard") ? LightShadows.Hard : shadows0;
                             cam.clearFlags = off.Contains("sky") ? CameraClearFlags.SolidColor : clear0;
                             camData.renderPostProcessing = post0 && !off.Contains("post");
                             camData.requiresColorOption = off.Contains("opaquetex") ? CameraOverrideOption.Off : colour0;
