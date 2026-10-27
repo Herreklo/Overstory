@@ -429,6 +429,34 @@ namespace Overstory.EditorTools
                     l.enabled = false;
                     C.restore.Add(() => { if (l != null) l.enabled = true; });
                 }
+                // the town's lamps the rig has lit (TownLights: lights made DontSave, which the search above never finds,
+                // so the frame has always had them): each becomes the corner's own light under "Town lamps", the same
+                // light, so the scene keeps what the frame shows
+                var townLamps = new GameObject("Town lamps");
+                townLamps.transform.SetParent(root.transform, false);
+                foreach (var tl in Object.FindObjectsByType<TownLights>(FindObjectsSortMode.None))
+                    foreach (Transform t in tl.transform)
+                    {
+                        var l = t.GetComponent<Light>();
+                        if (l == null || !l.enabled || !t.gameObject.activeInHierarchy)
+                            continue;
+                        var town = new GameObject(t.name);
+                        town.transform.SetParent(townLamps.transform, false);
+                        town.transform.SetPositionAndRotation(t.position, t.rotation);
+                        var copy = town.AddComponent<Light>();
+                        copy.type = l.type;
+                        copy.color = l.color;
+                        copy.intensity = l.intensity;
+                        copy.range = l.range;
+                        copy.spotAngle = l.spotAngle;
+                        copy.innerSpotAngle = l.innerSpotAngle;
+                        copy.shadows = l.shadows;
+                        copy.renderingLayerMask = l.renderingLayerMask;
+                        copy.cullingMask = l.cullingMask;
+                        l.enabled = false;
+                        C.restore.Add(() => { if (l != null) l.enabled = true; });
+                    }
+                Debug.Log($"[LT1ArtPasses] town lamps lit: {townLamps.transform.childCount}");
                 if (C.RendererData != null)
                     foreach (var f in C.RendererData.rendererFeatures)
                         if (f != null)
