@@ -425,12 +425,15 @@ def glow(img, head, kind, colour, dist, cam, air, w, h):
         return img
     fog = air.get("fog", 0.0)
     yy, xx = np.mgrid[0:h, 0:w].astype(np.float32)
-    rr = np.sqrt((xx - hx) ** 2 + (yy - hy) ** 2)
+    # a capped lantern throws its light down and out: the halo stretched below the head into a soft cone, cut above
+    below = yy > hy
+    rr = np.sqrt((xx - hx) ** 2 + ((yy - hy) / np.where(below, kind.get("cone", 1.0), 1.0)) ** 2)
     px_m = h / (2 * hd * basis[3])
     halo = np.zeros((h, w), np.float32)
     for size, share in kind["halo"]:
         s = size * kind.get("halo_size", 1.0) * px_m * (1 + fog * hd / 40.0)
         halo += share * np.exp(-(rr / max(s, 1.0)) ** 2)
+    halo *= np.where(below, 1.0, kind.get("cap_cut", 1.0) + (1 - kind.get("cap_cut", 1.0)) * np.exp(-(rr / (0.5 * px_m)) ** 2))
     front = smoothstep(hd - 2.0, hd + 1.0, dist)
     behind = 0.35 + 0.65 * front
     a = kind["halo_strength"] * (0.3 + fog) * halo * behind
@@ -653,6 +656,46 @@ def merged(base, over):
     return out
 
 
+def from_design(img, frame, recipe, vname, view, P, ps, cam, w, h, rays, focus_w, lamps, lit_on, a):
+    """A frame from a chosen direction (directions.json, tools/style_thumb.py): the direction's designed value of
+    every mass is the base, the render's own detail rides on it (quietened by the plan's calm, kept at the focus and
+    in the light), its colour key by value with each light's own hue, then the lamps, edges and lens."""
+    import style_thumb as st
+    rec = json.load(open(os.path.join(AD, "directions.json")))
+    ds = frame["design"]
+    d = merged(st.for_moment(rec["directions"][ds["direction"]], a.moment), ds.get("over", {}))
+    Ld, warm, hue, air, tint = st.paint(d, st.design_view(rec, recipe, vname), st.kinds_of(rec, recipe), P, ps, cam, w, h, rays,
+                             ps["lit"], draw=False)
+    y = np.maximum(luma(img), 1e-5)
+    ly = np.log(y)
+    plan = frame["values"]
+    guide = np.clip(np.log(np.maximum(ps["dist"], 0.5)) / 9.0, 0, 1) * 0.5 + np.clip(srgb(y), 0, 1) * 0.5
+    detail = ly - guided(guide, ly, plan["mass_px"], plan["mass_eps"])
+    calm = plan["calm"] + (1 - plan["calm"]) * np.maximum(focus_w, warm)
+    calm = calm * (1 - smoothstep(ds.get("lost_from", 40.0), ds.get("lost_to", 120.0), ps["dist"]))
+    calm = np.where(ps["sky"], ds.get("sky_detail", 0.0), calm)
+    yd = np.exp(np.log(np.maximum(from_lstar(Ld), 1e-5)) + detail * calm)
+    # the colour key, by the final value; some of the surface's own colour kept (a pantile stays a pantile)
+    key = st.colour_key(lstar(yd), warm, d["colour"], hue, air, tint)
+    own = img / y[..., None]
+    k = np.where(ps["sky"], ds.get("sky_own", ds.get("own", 0.15)), ds.get("own", 0.15))[..., None]
+    tint = key / np.maximum(luma(key)[..., None], 1e-5) * (1 - k) + own * k
+    img = tint / np.maximum(luma(tint)[..., None], 1e-5) * yd[..., None]
+    if ds.get("mirror") and frame.get("wet"):
+        # the wet ground mirrors the designed picture, not the render
+        img = mirror(img, {**frame["wet"], "mirror": ds["mirror"]}, ps, P, rays, cam, w, h)
+    img = draw_lamps(img, P, ps["dist"], ps["cls"], cam, lamps, recipe["lamp_kinds"], frame.get("air", {}), w, h, lit_on)
+    img = edges_and_marks(img, ps["dist"], ps["sky"], focus_w, warm, frame["edges"])
+    img = lens(img, frame["lens"], h, w)
+    out = a.out or os.path.join(AD, "frames", f"{vname}-{a.moment}")
+    os.makedirs(os.path.dirname(out), exist_ok=True)
+    write_png(f"{out}.png", (srgb(img) * 255).round())
+    g = srgb(luma(img))
+    write_png(f"{out}-grey.png", (np.repeat(g[..., None], 3, -1) * 255).round())
+    print("values", value_study(img, out))
+    return img
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("view")
@@ -685,6 +728,9 @@ def main():
     lamps = [{**l, "_kind": {**recipe["lamp_kinds"][l["kind"]], **frame.get("lamp_art", {}).get(l["id"], {})}}
              for l in recipe["lamps"]]
     lit_on = frame.get("lamps_on", False)
+    if frame.get("design"):
+        img = from_design(img, frame, recipe, a.view, view, P, ps, cam, w, h, rays, focus_w, lamps, lit_on, a)
+        return
     img, pool = add_lamps(img, P, ps["normal"], ps["dist"], ps["sky"], ps["cls"], rays, cam, lamps if lit_on else [],
                           recipe["lamp_kinds"], frame.get("air", {}), w, h, frame.get("wet")) \
         if lit_on else (img, np.zeros((h, w), np.float32))

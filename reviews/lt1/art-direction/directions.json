@@ -1,0 +1,1415 @@
+{
+ "_": "Three ways to design the street camera in blue hour (tools/style_thumb.py; README.md here). Each is an idea in one sentence, a value plan (L* of each mass before the air, what lamps and sky add, the inks it is cut to), a colour script and a shape language. Masses are things the facts place, found by class, box (street metres), surface kind, facing and height; a mass without its own design takes the design of the mass it is like.",
+ "masses": [
+  {
+   "name": "rest"
+  },
+  {
+   "name": "ground",
+   "cls": [
+    1
+   ],
+   "nz": [
+    0.6,
+    1
+   ]
+  },
+  {
+   "name": "curtain",
+   "cls": [
+    1
+   ],
+   "box": [
+    0,
+    0,
+    -5,
+    49.6,
+    31,
+    9.5
+   ],
+   "nz": [
+    -1,
+    0.6
+   ]
+  },
+  {
+   "name": "curtain.foot",
+   "like": "curtain",
+   "cls": [
+    1
+   ],
+   "box": [
+    0,
+    0,
+    -5,
+    49.6,
+    31,
+    3.9
+   ],
+   "nz": [
+    -1,
+    0.6
+   ]
+  },
+  {
+   "name": "knuckle",
+   "cls": [
+    1
+   ],
+   "box": [
+    49.6,
+    14,
+    2.9,
+    66,
+    36,
+    16
+   ]
+  },
+  {
+   "name": "knuckle.top",
+   "like": "knuckle",
+   "cls": [
+    1
+   ],
+   "box": [
+    49.6,
+    14,
+    2.9,
+    66,
+    36,
+    16
+   ],
+   "nz": [
+    0.55,
+    1
+   ],
+   "z": [
+    7.0,
+    40
+   ]
+  },
+  {
+   "name": "knuckle.foot",
+   "like": "knuckle",
+   "cls": [
+    1
+   ],
+   "box": [
+    49.6,
+    14,
+    2.9,
+    66,
+    36,
+    4.2
+   ],
+   "nz": [
+    -1,
+    0.55
+   ]
+  },
+  {
+   "name": "street",
+   "like": "ground",
+   "cls": [
+    1
+   ],
+   "nz": [
+    0.9,
+    1.0
+   ],
+   "z": [
+    -5.0,
+    3.3
+   ],
+   "_": "the street's own ground in front of the rock: it mirrors the sky, it is not the rock"
+  },
+  {
+   "name": "town",
+   "cls": [
+    1
+   ],
+   "box": [
+    0,
+    36,
+    5,
+    120,
+    300,
+    80
+   ],
+   "nz": [
+    -1,
+    0.3
+   ]
+  },
+  {
+   "name": "town.roof",
+   "like": "town",
+   "cls": [
+    1
+   ],
+   "box": [
+    0,
+    36,
+    5,
+    120,
+    300,
+    80
+   ],
+   "nz": [
+    0.3,
+    0.92
+   ]
+  },
+  {
+   "name": "stone",
+   "cls": [
+    3
+   ]
+  },
+  {
+   "name": "coping",
+   "like": "stone",
+   "cls": [
+    3
+   ],
+   "nz": [
+    0.6,
+    1
+   ]
+  },
+  {
+   "name": "tread",
+   "like": "coping",
+   "cls": [
+    3
+   ],
+   "nz": [
+    0.6,
+    1
+   ],
+   "box": [
+    46.0,
+    0,
+    -5,
+    50.7,
+    200,
+    60
+   ]
+  },
+  {
+   "name": "house",
+   "cls": [
+    2
+   ]
+  },
+  {
+   "name": "C.wall",
+   "like": "house",
+   "cls": [
+    2
+   ],
+   "box": [
+    30,
+    28,
+    0,
+    46,
+    41,
+    30
+   ]
+  },
+  {
+   "name": "C.east",
+   "like": "C.wall",
+   "cls": [
+    2
+   ],
+   "box": [
+    30,
+    28,
+    0,
+    46,
+    41,
+    30
+   ],
+   "nx": [
+    0.5,
+    1
+   ]
+  },
+  {
+   "name": "C.roof",
+   "cls": [
+    2
+   ],
+   "box": [
+    30,
+    28,
+    0,
+    46,
+    41,
+    30
+   ],
+   "kinds": [
+    5
+   ]
+  },
+  {
+   "name": "C.plinth",
+   "cls": [
+    2
+   ],
+   "box": [
+    30,
+    28,
+    0,
+    46,
+    41,
+    30
+   ],
+   "kinds": [
+    6,
+    13
+   ],
+   "z": [
+    0,
+    8.6
+   ]
+  },
+  {
+   "name": "C.chimney",
+   "like": "C.roof",
+   "cls": [
+    2
+   ],
+   "box": [
+    30,
+    28,
+    0,
+    46,
+    41,
+    30
+   ],
+   "kinds": [
+    6,
+    7,
+    13
+   ],
+   "z": [
+    12,
+    30
+   ]
+  },
+  {
+   "name": "C.glass",
+   "cls": [
+    2
+   ],
+   "box": [
+    30,
+    28,
+    0,
+    46,
+    41,
+    30
+   ],
+   "kinds": [
+    4,
+    10
+   ]
+  },
+  {
+   "name": "D.wall",
+   "like": "house",
+   "cls": [
+    2
+   ],
+   "box": [
+    50,
+    37,
+    0,
+    66,
+    52,
+    30
+   ]
+  },
+  {
+   "name": "D.roof",
+   "cls": [
+    2
+   ],
+   "box": [
+    50,
+    37,
+    0,
+    66,
+    52,
+    30
+   ],
+   "kinds": [
+    5
+   ]
+  },
+  {
+   "name": "D.chimney",
+   "like": "D.roof",
+   "cls": [
+    2
+   ],
+   "box": [
+    50,
+    37,
+    0,
+    66,
+    52,
+    30
+   ],
+   "kinds": [
+    6,
+    7,
+    13
+   ],
+   "z": [
+    18.5,
+    30
+   ]
+  },
+  {
+   "name": "far.wall",
+   "like": "house",
+   "cls": [
+    2
+   ],
+   "box": [
+    38,
+    70,
+    0,
+    56,
+    95,
+    40
+   ]
+  },
+  {
+   "name": "far.roof",
+   "like": "far.wall",
+   "cls": [
+    2
+   ],
+   "box": [
+    38,
+    70,
+    0,
+    56,
+    95,
+    40
+   ],
+   "kinds": [
+    5
+   ]
+  },
+  {
+   "name": "sky",
+   "sky": true
+  }
+ ],
+ "views": {
+  "street": {}
+ },
+ "directions": {
+  "a-pearl": {
+   "idea": "The sea fog keeps the last of the day: the town is paper flats stepping back into pearl, and its lamps are the only gold left.",
+   "shape": "Stacked flat silhouettes, each layer lighter and simpler; no inner detail past 30 m; soft edges everywhere but the lamps; the stair a pale soft ladder.",
+   "colour_script": "Key: pearl blue-violet grey from the fogged sky, almost colourless. Accent: the lanterns' gold as small points, the one white the Landing's glass. Warmest: the Landing's glass and C's lit panes. Darkest: the lantern posts and the near wall's foot.",
+   "inks": [
+    14,
+    42,
+    58,
+    72,
+    94
+   ],
+   "sky": {
+    "horizon": 84,
+    "zenith": 74,
+    "deg": 32
+   },
+   "air": {
+    "L": 76,
+    "m": 38,
+    "from_m": 6,
+    "height_m": 30,
+    "sky_share": 0.5,
+    "fog": 0.6
+   },
+   "glow": {
+    "towards": [
+     47.0,
+     86.0,
+     20.0
+    ],
+    "deg_wide": 26,
+    "deg_up": 8,
+    "deg_down": 12,
+    "L": 5,
+    "warm": 0.35,
+    "srgb": "#ffc27e"
+   },
+   "windows": 74,
+   "masses": {
+    "rest": {
+     "L": 50
+    },
+    "ground": {
+     "L": 34
+    },
+    "curtain": {
+     "L": 38
+    },
+    "curtain.foot": {
+     "L": 16
+    },
+    "knuckle": {
+     "L": 50
+    },
+    "knuckle.top": {
+     "L": 54,
+     "sky": 8
+    },
+    "knuckle.foot": {
+     "L": 40
+    },
+    "town": {
+     "L": 60
+    },
+    "town.roof": {
+     "L": 56
+    },
+    "stone": {
+     "L": 44,
+     "lamp": 20
+    },
+    "coping": {
+     "L": 52,
+     "lamp": 24
+    },
+    "tread": {
+     "L": 50,
+     "lamp": 24
+    },
+    "house": {
+     "L": 62
+    },
+    "C.wall": {
+     "L": 58
+    },
+    "C.east": {
+     "L": 58,
+     "lamp": 34
+    },
+    "C.roof": {
+     "L": 44
+    },
+    "C.plinth": {
+     "L": 38,
+     "lamp": 16
+    },
+    "C.glass": {
+     "L": 38
+    },
+    "D.wall": {
+     "L": 64
+    },
+    "D.roof": {
+     "L": 50
+    },
+    "far.wall": {
+     "L": 68
+    },
+    "far.roof": {
+     "L": 60
+    }
+   },
+   "wet": {
+    "streak_deg": [
+     2.0,
+     14.0
+    ],
+    "L": 16
+   },
+   "lamp": {
+    "default": {
+     "post": 14,
+     "glass": 90,
+     "halo_m": 1.4,
+     "halo_L": 5
+    },
+    "landing": {
+     "glass": 97,
+     "halo_m": 3.0,
+     "halo_L": 9
+    }
+   },
+   "colour": {
+    "ramp": [
+     [
+      10,
+      "#232838"
+     ],
+     [
+      40,
+      "#5b6178"
+     ],
+     [
+      58,
+      "#8b90a6"
+     ],
+     [
+      72,
+      "#b5b9cb"
+     ],
+     [
+      85,
+      "#dadce6"
+     ],
+     [
+      96,
+      "#f4f2ee"
+     ]
+    ],
+    "warm": "#ffc27e",
+    "warm_share": 0.9,
+    "swatches": [
+     "#232838",
+     "#5b6178",
+     "#8b90a6",
+     "#b5b9cb",
+     "#dadce6",
+     "#ffc27e"
+    ]
+   },
+   "lamp_boost": 2.0,
+   "lamp_scale": {
+    "lower": 0.5
+   },
+   "moment": "1750-sea-fog"
+  },
+  "b-lamplight": {
+   "idea": "In the dark the town shrinks to the rooms its lamps make, and the Landing is the room everyone passes through.",
+   "shape": "Angular pools of light cut by the planes they fall on (C's corner, the coping tops, the tread noses), a chain of them up the stair; everything else one night mass with its edges lost.",
+   "colour_script": "Key: ink blue of the night sky in every shade. Accent: the lamps' gold, the one white the Landing's glass. Warmest: the pool on C's east wall and the top treads. Darkest: the near wall's foot.",
+   "inks": [
+    6,
+    18,
+    32,
+    60,
+    94
+   ],
+   "sky": {
+    "horizon": 36,
+    "zenith": 20,
+    "deg": 30
+   },
+   "air": {
+    "L": 28,
+    "m": 55,
+    "height_m": 25,
+    "sky_share": 0.6,
+    "fog": 0.6
+   },
+   "glow": {
+    "towards": [
+     47.0,
+     86.0,
+     20.0
+    ],
+    "deg_wide": 24,
+    "deg_up": 8,
+    "deg_down": 12,
+    "L": 6,
+    "warm": 0.6,
+    "srgb": "#ffc27e"
+   },
+   "windows": 66,
+   "masses": {
+    "rest": {
+     "L": 18
+    },
+    "ground": {
+     "L": 12,
+     "lamp": 40
+    },
+    "curtain": {
+     "L": 16
+    },
+    "curtain.foot": {
+     "L": 6
+    },
+    "knuckle": {
+     "L": 16
+    },
+    "knuckle.top": {
+     "L": 20,
+     "sky": 6
+    },
+    "knuckle.foot": {
+     "L": 8
+    },
+    "town": {
+     "L": 22
+    },
+    "town.roof": {
+     "L": 18
+    },
+    "stone": {
+     "L": 14,
+     "lamp": 50
+    },
+    "coping": {
+     "L": 20,
+     "lamp": 55
+    },
+    "tread": {
+     "L": 16,
+     "lamp": 55
+    },
+    "house": {
+     "L": 30
+    },
+    "C.wall": {
+     "L": 32
+    },
+    "C.east": {
+     "L": 28,
+     "lamp": 62
+    },
+    "C.roof": {
+     "L": 16
+    },
+    "C.plinth": {
+     "L": 12,
+     "lamp": 40
+    },
+    "C.glass": {
+     "L": 12
+    },
+    "D.wall": {
+     "L": 34
+    },
+    "D.roof": {
+     "L": 18
+    },
+    "far.wall": {
+     "L": 30
+    },
+    "far.roof": {
+     "L": 20
+    }
+   },
+   "wet": {
+    "streak_deg": [
+     2.0,
+     14.0
+    ],
+    "L": 40
+   },
+   "lamp": {
+    "default": {
+     "post": 8,
+     "glass": 82,
+     "halo_m": 0.8,
+     "halo_L": 12
+    },
+    "landing": {
+     "glass": 97,
+     "halo_m": 1.2,
+     "halo_L": 18
+    },
+    "lower": {
+     "glass": 76,
+     "halo_m": 0.6,
+     "halo_L": 8
+    }
+   },
+   "colour": {
+    "ramp": [
+     [
+      4,
+      "#0a0c1e"
+     ],
+     [
+      18,
+      "#1a1f44"
+     ],
+     [
+      32,
+      "#36407a"
+     ],
+     [
+      50,
+      "#6f6f9a"
+     ],
+     [
+      62,
+      "#d9a46e"
+     ],
+     [
+      80,
+      "#ffd59a"
+     ],
+     [
+      96,
+      "#fff4e0"
+     ]
+    ],
+    "warm": "#ffb46a",
+    "warm_share": 1.0,
+    "swatches": [
+     "#0a0c1e",
+     "#1a1f44",
+     "#36407a",
+     "#d9a46e",
+     "#ffd59a",
+     "#fff4e0"
+    ]
+   },
+   "lamp_boost": 4.0,
+   "moment": "1750-sea-fog"
+  },
+  "c-gap": {
+   "idea": "A black rock and a white house hold open a gap of lit fog, and the wet stair climbs out of the dark into the town's light.",
+   "shape": "Three big flat shapes: the rock a black wedge of a few straight runs with one thin wet rim of sky, C a true-white block whose gable is the frame's one crisp silhouette, and a soft shelf of lit fog across the gully behind the Landing; the wet treads a ladder of sky-lit lines up into it; beyond the Landing everything soft, in pearl.",
+   "colour_script": "Key: ultramarine only in the near darks, blue-grey sky, pearl beyond the Landing; shade takes the fog's colour. Accent: one warm family in three strengths: the lantern globes near white, C's lit wall and the fog shelf peach, the windows amber. The one white: the Landing's globe and C's lantern-lit corner. Darkest: the rock wedge and the lantern posts.",
+   "moments": {
+    "1750-sea-fog": {
+     "inks": [
+      9,
+      26,
+      50,
+      70,
+      90
+     ],
+     "sky": {
+      "horizon": 62,
+      "zenith": 42,
+      "deg": 30,
+      "deg0": 8
+     },
+     "air": {
+      "L": 64,
+      "m": 30,
+      "from_m": 16,
+      "height_m": 40,
+      "sky_share": 0.4,
+      "fog": 0.6
+     },
+     "glow": {
+      "towards": [
+       46.0,
+       62.0,
+       13.0
+      ],
+      "deg_wide": 36,
+      "deg_up": 5.0,
+      "deg_down": 8,
+      "L": 24,
+      "warm": 0.9,
+      "sky_share": 1.0,
+      "srgb": "#f6c39a"
+     },
+     "windows": 62,
+     "masses": {
+      "rest": {
+       "L": 24
+      },
+      "ground": {
+       "L": 24,
+       "sky": 4,
+       "lamp": 20
+      },
+      "curtain": {
+       "L": 14,
+       "grad": 1.2
+      },
+      "curtain.foot": {
+       "L": 9
+      },
+      "knuckle": {
+       "L": 10,
+       "rim": {
+        "px": 5,
+        "L": 42
+       },
+       "grad": 0.6
+      },
+      "knuckle.top": {
+       "L": 12
+      },
+      "knuckle.foot": {
+       "L": 8
+      },
+      "town": {
+       "L": 56
+      },
+      "town.roof": {
+       "L": 50
+      },
+      "stone": {
+       "L": 18,
+       "lamp": 22
+      },
+      "coping": {
+       "L": 24,
+       "lamp": 34,
+       "sky": 16
+      },
+      "tread": {
+       "L": 22,
+       "lamp": 28,
+       "sky": 26
+      },
+      "house": {
+       "L": 62
+      },
+      "C.wall": {
+       "L": 64
+      },
+      "C.east": {
+       "L": 56,
+       "lamp": 60
+      },
+      "C.roof": {
+       "L": 30
+      },
+      "C.plinth": {
+       "L": 24,
+       "lamp": 20
+      },
+      "C.glass": {
+       "L": 20
+      },
+      "D.wall": {
+       "L": 50
+      },
+      "D.roof": {
+       "L": 26
+      },
+      "far.wall": {
+       "L": 62
+      },
+      "far.roof": {
+       "L": 54
+      }
+     },
+     "wet": {
+      "streak_deg": [
+       2.0,
+       14.0
+      ],
+      "L": 36
+     },
+     "lamp": {
+      "default": {
+       "post": 8,
+       "glass": 80,
+       "halo_m": 1.6,
+       "halo_L": 10
+      },
+      "landing": {
+       "glass": 98,
+       "halo_m": 1.4,
+       "halo_L": 16
+      },
+      "lower": {
+       "glass": 82,
+       "halo_m": 0.8,
+       "halo_L": 8
+      },
+      "upper": {
+       "glass": 74,
+       "halo_m": 2.4,
+       "halo_L": 12
+      },
+      "top": {
+       "glass": 70,
+       "halo_m": 3.0,
+       "halo_L": 12
+      }
+     },
+     "colour": {
+      "ramp": [
+       [
+        6,
+        "#080a1e"
+       ],
+       [
+        20,
+        "#1c2140"
+       ],
+       [
+        40,
+        "#434962"
+       ],
+       [
+        60,
+        "#9a9daf"
+       ],
+       [
+        75,
+        "#cdd0d8"
+       ],
+       [
+        92,
+        "#f6f4ef"
+       ]
+      ],
+      "ramp_far": [
+       [
+        30,
+        "#4c5266"
+       ],
+       [
+        55,
+        "#9095a6"
+       ],
+       [
+        70,
+        "#c3c4cc"
+       ],
+       [
+        85,
+        "#e4e2e2"
+       ]
+      ],
+      "far_gamma": 0.8,
+      "ramp_sky": [
+       [
+        30,
+        "#3a4468"
+       ],
+       [
+        50,
+        "#6c7593"
+       ],
+       [
+        66,
+        "#a3a8ba"
+       ],
+       [
+        80,
+        "#d6d6dc"
+       ]
+      ],
+      "warm": "#f2b277",
+      "warm_share": 1.0,
+      "swatches": [
+       "#070a26",
+       "#161d55",
+       "#6c7593",
+       "#cdd0da",
+       "#f2b277",
+       "#f6c39a",
+       "#fff4e6"
+      ]
+     },
+     "lamp_boost": 1.6
+    },
+    "1300-drizzle": {
+     "colour_script": "Key: the overcast's silver in every wet surface; walls cool blue-grey, wet granite and plinths warm brown-grey. Accent: D's wet pantiles, dull burnt orange, darker than its wall. Lightest: the sky over the gully's top, then the wet treads and puddles that mirror it, then C's east wall by the Landing. Darkest: the rock wedge and C's nearest window glass.",
+     "lamps_on": false,
+     "inks": [
+      12,
+      30,
+      50,
+      70,
+      90
+     ],
+     "sky": {
+      "horizon": 92,
+      "zenith": 80,
+      "deg": 30,
+      "deg0": 6
+     },
+     "air": {
+      "L": 84,
+      "m": 50,
+      "from_m": 10,
+      "height_m": 60,
+      "sky_share": 0.5,
+      "fog": 0.3
+     },
+     "glow": {
+      "towards": [
+       46.0,
+       90.0,
+       22.0
+      ],
+      "deg_wide": 30,
+      "deg_up": 10,
+      "deg_down": 8,
+      "L": 4,
+      "warm": 0.0,
+      "sky_share": 1.0,
+      "srgb": "#eef0ea"
+     },
+     "windows": null,
+     "masses": {
+      "rest": {
+       "L": 50
+      },
+      "ground": {
+       "L": 30,
+       "sky": 16,
+       "tint": "#8a8072",
+       "tint_k": 0.4
+      },
+      "curtain": {
+       "L": 30,
+       "tint": "#857b6e",
+       "tint_k": 0.5,
+       "grad": 1.4
+      },
+      "curtain.foot": {
+       "L": 18
+      },
+      "knuckle": {
+       "L": 20,
+       "tint": "#7d7264",
+       "tint_k": 0.6,
+       "rim": {
+        "px": 4,
+        "L": 52
+       },
+       "grad": 0.8
+      },
+      "knuckle.top": {
+       "L": 24
+      },
+      "knuckle.foot": {
+       "L": 14
+      },
+      "town": {
+       "L": 60
+      },
+      "town.roof": {
+       "L": 52
+      },
+      "stone": {
+       "L": 30,
+       "tint": "#857b6e",
+       "tint_k": 0.4
+      },
+      "coping": {
+       "L": 34,
+       "sky": 30
+      },
+      "tread": {
+       "L": 30,
+       "sky": 40
+      },
+      "house": {
+       "L": 70,
+       "tint": "#b9c3cc",
+       "tint_k": 0.5
+      },
+      "C.wall": {
+       "L": 70
+      },
+      "C.east": {
+       "L": 76
+      },
+      "C.roof": {
+       "L": 34,
+       "tint": "#4a5058",
+       "tint_k": 0.4
+      },
+      "C.plinth": {
+       "L": 28,
+       "tint": "#7d7264",
+       "tint_k": 0.5
+      },
+      "C.glass": {
+       "L": 8
+      },
+      "D.wall": {
+       "L": 66
+      },
+      "D.roof": {
+       "L": 40,
+       "tint": "#8f5e46",
+       "tint_k": 0.6
+      },
+      "far.wall": {
+       "L": 70
+      },
+      "far.roof": {
+       "L": 58,
+       "tint": "#8a6050",
+       "tint_k": 0.4
+      }
+     },
+     "lamp": {
+      "default": {
+       "post": 14,
+       "glass": 40,
+       "halo_m": 0.5,
+       "halo_L": 0
+      }
+     },
+     "colour": {
+      "ramp": [
+       [
+        8,
+        "#1f2328"
+       ],
+       [
+        30,
+        "#4b5059"
+       ],
+       [
+        50,
+        "#7f858d"
+       ],
+       [
+        70,
+        "#b6bbc1"
+       ],
+       [
+        90,
+        "#e9ebed"
+       ]
+      ],
+      "ramp_far": [
+       [
+        40,
+        "#8b9097"
+       ],
+       [
+        70,
+        "#c1c5ca"
+       ],
+       [
+        90,
+        "#e7e9eb"
+       ]
+      ],
+      "ramp_sky": [
+       [
+        70,
+        "#c9cdd2"
+       ],
+       [
+        92,
+        "#f1f2f2"
+       ]
+      ],
+      "warm": "#d9cfc0",
+      "warm_share": 0.0,
+      "swatches": [
+       "#1f2328",
+       "#7d7264",
+       "#7f858d",
+       "#b9c3cc",
+       "#8f5e46",
+       "#f1f2f2"
+      ]
+     }
+    },
+    "1600-low-sun": {
+     "colour_script": "Key: the sun's gold on what faces it against the sky's blue; only the shade takes the violet. Accent: the gold on C's sunlit front at the Landing; D's pantiles orange-red the far warm note. The one white: C's sunlit corner. Darkest: the near retaining wall in shade and the rock's shaded foot.",
+     "lamps_on": false,
+     "inks": [
+      10,
+      30,
+      50,
+      70,
+      90
+     ],
+     "sky": {
+      "horizon": 76,
+      "zenith": 50,
+      "deg": 32,
+      "deg0": 4
+     },
+     "air": {
+      "L": 72,
+      "m": 140,
+      "from_m": 20,
+      "height_m": 60,
+      "sky_share": 0.5,
+      "fog": 0.15
+     },
+     "sun": {
+      "srgb": "#ffc488",
+      "share": 0.9
+     },
+     "windows": null,
+     "masses": {
+      "rest": {
+       "L": 26,
+       "sun": 30
+      },
+      "ground": {
+       "L": 24,
+       "sun": 34
+      },
+      "curtain": {
+       "L": 14,
+       "sun": 30,
+       "grad": 1.0
+      },
+      "curtain.foot": {
+       "L": 9
+      },
+      "knuckle": {
+       "L": 16,
+       "sun": 34,
+       "grad": 0.5
+      },
+      "knuckle.top": {
+       "L": 20,
+       "sun": 34
+      },
+      "knuckle.foot": {
+       "L": 10
+      },
+      "town": {
+       "L": 40,
+       "sun": 30
+      },
+      "town.roof": {
+       "L": 34,
+       "sun": 28
+      },
+      "stone": {
+       "L": 22,
+       "sun": 30
+      },
+      "coping": {
+       "L": 26,
+       "sun": 34,
+       "sky": 10
+      },
+      "tread": {
+       "L": 24,
+       "sun": 30,
+       "sky": 12
+      },
+      "house": {
+       "L": 44,
+       "sun": 40
+      },
+      "C.wall": {
+       "L": 40,
+       "sun": 44
+      },
+      "C.east": {
+       "L": 40,
+       "sun": 48
+      },
+      "C.roof": {
+       "L": 26,
+       "sun": 20
+      },
+      "C.plinth": {
+       "L": 20,
+       "sun": 30
+      },
+      "C.glass": {
+       "L": 14
+      },
+      "D.wall": {
+       "L": 44,
+       "sun": 40
+      },
+      "D.roof": {
+       "L": 30,
+       "sun": 30,
+       "tint": "#c0583a",
+       "tint_k": 0.8
+      },
+      "far.wall": {
+       "L": 46,
+       "sun": 30
+      },
+      "far.roof": {
+       "L": 36,
+       "sun": 26
+      }
+     },
+     "lamp": {
+      "default": {
+       "post": 12,
+       "glass": 40,
+       "halo_m": 0.5,
+       "halo_L": 0
+      }
+     },
+     "colour": {
+      "ramp": [
+       [
+        8,
+        "#15172a"
+       ],
+       [
+        25,
+        "#2c3150"
+       ],
+       [
+        45,
+        "#5f6482"
+       ],
+       [
+        65,
+        "#a9a3b2"
+       ],
+       [
+        85,
+        "#f4e6d4"
+       ],
+       [
+        95,
+        "#fff6ea"
+       ]
+      ],
+      "ramp_far": [
+       [
+        40,
+        "#8a8fb0"
+       ],
+       [
+        70,
+        "#d8c8bc"
+       ],
+       [
+        90,
+        "#f2e6da"
+       ]
+      ],
+      "ramp_sky": [
+       [
+        45,
+        "#5e78b8"
+       ],
+       [
+        60,
+        "#87a0d0"
+       ],
+       [
+        76,
+        "#c4d0e6"
+       ]
+      ],
+      "warm": "#ffc488",
+      "warm_share": 0.6,
+      "swatches": [
+       "#15172a",
+       "#2c3150",
+       "#87a0d0",
+       "#ffc488",
+       "#c0583a",
+       "#fff6ea"
+      ]
+     }
+    }
+   }
+  }
+ }
+}

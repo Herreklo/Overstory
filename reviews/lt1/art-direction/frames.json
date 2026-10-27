@@ -95,7 +95,7 @@
  ],
  "lamp_kinds": {
   "lantern-1955": {
-   "_": "the old town's lanterns with warm incandescent bulbs, put up in 1955 (heart_layout.py, LAMP_ERAS)",
+   "_": "the old town's lanterns with warm incandescent bulbs, put up in 1955 (heart_layout.py, LAMP_ERAS); a cap over the bulb, so in fog its light is a soft cone below the head (cone, cap_cut)",
    "srgb": "#ffc27e",
    "power": 3.0,
    "wrap": 0.3,
@@ -111,6 +111,8 @@
    "halo_px": 26,
    "glass_m": 0.38,
    "cap_m": 0.16,
+   "cone": 1.8,
+   "cap_cut": 0.35,
    "clay_box_m": 0.45,
    "glass_unlit_srgb": "#6f7a80"
   }
@@ -119,6 +121,7 @@
   "1750-sea-fog": {
    "_": "Friday 20 October 1989, 17:50: blue hour in sea fog. Key: the blue-violet of the fogged sky in every shade. Accent: the lanterns' gold, the one white the nearest lantern's head. Darkest: the near retaining wall and the rock's foot.",
    "lamps_on": true,
+   "design": {"direction": "c-gap", "own": 0.12, "lost_from": 35, "lost_to": 90, "mirror": 0.35},
    "air": {
     "fog": 0.6
    },
@@ -219,8 +222,8 @@
     "sky_px": 3.0
    },
    "lens": {
-    "halo_from": 0.55,
-    "halo": [[5, 0.18], [22, 0.12]],
+    "halo_from": 0.78,
+    "halo": [[5, 0.12], [22, 0.06]],
     "halo_srgb": "#ffc89a",
     "vignette": 0.28,
     "grain": 0.035
@@ -252,16 +255,17 @@
      "halo_size": 1.6
     },
     "upper": {
-     "halo_size": 1.6
+     "halo_size": 2.2, "head_white": 1.6, "halo_strength": 0.5
     },
     "top": {
-     "halo_size": 1.6
+     "halo_size": 2.6, "head_white": 1.3, "halo_strength": 0.45
     }
    }
   },
   "1300-drizzle": {
    "_": "Friday 20 October 1989, 13:00: drizzle under a bright overcast. Key: the silver of the overcast in every wet surface, sky lightest, then the wet treads and puddles that mirror it, the roofs, the walls. Accent: the wet red of the pantile roofs (D from the street; C's oxide-red door where a view sees it). Darkest: the near retaining wall's foot and the dark glass.",
    "lamps_on": false,
+   "design": {"direction": "c-gap", "own": 0.12, "lost_from": 35, "lost_to": 90, "mirror": 0.6},
    "air": {
     "fog": 0.3
    },
@@ -387,6 +391,7 @@
   "1600-low-sun": {
    "_": "Friday 20 October 1989, 16:00: low October sun from the south-west. Key: the sun's gold on what faces it against the sky's blue in every shade, two values more than five. Accent: the gold on C's lit front at the Landing. Darkest: the near retaining wall in shade and the shadow under C's eaves.",
    "lamps_on": false,
+   "design": {"direction": "c-gap", "own": 0.12, "lost_from": 35, "lost_to": 90},
    "air": {
     "fog": 0.15
    },
