@@ -81,7 +81,7 @@ namespace Overstory.EditorTools.Town
         /// <summary>The views: the two city cameras, the street stop and the roam's poses (street frame, m).</summary>
         public static readonly (string name, Vector3 pos, Vector3 target, float fov)[] Views =
         {
-            ("mid", new Vector3(55f, -115f, 46f), new Vector3(58f, 45f, 15f), 42f),
+            ("mid", new Vector3(55f, -115f, 46f), new Vector3(58f, 45f, 20f), 42f),
             ("midhigh", new Vector3(52f, -150f, 75f), new Vector3(55f, 30f, 4f), 42f),
             // the street stop: on Harbour Row at the gully's foot, three metres up, into the Gully Steps
             ("street", new Vector3(47f, -14f, 3.2f), new Vector3(50f, 30f, 9f), 46.4f),
@@ -243,6 +243,7 @@ namespace Overstory.EditorTools.Town
                 Add(houses, $"house {p.id} roof", roof, Mat(0.30f, tones?.Roof(p) ?? white, porosity: 0.35f, smooth: 0.12f), made);
                 Add(houses, $"house {p.id} plinth", foot, plinth, made);
                 Openings(p, town.ground, facts, trims, panes);
+                Roofline(p, facts, facts.Overhang(p), trims);
             }
             Add(houses, "openings and trims", trims.Make("openings"), trimM, made);
             Add(houses, "panes", panes.Make("panes"), paneM, made);
@@ -302,11 +303,21 @@ namespace Overstory.EditorTools.Town
                 data.dithering = true;
             }
 
-            foreach (var m in moment == null ? new[] { "grey" } : moment.Split(','))
+            string[] compasses = Cli.Arg("-compass", null)?.Split(',') ?? new string[] { null };
+            foreach (var m0 in moment == null ? new[] { "grey" } : moment.Split(','))
+            foreach (var compass in compasses)
             {
+                string m = compass == null ? m0 : $"{m0}-c{compass}";
                 if (stage != null)
-                    stage.rig = AssetDatabase.LoadAssetAtPath<LightRig>($"{LT1}/Heart/Light/Heart_{m}.asset")
-                        ?? throw new FileNotFoundException($"no light rig Heart_{m}");
+                {
+                    // the street's moment, with the air at the city's distances (town.json, air); the asset is left alone
+                    var rig = Object.Instantiate(AssetDatabase.LoadAssetAtPath<LightRig>($"{LT1}/Heart/Light/Heart_{m0}.asset")
+                        ?? throw new FileNotFoundException($"no light rig Heart_{m0}"));
+                    rig.hideFlags = HideFlags.DontSave;
+                    made.Add(rig);
+                    facts.Air(rig, compass);
+                    stage.rig = rig;
+                }
                 foreach (var v in Views)
                 {
                     if (!Cli.Wanted("-views", v.name))
@@ -317,7 +328,10 @@ namespace Overstory.EditorTools.Town
                     cam.nearClipPlane = 0.3f;
                     cam.farClipPlane = 6000f;
                     if (stage != null)
+                    {
                         stage.Apply();
+                        Shader.SetGlobalFloat("_OS_AirClear", facts.airClear);
+                    }
                     string file = Path.Combine(dir, $"{v.name}-{m}.png");
                     LT1Render.Still(cam, file, grey: false, msaa: 4);
                     Debug.Log($"[LT1Town] {file}");
@@ -407,6 +421,33 @@ namespace Overstory.EditorTools.Town
                     diaries[(int)(double)Obj(b)["id"]] = Obj(b);
                 foreach (var l in t.lanes)
                     grain[l.id] = l.grain;
+            }
+
+            /// <summary>The air seen across the town (town.json, air): the hour's colours stay the rig's, its thickness and
+            /// layers are for hundreds of metres, not a street's fifty. A compass (the bearing of the town's +x) turns the
+            /// sun to the town's own frame from the rig's azimuth.</summary>
+            public float airClear;
+
+            public void Air(LightRig r, string compass)
+            {
+                if (compass != null)
+                {
+                    float azimuth = r.streetAxisCompass - r.sunBearing;
+                    r.sunBearing = Mathf.Repeat(float.Parse(compass, System.Globalization.CultureInfo.InvariantCulture) - azimuth, 360f);
+                }
+                if (!town.TryGetValue("air", out var o))
+                    return;
+                var a = Obj(o);
+                airClear = F(a["clearM"]);
+                r.fogDensity = F(a["density"]);
+                r.fogHeightFalloff = F(a["heightFalloff"]);
+                r.fogMidDistance = F(a["midM"]);
+                r.fogFarDistance = F(a["farM"]);
+                r.fogMidColour = r.fogColour;
+                r.fogFarColour = Color.Lerp(r.fogColour, r.zenith, F(a["farToZenith"]));
+                r.hazeDensity = F(a["haze"]);
+                r.hazeHeight = F(a["hazeHeight"]);
+                r.hazeColour = r.fogColour;
             }
 
             ulong Seed(int id, string what) => Hash.Then(Hash.Of($"town.{id}"), what);
@@ -1538,8 +1579,12 @@ namespace Overstory.EditorTools.Town
                 {
                     float al = p.chimneys[i] * M, ac = p.chimneys[i + 1] * M, hs = p.chimneys[i + 2] * M / 2, up = p.chimneys[i + 3] * M;
                     Vector2 c = mid + rd * al + xd * ac;
+                    float top = zr - ac * tanr + up, hc = hs + 0.06f;
                     mb.Add(Prism(new[] { c - rd * hs - xd * hs, c + rd * hs - xd * hs, c + rd * hs + xd * hs, c - rd * hs + xd * hs },
-                                 e, zr - ac * tanr + up));
+                                 e, top));
+                    // its crown: a course corbelled out round the top, so it reads as a stack and not a post
+                    mb.Add(Prism(new[] { c - rd * hc - xd * hc, c + rd * hc - xd * hc, c + rd * hc + xd * hc, c - rd * hc + xd * hc },
+                                 top - 0.16f, top + 0.02f));
                 }
                 foot = mb.Make("plinth and chimneys");
             }
@@ -1596,6 +1641,46 @@ namespace Overstory.EditorTools.Town
             roof.RecalculateNormals();
             DoubleSided(roof);
             return (walls.Make("walls"), roof, foot);
+        }
+
+        /// <summary>The roof's edges as the era made them (timber.json, verge and eaves): a barge board under each rake of a
+        /// gable, out at the roof's edge, and the fascia along the eaves where the era has one, both in the trim's paint.</summary>
+        static void Roofline(Placement p, Tones f, float o, MB trim)
+        {
+            if (p.roof != "gable" && p.roof != "eaves" || p.kind == "outhouse")
+                return;
+            var fp = new Vector2[4];
+            for (int i = 0; i < 4; i++)
+                fp[i] = new Vector2(p.footprint[2 * i] * M, p.footprint[2 * i + 1] * M);
+            var wk = f.Working(p);
+            var verge = Obj(wk["verge"]);
+            float board = F(verge["boardMm"]) * M, fascia = F(Obj(wk["eaves"])["fasciaMm"]) * M;
+            float e = p.eave * M, tan = Mathf.Tan(p.pitch * Mathf.Deg2Rad), cos = Mathf.Cos(p.pitch * Mathf.Deg2Rad);
+            Vector2 u = (fp[1] - fp[0]).normalized, n = (fp[3] - fp[0]).normalized;
+            float W = Vector2.Distance(fp[0], fp[1]), D = Vector2.Distance(fp[0], fp[3]);
+            Vector2 c0 = fp[0] - u * o - n * o;
+            float L = W + 2 * o, S = D + 2 * o, ze = e - o * tan;
+            bool gable = p.roof == "gable";
+            // (s along u, w along n); the gables stand at w 0 and S on a gable roof, at s 0 and L on an eaves roof
+            Vector3 P(float s, float w, float z) { var q = c0 + u * s + n * w; return U(q.x, q.y, z); }
+            void Both(Vector3 a, Vector3 b, Vector3 c, Vector3 d) { trim.Quad(a, b, c, d); trim.Quad(d, c, b, a); }
+            trim.tint = f.Paint(p, "trim").linear;
+            float drop = board / cos, span = (gable ? L : S) / 2, zr = ze + span * tan;
+            for (int end = 0; end < 2; end++)
+            {
+                float at = end == 0 ? -0.01f : (gable ? S : L) + 0.01f;
+                Vector3 G(float along, float z) => gable ? P(along, at, z) : P(at, along, z);
+                Both(G(0, ze + 0.02f), G(span, zr + 0.02f), G(span, zr - drop), G(0, ze - drop));
+                Both(G(span, zr + 0.02f), G(2 * span, ze + 0.02f), G(2 * span, ze - drop), G(span, zr - drop));
+            }
+            if (fascia <= 0f)
+                return;
+            for (int side = 0; side < 2; side++)
+            {
+                float at = side == 0 ? -0.01f : (gable ? L : S) + 0.01f, run = gable ? S : L;
+                Vector3 E(float along, float z) => gable ? P(at, along, z) : P(along, at, z);
+                Both(E(0, ze + 0.02f), E(run, ze + 0.02f), E(run, ze - fascia), E(0, ze - fascia));
+            }
         }
 
         /// <summary>Where a wall's openings sit (their centres), as tools/houses.py sets them: the first and last at the

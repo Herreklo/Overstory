@@ -31,6 +31,7 @@ float4 _OS_PavingMeanUV; // xy: the palette UV of setts_mean, the tone a sett pa
 float _OS_Clay;          // 1: every surface one matte grey, to judge shape and composition alone
 float _OS_Debug;         // passes for a paintover: 1 palette UV, 2 normal, 3 position mod 8 m, 4 distance; 0 the picture
 float _OS_AirBands;      // 0: the air thickens smoothly; n: in n flat bands (look D's graded wipe, or a style's layers)
+float _OS_AirClear;      // the air's clear reach (m): it thickens in over about this far from the eye; 0 from the eye on
 float _OS_AirBandSoft;   // how soft each band's edge is (0 hard, 1 smooth); 0 reads as look D's 0.2
 
 struct StreetSurface
@@ -338,6 +339,13 @@ float OS_MeanDensity(float3 v, float k, float base)
     return abs(kdh) > 1e-3 ? a * (1.0 - exp(-kdh)) / kdh : a;
 }
 
+// How far of a path d long the air counts: all of it, or with a clear reach c, d - c (1 - e^(-d / c)), so the near
+// stays clear and the layers part beyond it (the city camera's quay against its far hill)
+float OS_AirReach(float d)
+{
+    return _OS_AirClear > 0.0 ? max(d - _OS_AirClear * (1.0 - exp(-d / _OS_AirClear)), 0.0) : d;
+}
+
 // How much of a surface the air hides, cheaply: the same air and haze or bank as OS_Atmosphere, the bank's thickening
 // off the eye taken whole (its density times d - c (1 - e^(-d / c))) and its wisps left out. For the style's pass,
 // which leaves the light from the air alone as it leaves the sky's.
@@ -345,7 +353,7 @@ float OS_Hidden(float3 positionWS)
 {
     float3 v = positionWS - _WorldSpaceCameraPos;
     float d = length(v);
-    float tau = _OS_FogParams.x * d * OS_MeanDensity(v, max(_OS_FogParams.y, 1e-4), _OS_FogParams.z);
+    float tau = _OS_FogParams.x * OS_AirReach(d) * OS_MeanDensity(v, max(_OS_FogParams.y, 1e-4), _OS_FogParams.z);
     bool bank = _OS_Bank.x > 0.5;
     float c = bank ? _OS_Haze.z : 0.0;
     float reach = c > 0.0 ? max(d - c * (1.0 - exp(-d / c)), 0.0) : d;
@@ -365,7 +373,7 @@ half3 OS_Atmosphere(half3 colour, float3 positionWS)
 #else
     float3 v = positionWS - _WorldSpaceCameraPos;
     float d = length(v);
-    float tauAir = _OS_FogParams.x * d * OS_MeanDensity(v, max(_OS_FogParams.y, 1e-4), _OS_FogParams.z);
+    float tauAir = _OS_FogParams.x * OS_AirReach(d) * OS_MeanDensity(v, max(_OS_FogParams.y, 1e-4), _OS_FogParams.z);
     float tauHaze;
     float3 glow = 0;
     if (_OS_Bank.x > 0.5)

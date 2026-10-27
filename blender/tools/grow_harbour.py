@@ -47,13 +47,16 @@ SITE = dict(
     # the land's rise inland from the building line (s, z): steep where the old town climbs, easing to the heath,
     # rising again to the ridge
     rise=[(0.0, 0.0), (6.0, 0.6), (14.0, 3.6), (30.0, 9.8), (52.0, 17.0), (74.0, 24.4), (96.0, 31.6),
-          (118.0, 38.4), (140.0, 44.0), (175.0, 54.0), (230.0, 75.0), (320.0, 110.0), (600.0, 190.0)],
+          (118.0, 38.4), (140.0, 44.0), (175.0, 54.0), (230.0, 75.0), (320.0, 110.0), (600.0, 160.0)],
     tilt=dict(cell=80.0, amp=0.2),                       # the slope's change along the bay: contours drawn in and out
     noise=[(46.0, 2.2), (17.0, 0.6)],                    # (lattice m, amplitude m): the contours' own wander
     gully=dict(x=50.0, width=12.0, depth=4.4, s0=4.0, s1=100.0),
     knoll=dict(x=114.0, s=54.0, rx=40.0, rs=28.0, h=3.0),
     # beyond the quay's ends the hill meets the water as rock: the blend's run along x, the bank's height and reach
     banks=dict(fade=22.0, height=9.0, reach=9.0),
+    # the bay opens to the sea at one end (+1 the +x end, the south-west): a low coast of skerries there, hills at the
+    # other; skerry is their height per metre of the far land's wander
+    mouth=dict(side=1, skerry=0.12),
     lanes=[  # oldest first: contour lanes at a height between two x; a climbing lane from a lane at a grade
         dict(id="lane-1", name="Strandgata", kind="contour", z=7.5, x=(-32.0, 148.0), width=3.4, surface="setts",
              laid=1880, built=(1790, 1850), grain="old", authored=200),
@@ -1572,7 +1575,11 @@ def coarse():
             # beyond the town: the far hills, the bay's open sea behind the eye
             z = natural(x, y)
             far = noise(x / 6.0, y / 6.0) * 30.0
-            if y - shore_y(max(-200.0, min(320.0, x))) > 0 or abs(x - 58) > 260:
+            seaward = y - shore_y(max(-200.0, min(320.0, x))) <= 0
+            if seaward and (x - 58) * SITE["mouth"]["side"] > 260:
+                # the bay's mouth: the low coast's skerries, awash or a few metres up
+                z = max(z, SITE["water"] + SITE["mouth"]["skerry"] * far)
+            elif not seaward or abs(x - 58) > 260:
                 z = max(z, 18.0 + far + 0.12 * max(0.0, abs(x - 58) - 140)) if abs(x - 58) > 140 else z
             row.append(mm(z))
         Z.append(row)

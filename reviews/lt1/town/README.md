@@ -12,3 +12,5 @@ We started from 17:50 sea fog, as the brief asked. With the street's rig it give
 - r13: wet bands on the quay and sjøhus feet; roofs relaid on their materials' cycles, so old roofs come back near new.
 - r14: yards closed from the plots: hedges, plank and picket fences, dry-stone walls where the plot falls.
 - r15: lanes and setts lighter and warmer than the grass, so the net of lanes reads from the hill; steps on the smau, cut into benched ground. Small stills in `r15/small/`.
+- r16: the sun reaches the town: the bay's south-west mouth is a low coast of skerries, not headlands that shaded it from the 8° sun; a lower ridge, so the mid view holds a strip of sky; the air at the city's distances, in the art direction's bands.
+- r17: the air clear for its first 180 m (`town.json`, air), so the quay and near water are not veiled; verge boards and fascias on the gables and eaves (`timber.json`'s working); chimneys with a corbelled crown. Small stills in `r17/small/`.
