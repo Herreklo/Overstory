@@ -54,6 +54,15 @@ def mass_labels(spec, P, ps):
     return lab
 
 
+def clean_labels(lab, passes):
+    """A one-pixel sliver of another mass (a joint's gap showing what lies behind) taken by the mass around it."""
+    for _ in range(passes):
+        for ax in (0, 1):
+            a, b = np.roll(lab, 1, ax), np.roll(lab, -1, ax)
+            lab = np.where((a == b) & (lab != a), a, lab)
+    return lab
+
+
 def look_up(values, spec, i):
     """A mass's design, or the design of the mass it is like (C.east is like C.wall, which is like house)."""
     name = spec[i]["name"]
@@ -88,14 +97,21 @@ def lamp_light(P, ps, cam, lamps, kinds, w, h):
     out = {}
     for lamp in lamps:
         kind = kinds[lamp["kind"]]
+        key = (lamp["id"], json.dumps(kind, sort_keys=True), tuple(lamp["head"]), P.shape, ps.get("calm", 0))
+        if key in _LIT:
+            out[lamp["id"]] = _LIT[key]
+            continue
         head = np.array(lamp["head"], np.float32)
         L = head[None, None, :] - P
         r2 = np.maximum((L * L).sum(-1), 0.25)
         facing = np.clip((ps["normal"] * L / np.sqrt(r2)[..., None]).sum(-1) * (1 - kind["wrap"]) + kind["wrap"], 0, 1)
         reach = sf.smoothstep(kind["reach"], kind["reach"] * 0.6, np.sqrt(r2))
         e = kind["power"] * facing / r2 * reach * shadow_near(P, (reach > 0) & ~ps["sky"], head, ps["dist"], cam, w, h, 16)
-        out[lamp["id"]] = np.where(ps["sky"], 0.0, e / kind["pool_full"]).astype(np.float32)
+        out[lamp["id"]] = _LIT[key] = np.where(ps["sky"], 0.0, e / kind["pool_full"]).astype(np.float32)
     return out
+
+
+_LIT = {}  # a lamp's light on this view, the same for every direction painted in one run
 
 
 def wet_lobe(P, ps, cam, lamp, kind, wet):
@@ -121,6 +137,8 @@ def paint(d, view, recipe, P, ps, cam, w, h, rays, lit, draw=True):
     """One direction's value sketch, in L*: masses, lights, air, then the lamps themselves."""
     spec = view["masses"]
     lab = mass_labels(spec, P, ps)
+    if d.get("clean_px"):
+        lab = clean_labels(lab, d["clean_px"])
     nz = np.clip(ps["normal"][..., 2], 0, 1)
     L = np.zeros(lab.shape, np.float32)
     lamp_k = np.zeros(lab.shape, np.float32)
@@ -151,6 +169,9 @@ def paint(d, view, recipe, P, ps, cam, w, h, rays, lit, draw=True):
             e = lights[l["id"]] * d.get("lamp_scale", {}).get(l["id"], 1.0)
             pool = pool + e
             hue = hue + e[..., None] * sf.hexlin(kinds[l["kind"]]["srgb"])[None, None, :]
+    if d.get("pool_soft_px"):
+        # a lamp's light as one soft pool: a joint's or a board's own tilt does not catch it apart
+        pool = sf.blur(pool, d["pool_soft_px"] * w / 960.0)
     pool = 1 - np.exp(-pool * d.get("lamp_boost", 1.0))
     L = L + sky_k * nz + lamp_k * pool
     sun = ps.get("sun")
@@ -191,10 +212,15 @@ def paint(d, view, recipe, P, ps, cam, w, h, rays, lit, draw=True):
     zmid = (cam[0][2] + np.minimum(P[..., 2], 60.0)) * 0.5
     dens = np.exp(-np.maximum(zmid - a.get("z0", 0.0), 0.0) / a.get("height_m", 1e6))
     t = 1 - np.exp(-np.maximum(ps["dist"] - a.get("from_m", 0.0), 0.0) * dens / a["m"])
+    if a.get("steps"):
+        # the air printed in steps, as a print lays a layer of paper-tint per block, not a fade
+        stp = np.array(a["steps"], np.float32)
+        t = stp[np.clip((t[..., None] >= stp).sum(-1) - 1, 0, len(stp) - 1)]
     fog_L = a["L"] + (sky_L - sk["horizon"]) * a.get("sky_share", 0.0) + glowf * (g["L"] if g else 0)
     L = L * (1 - t) + fog_L * t
     L = np.where(ps["sky"], sky_L + glowf * (g["L"] if g else 0) * g.get("sky_share", 1.0) if g else sky_L, L)
-    warm = np.maximum(warm * (1 - t), glowf * (g.get("warm", 0) if g else 0))
+    in_air = np.where(ps["sky"], 1.0, t) if g and g.get("in_air") else 1.0
+    warm = np.maximum(warm * (1 - t), glowf * (g.get("warm", 0) if g else 0) * in_air)
     if g:
         hue = hue + (glowf * g.get("warm", 0) * 4)[..., None] * sf.hexlin(g.get("srgb", "#ffc27e"))[None, None, :]
     # lit rooms: who is in is a fact the render already draws

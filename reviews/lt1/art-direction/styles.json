@@ -1,0 +1,59 @@
+{
+  "_": "Three directions for the walked corner that differ in styling, not only in value plan (tools/style_dir.py). Each is an idea in one sentence, a value plan (L* of each mass before the air, what lamps and sky add), and a styling: how surfaces, edges, detail, air and history are drawn. The masses are directions.json's (things the facts place). Anchored on nothing we made before: no render's surface detail is used.",
+  "views": {"street": {"masses": [{"name": "C.plinth.joint", "like": "C.plinth", "cls": [2], "box": [30, 28, 0, 46, 41, 30], "kinds": [14], "z": [0, 8.6], "_": "the plinth's joints are the plinth, not the wall"}]}},
+  "directions": {
+    "print": {
+      "moment": "1750-sea-fog",
+      "idea": "The corner printed from seven inks on fog-paper: the near world cut in deep blocks, each layer up the gully printing fewer inks the farther it lies, and the lamps the only warm block.",
+      "styling": {"kind": "woodblock", "warm_at": 0.3, "inks": [[10, "#12172e", "#2a1e1c"], [22, "#262d4a", "#4a3428"], [36, "#454d6e", "#7a573c"], [52, "#7a809c", "#b48660"], [68, "#b0b3c3", "#e2b88e"], [84, "#dadadf", "#f6d8b4"], [97, "#f6f2e8", "#fff4e4"]], "sky_ramp": [[30, "#2c3763"], [45, "#535d88"], [60, "#888fac"], [75, "#c3c3ce"]], "warm_min_L": 56, "cut": {"deg": 24, "rel": 0.03, "near_m": 10, "far_m": 45, "base": 0.0, "up": 1.0, "lamp": 0.4, "L": 34, "soft_px": 0, "default": 0.0, "masses": {"tread": {"line": 1.0}, "coping": {"line": 1.0}}, "r0": 0.1, "r1": 0.5}, "warm_soft_px": 4},
+      "masses": {"rest": {"L": 24}, "ground": {"L": 20, "sky": 6, "lamp": 34}, "curtain": {"L": 10}, "curtain.foot": {"L": 10}, "knuckle": {"L": 12}, "knuckle.top": {"L": 18}, "knuckle.foot": {"L": 10}, "town": {"L": 60}, "town.roof": {"L": 50}, "stone": {"L": 22, "lamp": 30}, "coping": {"L": 30, "sky": 12, "lamp": 34}, "tread": {"L": 22, "sky": 22, "lamp": 36}, "house": {"L": 64}, "C.wall": {"L": 68}, "C.east": {"L": 56, "lamp": 40}, "C.roof": {"L": 24}, "C.plinth": {"L": 22, "lamp": 22}, "C.glass": {"L": 14}, "D.wall": {"L": 52}, "D.roof": {"L": 22}, "far.wall": {"L": 64}, "far.roof": {"L": 56}},
+      "sky": {"horizon": 66, "zenith": 38, "deg": 30, "deg0": 6},
+      "air": {"L": 72, "m": 28, "from_m": 14, "height_m": 40, "sky_share": 0.3, "fog": 0.15, "steps": [0.0, 0.3, 0.55, 0.75, 0.9]},
+      "glow": {"towards": [46.0, 62.0, 13.0], "deg_wide": 30, "deg_up": 5.0, "deg_down": 7, "L": 18, "warm": 0.9, "sky_share": 1.0, "srgb": "#f6c39a", "in_air": true},
+      "windows": 66,
+      "wet": {"streak_deg": [2.0, 14.0], "L": 32},
+      "lamp": {"default": {"post": 10, "glass": 97, "halo_m": 0.35, "halo_L": 34}, "landing": {"halo_m": 0.5, "halo_L": 40}, "lower": {"halo_m": 0.28}},
+      "lamp_boost": 1.6,
+      "calm_px": 3,
+      "colour": {"warm": "#f2b277", "swatches": ["#12172e", "#262d4a", "#454d6e", "#7a809c", "#b0b3c3", "#dadadf", "#f6f2e8", "#b48660", "#e2b88e", "#f6d8b4"]},
+      "calm_keep": ["tread"],
+      "pool_soft_px": 3,
+      "clean_px": 1
+    },
+    "silver": {
+      "moment": "1750-sea-fog",
+      "idea": "A dark wet town drawn only in light: calm unmarked planes, and every edge the rain has wet catching the sky or a lamp as a thin line, sharp where the edge is sharp and new, soft or broken where it is worn.",
+      "styling": {"kind": "lightline", "line": {"deg": 24, "rel": 0.03, "near_m": 12, "far_m": 75, "base": 0.1, "up": 0.9, "lamp": 0.9, "L": 56, "soft_px": 0.7, "masses": {"knuckle": {"line": 0.45}, "curtain": {"line": 0.6}, "ground": {"line": 0.3}, "tread": {"line": 1.3}, "coping": {"line": 1.2}, "stone": {"line": 0.25}, "C.plinth": {"line": 0.2}}, "kinds": {"0": 0.15, "5": 0.3}, "r0": 0.05, "r1": 0.5}},
+      "masses": {"rest": {"L": 18}, "ground": {"L": 15, "sky": 5, "lamp": 16}, "curtain": {"L": 9, "grad": 0.8}, "curtain.foot": {"L": 7}, "knuckle": {"L": 9, "grad": 0.5}, "knuckle.top": {"L": 11}, "knuckle.foot": {"L": 7}, "town": {"L": 34}, "town.roof": {"L": 30}, "stone": {"L": 13, "lamp": 18}, "coping": {"L": 15, "sky": 4, "lamp": 20}, "tread": {"L": 13, "sky": 4, "lamp": 18}, "house": {"L": 36}, "C.wall": {"L": 42, "grad": 0.8}, "C.east": {"L": 34, "lamp": 34}, "C.roof": {"L": 16}, "C.plinth": {"L": 14, "lamp": 12}, "C.glass": {"L": 8}, "D.wall": {"L": 30}, "D.roof": {"L": 14}, "far.wall": {"L": 38}, "far.roof": {"L": 32}},
+      "sky": {"horizon": 54, "zenith": 32, "deg": 30, "deg0": 6},
+      "air": {"L": 42, "m": 40, "from_m": 18, "height_m": 40, "sky_share": 0.5, "fog": 0.6},
+      "glow": {"towards": [46.0, 62.0, 13.0], "deg_wide": 30, "deg_up": 5.0, "deg_down": 7, "L": 16, "warm": 0.9, "sky_share": 1.0, "srgb": "#f6c39a", "in_air": true},
+      "windows": 60,
+      "wet": {"streak_deg": [2.0, 14.0], "L": 30},
+      "lamp": {"default": {"post": 6, "glass": 97, "halo_m": 1.6, "halo_L": 12}, "landing": {"halo_m": 1.4, "halo_L": 18}, "lower": {"halo_m": 0.8}, "upper": {"halo_m": 2.2}, "top": {"halo_m": 2.8}},
+      "lamp_boost": 1.6,
+      "colour": {"ramp": [[4, "#05071a"], [14, "#131931"], [28, "#2a3150"], [44, "#59607e"], [64, "#a6aabd"], [86, "#e6e5e8"]], "ramp_far": [[20, "#2a3049"], [40, "#5a6078"], [60, "#9a9db0"]], "far_gamma": 0.8, "ramp_sky": [[25, "#262e52"], [40, "#4a5378"], [55, "#7f87a3"], [70, "#b9bccb"]], "warm": "#f2b277", "warm_share": 1.0, "swatches": ["#05071a", "#131931", "#2a3150", "#59607e", "#a6aabd", "#e6e5e8", "#f2b277", "#ffe6c4"]},
+      "calm_px": 2,
+      "pool_soft_px": 2,
+      "clean_px": 1
+    },
+    "two-inks": {
+      "moment": "1750-sea-fog",
+      "idea": "The hour prints the town in two inks on paper, its sky's blue and its lamps' amber, the white houses left as paper; only what people paint and keep shows its own colour, and it drains into the hour's inks as it is let go.",
+      "styling": {"kind": "twoink", "paper": "#f5f0e4", "cool": "#4657b8", "warm": "#f0a050", "sky_cool": "#4a5cbc", "warm_share": 0.8, "own": {"D.roof": {"srgb": "#9c4a22", "k": 1.0}}, "own_drain": 0.3},
+      "masses": {"rest": {"L": 50}, "ground": {"L": 40, "sky": 8, "lamp": 26}, "curtain": {"L": 20, "grad": 0.6}, "curtain.foot": {"L": 15}, "knuckle": {"L": 14, "grad": 0.4}, "knuckle.top": {"L": 20}, "knuckle.foot": {"L": 12}, "town": {"L": 76}, "town.roof": {"L": 64}, "stone": {"L": 32, "lamp": 26}, "coping": {"L": 44, "sky": 10, "lamp": 30}, "tread": {"L": 38, "sky": 20, "lamp": 30}, "house": {"L": 84}, "C.wall": {"L": 90}, "C.east": {"L": 80, "lamp": 16}, "C.roof": {"L": 38}, "C.plinth": {"L": 32, "lamp": 16}, "C.glass": {"L": 24}, "D.wall": {"L": 78}, "D.roof": {"L": 40}, "far.wall": {"L": 84}, "far.roof": {"L": 74}},
+      "sky": {"horizon": 52, "zenith": 32, "deg": 32, "deg0": 6},
+      "air": {"L": 76, "m": 26, "from_m": 14, "height_m": 40, "sky_share": 0.2, "fog": 0.6},
+      "glow": {"towards": [46.0, 62.0, 13.0], "deg_wide": 30, "deg_up": 5.0, "deg_down": 7, "L": 10, "warm": 0.8, "sky_share": 1.0, "srgb": "#f6c39a", "in_air": true},
+      "windows": 70,
+      "wet": {"streak_deg": [2.0, 14.0], "L": 34},
+      "lamp": {"default": {"post": 12, "glass": 99, "halo_m": 1.4, "halo_L": 10}, "landing": {"halo_m": 1.4, "halo_L": 14}, "lower": {"halo_m": 0.8}, "upper": {"halo_m": 2.0}, "top": {"halo_m": 2.6}},
+      "lamp_boost": 1.6,
+      "colour": {"warm": "#f0a050", "swatches": ["#f5f0e4", "#4657b8", "#f0a050", "#c4582e"]},
+      "calm_px": 2,
+      "calm_keep": ["tread"],
+      "pool_soft_px": 3,
+      "clean_px": 1
+    }
+  }
+}
