@@ -1,0 +1,209 @@
+{
+ "_": "The style frames' recipe (tools/style_frame.py; README.md here). Views are the corner's judged cameras (LT1Stone.Views, street metres). Lamps are facts: the Landing's lantern of 1955 stands in the render; the gully's three are the lanterns heart_layout.py gives Gully Steps every 24 m, alternating sides, which its way check drops today (the lamps element's to fix), drawn 0.2 m off the flight at their planned places. Each moment is the colour script's key for that light.",
+ "views": {
+  "street": {
+   "pos": [49.3, 12.0, 5.6],
+   "target": [47.5, 44.0, 10.5],
+   "fov": 46.4,
+   "focus": [45.0, 36.8, 10.6],
+   "focus_radius": 0.16
+  },
+  "eye-foot": {
+   "pos": [49.8, 21.4, 4.7],
+   "target": [48.6, 30.7, 5.9],
+   "fov": 37.8,
+   "focus": [45.0, 36.8, 10.6],
+   "focus_radius": 0.2
+  },
+  "c-east": {
+   "pos": [47.5, 33.0, 9.05],
+   "target": [41.4, 35.5, 10.2],
+   "fov": 37.8,
+   "focus": [44.2, 34.5, 10.4],
+   "focus_radius": 0.22
+  },
+  "into12": {
+   "pos": [56.0, 18.0, 15.0],
+   "target": [48.6, 30.7, 5.5],
+   "fov": 46.4,
+   "focus": [45.0, 36.8, 9.5],
+   "focus_radius": 0.2
+  }
+ },
+ "lamps": [
+  {
+   "name": "the Landing",
+   "kind": "lantern-1955",
+   "base": [44.2, 36.8, 8.0],
+   "head": [44.2, 36.8, 11.3],
+   "add": false
+  },
+  {
+   "name": "Gully Steps, lower flight (on the cheek wall)",
+   "kind": "lantern-1955",
+   "base": [50.55, 30.17, 6.38],
+   "head": [50.55, 30.17, 9.68],
+   "add": true
+  },
+  {
+   "name": "Gully Steps, upper flight",
+   "kind": "lantern-1955",
+   "base": [44.4, 53.84, 9.33],
+   "head": [44.4, 53.84, 12.63],
+   "add": true
+  },
+  {
+   "name": "Gully Steps, top",
+   "kind": "lantern-1955",
+   "base": [48.6, 77.84, 15.08],
+   "head": [48.6, 77.84, 18.38],
+   "add": true
+  }
+ ],
+ "lamp_kinds": {
+  "lantern-1955": {
+   "_": "the old town's lanterns with warm incandescent bulbs, put up in 1955 (heart_layout.py, LAMP_ERAS)",
+   "srgb": "#ffc27e",
+   "power": 3.0,
+   "wrap": 0.3,
+   "reach": 16.0,
+   "pool_full": 0.35,
+   "shadow_steps": 20,
+   "post_srgb": [34, 38, 36],
+   "post_m": 0.11,
+   "head_m": 0.34,
+   "head_white": 4.0,
+   "halo": [[0.3, 1.0], [1.0, 0.3], [2.4, 0.08]],
+   "halo_strength": 0.6,
+   "halo_px": 26,
+   "glass_m": 0.38,
+   "cap_m": 0.16,
+   "clay_box_m": 0.45
+  }
+ },
+ "moments": {
+  "1750-sea-fog": {
+   "_": "Friday 20 October 1989, 17:50: blue hour in sea fog. Key: the blue-violet of the fogged sky in every shade. Accent: the lanterns' gold, the one white the nearest lantern's head. Darkest: the near retaining wall and the rock's foot.",
+   "lamps_on": true,
+   "air": {
+    "fog": 0.6
+   },
+   "values": {
+    "mass_px": 12,
+    "mass_eps": 0.004,
+    "calm": 0.55,
+    "pool_lift": 14,
+    "bands": [
+     {
+      "m": [0, 22],
+      "from": [4, 40],
+      "to": [10, 34]
+     },
+     {
+      "m": [22, 50],
+      "from": [8, 45],
+      "to": [14, 56]
+     },
+     {
+      "m": [50, 130],
+      "from": [12, 48],
+      "to": [36, 56]
+     },
+     {
+      "m": [130, 9000],
+      "from": [20, 50],
+      "to": [46, 58]
+     }
+    ],
+    "sky": {
+     "from": [25, 55],
+     "to": [50, 66],
+     "up": [8, 32, -9]
+    },
+    "local": {
+     "paint": 12,
+     "roof": -4.0,
+     "stone": -2.0,
+     "ground": -8,
+     "clay": -7
+    },
+    "glow": {
+     "towards": [-1.8, 68.0, 12.4],
+     "deg_wide": 28.0,
+     "deg_up": 7.0,
+     "deg_down": 12.0,
+     "lstar": 11.0,
+     "veil_m": 45.0
+    },
+    "merge": {
+     "px": 40,
+     "share": 0.85
+    },
+    "veil": {
+     "m": [26, 60],
+     "lstar": 44,
+     "share": 0.35
+    },
+    "masses": [
+     {
+      "name": "the rock knuckle, a dark curtain",
+      "box": [49.6, 14, 2.9, 66, 36, 16],
+      "cls": [1],
+      "from": [8, 45],
+      "to": [10, 16],
+      "share": 0.85,
+      "pool": 1.0,
+      "steep_only": true
+     }
+    ],
+    "shine_keep": 1.0
+   },
+   "colour": {
+    "ramp": [[0.0, "#0c0e2e"], [0.3, "#262e66"], [0.55, "#6874a8"], [0.75, "#c9b5b0"], [0.95, "#ffd9a6"]],
+    "strength": 0.6,
+    "keep_lit": 0.9,
+    "keep_pool": 0.6,
+    "chroma_focus": 1.25,
+    "chroma_far": 0.7,
+    "chroma_sky": 0.85,
+    "glow_srgb": "#e6a882",
+    "glow_share": 0.45
+   },
+   "edges": {
+    "near_m": 24,
+    "far_m": 90,
+    "mark_px": [1.5, 8],
+    "radii": [2, 4, 7],
+    "dark_lo": 14,
+    "dark_hi": 34,
+    "dark_share": 0.6,
+    "focus_keep": 0.9,
+    "pool_keep": 0.5,
+    "lost_px": 3,
+    "sky_px": 3.0
+   },
+   "lens": {
+    "halo_from": 0.55,
+    "halo": [[5, 0.18], [22, 0.12]],
+    "halo_srgb": "#ffc89a",
+    "vignette": 0.28,
+    "grain": 0.035
+   },
+   "wet": {
+    "lobe": 60.0,
+    "lamp": 0.6,
+    "share": 1.0,
+    "fresnel0": 0.04,
+    "air_srgb": "#8d8fc0",
+    "air": 0.1,
+    "darken": 0.45,
+    "mirror": 0.55,
+    "mirror_cover": 0.8,
+    "blur_px": 1.5,
+    "streak_px": 6,
+    "patch_px": 9,
+    "patch_soft": 0.18
+   }
+  }
+ }
+}
