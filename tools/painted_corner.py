@@ -4,12 +4,16 @@ or the frame's still. Any element session runs it after its element lands.
 
     tools/painted_corner.py                  the scene (saved, checked, its still), then the app
     tools/painted_corner.py --scene          the scene only (saved, checked, its still)
-    tools/painted_corner.py --paint          the frame's still only (LT1ArtPasses.Paint, supersampled)
-    tools/painted_corner.py ... -- -elements trees,growth     arguments after -- go to Unity (-elements none: no elements)
+    tools/painted_corner.py --paint          the frame's still only (LT1ArtPasses.Paint, supersampled), to
+                                             unity/Builds/PaintedCorner/stills/{view}-{moment} unless -out says where
+    tools/painted_corner.py ... -- -elements trees,growth     arguments after -- go to Unity (-elements none: no elements;
+                                             -view eye-foot, -moment 1300-drizzle, -out reviews/lt1/<element>/...;
+                                             -still <path> for the scene's still)
 
 The scene is unity/Assets/Experiments/LT1/Corner/LT1_PaintedCorner.unity (its meshes and materials in Corner/Generated/,
 with greybox.txt), the app unity/Builds/PaintedCorner/PaintedCorner.app, the scene's still
-reviews/lt1/art-direction/engine/corner-scene.png; none of them is tracked but the still. Unity runs in batch mode under
+unity/Builds/PaintedCorner/corner-scene.png; none of them is tracked. The page's own frame
+(reviews/lt1/art-direction/engine/street-1750-sea-fog) is written only when -out names it. Unity runs in batch mode under
 the Unity lock (tools/unity_lock.py), and waits while another job or the editor has unity/ open. The stage writes the
 sky's material and a build rewrites some settings as housekeeping: every one of those files is copied before Unity runs
 and put back as it was after, if it changed, so other sessions' edits in them stay. The log is
@@ -62,11 +66,16 @@ def main():
     ap.add_argument("unity_args", nargs="*", help="after --: arguments for Unity (e.g. -elements none)")
     a = ap.parse_args()
     method = METHODS["scene" if a.scene else "paint" if a.paint else "build"]
+    unity_args = list(a.unity_args)
+    if a.paint and "-out" not in unity_args:
+        def arg(name, default):
+            return unity_args[unity_args.index(name) + 1] if name in unity_args[:-1] else default
+        unity_args += ["-out", f"unity/Builds/PaintedCorner/stills/{arg('-view', 'street')}-{arg('-moment', '1750-sea-fog')}"]
     log_dir = os.path.join(REPO, "unity/Builds/PaintedCorner")
     os.makedirs(log_dir, exist_ok=True)
     log = os.path.join(log_dir, "build.log")
     cmd = [UNITY, "-batchmode", "-quit", "-projectPath", os.path.join(REPO, "unity"), "-executeMethod", method,
-           *a.unity_args, "-logFile", log]
+           *unity_args, "-logFile", log]
 
     start = time.time()
     with unity_lock.held(purpose=f"the painted corner: tools/painted_corner.py {' '.join(sys.argv[1:])}") as lk:

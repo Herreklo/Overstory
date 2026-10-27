@@ -256,6 +256,13 @@ namespace Overstory.EditorTools
             string repo = Path.GetFullPath(Path.Combine(Application.dataPath, "..", ".."));
             string unity = Path.GetFullPath(Path.Combine(Application.dataPath, ".."));
             var P = JsonUtility.FromJson<PaintData>(File.ReadAllText(Path.Combine(unity, dataPath)));
+            // another view (LT1Stone.Views, e.g. eye-foot) or hour (a Heart rig, e.g. 1300-drizzle) than the page's: the
+            // still then goes to the untracked builds folder unless -out says where, so the page's frame stays as it is
+            string askedView = Cli.Arg("-view", P.view), askedMoment = Cli.Arg("-moment", P.moment);
+            if (askedView != P.view || askedMoment != P.moment)
+                P.@out = $"unity/Builds/PaintedCorner/stills/{askedView}-{askedMoment}";
+            P.view = askedView;
+            P.moment = askedMoment;
             var C = new Composed
             {
                 Width = P.width, Height = P.height, Super = Mathf.Max(1, P.super), Msaa = Mathf.Max(1, P.msaa),

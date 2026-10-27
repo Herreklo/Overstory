@@ -27,7 +27,7 @@ namespace Overstory.EditorTools.Corner
     ///             greybox.txt (what an element can hide). Then Check and Still.
     ///     Check   the saved scene opened: every renderer has its mesh and materials, the look its values and air.
     ///     Still   the saved scene's camera drawn as the app draws it (1x, MSAA 4x, the runtime air) to
-    ///             reviews/lt1/art-direction/engine/corner-scene.png (and -grey), to set beside the frame.
+    ///             unity/Builds/PaintedCorner/corner-scene.png (and -grey; -still elsewhere), to set beside the frame.
     ///     Build   Scene, then unity/Builds/PaintedCorner/PaintedCorner.app from it (LT1Perf.BuildPlayer: full screen
     ///             at 2560 by 1440), with the BatchRendererGroup's shader variants kept for the build only.
     ///
@@ -40,7 +40,7 @@ namespace Overstory.EditorTools.Corner
         public const string Generated = Folder + "/Generated";
         public const string ScenePath = Folder + "/LT1_PaintedCorner.unity";
         public const string App = "Builds/PaintedCorner/PaintedCorner.app";
-        const string StillOut = "reviews/lt1/art-direction/engine/corner-scene";
+        const string StillOut = "unity/Builds/PaintedCorner/corner-scene";
 
         public static void Scene()
         {
