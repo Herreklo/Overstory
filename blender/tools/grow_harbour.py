@@ -95,12 +95,12 @@ GRAIN = {  # how a lane's plots are cut, by the age of the lane
     "old": dict(run=[(3, 3), (4, 4), (5, 3), (6, 2), (8, 1)], within=0.2, passage=(0.6, 1.6), yard=(0.15, 0.8), turn=2.5,
                 fence=dict(gate=1.9, front=0.0),
                 width=[((5.5, 7.5), 1), ((7.5, 10.5), 5), ((10.5, 14.0), 4)], depth=(5.8, 7.8), wing=0.5,
-                outhouse=0.45, back=0.4, garden=0.4,
+                outhouse=0.45, back=0.4, garden=0.4, fit=dict(depth=5.0, width=5.6, yard=0.1, strip=0.15),
                 close=[("plank", 4), ("picket", 2), ("hedge", 2), ("stone", 2), (None, 2)]),
     "mid": dict(run=[(3, 3), (4, 4), (5, 2)], within=0.2, passage=(0.8, 2.0), yard=(0.3, 1.8), turn=1.5,
                 fence=dict(gate=1.6, front=1.0),
                 width=[((6.5, 8.5), 2), ((8.5, 11.0), 5), ((11.0, 13.0), 2)], depth=(6.4, 8.4), wing=0.4,
-                outhouse=0.5, back=0.25, garden=0.7,
+                outhouse=0.5, back=0.25, garden=0.7, fit=dict(depth=5.6, width=6.2, yard=0.2, strip=0.3),
                 close=[("picket", 4), ("hedge", 4), ("plank", 1), ("stone", 1), (None, 2)]),
     "villa": dict(run=[(1, 1)], within=0.0, passage=(3.0, 7.0), yard=(2.0, 4.5), turn=4.0,
                   fence=dict(gate=0.0, front=1.0),
@@ -829,7 +829,7 @@ def chimneys(p):
         n = 1 if ridge < 9.0 else rs.weighted([(1, 2), (2, 3)])
         if kind == "church":
             n = 1
-        size = rs.uniform(0.7, 1.0) if ridge > 7.0 else rs.uniform(0.55, 0.7)
+        size = rs.uniform(0.55, 0.75) if ridge > 7.0 else rs.uniform(0.45, 0.55)   # a stack of one or two flues
         for k in range(n):
             along_ = 0.0 if n == 1 else (-1 if k == 0 else 1) * ridge * rs.uniform(0.18, 0.3)
             along_ += rs.uniform(-0.12, 0.12) * ridge * (0.5 if n == 1 else 0.2)
@@ -1191,16 +1191,27 @@ def grow():
                 auth = queue[0] if side == "up" and queue and px >= queue[0]["plot"]["x"] / 1000.0 else None
                 if auth:
                     w, d = auth["plot"]["w"] / 1000.0 - 0.3, auth["plot"]["d"] / 1000.0
+                # where a plot has less room than the house drawn for it, the house is built to the room: shallower,
+                # its front yard narrower, then narrower itself, as old plots were cut (fit); never below fit's least
+                sizes = [(w, d, yardd)]
+                fit = g.get("fit")
+                if fit and not auth:
+                    sizes += [(w, max(fit["depth"], d * 0.82), min(yardd, fit["yard"])), (w, fit["depth"], min(yardd, fit["yard"])),
+                              (max(fit["width"], w * 0.72), fit["depth"], min(yardd, fit["yard"]))]
                 fp = None
                 for nudge in (0.0, 0.3, 0.6, 1.0, 1.5) if run > 0 else (0.0,):
-                    mid = t + nudge + w / 2
-                    if blocked(mid, w):
+                    for w_, d_, y_ in sizes:
+                        mid = t + nudge + w_ / 2
+                        if blocked(mid, w_):
+                            break
+                        fp, cz = site_house(mid, w_, d_, y_, side, turn)
+                        if ground.free(fp, 0.12 if g["within"] else 0.6, fit["strip"] if fit else 0.5, strip_n):
+                            t += nudge
+                            w, d, yardd = w_, d_, y_
+                            break
+                        fp = None
+                    if fp is not None or blocked(t + nudge + w / 2, w):
                         break
-                    fp, cz = site_house(mid, w, d, yardd, side, turn)
-                    if ground.free(fp, 0.12 if g["within"] else 0.6, 0.5, strip_n):
-                        t += nudge
-                        break
-                    fp = None
                 if fp is None:
                     run = 0
                     prev = None

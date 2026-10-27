@@ -174,6 +174,7 @@ namespace Overstory.EditorTools.Town
                 water.SetFloat("_WaveScale", F(look["waveScale"]));
                 water.SetFloat("_WaveStrength", F(look["waveStrength"]));
                 water.SetFloat("_WaveStretch", F(look["waveStretch"]));
+                water.SetFloat("_WaveWobble", F(look["waveWobble"]));
                 made.Add(water);
             }
             var fenceM = Mat(0.70f, tones?.fence ?? white, porosity: 0.2f, smooth: 0.15f);
@@ -469,6 +470,9 @@ namespace Overstory.EditorTools.Town
                     float azimuth = r.streetAxisCompass - r.sunBearing;
                     r.sunBearing = Mathf.Repeat(float.Parse(compass, System.Globalization.CultureInfo.InvariantCulture) - azimuth, 360f);
                 }
+                // the city camera keys its lightest light, a white wall in the sun, not the light on level ground
+                if (town.TryGetValue("camera", out var cam))
+                    r.postExposure += F(Obj(cam)["exposure"]);
                 if (!town.TryGetValue("air", out var o))
                     return;
                 var a = Obj(o);
@@ -673,8 +677,6 @@ namespace Overstory.EditorTools.Town
                 return Hash.Unit(Hash.Then(Seed(p.id, "lit"), room)) < F(evening["room"]) * share;
             }
 
-            /// <summary>A roof's covering by the year it was laid (town.json, roofs), weathered from new to old over its
-            /// record's years (materials/*.json, oldYears).</summary>
             /// <summary>A roof's covering: the one of its year built (town.json, roofs).</summary>
             string Covering(Placement p)
             {
@@ -685,6 +687,8 @@ namespace Overstory.EditorTools.Town
                 return null;
             }
 
+            /// <summary>A roof's colour, weathered from new to old over its record's years (materials/*.json, oldYears);
+            /// relaid, its cleaned tiles keep a share of the weathering they had (relaidKeeps).</summary>
             public Color Roof(Placement p)
             {
                 var d = Diary(p);
@@ -692,7 +696,8 @@ namespace Overstory.EditorTools.Town
                 int built = Mathf.Max(Mathf.Max(Last(d, "built"), 1), p.year);
                 int laid = Mathf.Max(built, Last(d, "roof_retiled"));
                 var rec = Read($"materials/{Covering(p)}.json");
-                float age = Mathf.Clamp01((Year - laid) / (float)(double)rec["oldYears"]);
+                float old = F(rec["oldYears"]), keeps = rec.TryGetValue("relaidKeeps", out var k) ? F(k) : 0f;
+                float age = Mathf.Clamp01((Year - laid) / old + keeps * Mathf.Clamp01((laid - built) / old));
                 var c = Color.Lerp(Hex((string)rec["srgbNew"]), Hex((string)rec["srgbOld"]), age);
                 // one roof a little apart from the next, claiming nothing
                 return c * Hash.Range(Seed(p.id, "roof"), 0.93f, 1.07f);
@@ -701,13 +706,13 @@ namespace Overstory.EditorTools.Town
             public Color Crown(Tree t) =>
                 crowns.TryGetValue(t.species, out var c) ? Pick(c, Hash.Of($"town.crown.{t.id}")) : stand;
 
-            /// <summary>A tree's bark and its trunk's width at the foot per metre of its height.</summary>
             /// <summary>A window's panes by day (linear): dark glass, or the cloth of its curtains in a share of rooms.</summary>
             public Color Pane(Placement p, string room) =>
                 Hash.Unit(Hash.Then(Seed(p.id, "curtains"), room)) < curtainShare ? curtained : glass.linear;
             readonly float curtainShare;
             readonly Color curtained;
 
+            /// <summary>A tree's bark and its trunk's width at the foot per metre of its height.</summary>
             public (Color c, float girth) Trunk(Tree t) => trunks.TryGetValue(t.species, out var b) ? b : trunks["default"];
 
             public Color Surface(string name) => surfaces.TryGetValue(name, out var c) ? c : surfaces["setts"];

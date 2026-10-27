@@ -21,6 +21,7 @@ Shader "Overstory/Town"
         _WaveScale ("Wave scale (per metre)", Float) = 0.35
         _WaveStrength ("Wave strength", Float) = 0.1
         _WaveStretch ("Crests' length over their spacing", Float) = 4
+        _WaveWobble ("How far a crest wavers along its length (radians)", Float) = 3
         _Brush ("Share of the look's brushwork", Float) = 1
         _Laps ("Weatherboards' exposure or a roof's courses as they rise (m), 0 for none", Float) = 0
         _Card ("Leaf cards: each turned to the eye about its centre by its corner in uv (0 or 1)", Float) = 0
@@ -43,7 +44,7 @@ Shader "Overstory/Town"
         half _LineWidth;
         half _WaveScale;
         half _WaveStrength;
-        half _WaveStretch;
+        half _WaveStretch; half _WaveWobble;
         half _Brush;
         half _Laps;
         half _Card;
@@ -83,7 +84,7 @@ Shader "Overstory/Town"
             // the mirror breaks into bands across the view and never into glitter; its steepest slope _WaveStrength
             float2 q = positionWS.xz * _WaveScale + float2(0.0, 0.04 * _OS_Time);
             const float e = 0.03;
-            #define OS_SWELL(r) (sin(6.2832 * (r).y + 3.0 * OS_Noise(float2((r).x / _WaveStretch, (r).y * 0.5))) / 6.2832)
+            #define OS_SWELL(r) (sin(6.2832 * (r).y + _WaveWobble * OS_Noise(float2((r).x / _WaveStretch, (r).y * 0.5))) / 6.2832)
             float sx = OS_SWELL(q + float2(e, 0)) - OS_SWELL(q - float2(e, 0));
             float sz = OS_SWELL(q + float2(0, e)) - OS_SWELL(q - float2(0, e));
             #undef OS_SWELL
