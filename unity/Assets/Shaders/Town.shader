@@ -94,8 +94,9 @@ Shader "Overstory/Town"
             s.normalWS = normalize(half3(-sx * _WaveStrength, 2.0 * e, -sz * _WaveStrength));
             float d = tint.a * 4.0 - 1.0;
             float aa = max(fwidth(d), 1e-3);
-            // the light line only where the sun strikes the water at the foot of a thing, never in its shade
-            half rim = (half)(1.0 - smoothstep(_LineWidth - aa, _LineWidth + aa, d)) * sunlit;
+            // the light line only where the sun strikes the water at the foot of a thing, never in its shade, and none
+            // where the pack gives it no width
+            half rim = (half)(1.0 - smoothstep(_LineWidth - aa, _LineWidth + aa, d)) * sunlit * step(1e-4, _LineWidth);
             s.albedo = lerp(_OS_Clay > 0.5 ? half3(0.10h, 0.10h, 0.10h) : tint.rgb, _LineColor.rgb, rim);
             s.smoothness = lerp(_Smoothness, 0.1h, rim);
             s.normalWS = normalize(lerp(s.normalWS, half3(0, 1, 0), rim));

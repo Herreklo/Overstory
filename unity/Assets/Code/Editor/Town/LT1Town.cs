@@ -338,6 +338,7 @@ namespace Overstory.EditorTools.Town
             }
 
             string[] compasses = Cli.Arg("-compass", null)?.Split(',') ?? new string[] { null };
+            var style = stage?.style;
             foreach (var m0 in moment == null ? new[] { "grey" } : moment.Split(','))
             foreach (var compass in compasses)
             {
@@ -345,13 +346,17 @@ namespace Overstory.EditorTools.Town
                 if (stage != null)
                 {
                     // the street's moment, with the air at the city's distances (town.json, air); the asset is left alone
-                    var rig = Object.Instantiate(AssetDatabase.LoadAssetAtPath<LightRig>($"{LT1}/Heart/Light/Heart_{m0}.asset")
-                        ?? throw new FileNotFoundException($"no light rig Heart_{m0}"));
+                    string from = facts.From(m0);
+                    var rig = Object.Instantiate(AssetDatabase.LoadAssetAtPath<LightRig>($"{LT1}/Heart/Light/Heart_{from}.asset")
+                        ?? throw new FileNotFoundException($"no light rig Heart_{from}"));
                     rig.hideFlags = HideFlags.DontSave;
                     made.Add(rig);
-                    facts.Air(rig, compass);
-                rig.reflectionStrength = F(facts.water["reflection"]);   // the harbour's mirror at the city's distances
+                    rig.reflectionStrength = F(facts.water["reflection"]);   // the harbour's mirror at the city's distances
+                    facts.Air(rig, compass, m0);
                     stage.rig = rig;
+                    // the style as the moment's light at the city's distances asks it (town.json, moments); the asset
+                    // is left alone
+                    stage.style = facts.StyleFor(style, m0, made);
                 }
                 foreach (var v in Views)
                 {
@@ -505,30 +510,84 @@ namespace Overstory.EditorTools.Town
             /// sun to the town's own frame from the rig's azimuth.</summary>
             public float airClear;
 
-            public void Air(LightRig r, string compass)
+            /// <summary>The moment as the city sees it (town.json, moments), or null: the rig's fields, the style's, and
+            /// the camera's, shade's and air's values it sets in place of the pack's own.</summary>
+            Dictionary<string, object> Moment(string m) =>
+                m != null && town.TryGetValue("moments", out var ms) && Obj(ms).TryGetValue(m, out var o) ? Obj(o) : null;
+
+            /// <summary>The street's rig a moment starts from: its own name, or the one it names (from).</summary>
+            public string From(string m) => Moment(m) is { } mo && mo.TryGetValue("from", out var f) ? (string)f : m;
+
+            /// <summary>A part of the pack (camera, shade, air) with the moment's values in place of its own.</summary>
+            Dictionary<string, object> Part(string key, Dictionary<string, object> moment)
             {
+                var d = town.TryGetValue(key, out var o) ? new Dictionary<string, object>(Obj(o)) : null;
+                if (moment != null && moment.TryGetValue(key, out var mo))
+                    foreach (var kv in Obj(mo))
+                        (d ??= new Dictionary<string, object>())[kv.Key] = kv.Value;
+                return d;
+            }
+
+            /// <summary>Sets an object's fields by name from the pack: a colour as sRGB hex, or as [r, g, b] where it is
+            /// brighter than white; a number; a switch.</summary>
+            static void Set(object target, Dictionary<string, object> fields)
+            {
+                foreach (var kv in fields)
+                {
+                    var f = target.GetType().GetField(kv.Key) ?? throw new ArgumentException($"no field {kv.Key} on {target.GetType().Name}");
+                    object v = kv.Value;
+                    if (f.FieldType == typeof(Color))
+                        v = v is string h ? Hex(h) : new Color(F(Arr(v)[0]), F(Arr(v)[1]), F(Arr(v)[2]), 1f);
+                    else if (f.FieldType == typeof(float))
+                        v = F(v);
+                    else if (f.FieldType == typeof(int))
+                        v = (int)F(v);
+                    f.SetValue(target, v);
+                }
+            }
+
+            /// <summary>The style under this moment: the game's, or a copy with the fields the moment sets.</summary>
+            public Style StyleFor(Style style, string moment, List<Object> made)
+            {
+                var mo = Moment(moment);
+                if (style == null || mo == null || !mo.TryGetValue("style", out var fields))
+                    return style;
+                var s = Object.Instantiate(style);
+                s.hideFlags = HideFlags.DontSave;
+                made.Add(s);
+                Set(s, Obj(fields));
+                return s;
+            }
+
+            public void Air(LightRig r, string compass, string moment)
+            {
+                // the moment's own light at the city's distances, the sun set once from its clock
+                var mo = Moment(moment);
+                if (mo != null && mo.TryGetValue("rig", out var fields))
+                    Set(r, Obj(fields));
+                r.SetSunFromClock();
+                r.sunFromClock = false;
                 if (compass != null)
                 {
                     float azimuth = r.streetAxisCompass - r.sunBearing;
                     r.sunBearing = Mathf.Repeat(float.Parse(compass, System.Globalization.CultureInfo.InvariantCulture) - azimuth, 360f);
                 }
                 // the city camera keys its lightest light, a white wall in the sun, not the light on level ground
-                if (town.TryGetValue("camera", out var cam))
-                    r.postExposure += F(Obj(cam)["exposure"]);
+                if (Part("camera", mo) is { } cam)
+                    r.postExposure += F(cam["exposure"]);
                 // the shade's light from the sky (shade): fill of the rig's, and cool of the way to the zenith's hue at
                 // its own brightness, so the sun is the one warm light and the shade the sky's blue
-                if (town.TryGetValue("shade", out var sh))
+                if (Part("shade", mo) is { } o2)
                 {
-                    var o2 = Obj(sh);
                     float fill = F(o2["fill"]), cool = F(o2["cool"]);
                     Color Cool(Color c) => Color.Lerp(c, r.zenith * (c.grayscale / Mathf.Max(r.zenith.grayscale, 1e-3f)), cool) * fill;
                     r.ambientSky = Cool(r.ambientSky);
                     r.ambientEquator = Cool(r.ambientEquator);
                     r.ambientGround = Cool(r.ambientGround);
                 }
-                if (!town.TryGetValue("air", out var o))
+                var a = Part("air", mo);
+                if (a == null)
                     return;
-                var a = Obj(o);
                 airClear = F(a["clearM"]);
                 r.fogDensity = F(a["density"]);
                 r.fogHeightFalloff = F(a["heightFalloff"]);
