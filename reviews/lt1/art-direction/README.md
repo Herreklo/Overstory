@@ -1,5 +1,14 @@
 # The walked corner: art direction
 
+**What matters** (27 October; painterly realism in VD1's line, stylised hard: decide what matters, push it harder than reality, remove almost everything else)
+1. **One focus:** the Landing lantern by C's lit corner. Every value, edge and detail serves the eye's way there.
+2. **White timber against dark wet rock**, the frame's largest contrast, kept for the focus. The gully is steeper and tighter than it measures: its walls one dark simple mass, the flight a ladder of wet lit noses up to the Landing.
+3. **Sea fog in three clear layers:** the near clear, the Landing veiled, the far town one flat silhouette in the fog's colour. The air carries the hour's colour.
+4. **Warm in a cool hour:** each lamp a small hot head, a tight halo and a long streak mirrored in the wet stone under it; lit windows the only other warm. Nothing else is warm.
+5. **Clapboard as rhythm:** a few bold shadow lines near, lost in shade and gone past 12 m.
+6. **History as designed shapes from the coat data,** such as a peeled patch or a renewed run, never noise. True colour only where people keep things (D's pantiles, a door). The rest is muted grey-blue, as in Stålenhag's world with its one or two kept accents.
+7. **Removed:** mottle, grain, texture noise, small clutter, every line that carries no fact, and detail away from the focus and the history. Edges are found against the sky and at the focus, and lost inside shade.
+
 Øystein, 27 October: "I want you to have more of a designers eye. Make our style and art truly outstanding." This page sets how the corner's four judged views are designed in each light; the frames in `frames/` show it, and every later element is judged against them. The masters it draws on are in [masters.md](masters.md).
 
 **In short**
