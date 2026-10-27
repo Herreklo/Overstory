@@ -52,7 +52,7 @@ namespace Overstory.EditorTools
         [System.Serializable] class Chalk { public float perDecade, towardValue, keepChroma; }
         [System.Serializable] class Gloss { public float @new, old, halfYears; }
         [System.Serializable] class Peel { public float onsetYears, spanYears, flakeMm, alongGrain, toWood; }
-        [System.Serializable] class Weather { public float southFactor, footM, footFactor, lapFactor, boardSpread, dripFactor, endFactor, rainFactor, rainFromDeg; }
+        [System.Serializable] class Weather { public float southFactor, footM, footFactor, lapFactor, boardSpread, patchSpread, patchM, dripFactor, endFactor, rainFactor, rainFromDeg; }
         [System.Serializable] class Curtains { public string srgb; public float share, opacity, depthM, valanceShare, foldsPerM; }
         [System.Serializable] class Room
         {
@@ -74,15 +74,33 @@ namespace Overstory.EditorTools
             public Peel peel;
             public Weather weather;
             public Soil soil;
-            public float[] greySpread;
-            public NailStain nailStain;
-            public float boardingValueSpread;
+            public Source source;
+            public Sawings sawings;
+            public Stocks stocks;
+            public Weathering weathering;
+            public NailRust nailRust;
             public Room room;
             public Daylight daylight;
             public Wave wave;
         }
         [System.Serializable] class Soil { public string srgb; public float perDecade, most, openShare; }
-        [System.Serializable] class NailStain { public string srgb; public float most, downM, fromTopM, acrossM; public float[] widthMm; }
+        // the softwood's record (pine.json): its source, sawings, stocks, weathering and nails' rust
+        [System.Serializable] class Source { public string srgbHeart, srgbKnot; public float[] heartShare, ringsPerM, knotMm; public float latewood, knotsPerM, knotGrey; }
+        [System.Serializable] class Sawing { public float fibre, edgeMm; }
+        [System.Serializable] class Sawings { public Sawing rough, planed; }
+        [System.Serializable] class Stock { public float[] priorYears; public float valueSpread, filmShare, filmCover; public string srgbFilm; }
+        [System.Serializable] class Stocks { public Stock formwork, @new; }
+        [System.Serializable] class Weathering
+        {
+            public string srgbBrowned, srgbSilver, srgbDamp;
+            public float brownHalfYears, dampMost, dampReachM, dampYears, shelterReachM, grainOld, grainYears, checksPerBoard, checkYears, cupping;
+            public float[] greySpread, silverYears, streaks;
+        }
+        [System.Serializable] class NailRust { public string srgb, srgbIron; public float most, mPerYear, mostM, haloMm; public float[] widthMm; }
+        // what the boarding is made of and how it is nailed (timber.json, boarding)
+        [System.Serializable] class Nails { public float[] fromEndMm; public float acrossMm; }
+        [System.Serializable] class Boarding { public string stock, sawing; public Nails nails; }
+        [System.Serializable] class Timber { public Boarding boarding; }
         [System.Serializable] class Daylight { public float window, backWall, ceiling, curtains; }
         [System.Serializable] class Wave { public float tiltDeg; public float[] perM; }
 
@@ -285,9 +303,29 @@ namespace Overstory.EditorTools
             mat.SetVector("_PineNew", With(Linear(pine.srgbNew), pine.weatherHalfYears));
             mat.SetVector("_PineOld", With(Linear(pine.srgbWeathered), pine.gloss));
             mat.SetVector("_WaterPine", Water(pine));
-            mat.SetVector("_Boarding", new Vector4(pine.greySpread[0], pine.greySpread[1], pine.nailStain.downM, pine.nailStain.most));
-            mat.SetVector("_Nails", With(Linear(pine.nailStain.srgb), pine.nailStain.fromTopM));
-            mat.SetVector("_BoardingB", new Vector4(pine.nailStain.acrossM, pine.nailStain.widthMm[0] * 0.001f, pine.nailStain.widthMm[1] * 0.001f, pine.boardingValueSpread));
+            var src = pine.source;
+            var wt = pine.weathering;
+            var boarding = JsonUtility.FromJson<Timber>(File.ReadAllText(Path.Combine(pack, "timber.json"))).boarding;
+            var stock = (Stock)typeof(Stocks).GetField(boarding.stock).GetValue(pine.stocks);
+            var sawing = (Sawing)typeof(Sawings).GetField(boarding.sawing).GetValue(pine.sawings);
+            mat.SetVector("_WoodHeart", With(Linear(src.srgbHeart), src.heartShare[1]));
+            mat.SetVector("_WoodBrown", With(Linear(wt.srgbBrowned), wt.brownHalfYears));
+            mat.SetVector("_WoodSilver", With(Linear(wt.srgbSilver), wt.silverYears[0]));
+            mat.SetVector("_WoodDamp", With(Linear(wt.srgbDamp), wt.dampMost));
+            mat.SetVector("_WoodKnot", With(Linear(src.srgbKnot), src.knotsPerM));
+            mat.SetVector("_WoodA", new Vector4(src.heartShare[0], wt.silverYears[1], wt.dampReachM, wt.dampYears));
+            mat.SetVector("_WoodB", new Vector4(src.ringsPerM[0], src.ringsPerM[1], src.latewood, wt.grainOld));
+            mat.SetVector("_WoodC", new Vector4(wt.grainYears, wt.streaks[0], wt.streaks[1], wt.checksPerBoard));
+            mat.SetVector("_WoodD", new Vector4(wt.checkYears, wt.cupping, src.knotMm[0] * 0.001f, src.knotMm[1] * 0.001f));
+            mat.SetVector("_WoodE", new Vector4(wt.greySpread[0], wt.greySpread[1], wt.shelterReachM, src.knotGrey));
+            mat.SetVector("_WoodStock", new Vector4(stock.priorYears[0], stock.priorYears[1], stock.valueSpread, stock.filmShare));
+            mat.SetVector("_WoodFilm", With(Linear(stock.srgbFilm), stock.filmCover));
+            mat.SetVector("_WoodSaw", new Vector4(sawing.fibre, sawing.edgeMm * 0.001f, pine.sawings.planed.fibre, pine.sawings.planed.edgeMm * 0.001f));
+            var rust = pine.nailRust;
+            mat.SetVector("_Rust", With(Linear(rust.srgb), rust.most));
+            mat.SetVector("_RustIron", With(Linear(rust.srgbIron), rust.haloMm * 0.001f));
+            mat.SetVector("_RustB", new Vector4(rust.mPerYear, rust.mostM, rust.widthMm[0] * 0.001f, rust.widthMm[1] * 0.001f));
+            mat.SetVector("_NailsAt", new Vector4(boarding.nails.fromEndMm[0] * 0.001f, boarding.nails.fromEndMm[1] * 0.001f, boarding.nails.acrossMm * 0.001f, 0f));
             var stone = Read("materials/fieldstone.json");
             mat.SetVector("_Stone", With(Linear(stone.srgb), stone.valueSpread));
             mat.SetVector("_StoneB", new Vector4(stone.warmSpread, stone.gloss, 0f, 0f));
@@ -323,7 +361,7 @@ namespace Overstory.EditorTools
             mat.SetVector("_Soil", new Vector4(rule.soil.perDecade, rule.soil.most, rule.soil.openShare, 0f));
             mat.SetColor("_SoilColour", Linear(rule.soil.srgb));
             mat.SetVector("_Weather", new Vector4(w.southFactor, w.footM, w.footFactor, w.lapFactor));
-            mat.SetVector("_WeatherB", new Vector4(w.boardSpread, 0f, 0f, 0f));
+            mat.SetVector("_WeatherB", new Vector4(w.boardSpread, w.patchSpread, w.patchM, 0f));
             mat.SetVector("_WeatherC", new Vector4(w.dripFactor, w.endFactor, w.rainFactor, w.rainFromDeg * Mathf.Deg2Rad));
             mat.SetFloat("_Grey", 0f);
             mat.SetFloat("_Debug", float.Parse(Cli.Arg("-debug", "0"), CultureInfo.InvariantCulture));

@@ -27,7 +27,7 @@ ALWAYS = ("pine", "fieldstone", "lime-mortar", "render", "glass")
 KEYS = {
     "paint": ("chalk", "gloss", "peel", "water"),
     "cover": ("srgbNew", "srgbOld", "oldYears", "gloss", "water"),
-    "pine": ("srgbNew", "srgbWeathered", "weatherHalfYears", "gloss", "water"),
+    "pine": ("srgbNew", "srgbWeathered", "weatherHalfYears", "gloss", "water", "source", "sawings", "stocks", "weathering", "nailRust"),
     "fieldstone": ("srgb", "valueSpread", "warmSpread", "gloss", "water"),
     "lime-mortar": ("srgb", "gloss", "water", "jointView", "jointFar"),
     "render": ("srgb", "gloss", "water"),

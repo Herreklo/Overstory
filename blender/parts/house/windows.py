@@ -102,56 +102,71 @@ def window(soup, f, hole, spec, out_w, rng, lit, scheme):
 
 
 def _plank(soup, f, sc, zc, w, h, w0, t, turn):
-    """One rough board standing on the wall from w0 out by t, its centre (sc, zc), w wide and h long, turned in the
-    wall's plane by turn (radians): its face and its four edges (its back lies on the casing). Rigid: only turned."""
+    """One rough board standing in an opening from w0 out by t, its centre (sc, zc), w wide and h long, turned in the
+    wall's plane by turn (radians): its face and its four edges. Rigid: only turned. Its marks (uv7) are its half width
+    and its length, so the wood (House.shader) knows its edges and both its ends."""
     import math
     c, s_ = math.cos(turn), math.sin(turn)
 
     def at(a, z, d):
         return f.at(sc + a * c - z * s_, zc + a * s_ + z * c, d)
     q = ((-w / 2, -h / 2), (w / 2, -h / 2), (w / 2, h / 2), (-w / 2, h / 2))
+    mk = (w / 2, h)
     front = [at(a, z, w0 + t) for a, z in q]
     # the grain runs up the board: its surface coordinates along (s) its length; its lap, how far below its top
-    soup.quad(*front, ta=[(z + zc, a) for a, z in q], laps=[h / 2 - z for a, z in q])
+    soup.quad(*front, ta=[(z + zc, a) for a, z in q], laps=[h / 2 - z for a, z in q], marks=[mk] * 4)
     if soup.level > 0 and t < soup.err:
         return
     back = [at(a, z, w0) for a, z in q]
     for i in range(4):
         j = (i + 1) % 4
-        soup.quad(back[i], back[j], front[j], front[i], ta=[(q[i][1], 0.0), (q[j][1], 0.0), (q[j][1], t), (q[i][1], t)])
+        soup.quad(back[i], back[j], front[j], front[i], ta=[(q[i][1] + zc, 0.0), (q[j][1] + zc, 0.0), (q[j][1] + zc, t), (q[i][1] + zc, t)],
+                  laps=[h / 2 - q[i][1], h / 2 - q[j][1], h / 2 - q[j][1], h / 2 - q[i][1]], marks=[mk] * 4)
 
 
-def boarded(soup, f, outline, out_w, proud, bd, rng, year):
-    """An empty house's opening boarded up: rough sawn boards, reused and of mixed widths, nailed upright over the
-    casing at its head and sill, butted with uneven gaps, their ends ragged, now and then one set out of true; left
-    unpainted, put up that year (timber.json, boarding). The boards draw from their own stream (one draw of the
-    wall's), so the wall's other parts keep their seeds."""
+def boarded(soup, f, hole, out_w, proud, bd, rng, year, sill=None):
+    """An empty house's opening boarded up: rough sawn boards, reused and of mixed widths, stood upright in the
+    opening between its jambs, on its sill and cut to fit under its head, a little behind the casing's face, butted
+    with uneven gaps, a board now and then cut short or a little out of true; left unpainted, put up that year
+    (timber.json, boarding). hole is the opening (s0, s1, z0, z1); sill its sill's (height, proud) (m), whose top
+    slopes out and down from the opening's foot, or None (a door's threshold). The boards draw from their own stream
+    (one draw of the wall's), so the wall's other parts keep their seeds."""
     import hashing as HS
     import math
     brng = HS.Stream("boarding", rng.randint(0, 2 ** 31 - 1))
-    s0, s1, z0, z1 = outline
+    s0, s1, z0, z1 = hole
     t = bd["thickMm"] * MM
-    w0 = out_w + proud + 0.002
+    face = out_w + proud
     soup.use(kind="boarding", scheme="none", year=year, lap=0.5)
     if soup.level >= 2:
-        # (from the city the boarding is one face over the casing)
+        # (from the city the boarding is one face in the opening)
         soup.use(seed=brng.random())
-        soup.quad(f.at(s0, z0, w0 + t), f.at(s1, z0, w0 + t), f.at(s1, z1, w0 + t), f.at(s0, z1, w0 + t),
-                  ta=[(z0, s0), (z0, s1), (z1, s1), (z1, s0)])
+        w = face - bd["setBackMm"][0] * MM
+        soup.quad(f.at(s0, z0, w), f.at(s1, z0, w), f.at(s1, z1, w), f.at(s0, z1, w),
+                  ta=[(z0, s0), (z0, s1), (z1, s1), (z1, s0)], marks=[((s1 - s0) / 2, z1 - z0)] * 4)
         return
-    a = s0 - brng.uniform(*bd["sideOverMm"]) * MM
-    end = s1 + brng.uniform(*bd["sideOverMm"]) * MM
     planks = []
+    a = s0 + 0.002
+    end = s1 - 0.002
     while a < end - 0.04:
         w = min(brng.uniform(*bd["widthMm"]) * MM, end - a)
         if end - a - w < bd["widthMm"][0] * MM * 0.6:
             w = end - a
         planks.append((a, w))
         a += w + brng.uniform(*bd["gapMm"]) * MM
-    skew = brng.randint(0, len(planks) - 1) if brng.random() < bd["outOfTrueShare"] else -1
+    inner = [i for i in range(1, len(planks) - 1)]
+    skew = inner[brng.randint(0, len(inner) - 1)] if inner and brng.random() < bd["outOfTrueShare"] else -1
     for i, (a, w) in enumerate(planks):
-        lo = z0 - brng.uniform(*bd["endOverMm"]) * MM
-        hi = z1 + brng.uniform(*bd["endOverMm"]) * MM
+        # (never into the window's frame behind it)
+        w0 = max(face - brng.uniform(*bd["setBackMm"]) * MM - t, out_w - 0.002)
+        # it stands on the sill where the sill's slope meets the board's back, and is cut to fit under the head
+        lo = z0 if sill is None else z0 - sill[0] * 0.35 * max(0.0, w0) / (out_w + sill[1])
+        hi = z1 - brng.uniform(*bd["topGapMm"]) * MM
         turn = math.radians(brng.uniform(*bd["outOfTrueDeg"]) * (1 if brng.random() < 0.5 else -1)) if i == skew else 0.0
+        # a board out of true was nailed on last, over its neighbours' faces, and cut to clear the head and sill
+        if turn:
+            w0 = face - bd["setBackMm"][0] * MM
+            hi -= abs(math.sin(turn)) * w
+            lo = max(lo, z0 if sill is None else z0 - sill[0] * 0.35 * max(0.0, w0) / (out_w + sill[1])) + abs(math.sin(turn)) * w
         soup.use(seed=brng.random())
-        _plank(soup, f, a + w / 2, 0.5 * (lo + hi), w, hi - lo, w0 + brng.uniform(*bd["setOutMm"]) * MM, t, turn)
+        _plank(soup, f, a + w / 2, 0.5 * (lo + hi), w, hi - lo, w0, t, turn)

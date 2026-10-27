@@ -178,8 +178,8 @@ def build(b, facts, timber, ground, date, index, seed, lit_share, tier="near"):
             C.reveal(soup, f, s0, s1, za, zb, out_w + casing_spec["proudMm"] * MM, out_w - 0.004)
             if boarded is not None:
                 soup.use(year=float(boarded))
-                WN.boarded(soup, f, outlines[-1], out_w, casing_spec["proudMm"] * MM, timber["boarding"], rng,
-                           float(boarded))
+                WN.boarded(soup, f, (s0, s1, za, zb), out_w, casing_spec["proudMm"] * MM, timber["boarding"], rng,
+                           float(boarded), sill=(casing_spec["sillMm"] * MM, casing_spec["sillProudMm"] * MM))
                 soup.use(year=float(yr))
             lit = 0.0
             if boarded is None and lit_share > 0:
@@ -197,7 +197,7 @@ def build(b, facts, timber, ground, date, index, seed, lit_share, tier="near"):
             DR.door(soup, f, door_hole, dsp, out_w, rng, 0.0)
             if boarded is not None:
                 soup.use(year=float(boarded))
-                WN.boarded(soup, f, (ol[0], ol[1], dz0, ol[3]), out_w, cs["proudMm"] * MM, timber["boarding"], rng,
+                WN.boarded(soup, f, (ds0, ds1, dz0, dz1), out_w, cs["proudMm"] * MM, timber["boarding"], rng,
                            float(boarded))
             gp = f.at(0.5 * (ds0 + ds1), 0.0, 0.3)
             DR.steps(soup, f, ol[0], ol[1], zdrip, ground(gp[0], gp[1]) - base, dsp["step"], rng)
