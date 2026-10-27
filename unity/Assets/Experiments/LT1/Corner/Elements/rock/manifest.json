@@ -1,0 +1,32 @@
+{
+  "_": "tools/corner_ground.py; the binaries are rebuilt, not tracked (cache/ground/)",
+  "fixture": "df51cc9535dc0e3fb260003db14f5ce6bc060badf2d19455a80cf2d905119436",
+  "levels": {
+    "l0": {
+      "file": "cache/ground/knuckle-l0.bin",
+      "sha256": "39f1436137c83450826f30c6cab114f3fdb5c0b8211f49ed0ce04fea90ece3bc",
+      "triangles": 14086,
+      "faces": 832,
+      "medianEdgeM": 0.422
+    },
+    "l1": {
+      "file": "cache/ground/knuckle-l1.bin",
+      "sha256": "eeddf01ac363cbf753d8a8abd0491843cf785b6432585377390c635c66945f77",
+      "triangles": 7158,
+      "faces": 832,
+      "medianEdgeM": 0.735
+    },
+    "l2": {
+      "file": "cache/ground/knuckle-l2.bin",
+      "sha256": "fc1afbc3b2623f70c59987845aa9570af5fef511177d5264920ca95703654f1d",
+      "triangles": 1327,
+      "faces": 652,
+      "medianEdgeM": 0.975
+    }
+  },
+  "patch": {
+    "file": "cache/ground/patch-l0.bin",
+    "sha256": "3e8fde0777c72e05327a40bf9f09b46e85fbbf592d249efa47e0af9630014165",
+    "triangles": 1355
+  }
+}

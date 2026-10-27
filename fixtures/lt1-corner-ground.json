@@ -1,0 +1,248 @@
+{
+  "_": "The corner's rock and ground: values its record (lt1-corner.json: site.outcrops, ground_history, walls) and the heart's layout lack, each a FIXTURE VALUE until the engine provides it (docs/engine-requests.md). Street axes as the heart's (x towards the Basin's head, y up Herring Hill, z up; metres); compass bearings in degrees (0 north, clockwise; street direction (-cos b, sin b)), dips from the horizontal. Facts stay in the record; nothing here claims a history the record does not hold.",
+  "record": "fixtures/lt1-corner.json",
+  "date": 1989,
+  "knuckle": {
+    "id": "outcrop-59000-39000",
+    "record": "site.outcrops[0] (x 59 y 39, r 7.5, top 12.6) and ground_history (lichen on the knuckle and the wall, bare since 1874: the lane cut past the rock)",
+    "rock": "slate",
+    "rock_why": "the pack's slate is the town's own slaty rock, phyllite (packs/stavanger-1989/materials/slate.json)",
+    "bareSince": 1874,
+    "jointing": {
+      "_": "FIXTURE VALUES. The town's phyllite (NGU rapport 2024.034; SVV rapport 315, the Eiganes tunnel): foliation striking 150-180, dipping 45-90 (most 60-70) to the WSW; steep cross joints near 045, 135 and 075-090. The reports give no spacings at this scale: the spacings are inferred (plates 0.05-0.3 m bundled into packages that break together; cross joints a metre or more apart). This outcrop takes the steep end of the foliation's usual dip. The sheeting (unloading joints near-parallel to the ground, thin near the top and thicker with depth, as glaciated bedrock in Norway has them) is not in the reports: a FIXTURE VALUE from the common case. Which planes stand open (openShare, the rest tight, a face running on across them unbroken) is a FIXTURE VALUE too.",
+      "families": [
+        {
+          "name": "foliation",
+          "kind": 0,
+          "strike": 160,
+          "dip": 72,
+          "dipToward": 250,
+          "spacingM": [
+            0.7,
+            1.8
+          ],
+          "openShare": 0.25
+        },
+        {
+          "name": "sheeting",
+          "kind": 0,
+          "strike": 160,
+          "dip": 14,
+          "dipToward": 250,
+          "spacingM": [
+            0.45,
+            0.9
+          ],
+          "deepSpacingM": [
+            1.7,
+            2.8
+          ],
+          "deepM": 7.0,
+          "openShare": 0.35
+        },
+        {
+          "name": "J1",
+          "kind": 2,
+          "strike": 45,
+          "dip": 84,
+          "dipToward": 135,
+          "spacingM": [
+            1.6,
+            3.6
+          ],
+          "openShare": 0.35
+        },
+        {
+          "name": "J2",
+          "kind": 2,
+          "strike": 135,
+          "dip": 80,
+          "dipToward": 45,
+          "spacingM": [
+            2.0,
+            4.4
+          ],
+          "openShare": 0.3
+        },
+        {
+          "name": "J3",
+          "kind": 2,
+          "strike": 82,
+          "dip": 86,
+          "dipToward": 352,
+          "spacingM": [
+            3.0,
+            6.0
+          ],
+          "openShare": 0.45
+        }
+      ]
+    },
+    "domes": {
+      "_": "FIXTURE VALUES. The ice's rounding of the knuckle's top (the record gives only its top, 12.6): a low cap, the cells under it are kept (their tops the sheeting's steps), and a few broad planes tangent to it, one about every planeM and clipLiftM over it, cut what stands too proud.",
+      "fin": {
+        "centre": [
+          56.8,
+          32.6
+        ],
+        "top": 12.25,
+        "radii": [
+          6.0,
+          3.2
+        ],
+        "drop": 0.7,
+        "planeM": 4.0,
+        "clipLiftM": 0.25
+      },
+      "upper": {
+        "centre": [
+          57.6,
+          43.5
+        ],
+        "top": 12.55,
+        "radii": [
+          7.5,
+          6.5
+        ],
+        "drop": 0.8,
+        "planeM": 4.0,
+        "clipLiftM": 0.0
+      }
+    },
+    "cuts": {
+      "_": "The 1874 cuts past the rock (ground_history: the lane cut past the rock): the gully's cut along the right cheek wall's back (the gully port's wall, cache/r2b/gully-walls.bin) and the High Terrace's cut through the knuckle (heart_layout: High Terrace, 3.4 m wide). FIXTURE VALUES: where each cut face stands; the rock stood out to the gully's cut as it stands at rockToX. The gully's cut leans back batterDeg from its foot at footZ (FIXTURE VALUE).",
+      "gully": {
+        "a": [
+          51.55,
+          26.0
+        ],
+        "b": [
+          50.5,
+          36.0
+        ],
+        "rockToX": 53.0,
+        "batterDeg": 10.0,
+        "footZ": 3.0
+      },
+      "landing": {
+        "x": 52.05
+      },
+      "terraceWidth": 3.4,
+      "terraceMargin": 0.1
+    },
+    "pluck": {
+      "_": "FIXTURE VALUE: the share of the face's outermost blocks the ice plucked away (the lee side), and how deep (in blocks).",
+      "share": 0.18
+    },
+    "faces": {
+      "_": "FIXTURE VALUES: where the fin's street face stands. It is one foliation plane, through the point at (its foot at the street's edge), from its foot to the ice's cap; the rock behind it is whole (fill) to the cuts and the cap. Beyond it only some of the big blocks at its foot stayed (one slab out, under footM, footShare of them).",
+      "F1": [
+        {
+          "family": "foliation",
+          "side": 1,
+          "at": [
+            55.0,
+            30.0,
+            3.0
+          ],
+          "fill": true,
+          "footM": 1.8,
+          "footShare": 0.5
+        }
+      ],
+      "F2": [
+        {
+          "family": "foliation",
+          "side": 1,
+          "at": [
+            55.0,
+            30.0,
+            3.0
+          ],
+          "fill": true,
+          "footM": 1.8,
+          "footShare": 0.5
+        }
+      ]
+    },
+    "spall": {
+      "_": "FIXTURE VALUES: the share of open joint faces that have shed a plate (phyllite's plates, 0.05-0.3 m, break away as a piece; the joints' skins likewise), and how deep.",
+      "share": 0.4,
+      "depthM": [
+        0.05,
+        0.22
+      ]
+    }
+  },
+  "patch": {
+    "_": "Where the corner's own rock and ground replace the clay (street boxes on the clay's 1.5 m grid lines, so the clay's edge meets ours exactly): kept clear of Low Terrace 18, High Terrace 22 and the way to D, which stay clay.",
+    "boxes": [
+      {
+        "name": "the knuckle and its lane",
+        "min": [
+          51.0,
+          28.5
+        ],
+        "max": [
+          60.0,
+          43.5
+        ]
+      },
+      {
+        "name": "the knuckle under D",
+        "min": [
+          54.0,
+          43.5
+        ],
+        "max": [
+          60.0,
+          49.5
+        ]
+      },
+      {
+        "name": "the fin's east end",
+        "min": [
+          60.0,
+          30.0
+        ],
+        "max": [
+          61.5,
+          31.5
+        ]
+      },
+      {
+        "name": "the knuckle's east side",
+        "min": [
+          60.0,
+          31.5
+        ],
+        "max": [
+          61.5,
+          42.0
+        ]
+      },
+      {
+        "name": "the knuckle north of the lane, east",
+        "min": [
+          61.5,
+          36.0
+        ],
+        "max": [
+          64.5,
+          40.5
+        ]
+      },
+      {
+        "name": "the knuckle north of the lane, its east end",
+        "min": [
+          64.5,
+          36.0
+        ],
+        "max": [
+          66.0,
+          39.0
+        ]
+      }
+    ]
+  }
+}
