@@ -39,6 +39,11 @@
   "windowsByYear": [
     { "from": 1955, "to": 1989, "window": "husmor", "note": "the husmorvindu: one big pane on a pivot, easy to wash; set in a smaller opening, the old casings lost, the rest of the old hole boarded in" }
   ],
+  "levels": {
+    "near":   { "level": 0, "errMm": 0 },
+    "street": { "level": 1, "errMm": 10 },
+    "city":   { "level": 2, "errMm": 40 }
+  },
   "doors": {
     "paired-square": { "leaves": 2, "wMm": 1150, "hMm": 2050, "thresholdMm": 110, "frameMm": 75, "setBackMm": 70, "leafMm": 45, "stileMm": 115, "railMm": 110, "bottomRailMm": 210, "lockRailMm": 160, "panelRows": 3, "glazedRows": 0, "fieldMm": 16, "raiseMm": 32, "lightMm": 380, "lightCols": 3, "barMm": 24, "handleMm": [32, 120, 55], "handleAtMm": 1000, "step": { "riserMm": [140, 200], "treadMm": 340, "overhangMm": 120 } },
     "paired-glazed": { "leaves": 2, "wMm": 1200, "hMm": 2150, "thresholdMm": 110, "frameMm": 75, "setBackMm": 70, "leafMm": 45, "stileMm": 115, "railMm": 110, "bottomRailMm": 210, "lockRailMm": 160, "panelRows": 3, "glazedRows": 1, "fieldMm": 16, "raiseMm": 32, "lightMm": 420, "lightCols": 2, "barMm": 24, "handleMm": [32, 120, 55], "handleAtMm": 1000, "step": { "riserMm": [140, 200], "treadMm": 340, "overhangMm": 120 } }
@@ -47,6 +52,7 @@
   "boarding": { "thickMm": 22, "overlapMm": 70 },
   "provenance": "authored",
   "notes": {
+    "levels": "A house's levels, each from the same facts and seed (tools/houses.py --tiers): near draws every piece; street (from 20 m) one board a run, the stones' faces without their arrises, a door's panels flat, and a box shallower than errMm its front alone; city (from 80 m) a wall's planes around its openings, the plinth one face, a window its glass and casing, a door one face. errMm is the error under a pixel at 1440p where the tier begins (0.48 mm a pixel per metre: docs/building-blocks.md, Levels).",
     "doors": "Doors were paired, with square panels and an overlight, and opened inward (the research, 3. Windows and doors); a sveitser door's upper fields glazed (inf.). Sizes are this pack's assumptions, judged by look: a pair 1150-1200 wide and 2050-2150 high with its overlight, set back 70 mm in the reveal, on a threshold board 110 mm over the drip board's line; stone steps of 140-200 mm risers and 340 mm treads down to the ground. A working's door is where on the front it stands (centre, or the first bay, at the side); doorKind is which of these.",
     "sources": "reviews/lt1/houses/first-pass/research-subject.md: the claddings by era (single-rebated to about 1875, double-rebated sveitser), the trims (Heng 2015: side trims 120-125 x 25, the head's drip board 30 thick at about 20 degrees standing 180 proud over the window, the sill's 120, frame to drip board about 250, brackets 480 x 125 x 50), barge boards 28-34 x 195-220 [Mandal], almost no overhang on classical roofs and a deep one with rafter ends on sveitser roofs, pantiles on battens about 30 cm apart, slate on sveitser roofs, one big chimney at mid-ridge on a classical house and two or more with corbelled crowns on a sveitser one, gutters only from the sveitser era, grey fieldstone plinths, the husmorvindu and its lost trims.",
     "exposureMm": "No source gave a Stavanger board width: classical widths vary within a wall (the range is drawn per course), sveitser boards are machine-run and even. Board thickness 25-32 mm.",

@@ -19,6 +19,7 @@ namespace Overstory.EditorTools
     ///     Unity -batchmode -quit -projectPath unity -executeMethod Overstory.EditorTools.LT1Houses.Still
     ///         -mesh cache/houses -out reviews/lt1/houses/first-pass/round01 [-houses C,D,E]
     ///         [-moment 1750-sea-fog,1300-drizzle] [-view street,c-east] [-looks grey,material] [-debug 0]
+    ///         [-tier near] (street or city: each house's NAME.TIER.bin, from tools/houses.py --tiers)
     ///         [-ref reviews/lt1/heart/target/3-street-gully-steps-target.png]
     ///
     /// The clay of each house drawn is cut out of the corner's clay in memory (its triangles over the house's
@@ -67,7 +68,7 @@ namespace Overstory.EditorTools
             public float weatherHalfYears, oldYears, valueSpread, warmSpread;
             public float gloss = -1f;
             public float[] water;
-            public float jointView = 1f;
+            public float jointView = 1f, jointFar = 1f;
             public Chalk chalk;
             public Gloss glossCurve;
             public Peel peel;
@@ -119,7 +120,8 @@ namespace Overstory.EditorTools
                     for (int i = 0; i < 4; i++)
                         fp[i] = new Vector2(row.fp[2 * i], row.fp[2 * i + 1]);
                     cut.Add(fp);
-                    var m = LT1R2b.Load(Path.Combine(dir, $"{name}.bin"));
+                    string tier = Cli.Arg("-tier", "near");
+                    var m = LT1R2b.Load(Path.Combine(dir, tier == "near" ? $"{name}.bin" : $"{name}.{tier}.bin"));
                     m.name = $"house {name}";
                     made.Add(m);
                     var g = new GameObject(name);
@@ -280,6 +282,7 @@ namespace Overstory.EditorTools
             mat.SetVector("_Mortar", With(Linear(mortar.srgb), mortar.gloss));
             mat.SetVector("_WaterMortar", Water(mortar));
             mat.SetFloat("_Joint", mortar.jointView);
+            mat.SetFloat("_JointFar", mortar.jointFar);
             var render = Read("materials/render.json");
             mat.SetVector("_Render", With(Linear(render.srgb), render.gloss));
             mat.SetVector("_WaterRender", Water(render));

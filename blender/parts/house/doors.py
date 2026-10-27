@@ -17,6 +17,8 @@ def _panel(soup, f, a, b, za, zb, wl, field, raise_, rng):
     soup.use(seed=rng.random())
     wg, wr = wl - field, wl - field * 0.35
     soup.quad(f.at(a, za, wg), f.at(b, za, wg), f.at(b, zb, wg), f.at(a, zb, wg), ta=[(a, za), (b, za), (b, zb), (a, zb)])
+    if soup.level > 0:
+        return
     r = min(raise_, 0.3 * (b - a), 0.3 * (zb - za))
     a1, b1, za1, zb1 = a + r, b - r, za + r, zb - r
     soup.quad(f.at(a1, za1, wr), f.at(b1, za1, wr), f.at(b1, zb1, wr), f.at(a1, zb1, wr),
@@ -75,6 +77,11 @@ def door(soup, f, hole, sp, out_w, rng, lit):
     s0, s1, z0, z1 = hole
     fr = sp["frameMm"] * MM
     wf = out_w - 0.004
+    if soup.level >= 2:
+        soup.use(kind="door", scheme="door", seed=rng.random(), lap=0.5)
+        soup.quad(f.at(s0, z0, wf - 0.05), f.at(s1, z0, wf - 0.05), f.at(s1, z1, wf - 0.05), f.at(s0, z1, wf - 0.05),
+                  ta=[(s0, z0), (s1, z0), (s1, z1), (s0, z1)])
+        return
     depth = 0.12
     soup.use(kind="sash", scheme="door", seed=rng.random(), lap=0.5)
     soup.box(f, s0, s1, z1 - fr, z1, wf - depth, wf)

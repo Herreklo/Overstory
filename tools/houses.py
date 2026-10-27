@@ -8,6 +8,7 @@ events, its coats on the date (blender/parts/house/coats.py, by the pack's paint
 
     /Applications/Blender.app/Contents/MacOS/Blender -b --factory-startup --python tools/houses.py -- \\
         [--houses C,D,E] [--out cache/houses] [--date 1989.8] [--pack packs/stavanger-1989] [--no-bake]
+        [--tiers near,street,city]
 
 Blender only for its ray tree (mathutils): nothing is made in a scene.
 """
@@ -69,7 +70,8 @@ def bake_soup(soup, ground):
     """What each triangle sees (bake.py's rays and reach): its share of open sky, of open ground, and its openness
     close by. The house only knows itself; the ground is the carved ground's height under each sample. A ray that
     meets the house itself brings back one bounce: what the face it meets sees of sky and ground, times BOUNCE, so a
-    rafter's side under a deep eave is lit by the boards round it, not black."""
+    rafter's side under a deep eave is lit by the boards round it, not black. A joint (the slot between stones drawn as
+    one face, from the street tier) sees past its own stones: their shade is in its share (lime-mortar.json, jointFar)."""
     import importlib.util
     from mathutils import Vector
     from mathutils.bvhtree import BVHTree
@@ -79,6 +81,8 @@ def bake_soup(soup, ground):
     verts = [Vector(p) for p in soup.p]
     polys = [(i, i + 1, i + 2) for i in range(0, len(verts), 3)]
     tree = BVHTree.FromPolygons(verts, polys, epsilon=0.0)
+    from soup import KINDS
+    kinds = [int(soup.ch[3 * t][2]) for t in range(len(polys))]
     first, hits = [], []
     for t in range(len(polys)):
         a, b, c = verts[3 * t], verts[3 * t + 1], verts[3 * t + 2]
@@ -94,6 +98,8 @@ def bake_soup(soup, ground):
             h = o.z - ground(o.x, o.y)
             for d in dirs:
                 hit, hn, face, dist = tree.ray_cast(o, d, BK.REACH)
+                while hit is not None and kinds[t] == KINDS["joint"] and kinds[face] == KINDS["stone"]:
+                    hit, hn, face, dist = tree.ray_cast(hit + d * 1e-4, d, BK.REACH)
                 if hit is not None:
                     near += dist < BK.NEAR
                     if hn.dot(d) < 0.0:
@@ -132,6 +138,7 @@ def main(argv):
     ap.add_argument("--timber", default="timber.json")
     ap.add_argument("--paint", default="paint.json")
     ap.add_argument("--no-bake", action="store_true")
+    ap.add_argument("--tiers", default="near", help="the levels to write (timber.json, levels): near as L.bin, others as L.<tier>.bin")
     a = ap.parse_args(argv)
     out = os.path.join(ROOT, a.out)
     os.makedirs(out, exist_ok=True)
@@ -145,18 +152,19 @@ def main(argv):
         b = next(x for x in H.BUILDINGS if x["name"].startswith(letter + " ("))
         hid = int(re.match(r".*?\((\d+)", b["name"]).group(1))
         facts = facts_of(records[hid])
-        t0 = time.time()
         ground = local_ground(b)
-        soup, report = HO.build(b, facts, timber, ground, a.date, index, seed, lit_share=0.5)
-        t1 = time.time()
-        baked = None if a.no_bake else bake_soup(soup, ground)
-        soup.write(os.path.join(out, f"{letter}.bin"), baked)
+        for tier in a.tiers.split(","):
+            t0 = time.time()
+            soup, report = HO.build(b, facts, timber, ground, a.date, index, seed, lit_share=0.5, tier=tier)
+            t1 = time.time()
+            baked = None if a.no_bake else bake_soup(soup, ground)
+            soup.write(os.path.join(out, f"{letter}.bin" if tier == "near" else f"{letter}.{tier}.bin"), baked)
+            print(f"[houses] {letter} {tier}: {report['triangles']} triangles, built {t1 - t0:.1f} s, baked {time.time() - t1:.1f} s")
         rows.append(dict(index=index, name=letter, id=hid, era=facts["era"], built=facts["built"],
                          wealth=facts["wealth"], events=facts["events"],
                          coats=CO.coats(facts, paint, seed, a.date), roof=roof_of(facts, timber, a.date),
                          fp=[round(c, 3) for xy in H.footprint(b, 0.0) for c in xy]))
-        print(f"[houses] {letter} ({hid}, {facts['era']} {facts['built']}): {report['triangles']} triangles, "
-              f"{report['windows']} windows, roof {report['roof']}, built {t1 - t0:.1f} s, baked {time.time() - t1:.1f} s")
+        print(f"[houses] {letter} ({hid}, {facts['era']} {facts['built']}): {report['windows']} windows, roof {report['roof']}")
         for w, r in report["walls"].items():
             print(f"[houses]   {w}: {r}")
     json.dump(dict(date=a.date, pack=a.pack, paint=a.paint, houses=rows), open(os.path.join(out, "houses.json"), "w"), indent=1)

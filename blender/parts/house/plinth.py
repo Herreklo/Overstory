@@ -18,16 +18,17 @@ MM = 0.001
 def _fieldstone(soup, f, cell, wb, wf, pl, rng):
     """One fieldstone filling its cell (s0, z0, s1, z1) less its joints: an outline whose four corners are arcs of
     their own rounding (roundSegments each: at eye level a corner cut once read as an octagon), the face domed out from
-    that outline and its arris rounded back to it."""
+    that outline and its arris rounded back to it. From the street level the stone is its dome alone, from the arris's
+    foot (each corner cut once) to the crown, its corners leaning as the dome falls."""
     s0, z0, s1, z1 = cell
     w, h = s1 - s0, z1 - z0
     r = [min(rng.uniform(*pl["roundMm"]) * MM, 0.4 * w, 0.4 * h) for _ in range(4)]
-    k_arc = pl["roundSegments"]
+    k_arc = pl["roundSegments"] if soup.level == 0 else 0
     o = []
     for (cs_, cz_, a0), rr in zip(((s0 + r[0], z0 + r[0], 180), (s1 - r[1], z0 + r[1], 270),
                                    (s1 - r[2], z1 - r[2], 0), (s0 + r[3], z1 - r[3], 90)), r):
         for i in range(k_arc + 1):
-            t = math.radians(a0 + 90.0 * i / k_arc)
+            t = math.radians(a0 + (90.0 * i / k_arc if k_arc else 45.0))
             o.append((cs_ + rr * math.cos(t), cz_ + rr * math.sin(t)))
     turn = math.radians(rng.uniform(*pl["turnDeg"]))
     sc, zc = 0.5 * (s0 + s1), 0.5 * (z0 + z1)
@@ -53,6 +54,12 @@ def _fieldstone(soup, f, cell, wb, wf, pl, rng):
     nr = [lean(a, z, k_ring) for a, z in ring]
     no = [lean(a, z, 1.4) for a, z in o]
     n = len(o)
+    if soup.level > 0:
+        nd = [lean(a, z, k_ring) for a, z in o]
+        for i in range(n):
+            j = (i + 1) % n
+            soup.tri(po[i], po[j], crown, ta=o[i], tb=o[j], tc=(sc, zc), ns=(nd[i], nd[j], f.n))
+        return
     for i in range(n):
         j = (i + 1) % n
         soup.tri(pr[i], pr[j], crown, ta=ring[i], tb=ring[j], tc=(sc, zc), ns=(nr[i], nr[j], f.n))
@@ -65,9 +72,14 @@ def plinth(soup, f, s0, s1, z_ground, z_top, pl, face_w, seed):
     mortar's bed, then each stone of the mason's laying. seed: the wall's (hashing.h)."""
     import hashing as HS
     back = face_w - pl["bedMm"] * MM
-    soup.use(kind="mortar", scheme="none", seed=0.0, lap=0.0, shelter=0.0)
+    soup.use(kind="mortar" if soup.level == 0 else "joint", scheme="none", seed=0.0, lap=0.0, shelter=0.0)
     soup.quad(f.at(s0, z_ground, back), f.at(s1, z_ground, back), f.at(s1, z_top, back), f.at(s0, z_top, back),
               ta=[(s0, z_ground), (s1, z_ground), (s1, z_top), (s0, z_top)])
+    if soup.level >= 2:
+        soup.use(kind="stone", seed=0.5, lap=0.5)
+        soup.quad(f.at(s0, z_ground, face_w), f.at(s1, z_ground, face_w), f.at(s1, z_top, face_w), f.at(s0, z_top, face_w),
+                  ta=[(s0, z_ground), (s1, z_ground), (s1, z_top), (s0, z_top)])
+        return 0
     cells = r2b_wall.lay(seed, pl, s1 - s0, z_top - z_ground)
     for i, c in enumerate(cells):
         rng = HS.Stream(seed, "fieldstone", i)

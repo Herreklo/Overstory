@@ -79,6 +79,10 @@ def clad(soup, f, wall, openings, lines, cl, rng, shelter, patches=()):
     jit = cl["tiltJitterMm"] * MM
     L, eave, ridge = wall["length"], wall["eave"], wall.get("ridge")
     half = L / 2
+    if soup.level >= 2:
+        # the wall as planes: up to the eave, and the gable over it, the openings cut out of them
+        top_ = ridge - 0.08 if ridge is not None else lines[-1]
+        lines = [lines[0], eave, top_] if ridge is not None and top_ > eave + 0.1 else [lines[0], lines[-1]]
     prev_joints = []
     boards = 0
     for i in range(len(lines) - 1):
@@ -151,8 +155,12 @@ def clad(soup, f, wall, openings, lines, cl, rng, shelter, patches=()):
                     lz = lambda z: (z - za) / max(1e-6, zb - za)
                     soup.quad(*p, ta=t, laps=(lz(zf), lz(zf), lz(zt), lz(zt)))
                     soup.use(kind="underside")
-                    if notch:
+                    if notch or soup.level >= 2:
                         pass    # (its foot sits on the casing's head)
+                    elif groove > 0 and soup.level > 0:
+                        # the groove as one face sloping from the slot's foot out to the board's: its shadow line
+                        soup.quad(f.at(sa0, za, but - groove), f.at(sa1, za, but - groove), f.at(sa1, zf, b_but),
+                                  f.at(sa0, zf, b_but), ta=[(sa0, 0.0), (sa1, 0.0), (sa1, groove), (sa0, groove)])
                     elif groove > 0:
                         # the joint's groove: the board's rebated underside and the slot's back
                         soup.quad(f.at(sa0, zf, but - groove), f.at(sa1, zf, but - groove), f.at(sa1, zf, b_but),
@@ -166,7 +174,9 @@ def clad(soup, f, wall, openings, lines, cl, rng, shelter, patches=()):
                                   f.at(sa0, za, b_but), ta=[(sa0, 0.0), (sa1, 0.0), (sa1, 0.02), (sa0, 0.02)])
                     # its ends where it meets the next board (end grain, a hair's gap)
                     soup.use(kind="endgrain")
-                    if end < a1 - 0.01:
+                    if soup.level > 0:
+                        pass
+                    elif end < a1 - 0.01:
                         soup.quad(f.at(sa1 - gap, zf, dep(zf)), f.at(sa1 - gap, zf, 0.0), f.at(sb1 - gap, zt, 0.0),
                                   f.at(sb1 - gap, zt, dep(zt)))
                     if s > a0 + 0.01:
@@ -184,14 +194,15 @@ def corner_boards(soup, f, wall, z0, z1, cb, out_w, extend_left, extend_right, r
     board laps its neighbour's runs past the corner by that board's thickness."""
     w = cb["widthMm"] * MM
     t = out_w + cb["proudMm"] * MM
+    w0 = out_w if soup.level >= 2 else 0.0     # at the city level only its part proud of the cladding (casing)
     L = wall["length"]
     soup.use(kind="trim", lap=0.5, scheme="trim")
     for side, ext in ((0, extend_left), (1, extend_right)):
         soup.use(seed=rng.random())
         if side == 0:
-            soup.box(f, -ext, w, z0, z1, 0.0, t, grain="z")
+            soup.box(f, -ext, w, z0, z1, w0, t, grain="z")
         else:
-            soup.box(f, L - w, L + ext, z0, z1, 0.0, t, grain="z")
+            soup.box(f, L - w, L + ext, z0, z1, w0, t, grain="z")
 
 
 def drip_board(soup, f, s0, s1, z0, db, out_w, rng):
@@ -222,17 +233,18 @@ def casing(soup, f, s0, s1, z0, z1, cs, out_w, rng, with_sill=True):
     hd, cap, capp = cs["headMm"] * MM, cs["capMm"] * MM, cs["capProudMm"] * MM
     sh, sp, horn = cs["sillMm"] * MM, cs["sillProudMm"] * MM, cs["hornMm"] * MM
     w = out_w + cp
+    w0 = out_w if soup.level >= 2 else 0.0
     soup.use(kind="trim", lap=0.5, scheme="trim")
     zs = z0 - (sh if with_sill else 0.0)
     soup.use(seed=rng.random())
-    soup.box(f, s0 - cw, s0, z0, z1, 0.0, w, grain="z")
+    soup.box(f, s0 - cw, s0, z0, z1, w0, w, grain="z")
     soup.use(seed=rng.random())
-    soup.box(f, s1, s1 + cw, z0, z1, 0.0, w, grain="z")
+    soup.box(f, s1, s1 + cw, z0, z1, w0, w, grain="z")
     soup.use(seed=rng.random())
-    soup.box(f, s0 - cw, s1 + cw, z1, z1 + hd, 0.0, w)
+    soup.box(f, s0 - cw, s1 + cw, z1, z1 + hd, w0, w)
     if cap > 0:
         soup.use(seed=rng.random())
-        soup.box(f, s0 - cw - (capp - cp), s1 + cw + (capp - cp), z1 + hd, z1 + hd + cap, 0.0, out_w + capp)
+        soup.box(f, s0 - cw - (capp - cp), s1 + cw + (capp - cp), z1 + hd, z1 + hd + cap, w0, out_w + capp)
     if cs.get("brackets"):
         # a bracket on each side casing under the cap's ends, tapering down from the cap's depth
         bh, bp, bt = (v * MM for v in cs["brackets"])
@@ -244,7 +256,10 @@ def casing(soup, f, s0, s1, z0, z1, cs, out_w, rng, with_sill=True):
             soup.quad(f.at(a, zb_, w), f.at(a, zb_, wb), f.at(a, zt_, wt), f.at(a, zt_, w))
             soup.quad(f.at(b, zb_, wb), f.at(b, zb_, w), f.at(b, zt_, w), f.at(b, zt_, wt))
             soup.quad(f.at(a, zb_, w), f.at(b, zb_, w), f.at(b, zb_, wb), f.at(a, zb_, wb))
-    if with_sill:
+    if with_sill and soup.level >= 2:
+        soup.use(seed=rng.random())
+        soup.box(f, s0 - cw - horn, s1 + cw + horn, zs, z0, out_w, out_w + sp)
+    elif with_sill:
         soup.use(seed=rng.random())
         a, b = s0 - cw - horn, s1 + cw + horn
         wf = out_w + sp
@@ -261,6 +276,8 @@ def casing(soup, f, s0, s1, z0, z1, cs, out_w, rng, with_sill=True):
 
 def reveal(soup, f, s0, s1, z0, z1, w_front, w_back):
     """The opening's lining from the casing's face back to the frame: four faces looking into the hole."""
+    if soup.level >= 2:
+        return
     soup.use(kind="trim", lap=0.5, scheme="trim")
     soup.quad(f.at(s0, z0, w_back), f.at(s0, z0, w_front), f.at(s0, z1, w_front), f.at(s0, z1, w_back))
     soup.quad(f.at(s1, z0, w_front), f.at(s1, z0, w_back), f.at(s1, z1, w_back), f.at(s1, z1, w_front))

@@ -32,6 +32,7 @@ Shader "Overstory/House"
         _WaterMortar ("Lime mortar's water profile", Vector) = (0, 0, 0, 0)
         _WaterRender ("Chimney render's water profile", Vector) = (0, 0, 0, 0)
         _Joint ("The share of the light a mortar joint's back sees between its stones (lime-mortar.json)", Float) = 1
+        _JointFar ("The share a joint shows as one face where no stone sides are drawn (lime-mortar.json)", Float) = 1
         _Weather ("Paint weather: x south, y foot (m), z foot, w lap (paint.json)", Vector) = (0, 1, 0, 0)
         _WeatherB ("Paint weather: x how far one board's paint runs ahead of or behind another's (paint.json)", Vector) = (0, 0, 0, 0)
         [Toggle] _Grey ("Grey light: every pigment one grey (to judge form)", Float) = 0
@@ -64,6 +65,7 @@ Shader "Overstory/House"
         half4 _WaterMortar;
         half4 _WaterRender;
         half _Joint;
+        half _JointFar;
         float4 _Weather;
         float4 _WeatherB;
         half _Grey;
@@ -111,6 +113,7 @@ Shader "Overstory/House"
     #define K_METAL 11
     #define K_ENDGRAIN 12
     #define K_MORTAR 13
+    #define K_JOINT 14      // the mortar's bed where a level draws no stone sides: the slot between them as one face
 
     // the coat schemes (soup.SCHEMES) and the painted part each reads, -1 for none
     int OS_PartOf(int scheme)
@@ -402,7 +405,7 @@ Shader "Overstory/House"
                     s.smoothness = _StoneB.y;
                     water = _WaterStone;
                 }
-                else if (kind == K_MORTAR)
+                else if (kind == K_MORTAR || kind == K_JOINT)
                 {
                     s.albedo = _Mortar.rgb;
                     s.smoothness = _Mortar.a;
@@ -446,6 +449,9 @@ Shader "Overstory/House"
                 // a centimetre's mark, it goes to the plinth's mean with the flakes (OS_Near)
                 if (kind == K_MORTAR)
                     s.albedo *= lerp(1.0h, _Joint, OS_Near(0.5 * max(length(ddx(input.positionWS)), length(ddy(input.positionWS)))));
+                // where no sides are drawn the bed stands for the whole slot, its sides' shade with it, at every distance
+                else if (kind == K_JOINT)
+                    s.albedo *= _JointFar;
 
                 InputData id = (InputData)0;
                 id.positionWS = input.positionWS;

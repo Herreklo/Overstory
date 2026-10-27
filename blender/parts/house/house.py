@@ -78,11 +78,14 @@ def bays(length, op):
     return [edge + room * i / gaps for i in range(gaps + 1)]
 
 
-def build(b, facts, timber, ground, date, index, seed, lit_share):
-    """The house's soup. b: its plan (heart_layout's building); facts: its record (era, built, events, wealth)."""
+def build(b, facts, timber, ground, date, index, seed, lit_share, tier="near"):
+    """The house's soup. b: its plan (heart_layout's building); facts: its record (era, built, events, wealth);
+    tier: the level drawn (timber.json, levels), every level from the same facts and seed."""
     wk = timber["workings"][facts["era"]]
     hid = facts["id"]
     soup = Soup()
+    lv = timber["levels"][tier]
+    soup.level, soup.err = lv["level"], lv["errMm"] * MM
     soup.use(house=index, year=float(facts["built"]))
     W, D = b["w"], b["d"]
     base, eave, pitch = b["base"], b["eave"], b["pitch"]

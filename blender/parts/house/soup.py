@@ -19,7 +19,7 @@ import math
 import struct
 
 KINDS = {"board": 0, "underside": 1, "trim": 2, "sash": 3, "glass": 4, "tile": 5, "stone": 6, "render": 7,
-         "boarding": 8, "door": 9, "room": 10, "metal": 11, "endgrain": 12, "mortar": 13}
+         "boarding": 8, "door": 9, "room": 10, "metal": 11, "endgrain": 12, "mortar": 13, "joint": 14}
 SCHEMES = {"none": 0, "body": 1, "trim": 2, "window": 3, "door": 4, "stain": 5, "back": 6}
 
 
@@ -67,6 +67,9 @@ class Soup:
     def __init__(self):
         self.p, self.nrm, self.ch = [], [], []
         self.a = dict(kind=0, house=0, seed=0.0, year=1800.0, lap=0.5, shelter=0.0, scheme=0, band=0.0, lit=0.0)
+        # the level drawn (0 near, 1 street, 2 city) and its error (m): a box shallower than the error shows only
+        # its front, its sides being under a pixel at the distance the level is seen from (timber.json, levels)
+        self.level, self.err = 0, 0.0
 
     def use(self, **kw):
         for k, v in kw.items():
@@ -114,8 +117,9 @@ class Soup:
             "left": ((s0, z0, w0), (s0, z0, w1), (s0, z1, w1), (s0, z1, w0)),
             "right": ((s1, z0, w1), (s1, z0, w0), (s1, z1, w0), (s1, z1, w1)),
         }
+        thin = self.level > 0 and w1 - w0 < self.err
         for name, q in faces.items():
-            if name in skip:
+            if name in skip or (thin and name != "front"):
                 continue
             if name in ("front", "back"):
                 t = [tc(c[0], c[1]) for c in q]

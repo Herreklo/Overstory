@@ -5,7 +5,8 @@ walked corner's houses so far.
     python3 tools/check.py [--houses cache/houses]
 
 - Each house's triangles against its tier's budget (docs/foundations.md, the tiers: a house up to 40,000 near, about
-  8,000 street, about 1,500 city). Only the near tier is built; a tier not built is reported as missing, not passed.
+  8,000 street, about 1,500 city), each level at most 60% of the one before it (the blender-generators skill, Levels).
+  A tier not built (tools/houses.py --tiers) is reported as missing, not passed.
 - Every material record houses.json names (its coats' paints, its roof's covering, the wood, stone, mortar, render and
   glass the shader reads) exists in the pack and holds the keys the shader is filled from.
 - Every colour the paint rule names is in its colour list.
@@ -21,13 +22,14 @@ import sys
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 BUDGET = {"near": 40000, "street": 8000, "city": 1500}  # a house, docs/foundations.md (provisional)
+SHARE = 0.6  # a level at most this share of the one before it
 ALWAYS = ("pine", "fieldstone", "lime-mortar", "render", "glass")
 KEYS = {
     "paint": ("chalk", "gloss", "peel", "water"),
     "cover": ("srgbNew", "srgbOld", "oldYears", "gloss", "water"),
     "pine": ("srgbNew", "srgbWeathered", "weatherHalfYears", "gloss", "water"),
     "fieldstone": ("srgb", "valueSpread", "warmSpread", "gloss", "water"),
-    "lime-mortar": ("srgb", "gloss", "water", "jointView"),
+    "lime-mortar": ("srgb", "gloss", "water", "jointView", "jointFar"),
     "render": ("srgb", "gloss", "water"),
     "glass": ("srgbDark", "gloss"),
 }
@@ -49,13 +51,20 @@ def main(argv):
     rows = json.load(open(os.path.join(ROOT, a.houses, "houses.json")))
     pack = os.path.join(ROOT, rows["pack"])
     for h in rows["houses"]:
-        t = triangles(os.path.join(ROOT, a.houses, f"{h['name']}.bin"))
-        ok = t <= BUDGET["near"]
-        print(f"{'pass' if ok else 'FAIL'}  house {h['name']} near tier: {t:,} triangles (budget {BUDGET['near']:,})")
-        if not ok:
-            fails.append(f"house {h['name']} near")
-        for tier in ("street", "city"):
-            missing.append(f"house {h['name']} {tier}")
+        before = None
+        for tier in ("near", "street", "city"):
+            path = os.path.join(ROOT, a.houses, f"{h['name']}.bin" if tier == "near" else f"{h['name']}.{tier}.bin")
+            if not os.path.exists(path):
+                missing.append(f"house {h['name']} {tier}")
+                before = None
+                continue
+            t = triangles(path)
+            ok = t <= BUDGET[tier] and (before is None or t <= SHARE * before)
+            share = f", {t / before:.0%} of the level before" if before else ""
+            print(f"{'pass' if ok else 'FAIL'}  house {h['name']} {tier} tier: {t:,} triangles (budget {BUDGET[tier]:,}{share})")
+            if not ok:
+                fails.append(f"house {h['name']} {tier}")
+            before = t
     names = {c["paint"]: "paint" for h in rows["houses"] for c in h["coats"].values()}
     names.update({h["roof"]["material"]: "cover" for h in rows["houses"]})
     names.update({m: m for m in ALWAYS})
