@@ -29,6 +29,7 @@ Shader "Hidden/Overstory/PaintAir"
             sampler2D _P_Dist;
             float4 _P_Dist_TexelSize;
             float4 _P_Rim;
+            float4 _P_ContactB;                                     // x the least angle (cosine) that counts: a board's lap is no junction
             float4 _P_Contact;                                      // x strength, y the reach (m), z the curve, w the most the reach may span (share of the frame's height)                                          // x strength, y the band (share of the frame's height), z the sky it mirrors (elevation, deg), w the gap behind (m)
             float4 _P_CamPos, _P_CamFwd, _P_CamRight, _P_CamUp;   // right and up scaled by the half view's tangent
             float4 _P_FogD, _P_FogW, _P_FogA;
@@ -94,7 +95,7 @@ Shader "Hidden/Overstory/PaintAir"
                     float3 S = PointAt(q, ok);
                     float3 v = S - P;
                     float vv = dot(v, v);
-                    float o = saturate(dot(v, n) * rsqrt(max(vv, 1e-8)) - 0.15) * saturate(1.0 - vv / (R * R));
+                    float o = saturate(dot(v, n) * rsqrt(max(vv, 1e-8)) - _P_ContactB.x) * saturate(1.0 - vv / (R * R));
                     sum += o * ok;
                 }
                 float ao = saturate(1.0 - _P_Contact.x * 2.0 * sum / N);

@@ -168,7 +168,7 @@ namespace Overstory.EditorTools
         [System.Serializable] class PHide { public float[] box; public int cls; }
         [System.Serializable] class PCover { public string name; public int slot; }
         [System.Serializable] class PTuft { public string name; public int slot; public float[] from, to, lumps; public float depth, overhang, drop; public float shape = 0.6f; }
-        [System.Serializable] class PLantern { public float post, glassH, glassBottom, glassTop, capH, capW; public int glassSlot, metalSlot; }
+        [System.Serializable] class PLantern { public float post, glassH, glassBottom, glassTop, capH, capW; public int glassSlot, metalSlot; public float shadowBias = 0.05f, shadowNormalBias = 0.4f; }
         [System.Serializable] class PLamp { public string id, srgb; public float[] @base, head, halo; public float[] fill = new float[2]; public string fillSrgb; public float power, white, haloStrength; public float @catch = 1f; }
         [System.Serializable]
         class PaintData
@@ -479,6 +479,10 @@ namespace Overstory.EditorTools
                     light.range = lightReach;
                     light.shadows = LightShadows.Soft;
                     light.shadowNearPlane = 0.05f;
+                    // its own bias, so a wall it rakes takes no acne rings (the pipeline's is set for the sun)
+                    light.GetUniversalAdditionalLightData().usePipelineSettings = false;
+                    light.shadowBias = lt.shadowBias;
+                    light.shadowNormalBias = lt.shadowNormalBias;
                     var hc = LinearOf(lamp.srgb) * lamp.haloStrength;
                     lampPos[k] = new Vector4(head.x, head.y, head.z, lamp.halo[0]);
                     lampHalo[k] = new Vector4(hc.r, hc.g, hc.b, lamp.halo[1]);
