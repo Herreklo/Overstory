@@ -5,7 +5,9 @@ The care rule walks the house's life from the year it was built: a coat on every
 repaint every interval its wealth keeps (longer after a 'neglected' event, none while it stands boarded); a dated
 'repainted' or 'restored' event puts a coat on in its year, a repaint choosing its colours again from its period; new
 windows come painted in their year. A care repaint chooses its colours again from its own period at the rule's
-recolourShare, otherwise keeps them; it shows no year a player can read. Pure Python: tools/houses.py writes the result into houses.json.
+recolourShare, otherwise keeps them; it shows no year a player can read. Under a scheme of the paint rule (a quarter
+whose rule chose the colour) a coat from the scheme's year keeps a part's colour while the scheme allows it. Pure
+Python: tools/houses.py writes the result into houses.json.
 """
 
 import os
@@ -36,9 +38,15 @@ def _choose(paint, year, part, rng, colour):
     return rng.choice(p[part])
 
 
-def coats(facts, paint, seed, date):
+def scheme_of(paint, lane):
+    """The paint rule's scheme over a house placed on the lane, or None."""
+    return next((s for s in paint.get("schemes", []) if lane in s["lanes"]), None)
+
+
+def coats(facts, paint, seed, date, scheme=None):
     """{part: dict(colour, srgb, year, paint, under, underSrgb, count)} for each of PARTS on the date; under is the
-    colour of the coat below the top one (the top's own when it was a like-for-like repaint, None on bare wood)."""
+    colour of the coat below the top one (the top's own when it was a like-for-like repaint, None on bare wood).
+    scheme: the paint rule's scheme the house is under (scheme_of), or None."""
     hid = facts["id"]
     care = paint["care"]
     lo, hi = care["intervalYears"]
@@ -50,8 +58,15 @@ def coats(facts, paint, seed, date):
     def coat(year, parts, choose):
         system = _system(paint, year, rng)
         for part in parts:
+            was = colour.get(part)
             if choose or part not in colour:
                 colour[part] = _choose(paint, year, part, rng, colour)
+            # under a scheme the colour stays one it allows (the seed's draws as without it)
+            allowed = scheme.get(part) if scheme and year >= scheme["from"] else None
+            if allowed and was in allowed:
+                colour[part] = was
+            elif allowed and colour[part] not in allowed:
+                colour[part] = allowed[0]
             stack[part].append((year, colour[part], system))
 
     def interval(neglect):

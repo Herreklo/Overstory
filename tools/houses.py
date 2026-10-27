@@ -170,6 +170,7 @@ def main(argv):
     paint = json.load(open(os.path.join(ROOT, a.pack, a.paint)))
     fixture = json.load(open(os.path.join(ROOT, "fixtures/lt1-corner.json")))
     records = {r["id"]: r for r in fixture["buildings"]}
+    lanes = {pl["id"]: pl["lane"] for pl in fixture["placements"]}
     seed = fixture["worldSeed"]
     rows = []
     for index, letter in enumerate(a.houses.split(",")):
@@ -186,7 +187,7 @@ def main(argv):
             print(f"[houses] {letter} {tier}: {report['triangles']} triangles, built {t1 - t0:.1f} s, baked {time.time() - t1:.1f} s")
         rows.append(dict(index=index, name=letter, id=hid, era=facts["era"], built=facts["built"],
                          wealth=facts["wealth"], events=facts["events"],
-                         coats=CO.coats(facts, paint, seed, a.date), roof=roof_of(facts, timber, a.date),
+                         coats=CO.coats(facts, paint, seed, a.date, CO.scheme_of(paint, lanes.get(hid))), roof=roof_of(facts, timber, a.date),
                          fp=[round(c, 3) for xy in H.footprint(b, 0.0) for c in xy]))
         print(f"[houses] {letter} ({hid}, {facts['era']} {facts['built']}): {report['windows']} windows, roof {report['roof']}")
         for w, r in report["walls"].items():
