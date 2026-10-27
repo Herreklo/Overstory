@@ -1420,8 +1420,8 @@ namespace Overstory.EditorTools.Town
                         Mass(0, x, y, z + c0, z + h, r, r, rot, cone, 0.12f);
                         break;
                     case "tall":
-                        // a birch: a tall narrow mass and two or three lobes hung off it
-                        c0 = 0.3f * h;
+                        // a birch: a tall narrow mass and two or three lobes hung off it, low on a tree grown in the open
+                        c0 = 0.22f * h;
                         Mass(0, x, y, z + c0, z + h, r * 0.72f, r * R("ry", 0, 0.6f, 0.72f), rot, round, 0.2f);
                         Lobes(2 + (R("n", 0, 0f, 1f) < 0.5f ? 1 : 0), c0, 0.35f, 0.6f, 0.45f, 0.62f, 0.4f, 0.4f, 0.65f);
                         break;

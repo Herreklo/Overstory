@@ -1340,8 +1340,9 @@ def plant(gardens, ground, places, top_line):
             top_y = at(top_line, tacc, tt)[0][1] if tt is not None else building_line(x) + 140.0
             above = y - top_y - f["above"]
             patch = noise(x, y, [(70.0, 1.0), (23.0, 0.5)])
-            # wild trees come up in clumps with open ground between, never evenly: a seed tree and its seedlings
-            clump = 1.8 if noise(x, y, [(15.0, 1.0), (6.0, 0.5)]) > 0.2 else 0.25
+            # wild trees come up in groves with open ground between, never evenly: a seed tree and its seedlings,
+            # massed as a painter masses them
+            clump = 2.2 if noise(x, y, [(40.0, 1.0), (14.0, 0.45)]) > 0.3 else 0.12
             if any(in_planting(pl, x, y) for pl in SITE["plantings"]):
                 continue                                         # planted in its own rows, above
             if above > 0:
@@ -1465,9 +1466,10 @@ def cover(Z, kind, gardens, top_line, yards=(), trees=()):
             k = kind[j][i]
             zc = Z[j][i]
             slope = max(abs(Z[j][min(nx - 1, i + 1)] - Z[j][max(0, i - 1)]), abs(Z[min(ny - 1, j + 1)][i] - Z[max(0, j - 1)][i])) / 2
+            bank = bank_weight(x) > 0.25
             if k not in (0, 3):
                 c = 5
-            elif y < shore_y(x) or bank_weight(x) > 0.25 or slope > 0.95:
+            elif y < shore_y(x) or slope > 0.95:
                 c = 3
             elif any(in_planting(pl, x, y) for pl in SITE["plantings"]):
                 c = 4
@@ -1477,8 +1479,12 @@ def cover(Z, kind, gardens, top_line, yards=(), trees=()):
                 yd = plot[(i, j)]
                 out.append((1 if yd["kept"] else 2) * 16 + yd["patch"])
                 continue
-            elif y > top_y[i] + 6.0:
-                c = 2
+            elif bank or y > top_y[i] + 6.0:
+                # heath on the banks and above the top lane, broken by the ledges the ice scraped bare, long along the
+                # contour as the gneiss's beds run (the banks rise across the valley, the heath up it): more of them on
+                # the banks, where the soil is thin
+                knoll = noise(x, y * 0.4, [(16.0, 1.0), (6.0, 0.45)]) if bank else noise(x * 0.4, y, [(16.0, 1.0), (6.0, 0.45)])
+                c = 3 if knoll > (0.45 if bank else 0.75) else 2
             elif (i, j) in garden:
                 c = 1
             else:
