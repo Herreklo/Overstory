@@ -170,13 +170,14 @@ namespace Overstory.EditorTools.Town
                 water.SetFloat("_LineWidth", F(look["lineM"]));
                 water.SetFloat("_WaveScale", F(look["waveScale"]));
                 water.SetFloat("_WaveStrength", F(look["waveStrength"]));
+                water.SetFloat("_WaveStretch", F(look["waveStretch"]));
                 made.Add(water);
             }
             var fenceM = Mat(0.70f, tones?.fence ?? white, porosity: 0.2f, smooth: 0.15f);
             var plinth = Mat(0.36f, tones?.stone ?? white, porosity: 0.6f, smooth: 0.08f);
             var crown = Mat(0.34f, white, tinted: true, porosity: 0.3f, smooth: 0.08f, ground: 0.2f);
             var standM = Mat(0.34f, tones?.stand ?? white, porosity: 0.3f, smooth: 0.08f, ground: 0.2f);
-            var trunk = Mat(0.26f, tones?.trunk ?? white, porosity: 0.6f);
+            var trunk = Mat(0.26f, white, tinted: true, porosity: 0.6f);
             var timber = Mat(0.40f, tones?.boards ?? white, porosity: 0.7f);
             // the openings and trims take each house's paints in their vertex colours; the panes the glass's, lit or not
             var trimM = Mat(0.78f, white, tinted: true, porosity: 0.2f, smooth: 0.15f);
@@ -226,9 +227,21 @@ namespace Overstory.EditorTools.Town
                 Add(root, "boats", Boats(town.boats, town.quay.water * M, tones), hull, made);
             if (town.trees != null && town.trees.Length > 0)
             {
-                var (crowns, trunks) = Trees(town.trees, tones);
+                var (crowns, leaves, trunks) = Trees(town.trees, facts, tones != null);
                 Add(root, "tree crowns", crowns, crown, made);
                 Add(root, "tree trunks", trunks, trunk, made);
+                if (moment != null)
+                {
+                    // the crowns' fringe: the crowns' material, each card turned to the eye (Town.shader, _Card)
+                    var leafM = new Material(crown) { name = "leaves", hideFlags = HideFlags.DontSave };
+                    leafM.SetFloat("_Card", 1f);
+                    var edge = Arr(facts.fringe["edge"]);
+                    leafM.SetVector("_CardEdge", new Vector4(F(edge[0]), F(edge[1]), 0f, 0f));
+                    made.Add(leafM);
+                    Add(root, "tree fringe", leaves, leafM, made);
+                }
+                else
+                    Object.DestroyImmediate(leaves);
             }
             if (town.stands != null)
                 Add(root, "stands", Stands(town.stands, town.ground), standM, made);
@@ -316,6 +329,7 @@ namespace Overstory.EditorTools.Town
                     rig.hideFlags = HideFlags.DontSave;
                     made.Add(rig);
                     facts.Air(rig, compass);
+                rig.reflectionStrength = F(facts.water["reflection"]);   // the harbour's mirror at the city's distances
                     stage.rig = rig;
                 }
                 foreach (var v in Views)
@@ -351,8 +365,9 @@ namespace Overstory.EditorTools.Town
         {
             public readonly Color[] cover;
             public readonly float[] spread;
-            public readonly Color land, stand, trunk, fence, stone;
+            public readonly Color land, stand, fence, stone;
             readonly Dictionary<string, Color[]> crowns = new Dictionary<string, Color[]>();
+            readonly Dictionary<string, (Color c, float girth)> trunks = new Dictionary<string, (Color, float)>();
             readonly Dictionary<string, Color> surfaces = new Dictionary<string, Color>();
             readonly Color[] boats, hedges;
             readonly Dictionary<string, object> paint, schemeOf, town;
@@ -362,7 +377,7 @@ namespace Overstory.EditorTools.Town
             readonly string pack;
             const int Year = 1989;
 
-            public readonly Dictionary<string, object> timber, openings, water;
+            public readonly Dictionary<string, object> timber, openings, water, fringe;
             public readonly Color glass, boards;
             /// <summary>A lit room's light through its pane at a window glow of 1, linear.</summary>
             public readonly Vector4 paneLit;
@@ -380,6 +395,7 @@ namespace Overstory.EditorTools.Town
                 evening = Obj(town["evening"]);
                 glass = Hex((string)Obj(town["glass"])["srgb"]);
                 water = Obj(town["water"]);
+                fringe = Obj(town["fringe"]);
                 // the room behind a lit pane: its lamp on its walls and its curtains, half each (materials/glass.json)
                 var room = Obj(Read("materials/glass.json")["room"]);
                 Color lamp = Hex((string)room["srgbLamp"]).linear, walls = Hex((string)room["srgbWalls"]).linear,
@@ -401,12 +417,13 @@ namespace Overstory.EditorTools.Town
                 }
                 land = Hex((string)town["land"]);
                 stand = Hex((string)town["stand"]);
-                trunk = Hex((string)town["trunk"]);
                 fence = paints[(string)town["fences"]];
                 stone = Hex((string)Read("materials/fieldstone.json")["srgb"]);
                 boards = Hex((string)Read("materials/pine.json")["srgbWeathered"]);
                 foreach (var kv in Obj(town["crowns"]))
                     crowns[kv.Key] = Arr(kv.Value).ConvertAll(o => Hex((string)o)).ToArray();
+                foreach (var kv in Obj(town["trunks"]))
+                    trunks[kv.Key] = (Hex((string)Obj(kv.Value)["srgb"]), F(Obj(kv.Value)["girth"]));
                 foreach (var kv in Obj(town["surfaces"]))
                     surfaces[kv.Key] = Hex((string)kv.Value);
                 boats = Arr(town["boats"]).ConvertAll(o => paints[(string)o]).ToArray();
@@ -644,6 +661,9 @@ namespace Overstory.EditorTools.Town
 
             public Color Crown(Tree t) =>
                 crowns.TryGetValue(t.species, out var c) ? Pick(c, Hash.Of($"town.crown.{t.id}")) : stand;
+
+            /// <summary>A tree's bark and its trunk's width at the foot per metre of its height.</summary>
+            public (Color c, float girth) Trunk(Tree t) => trunks.TryGetValue(t.species, out var b) ? b : trunks["default"];
 
             public Color Surface(string name) => surfaces.TryGetValue(name, out var c) ? c : surfaces["setts"];
 
@@ -1151,13 +1171,26 @@ namespace Overstory.EditorTools.Town
             }
         }
 
-        static (Mesh crowns, Mesh trunks) Trees(Tree[] trees, Tones tones)
+        static (Mesh crowns, Mesh leaves, Mesh trunks) Trees(Tree[] trees, Tones facts, bool coloured)
         {
             var cv = new List<Vector3>();
             var ct = new List<int>();
             var cc = new List<Color>();
+            var centres = new List<Vector3>();   // each crown vertex's mass's centre
             var tv = new List<Vector3>();
             var tt = new List<int>();
+            var tc = new List<Color>();
+            // the fringe's cards: four corners at the card's centre, their offsets across the view in uv
+            var lv = new List<Vector3>();
+            var luv = new List<Vector2>();
+            var ln = new List<Vector3>();
+            var lc = new List<Color>();
+            var lt = new List<int>();
+            var fr = facts.fringe;
+            float fSize = F(fr["size"]), fWidth = F(fr["width"]), fTail = F(fr["tail"]), fTurn = F(fr["turn"]), fOut = F(fr["out"]),
+                  fRadial = F(fr["radial"]), fJitter = F(fr["jitter"]), soften = F(fr["soften"]);
+            float Lo(string k) => F(Arr(fr[k])[0]);
+            float Hi(string k) => F(Arr(fr[k])[1]);
             // a broadleaf crown is full low and rounds over at the top; a spruce is a spire
             Func<float, float> round = u => Mathf.Sqrt(Mathf.Sin(Mathf.PI * Mathf.Pow(u, 0.8f)));
             Func<float, float> cone = u => Mathf.Min(1f, u / 0.12f) * Mathf.Pow(1f - u, 0.95f);
@@ -1167,14 +1200,52 @@ namespace Overstory.EditorTools.Town
                 ulong id = Hash.Of(tr.id);
                 float R(string what, int k, float lo, float hi) => Hash.Range(Hash.Then(Hash.Then(id, what), (ulong)k), lo, hi);
                 float rot = R("turn", 0, 0f, Mathf.PI * 2f);
-                var tint = tones == null ? Color.white : tones.Crown(tr).linear;
-                // one mass of the crown, a little lighter or darker than the next (claiming nothing)
+                var tint = coloured ? facts.Crown(tr).linear : Color.white;
+                // the crown's edge: a leaf stroke on each upper facet of a mass, out of it a little and turned part way
+                // radial, so it shades as the mass round it; the shader lays its corners across the view and opens it
+                // only where the crown turns from the eye
+                void Fringe(int k, int t0, Vector3 centre, float size, Color c)
+                {
+                    for (int i = t0, j = 0; i < ct.Count; i += 3, j++)
+                    {
+                        Vector3 a = cv[ct[i]], b = cv[ct[i + 1]], d = cv[ct[i + 2]];
+                        var n = Vector3.Cross(b - a, d - a).normalized;
+                        if (Vector3.Dot(n, (a + b + d) / 3f - centre) < 0f)
+                            n = -n;
+                        if (n.y < -0.5f)
+                            continue;   // the underside
+                        ulong hk = Hash.Then(Hash.Then(Hash.Then(id, "leaf"), (ulong)k), (ulong)j);
+                        float H(string what, float lo, float hi) => Hash.Range(Hash.Then(hk, what), lo, hi);
+                        float u = H("u", 0f, 1f), v = H("v", 0f, 1f);
+                        if (u + v > 1f) { u = 1f - u; v = 1f - v; }
+                        float len = size * H("s", Lo("spread"), Hi("spread"));
+                        var at = a + (b - a) * u + (d - a) * v + n * len * fOut;
+                        var jit = new Vector3(H("x", -1f, 1f), H("y", -1f, 1f), H("z", -1f, 1f));
+                        var nl = (n + (at - centre).normalized * fRadial + jit * fJitter).normalized;
+                        float turn = H("lean", -fTurn, fTurn), cs = Mathf.Cos(turn), sn = Mathf.Sin(turn);
+                        Vector2 Corner(float px, float py) => new Vector2(px * cs - py * sn, px * sn + py * cs);
+                        int n0 = lv.Count;
+                        // tip, right, tail, left across the view
+                        luv.Add(Corner(0f, len)); luv.Add(Corner(len * fWidth, 0f)); luv.Add(Corner(0f, -len * fTail)); luv.Add(Corner(-len * fWidth, 0f));
+                        var tone = c * H("tone", Lo("tone"), Hi("tone"));
+                        for (int q = 0; q < 4; q++) { lv.Add(at); ln.Add(nl); lc.Add(tone); }
+                        // both windings, so the card shows however the view's axes turn it
+                        lt.AddRange(new[] { n0, n0 + 1, n0 + 2, n0, n0 + 2, n0 + 3, n0, n0 + 2, n0 + 1, n0, n0 + 3, n0 + 2 });
+                    }
+                }
+                // one mass of the crown, a little lighter or darker than the next (claiming nothing), and its fringe
                 void Mass(int k, float mx, float my, float z0, float z1, float rx, float ry, float a, Func<float, float> prof, float jit)
                 {
+                    int t0 = ct.Count;
                     Blob(cv, ct, mx, my, z0, z1, rx, ry, a, prof, Hash.Then(id, (ulong)k), jit);
                     var c = tint * R("tone", k, 0.86f, 1.1f);
+                    var centre = U(mx, my, (z0 + z1) / 2f);
                     while (cc.Count < cv.Count)
+                    {
                         cc.Add(c);
+                        centres.Add(centre);
+                    }
+                    Fringe(k, t0, centre, fSize * (rx + ry) / 2f, c);
                 }
                 // lobes round the main mass, at their own heights and sides
                 void Lobes(int n, float c0, float off0, float off1, float rk0, float rk1, float zb1, float hz0, float hz1)
@@ -1218,14 +1289,24 @@ namespace Overstory.EditorTools.Town
                         Lobes(3, c0, 0.4f, 0.6f, 0.45f, 0.62f, 0.3f, 0.45f, 0.7f);
                         break;
                 }
-                // the trunk: a square post from below the ground into the crown
-                float tw = Mathf.Clamp(h * 0.025f, 0.12f, 0.4f);
-                var post = Prism(new[] { new Vector2(x - tw, y - tw), new Vector2(x + tw, y - tw), new Vector2(x + tw, y + tw), new Vector2(x - tw, y + tw) }, z - 1f, z + c0 + (h - c0) * 0.3f);
+                // the trunk: six sides from below the ground into the crown, its girth by its height, half at the top
+                var (bark, girth) = facts.Trunk(tr);
+                float w0 = girth * h / 2f, w1 = w0 / 2f, zt = z + c0 + (h - c0) * 0.3f;
                 int m0 = tv.Count;
-                tv.AddRange(post.vertices);
-                foreach (var i in post.triangles)
-                    tt.Add(m0 + i);
-                Object.DestroyImmediate(post);
+                for (int s6 = 0; s6 < 6; s6++)
+                {
+                    float a = rot + s6 * Mathf.PI / 3f;
+                    tv.Add(U(x + Mathf.Cos(a) * w0, y + Mathf.Sin(a) * w0, z - 1f));
+                    tv.Add(U(x + Mathf.Cos(a) * w1, y + Mathf.Sin(a) * w1, zt));
+                }
+                for (int s6 = 0; s6 < 6; s6++)
+                {
+                    int a0 = m0 + 2 * s6, b0 = m0 + 2 * ((s6 + 1) % 6);
+                    tt.AddRange(new[] { a0, a0 + 1, b0 + 1, a0, b0 + 1, b0 });
+                }
+                var barkC = coloured ? bark.linear : Color.white;
+                while (tc.Count < tv.Count)
+                    tc.Add(barkC);
             }
             // the crowns were wound counterclockwise seen from outside in the street frame, which the mirror into
             // Unity turns inwards: flip them
@@ -1251,7 +1332,30 @@ namespace Overstory.EditorTools.Town
                 fc.Add(cc[ct[i]]);
                 ft.Add(i);
             }
-            return (Make("tree crowns", fv, ft, fc), Make("tree trunks", tv, tt, null));
+            var crowns = Make("tree crowns", fv, ft, fc);
+            // each facet shaded part way to its mass's round, so the planes are a hint across a lit and a shaded side
+            var fn = crowns.normals;
+            for (int i = 0; i < fn.Length; i++)
+            {
+                var radial = (fv[i] - centres[ct[i]]).normalized;
+                if (Vector3.Dot(fn[i], radial) < 0f)
+                    fn[i] = -fn[i];
+                fn[i] = Vector3.Lerp(fn[i], radial, soften).normalized;
+            }
+            crowns.normals = fn;
+            var trunks = Make("tree trunks", tv, tt, tc);
+            DoubleSided(trunks);
+            var leaves = new Mesh { name = "tree fringe", indexFormat = IndexFormat.UInt32, hideFlags = HideFlags.DontSave };
+            leaves.SetVertices(lv);
+            leaves.SetUVs(0, luv);
+            leaves.SetNormals(ln);
+            leaves.SetColors(lc);
+            leaves.SetTriangles(lt, 0);
+            // the cards open across the view from their centres: room in the bounds for the widest
+            var bounds = leaves.bounds;
+            bounds.Expand(4f);
+            leaves.bounds = bounds;
+            return (crowns, leaves, trunks);
         }
 
         /// <summary>The spruce stands' closed canopy: where the rows have grown together, one rough surface at a little

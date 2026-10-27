@@ -92,19 +92,19 @@ BANK = dict(run=1.6, widest=6.0)
 COARSE = dict(x0=-1400.0, y0=-1200.0, x1=1500.0, y1=1800.0, step=25.0)
 
 GRAIN = {  # how a lane's plots are cut, by the age of the lane
-    "old": dict(run=[(3, 3), (4, 4), (5, 3), (6, 2), (8, 1)], within=0.2, passage=(0.9, 2.2), yard=(0.15, 0.8), turn=2.5,
+    "old": dict(run=[(3, 3), (4, 4), (5, 3), (6, 2), (8, 1)], within=0.2, passage=(0.6, 1.6), yard=(0.15, 0.8), turn=2.5,
                 fence=dict(gate=1.9, front=0.0),
                 width=[((5.5, 7.5), 1), ((7.5, 10.5), 5), ((10.5, 14.0), 4)], depth=(5.8, 7.8), wing=0.5,
-                outhouse=0.45, back=0.3, garden=0.4,
+                outhouse=0.45, back=0.4, garden=0.4,
                 close=[("plank", 4), ("picket", 2), ("hedge", 2), ("stone", 2), (None, 2)]),
-    "mid": dict(run=[(2, 3), (3, 4), (4, 2)], within=0.3, passage=(1.4, 3.2), yard=(0.6, 2.6), turn=1.5,
+    "mid": dict(run=[(3, 3), (4, 4), (5, 2)], within=0.2, passage=(0.8, 2.0), yard=(0.3, 1.8), turn=1.5,
                 fence=dict(gate=1.6, front=1.0),
                 width=[((6.5, 8.5), 2), ((8.5, 11.0), 5), ((11.0, 13.0), 2)], depth=(6.4, 8.4), wing=0.4,
-                outhouse=0.35, back=0.12, garden=0.7,
+                outhouse=0.5, back=0.25, garden=0.7,
                 close=[("picket", 4), ("hedge", 4), ("plank", 1), ("stone", 1), (None, 2)]),
-    "villa": dict(run=[(1, 1)], within=0.0, passage=(5.0, 12.0), yard=(3.0, 6.0), turn=4.0,
+    "villa": dict(run=[(1, 1)], within=0.0, passage=(3.0, 7.0), yard=(2.0, 4.5), turn=4.0,
                   fence=dict(gate=0.0, front=1.0),
-                  width=[((8.5, 11.0), 1)], depth=(8.0, 10.0), wing=0.15, outhouse=0.25, back=0.0, garden=1.4,
+                  width=[((8.5, 11.0), 1)], depth=(8.0, 10.0), wing=0.15, outhouse=0.4, back=0.0, garden=1.4,
                   close=[("hedge", 6), ("picket", 3), (None, 1)]),
 }
 

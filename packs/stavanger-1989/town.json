@@ -40,26 +40,60 @@
       "3C4A33"
     ],
     "birch": [
-      "9E8A4C",
-      "8E7E44",
-      "7C7A44",
-      "6E6458"
+      "86784E",
+      "7A7049",
+      "6A6A48",
+      "645D56"
     ],
     "rowan": [
-      "8A4E2C",
-      "7A5A30"
+      "784A32",
+      "6C5636"
     ],
     "sycamore": [
-      "7E7A3A",
-      "8E7034"
+      "6A6A40",
+      "76653C"
     ],
     "apple": [
-      "66703A",
-      "7A7438"
+      "5C6438",
+      "68683C"
     ]
   },
+  "fringe": {
+    "size": 0.3,
+    "spread": [0.7, 1.25],
+    "width": 0.5,
+    "tail": 0.7,
+    "turn": 0.7,
+    "out": 0.25,
+    "radial": 0.6,
+    "jitter": 0.35,
+    "tone": [0.88, 1.1],
+    "edge": [0.6, 0.15],
+    "soften": 0.6
+  },
   "stand": "2A392C",
-  "trunk": "4A443C",
+  "trunks": {
+    "default": {
+      "srgb": "4A443C",
+      "girth": 0.022
+    },
+    "birch": {
+      "srgb": "A8A296",
+      "girth": 0.018
+    },
+    "spruce": {
+      "srgb": "4A443C",
+      "girth": 0.018
+    },
+    "sycamore": {
+      "srgb": "55504A",
+      "girth": 0.03
+    },
+    "apple": {
+      "srgb": "4A443C",
+      "girth": 0.035
+    }
+  },
   "surfaces": {
     "setts": "948F84",
     "asphalt": "4D4D4B",
@@ -115,9 +149,11 @@
     "lineM": 0.45,
     "wetM": 0.6,
     "wet": 0.45,
-    "smoothness": 0.45,
-    "waveScale": 0.35,
-    "waveStrength": 0.1
+    "smoothness": 1.0,
+    "reflection": 0.6,
+    "waveScale": 0.25,
+    "waveStretch": 4.0,
+    "waveStrength": 0.12
   },
   "glass": {
     "srgb": "1B2024"
@@ -219,5 +255,5 @@
     "functionalist": "chalet",
     "seventies": "chalet"
   },
-  "notes": "Cover tones are wet ground in late October on the Rogaland coast: grass still green in the mild wet autumn, heather and dead bracken going brown, grey gneiss with lichen. Birch is past its yellow peak and one in four is bare (its twigs a grey-violet mass from afar), rowan has turned, and sycamore and apple are half green. The old lanes keep the old town's white (paint.json, schemes). A warehouse takes its period's back-of-house paints, falun red and ochre. A roof takes the covering of its year built. A neglected house's paint goes part way toward the soil's colour, as grime and chalking read from afar. A sjøhus has small windows along its sides and a stack of loading hatches in each gable, the port at the quay; the church tall windows along its sides and its door in the west gable. A porch has its door in its gable to the lane, glazed sides where its era glazed them; a lean-to one small window at its back. At 17:50 in late October most households are home and a room in two is lit: a lit window is the moment's (local scene state, seeded, claiming nothing), never in a house its diary says is empty or boarded; its light is the room's lamp on its walls and curtains (materials/glass.json), pane its brightness at a window glow of 1. By day a pane is dark glass. An era timber.json has no working for yet is drawn at this tier by the nearest one it names (workingOf), until its own is written. The harbour's water at this tier is a designed colour, not a mirror: the sky's hue, greener and lighter where the bed shows through shallow water, deepening to open water by deepM, darkest at the foot of a made thing (footM) as its shade and reflection lie there; one light line lineM wide at every waterline, round the shore, the quay, the piers, the sjøhus and every boat; above it on the quay's face, the piers and the feet of the sjøhus, a band wetM high darkened to wet of the stone's colour. Its smoothness stays under the screen's reflections, so no blurred mirror lies under the houses. Hedges in late October: privet dark and still in leaf (two in four), hawthorn olive going thin, beech holding its copper leaves through the winter. The lanes' setts and gravel are lighter and warmer than the grass round them, as dry stone is, so the town's net of lanes and steps reads from the hill. The air at the city's distances (air) replaces the street moment's: clear for its first clearM metres, then thickening by density and thinning with height, its colour the horizon's near and a share farToZenith of the zenith's far, so the far ridge and bay fall back in the art direction's bands."
+  "notes": "Cover tones are wet ground in late October on the Rogaland coast: grass still green in the mild wet autumn, heather and dead bracken going brown, grey gneiss with lichen. Birch is past its yellow peak and one in four is bare (its twigs a grey-violet mass from afar), rowan has turned, and sycamore and apple are half green. The old lanes keep the old town's white (paint.json, schemes). A warehouse takes its period's back-of-house paints, falun red and ochre. A roof takes the covering of its year built. A neglected house's paint goes part way toward the soil's colour, as grime and chalking read from afar. A sjøhus has small windows along its sides and a stack of loading hatches in each gable, the port at the quay; the church tall windows along its sides and its door in the west gable. A porch has its door in its gable to the lane, glazed sides where its era glazed them; a lean-to one small window at its back. At 17:50 in late October most households are home and a room in two is lit: a lit window is the moment's (local scene state, seeded, claiming nothing), never in a house its diary says is empty or boarded; its light is the room's lamp on its walls and curtains (materials/glass.json), pane its brightness at a window glow of 1. By day a pane is dark glass. An era timber.json has no working for yet is drawn at this tier by the nearest one it names (workingOf), until its own is written. The harbour's water at this tier is a designed colour, not a mirror: the sky's hue, greener and lighter where the bed shows through shallow water, deepening to open water by deepM, darkest at the foot of a made thing (footM) as its shade and reflection lie there; one light line lineM wide at every waterline, round the shore, the quay, the piers, the sjøhus and every boat; above it on the quay's face, the piers and the feet of the sjøhus, a band wetM high darkened to wet of the stone's colour. It is a mirror for the screen's reflections (smoothness), at reflection of their strength, as still water gives back a darker world; parallel crests along the quay (waveScale of them per metre, wavering along their length over waveStretch of their spacing, their steepest slope waveStrength) break the mirror into bands, never into glitter. Hedges in late October: privet dark and still in leaf (two in four), hawthorn olive going thin, beech holding its copper leaves through the winter. The lanes' setts and gravel are lighter and warmer than the grass round them, as dry stone is, so the town's net of lanes and steps reads from the hill. The crowns sit a clear step below the walls and are muted, as wet October leaves are against white paint: the low sun warms them enough. A crown's edge is a fringe of leaf strokes (fringe): diamonds size times the mass's radius from centre to tip (by spread), width of that to each side and tail of it below, leaning up to turn radians, on each upper facet of each mass, out of it by out of their size, their normals turned radial of the way from the facet's and jittered, their tones by tone; each turned to the eye and opened only where the crown turns from the eye (the facing between edge's two values), so the strokes break the outline and the sky seams and never the lit face. The masses' facets are shaded soften of the way turned to the mass's own round, so a crown reads as a lit and a shaded side with its planes a hint, not a cut gem. A trunk is its species' bark (trunks, or default), a birch's pale; it is girth of the tree's height across at its foot and half that where it enters the crown. The air at the city's distances (air) replaces the street moment's: clear for its first clearM metres, then thickening by density and thinning with height, its colour the horizon's near and a share farToZenith of the zenith's far, so the far ridge and bay fall back in the art direction's bands."
 }

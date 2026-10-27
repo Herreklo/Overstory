@@ -20,6 +20,9 @@ Shader "Overstory/Town"
         _LineWidth ("The light line's width (m)", Float) = 0.45
         _WaveScale ("Wave scale (per metre)", Float) = 0.35
         _WaveStrength ("Wave strength", Float) = 0.1
+        _WaveStretch ("Crests' length over their spacing", Float) = 4
+        _Card ("Leaf cards: each turned to the eye about its centre by its corner in uv (0 or 1)", Float) = 0
+        _CardEdge ("A card full below the facing y, shut above x", Vector) = (0.6, 0.15, 0, 0)
     }
 
     HLSLINCLUDE
@@ -38,19 +41,52 @@ Shader "Overstory/Town"
         half _LineWidth;
         half _WaveScale;
         half _WaveStrength;
+        half _WaveStretch;
+        half _Card;
+        float4 _CardEdge;
     CBUFFER_END
 
     #include "StreetSurface.hlsl"
 
-    StreetSurface OS_TownSurface(half4 tint, half3 normalWS, float3 positionWS)
+    // a leaf card's corner: laid out about the card's centre p across a view with axes right and up, open in full where
+    // the crown turns from the eye (its normal n across the line to the eye, toEye) and shut where it faces the eye, so
+    // the cards break the crown's outline and its seams with the sky and never its lit face
+    float3 OS_CardCorner(float3 p, float3 n, float2 corner, float3 right, float3 up, float3 toEye)
+    {
+        float open = smoothstep(_CardEdge.x, _CardEdge.y, dot(n, toEye));
+        return p + (right * corner.x + up * corner.y) * open;
+    }
+
+    // where a vertex stands, a card's corner turned to the camera
+    float3 OS_TownPosition(float3 positionOS, float3 normalOS, float2 corner)
+    {
+        float3 p = TransformObjectToWorld(positionOS);
+        if (_Card > 0.5)
+            p = OS_CardCorner(p, TransformObjectToWorldNormal(normalOS), corner, UNITY_MATRIX_V[0].xyz, UNITY_MATRIX_V[1].xyz,
+                              normalize(GetCameraPositionWS() - p));
+        return p;
+    }
+
+    // sunlit: how much of the sun reaches the point (1 where shadows are not drawn)
+    StreetSurface OS_TownSurface(half4 tint, half3 normalWS, float3 positionWS, half sunlit)
     {
         StreetSurface s;
         if (_Water > 0.5)
         {
-            s = OS_WaterSurface(positionWS, half4(tint.rgb, 1), _Smoothness, _WaveScale, _WaveStrength);
+            s = OS_WaterSurface(positionWS, half4(tint.rgb, 1), _Smoothness, _WaveScale, 0);
+            // the harbour's swell at this tier: parallel crests along the quay, a little wavering along their length, so
+            // the mirror breaks into bands across the view and never into glitter; its steepest slope _WaveStrength
+            float2 q = positionWS.xz * _WaveScale + float2(0.0, 0.04 * _OS_Time);
+            const float e = 0.03;
+            #define OS_SWELL(r) (sin(6.2832 * (r).y + 3.0 * OS_Noise(float2((r).x / _WaveStretch, (r).y * 0.5))) / 6.2832)
+            float sx = OS_SWELL(q + float2(e, 0)) - OS_SWELL(q - float2(e, 0));
+            float sz = OS_SWELL(q + float2(0, e)) - OS_SWELL(q - float2(0, e));
+            #undef OS_SWELL
+            s.normalWS = normalize(half3(-sx * _WaveStrength, 2.0 * e, -sz * _WaveStrength));
             float d = tint.a * 4.0 - 1.0;
             float aa = max(fwidth(d), 1e-3);
-            half rim = (half)(1.0 - smoothstep(_LineWidth - aa, _LineWidth + aa, d));
+            // the light line only where the sun strikes the water at the foot of a thing, never in its shade
+            half rim = (half)(1.0 - smoothstep(_LineWidth - aa, _LineWidth + aa, d)) * sunlit;
             s.albedo = lerp(_OS_Clay > 0.5 ? half3(0.10h, 0.10h, 0.10h) : tint.rgb, _LineColor.rgb, rim);
             s.smoothness = lerp(_Smoothness, 0.1h, rim);
             s.normalWS = normalize(lerp(s.normalWS, half3(0, 1, 0), rim));
@@ -116,6 +152,7 @@ Shader "Overstory/Town"
                 float4 positionOS : POSITION;
                 float3 normalOS : NORMAL;
                 half4 color : COLOR;
+                float2 corner : TEXCOORD0;
                 UNITY_VERTEX_INPUT_INSTANCE_ID
             };
 
@@ -135,9 +172,8 @@ Shader "Overstory/Town"
                 UNITY_SETUP_INSTANCE_ID(input);
                 UNITY_TRANSFER_INSTANCE_ID(input, o);
                 UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(o);
-                VertexPositionInputs p = GetVertexPositionInputs(input.positionOS.xyz);
-                o.positionCS = p.positionCS;
-                o.positionWS = p.positionWS;
+                o.positionWS = OS_TownPosition(input.positionOS.xyz, input.normalOS, input.corner);
+                o.positionCS = TransformWorldToHClip(o.positionWS);
                 o.normalWS = TransformObjectToWorldNormal(input.normalOS);
                 o.color = input.color;
                 return o;
@@ -151,7 +187,12 @@ Shader "Overstory/Town"
             {
                 UNITY_SETUP_INSTANCE_ID(input);
                 UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(input);
-                StreetSurface s = OS_TownSurface(input.color, NormalizeNormalPerPixel(input.normalWS), input.positionWS);
+            #if defined(MAIN_LIGHT_CALCULATE_SHADOWS)
+                half sunlit = MainLightRealtimeShadow(TransformWorldToShadowCoord(input.positionWS));
+            #else
+                half sunlit = 1;
+            #endif
+                StreetSurface s = OS_TownSurface(input.color, NormalizeNormalPerPixel(input.normalWS), input.positionWS, sunlit);
 
                 InputData id = (InputData)0;
                 id.positionWS = input.positionWS;
@@ -210,6 +251,7 @@ Shader "Overstory/Town"
             {
                 float4 positionOS : POSITION;
                 float3 normalOS : NORMAL;
+                float2 corner : TEXCOORD0;
                 UNITY_VERTEX_INPUT_INSTANCE_ID
             };
 
@@ -223,6 +265,12 @@ Shader "Overstory/Town"
             #else
                 float3 lightDirectionWS = _LightDirection;
             #endif
+                if (_Card > 0.5)
+                {
+                    // a card turned to the light, so the crown's shadow has the fringe's broken edge
+                    float3 right = normalize(cross(abs(lightDirectionWS.y) > 0.99 ? float3(1, 0, 0) : float3(0, 1, 0), lightDirectionWS));
+                    positionWS = OS_CardCorner(positionWS, normalWS, input.corner, right, cross(lightDirectionWS, right), lightDirectionWS);
+                }
                 float4 positionCS = TransformWorldToHClip(ApplyShadowBias(positionWS, normalWS, lightDirectionWS));
             #if UNITY_REVERSED_Z
                 positionCS.z = min(positionCS.z, UNITY_NEAR_CLIP_VALUE);
@@ -256,6 +304,8 @@ Shader "Overstory/Town"
             struct Attributes
             {
                 float4 positionOS : POSITION;
+                float3 normalOS : NORMAL;
+                float2 corner : TEXCOORD0;
                 UNITY_VERTEX_INPUT_INSTANCE_ID
             };
 
@@ -270,7 +320,7 @@ Shader "Overstory/Town"
                 Varyings o = (Varyings)0;
                 UNITY_SETUP_INSTANCE_ID(input);
                 UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(o);
-                o.positionCS = TransformObjectToHClip(input.positionOS.xyz);
+                o.positionCS = TransformWorldToHClip(OS_TownPosition(input.positionOS.xyz, input.normalOS, input.corner));
                 return o;
             }
 
@@ -306,6 +356,7 @@ Shader "Overstory/Town"
                 float4 positionOS : POSITION;
                 float3 normalOS : NORMAL;
                 half4 color : COLOR;
+                float2 corner : TEXCOORD0;
                 UNITY_VERTEX_INPUT_INSTANCE_ID
             };
 
@@ -323,7 +374,7 @@ Shader "Overstory/Town"
                 Varyings o = (Varyings)0;
                 UNITY_SETUP_INSTANCE_ID(input);
                 UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(o);
-                o.positionWS = TransformObjectToWorld(input.positionOS.xyz);
+                o.positionWS = OS_TownPosition(input.positionOS.xyz, input.normalOS, input.corner);
                 o.positionCS = TransformWorldToHClip(o.positionWS);
                 o.normalWS = TransformObjectToWorldNormal(input.normalOS);
                 o.color = input.color;
@@ -336,7 +387,7 @@ Shader "Overstory/Town"
             #endif
             )
             {
-                StreetSurface s = OS_TownSurface(input.color, normalize(input.normalWS), input.positionWS);
+                StreetSurface s = OS_TownSurface(input.color, normalize(input.normalWS), input.positionWS, 1);
             #if defined(_GBUFFER_NORMALS_OCT)
                 float2 oct = PackNormalOctQuadEncode(s.normalWS);
                 outNormalWS = half4(PackFloat2To888(saturate(oct * 0.5 + 0.5)), 0.0);
