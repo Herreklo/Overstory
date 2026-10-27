@@ -31,7 +31,7 @@ KEYS = {
     "fieldstone": ("srgb", "valueSpread", "warmSpread", "gloss", "water"),
     "lime-mortar": ("srgb", "gloss", "water", "jointView", "jointFar"),
     "render": ("srgb", "gloss", "water"),
-    "glass": ("srgbDark", "gloss"),
+    "glass": ("gloss", "daylight", "wave"),
 }
 
 

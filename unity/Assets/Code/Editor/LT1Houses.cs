@@ -74,7 +74,11 @@ namespace Overstory.EditorTools
             public Peel peel;
             public Weather weather;
             public Room room;
+            public Daylight daylight;
+            public Wave wave;
         }
+        [System.Serializable] class Daylight { public float window, backWall, ceiling, curtains; }
+        [System.Serializable] class Wave { public float tiltDeg; public float[] perM; }
 
         // the houses buffer's rows a house (House.shader, OS_HOUSE_ROWS) and its painted parts in order
         const int HouseRows = 16;
@@ -287,7 +291,10 @@ namespace Overstory.EditorTools
             mat.SetVector("_Render", With(Linear(render.srgb), render.gloss));
             mat.SetVector("_WaterRender", Water(render));
             var glass = Read("materials/glass.json");
-            mat.SetVector("_Glass", With(Linear(glass.srgbDark), glass.gloss));
+            mat.SetVector("_Glass", new Vector4(0f, 0f, 0f, glass.gloss));
+            var day = glass.daylight;
+            mat.SetVector("_GlassDay", new Vector4(day.window, day.backWall, day.ceiling, day.curtains));
+            mat.SetVector("_GlassWave", new Vector4(glass.wave.tiltDeg * Mathf.Deg2Rad, glass.wave.perM[0], glass.wave.perM[1], 0f));
             var room = glass.room;
             mat.SetVector("_Room", With(Linear(room.srgbLamp), room.lampPower));
             mat.SetVector("_RoomWall", With(Linear(room.srgbWalls), room.depthM));

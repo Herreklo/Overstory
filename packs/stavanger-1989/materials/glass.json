@@ -1,13 +1,14 @@
 {
   "schemaVersion": 1,
   "material": "glass",
-  "describes": "Window glass, the panes of every window: dark where no room is lit behind it, reflecting the sky; where a room is lit, the room seen through it (its walls, ceiling and floor, its lamp, the curtains at the window).",
-  "srgbDark": "1C2126",
+  "describes": "Window glass, the panes of every window: old drawn glass, a little wavy, reflecting the sky and the town round it; behind it the room, by day lit from its window, and where a room is lit, the room by its lamp (its walls, ceiling and floor, its lamp, the curtains at the window).",
   "gloss": 0.92,
   "provenance": "authored",
   "notes": {
-    "srgbDark": "An unlit room seen through the glass.",
-    "room": "A room of the period behind every lit window (inf., to check against the survey photos when they come): papered walls in warm light tones, a white ceiling, a lacquered pine floor, a dark sofa or sideboard against the back wall, one incandescent lamp (about 2700 K) in a fabric shade hung half a metre under a ceiling of 2.4 m, the sill 0.8 m over the floor; white sheer side curtains and a valance just behind the glass. Its light makes the pane's depth: brighter and creamier near the lamp, deeper amber at the floor, the corners and the furniture. lampPower, lampSoftM2 (how close to the lamp its light stops rising), the corners' light and the shade's glow were judged by look. Where the furniture stands and where the lamp hangs are each window's seed, claiming nothing."
+    "room": "A room of the period behind every lit window (inf., to check against the survey photos when they come): papered walls in warm light tones, a white ceiling, a lacquered pine floor, a dark sofa or sideboard against the back wall, one incandescent lamp (about 2700 K) in a fabric shade hung half a metre under a ceiling of 2.4 m, the sill 0.8 m over the floor; white sheer side curtains and a valance just behind the glass. Its light makes the pane's depth: brighter and creamier near the lamp, deeper amber at the floor, the corners and the furniture. lampPower, lampSoftM2 (how close to the lamp its light stops rising), the corners' light and the shade's glow were judged by look. Where the furniture stands and where the lamp hangs are each window's seed, claiming nothing.",
+    "daylight": "An unlit room by day, as a share of the light on the window's face: about a third of it just inside the glass, a twentieth at a back wall 3.6 m in (a small window's daylight factor), the ceiling half the walls'; sheer white curtains at the glass return about half the light that reaches them. Judged by look (round 3).",
+    "wave": "Drawn and cylinder glass before float glass (1960s) is never flat: its waves tilt it by about half a degree, a few waves a metre, enough to bend a straight edge in what it reflects (round 3, judged by look).",
+    "curtains": "share is of the hole's half width: the frame and the sash's stiles take its outer quarter or so, so at 0.3 the side curtains hung behind the frame; at 0.5 each shows on the glass at its side (round 3)."
   },
   "room": {
     "srgbLamp": "FFC284",
@@ -33,11 +34,24 @@
     "shadeGlow": 3.0,
     "curtains": {
       "srgb": "F3ECDC",
-      "share": 0.3,
+      "share": 0.5,
       "opacity": 0.6,
       "depthM": 0.07,
       "valanceShare": 0.16,
       "foldsPerM": 11
     }
+  },
+  "daylight": {
+    "window": 0.35,
+    "backWall": 0.05,
+    "ceiling": 0.5,
+    "curtains": 0.55
+  },
+  "wave": {
+    "tiltDeg": 0.6,
+    "perM": [
+      4,
+      9
+    ]
   }
 }

@@ -20,7 +20,9 @@ Shader "Overstory/House"
         _RoomShade ("The lamp's shade: x its radius (m), yzw its glow (linear)", Vector) = (0, 0, 0, 0)
         _Curtain ("Curtains: rgb (linear), a the share of the window's half width each covers", Vector) = (0, 0, 0, 0)
         _CurtainB ("Curtains: x opacity, y depth behind the glass (m), z the valance's share of the height, w folds a metre", Vector) = (0, 0.06, 0, 10)
-        _Glass ("Window glass: rgb an unlit room through it (linear), a its smoothness", Vector) = (0, 0, 0, 0)
+        _Glass ("Window glass: a its smoothness", Vector) = (0, 0, 0, 0)
+        _GlassDay ("An unlit room by day: x its light at the glass, y at its back wall, z the ceiling's share, w the curtains' (glass.json, daylight)", Vector) = (0.3, 0.04, 0.5, 0.5)
+        _GlassWave ("Old glass's waves: x their tilt (radians), y z waves a metre, least and most (glass.json, wave)", Vector) = (0, 4, 9, 0)
         _PineNew ("Bare pine: rgb new (linear), a years to weather half way", Vector) = (0, 0, 0, 1)
         _PineOld ("Bare pine: rgb weathered (linear), a smoothness", Vector) = (0, 0, 0, 0)
         _Stone ("Fieldstone: rgb its mean (linear), a value spread", Vector) = (0, 0, 0, 0)
@@ -54,6 +56,8 @@ Shader "Overstory/House"
         half4 _Curtain;
         float4 _CurtainB;
         half4 _Glass;
+        half4 _GlassDay;
+        float4 _GlassWave;
         half4 _PineNew;
         half4 _PineOld;
         half4 _Stone;
@@ -104,6 +108,12 @@ Shader "Overstory/House"
     #define K_TRIM 2
     #define K_SASH 3
     #define K_GLASS 4
+    // the share of a smooth face's reflection the look's shade adds (StreetLooks.hlsl: look P softens it like paint)
+    #if defined(_OS_LOOK_P)
+        #define OS_REFL_SHARE 0.85h
+    #else
+        #define OS_REFL_SHARE 1.0h
+    #endif
     #define K_TILE 5
     #define K_STONE 6
     #define K_RENDER 7
@@ -228,55 +238,134 @@ Shader "Overstory/House"
             // valance over it just behind the glass. The glass gives the window's own frame: uv metres from its centre
             // and foot, place x its half width and y its height. The lamp's swing and each window's brightness are its
             // seed's, claiming nothing; every size and colour is the pack's (glass.json, room).
-            half3 OS_Room(Varyings input, half3 n, half k, float3 t)
+            struct RoomHit
             {
+                half3 albedo;   // the room's face the ray meets (wall, ceiling, floor or furniture)
+                float3 h, lo, hi, rd, ro, pc;
+                half ao;        // its corners' and edges' share
+                half ceiling;   // 1 on the ceiling
+                half cloth;     // how much of it the curtains cover, where the ray passes them
+                half f;         // what the glass reflects (Schlick, glass's 0.04)
+                float th, tz;
+                float3 nf;
+            };
+
+            // The room behind a pane (interior mapping): the ray from the eye through the glass meets a box room behind
+            // the window, its furniture along the back wall, sheer curtains at the window's sides and a valance over it
+            // just behind the glass. The glass gives the window's own frame: uv metres from its centre and foot, place x
+            // its half width and y its height. Where the furniture stands is the seed's, claiming nothing; every size and
+            // colour is the pack's (glass.json, room).
+            RoomHit OS_RoomRay(Varyings input, half3 n, half k, float3 t)
+            {
+                RoomHit r;
                 float3 d = normalize(input.positionWS - _WorldSpaceCameraPos);
-                float3 rd = float3(dot(d, t), d.y, max(-dot(d, (float3)n), 0.02));
-                float3 ro = float3(input.uv.x, input.uv.y, 0.0);
+                r.rd = float3(dot(d, t), d.y, max(-dot(d, (float3)n), 0.02));
+                r.ro = float3(input.uv.x, input.uv.y, 0.0);
                 float hw = input.place.x, hh = input.place.y;
                 float sill = _RoomFloor.a, height = _RoomShape.x;
-                float3 lo = float3(-_RoomCeiling.a, -sill, 0.0), hi = float3(_RoomCeiling.a, height - sill, _RoomWall.a);
-                float3 tb = (float3(rd.x > 0.0 ? hi.x : lo.x, rd.y > 0.0 ? hi.y : lo.y, hi.z) - ro) / rd;
-                float th = min(min(tb.x, tb.y), tb.z);
-                float3 h = ro + rd * th;
-                half3 albedo = _RoomWall.rgb;
-                float3 nf = float3(0.0, 0.0, -1.0);
-                if (th == tb.x)
-                    nf = float3(-sign(rd.x), 0.0, 0.0);
-                else if (th == tb.y)
+                r.lo = float3(-_RoomCeiling.a, -sill, 0.0);
+                r.hi = float3(_RoomCeiling.a, height - sill, _RoomWall.a);
+                float3 tb = (float3(r.rd.x > 0.0 ? r.hi.x : r.lo.x, r.rd.y > 0.0 ? r.hi.y : r.lo.y, r.hi.z) - r.ro) / r.rd;
+                r.th = min(min(tb.x, tb.y), tb.z);
+                r.tz = tb.z;
+                r.h = r.ro + r.rd * r.th;
+                r.albedo = _RoomWall.rgb;
+                r.ceiling = 0.0h;
+                r.nf = float3(0.0, 0.0, -1.0);
+                if (r.th == tb.x)
+                    r.nf = float3(-sign(r.rd.x), 0.0, 0.0);
+                else if (r.th == tb.y)
                 {
-                    albedo = rd.y > 0.0 ? _RoomCeiling.rgb : _RoomFloor.rgb;
-                    nf = float3(0.0, -sign(rd.y), 0.0);
+                    r.albedo = r.rd.y > 0.0 ? _RoomCeiling.rgb : _RoomFloor.rgb;
+                    r.ceiling = r.rd.y > 0.0 ? 1.0h : 0.0h;
+                    r.nf = float3(0.0, -sign(r.rd.y), 0.0);
                 }
                 // furniture along the back wall up to its height (a sofa, a sideboard), where the seed puts it
                 float sx = (frac(k * 5.31) - 0.5) * 2.0 * _RoomCeiling.a;
-                if (th == tb.z && h.y + sill < _RoomFurniture.a && abs(h.x - sx) < _RoomFurniture2.x)
-                    albedo = _RoomFurniture.rgb;
+                if (r.th == tb.z && r.h.y + sill < _RoomFurniture.a && abs(r.h.x - sx) < _RoomFurniture2.x)
+                    r.albedo = _RoomFurniture.rgb;
+                // the room's corners and edges see less of the light
+                float3 e = min(r.h - r.lo, r.hi - r.h) / _RoomFurniture2.y;
+                float edge = r.th == tb.z ? min(e.x, e.y) : r.th == tb.x ? min(e.y, e.z) : min(e.x, e.z);
+                r.ao = (half)lerp(_RoomFurniture2.z, 1.0, saturate(edge));
+                // the curtains: a sheer cloth gathered in folds
+                r.pc = r.ro + r.rd * (_CurtainB.y / r.rd.z);
+                float side = smoothstep(hw * (1.0 - _Curtain.a) - 0.02, hw * (1.0 - _Curtain.a) + 0.02, abs(r.pc.x));
+                float top = smoothstep(hh * (1.0 - _CurtainB.z) - 0.02, hh * (1.0 - _CurtainB.z) + 0.02, r.pc.y);
+                float fold = 0.75 + 0.25 * sin(r.pc.x * _CurtainB.w * 6.2832);
+                r.cloth = (half)(saturate(max(side, top)) * _CurtainB.x * fold);
+                r.f = 0.04h + 0.96h * pow(1.0h - (half)saturate(r.rd.z), 5.0h);
+                return r;
+            }
+
+            // A lit room: one lamp hung under its ceiling (its swing the seed's), its shade glowing, the curtains lit
+            // through from the room; returned as the light the pane gives out.
+            half3 OS_Room(Varyings input, half3 n, half k, float3 t)
+            {
+                RoomHit r = OS_RoomRay(input, n, k, t);
+                float sill = _RoomFloor.a, height = _RoomShape.x;
                 float3 lamp = float3((frac(k * 13.7) - 0.5) * 2.0 * _RoomShape.w, height - sill - _RoomShape.z, 0.5 * _RoomWall.a);
-                float3 l = lamp - h;
+                float3 l = lamp - r.h;
                 float l2 = dot(l, l);
-                // the room's corners and edges see less of it
-                float3 e = min(h - lo, hi - h) / _RoomFurniture2.y;
-                float edge = th == tb.z ? min(e.x, e.y) : th == tb.x ? min(e.y, e.z) : min(e.x, e.z);
-                half ao = (half)lerp(_RoomFurniture2.z, 1.0, saturate(edge));
-                half3 room = albedo * ao * (half)(_Room.a * saturate(dot(nf, l) * rsqrt(l2)) / (_RoomFurniture2.w + l2) + _RoomShape.y);
+                half3 room = r.albedo * r.ao * (half)(_Room.a * saturate(dot(r.nf, l) * rsqrt(l2)) / (_RoomFurniture2.w + l2) + _RoomShape.y);
                 // the lamp's shade, where the ray passes it, glowing with the light inside it
-                float3 oc = ro - lamp;
-                float bq = dot(oc, rd), cq = dot(oc, oc) - _RoomShade.x * _RoomShade.x;
-                if (bq * bq - cq > 0.0 && -bq > 0.0 && -bq < th)
+                float3 oc = r.ro - lamp;
+                float bq = dot(oc, r.rd), cq = dot(oc, oc) - _RoomShade.x * _RoomShade.x;
+                if (bq * bq - cq > 0.0 && -bq > 0.0 && -bq < r.th)
                     room = _RoomShade.yzw;
-                // the curtains: a sheer cloth gathered in folds, lit through from the room
-                float3 pc = ro + rd * (_CurtainB.y / rd.z);
-                float side = smoothstep(hw * (1.0 - _Curtain.a) - 0.02, hw * (1.0 - _Curtain.a) + 0.02, abs(pc.x));
-                float top = smoothstep(hh * (1.0 - _CurtainB.z) - 0.02, hh * (1.0 - _CurtainB.z) + 0.02, pc.y);
-                float fold = 0.75 + 0.25 * sin(pc.x * _CurtainB.w * 6.2832);
-                float3 lc = lamp - pc;
+                float3 lc = lamp - r.pc;
                 float c2 = dot(lc, lc);
                 half3 cloth = _Curtain.rgb * (half)(_Room.a * saturate(lc.z * rsqrt(c2)) / (1.0 + c2) + _RoomShape.y);
-                room = lerp(room, cloth, (half)(saturate(max(side, top)) * _CurtainB.x * fold));
-                // the glass passes what it does not reflect (Schlick, glass's 0.04)
-                half f = 0.04h + 0.96h * pow(1.0h - (half)saturate(rd.z), 5.0h);
-                return room * _Room.rgb * (1.0h - f);
+                room = lerp(room, cloth, r.cloth);
+                // the glass passes what it does not reflect
+                return room * _Room.rgb * (1.0h - r.f);
+            }
+
+            // An unlit room by day: the same room, lit only by the light that comes in at its window, the most near
+            // the glass and less to the back, the ceiling less than the walls and floor; the curtains at the glass lit
+            // from outside. Returned as the share of the light on the pane's face that comes back out through the
+            // glass, so the shade lights it by the light outside the window (glass.json, daylight).
+            half3 OS_RoomDay(Varyings input, half3 n, half k, float3 t)
+            {
+                RoomHit r = OS_RoomRay(input, n, k, t);
+                half deep = (half)saturate(r.h.z / max(_RoomWall.a, 0.1));
+                half3 room = r.albedo * r.ao * lerp(_GlassDay.x, _GlassDay.y, deep) * lerp(1.0h, _GlassDay.z, r.ceiling);
+                room = lerp(room, _Curtain.rgb * _GlassDay.w, r.cloth);
+                return room * (1.0h - r.f);
+            }
+
+            // The town's horizon toward a direction (its elevation, radians): the town's horizon map (TownHorizon.shader)
+            // read as OS_TownSky reads it, at the point's own height, between the two of its eight directions round it.
+            half OS_HorizonToward(float3 positionWS, half3 n, float3 dir)
+            {
+                if (_OS_SkyMapOn < 0.5 || _OS_HorizonInfo.w < 0.5)
+                    return 0.0h;
+                float3 o = positionWS + n * 0.6;
+                float2 uv = (o.xz - _OS_SkyMapRect.xy) * _OS_SkyMapRect.z;
+                if (any(uv < 0.0) || any(uv > 1.0))
+                    return 0.0h;
+                float res = _OS_HorizonInfo.x, levels = _OS_HorizonInfo.y;
+                float2 f = uv * res - 0.5;
+                float2 i0 = floor(f), b = f - i0;
+                half4 a0 = 0.0h, a1 = 0.0h;
+                [unroll]
+                for (int c = 0; c < 4; c++)
+                {
+                    float2 corner = float2(c & 1, c >> 1);
+                    float2 cuv = (clamp(i0 + corner, 0.0, res - 1.0) + 0.5) / res;
+                    float g = SAMPLE_TEXTURE2D_LOD(_OS_HorizonGround, sampler_OS_HorizonGround, cuv, 0).r;
+                    float tt = sqrt(saturate((o.y - g) / _OS_HorizonInfo.z));
+                    float3 uvw = float3(cuv, (tt * (levels - 1.0) + 0.5) / levels);
+                    half w = (half)(lerp(1.0 - b.x, b.x, corner.x) * lerp(1.0 - b.y, b.y, corner.y));
+                    a0 += w * (half4)SAMPLE_TEXTURE3D_LOD(_OS_Horizon0, sampler_OS_HorizonGround, uvw, 0);
+                    a1 += w * (half4)SAMPLE_TEXTURE3D_LOD(_OS_Horizon1, sampler_OS_HorizonGround, uvw, 0);
+                }
+                half angle[8] = { a0.x, a0.y, a0.z, a0.w, a1.x, a1.y, a1.z, a1.w };
+                float a = atan2(dir.z, dir.x);
+                float kf = frac(a / 6.283185 + 1.0) * 8.0 - 0.5;
+                float k0 = floor(kf);
+                int i = (int)(k0 + 8.0) % 8, j = (i + 1) % 8;
+                return (half)(lerp(angle[i], angle[j], kf - k0) * HALF_PI);
             }
 
             half3 OS_Bare(half years, half seed)
@@ -361,17 +450,43 @@ Shader "Overstory/House"
                 half4 water = 0;    // its water profile (Water.hlsl); glass and the room take none
                 if (kind == K_GLASS)
                 {
-                    // glass: dark and glossy; a lit room behind it gives its light, each window a little different
-                    // in brightness and warmth (its seed, claiming nothing)
-                    s.albedo = _Glass.rgb;
-                    s.smoothness = _Glass.a;
+                    // glass: the room behind it, by day lit by the light at its window (OS_RoomDay); where a room is
+                    // lit, its lamp's light too, each window a little different in brightness and warmth (its seed,
+                    // claiming nothing)
                     half k = input.bake.w;
+                    s.albedo = OS_RoomDay(input, n, k > 0.0h ? k : seed, tangentWS);
+                    s.smoothness = _Glass.a;
                     if (k > 0.0h)
                     {
                         half warm = frac(k * 7.13h);
                         s.emission = OS_Room(input, n, k, tangentWS) * _OS_WindowGlow * lerp(0.7h, 1.2h, k)
                                      * lerp(half3(1.0h, 0.92h, 0.82h), half3(1.0h, 1.0h, 1.0h), warm);
                     }
+                    // old glass is drawn, never flat: waves across the pane, a few a metre, each pane its own (its
+                    // seed, claiming nothing), bend what it reflects (glass.json, wave)
+                    float fr = lerp(_GlassWave.y, _GlassWave.z, frac(seed * 3.71));
+                    float ph = seed * 43.7;
+                    half tilt = (half)(_GlassWave.x * sin((input.uv.y * fr + ph) * 6.2832));
+                    half lean = (half)(0.5 * _GlassWave.x * sin((input.uv.x * fr * 0.6 + ph * 1.3) * 6.2832));
+                    half3 up = normalize(half3(0.0h, 1.0h, 0.0h) - n * n.y + half3(0.0h, 1e-3h, 0.0h));
+                    s.normalWS = normalize(n + up * tilt + (half3)tangentWS * lean);
+                    // it reflects the sky where the town leaves it open and the town's walls and ground where they hide
+                    // it, both from the light: the shade adds the sky's reflection in one face; added here, the second
+                    // face's, and the town in place of the sky it hides (seen from the probe's horizon, as bright as
+                    // the town's bounce is beside the horizon's light)
+                    float3 v = GetWorldSpaceNormalizeViewDir(input.positionWS);
+                    float3 r = reflect(-v, (float3)s.normalWS);
+                    float3 rh = normalize(float3(r.x, 0.0, r.z) + float3(1e-4, 0.0, 0.0));
+                    half hidden = saturate(((half)OS_HorizonToward(input.positionWS, n, r) - (half)asin(clamp(r.y, -1.0, 1.0))) / 0.06h + 0.5h);
+                    float2 suv = GetNormalizedScreenSpaceUV(input.positionCS);
+                    half rough = 1.0h - s.smoothness;
+                    half3 sky = GlossyEnvironmentReflection((half3)r, input.positionWS, rough, 1.0h, suv);
+                    half3 skyH = GlossyEnvironmentReflection((half3)rh, input.positionWS, rough, 1.0h, suv);
+                    half3 lum = half3(0.2126h, 0.7152h, 0.0722h);
+                    half3 town = (half3)_OS_TownBounce.rgb * dot(skyH, lum) / max(dot(OS_SkyFor((half3)rh), lum), 1e-4h);
+                    half f1 = 0.04h + 0.96h * pow(1.0h - saturate(dot(s.normalWS, (half3)v)), 5.0h);
+                    half f2 = 2.0h * f1 / (1.0h + f1);
+                    s.emission += s.smoothness * s.smoothness * (f2 * lerp(sky, town, hidden) - OS_REFL_SHARE * f1 * sky);
                 }
                 else if (kind == K_ROOM)
                 {

@@ -91,6 +91,9 @@ def _splitstone(soup, f, cell, wb, wf, pl, rng):
     sc, zc = 0.5 * (s0 + s1), 0.5 * (z0 + z1)
     arr = min(rng.uniform(*pl["arrisMm"]) * MM, 0.15 * min(s1 - s0, z1 - z0))
     o = _outline(cell, pl, arr, rng)
+    if soup.level > 0:
+        # (from the street a knock or a break is under two pixels: the cell's corners, the seed's draws kept)
+        o = [(s0, z0), (s1, z0), (s1, z1), (s0, z1)]
     # the split: across the grain, one ridge a little slanted, standing out of the face's plane; or one plane
     ridge = rng.uniform(*pl["ridgeMm"]) * MM if rng.random() < pl["ridgeShare"] else 0.0
     sr = s0 + (s1 - s0) * rng.uniform(0.3, 0.7)
