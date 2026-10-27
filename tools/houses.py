@@ -67,8 +67,8 @@ BOUNCE = 0.45  # the light a painted house's own faces send on: the mean albedo 
 
 
 def bake_soup(soup, ground):
-    """What each triangle sees (bake.py's rays and reach): its share of open sky, of open ground, and its openness
-    close by. The house only knows itself; the ground is the carved ground's height under each sample. A ray that
+    """What each triangle's corners see (bake.py's rays and reach): their share of open sky, of open ground, and
+    their openness close by. The house only knows itself; the ground is the carved ground's height under each sample. A ray that
     meets the house itself brings back one bounce: what the face it meets sees of sky and ground, times BOUNCE, so a
     rafter's side under a deep eave is lit by the boards round it, not black. A joint (the slot between stones drawn as
     one face, from the street tier) and the mortar behind the stones see past them: their shade is in the joint's share
@@ -85,6 +85,36 @@ def bake_soup(soup, ground):
     from soup import KINDS
     kinds = [int(soup.ch[3 * t][2]) for t in range(len(polys))]
     through = (KINDS["joint"], KINDS["mortar"])
+    INSET = 0.003  # a corner's sample stands this far in from the corner, toward the triangle's middle
+
+    def look(s, n, dirs, t):
+        """One sample's rays: its share of sky, of ground and of openness close by, the faces it met, and whether
+        it lies buried (most of its rays meet the back of a face: a corner tucked under another part)."""
+        o = s + n * BK.LIFT
+        h = o.z - ground(o.x, o.y)
+        sky = gnd = near = back = 0
+        met = []
+        for d in dirs:
+            hit, hn, face, dist = tree.ray_cast(o, d, BK.REACH)
+            while hit is not None and kinds[t] in through and kinds[face] == KINDS["stone"]:
+                hit, hn, face, dist = tree.ray_cast(hit + d * 1e-4, d, BK.REACH)
+            if hit is not None:
+                near += dist < BK.NEAR
+                if hn.dot(d) < 0.0:
+                    met.append(face)
+                else:
+                    back += 1
+                continue
+            if d.z < -1e-4 and h > 0.0 and -h / d.z < BK.REACH:
+                gnd += 1
+            else:
+                sky += 1
+        k = float(len(dirs))
+        return (sky / k, gnd / k, 1.0 - near / k), met, back > 0.3 * k
+
+    # each corner of a triangle sees from its own corner, so the light runs smoothly over a face cut into many
+    # triangles (a board cut at a casing and at its marks) instead of stepping at each cut; a buried corner takes the
+    # triangle's middle
     first, hits = [], []
     for t in range(len(polys)):
         a, b, c = verts[3 * t], verts[3 * t + 1], verts[3 * t + 2]
@@ -92,32 +122,20 @@ def bake_soup(soup, ground):
         u, w = BK._basis(n)
         centre = (a + b + c) / 3.0
         dirs = [u * x + w * y + n * z for x, y, z in BK._FAN]
-        samples = [centre] + [q.lerp(centre, 0.5) for q in (a, b, c)]
-        sky = gnd = near = 0
-        met = []
-        for s in samples:
-            o = s + n * BK.LIFT
-            h = o.z - ground(o.x, o.y)
-            for d in dirs:
-                hit, hn, face, dist = tree.ray_cast(o, d, BK.REACH)
-                while hit is not None and kinds[t] in through and kinds[face] == KINDS["stone"]:
-                    hit, hn, face, dist = tree.ray_cast(hit + d * 1e-4, d, BK.REACH)
-                if hit is not None:
-                    near += dist < BK.NEAR
-                    if hn.dot(d) < 0.0:
-                        met.append(face)
-                    continue
-                if d.z < -1e-4 and h > 0.0 and -h / d.z < BK.REACH:
-                    gnd += 1
-                else:
-                    sky += 1
-        k = float(len(samples) * len(dirs))
-        first.append((sky / k, gnd / k, 1.0 - near / k))
-        hits.append((met, k))
+        mid = look(centre, n, dirs, t)
+        for q in (a, b, c):
+            to = centre - q
+            s = q + to * min(1.0, INSET / max(to.length, 1e-9))
+            v = look(s, n, dirs, t)
+            v = mid if v[2] else v
+            first.append(v[0])
+            hits.append((v[1], float(len(dirs))))
+    # a face met brings back the mean of what its corners see
+    face = [tuple(sum(first[3 * f + i][j] for i in range(3)) / 3.0 for j in range(3)) for f in range(len(polys))]
     seen = []
     for (sky, gnd, op), (met, k) in zip(first, hits):
-        sky += BOUNCE * sum(first[f][0] for f in met) / k
-        gnd += BOUNCE * sum(first[f][1] for f in met) / k
+        sky += BOUNCE * sum(face[f][0] for f in met) / k
+        gnd += BOUNCE * sum(face[f][1] for f in met) / k
         seen.append((sky, gnd, op))
     # a stone's facet is one plane a hand wide: it sees one light, whatever triangles it is cut into (else each
     # triangle of its fan shows as a shard)
@@ -135,13 +153,10 @@ def bake_soup(soup, ground):
         facets.setdefault(key, []).append((t, area))
     for tris in facets.values():
         total = sum(w for _, w in tris)
-        mean = tuple(sum(seen[t][i] * w for t, w in tris) / total for i in range(3))
+        mean = tuple(sum(seen[3 * t + j][i] * w for t, w in tris for j in range(3)) / (3.0 * total) for i in range(3))
         for t, _ in tris:
-            seen[t] = mean
-    out = []
-    for s in seen:
-        out += [s] * 3
-    return out
+            seen[3 * t:3 * t + 3] = [mean] * 3
+    return seen
 
 
 def roof_of(facts, timber, date):

@@ -56,6 +56,7 @@ Shader "Overstory/House"
         _RustIron ("Nail rust: rgb the iron-black at the nail (linear), a its reach round it (m)", Vector) = (0.025, 0.023, 0.022, 0.009)
         _RustB ("Nail rust: x its run a year (m), y its longest (m), z its width at the nail, w at its tail (m)", Vector) = (0.035, 0.42, 0.011, 0.004)
         _NailsAt ("The boarding's nails (timber.json, boarding): x y from a board's end, least and most (m), z either side of its middle (m)", Vector) = (0.022, 0.04, 0.03, 0)
+        _WeatherD ("Paint weather: x how much more water the lowest boards take, gathered from the wall above, y over how many metres up it gathers (paint.json)", Vector) = (0, 6, 0, 0)
         _WeatherC ("Paint weather: x a sill's run-off, y end grain, z the rain's side, w the rain's bearing (rad) (paint.json)", Vector) = (0, 0, 0, 0)
         [Toggle] _Grey ("Grey light: every pigment one grey (to judge form)", Float) = 0
         _Debug ("Debug: 1 the kind as colour, 2 the bake, 3 the normal, 4 the coat's age, 5 its loss, 6 a pane: its facing, its window half width and height, 7 its room unlit by the air, 8 the dry albedo, 9 the place (x lap or from the top, y shelter)", Float) = 0
@@ -110,6 +111,7 @@ Shader "Overstory/House"
         float4 _WoodSaw;
         half4 _Rust;
         half4 _RustIron;
+        float4 _WeatherD;
         float4 _RustB;
         float4 _NailsAt;
         half _Grey;
@@ -455,7 +457,7 @@ Shader "Overstory/House"
                 c *= 1.0h + (half)_WoodStock.z * (half)(2.0 * r3 - 1.0);
                 if (r5 < _WoodStock.w)
                 {
-                    float fm = OS_Noise(float2(along * 3.0, across * 14.0) + seed * 31.0);
+                    float fm = OS_Noise(float2(along * 1.5, across * 40.0) + seed * 31.0);
                     c = lerp(c, _WoodFilm.rgb, (half)smoothstep(0.6, 0.68, fm) * _WoodFilm.a * (1.0h - 0.5h * saturate(years / 20.0h)));
                 }
                 // the grain: the rings of a log sawn through (the pith off to one side, under the face), their latewood
@@ -502,7 +504,7 @@ Shader "Overstory/House"
                         float ky = len * frac(seed * (3.7 + 5.1 * k));
                         float kx = (frac(seed * (8.9 + 2.3 * k)) - 0.5) * 1.4 * halfW;
                         float kr = 0.5 * lerp(_WoodD.z, _WoodD.w, frac(seed * (6.1 + 4.7 * k)));
-                        float dd = length(float2((across - kx) / kr, (along - ky) / (kr * 1.8)));
+                        float dd = length(float2((across - kx) / kr, (along - ky) / (kr * lerp(1.3, 3.0, frac(seed * (9.7 + 3.3 * k))))));
                         float dh = length(float2((across - kx) / kr, (along - ky) / (kr * 4.0)));
                         knot = max(knot, (half)saturate((1.0 - dd) * kr / max(footprint, 0.002) + 0.5));
                         halo = max(halo, (half)(saturate(1.0 - (dh - 1.0) / 1.2) * 0.12));
@@ -523,9 +525,10 @@ Shader "Overstory/House"
 
             // Steel nails at a board's ends (timber.json, boarding: nails), their rust run down the grain below each,
             // longer with the years and wicking unevenly, the head and the wood round it iron-black (pine.json, nailRust)
-            half3 OS_NailRust(half3 c, float along, float across, float halfW, float len, float seed, half years, float footprint)
+            half3 OS_NailRust(half3 c, float along, float across, float halfW, float len, float seed, half years, float footprint,
+                              half runs)
             {
-                float run = min(_RustB.y, _RustB.x * years);
+                float run = min(_RustB.y, _RustB.x * years) * runs + 1e-4;
                 float ax = min(_NailsAt.z, max(halfW - 0.015, 0.0));
                 half rust = 0.0h, iron = 0.0h;
                 [unroll]
@@ -542,7 +545,7 @@ Shader "Overstory/House"
                         float meander = 0.003 * (OS_Noise(float2(dy * 9.0, i * 5.3 + seed * 7.0)) - 0.5);
                         float w = 0.5 * lerp(_RustB.z, _RustB.w, t) * (0.7 + 0.6 * OS_Noise(float2(dy * 25.0, i * 3.1 + seed * 9.0)));
                         float wd = max(w, footprint);
-                        rust = max(rust, (half)(saturate(1.5 * (1.0 - abs(dx - meander) / wd)) * (w / wd) * exp(-1.6 * t)));
+                        rust = max(rust, (half)(saturate(1.5 * (1.0 - abs(dx - meander) / wd)) * (w / wd) * exp(-1.0 * t)));
                     }
                 }
                 c = lerp(c, _Rust.rgb, rust * _Rust.a);
@@ -569,15 +572,24 @@ Shader "Overstory/House"
                 half seed = (half)input.piece.z;
                 // how much more water works in here than on the open wall: a sill's run-off, which runs down from it
                 // in streaks; the end grain at a board's ends; the wall's foot; a board's lap edge, where it drips
-                half water = 1.0h, drinks = 1.0h;
+                half water = 1.0h, drinks = 1.0h, gathered = 1.0h;
                 if (kind == K_BOARD)
                 {
+                    // a sill's run-off falls in streaks from its drip points; at each lap it drips to the board below
+                    // and runs on a little aside, so each course takes up the streak above it in part, spread wider
+                    // and weaker the further down it goes
+                    half fall = 1.0h - input.marks.x;
                     float sx = input.uv.x + input.piece.y * 13.1 + 0.012 * OS_Noise(float2(input.uv.y * 4.0, input.piece.y));
-                    half streaks = (half)(0.15 + 0.85 * smoothstep(0.5, 0.8, 0.65 * OS_Noise(float2(sx * 30.0, 4.7)) + 0.35 * OS_Noise(float2(sx * 80.0, 9.1))));
+                    float sb = input.uv.x + seed * 7.7;
+                    half streaks = (half)(0.15 + 0.85 * smoothstep(0.5, 0.82, 0.45 * OS_Noise(float2(sx * 30.0 * (1.0 - 0.45 * fall), 4.7))
+                                 + 0.2 * OS_Noise(float2(sx * 80.0, 9.1)) + 0.35 * OS_Noise(float2(sb * 38.0, 2.3))));
                     // end grain drinks water only centimetres in from the cut (its mark falls off as its cube)
                     half endg = input.marks.y * input.marks.y * input.marks.y;
                     drinks = 1.0h + (half)_WeatherC.y * endg;
-                    water *= (1.0h + (half)_WeatherC.x * input.marks.x * streaks) * drinks;
+                    water *= (1.0h + (half)_WeatherC.x * input.marks.x * input.marks.x * streaks) * drinks;
+                    // the water running down a wall gathers: the lower boards take what the upper ones shed
+                    gathered = 1.0h + (half)_WeatherD.x * saturate(1.0h - (half)(input.uv.y / max(_WeatherD.y, 0.5)));
+                    water *= gathered;
                     water *= 1.0h + (half)_Weather.z * saturate(1.0h - (half)(input.uv.y / _Weather.y));
                     half lap = 1.0h - input.place.x;
                     water *= 1.0h + (half)_Weather.w * lap * lap * lap;
@@ -589,7 +601,7 @@ Shader "Overstory/House"
                 // a wall's paint holds better in some stretches than others (how well each coat took; claims nothing):
                 // a broad patchwork over the wall, so the failure gathers into patches and leaves the rest whole
                 if (kind == K_BOARD)
-                    ew *= 1.0h + (half)_WeatherB.y * (half)(2.0 * OS_Noise(float2(input.uv.x, input.uv.y) / max(_WeatherB.z, 0.1) + input.piece.y * 7.3) - 1.0);
+                    ew *= 1.0h + (half)_WeatherB.y * (half)(2.0 * smoothstep(0.3, 0.7, OS_Noise(float2(input.uv.x, input.uv.y) / max(_WeatherB.z, 0.1) + input.piece.y * 7.3)) - 1.0);
                 // the top coat, each piece a hair different (its seed), chalked by its weathered years
                 half3 top = (half3)input.coat.rgb * (1.0h + 0.03h * (seed * 2.0h - 1.0h));
                 half chalk = 1.0h - exp(-(half)chalkP.x * ea / 10.0h);
@@ -597,8 +609,10 @@ Shader "Overstory/House"
                 half3 c = lerp(top, toward, chalk);
                 // dirt and green growth gather where water runs and stands, more each year the coat is up, and only a
                 // little on the open wall (paint.json, soil)
-                // (end grain drinks water in but holds none on the face, so it fails the paint without gathering dirt)
-                half wet = age * (1.0h - input.place.y) * (water / drinks - 1.0h + (half)_Soil.z);
+                // (end grain drinks water in but holds none on the face, so it fails the paint without gathering dirt;
+                // the water a wall gathers runs over it as a film, failing the paint lower down, but the dirt is where
+                // water drips and stands)
+                half wet = age * (1.0h - input.place.y) * (water / (drinks * gathered) - 1.0h + (half)_Soil.z);
                 half grown = (half)_Soil.x * wet / 10.0h;
                 c = lerp(c, (half3)_SoilColour.rgb, (1.0h - exp(-grown * grown)) * (half)_Soil.y);
                 gloss = lerp((half)glossP.y, (half)glossP.x, exp2(-ea / max(0.5h, (half)glossP.z)));
@@ -624,8 +638,10 @@ Shader "Overstory/House"
                     float nb = clamp(boardH / (0.6 * flake), 2.0, 24.0);
                     float bf = input.place.x * nb + 0.7 * (OS_Noise(float2(input.uv.x * 3.0, seed * 37.0)) - 0.5);
                     float band = floor(bf);
-                    h = 0.72 * OS_Noise(float2(input.uv.x / run, band * 7.13 + seed * 91.7))
-                      + 0.28 * OS_Noise(float2(input.uv.x / (0.25 * run), bf * 2.7 + seed * 13.0));
+                    float bf2 = bf + 0.25 * (OS_Noise(float2(input.uv.x * 40.0, seed * 5.0)) - 0.5);
+                    h = 0.66 * OS_Noise(float2(input.uv.x / run, band * 7.13 + seed * 91.7))
+                      + 0.22 * OS_Noise(float2(input.uv.x / (0.25 * run), bf2 * 2.7 + seed * 13.0))
+                      + 0.12 * OS_Noise(float2(input.uv.x / (0.05 * run), bf2 * 9.1 + seed * 3.0));
                     h *= lerp(0.6, 1.0, saturate(input.place.x * 1.8));
                     h = saturate((h - 0.18) / 0.6);
                 }
@@ -638,15 +654,20 @@ Shader "Overstory/House"
                 // flakes are marks centimetres across, so they hold to twice the distance of the fine marks
                 // (Detail.hlsl), and by the street stop are the coat's painted shape: its mean
                 half near = OS_Near(0.5 * footprint);
-                half off = (half)step(h, loss);
-                // a flake goes to the wood as often as the paint lets go of it there, not of the coat under (glossP.w)
-                half deep = (half)step(h, loss * glossP.w);
+                // a film lets go at a few weak points first and then wholesale: the share of the face lost grows
+                // slower than the loss at first (lv)
+                half lv = loss * sqrt(loss);
+                half off = (half)step(h, lv);
+                // a flake goes to the wood as often as the paint lets go of it there, not of the coat under (glossP.w),
+                // and always where water drinks into the wood (end grain), which lifts every coat at once
+                half toWood = saturate((half)glossP.w * drinks);
+                half deep = (half)step(h, lv * toWood);
                 // round a flake the film has let go: a dark line where it stands off the wood, then its lifted edge
-                half shadow = (half)(step(h, loss + 0.012) - off);
-                half lifted = (half)(step(h, loss + 0.045) - off) - shadow;
+                half shadow = (half)(step(h, lv + 0.012) - off);
+                half lifted = (half)(step(h, lv + 0.045) - off) - shadow;
                 half3 flaked = lerp(lerp(c * (1.0h - 0.45h * shadow + 0.1h * lifted), below, off), wood, deep);
-                half3 mean = lerp(lerp(c, below, loss), wood, loss * (half)glossP.w);
-                bare = lerp(loss * (half)glossP.w, deep, near);
+                half3 mean = lerp(lerp(c, below, lv), wood, lv * toWood);
+                bare = lerp(lv * toWood, deep, near);
                 return lerp(mean, flaked, near);
             }
 
@@ -779,10 +800,12 @@ Shader "Overstory/House"
                         half rain = (1.0h - input.place.y) * (1.0h + (half)_WeatherC.z * side) / (1.0h + (half)_WeatherC.z);
                         half sun = saturate(0.5h - 0.5h * n.z);
                         half cup;
-                        s.albedo = OS_Wood(input.place.x, input.uv.y, input.marks.x, input.marks.y, input.piece.z, age,
+                        // (a batten across the boards gives its half width negative: no rust runs along it)
+                        float halfW = abs(input.marks.x);
+                        s.albedo = OS_Wood(input.place.x, input.uv.y, halfW, input.marks.y, input.piece.z, age,
                                            rain, sun, footprint, _WoodSaw.xy, cup);
-                        s.albedo = OS_NailRust(s.albedo, input.place.x, input.uv.y, input.marks.x, input.marks.y,
-                                               input.piece.z, age, footprint);
+                        s.albedo = OS_NailRust(s.albedo, input.place.x, input.uv.y, halfW, input.marks.y,
+                                               input.piece.z, age, footprint, input.marks.x < 0.0 ? 0.0h : 1.0h);
                         s.normalWS = normalize(n + (half3)tangentWS * cup);
                     }
                     s.smoothness = _PineOld.a;

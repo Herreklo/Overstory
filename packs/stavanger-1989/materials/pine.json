@@ -20,21 +20,21 @@
     "knotsPerM": 1.0,
     "knotMm": [12, 30],
     "srgbKnot": "5C4130",
-    "knotGrey": 0.62
+    "knotGrey": 0.5
   },
   "sawings": {
     "rough": { "fibre": 0.09, "edgeMm": 7 },
     "planed": { "fibre": 0.02, "edgeMm": 2 }
   },
   "stocks": {
-    "formwork": { "priorYears": [0.5, 4.0], "valueSpread": 0.18, "filmShare": 0.45, "filmCover": 0.35, "srgbFilm": "B2AEA4" },
+    "formwork": { "priorYears": [0.5, 4.0], "valueSpread": 0.18, "filmShare": 0.45, "filmCover": 0.25, "srgbFilm": "B2AEA4" },
     "new": { "priorYears": [0.0, 0.0], "valueSpread": 0.05, "filmShare": 0.0, "filmCover": 0.0, "srgbFilm": "B2AEA4" }
   },
   "weathering": {
     "srgbBrowned": "98724E",
     "brownHalfYears": 0.4,
     "greySpread": [0.5, 2.5],
-    "srgbSilver": "A8A6A0",
+    "srgbSilver": "9E9B94",
     "silverYears": [5, 12],
     "srgbDamp": "57524B",
     "dampMost": 0.55,
@@ -43,7 +43,7 @@
     "shelterReachM": 0.14,
     "grainOld": 0.22,
     "grainYears": 12,
-    "streaks": [0.05, 0.12],
+    "streaks": [0.07, 0.2],
     "checksPerBoard": 3,
     "checkYears": 4,
     "cupping": 0.18
@@ -56,7 +56,7 @@
     "source": "What the tree gives: heartwood redder and darker than sapwood, each board its own share of it (heartShare, by its seed); slow-grown Nordic stems of 2 to 4 mm rings (ringsPerM), the latewood a share darker (latewood); knots about knotsPerM a metre of board, knotMm across and longer along the grain, dark when new (srgbKnot) and greying with the board to knotGrey of the wood round them. Common knowledge of Nordic spruce and pine; values judged by look.",
     "sawings": "How the board was cut: rough sawn boards keep a fibrous face (fibre, a fine value noise along the grain) and wear round at their arrises (edgeMm); planed boards are smooth with crisp arrises.",
     "stocks": "Where the boards came from. Formwork boards (forskalingsbord) are rough sawn and already used on a site before they board a house: priorYears of weathering before they go up, mixed in value (valueSpread), and on filmShare of them a film of cement in patches (filmCover of the board at most, srgbFilm). New stock is even and clean. Common knowledge; judged by look.",
-    "weathering": "The weather's three stages: the sun browns the wood within months (srgbBrowned, brownHalfYears; less on a north face); the rain leaches the brown to grey (weatherHalfYears, each board at its own pace between greySpread times it); sun and rain together silver it over silverYears (onset to whole; srgbSilver). Where water stays, at a board's foot on the sill and at its end grain, mould darkens it over dampYears (srgbDamp, at most dampMost, over dampReachM of the board). Under a head the rain does not reach the board's top, which stays browner over shelterReachM. The earlywood wears from between the rings, so the grain's contrast grows to grainOld over grainYears, and long streaks along the grain (streaks: new, old) hold it from afar. Checks open along the grain after checkYears (up to checksPerBoard a board), and a weathered board cups across its width (cupping, the face's turn at its edge). The stages: Bygg og bevar and Fortidsminneforeningen (bare wood greys); the rest common knowledge of weathered softwood, judged by look. Round 3's review: wet silvered wood is mid grey-brown, not charcoal.",
+    "weathering": "The weather's three stages: the sun browns the wood within months (srgbBrowned, brownHalfYears; less on a north face); the rain leaches the brown to grey (weatherHalfYears, each board at its own pace between greySpread times it); sun and rain together silver it over silverYears (onset to whole; srgbSilver). Where water stays, at a board's foot on the sill and at its end grain, mould darkens it over dampYears (srgbDamp, at most dampMost, over dampReachM of the board). Under a head the rain does not reach the board's top, which stays browner over shelterReachM. The earlywood wears from between the rings, so the grain's contrast grows to grainOld over grainYears, and long streaks along the grain (streaks: new, old) hold it from afar. Checks open along the grain after checkYears (up to checksPerBoard a board), and a weathered board cups across its width (cupping, the face's turn at its edge). The stages: Bygg og bevar and Fortidsminneforeningen (bare wood greys); the rest common knowledge of weathered softwood, judged by look. Round 3's review: wet silvered wood is mid grey-brown, not charcoal. Round 4's: by 2005 the boards read a pale ribbed panel, so the silver is a wetter town's darker grey and the long streaks stronger.",
     "water": "Its water profile as the town's (Shaders/Water.hlsl, Overstory.World.WaterPack): how much it darkens wet, how glossy its wet film, how long it holds water, how readily run-off stains it. Bare weathered wood drinks rain and goes darker, stays wet, stains. Lowered in round 4 from 0.7: wet silvered wood is mid grey-brown, not charcoal.",
     "nailRust": "Steel nails rust and the rust runs down the grain below them: a streak srgb, at most most, mPerYear longer each year up to mostM, widthMm wide at the nail narrowing to the second at its tail; the nail's head and the wood round it go iron-black (srgbIron) over haloMm. Common knowledge, assumed; judged by look (round 3: a dash read as a dash, not a streak; round 4: 11 mm read as a hairline at eye level, and a light rust is lost on wet grey wood: the stain is the darker iron-brown the tannins make).",
     "gloss": "Bare wood's smoothness: matte."

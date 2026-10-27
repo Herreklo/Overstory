@@ -101,17 +101,18 @@ def window(soup, f, hole, spec, out_w, rng, lit, scheme):
         glass(soup, f, hole, p, wg, lit, centre)
 
 
-def _plank(soup, f, sc, zc, w, h, w0, t, turn):
+def _plank(soup, f, sc, zc, w, h, w0, t, turn, across=False):
     """One rough board standing in an opening from w0 out by t, its centre (sc, zc), w wide and h long, turned in the
     wall's plane by turn (radians): its face and its four edges. Rigid: only turned. Its marks (uv7) are its half width
-    and its length, so the wood (House.shader) knows its edges and both its ends."""
+    and its length, so the wood (House.shader) knows its edges and both its ends; a batten across the boards (across)
+    gives its half width negative, so the wood runs no rust along it (rust runs down, not along a level batten)."""
     import math
     c, s_ = math.cos(turn), math.sin(turn)
 
     def at(a, z, d):
         return f.at(sc + a * c - z * s_, zc + a * s_ + z * c, d)
     q = ((-w / 2, -h / 2), (w / 2, -h / 2), (w / 2, h / 2), (-w / 2, h / 2))
-    mk = (w / 2, h)
+    mk = (-w / 2 if across else w / 2, h)
     front = [at(a, z, w0 + t) for a, z in q]
     # the grain runs up the board: its surface coordinates along (s) its length; its lap, how far below its top
     soup.quad(*front, ta=[(z + zc, a) for a, z in q], laps=[h / 2 - z for a, z in q], marks=[mk] * 4)
@@ -170,3 +171,15 @@ def boarded(soup, f, hole, out_w, proud, bd, rng, year, sill=None):
             lo = max(lo, z0 if sill is None else z0 - sill[0] * 0.35 * max(0.0, w0) / (out_w + sill[1])) + abs(math.sin(turn)) * w
         soup.use(seed=brng.random())
         _plank(soup, f, a + w / 2, 0.5 * (lo + hi), w, hi - lo, w0, t, turn)
+    # battens across hold the boards together, nailed over their faces (the byarkiv's Pedersgata 81, 1989): one for
+    # about every spacingM of the opening's height, each a little out of level
+    bt = bd["battens"]
+    n = max(1, round((z1 - z0) / bt["spacingM"]))
+    for k in range(n):
+        bw = brng.uniform(*bt["widthMm"]) * MM
+        zc = z0 + (z1 - z0) * (k + 0.5) / n + brng.uniform(-0.25, 0.25) * (z1 - z0) / n
+        zc = min(max(zc, z0 + bw), z1 - bw)
+        turn = math.radians(90.0 + brng.uniform(-1.0, 1.0) * bt["outOfLevelDeg"])
+        length = (s1 - s0) - 0.004 - abs(math.cos(turn)) * bw
+        soup.use(seed=brng.random())
+        _plank(soup, f, 0.5 * (s0 + s1), zc, bw, length, face - bd["setBackMm"][0] * MM, bt["thickMm"] * MM, turn, across=True)

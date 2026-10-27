@@ -52,7 +52,7 @@ namespace Overstory.EditorTools
         [System.Serializable] class Chalk { public float perDecade, towardValue, keepChroma; }
         [System.Serializable] class Gloss { public float @new, old, halfYears; }
         [System.Serializable] class Peel { public float onsetYears, spanYears, flakeMm, alongGrain, toWood; }
-        [System.Serializable] class Weather { public float southFactor, footM, footFactor, lapFactor, boardSpread, patchSpread, patchM, dripFactor, endFactor, rainFactor, rainFromDeg; }
+        [System.Serializable] class Weather { public float southFactor, footM, footFactor, lapFactor, boardSpread, patchSpread, patchM, gatherFactor, gatherM, dripFactor, endFactor, rainFactor, rainFromDeg; }
         [System.Serializable] class Curtains { public string srgb; public float share, opacity, depthM, valanceShare, foldsPerM; }
         [System.Serializable] class Room
         {
@@ -362,6 +362,7 @@ namespace Overstory.EditorTools
             mat.SetColor("_SoilColour", Linear(rule.soil.srgb));
             mat.SetVector("_Weather", new Vector4(w.southFactor, w.footM, w.footFactor, w.lapFactor));
             mat.SetVector("_WeatherB", new Vector4(w.boardSpread, w.patchSpread, w.patchM, 0f));
+            mat.SetVector("_WeatherD", new Vector4(w.gatherFactor, w.gatherM, 0f, 0f));
             mat.SetVector("_WeatherC", new Vector4(w.dripFactor, w.endFactor, w.rainFactor, w.rainFromDeg * Mathf.Deg2Rad));
             mat.SetFloat("_Grey", 0f);
             mat.SetFloat("_Debug", float.Parse(Cli.Arg("-debug", "0"), CultureInfo.InvariantCulture));
