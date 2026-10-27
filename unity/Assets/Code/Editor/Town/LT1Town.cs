@@ -404,6 +404,8 @@ namespace Overstory.EditorTools.Town
             public readonly Vector2 coping;
             public readonly Vector4 bollards;
             public readonly Color copingStone, bollardIron;
+            /// <summary>The inside of an open boat and the deck of a decked one.</summary>
+            public readonly Color boatOpen, boatDecked;
             public readonly Color glass, boards;
             /// <summary>A lit room's light through its pane at a window glow of 1, linear.</summary>
             public readonly Vector4 paneLit;
@@ -469,6 +471,9 @@ namespace Overstory.EditorTools.Town
                 foreach (var kv in Obj(town["surfaces"]))
                     surfaces[kv.Key] = Hex((string)kv.Value);
                 boats = Arr(town["boats"]).ConvertAll(o => paints[(string)o]).ToArray();
+                var bi = Obj(town["boatInside"]);
+                boatOpen = Hex((string)bi["open"]);
+                boatDecked = Hex((string)bi["decked"]);
                 hedges = Arr(town["hedges"]).ConvertAll(o => Hex((string)o)).ToArray();
                 var scheme = Obj(town["scheme"]);
                 foreach (var o in Arr(paint["schemes"]))
@@ -1589,6 +1594,8 @@ namespace Overstory.EditorTools.Town
             void Fill() { while (col.Count < v.Count) col.Add(tint); }
             public void Quad(Vector3 a, Vector3 b, Vector3 c, Vector3 d) { int n = v.Count; v.Add(a); v.Add(b); v.Add(c); v.Add(d); t.AddRange(new[] { n, n + 2, n + 1, n, n + 3, n + 2 }); Fill(); }
             public void Tri(Vector3 a, Vector3 b, Vector3 c) { int n = v.Count; v.Add(a); v.Add(b); v.Add(c); t.AddRange(new[] { n, n + 2, n + 1 }); Fill(); }
+            /// <summary>A quad seen from both sides.</summary>
+            public void Both(Vector3 a, Vector3 b, Vector3 c, Vector3 d) { Quad(a, b, c, d); Quad(d, c, b, a); }
             public void Add(Mesh m)
             {
                 int n = v.Count;
@@ -1652,8 +1659,12 @@ namespace Overstory.EditorTools.Town
                         stones.Quad(U(b.x - s0.x, b.y - s0.y, fb), U(b.x - s0.x, b.y - s0.y, tb), U(b.x + s0.x, b.y + s0.y, tb), U(b.x + s0.x, b.y + s0.y, fb));
                         continue;
                     }
+                    // a board's thickness, its two faces and its top, so it is there from either side
                     var mb = f.kind == "plank" ? planks : pickets;
-                    mb.Quad(U(a.x, a.y, za - 0.1f), U(b.x, b.y, zb - 0.1f), U(b.x, b.y, zb + h), U(a.x, a.y, za + h));
+                    Vector2 dd = (b - a).normalized, t = new Vector2(-dd.y, dd.x) * Mathf.Max(hw, 0.025f);
+                    foreach (var sgn in new[] { -1f, 1f })
+                        mb.Both(U(a.x + sgn * t.x, a.y + sgn * t.y, za - 0.1f), U(b.x + sgn * t.x, b.y + sgn * t.y, zb - 0.1f), U(b.x + sgn * t.x, b.y + sgn * t.y, zb + h), U(a.x + sgn * t.x, a.y + sgn * t.y, za + h));
+                    mb.Both(U(a.x - t.x, a.y - t.y, za + h), U(b.x - t.x, b.y - t.y, zb + h), U(b.x + t.x, b.y + t.y, zb + h), U(a.x + t.x, a.y + t.y, za + h));
                     foreach (var (q, zq) in new[] { (a, za), (b, zb) })
                         mb.Add(Prism(new[] { q + new Vector2(-0.06f, -0.06f), q + new Vector2(0.06f, -0.06f), q + new Vector2(0.06f, 0.06f), q + new Vector2(-0.06f, 0.06f) }, zq - 0.1f, zq + h + 0.1f));
                 }
@@ -1785,7 +1796,8 @@ namespace Overstory.EditorTools.Town
             var st = Stations;
             foreach (var bt in boats)
             {
-                mb.tint = tones == null ? Color.white : tones.Boat(bt).linear;
+                Color hullC = tones == null ? Color.white : tones.Boat(bt).linear;
+                Color inside = tones == null ? Color.white : (bt.deck == "open" ? tones.boatOpen : tones.boatDecked).linear;
                 float L = bt.length * M, B = bt.beam * M, ang = bt.angle * Mathf.Deg2Rad;
                 Vector2 f = new Vector2(Mathf.Cos(ang), Mathf.Sin(ang)), sd = new Vector2(-f.y, f.x), o = new Vector2(bt.x, bt.y) * M;
                 bool faering = bt.kind == "faering";
@@ -1802,14 +1814,25 @@ namespace Overstory.EditorTools.Town
                     var p = o + f * ((st[k] - 0.5f) * L) + sd * (side * hb[k] * B * 0.2f);
                     return U(p.x, p.y, water - draft * (0.4f + 0.6f * Mathf.Sin(Mathf.PI * Mathf.Min(1f, st[k] * 1.4f))));
                 }
+                mb.tint = hullC;
                 for (int k = 0; k + 1 < st.Length; k++)
                 {
                     mb.Quad(K(k, 1f), K(k + 1, 1f), G(k + 1, 1f), G(k, 1f));
                     mb.Quad(K(k, -1f), G(k, -1f), G(k + 1, -1f), K(k + 1, -1f));
-                    // the deck (or the open boat's floor) a little below the gunwale
-                    mb.Quad(G(k, -1f, -0.2f), G(k, 1f, -0.2f), G(k + 1, 1f, -0.2f), G(k + 1, -1f, -0.2f));
                 }
                 mb.Quad(K(0, -1f), K(0, 1f), G(0, 1f), G(0, -1f));
+                // the inside: the hull's sides narrowing from the gunwale to the deck (or the open boat's floor) a
+                // little below it, so from above a boat is its gunwale's pale rim round its inside
+                mb.tint = inside;
+                Vector3 I(int k, float side) => G(k, side * 0.85f, -0.2f);
+                for (int k = 0; k + 1 < st.Length; k++)
+                {
+                    mb.Quad(I(k, -1f), I(k, 1f), I(k + 1, 1f), I(k + 1, -1f));
+                    mb.Quad(I(k, 1f), G(k, 1f), G(k + 1, 1f), I(k + 1, 1f));
+                    mb.Quad(I(k, -1f), I(k + 1, -1f), G(k + 1, -1f), G(k, -1f));
+                }
+                mb.Quad(I(0, -1f), G(0, -1f), G(0, 1f), I(0, 1f));
+                mb.tint = hullC;
                 if (bt.deck == "open")
                     continue;
                 bool wheel = bt.deck == "wheelhouse";
@@ -2082,14 +2105,16 @@ namespace Overstory.EditorTools.Town
                     }
                 }
 
-                // the corner boards, at both ends of the wall up to its eaves
+                // the corner boards, at both ends of the wall up to its eaves; under an eave they stop at the roof's
+                // underside, which falls away from the wall as they stand proud of it
                 if (p.kind != "outhouse")
                 {
                     var corner = Obj(wk["corner"]);
                     float wc = F(corner["widthMm"]) * M, pc = F(corner["proudMm"]) * M;
+                    float top = gableEnd ? e : e - (pc + 0.03f) * Mathf.Tan(p.pitch * Mathf.Deg2Rad);
                     trim.tint = trimC;
-                    Rect(trim, 0f, wc, b, e, pc);
-                    Rect(trim, L - wc, L, b, e, pc);
+                    Rect(trim, 0f, wc, b, top, pc);
+                    Rect(trim, L - wc, L, b, top, pc);
                 }
 
                 if (house)
