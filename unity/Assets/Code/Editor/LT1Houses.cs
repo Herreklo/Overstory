@@ -52,6 +52,15 @@ namespace Overstory.EditorTools
         [System.Serializable] class Gloss { public float @new, old, halfYears; }
         [System.Serializable] class Peel { public float onsetYears, spanYears, flakeMm, alongGrain; }
         [System.Serializable] class Weather { public float southFactor, footM, footFactor, lapFactor; }
+        [System.Serializable] class Curtains { public string srgb; public float share, opacity, depthM, valanceShare, foldsPerM; }
+        [System.Serializable] class Room
+        {
+            public string srgbLamp, srgbWalls, srgbCeiling, srgbFloor;
+            public string srgbFurniture, srgbShade;
+            public float lampPower, lampSoftM2, depthM, halfWidthM, sillM, heightM, ambient, lampDropM, lampSwingM;
+            public float furnitureHeightM, furnitureHalfLengthM, cornerReachM, cornerLight, shadeRadiusM, shadeGlow;
+            public Curtains curtains;
+        }
         [System.Serializable] class Record
         {
             public string srgb, srgbNew, srgbOld, srgbWeathered, srgbDark;
@@ -63,6 +72,7 @@ namespace Overstory.EditorTools
             public Gloss glossCurve;
             public Peel peel;
             public Weather weather;
+            public Room room;
         }
 
         // the houses buffer's rows a house (House.shader, OS_HOUSE_ROWS) and its painted parts in order
@@ -275,6 +285,19 @@ namespace Overstory.EditorTools
             mat.SetVector("_WaterRender", Water(render));
             var glass = Read("materials/glass.json");
             mat.SetVector("_Glass", With(Linear(glass.srgbDark), glass.gloss));
+            var room = glass.room;
+            mat.SetVector("_Room", With(Linear(room.srgbLamp), room.lampPower));
+            mat.SetVector("_RoomWall", With(Linear(room.srgbWalls), room.depthM));
+            mat.SetVector("_RoomCeiling", With(Linear(room.srgbCeiling), room.halfWidthM));
+            mat.SetVector("_RoomFloor", With(Linear(room.srgbFloor), room.sillM));
+            mat.SetVector("_RoomShape", new Vector4(room.heightM, room.ambient, room.lampDropM, room.lampSwingM));
+            mat.SetVector("_RoomFurniture", With(Linear(room.srgbFurniture), room.furnitureHeightM));
+            mat.SetVector("_RoomFurniture2", new Vector4(room.furnitureHalfLengthM, room.cornerReachM, room.cornerLight, room.lampSoftM2));
+            var shade = Linear(room.srgbShade) * room.shadeGlow;
+            mat.SetVector("_RoomShade", new Vector4(room.shadeRadiusM, shade.r, shade.g, shade.b));
+            var cu = room.curtains;
+            mat.SetVector("_Curtain", With(Linear(cu.srgb), cu.share));
+            mat.SetVector("_CurtainB", new Vector4(cu.opacity, cu.depthM, cu.valanceShare, cu.foldsPerM));
             var w = Read(paintRule).weather;
             mat.SetVector("_Weather", new Vector4(w.southFactor, w.footM, w.footFactor, w.lapFactor));
             mat.SetFloat("_Grey", 0f);

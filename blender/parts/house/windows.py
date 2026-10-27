@@ -32,12 +32,15 @@ def _sash(soup, f, s0, s1, z0, z1, wf, sa, bar, rows, cols, rng, lit, scheme, gl
 
 
 def glass(soup, f, hole, pane, wg, lit, centre):
-    """The glass over a sash's opening, its surface coordinates the window's own (metres from its foot, centred)."""
+    """The glass over a sash's opening, its surface coordinates the window's own (metres from its foot, centred),
+    and the window's half width and height on its place channels (lap, shelter), for the room the shader draws."""
     s0, s1, z0, z1 = pane
-    soup.use(kind="glass", scheme="none", lit=lit, lap=0.5)
+    kept = dict(lap=soup.a["lap"], shelter=soup.a["shelter"])
+    soup.use(kind="glass", scheme="none", lit=lit, lap=0.5 * (hole[1] - hole[0]), shelter=hole[3] - hole[2])
     c, base = centre, hole[2]
     soup.quad(f.at(s0, z0, wg), f.at(s1, z0, wg), f.at(s1, z1, wg), f.at(s0, z1, wg),
               ta=[(s0 - c, z0 - base), (s1 - c, z0 - base), (s1 - c, z1 - base), (s0 - c, z1 - base)])
+    soup.use(**kept)
 
 
 def window(soup, f, hole, spec, out_w, rng, lit, scheme):

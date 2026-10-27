@@ -1,11 +1,43 @@
 {
   "schemaVersion": 1,
   "material": "glass",
-  "describes": "Window glass, the panes of every window: dark where no room is lit behind it, reflecting the sky.",
+  "describes": "Window glass, the panes of every window: dark where no room is lit behind it, reflecting the sky; where a room is lit, the room seen through it (its walls, ceiling and floor, its lamp, the curtains at the window).",
   "srgbDark": "1C2126",
   "gloss": 0.92,
   "provenance": "authored",
   "notes": {
-    "srgbDark": "An unlit room seen through the glass."
+    "srgbDark": "An unlit room seen through the glass.",
+    "room": "A room of the period behind every lit window (inf., to check against the survey photos when they come): papered walls in warm light tones, a white ceiling, a lacquered pine floor, a dark sofa or sideboard against the back wall, one incandescent lamp (about 2700 K) in a fabric shade hung half a metre under a ceiling of 2.4 m, the sill 0.8 m over the floor; white sheer side curtains and a valance just behind the glass. Its light makes the pane's depth: brighter and creamier near the lamp, deeper amber at the floor, the corners and the furniture. lampPower, lampSoftM2 (how close to the lamp its light stops rising), the corners' light and the shade's glow were judged by look. Where the furniture stands and where the lamp hangs are each window's seed, claiming nothing."
+  },
+  "room": {
+    "srgbLamp": "FFC284",
+    "lampPower": 7.0,
+    "lampSoftM2": 0.25,
+    "srgbWalls": "D8C6A2",
+    "srgbCeiling": "EEE9DD",
+    "srgbFloor": "8C6B46",
+    "depthM": 3.6,
+    "halfWidthM": 1.8,
+    "sillM": 0.8,
+    "heightM": 2.4,
+    "ambient": 0.05,
+    "lampDropM": 0.5,
+    "lampSwingM": 0.7,
+    "srgbFurniture": "5A4636",
+    "furnitureHeightM": 0.85,
+    "furnitureHalfLengthM": 0.9,
+    "cornerReachM": 0.6,
+    "cornerLight": 0.45,
+    "srgbShade": "FFE2B8",
+    "shadeRadiusM": 0.2,
+    "shadeGlow": 3.0,
+    "curtains": {
+      "srgb": "F3ECDC",
+      "share": 0.3,
+      "opacity": 0.6,
+      "depthM": 0.07,
+      "valanceShare": 0.16,
+      "foldsPerM": 11
+    }
   }
 }
