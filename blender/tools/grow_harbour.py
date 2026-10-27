@@ -843,6 +843,7 @@ def chimneys(p):
 
 
 BACK_OF = {}   # a back house's id: the house whose plot it was built on
+LOTS = []      # every house's footprint, its household's id and whether it is kept, for the gardens between the rows
 
 
 def close_plots(placements, buildings, ground, fences):
@@ -880,6 +881,10 @@ def close_plots(placements, buildings, ground, fences):
             last[e["kind"]] = e["year"]
         return last.get("neglected", 0) > last.get("restored", 0)
 
+    LOTS.clear()
+    for p in placements:
+        if p["kind"] == "house":
+            LOTS.append(dict(fp=fp_of(p), hid=owner(p), kept=not let_go(owner(p))))
     plots = []
     for p in placements:
         if p["kind"] != "house" or p["side"] == "back" or p["lane"] not in grain_of:
@@ -954,7 +959,11 @@ def close_plots(placements, buildings, ground, fences):
             q["hid"])
         if q["left"]:
             run(q["sides"] if q["sides"] != "stone" else "plank", b0, e0, q["rs"], q["kept"], q["hid"])
-        yards.append(dict(poly=[b0, b1, e1, e0], kept=q["kept"], patch=int(HS.unit(HS.h(WORLD, q["hid"], "plot", "tone")) * 16)))
+        u = lambda what: HS.unit(HS.h(WORLD, q["hid"], "plot", what))
+        yard = d if d <= WHOLE else YARD[0] + (YARD[1] - YARD[0]) * u("yard")
+        beds = BEDS[1] + (BEDS[2] - BEDS[1]) * u("beds deep") if u("beds") < BEDS[0] and d - yard > BEDS[1] + 1.0 else 0.0
+        yards.append(dict(poly=[b0, b1, e1, e0], kept=q["kept"], patch=int(u("tone") * 16), b0=b0, n=(nx, ny), depth=d,
+                          yard=yard, beds=beds))
     return yards
 
 
@@ -1415,7 +1424,12 @@ def walls(poly, level, parapet, step=2.0):
 
 # -- the ground, carved where the town stands ----------------------------------------------------------------------------
 
-COVER = ["grass", "garden", "heath", "rock", "forest floor", "made", "litter"]
+COVER = ["grass", "garden", "heath", "rock", "forest floor", "made", "litter", "yard", "beds"]
+YARD = (1.8, 3.2)    # how far the trodden yard behind a kept house runs, gravel and flags, before its garden begins
+REACH = 14.0         # how far from its house the ground between the rows is a household's garden
+GARDENS = [(1, 5), (0, 3), (8, 1)]  # what a kept household's garden between the rows is, by weight: lawn, rough grass, beds
+WHOLE = 4.5          # a kept plot no deeper than this is all yard
+BEDS = (0.4, 2.5, 4.0)  # the share of kept gardens with vegetable beds at their back, and how deep: dug soil in October
 SHEDS = {"birch", "rowan", "sycamore", "apple"}   # the trees that drop their leaves in October
 LITTER = 0.9                                         # how far out under its crown a tree's fallen leaves lie
 
@@ -1423,8 +1437,9 @@ LITTER = 0.9                                         # how far out under its cro
 def cover(Z, kind, gardens, top_line, yards=(), trees=()):
     """What covers the ground at each point, for its tone (index in COVER) and a patch value 0-15 from the land's
     own lattice: made ground; the rock of the banks and of slopes too steep to hold soil; the spruce stands' needles;
-    October's fallen leaves under the crowns of the trees that shed them; the heath above the top lane; the gardens
-    behind the houses; grass on the rest of the town's slopes."""
+    October's fallen leaves under the crowns of the trees that shed them; the heath above the top lane; the yards
+    behind the houses and the ground between the rows, each point the garden of its nearest house (lawn, rough grass
+    or beds, heath where the house is let go); grass on the rest of the town's slopes."""
     g = GRID
     ny, nx = len(Z), len(Z[0])
     tacc = along(top_line)
@@ -1447,6 +1462,35 @@ def cover(Z, kind, gardens, top_line, yards=(), trees=()):
             for i in range(max(0, int(math.floor((x0 - g["x0"]) / g["step"]))), min(nx, int(math.ceil((x1 - g["x0"]) / g["step"])) + 1)):
                 if inside(yd["poly"], g["x0"] + i * g["step"], g["y0"] + j * g["step"]):
                     plot[(i, j)] = yd
+    # the ground between the rows, each point the garden of the nearest house within reach
+    cell = 12.0
+    lot_index = {}
+    for lot in LOTS:
+        x0, y0, x1, y1 = box(lot["fp"], REACH)
+        for ci in range(int(math.floor(x0 / cell)), int(math.floor(x1 / cell)) + 1):
+            for cj in range(int(math.floor(y0 / cell)), int(math.floor(y1 / cell)) + 1):
+                lot_index.setdefault((ci, cj), []).append(lot)
+    for lot in LOTS:
+        h = HS.h(WORLD, lot["hid"], "garden")
+        total = sum(w for _, w in GARDENS)
+        pick, acc = GARDENS[-1][0], HS.unit(h) * total
+        for c_, w in GARDENS:
+            if acc < w:
+                pick = c_
+                break
+            acc -= w
+        lot["cover"] = pick if lot["kept"] else 2
+        lot["patch"] = int(HS.unit(HS.h(WORLD, lot["hid"], "garden", "tone")) * 16)
+
+    def lot_at(x, y):
+        best, bd = None, REACH
+        for lot in lot_index.get((int(math.floor(x / cell)), int(math.floor(y / cell))), ()):
+            fp = lot["fp"]
+            d = min(seg_dist(x, y, fp[k], fp[(k + 1) % 4]) for k in range(4))
+            if d < bd:
+                best, bd = lot, d
+        return best
+
     litter = set()
     for tr in trees:
         if tr["species"] not in SHEDS:
@@ -1476,8 +1520,14 @@ def cover(Z, kind, gardens, top_line, yards=(), trees=()):
             elif (i, j) in litter:
                 c = 6
             elif (i, j) in plot:
+                # a kept plot is its trodden yard at the house's back, then its garden, and in some its vegetable beds at
+                # the far fence; one let go is heath
                 yd = plot[(i, j)]
-                out.append((1 if yd["kept"] else 2) * 16 + yd["patch"])
+                c = 2
+                if yd["kept"]:
+                    s = (x - yd["b0"][0]) * yd["n"][0] + (y - yd["b0"][1]) * yd["n"][1]
+                    c = 7 if s < yd["yard"] else 8 if s > yd["depth"] - yd["beds"] else 1
+                out.append(c * 16 + yd["patch"])
                 continue
             elif bank or y > top_y[i] + 6.0:
                 # heath on the banks and above the top lane, broken by the ledges the ice scraped bare, long along the
@@ -1488,6 +1538,10 @@ def cover(Z, kind, gardens, top_line, yards=(), trees=()):
             elif (i, j) in garden:
                 c = 1
             else:
+                lot = lot_at(x, y)
+                if lot is not None:
+                    out.append(lot["cover"] * 16 + lot["patch"])
+                    continue
                 c = 0
             patch = noise(x, y, [(23.0, 0.7), (7.0, 0.3)])
             out.append(c * 16 + max(0, min(15, int((patch + 1.0) * 7.5))))
