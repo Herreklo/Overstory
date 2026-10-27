@@ -27,9 +27,7 @@ for p in ("blender/resolver", "blender/blockouts", "blender/parts/house"):
 
 import numpy as np  # noqa: E402
 
-import centre_land as L  # noqa: E402
 import hashing as HS  # noqa: E402
-import heart_layout as H  # noqa: E402
 import coats as CO  # noqa: E402
 import house as HO  # noqa: E402  (blender/parts/house, not the old generator)
 
@@ -44,17 +42,52 @@ def facts_of(record):
                 with_=built["params"].get("with", []), events=[e for e in events if e["kind"] != "built"])
 
 
-def local_ground(b, pad=12.0, step=0.5):
-    """The carved ground round a house, sampled as heart_build samples it."""
-    xs = [b["ox"] + dx for dx in (-b["w"] - pad, b["w"] + pad, 0.0)]
-    ys = [b["oy"] + dy for dy in (-b["d"] - pad, b["d"] + pad, 0.0)]
-    x0, x1, y0, y1 = min(xs), max(xs), min(ys), max(ys)
-    X, Y = np.meshgrid(np.arange(x0, x1 + step / 2, step), np.arange(y0, y1 + step / 2, step), indexing="ij")
-    Z = H.carve(X, Y, L.heights(X, Y))
+def _layout_key():
+    """The layout's sources' hash: the plan cache holds while they are unchanged."""
+    import hashlib
+    h = hashlib.sha1()
+    for p in ("blender/blockouts/heart_layout.py", "blender/blockouts/centre_land.py", "blender/resolver/terrain.py",
+              "fixtures/lt1-corner.json"):
+        h.update(open(os.path.join(ROOT, p), "rb").read())
+    return h.hexdigest()
+
+
+def plan_of(letters, pad=12.0, step=0.5):
+    """Each house's plan (heart_layout's building), its footprint and the carved ground round it, sampled as
+    heart_build samples it. Importing the layout takes over a minute, so they are kept in cache/houses-plan.json while
+    the layout's sources are unchanged (generated, untracked)."""
+    path = os.path.join(ROOT, "cache", "houses-plan.json")
+    key = _layout_key()
+    cached = json.load(open(path)) if os.path.exists(path) else {}
+    if cached.get("key") != key:
+        cached = dict(key=key, houses={})
+    if all(x in cached["houses"] for x in letters):
+        return cached["houses"]
+    import centre_land as L
+    import heart_layout as H
+    for letter in letters:
+        b = next(x for x in H.BUILDINGS if x["name"].startswith(letter + " ("))
+        xs = [b["ox"] + dx for dx in (-b["w"] - pad, b["w"] + pad, 0.0)]
+        ys = [b["oy"] + dy for dy in (-b["d"] - pad, b["d"] + pad, 0.0)]
+        x0, x1, y0, y1 = min(xs), max(xs), min(ys), max(ys)
+        X, Y = np.meshgrid(np.arange(x0, x1 + step / 2, step), np.arange(y0, y1 + step / 2, step), indexing="ij")
+        Z = H.carve(X, Y, L.heights(X, Y))
+        cached["houses"][letter] = dict(b={k: v for k, v in b.items() if isinstance(v, (int, float, str))},
+                                        fp=[list(map(float, xy)) for xy in H.footprint(b, 0.0)],
+                                        ground=dict(x0=x0, y0=y0, step=step, z=Z.tolist()))
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    json.dump(cached, open(path, "w"))
+    return cached["houses"]
+
+
+def local_ground(g):
+    """The carved ground round a house from its cached grid: bilinear between samples."""
+    Z = np.asarray(g["z"])
+    x0, y0, step = g["x0"], g["y0"], g["step"]
 
     def ground(x, y):
-        u = min(max((x - x0) / step, 0), X.shape[0] - 1.001)
-        v = min(max((y - y0) / step, 0), X.shape[1] - 1.001)
+        u = min(max((x - x0) / step, 0), Z.shape[0] - 1.001)
+        v = min(max((y - y0) / step, 0), Z.shape[1] - 1.001)
         i, j = int(u), int(v)
         fu, fv = u - i, v - j
         a = Z[i, j] + (Z[i + 1, j] - Z[i, j]) * fu
@@ -182,17 +215,21 @@ def main(argv):
     out = os.path.join(ROOT, a.out)
     os.makedirs(out, exist_ok=True)
     timber = json.load(open(os.path.join(ROOT, a.pack, a.timber)))
+    # each working's covering, as its material record lays it
+    timber["covers"] = {w["roof"]["material"]: json.load(open(os.path.join(ROOT, a.pack, "materials", w["roof"]["material"] + ".json")))
+                        for w in timber["workings"].values()}
     paint = json.load(open(os.path.join(ROOT, a.pack, a.paint)))
     fixture = json.load(open(os.path.join(ROOT, "fixtures/lt1-corner.json")))
     records = {r["id"]: r for r in fixture["buildings"]}
     lanes = {pl["id"]: pl["lane"] for pl in fixture["placements"]}
     seed = fixture["worldSeed"]
     rows = []
+    plans = plan_of(a.houses.split(","))
     for index, letter in enumerate(a.houses.split(",")):
-        b = next(x for x in H.BUILDINGS if x["name"].startswith(letter + " ("))
+        b = plans[letter]["b"]
         hid = int(re.match(r".*?\((\d+)", b["name"]).group(1))
         facts = facts_of(records[hid])
-        ground = local_ground(b)
+        ground = local_ground(plans[letter]["ground"])
         for tier in a.tiers.split(","):
             t0 = time.time()
             soup, report = HO.build(b, facts, timber, ground, a.date, index, seed, lit_share=0.5, tier=tier)
@@ -203,7 +240,7 @@ def main(argv):
         rows.append(dict(index=index, name=letter, id=hid, era=facts["era"], built=facts["built"],
                          wealth=facts["wealth"], events=facts["events"],
                          coats=CO.coats(facts, paint, seed, a.date, CO.scheme_of(paint, lanes.get(hid))), roof=roof_of(facts, timber, a.date),
-                         fp=[round(c, 3) for xy in H.footprint(b, 0.0) for c in xy]))
+                         fp=[round(c, 3) for xy in plans[letter]["fp"] for c in xy]))
         print(f"[houses] {letter} ({hid}, {facts['era']} {facts['built']}): {report['windows']} windows, roof {report['roof']}")
         for w, r in report["walls"].items():
             print(f"[houses]   {w}: {r}")

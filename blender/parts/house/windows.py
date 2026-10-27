@@ -12,27 +12,30 @@ MM = 0.001
 RAIL, POST = ("back", "left", "right"), ("back", "top", "bottom")
 
 
-def _frame_box(soup, f, s0, s1, z0, z1, w0, w1, grain="s", skip=("back",)):
-    soup.box(f, s0, s1, z0, z1, w0, w1, skip=skip, grain=grain)
+def _frame_box(soup, f, s0, s1, z0, z1, w0, w1, c, grain="s", skip=("back",)):
+    soup.bbox(f, s0, s1, z0, z1, w0, w1, c, skip=skip, grain=grain)
 
 
 def _sash(soup, f, s0, s1, z0, z1, wf, sa, bar, rows, cols, rng, lit, scheme, glass_w):
-    """One sash: its four rails and stiles, its bars, and its panes of glass."""
+    """One sash: its four rails and stiles (the bottom rail deeper), its glazing bars (moulded: their outer arrises
+    chamfered wide, so each bar catches the light as a ridge), and its panes' opening."""
+    ch = soup.push["chamferMm"]
     d = 0.045
     soup.use(kind="sash", scheme=scheme, seed=rng.random(), lap=0.5)
-    _frame_box(soup, f, s0, s1, z0, z0 + sa * 1.25, wf - d, wf, skip=RAIL)    # the bottom rail, deeper than the rest
-    _frame_box(soup, f, s0, s1, z1 - sa, z1, wf - d, wf, skip=RAIL)
-    _frame_box(soup, f, s0, s0 + sa, z0 + sa * 1.25, z1 - sa, wf - d, wf, grain="z", skip=POST + ("left",))
-    _frame_box(soup, f, s1 - sa, s1, z0 + sa * 1.25, z1 - sa, wf - d, wf, grain="z", skip=POST + ("right",))
+    cs, cb = ch["sash"] * MM, ch["bar"] * MM
+    _frame_box(soup, f, s0, s1, z0, z0 + sa * 1.25, wf - d, wf, cs, skip=RAIL)    # the bottom rail, deeper than the rest
+    _frame_box(soup, f, s0, s1, z1 - sa, z1, wf - d, wf, cs, skip=RAIL)
+    _frame_box(soup, f, s0, s0 + sa, z0 + sa * 1.25, z1 - sa, wf - d, wf, cs, grain="z", skip=POST + ("left",))
+    _frame_box(soup, f, s1 - sa, s1, z0 + sa * 1.25, z1 - sa, wf - d, wf, cs, grain="z", skip=POST + ("right",))
     gs0, gs1, gz0, gz1 = s0 + sa, s1 - sa, z0 + sa * 1.25, z1 - sa
     bw = bar
     if bw > 0:
         for i in range(1, cols):
             s = gs0 + (gs1 - gs0) * i / cols
-            _frame_box(soup, f, s - bw / 2, s + bw / 2, gz0, gz1, wf - d * 0.7, wf - 0.006, grain="z", skip=POST)
+            _frame_box(soup, f, s - bw / 2, s + bw / 2, gz0, gz1, wf - d * 0.7, wf - 0.006, cb, grain="z", skip=POST)
         for j in range(1, rows):
             z = gz0 + (gz1 - gz0) * j / rows
-            _frame_box(soup, f, gs0, gs1, z - bw / 2, z + bw / 2, wf - d * 0.7, wf - 0.006, skip=RAIL)
+            _frame_box(soup, f, gs0, gs1, z - bw / 2, z + bw / 2, wf - d * 0.7, wf - 0.006, cb, skip=RAIL)
     return (gs0, gs1, gz0, gz1)
 
 
@@ -49,37 +52,40 @@ def glass(soup, f, hole, pane, wg, lit, centre):
 
 
 def window(soup, f, hole, spec, out_w, rng, lit, scheme):
-    """A window in its hole (s0, s1, z0, z1): the frame flush with the cladding's face, the sashes just inside it."""
+    """A window in its hole (s0, s1, z0, z1): the frame set back into the opening behind the casing (the style's
+    push: a deep reveal), the sashes set back in the frame, the glass back in the sashes' rebates."""
     s0, s1, z0, z1 = hole
+    pu = soup.push
     fr, sa, bar = spec["frameMm"] * MM, spec["sashMm"] * MM, spec["barMm"] * MM
     top = spec["top"] * MM
     cols, rows = spec["cols"], spec["rows"]
-    wf = out_w - 0.004
+    wf = out_w - pu["frameSetBackMm"] * MM
     depth = 0.11
+    cf = pu["chamferMm"]["frame"] * MM
     centre = 0.5 * (s0 + s1)
     if soup.level >= 2:
-        glass(soup, f, hole, (s0, s1, z0, z1), out_w - 0.03, lit, centre)
+        glass(soup, f, hole, (s0, s1, z0, z1), wf - 0.03, lit, centre)
         return
     soup.use(kind="sash", scheme=scheme, seed=rng.random(), lap=0.5)
-    _frame_box(soup, f, s0, s1, z0, z0 + fr, wf - depth, wf, skip=RAIL)
-    _frame_box(soup, f, s0, s1, z1 - fr, z1, wf - depth, wf, skip=RAIL)
-    _frame_box(soup, f, s0, s0 + fr, z0 + fr, z1 - fr, wf - depth, wf, grain="z", skip=POST + ("left",))
-    _frame_box(soup, f, s1 - fr, s1, z0 + fr, z1 - fr, wf - depth, wf, grain="z", skip=POST + ("right",))
+    _frame_box(soup, f, s0, s1, z0, z0 + fr, wf - depth, wf, cf, skip=RAIL)
+    _frame_box(soup, f, s0, s1, z1 - fr, z1, wf - depth, wf, cf, skip=RAIL)
+    _frame_box(soup, f, s0, s0 + fr, z0 + fr, z1 - fr, wf - depth, wf, cf, grain="z", skip=POST + ("left",))
+    _frame_box(soup, f, s1 - fr, s1, z0 + fr, z1 - fr, wf - depth, wf, cf, grain="z", skip=POST + ("right",))
     i0, i1, j0, j1 = s0 + fr, s1 - fr, z0 + fr, z1 - fr
-    ws = wf - 0.014
-    wg = ws - 0.03
+    ws = wf - pu["sashSetBackMm"] * MM
+    wg = ws - pu["glassSetBackMm"] * MM
     if top > 0:
         # the T-post: a transom under the top light and a post between the casements below it
         zt = j1 - top
         soup.use(kind="sash", scheme=scheme, seed=rng.random())
-        _frame_box(soup, f, i0, i1, zt - fr * 0.5, zt + fr * 0.5, wf - depth, wf, skip=RAIL)
+        _frame_box(soup, f, i0, i1, zt - fr * 0.5, zt + fr * 0.5, wf - depth, wf, cf, skip=RAIL)
         p = _sash(soup, f, i0, i1, zt + fr * 0.5, j1, ws, sa * 0.85, bar, 1, 2 if bar > 0 else 1, rng, lit, scheme, wg)
         glass(soup, f, hole, p, wg, lit, centre)
         j1 = zt - fr * 0.5
         if cols == 2:
             sm = 0.5 * (i0 + i1)
             soup.use(kind="sash", scheme=scheme, seed=rng.random())
-            _frame_box(soup, f, sm - fr * 0.5, sm + fr * 0.5, j0, j1, wf - depth, wf, grain="z", skip=POST)
+            _frame_box(soup, f, sm - fr * 0.5, sm + fr * 0.5, j0, j1, wf - depth, wf, cf, grain="z", skip=POST)
             for a, b in ((i0, sm - fr * 0.5), (sm + fr * 0.5, i1)):
                 p = _sash(soup, f, a, b, j0, j1, ws, sa, bar, rows, 1, rng, lit, scheme, wg)
                 glass(soup, f, hole, p, wg, lit, centre)
@@ -88,7 +94,7 @@ def window(soup, f, hole, spec, out_w, rng, lit, scheme):
         # two casements either side of a fixed post
         sm = 0.5 * (i0 + i1)
         soup.use(kind="sash", scheme=scheme, seed=rng.random())
-        _frame_box(soup, f, sm - fr * 0.5, sm + fr * 0.5, j0, j1, wf - depth, wf, grain="z", skip=POST)
+        _frame_box(soup, f, sm - fr * 0.5, sm + fr * 0.5, j0, j1, wf - depth, wf, cf, grain="z", skip=POST)
         for a, b in ((i0, sm - fr * 0.5), (sm + fr * 0.5, i1)):
             p = _sash(soup, f, a, b, j0, j1, ws, sa, bar, rows, 1, rng, lit, scheme, wg)
             glass(soup, f, hole, p, wg, lit, centre)

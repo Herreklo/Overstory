@@ -86,6 +86,7 @@ def build(b, facts, timber, ground, date, index, seed, lit_share, tier="near"):
     soup = Soup()
     lv = timber["levels"][tier]
     soup.level, soup.err = lv["level"], lv["errMm"] * MM
+    soup.push = timber["push"]
     soup.use(house=index, year=float(facts["built"]))
     W, D = b["w"], b["d"]
     base, eave, pitch = b["base"], b["eave"], b["pitch"]
@@ -175,11 +176,13 @@ def build(b, facts, timber, ground, date, index, seed, lit_share, tier="near"):
                 s0, s1, za = c_ - w_ / 2, c_ + w_ / 2, zb - h_
             soup.use(year=float(yr))
             outlines.append(C.casing(soup, f, s0, s1, za, zb, casing_spec, out_w, rng))
-            C.reveal(soup, f, s0, s1, za, zb, out_w + casing_spec["proudMm"] * MM, out_w - 0.004)
+            C.reveal(soup, f, s0, s1, za, zb, 0.0, out_w - timber["push"]["frameSetBackMm"] * MM)
             if boarded is not None:
                 soup.use(year=float(boarded))
-                WN.boarded(soup, f, (s0, s1, za, zb), out_w, casing_spec["proudMm"] * MM, timber["boarding"], rng,
-                           float(boarded), sill=(casing_spec["sillMm"] * MM, casing_spec["sillProudMm"] * MM))
+                pu = timber["push"]
+                WN.boarded(soup, f, (s0, s1, za, zb), out_w, casing_spec["proudMm"] * MM * pu["trimProud"],
+                           timber["boarding"], rng, float(boarded),
+                           sill=(casing_spec["sillMm"] * MM * pu["sillThick"], casing_spec["sillProudMm"] * MM * pu["sillProud"]))
                 soup.use(year=float(yr))
             lit = 0.0
             if boarded is None and lit_share > 0:
@@ -192,12 +195,12 @@ def build(b, facts, timber, ground, date, index, seed, lit_share, tier="near"):
             soup.use(year=float(facts["built"]))
             ol = C.casing(soup, f, ds0, ds1, dz0, dz1, cs, out_w, rng, with_sill=False)
             outlines.append((ol[0], ol[1], zdrip, ol[3]))
-            C.reveal(soup, f, ds0, ds1, dz0, dz1, out_w + cs["proudMm"] * MM, out_w - 0.004)
+            C.reveal(soup, f, ds0, ds1, dz0, dz1, 0.0, out_w - 0.004)
             DR.threshold(soup, f, ol[0], ol[1], zdrip, dz0, out_w, rng)
             DR.door(soup, f, door_hole, dsp, out_w, rng, 0.0)
             if boarded is not None:
                 soup.use(year=float(boarded))
-                WN.boarded(soup, f, (ds0, ds1, dz0, dz1), out_w, cs["proudMm"] * MM, timber["boarding"], rng,
+                WN.boarded(soup, f, (ds0, ds1, dz0, dz1), out_w, cs["proudMm"] * MM * timber["push"]["trimProud"], timber["boarding"], rng,
                            float(boarded))
             gp = f.at(0.5 * (ds0 + ds1), 0.0, 0.3)
             DR.steps(soup, f, ol[0], ol[1], zdrip, ground(gp[0], gp[1]) - base, dsp["step"], rng)
@@ -228,13 +231,22 @@ def build(b, facts, timber, ground, date, index, seed, lit_share, tier="near"):
         side_dir = lambda s: V(0, s)
         verge_dir = lambda s: V(s, 0)
     rr = HS.Stream(seed, hid, "roof")
-    rf = R.roof(soup, place, span, length, eave, pitch, wk, rr, verge_dir, side_dir)
+    # the ridge settles with the frame's age (a fact); how far, within the style's spread, is the seed's
+    sg = timber["push"]["ridgeSag"]
+    ss = HS.Stream(seed, hid, "roof", "sag")
+    sag = min(sg["mostMm"], sg["mmPerCentury"] * max(0.0, date - facts["built"]) / 100.0) * MM
+    sag *= 1.0 + sg["spread"] * (2.0 * ss.random() - 1.0)
+    rf = R.roof(soup, place, span, length, eave, pitch, wk, rr, verge_dir, side_dir,
+                laid=timber["covers"][wk["roof"]["material"]]["laid"], push=timber["push"], rain=timber["rainwater"],
+                sag=sag, wall_out=out_w, ground_at=lambda x, y: ground(x, y) - base)
+    place = rf["place"]
     ch = wk["chimney"]
     # one stack at mid-ridge, or a pair, each by a room's wall (the seed picks where among what the era allows)
     at = [0.5] if ch["count"] == 1 else [0.22 + 0.08 * rr.random(), 0.70 + 0.08 * rr.random()]
     for t in at:
         r_at = length * (t + (rr.random() - 0.5) * (0.3 if ch["count"] == 1 else 0.0))
-        R.chimney(soup, place, r_at, 0.0, rf["ridge_top"], ch, rr, eave)
-    report["roof"] = dict(courses=rf["courses"], ridge=round(rf["ridge_top"], 2))
+        R.chimney(soup, place, r_at, 0.0, rf["ridge_top"], ch, rr, eave,
+                  cover=rf["cover"], flash=tuple(v * MM for v in timber["rainwater"]["flashMm"]))
+    report["roof"] = dict(courses=rf["courses"], ridge=round(rf["ridge_top"], 2), sag_mm=round(sag / MM), eave=round(eave, 2))
     report["triangles"] = soup.triangles()
     return soup, report

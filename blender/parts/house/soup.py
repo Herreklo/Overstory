@@ -132,6 +132,91 @@ class Soup:
                 t = [tc(c[2], c[1]) for c in q]
             self.quad(*(P(*c) for c in q), ta=t)
 
+    def poly(self, pts, out, ta=None):
+        """A flat convex polygon (3 or 4 points), wound to face out (a direction)."""
+        n = cross(sub(pts[1], pts[0]), sub(pts[2], pts[0]))
+        if dot(n, out) < 0.0:
+            pts = pts[::-1]
+            ta = ta[::-1] if ta else None
+        if len(pts) == 3:
+            t = ta or ((0.0, 0.0), (1.0, 0.0), (1.0, 1.0))
+            self.tri(pts[0], pts[1], pts[2], t[0], t[1], t[2])
+        else:
+            self.quad(*pts, ta=ta)
+
+    def bbox(self, f, s0, s1, z0, z1, w0, w1, c, skip=("back",), grain="s"):
+        """A box in frame f's (s, z, w) space as box() draws it, its arrises chamfered by c (m): each edge between
+        two drawn faces becomes a narrow face of its own that catches the light, and each corner a small triangle.
+        Only at the level that draws them (near): a chamfer under the level's error is a plain box. The chamfer is
+        never more than a quarter of the box's least drawn side."""
+        lo, hi = (s0, z0, w0), (s1, z1, w1)
+        names = {(0, 0): "left", (0, 1): "right", (1, 0): "bottom", (1, 1): "top", (2, 0): "back", (2, 1): "front"}
+        thin = self.level > 0 and w1 - w0 < self.err
+        drawn = {k: (v not in skip and not (thin and v != "front")) for k, v in names.items()}
+        c = min(c, 0.25 * min(hi[a] - lo[a] for a in range(3)))
+        if self.level > 0 or c < 1e-4:
+            return self.box(f, s0, s1, z0, z1, w0, w1, skip=skip, grain=grain)
+        axes = (f.u, f.v, f.n)
+
+        def P(q):
+            return f.at(q[0], q[1], q[2])
+
+        def tc(x, y):
+            return (x, y) if grain == "s" else (y, x)
+
+        def V(corner, a):
+            # the corner's vertex on face (a, its side): pulled in along the other axes where their face is drawn
+            q = [hi[k] if corner[k] else lo[k] for k in range(3)]
+            for b in range(3):
+                if b != a and drawn[(b, corner[b])]:
+                    q[b] += -c if corner[b] else c
+            return q
+
+        def t_of(q, a):
+            # the surface coordinates a face on axis a carries (as box() gives them)
+            return tc(q[0], q[1]) if a == 2 else tc(q[0], q[2]) if a == 1 else tc(q[2], q[1])
+
+        def out(a, side):
+            return mul(axes[a], 1.0 if side else -1.0)
+
+        corners = [(i, j, k) for i in (0, 1) for j in (0, 1) for k in (0, 1)]
+        for a in range(3):
+            b_, c_ = [x for x in range(3) if x != a]
+            for side in (0, 1):
+                if not drawn[(a, side)]:
+                    continue
+                # the face's four corners in order round it
+                order = [(0, 0), (1, 0), (1, 1), (0, 1)]
+                ring = []
+                for u_, v_ in order:
+                    cr = [0, 0, 0]
+                    cr[a], cr[b_], cr[c_] = side, u_, v_
+                    ring.append(tuple(cr))
+                qs = [V(cr, a) for cr in ring]
+                self.poly([P(q) for q in qs], out(a, side), ta=[t_of(q, a) for q in qs])
+        # the chamfers along each edge where two drawn faces meet
+        for a in range(3):
+            for b in range(a + 1, 3):
+                k = 3 - a - b
+                for sa in (0, 1):
+                    for sb in (0, 1):
+                        if not (drawn[(a, sa)] and drawn[(b, sb)]):
+                            continue
+                        ends = []
+                        for sk in (0, 1):
+                            cr = [0, 0, 0]
+                            cr[a], cr[b], cr[k] = sa, sb, sk
+                            ends.append(tuple(cr))
+                        qs = [V(ends[0], a), V(ends[1], a), V(ends[1], b), V(ends[0], b)]
+                        o = norm(add(out(a, sa), out(b, sb)))
+                        self.poly([P(q) for q in qs], o, ta=[t_of(q, a) for q in qs])
+        # the corners where three drawn faces meet
+        for cr in corners:
+            if all(drawn[(a, cr[a])] for a in range(3)):
+                qs = [V(cr, a) for a in range(3)]
+                o = norm(add(add(out(0, cr[0]), out(1, cr[1])), out(2, cr[2])))
+                self.poly([P(q) for q in qs], o, ta=[t_of(q, 2) for q in qs])
+
     def triangles(self):
         return len(self.p) // 3
 

@@ -23,7 +23,7 @@
       "corner": { "widthMm": 165, "proudMm": 24 },
       "dripBoard": { "heightMm": 150, "proudMm": 40, "slopeMm": 18 },
       "casing": { "widthMm": 125, "proudMm": 25, "headMm": 250, "capMm": 30, "capProudMm": 180, "sillMm": 55, "sillProudMm": 120, "hornMm": 40, "brackets": [480, 125, 50] },
-      "eaves": { "overhangMm": 600, "fasciaMm": 0, "fasciaThickMm": 0, "rafterTails": true, "rafterMm": [75, 150], "rafterSpacingMm": 900, "gutter": true },
+      "eaves": { "overhangMm": 600, "fasciaMm": 0, "fasciaThickMm": 0, "rafterTails": true, "boardingMm": 25, "rafterMm": [75, 150], "rafterSpacingMm": 900, "gutter": true },
       "verge": { "overhangMm": 520, "boardMm": 215, "thickMm": 32 },
       "openings": { "bayMm": [1600, 2700], "edgeMm": 1100, "window": "tpost-6", "sillMm": 800, "gable": "pair", "door": "side", "doorKind": "paired-glazed" },
       "roof": { "cover": "slate", "material": "roof-slate", "gaugeMm": 210, "buttMm": 12 },
@@ -44,6 +44,17 @@
     "street": { "level": 1, "errMm": 10 },
     "city":   { "level": 2, "errMm": 40 }
   },
+  "push": {
+    "describes": "How far the style pushes each working's proportions where the houses are drawn (the street's shape language, blender/resolver/eras.py STYLES at stronger; the art direction of 27 October: deep reveals, thick trims, sills and caps that throw a shadow). Factors on the working's sizes; set-backs and chamfers in millimetres. Chamfers are drawn at the near level only.",
+    "trimProud": 1.6, "capProud": 1.25, "capThick": 1.4, "sillProud": 1.3, "sillThick": 1.35,
+    "frameSetBackMm": 32, "sashSetBackMm": 16, "glassSetBackMm": 20,
+    "bedMouldMm": [30, 22],
+    "dripGrooveMm": [9, 7, 16],
+    "chamferMm": { "trim": 7, "sill": 9, "frame": 4, "sash": 4, "bar": 6, "barge": 10, "fascia": 8 },
+    "bargeThick": 1.5, "flashMm": [120, 6],
+    "ridgeSag": { "describes": "Old timber settles: the ridge and the eaves dip between the gables, more the older the roof's frame (the house's age, a visual reading of a fact), each roof its own share of it (seeded, claiming no history).", "mmPerCentury": 32, "mostMm": 50, "spread": 0.35, "eaveShare": 0.3 }
+  },
+  "rainwater": { "describes": "Zinc half-round gutters on hooks and round downpipes on clips, where the era's eaves carry a gutter: the pipe drops from an outlet near the gutter's end, by a swan neck back to the wall, to a shoe just above the ground; and the sheet metal apron dressed up a chimney's faces where it meets the covering.", "gutterRadiusMm": 65, "beadMm": 9, "hookEveryMm": 700, "hookMm": [28, 5], "pipeRadiusMm": 42, "offWallMm": 45, "clipEveryMm": 1600, "clipMm": [26, 8], "outletFromEndMm": 260, "shoeMm": 170, "footMm": 160, "flashMm": [120, 6, 150] },
   "doors": {
     "paired-square": { "leaves": 2, "wMm": 1150, "hMm": 2050, "thresholdMm": 110, "frameMm": 75, "setBackMm": 70, "leafMm": 45, "stileMm": 115, "railMm": 110, "bottomRailMm": 210, "lockRailMm": 160, "panelRows": 3, "glazedRows": 0, "fieldMm": 16, "raiseMm": 32, "lightMm": 380, "lightCols": 3, "barMm": 24, "handleMm": [32, 120, 55], "handleAtMm": 1000, "step": { "riserMm": [140, 200], "treadMm": 340, "overhangMm": 120 } },
     "paired-glazed": { "leaves": 2, "wMm": 1200, "hMm": 2150, "thresholdMm": 110, "frameMm": 75, "setBackMm": 70, "leafMm": 45, "stileMm": 115, "railMm": 110, "bottomRailMm": 210, "lockRailMm": 160, "panelRows": 3, "glazedRows": 1, "fieldMm": 16, "raiseMm": 32, "lightMm": 420, "lightCols": 2, "barMm": 24, "handleMm": [32, 120, 55], "handleAtMm": 1000, "step": { "riserMm": [140, 200], "treadMm": 340, "overhangMm": 120 } }

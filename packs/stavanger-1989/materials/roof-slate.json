@@ -12,8 +12,10 @@
     0.1,
     0.2
   ],
+  "laid": { "widthMm": 250, "courseMm": 210, "liftMm": 12, "jointMm": 4, "rollDeg": 0.4, "dropMm": 1.2, "ridge": { "radiusMm": 60 }, "verge": { "over": false, "bargeAboveMm": 50 } },
   "provenance": "authored",
   "notes": {
+    "laid": "How the slates are laid (English pattern, rectangular slates about 250 by 500 mm, each course breaking joint by half a slate): the slate's width, the course's length up the slope (the gauge), how far a course's foot stands proud (the slate's thickness, pushed a little so the butts hold as a line at the street stop), the joint between slates, and each slate's own seeded roll about the slope and drop at its butt (mass-made slates hung by hand: non-semantic texture, claiming no history). The ridge is a low capping; at the verge the slates stop against the barge board, which stands above them.",
     "srgb": "Screen colours judged by look; not the town's own slaty rock (slate.json), which is a wall and step stone.",
     "water": "Its water profile as the town's (Shaders/Water.hlsl, Overstory.World.WaterPack): how much it darkens wet, how glossy its wet film, how long it holds water, how readily run-off stains it. Slate sheds water and glazes, as the town's slate. Judged by look."
   }

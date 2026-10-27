@@ -41,6 +41,19 @@ namespace Overstory.EditorTools
             // a person on Gully Steps across from D, looking up at its west wall over the retaining wall: the empty house
             // beside C's kept one
             ("d-west", new Vector3(48.6f, 47.0f, 9.6f), new Vector3(53.6f, 43.6f, 14.2f), Lens35),
+            // the parts at about 3 m, raking, so a casing's depth, a sill's drip and a reveal read: C's east window,
+            // D's front window (raised, over the gully), E's front window at eye level
+            ("c-win", new Vector3(44.0f, 33.4f, 9.8f), new Vector3(41.4f, 34.6f, 9.5f), Lens35),
+            ("d-win", new Vector3(50.9f, 45.2f, 14.7f), new Vector3(53.6f, 46.95f, 14.1f), Lens35),
+            ("e-win", new Vector3(52.9f, 88.9f, 18.25f), new Vector3(50.0f, 87.35f, 17.95f), Lens35),
+            // the roofs from about 12 m up, across the gully: C's slate and its gutter, D's and E's pantiles against the
+            // sky; and the eaves' corners at about 3 m, where a verge meets an eave
+            ("c-roof", new Vector3(49.0f, 29.5f, 19.5f), new Vector3(40.0f, 34.6f, 14.5f), Lens35),
+            ("c-eave", new Vector3(44.6f, 28.6f, 12.0f), new Vector3(41.8f, 31.4f, 12.6f), Lens35),
+            ("d-roof", new Vector3(47.0f, 50.0f, 22.5f), new Vector3(55.5f, 44.3f, 18.5f), Lens35),
+            ("d-eave", new Vector3(50.8f, 51.0f, 16.0f), new Vector3(53.7f, 47.9f, 16.7f), Lens35),
+            ("c-wide", new Vector3(50.0f, 27.0f, 12.0f), new Vector3(40.0f, 34.6f, 11.0f), Lens35),
+            ("e-roof", new Vector3(55.5f, 82.5f, 25.5f), new Vector3(47.0f, 89.5f, 22.5f), Lens35),
         };
 
         [System.Serializable] class Coat { public string colour, srgb, paint, under, underSrgb; public float year; public int count; }
@@ -108,6 +121,79 @@ namespace Overstory.EditorTools
         const int HouseRows = 16;
         static readonly string[] Parts = { "body", "back", "trim", "window", "door" };
         static readonly int HousesId = Shader.PropertyToID("_OS_Houses");
+
+        /// <summary>
+        /// The houses of a folder of their own in the painted corner (LT1ArtPasses.Paint), from the houses' views or the
+        /// gully's. For the run that folder's houses stand in cache/houses and are put back after; each view is drawn
+        /// from a copy of Paint.json (at -data) with its view, moment, tier, size and out changed, nothing else. A
+        /// houses' view is drawn in the place of the gully's "high" for the run (in memory).
+        ///
+        ///     Unity -batchmode -quit -projectPath unity -executeMethod Overstory.EditorTools.LT1Houses.Painted
+        ///         -mesh cache/houses-hero -into reviews/lt1/houses/hero/windows/p01 -views c-win,eye-foot
+        ///         [-moment 1750-sea-fog] [-tier near] [-size 1920x1080] -data /scratch/paint.json
+        /// </summary>
+        public static void Painted()
+        {
+            string repo = Path.GetFullPath(Path.Combine(Application.dataPath, "..", ".."));
+            string unity = Path.GetFullPath(Path.Combine(Application.dataPath, ".."));
+            string src = Path.Combine(repo, Cli.Arg("-mesh", "cache/houses-hero"));
+            string live = Path.Combine(repo, "cache/houses");
+            string data = Cli.Arg("-data", null) ?? throw new System.ArgumentException("-data: a scratch path for Paint.json's copy");
+            string into = Cli.Arg("-into", "reviews/lt1/houses/hero/painted");
+            string moment = Cli.Arg("-moment", "1750-sea-fog"), tier = Cli.Arg("-tier", "near");
+            var size = Cli.Arg("-size", "1920x1080").Split('x');
+            string paint = File.ReadAllText(Path.Combine(unity, "Assets/Experiments/LT1/ArtDirection/Paint.json"));
+            string Set(string json, string key, string value) =>
+                new System.Text.RegularExpressions.Regex($"\"{key}\"\\s*:\\s*(\"[^\"]*\"|[0-9.]+)").Replace(json, $"\"{key}\": {value}", 1);
+            string keep = Path.Combine(Path.GetTempPath(), $"lt1-houses-live-{System.Diagnostics.Process.GetCurrentProcess().Id}");
+            Directory.CreateDirectory(keep);
+            var swapped = new List<string>();
+            int hi = System.Array.FindIndex(LT1Stone.Views, v => v.name == "high");
+            var high = LT1Stone.Views[hi];
+            try
+            {
+                foreach (var file in Directory.GetFiles(src))
+                {
+                    string name = Path.GetFileName(file), at = Path.Combine(live, name);
+                    if (File.Exists(at))
+                        File.Copy(at, Path.Combine(keep, name), true);
+                    swapped.Add(name);
+                    File.Copy(file, at, true);
+                }
+                foreach (var viewName in Cli.Arg("-views", "eye-foot").Split(','))
+                {
+                    string drawn = viewName;
+                    var own = System.Array.Find(Views, v => v.name == viewName);
+                    if (own.name != null)
+                    {
+                        LT1Stone.Views[hi] = ("high", own.pos, own.target, own.fov);
+                        drawn = "high";
+                    }
+                    string json = Set(paint, "view", $"\"{drawn}\"");
+                    json = Set(json, "moment", $"\"{moment}\"");
+                    json = Set(json, "tier", $"\"{tier}\"");
+                    json = Set(json, "out", $"\"{into}-{moment}-{viewName}\"");
+                    json = Set(json, "width", size[0]);
+                    json = Set(json, "height", size[1]);
+                    File.WriteAllText(data, json);
+                    LT1ArtPasses.Paint();
+                    LT1Stone.Views[hi] = high;
+                }
+            }
+            finally
+            {
+                LT1Stone.Views[hi] = high;
+                foreach (var name in swapped)
+                {
+                    string kept = Path.Combine(keep, name), at = Path.Combine(live, name);
+                    if (File.Exists(kept))
+                        File.Copy(kept, at, true);
+                    else
+                        File.Delete(at);
+                }
+                Directory.Delete(keep, true);
+            }
+        }
 
         public static void Still()
         {
