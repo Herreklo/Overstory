@@ -272,6 +272,15 @@ namespace Overstory.EditorTools.Town
             }
             Add(houses, "openings and trims", trims.Make("openings"), trimM, made);
             Add(houses, "panes", panes.Make("panes"), paneM, made);
+            if (tones != null && facts.smoke != null)
+            {
+                // the stoves' smoke, the moment's (Smoke)
+                var smokeM = new Material(Shader.Find("Overstory/TownSmoke")) { name = "smoke", hideFlags = HideFlags.DontSave };
+                smokeM.SetColor("_Colour", Hex((string)facts.smoke["srgb"]));
+                smokeM.SetFloat("_Forward", F(facts.smoke["forward"]));
+                made.Add(smokeM);
+                Add(root, "smoke", Smoke(town, facts), smokeM, made);
+            }
 
             var camGo = new GameObject("Camera") { tag = "MainCamera" };
             var cam = camGo.AddComponent<Camera>();
@@ -392,6 +401,8 @@ namespace Overstory.EditorTools.Town
             const int Year = 1989;
 
             public readonly Dictionary<string, object> timber, openings, water, fringe, town;
+            /// <summary>The stoves' smoke at the moment, or null where the pack has none.</summary>
+            public readonly Dictionary<string, object> smoke;
             /// <summary>The share of the look's brushwork the houses' walls, roofs and trims take.</summary>
             public readonly float brush;
             /// <summary>The weatherboards' line near the eye: full within, gone by (m), its shade, its share of a board.</summary>
@@ -424,6 +435,7 @@ namespace Overstory.EditorTools.Town
                 glass = Hex((string)Obj(town["glass"])["srgb"]);
                 water = Obj(town["water"]);
                 fringe = Obj(town["fringe"]);
+                smoke = town.TryGetValue("smoke", out var sk) ? Obj(sk) : null;
                 brush = F(town["houseBrush"]);
                 var lp = Obj(town["laps"]);
                 laps = new Vector4(F(lp["fullM"]), F(lp["goneM"]), F(lp["shade"]), F(lp["share"]));
@@ -696,15 +708,26 @@ namespace Overstory.EditorTools.Town
             /// by seed (local scene state, claiming nothing).</summary>
             public bool Lit(Placement p, string room)
             {
+                if (!Home(p))
+                    return false;
+                float share = Obj(evening["kinds"]).TryGetValue(p.kind, out var k) ? F(k) : 0f;
+                return Hash.Unit(Hash.Then(Seed(p.id, "lit"), room)) < F(evening["room"]) * share;
+            }
+
+            /// <summary>Whether its household is in at the moment: never in a house its diary says is boarded or neglected,
+            /// nor in a kind nobody lives in; seeded.</summary>
+            public bool Home(Placement p)
+            {
                 var d = Diary(p);
                 if (Boarded(p) != "" || Last(d, "neglected") > Last(d, "restored"))
                     return false;
-                var kinds = Obj(evening["kinds"]);
-                float share = kinds.TryGetValue(p.kind, out var k) ? F(k) : 0f;
-                if (share <= 0f || Hash.Unit(Seed(Id(p), "home")) >= F(evening["home"]))
-                    return false;
-                return Hash.Unit(Hash.Then(Seed(p.id, "lit"), room)) < F(evening["room"]) * share;
+                float share = Obj(evening["kinds"]).TryGetValue(p.kind, out var k) ? F(k) : 0f;
+                return share > 0f && Hash.Unit(Seed(Id(p), "home")) < F(evening["home"]);
             }
+
+            /// <summary>Whether its stove is lit at the moment (smoke), only in a home whose household is in; seeded.</summary>
+            public bool Smoking(Placement p) =>
+                smoke != null && Home(p) && Hash.Unit(Seed(p.id, "smoke")) < F(smoke["share"]);
 
             /// <summary>A roof's covering: the one of its year built (town.json, roofs).</summary>
             string Covering(Placement p)
@@ -1846,6 +1869,91 @@ namespace Overstory.EditorTools.Town
 
         // -- a house as masses: body, roof, plinth -----------------------------------------------------------------------
 
+        /// <summary>A house's chimneys on its ridge (along it from its middle, off it to the side): each one's centre in
+        /// plan, the ridge's direction and the one across it, its half-size and the height of its top.</summary>
+        static List<(Vector2 c, Vector2 rd, Vector2 xd, float hs, float top)> Stacks(Placement p)
+        {
+            var list = new List<(Vector2, Vector2, Vector2, float, float)>();
+            if (p.chimneys == null || p.chimneys.Length < 4 || p.roof == "spire")
+                return list;
+            var fp = new Vector2[4];
+            for (int i = 0; i < 4; i++)
+                fp[i] = new Vector2(p.footprint[2 * i] * M, p.footprint[2 * i + 1] * M);
+            float e = p.eave * M;
+            Vector2 u0 = (fp[1] - fp[0]).normalized, n0 = (fp[3] - fp[0]).normalized;
+            float W0 = Vector2.Distance(fp[0], fp[1]), D0 = Vector2.Distance(fp[0], fp[3]);
+            bool gable = p.roof == "gable";
+            Vector2 rd = gable ? n0 : u0, xd = gable ? u0 : n0, mid = 0.5f * (fp[0] + fp[2]);
+            float tanr = Mathf.Tan(p.pitch * Mathf.Deg2Rad), zr = e + (gable ? W0 : D0) / 2 * tanr;
+            for (int i = 0; i + 3 < p.chimneys.Length; i += 4)
+            {
+                float al = p.chimneys[i] * M, ac = p.chimneys[i + 1] * M, hs = p.chimneys[i + 2] * M / 2, up = p.chimneys[i + 3] * M;
+                list.Add((mid + rd * al + xd * ac, rd, xd, hs, zr - ac * tanr + up));
+            }
+            return list;
+        }
+
+        /// <summary>The smoke of the stoves lit at the moment (town.json, smoke): from the first chimney's crown of each
+        /// home whose stove burns, a plume of soft puffs that rises, then bends over in the air and drifts, widening and
+        /// thinning; each puff a disc the shader turns to the eye (Shaders/TownSmoke.shader), its corner in uv, its
+        /// radius and opacity in uv2.</summary>
+        static Mesh Smoke(Town town, Tones facts)
+        {
+            var sm = facts.smoke;
+            var v = new List<Vector3>();
+            var uv = new List<Vector2>();
+            var uv2 = new List<Vector2>();
+            var t = new List<int>();
+            float rise = F(sm["riseM"]), opacity = F(sm["opacity"]), toward = F(sm["towardDeg"]) * Mathf.Deg2Rad;
+            var len = Arr(sm["lengthM"]);
+            var wid = Arr(sm["widthM"]);
+            int puffs = Mathf.Max(2, (int)F(sm["puffs"]));
+            var corners = new[] { new Vector2(-1f, -1f), new Vector2(1f, -1f), new Vector2(1f, 1f), new Vector2(-1f, 1f) };
+            foreach (var p in town.placements)
+            {
+                if (!facts.Smoking(p))
+                    continue;
+                var stacks = Stacks(p);
+                if (stacks.Count == 0)
+                    continue;
+                var (c, _, _, _, top) = stacks[0];
+                ulong seed = Hash.Of($"town.smoke.{p.id}");
+                float L = Hash.Range(Hash.Then(seed, "length"), F(len[0]), F(len[1]));
+                float a = toward + Hash.Range(Hash.Then(seed, "turn"), -0.2f, 0.2f);
+                Vector2 dir = new Vector2(Mathf.Cos(a), Mathf.Sin(a)), side = new Vector2(-dir.y, dir.x);
+                for (int k = 0; k < puffs; k++)
+                {
+                    float f = k / (float)(puffs - 1);
+                    ulong sk = Hash.Then(seed, $"{k}");
+                    float w = Mathf.Lerp(F(wid[0]), F(wid[1]), Mathf.Pow(f, 0.8f)) * Hash.Range(Hash.Then(sk, "w"), 0.8f, 1.2f);
+                    // up first, then bent over by the air: slow along the drift at first, its rise levelling off
+                    Vector2 q = c + dir * (L * Mathf.Pow(f, 1.5f)) + side * (w * 0.25f * Hash.Range(Hash.Then(sk, "s"), -1f, 1f));
+                    float z = top + 0.2f + rise * (1f - Mathf.Exp(-6f * f)) + w * 0.15f * Hash.Range(Hash.Then(sk, "z"), -1f, 1f);
+                    var centre = U(q.x, q.y, z);
+                    var puff = new Vector2(w / 2f, opacity * Mathf.Pow(1f - f, 1.3f));
+                    int n = v.Count;
+                    foreach (var corner in corners)
+                    {
+                        v.Add(centre);
+                        uv.Add(corner);
+                        uv2.Add(puff);
+                    }
+                    t.AddRange(new[] { n, n + 1, n + 2, n, n + 2, n + 3 });
+                }
+            }
+            var m = new Mesh { name = "smoke", hideFlags = HideFlags.DontSave, indexFormat = IndexFormat.UInt32 };
+            m.SetVertices(v);
+            m.SetUVs(0, uv);
+            m.SetUVs(1, uv2);
+            m.SetTriangles(t, 0);
+            // the puffs' corners are spread by the shader, so the bounds take their widest
+            m.RecalculateBounds();
+            var bb = m.bounds;
+            bb.Expand(F(wid[1]) * 1.2f);
+            m.bounds = bb;
+            return m;
+        }
+
         static (Mesh body, Mesh roof, Mesh foot) Masses(Placement p, Grid g, float overhang)
         {
             var fp = new Vector2[4];
@@ -1864,22 +1972,15 @@ namespace Overstory.EditorTools.Town
             walls.Add(Prism(fp, b, e));
             // an ark stands on the house's walls, not on the ground
             var foot = p.kind == "ark" ? new Mesh { name = "none", hideFlags = HideFlags.DontSave } : Prism(fp, low - 0.3f, b);
-            Vector2 u0 = (fp[1] - fp[0]).normalized, n0 = (fp[3] - fp[0]).normalized;
-            float W0 = Vector2.Distance(fp[0], fp[1]), D0 = Vector2.Distance(fp[0], fp[3]);
-            if (p.chimneys != null && p.chimneys.Length >= 4 && p.roof != "spire")
+            var stacks = Stacks(p);
+            if (stacks.Count > 0)
             {
-                // the chimneys on the ridge (along it from its middle, off it to the side), up from the eaves to their
-                // rise above the roof where they stand; in the plinth's mesh
+                // the chimneys, up from the eaves to their rise above the roof where they stand; in the plinth's mesh
                 var mb = new MB();
                 mb.Add(foot);
-                bool gable = p.roof == "gable";
-                Vector2 rd = gable ? n0 : u0, xd = gable ? u0 : n0, mid = 0.5f * (fp[0] + fp[2]);
-                float tanr = Mathf.Tan(p.pitch * Mathf.Deg2Rad), zr = e + (gable ? W0 : D0) / 2 * tanr;
-                for (int i = 0; i + 3 < p.chimneys.Length; i += 4)
+                foreach (var (c, rd, xd, hs, top) in stacks)
                 {
-                    float al = p.chimneys[i] * M, ac = p.chimneys[i + 1] * M, hs = p.chimneys[i + 2] * M / 2, up = p.chimneys[i + 3] * M;
-                    Vector2 c = mid + rd * al + xd * ac;
-                    float top = zr - ac * tanr + up, hc = hs + 0.06f;
+                    float hc = hs + 0.06f;
                     mb.Add(Prism(new[] { c - rd * hs - xd * hs, c + rd * hs - xd * hs, c + rd * hs + xd * hs, c - rd * hs + xd * hs },
                                  e, top));
                     // its crown: a course corbelled out round the top, so it reads as a stack and not a post
