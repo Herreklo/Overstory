@@ -6,6 +6,7 @@ using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
 using Overstory.Scenes;
+using Overstory.EditorTools.Corner;
 using Object = UnityEngine.Object;
 using Path = System.IO.Path;
 
@@ -202,47 +203,103 @@ namespace Overstory.EditorTools
         static bool Has(float[] a) => a != null && a.Length > 0;
         static Vector3 Street(float[] a) => new Vector3(a[0], a[2], a[1]);
 
+        /// <summary>What Compose made: the corner under one root (its camera, the greybox, the houses, the lamps and the
+        /// elements), the globals it set, and how to put the heart back.</summary>
+        internal sealed class Composed
+        {
+            internal CornerBuild Build;
+            internal GameObject Root;
+            internal Camera Camera;
+            internal UniversalRendererData RendererData;
+            internal int Width, Height, Super, Msaa;
+            internal float ShadowM;
+            internal string Out;
+            internal readonly List<System.Action> restore = new();
+            internal readonly List<System.Action> cleanup = new();
+            bool restored, cleaned;
+
+            /// <summary>The pipeline, the renderer's features, the heart's lights and renderers as they were (nothing
+            /// made is destroyed): before anything is saved.</summary>
+            internal void RestoreSettings()
+            {
+                if (restored)
+                    return;
+                restored = true;
+                for (int i = restore.Count - 1; i >= 0; i--)
+                    try { restore[i](); } catch (System.Exception e) { Debug.LogException(e); }
+            }
+
+            /// <summary>RestoreSettings, then everything made in memory destroyed (what was saved as an asset stays).</summary>
+            internal void Cleanup()
+            {
+                RestoreSettings();
+                if (cleaned)
+                    return;
+                cleaned = true;
+                for (int i = cleanup.Count - 1; i >= 0; i--)
+                    try { cleanup[i](); } catch (System.Exception e) { Debug.LogException(e); }
+            }
+        }
+
+        internal const string PaintJson = "Assets/Experiments/LT1/ArtDirection/Paint.json";
+
         /// <summary>
-        /// The painted corner: the street stop in the sea fog at 17:50, drawn with one designed surface
-        /// (PaintSurface.shader) in place of every material and one pass of air (PaintAir.shader), every value from
-        /// Paint.json, at its size, anti-aliased and supersampled. Writes {out}.png, {out}-grey.png and {out}-eighth.png
-        /// (the value check at 1/8, grey).
-        ///
-        ///     Unity -batchmode -quit -projectPath unity -executeMethod Overstory.EditorTools.LT1ArtPasses.Paint
-        ///         [-data Assets/Experiments/LT1/ArtDirection/Paint.json] [-out reviews/lt1/art-direction/engine/...]
+        /// The painted corner composed in the heart (LT1Stone.Stage), under one root: the frame's camera on the view; the
+        /// stage's meshes copied under Greybox, each drawn with the painted surface (PaintSurface.shader) for what it is,
+        /// one material per class, the stage's own renderers and lights off; the houses (cut out of the clay); the lamps;
+        /// then the elements ([CornerElement], Corner/CornerElement.cs) and what they hide. Every value is from Paint.json,
+        /// set as globals and kept (Build.Globals) so the scene's look sets them again. The caller draws it (Paint) or
+        /// saves it (LT1PaintedCorner), then calls Cleanup.
         /// </summary>
-        public static void Paint()
+        internal static Composed Compose(string dataPath, bool forScene)
         {
             string repo = Path.GetFullPath(Path.Combine(Application.dataPath, "..", ".."));
             string unity = Path.GetFullPath(Path.Combine(Application.dataPath, ".."));
-            var P = JsonUtility.FromJson<PaintData>(File.ReadAllText(Path.Combine(unity, Cli.Arg("-data", "Assets/Experiments/LT1/ArtDirection/Paint.json"))));
-            string outBase = Path.Combine(repo, Cli.Arg("-out", P.@out));
-            Directory.CreateDirectory(Path.GetDirectoryName(outBase));
+            var P = JsonUtility.FromJson<PaintData>(File.ReadAllText(Path.Combine(unity, dataPath)));
+            var C = new Composed
+            {
+                Width = P.width, Height = P.height, Super = Mathf.Max(1, P.super), Msaa = Mathf.Max(1, P.msaa),
+                ShadowM = P.shadowM, Out = P.@out,
+            };
+            var build = C.Build = new CornerBuild { ForScene = forScene, Moment = P.moment, View = P.view };
+            var made = build.Made;
+            var G = build.Globals;
             var urp = (UniversalRenderPipelineAsset)GraphicsSettings.currentRenderPipeline;
             float reach = urp.shadowDistance;
+            C.restore.Add(() => urp.shadowDistance = reach);
             bool async = ShaderUtil.allowAsyncCompilation;
             ShaderUtil.allowAsyncCompilation = false;
-            var (stage, go) = LT1Stone.Stage(false);
-            var shot = ScriptableObject.CreateInstance<CameraShot>();
-            var made = new List<Object>();
-            var root = new GameObject("painted") { hideFlags = HideFlags.DontSave };
-            var meshes = new List<(MeshFilter mf, Mesh mesh)>();
-            var renderers = new List<(Renderer r, Material[] mats, MaterialPropertyBlock block, bool on)>();
-            var lights = new List<(Light l, bool on)>();
-            var features = new Dictionary<ScriptableRendererFeature, bool>();
-            var rendererData = AssetDatabase.LoadAssetAtPath<UniversalRendererData>("Assets/Settings/PC_Renderer.asset");
-            Camera cam = null;
-            UniversalAdditionalCameraData camData = null;
-            bool camPost = false;
-            CameraClearFlags camClear = CameraClearFlags.Skybox;
-            Color camBack = Color.black;
+            C.restore.Add(() => ShaderUtil.allowAsyncCompilation = async);
             var sky = RenderSettings.skybox;
-            var targets = new List<RenderTexture>();
+            C.restore.Add(() => RenderSettings.skybox = sky);
             try
             {
-                // the houses drawn, their clay cut out of the corner's in memory (as LT1Houses.Still does)
+                var (stage, go) = LT1Stone.Stage(false);
+                var shot = ScriptableObject.CreateInstance<CameraShot>();
+                C.cleanup.Add(() =>
+                {
+                    if (go != null)
+                        Object.DestroyImmediate(go);
+                    Object.DestroyImmediate(shot);
+                });
+                C.cleanup.Add(() =>
+                {
+                    foreach (var o in made)
+                        if (o != null && !EditorUtility.IsPersistent(o))
+                            Object.DestroyImmediate(o);
+                });
+                var root = C.Root = new GameObject("Painted corner");
+                C.cleanup.Add(() =>
+                {
+                    if (C.Root != null)
+                        Object.DestroyImmediate(C.Root);
+                });
+                C.RendererData = AssetDatabase.LoadAssetAtPath<UniversalRendererData>("Assets/Settings/PC_Renderer.asset");
+
+                // the houses, their clay cut out of the corner's in memory (as LT1Houses.Still does)
                 string dir = Path.Combine(repo, "cache/houses");
                 var all = JsonUtility.FromJson<HRows>(File.ReadAllText(Path.Combine(dir, "houses.json")));
+                build.Date = all.date;
                 var cut = new List<Vector2[]>();
                 var houseMeshes = new List<Mesh>();
                 foreach (var name in P.houses)
@@ -259,6 +316,7 @@ namespace Overstory.EditorTools
                     houseMeshes.Add(m);
                 }
                 var cutClay = typeof(LT1Houses).GetMethod("CutClay", BindingFlags.NonPublic | BindingFlags.Static);
+                var cutOf = new Dictionary<MeshFilter, Mesh>();
                 foreach (var mf in Object.FindObjectsByType<MeshFilter>(FindObjectsSortMode.None))
                 {
                     if (mf.sharedMesh == null || !mf.name.StartsWith("buildings_"))
@@ -267,8 +325,7 @@ namespace Overstory.EditorTools
                     if (kept == null)
                         continue;
                     made.Add(kept);
-                    meshes.Add((mf, mf.sharedMesh));
-                    mf.sharedMesh = kept;
+                    cutOf[mf] = kept;
                 }
 
                 // the hour and the view
@@ -281,63 +338,119 @@ namespace Overstory.EditorTools
                     throw new System.ArgumentException($"no view {P.view}");
                 LT1Stone.Aim(stage, shot, view);
                 urp.shadowDistance = P.shadowM;
-                cam = stage.view;
+                // the clay's palette (StreetStage), kept for the scene
+                foreach (var t in new[] { "_OS_Albedo", "_OS_Emit", "_OS_Glow", "_OS_Surface" })
+                {
+                    var tex = Shader.GetGlobalTexture(t);
+                    if (tex != null)
+                        G.Texture(t, tex);
+                }
 
-                // every renderer drawn with the painted surface, by what it is; the sky's dome and anything not a mesh off
-                var paint = new Material(Shader.Find("Hidden/Overstory/PaintSurface")) { hideFlags = HideFlags.DontSave };
-                made.Add(paint);
+                // the frame's camera: the view's, with no post, cleared to nothing (the air draws the sky)
+                var camGo = new GameObject("Camera");
+                camGo.transform.SetParent(root.transform, false);
+                var cam = camGo.AddComponent<Camera>();
+                cam.CopyFrom(stage.view);
+                camGo.tag = "MainCamera";
+                cam.targetTexture = null;
+                cam.clearFlags = CameraClearFlags.SolidColor;
+                cam.backgroundColor = Color.clear;
+                cam.allowHDR = true;
+                cam.allowMSAA = true;
+                var camData = cam.GetUniversalAdditionalCameraData();
+                camData.renderPostProcessing = false;
+                camData.antialiasing = AntialiasingMode.None;
+                camData.renderShadows = true;
+                camData.requiresColorOption = CameraOverrideOption.Off;
+                camData.requiresDepthOption = CameraOverrideOption.Off;
+                C.Camera = build.Camera = cam;
+                RenderSettings.skybox = null;
+
+                // what the corner draws before its elements (the greybox): every mesh of the stage copied under the root,
+                // drawn with the painted surface for what it is (one material per class); the stage's own renderers and
+                // lights off; the sky's dome and anything not a mesh left out
+                var paintShader = Shader.Find("Hidden/Overstory/PaintSurface");
+                var classMats = new Dictionary<(float, float, float), Material>();
+                Material ClassMat(float cls, float emit, float slot)
+                {
+                    if (classMats.TryGetValue((cls, emit, slot), out var m))
+                        return m;
+                    m = new Material(paintShader) { name = $"paint class {cls}" + (emit != 0f ? $" head {emit}" : "") + (slot != 0f ? $" slot {slot}" : "") };
+                    m.SetFloat(ClassId, cls);
+                    m.SetFloat("_Emit", emit);
+                    m.SetFloat("_Slot", slot);
+                    made.Add(m);
+                    classMats[(cls, emit, slot)] = m;
+                    return m;
+                }
+                build.ClassMaterial = ClassMat;
+                var greybox = new GameObject("Greybox");
+                greybox.transform.SetParent(root.transform, false);
                 var tally = new Dictionary<string, int>();
                 foreach (var r in Object.FindObjectsByType<Renderer>(FindObjectsSortMode.None))
                 {
-                    var block = new MaterialPropertyBlock();
-                    if (r.HasPropertyBlock())
-                        r.GetPropertyBlock(block);
-                    renderers.Add((r, r.sharedMaterials, block, r.enabled));
-                    if (!r.enabled || r.sharedMaterials.Length == 0)
+                    if (r.transform.IsChildOf(root.transform) || !r.enabled || r.sharedMaterials.Length == 0)
                         continue;
+                    r.enabled = false;
+                    C.restore.Add(() => { if (r != null) r.enabled = true; });
                     float cls = ClassOf(r.sharedMaterial);
-                    string key = $"{cls} {(r.sharedMaterial != null && r.sharedMaterial.shader != null ? r.sharedMaterial.shader.name : "-")} {r.GetType().Name}";
-                    tally[key] = tally.TryGetValue(key, out int n) ? n + 1 : 1;
                     string shaderName = r.sharedMaterial != null && r.sharedMaterial.shader != null ? r.sharedMaterial.shader.name : "";
-                    if (cls == 5f || !(r is MeshRenderer) || System.Array.Exists(P.off ?? new string[0], o => shaderName.Contains(o)))
-                    {
-                        r.enabled = false;
+                    string key = $"{cls} {(shaderName != "" ? shaderName : "-")} {r.GetType().Name}";
+                    tally[key] = tally.TryGetValue(key, out int n) ? n + 1 : 1;
+                    var mf = r.GetComponent<MeshFilter>();
+                    if (cls == 5f || !(r is MeshRenderer) || mf == null || mf.sharedMesh == null
+                        || System.Array.Exists(P.off ?? new string[0], o => shaderName.Contains(o)))
                         continue;
-                    }
+                    var g = new GameObject(r.name) { layer = r.gameObject.layer };
+                    g.transform.SetPositionAndRotation(r.transform.position, r.transform.rotation);
+                    g.transform.localScale = r.transform.lossyScale;
+                    g.transform.SetParent(greybox.transform, true);
+                    g.AddComponent<MeshFilter>().sharedMesh = cutOf.TryGetValue(mf, out var cutMesh) ? cutMesh : mf.sharedMesh;
+                    var mr = g.AddComponent<MeshRenderer>();
+                    // a material whose shader paints itself (tag "OverstoryPaint"="Own", or _PaintOwn 1) keeps it: it reads
+                    // the page's globals and answers _P_Mode as PaintSurface does
                     var mats = new Material[r.sharedMaterials.Length];
                     for (int i = 0; i < mats.Length; i++)
-                        mats[i] = paint;
-                    var mine = new MaterialPropertyBlock();
-                    mine.SetFloat(ClassId, cls);
-                    r.sharedMaterials = mats;
-                    r.SetPropertyBlock(mine);
+                        mats[i] = PaintsItself(r.sharedMaterials[i]) ? r.sharedMaterials[i] : ClassMat(cls, 0f, 0f);
+                    mr.sharedMaterials = mats;
+                    mr.shadowCastingMode = r.shadowCastingMode;
+                    mr.receiveShadows = r.receiveShadows;
+                    mr.lightProbeUsage = LightProbeUsage.Off;
+                    mr.reflectionProbeUsage = ReflectionProbeUsage.Off;
+                    mr.renderingLayerMask = r.renderingLayerMask;
+                    build.Greybox.Add(new CornerPiece { Name = r.name, Path = PathOf(r.transform), Class = (int)cls, Renderer = mr });
                 }
                 foreach (var kv in tally)
                     Debug.Log($"[LT1ArtPasses] renderers {kv.Key}: {kv.Value}");
                 foreach (var l in Object.FindObjectsByType<Light>(FindObjectsSortMode.None))
                 {
-                    lights.Add((l, l.enabled));
+                    if (!l.enabled)
+                        continue;
                     l.enabled = false;
+                    C.restore.Add(() => { if (l != null) l.enabled = true; });
                 }
-                if (rendererData != null)
-                    foreach (var f in rendererData.rendererFeatures)
+                if (C.RendererData != null)
+                    foreach (var f in C.RendererData.rendererFeatures)
                         if (f != null)
                         {
-                            features[f] = f.isActive;
+                            bool on = f.isActive;
                             f.SetActive(false);
+                            C.restore.Add(() => f.SetActive(on));
                         }
 
+                var houses = new GameObject("Houses");
+                houses.transform.SetParent(root.transform, false);
                 foreach (var m in houseMeshes)
                 {
                     var g = new GameObject(m.name);
-                    g.transform.SetParent(root.transform, false);
+                    g.transform.SetParent(houses.transform, false);
                     g.AddComponent<MeshFilter>().sharedMesh = m;
                     var mr = g.AddComponent<MeshRenderer>();
-                    mr.sharedMaterial = paint;
+                    mr.sharedMaterial = ClassMat(2f, 0f, 0f);
                     mr.shadowCastingMode = ShadowCastingMode.On;
-                    var b = new MaterialPropertyBlock();
-                    b.SetFloat(ClassId, 2f);
-                    mr.SetPropertyBlock(b);
+                    mr.lightProbeUsage = LightProbeUsage.Off;
+                    mr.reflectionProbeUsage = ReflectionProbeUsage.Off;
+                    build.Greybox.Add(new CornerPiece { Name = m.name, Path = $"Houses/{m.name}", Class = 2, Renderer = mr });
                 }
 
                 // the designed values
@@ -357,7 +470,7 @@ namespace Overstory.EditorTools
                     else
                         v = new Vector4(g.v[0], g.v.Length > 1 ? g.v[1] : 0f, g.v.Length > 2 ? g.v[2] : 0f, g.v.Length > 3 ? g.v[3] : 0f);
                     globals[g.name] = v;
-                    Shader.SetGlobalVector(g.name, v);
+                    G.Vector(g.name, v);
                 }
                 Debug.Log($"[LT1ArtPasses] zenith {globals["_P_SkyZenith"]}, focus {globals["_P_Focus"]}");
                 var albedo = new Vector4[48];
@@ -376,9 +489,9 @@ namespace Overstory.EditorTools
                     surfB[sf.slot] = new Vector4(sf.calm, sf.gloss, sf.keep, sf.lamp);
                     veils[sf.slot] = new Vector4(sf.veil, 0f, 0f, 0f);
                 }
-                Shader.SetGlobalVectorArray("_P_Albedo", albedo);
-                Shader.SetGlobalVectorArray("_P_SurfB", surfB);
-                Shader.SetGlobalVectorArray("_P_Veil", veils);
+                G.Array("_P_Albedo", albedo);
+                G.Array("_P_SurfB", surfB);
+                G.Array("_P_Veil", veils);
                 var mMin = new Vector4[16];
                 var mMax = new Vector4[16];
                 var mN = new Vector4[16];
@@ -393,7 +506,7 @@ namespace Overstory.EditorTools
                     if (Has(f))
                         mFoot[k] = new Vector4(f[0], f[1], f[2], 0f);
                 }
-                Shader.SetGlobalVectorArray("_P_MassFoot", mFoot);
+                G.Array("_P_MassFoot", mFoot);
                 // the rock's crack and bedding lines: each a run of street points, cut into segments (world)
                 var crA = new Vector4[24];
                 var crB = new Vector4[24];
@@ -412,27 +525,16 @@ namespace Overstory.EditorTools
                             crB[crN] = new Vector4(bb.x, bb.y, bb.z, Wd(j + 1));
                         }
                     }
-                Shader.SetGlobalVectorArray("_P_CrackA", crA);
-                Shader.SetGlobalVectorArray("_P_CrackB", crB);
-                Shader.SetGlobalFloat("_P_CrackCount", crN);
-                Shader.SetGlobalVectorArray("_P_MassMin", mMin);
-                Shader.SetGlobalVectorArray("_P_MassMax", mMax);
-                Shader.SetGlobalVectorArray("_P_MassN", mN);
-                Shader.SetGlobalFloat("_P_MassCount", P.masses.Length);
-                var hMin = new Vector4[4];
-                var hMax = new Vector4[4];
-                for (int k = 0; k < P.hide.Length; k++)
-                {
-                    var b = P.hide[k].box;
-                    hMin[k] = new Vector4(b[0], b[1], b[2], 0f);
-                    hMax[k] = new Vector4(b[3], b[4], b[5], P.hide[k].cls);
-                }
-                Shader.SetGlobalVectorArray("_P_HideMin", hMin);
-                Shader.SetGlobalVectorArray("_P_HideMax", hMax);
-                Shader.SetGlobalFloat("_P_HideCount", P.hide.Length);
-                Shader.SetGlobalVector("_P_Clay", new Vector4(P.clay.wall, P.clay.ground, P.clay.roof, P.clay.glass));
-                Shader.SetGlobalVector("_P_ClayRoof", new Vector4(P.clay.roofNz[0], P.clay.roofNz[1], 0f, 0f));
-                Shader.SetGlobalVector("_P_Lantern", new Vector4(P.lantern.glassSlot, P.lantern.metalSlot, 0f, 0f));
+                G.Array("_P_CrackA", crA);
+                G.Array("_P_CrackB", crB);
+                G.Float("_P_CrackCount", crN);
+                G.Array("_P_MassMin", mMin);
+                G.Array("_P_MassMax", mMax);
+                G.Array("_P_MassN", mN);
+                G.Float("_P_MassCount", P.masses.Length);
+                G.Vector("_P_Clay", new Vector4(P.clay.wall, P.clay.ground, P.clay.roof, P.clay.glass));
+                G.Vector("_P_ClayRoof", new Vector4(P.clay.roofNz[0], P.clay.roofNz[1], 0f, 0f));
+                G.Vector("_P_Lantern", new Vector4(P.lantern.glassSlot, P.lantern.metalSlot, 0f, 0f));
                 var coats = new Vector4[64];
                 string[] parts = { "body", "back", "trim", "window", "door" };
                 foreach (var row in all.houses)
@@ -448,10 +550,12 @@ namespace Overstory.EditorTools
                     var cover = System.Array.Find(P.covers, cv => cv.name == row.roof.material);
                     coats[row.index * 8 + 5] = new Vector4(cover != null ? cover.slot : 5, row.roof.year, 0f, 0f);
                 }
-                Shader.SetGlobalVectorArray("_P_Coats", coats);
-                Shader.SetGlobalFloat("_P_Date", all.date);
+                G.Array("_P_Coats", coats);
+                G.Float("_P_Date", all.date);
 
                 // the lamps at their places: each a 1955 lantern (post, glass, cap) with its light, shadowed
+                var lamps = new GameObject("Lamps");
+                lamps.transform.SetParent(root.transform, false);
                 var lampPos = new Vector4[8];
                 var lampHalo = new Vector4[8];
                 var lampFill = new Vector4[8];
@@ -465,11 +569,13 @@ namespace Overstory.EditorTools
                     var lamp = P.lamps[k];
                     Vector3 foot = Street(lamp.@base), head = Street(lamp.head);
                     float glass0 = head.y - 0.5f * lt.glassH, glass1 = head.y + 0.5f * lt.glassH;
-                    Part(root, made, paint, $"lamp {lamp.id} post", Frustum(foot, foot.y, glass0, 0.5f * lt.post, 0.5f * lt.post), 8f, 0f);
-                    Part(root, made, paint, $"lamp {lamp.id} glass", Frustum(foot, glass0, glass1, 0.5f * lt.glassBottom, 0.5f * lt.glassTop), 7f, lamp.white);
-                    Part(root, made, paint, $"lamp {lamp.id} cap", Frustum(foot, glass1, glass1 + lt.capH, 0.5f * lt.capW, 0.01f), 8f, 0f);
+                    var post = Part(lamps, made, ClassMat(8f, 0f, 0f), $"lamp {lamp.id} post", Frustum(foot, foot.y, glass0, 0.5f * lt.post, 0.5f * lt.post));
+                    var glass = Part(lamps, made, ClassMat(7f, lamp.white, 0f), $"lamp {lamp.id} glass", Frustum(foot, glass0, glass1, 0.5f * lt.glassBottom, 0.5f * lt.glassTop));
+                    var cap = Part(lamps, made, ClassMat(8f, 0f, 0f), $"lamp {lamp.id} cap", Frustum(foot, glass1, glass1 + lt.capH, 0.5f * lt.capW, 0.01f));
+                    foreach (var (pr, pc) in new[] { (post, 8), (glass, 7), (cap, 8) })
+                        build.Greybox.Add(new CornerPiece { Name = pr.name, Path = $"Lamps/{pr.name}", Class = pc, Renderer = pr });
                     var lg = new GameObject($"lamp {lamp.id} light");
-                    lg.transform.SetParent(root.transform, false);
+                    lg.transform.SetParent(lamps.transform, false);
                     lg.transform.position = head;
                     var light = lg.AddComponent<Light>();
                     light.type = LightType.Point;
@@ -489,28 +595,86 @@ namespace Overstory.EditorTools
                     var fc = LinearOf(string.IsNullOrEmpty(lamp.fillSrgb) ? lamp.srgb : lamp.fillSrgb) * (lamp.fill != null && lamp.fill.Length > 0 ? lamp.fill[0] : 0f);
                     lampCatch[k] = new Vector4(lamp.@catch, 0f, 0f, 0f);
                     lampFill[k] = new Vector4(fc.r, fc.g, fc.b, lamp.fill != null && lamp.fill.Length > 1 ? lamp.fill[1] : 1f);
+                    build.Lamps.Add(new CornerLamp { Id = lamp.id, Head = head, Foot = foot, Colour = lc.linear, Power = lamp.power, Light = light });
                 }
                 // the designed mats of heather and grass breaking the curtain's straight tops
                 if (P.tufts != null)
                     foreach (var tf in P.tufts)
-                        Part(root, made, paint, $"tuft {tf.name}", Tuft(tf), 9f, 0f, tf.slot);
-                Shader.SetGlobalVectorArray("_P_LampPos", lampPos);
-                Shader.SetGlobalVectorArray("_P_LampHalo", lampHalo);
-                Shader.SetGlobalVectorArray("_P_LampFill", lampFill);
-                Shader.SetGlobalVectorArray("_P_LampCatch", lampCatch);
-                Shader.SetGlobalFloat("_P_LampCount", Mathf.Min(P.lamps.Length, 8));
+                        Part(lamps, made, ClassMat(9f, 0f, tf.slot), $"tuft {tf.name}", Tuft(tf));
+                G.Array("_P_LampPos", lampPos);
+                G.Array("_P_LampHalo", lampHalo);
+                G.Array("_P_LampFill", lampFill);
+                G.Array("_P_LampCatch", lampCatch);
+                G.Float("_P_LampCount", Mathf.Min(P.lamps.Length, 8));
+                G.Float("_P_Mode", 0f);
 
+                // the elements, and what they hide; then the page's hidden boxes and theirs
+                build.Elements = new GameObject("Elements");
+                build.Elements.transform.SetParent(root.transform, false);
+                CornerElements.Run(build);
+                var boxes = new List<(Vector3 min, Vector3 max, int cls)>();
+                foreach (var h in P.hide)
+                    boxes.Add((new Vector3(h.box[0], h.box[1], h.box[2]), new Vector3(h.box[3], h.box[4], h.box[5]), h.cls));
+                boxes.AddRange(build.HideBoxes);
+                if (boxes.Count > 16)
+                    throw new System.Exception($"[LT1ArtPasses] {boxes.Count} hidden boxes: the surface holds 16");
+                var hMin = new Vector4[16];
+                var hMax = new Vector4[16];
+                for (int k = 0; k < boxes.Count; k++)
+                {
+                    hMin[k] = new Vector4(boxes[k].min.x, boxes[k].min.y, boxes[k].min.z, 0f);
+                    hMax[k] = new Vector4(boxes[k].max.x, boxes[k].max.y, boxes[k].max.z, boxes[k].cls);
+                }
+                G.Array("_P_HideMin", hMin);
+                G.Array("_P_HideMax", hMax);
+                G.Float("_P_HideCount", boxes.Count);
+                return C;
+            }
+            catch
+            {
+                C.Cleanup();
+                throw;
+            }
+        }
+
+        /// <summary>Whether a material's shader paints itself in the painted corner (tag "OverstoryPaint"="Own", or a
+        /// material float _PaintOwn of 1): it is never swapped for PaintSurface.</summary>
+        internal static bool PaintsItself(Material m) =>
+            m != null && m.shader != null && (m.GetTag("OverstoryPaint", false) == "Own" || (m.HasFloat("_PaintOwn") && m.GetFloat("_PaintOwn") > 0.5f));
+
+        internal static Texture2D GreyOf(Texture2D src, int k) => Grey(src, k);
+
+        static string PathOf(Transform t)
+        {
+            string p = t.name;
+            for (var q = t.parent; q != null; q = q.parent)
+                p = q.name + "/" + p;
+            return p;
+        }
+
+        /// <summary>
+        /// The painted corner: the street stop in the sea fog at 17:50, drawn with one designed surface
+        /// (PaintSurface.shader) in place of every material and one pass of air (PaintAir.shader, pass 0), every value
+        /// from Paint.json, with the corner's elements (Compose), at its size, anti-aliased and supersampled. Writes
+        /// {out}.png, {out}-grey.png and {out}-eighth.png (the value check at 1/8, grey).
+        ///
+        ///     Unity -batchmode -quit -projectPath unity -executeMethod Overstory.EditorTools.LT1ArtPasses.Paint
+        ///         [-data Assets/Experiments/LT1/ArtDirection/Paint.json] [-out reviews/lt1/art-direction/engine/...]
+        ///         [-elements none|name,...]
+        /// </summary>
+        public static void Paint()
+        {
+            string repo = Path.GetFullPath(Path.Combine(Application.dataPath, "..", ".."));
+            var C = Compose(Cli.Arg("-data", PaintJson), false);
+            string outBase = Path.Combine(repo, Cli.Arg("-out", C.Out));
+            Directory.CreateDirectory(Path.GetDirectoryName(outBase));
+            var made = C.Build.Made;
+            var targets = new List<RenderTexture>();
+            try
+            {
+                var cam = C.Camera;
                 // the colour and the distance, each supersampled and anti-aliased; then the air over both
-                camData = cam.GetComponent<UniversalAdditionalCameraData>();
-                camPost = camData != null && camData.renderPostProcessing;
-                if (camData != null)
-                    camData.renderPostProcessing = false;
-                camClear = cam.clearFlags;
-                camBack = cam.backgroundColor;
-                cam.clearFlags = CameraClearFlags.SolidColor;
-                cam.backgroundColor = Color.clear;
-                RenderSettings.skybox = null;
-                int W = P.width * P.super, H = P.height * P.super;
+                int W = C.Width * C.Super, H = C.Height * C.Super;
                 RenderTexture Target(int w, int h, int depth, RenderTextureFormat f, RenderTextureReadWrite rw, int aa)
                 {
                     var t = new RenderTexture(w, h, depth, f, rw) { antiAliasing = aa, filterMode = FilterMode.Point };
@@ -518,9 +682,8 @@ namespace Overstory.EditorTools
                     targets.Add(t);
                     return t;
                 }
-                var colour = Target(W, H, 24, RenderTextureFormat.ARGBHalf, RenderTextureReadWrite.Linear, P.msaa);
-                var dist = Target(W, H, 24, RenderTextureFormat.ARGBHalf, RenderTextureReadWrite.Linear, P.msaa);
-                var was = cam.targetTexture;
+                var colour = Target(W, H, 24, RenderTextureFormat.ARGBHalf, RenderTextureReadWrite.Linear, C.Msaa);
+                var dist = Target(W, H, 24, RenderTextureFormat.ARGBHalf, RenderTextureReadWrite.Linear, C.Msaa);
                 try
                 {
                     cam.targetTexture = colour;
@@ -537,24 +700,24 @@ namespace Overstory.EditorTools
                         cam.targetTexture = ids;
                         Shader.SetGlobalFloat("_P_Mode", 2f);
                         LT1Render.Render(cam, ids);
-                        var idsSmall = Target(P.width, P.height, 0, RenderTextureFormat.ARGB32, RenderTextureReadWrite.Linear, 1);
+                        var idsSmall = Target(C.Width, C.Height, 0, RenderTextureFormat.ARGB32, RenderTextureReadWrite.Linear, 1);
                         Graphics.Blit(ids, idsSmall);
                         var keep = RenderTexture.active;
                         RenderTexture.active = idsSmall;
-                        var idTex = new Texture2D(P.width, P.height, TextureFormat.RGB24, false, true);
-                        idTex.ReadPixels(new Rect(0, 0, P.width, P.height), 0, 0);
+                        var idTex = new Texture2D(C.Width, C.Height, TextureFormat.RGB24, false, true);
+                        idTex.ReadPixels(new Rect(0, 0, C.Width, C.Height), 0, 0);
                         idTex.Apply();
                         RenderTexture.active = keep;
                         made.Add(idTex);
                         File.WriteAllBytes(outBase + "-ids.png", idTex.EncodeToPNG());
                         // and each pixel's street point (x, y, z) and its normal's up, as raw floats, bottom row first
-                        var pos = Target(P.width, P.height, 24, RenderTextureFormat.ARGBFloat, RenderTextureReadWrite.Linear, 1);
+                        var pos = Target(C.Width, C.Height, 24, RenderTextureFormat.ARGBFloat, RenderTextureReadWrite.Linear, 1);
                         cam.targetTexture = pos;
                         Shader.SetGlobalFloat("_P_Mode", 3f);
                         LT1Render.Render(cam, pos);
                         RenderTexture.active = pos;
-                        var posTex = new Texture2D(P.width, P.height, TextureFormat.RGBAFloat, false, true);
-                        posTex.ReadPixels(new Rect(0, 0, P.width, P.height), 0, 0);
+                        var posTex = new Texture2D(C.Width, C.Height, TextureFormat.RGBAFloat, false, true);
+                        posTex.ReadPixels(new Rect(0, 0, C.Width, C.Height), 0, 0);
                         posTex.Apply();
                         RenderTexture.active = keep;
                         made.Add(posTex);
@@ -564,27 +727,28 @@ namespace Overstory.EditorTools
                 finally
                 {
                     Shader.SetGlobalFloat("_P_Mode", 0f);
-                    cam.targetTexture = was;
+                    cam.targetTexture = null;
                 }
                 var air = new Material(Shader.Find("Hidden/Overstory/PaintAir")) { hideFlags = HideFlags.DontSave };
                 made.Add(air);
                 float tanY = Mathf.Tan(0.5f * cam.fieldOfView * Mathf.Deg2Rad), tanX = tanY * W / H;
                 air.SetTexture("_P_Dist", dist);
+                air.SetVector("_P_Dist_TexelSize", new Vector4(1f / W, 1f / H, W, H));
                 air.SetVector("_P_CamPos", cam.transform.position);
                 air.SetVector("_P_CamFwd", cam.transform.forward);
                 air.SetVector("_P_CamRight", cam.transform.right * tanX);
                 air.SetVector("_P_CamUp", cam.transform.up * tanY);
                 Debug.Log($"[LT1ArtPasses] camera at {cam.transform.position}, fov {cam.fieldOfView}, physical {cam.usePhysicalProperties}");
                 var big = Target(W, H, 0, RenderTextureFormat.ARGB32, RenderTextureReadWrite.sRGB, 1);
-                var small = Target(P.width, P.height, 0, RenderTextureFormat.ARGB32, RenderTextureReadWrite.sRGB, 1);
-                Graphics.Blit(colour, big, air);
+                var small = Target(C.Width, C.Height, 0, RenderTextureFormat.ARGB32, RenderTextureReadWrite.sRGB, 1);
+                Graphics.Blit(colour, big, air, 0);
                 big.filterMode = FilterMode.Bilinear;
                 Graphics.Blit(big, small); // each pixel the mean of the four under it at 2x
 
                 var prev = RenderTexture.active;
                 RenderTexture.active = small;
-                var tex = new Texture2D(P.width, P.height, TextureFormat.RGB24, false, false);
-                tex.ReadPixels(new Rect(0, 0, P.width, P.height), 0, 0);
+                var tex = new Texture2D(C.Width, C.Height, TextureFormat.RGB24, false, false);
+                tex.ReadPixels(new Rect(0, 0, C.Width, C.Height), 0, 0);
                 tex.Apply();
                 RenderTexture.active = prev;
                 made.Add(tex);
@@ -604,56 +768,24 @@ namespace Overstory.EditorTools
                     t.Release();
                     Object.DestroyImmediate(t);
                 }
-                foreach (var kv in features)
-                    kv.Key.SetActive(kv.Value);
-                foreach (var (l, on) in lights)
-                    if (l != null)
-                        l.enabled = on;
-                foreach (var (r, mats, block, on) in renderers)
-                {
-                    if (r == null)
-                        continue;
-                    r.sharedMaterials = mats;
-                    r.SetPropertyBlock(block.isEmpty ? null : block);
-                    r.enabled = on;
-                }
-                foreach (var (mf, mesh) in meshes)
-                    mf.sharedMesh = mesh;
-                if (cam != null)
-                {
-                    if (camData != null)
-                        camData.renderPostProcessing = camPost;
-                    cam.clearFlags = camClear;
-                    cam.backgroundColor = camBack;
-                }
-                RenderSettings.skybox = sky;
-                Object.DestroyImmediate(root);
-                foreach (var o in made)
-                    if (o != null)
-                        Object.DestroyImmediate(o);
-                ShaderUtil.allowAsyncCompilation = async;
-                urp.shadowDistance = reach;
-                Object.DestroyImmediate(go);
-                Object.DestroyImmediate(shot);
+                C.Cleanup();
             }
         }
 
-        /// <summary>One part of a lantern: its mesh drawn with the painted surface as a class, casting no shadow (the
+        /// <summary>One part of a lantern: its mesh drawn with the painted surface for its class, casting no shadow (the
         /// lamp's light sits inside it).</summary>
-        static void Part(GameObject root, List<Object> made, Material paint, string name, Mesh mesh, float cls, float emit, float slot = 0f)
+        static MeshRenderer Part(GameObject parent, List<Object> made, Material material, string name, Mesh mesh)
         {
             made.Add(mesh);
             var g = new GameObject(name);
-            g.transform.SetParent(root.transform, false);
+            g.transform.SetParent(parent.transform, false);
             g.AddComponent<MeshFilter>().sharedMesh = mesh;
             var mr = g.AddComponent<MeshRenderer>();
-            mr.sharedMaterial = paint;
+            mr.sharedMaterial = material;
             mr.shadowCastingMode = ShadowCastingMode.Off;
-            var b = new MaterialPropertyBlock();
-            b.SetFloat(ClassId, cls);
-            b.SetFloat("_Emit", emit);
-            b.SetFloat("_Slot", slot);
-            mr.SetPropertyBlock(b);
+            mr.lightProbeUsage = LightProbeUsage.Off;
+            mr.reflectionProbeUsage = ReflectionProbeUsage.Off;
+            return mr;
         }
 
         /// <summary>A designed mat of heather or grass along a straight top edge (Paint.json, tufts): a run of rounded

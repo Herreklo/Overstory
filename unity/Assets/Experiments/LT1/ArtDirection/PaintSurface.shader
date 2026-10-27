@@ -6,7 +6,9 @@
 // whole shapes. The air is PaintAir.shader's, after. Every value is a global from Paint.json.
 //
 // _Class: 1 clay, 2 a house, 3 laid stone, 4 a tree, 6 anything else, 7 a lantern's glass, 8 a lantern's metal,
-// 9 a designed shape (a tuft of heather or grass) with its own slot (_Slot).
+// 9 a designed shape (a tuft of heather or grass) with its own slot (_Slot), 10 an element's own surface (the corner's
+// elements, Code/Editor/Corner/CornerElement.cs: its values on its material, _OwnAlbedo, _OwnB, _OwnC).
+// Growth (lichen, moss) on laid stone and on the elements' own surfaces is Corner/CornerGrowth.hlsl's.
 // House meshes (House.shader): UV0 metres along and up; UV1 x the kind, y the house's row; UV3 the bake (x sky);
 // UV2 x a piece's seed (each board its own); UV4 y a lit window's seed; UV5 x the height on a board from its lap edge (0)
 // to its top (1); UV6 x the coat scheme; UV7 x a sill's run-off over it.
@@ -19,6 +21,9 @@ Shader "Hidden/Overstory/PaintSurface"
         _Class ("Class", Float) = 0
         _Emit ("A lantern's head: how white", Float) = 0
         _Slot ("A designed shape's slot", Float) = 0
+        _OwnAlbedo ("Own surface: albedo (linear), a its wet share", Vector) = (0.18, 0.18, 0.18, 0)
+        _OwnB ("Own surface: x calm, y gloss, w the lamps' light it takes", Vector) = (0, 0, 0, 1)
+        _OwnC ("Own surface: x the fog's veil it takes, y 1 if UV3.x carries its sky bake", Vector) = (1, 0, 0, 0)
     }
 
     HLSLINCLUDE
@@ -28,6 +33,9 @@ Shader "Hidden/Overstory/PaintSurface"
         float _Class;
         float _Emit;
         float _Slot;
+        float4 _OwnAlbedo;
+        float4 _OwnB;
+        float4 _OwnC;
     CBUFFER_END
 
     // what a face is: per slot (Paint.json, surfaces) rgb its value (linear) and a its wet share; B x calm, y gloss,
@@ -42,9 +50,9 @@ Shader "Hidden/Overstory/PaintSurface"
     float4 _P_MassN[16];
     float4 _P_MassFoot[16];   // a mass's foot where it sits into the ground: x the ground (street z), y the band's height, z how much darker
     float _P_MassCount;
-    // what the frame hides (a stand-in a lantern replaces): min, max xyz, w the class
-    float4 _P_HideMin[4];
-    float4 _P_HideMax[4];
+    // what the frame hides (a stand-in a lantern or an element replaces): min, max xyz, w the class
+    float4 _P_HideMin[16];
+    float4 _P_HideMax[16];
     float _P_HideCount;
 
     bool P_In(float3 s, float3 lo, float3 hi)
@@ -84,6 +92,7 @@ Shader "Hidden/Overstory/PaintSurface"
             #pragma multi_compile _ _LIGHT_LAYERS
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
             #include "Paint.hlsl"
+            #include "Assets/Experiments/LT1/Corner/CornerGrowth.hlsl"
 
             TEXTURE2D(_OS_Albedo);
             TEXTURE2D(_OS_Emit);
@@ -341,6 +350,13 @@ Shader "Hidden/Overstory/PaintSurface"
                     slot = (int)(_P_Lantern.y + 0.5);
                     albedo = (half3)_P_Albedo[slot].rgb;
                 }
+                else if (cls == 10)
+                {
+                    // an element's own surface: its values from its own data, on its material
+                    albedo = (half3)_OwnAlbedo.rgb;
+                    if (_OwnC.y > 0.5)
+                        sky = (half)i.b.z;
+                }
                 else
                 {
                     // the clay: what it is from its palette swatch and its facing, then the masses that need their own
@@ -422,13 +438,32 @@ Shader "Hidden/Overstory/PaintSurface"
 
                 // for the air: the distance from the eye, the coverage, and how much of the fog's veil this face takes
                 // (a mass of the near curtain stays in the near layer, however deep it runs)
+                // (an element's own surface carries them on its material; the rest by their slot)
+                half4 B;
+                half wetShare;
+                float veilShare;
+                if (cls == 10)
+                {
+                    B = (half4)_OwnB;
+                    wetShare = (half)_OwnAlbedo.a;
+                    veilShare = _OwnC.x;
+                }
+                else
+                {
+                    B = (half4)_P_SurfB[slot];
+                    wetShare = (half)_P_Albedo[slot].a;
+                    veilShare = _P_Veil[slot].x;
+                }
                 if (_P_Mode > 0.5 && _P_Mode < 1.5)
-                    return float4(distance(p, _WorldSpaceCameraPos), 1.0, _P_Veil[slot].x, 1.0);
+                    return float4(distance(p, _WorldSpaceCameraPos), 1.0, veilShare, 1.0);
                 if (_P_Mode > 1.5)
-                    return float4(slot * 4.0 / 255.0, cls * 16.0 / 255.0, 0.0, 1.0);   // which slot, for checking
-                half4 B = (half4)_P_SurfB[slot];
+                    return float4((cls == 10 ? 63 : slot) * 4.0 / 255.0, cls * 16.0 / 255.0, 0.0, 1.0);   // which slot (63 an own surface), for checking
+                // growth (lichen and moss) on laid stone and on the elements' own surfaces: Corner/CornerGrowth.hlsl's
+                // (UV4.y the lichen's years / 200, UV5.x the moss, UV3.x the sky bake)
+                if (cls == 3 || cls == 10)
+                    albedo = CornerGrowth(albedo, cls, i.a.xy, i.c.y, i.c.z, i.b.z, p, n, detail, pxm);
                 half wetUp = saturate((n.y - (half)_P_Wet.y) / max((half)(_P_Wet.z - _P_Wet.y), 1e-3h));
-                half wet = (half)_P_Wet.x * wetUp * (half)_P_Albedo[slot].a;
+                half wet = (half)_P_Wet.x * wetUp * wetShare;
                 albedo *= 1.0h - (half)_P_Wet.w * wet;
                 // the worn flight (ground_history: the busy middle worn smooth): a lighter, glossier wet path up the
                 // middle of each tread, its edges matte and darker
