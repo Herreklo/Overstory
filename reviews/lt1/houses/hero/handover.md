@@ -1,3 +1,7 @@
+**Paused 27 October (Øystein is reconsidering the style).** The second lead judged the hero houses in the painted corner (`painted/p00-*`): they hold at the street stop, but C's husmor windows read as flat stickers up close, and D reads as clean as C, because the painted surface draws no peel.
+The two builders (`brief-common.md`: walls and openings; roof and eaves; four views every round) were stopped early: walls bb61098 (corner boards chamfered and proud, the drip board a chamfered section; built, never rendered), roofs 84c78b5 (counts by part, nothing built); their notes are `walls-handover.md` and `roofs-handover.md`.
+Open: near budgets (the plinth was ~16k of C's and D's near count, pantiles and slates the rest); the painted scene draws the street tier at every distance (per-distance levels were asked of the coordinator, not done).
+
 # The walked corner's elements: hand-over (27 October, 18:20)
 
 The lead stopped here at about 80% context. The branch is `lt/1-harbour-street`, and the brief is `corner-elements-brief.md` in the parent's notes folder. Nothing below has been judged against the art-direction frame yet, and none of it is finished work for Øystein.
