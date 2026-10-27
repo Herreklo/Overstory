@@ -52,6 +52,7 @@
     "dripGrooveMm": [9, 7, 16],
     "chamferMm": { "trim": 7, "sill": 9, "frame": 4, "sash": 4, "bar": 6, "barge": 10, "fascia": 8 },
     "bargeThick": 1.5, "flashMm": [120, 6],
+    "lipShade": { "describes": "The shade a level lip (a sill, a head's cap, a drip board) throws on the face under it, pushed past what the sky alone gives so it reads at the street stop: the sky under the lip falls by shade at the lip and comes back over bandMm, along a curve of this power.", "shade": 0.55, "bandMm": 220, "power": 2.0 },
     "ridgeSag": { "describes": "Old timber settles: the ridge and the eaves dip between the gables, more the older the roof's frame (the house's age, a visual reading of a fact), each roof its own share of it (seeded, claiming no history).", "mmPerCentury": 32, "mostMm": 50, "spread": 0.35, "eaveShare": 0.3 }
   },
   "rainwater": { "describes": "Zinc half-round gutters on hooks and round downpipes on clips, where the era's eaves carry a gutter: the pipe drops from an outlet near the gutter's end, by a swan neck back to the wall, to a shoe just above the ground; and the sheet metal apron dressed up a chimney's faces where it meets the covering.", "gutterRadiusMm": 65, "beadMm": 9, "hookEveryMm": 700, "hookMm": [28, 5], "pipeRadiusMm": 42, "offWallMm": 45, "clipEveryMm": 1600, "clipMm": [26, 8], "outletFromEndMm": 260, "shoeMm": 170, "footMm": 160, "flashMm": [120, 6, 150] },

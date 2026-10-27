@@ -99,13 +99,20 @@ def local_ground(g):
 BOUNCE = 0.45  # the light a painted house's own faces send on: the mean albedo of its paint and wood in grey light
 
 
-def bake_soup(soup, ground):
-    """What each triangle's corners see (bake.py's rays and reach): their share of open sky, of open ground, and
-    their openness close by. The house only knows itself; the ground is the carved ground's height under each sample. A ray that
-    meets the house itself brings back one bounce: what the face it meets sees of sky and ground, times BOUNCE, so a
-    rafter's side under a deep eave is lit by the boards round it, not black. A joint (the slot between stones drawn as
-    one face, from the street tier) and the mortar behind the stones see past them: their shade is in the joint's share
-    (lime-mortar.json, jointView and jointFar). A stone's facet sees one light, the mean of its triangles'."""
+def bake_soup(soup, ground, lip):
+    """What each piece of the house sees (bake.py's rays and reach): its share of open sky, of open ground, and its
+    openness close by. The house only knows itself; the ground is the carved ground's height under each sample.
+
+    A piece is one made thing's flat face (a board, a casing member, a stone's facet: its kind, seed and plane, its
+    triangles joined by shared corners). It sees one light, or one that runs evenly across it (a field linear in
+    position, fitted to samples inside its triangles), so the light is the same however the face is cut into
+    triangles and nothing on a wall follows a triangle's edge. A curved face (a tile, a pipe) sees from each corner
+    along the corner's own normal, so its light follows the curve.
+
+    A ray that meets the house brings back one bounce: what the face it meets sees, times BOUNCE, so a rafter's side
+    under a deep eave is lit by the boards round it, not black. A joint and the mortar behind the stones see past
+    them (lime-mortar.json, jointView and jointFar). Under a level lip (a sill, a cap: a trim face looking down) the
+    sky falls in a band (timber.json, push.lipShade), each face's band read at the face's middle, so it runs level."""
     import importlib.util
     from mathutils import Vector
     from mathutils.bvhtree import BVHTree
@@ -113,21 +120,25 @@ def bake_soup(soup, ground):
     BK = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(BK)
     verts = [Vector(p) for p in soup.p]
-    polys = [(i, i + 1, i + 2) for i in range(0, len(verts), 3)]
+    nt = len(verts) // 3
+    polys = [(3 * t, 3 * t + 1, 3 * t + 2) for t in range(nt)]
     tree = BVHTree.FromPolygons(verts, polys, epsilon=0.0)
     from soup import KINDS
-    kinds = [int(soup.ch[3 * t][2]) for t in range(len(polys))]
+    kinds = [int(soup.ch[3 * t][2]) for t in range(nt)]
     through = (KINDS["joint"], KINDS["mortar"])
-    INSET = 0.003  # a corner's sample stands this far in from the corner, toward the triangle's middle
+    SPLIT = 0.01  # m2: a triangle larger than this is sampled at four points, a smaller one at its middle
+    EVEN = 0.6  # m: a piece's light runs across it only as far as samples this far apart can tell
 
-    def look(s, n, dirs, t):
+    def look(s, n, t):
         """One sample's rays: its share of sky, of ground and of openness close by, the faces it met, and whether
-        it lies buried (most of its rays meet the back of a face: a corner tucked under another part)."""
+        it lies buried (most of its rays meet the back of a face: a point tucked under another part)."""
+        u, w = BK._basis(n)
         o = s + n * BK.LIFT
         h = o.z - ground(o.x, o.y)
         sky = gnd = near = back = 0
         met = []
-        for d in dirs:
+        for x, y, z in BK._FAN:
+            d = u * x + w * y + n * z
             hit, hn, face, dist = tree.ray_cast(o, d, BK.REACH)
             while hit is not None and kinds[t] in through and kinds[face] == KINDS["stone"]:
                 hit, hn, face, dist = tree.ray_cast(hit + d * 1e-4, d, BK.REACH)
@@ -142,53 +153,178 @@ def bake_soup(soup, ground):
                 gnd += 1
             else:
                 sky += 1
-        k = float(len(dirs))
-        return (sky / k, gnd / k, 1.0 - near / k), met, back > 0.3 * k
+        k = float(len(BK._FAN))
+        return [sky / k, gnd / k, 1.0 - near / k], met, back > 0.3 * k, sky + gnd == 0
 
-    # each corner of a triangle sees from its own corner, so the light runs smoothly over a face cut into many
-    # triangles (a board cut at a casing and at its marks) instead of stepping at each cut; a buried corner takes the
-    # triangle's middle
-    first, hits = [], []
-    for t in range(len(polys)):
+    # the samples: inside a flat triangle (its middle, and three more toward its corners when it is large), at the
+    # corners of a curved one
+    normal, curved, samples = [], [], []
+    for t in range(nt):
         a, b, c = verts[3 * t], verts[3 * t + 1], verts[3 * t + 2]
-        n = (b - a).cross(c - a).normalized()
-        u, w = BK._basis(n)
+        cr = (b - a).cross(c - a)
+        area = 0.5 * cr.length
+        n = cr.normalized()
+        normal.append(n)
         centre = (a + b + c) / 3.0
-        dirs = [u * x + w * y + n * z for x, y, z in BK._FAN]
-        mid = look(centre, n, dirs, t)
-        for q in (a, b, c):
-            to = centre - q
-            s = q + to * min(1.0, INSET / max(to.length, 1e-9))
-            v = look(s, n, dirs, t)
-            v = mid if v[2] else v
-            first.append(v[0])
-            hits.append((v[1], float(len(dirs))))
-    # a face met brings back the mean of what its corners see
-    face = [tuple(sum(first[3 * f + i][j] for i in range(3)) / 3.0 for j in range(3)) for f in range(len(polys))]
-    seen = []
-    for (sky, gnd, op), (met, k) in zip(first, hits):
-        sky += BOUNCE * sum(face[f][0] for f in met) / k
-        gnd += BOUNCE * sum(face[f][1] for f in met) / k
-        seen.append((sky, gnd, op))
-    # a stone's facet is one plane a hand wide: it sees one light, whatever triangles it is cut into (else each
-    # triangle of its fan shows as a shard)
-    facets = {}
-    for t in range(len(polys)):
-        if kinds[t] != KINDS["stone"]:
+        bent = any((Vector(soup.nrm[3 * t + i]) - n).length > 1e-3 for i in range(3))
+        curved.append(bent)
+        mid = look(centre, n, t)
+        if bent:
+            for i, q in enumerate((a, b, c)):
+                to = centre - q
+                v = look(q + to * min(1.0, 0.003 / max(to.length, 1e-9)), Vector(soup.nrm[3 * t + i]).normalized(), t)
+                samples.append((t, i, area, (list(mid[0]), mid[1], mid[2], mid[3]) if v[2] else v))
+        else:
+            samples.append((t, None, area, mid))
+            if area > SPLIT:
+                for q in (a, b, c):
+                    v = look(centre * 0.5 + q * 0.5, n, t)
+                    if not v[2]:
+                        samples.append((t, centre * 0.5 + q * 0.5, area / 3.0, v))
+    # a face met brings back the mean of what that triangle's samples see
+    acc = [[0.0, 0.0, 0.0, 0] for _ in range(nt)]
+    for t, _, _, v in samples:
+        for j in range(3):
+            acc[t][j] += v[0][j]
+        acc[t][3] += 1
+    face = [(a_[0] / a_[3], a_[1] / a_[3], a_[2] / a_[3]) if a_[3] else (0.0, 0.0, 1.0) for a_ in acc]
+    k = float(len(BK._FAN))
+    for _, _, _, v in samples:
+        v[0][0] += BOUNCE * sum(face[f][0] for f in v[1]) / k
+        v[0][1] += BOUNCE * sum(face[f][1] for f in v[1]) / k
+
+    seen = [None] * (3 * nt)
+    # curved triangles: each corner its own
+    for t, i, _, v in samples:
+        if curved[t]:
+            seen[3 * t + i] = tuple(v[0])
+
+    # flat triangles into pieces: kind, seed and plane, joined where they share a corner
+    parent = list(range(nt))
+
+    def root(x):
+        while parent[x] != x:
+            parent[x] = parent[parent[x]]
+            x = parent[x]
+        return x
+
+    corner = {}
+    for t in range(nt):
+        if curved[t]:
             continue
-        a, b, c = verts[3 * t], verts[3 * t + 1], verts[3 * t + 2]
-        n = (b - a).cross(c - a)
-        area = n.length
-        if area < 1e-12:
+        n = normal[t]
+        key = (kinds[t], round(soup.ch[3 * t][4], 6), round(n.x * 25), round(n.y * 25), round(n.z * 25),
+               round(n.dot(verts[3 * t]) / 0.005))
+        for i in range(3):
+            q = verts[3 * t + i]
+            ck = key + (round(q.x * 2000), round(q.y * 2000), round(q.z * 2000))
+            o = corner.setdefault(ck, t)
+            ra, rb = root(o), root(t)
+            if ra != rb:
+                parent[rb] = ra
+    pieces = {}
+    for t in range(nt):
+        if not curved[t]:
+            pieces.setdefault(root(t), []).append(t)
+    by_tri = {}
+    for t, at, area, v in samples:
+        if not curved[t]:
+            by_tri.setdefault(t, []).append((at, area, v[0], v[3]))
+    for tris in pieces.values():
+        n = normal[tris[0]]
+        u, w = BK._basis(n)
+        pts = []
+        for t in tris:
+            centre = (verts[3 * t] + verts[3 * t + 1] + verts[3 * t + 2]) / 3.0
+            for at, area, val, shut in by_tri.get(t, ()):
+                pts.append((centre if at is None else at, area, val, shut))
+        # a piece running into the house (a stack through the roof, a board behind a casing) is seen only where it
+        # comes out: a sample shut in on every side is left out, unless the whole piece is shut in
+        if any(not p_[3] for p_ in pts):
+            pts = [p_ for p_ in pts if not p_[3]]
+        pts = [p_[:3] for p_ in pts]
+        if not pts:
+            for t in tris:
+                seen[3 * t:3 * t + 3] = [(0.0, 0.0, 1.0)] * 3
             continue
-        n = n / area
-        key = (round(soup.ch[3 * t][4], 6), round(n.x * 50), round(n.y * 50), round(n.z * 50))
-        facets.setdefault(key, []).append((t, area))
-    for tris in facets.values():
-        total = sum(w for _, w in tris)
-        mean = tuple(sum(seen[3 * t + j][i] * w for t, w in tris for j in range(3)) / (3.0 * total) for i in range(3))
-        for t, _ in tris:
-            seen[3 * t:3 * t + 3] = [mean] * 3
+        W = sum(a_ for _, a_, _ in pts)
+        c = sum((q * a_ for q, a_, _ in pts), Vector((0, 0, 0))) / W
+        # weighted least squares of value = m + gu*(q-c).u + gw*(q-c).w, the slopes held back (ridge) so a small
+        # piece sees one light
+        su = sw = suu = sww = suw = 0.0
+        for q, a_, _ in pts:
+            x, y = (q - c).dot(u), (q - c).dot(w)
+            su += a_ * x
+            sw += a_ * y
+            suu += a_ * x * x
+            sww += a_ * y * y
+            suw += a_ * x * y
+        lam = W * EVEN * EVEN / 12.0 * 0.25
+        corners = [verts[3 * t + i] for t in tris for i in range(3)]
+        fit = []
+        for j in range(3):
+            vals = [val[j] for _, _, val in pts]
+            m = sum(a_ * val[j] for _, a_, val in pts) / W
+            bu = sum(a_ * (q - c).dot(u) * (val[j] - m) for q, a_, val in pts)
+            bw = sum(a_ * (q - c).dot(w) * (val[j] - m) for q, a_, val in pts)
+            A, B, D = suu + lam, suw, sww + lam
+            det = A * D - B * B
+            gu, gw = ((D * bu - B * bw) / det, (A * bw - B * bu) / det) if det > 1e-12 else (0.0, 0.0)
+            lo, hi = min(vals), max(vals)
+            m = min(max(m, lo), hi)
+            # the slope held so no corner leaves what the samples saw (scaled whole, so it stays one even field)
+            k_ = 1.0
+            for q in corners:
+                e = gu * (q - c).dot(u) + gw * (q - c).dot(w)
+                if m + e > hi + 1e-9:
+                    k_ = min(k_, (hi - m) / e)
+                elif m + e < lo - 1e-9:
+                    k_ = min(k_, (lo - m) / e)
+            fit.append((m, gu * max(k_, 0.0), gw * max(k_, 0.0)))
+        for t in tris:
+            for i in range(3):
+                q = verts[3 * t + i]
+                x, y = (q - c).dot(u), (q - c).dot(w)
+                seen[3 * t + i] = tuple(m + gu * x + gw * y for m, gu, gw in fit)
+
+    # under a level lip: a standing face's band, read up from the face's middle at each corner's height
+    S, B, P = lip["shade"], lip["bandMm"] * 0.001, lip["power"]
+    trim = KINDS["trim"]
+    faces = {}
+    for t in range(nt):
+        if abs(normal[t].z) < 0.5:
+            faces.setdefault(soup.fid[t], []).append(t)
+    up = Vector((0.0, 0.0, 1.0))
+    for tris in faces.values():
+        area = sum(((verts[3 * t + 1] - verts[3 * t]).cross(verts[3 * t + 2] - verts[3 * t])).length for t in tris)
+        mid = sum((((verts[3 * t + 1] - verts[3 * t]).cross(verts[3 * t + 2] - verts[3 * t])).length *
+                   (verts[3 * t] + verts[3 * t + 1] + verts[3 * t + 2]) / 3.0 for t in tris), Vector((0, 0, 0))) / max(area, 1e-12)
+        n = normal[tris[0]]
+        band = {}
+        for t in tris:
+            for i in range(3):
+                z = round(verts[3 * t + i].z, 5)
+                if z in band:
+                    continue
+                o = Vector((mid.x, mid.y, z)) + n * 0.002
+                gone, f = 0.0, 1.0
+                while gone < B:
+                    hit, hn, hf, dist = tree.ray_cast(o, up, B - gone)
+                    if hit is None:
+                        break
+                    gone += dist
+                    if kinds[hf] == trim and hn.z < -0.9:
+                        f = 1.0 - S * max(0.0, 1.0 - gone / B) ** P
+                        break
+                    o = hit + up * 1e-4
+                    gone += 1e-4
+                band[z] = f
+        for t in tris:
+            for i in range(3):
+                f = band[round(verts[3 * t + i].z, 5)]
+                if f < 1.0:
+                    sk, gd, op = seen[3 * t + i]
+                    seen[3 * t + i] = (sk * f, gd, op)
     return seen
 
 
@@ -234,7 +370,7 @@ def main(argv):
             t0 = time.time()
             soup, report = HO.build(b, facts, timber, ground, a.date, index, seed, lit_share=0.5, tier=tier)
             t1 = time.time()
-            baked = None if a.no_bake else bake_soup(soup, ground)
+            baked = None if a.no_bake else bake_soup(soup, ground, timber["push"]["lipShade"])
             soup.write(os.path.join(out, f"{letter}.bin" if tier == "near" else f"{letter}.{tier}.bin"), baked)
             print(f"[houses] {letter} {tier}: {report['triangles']} triangles, built {t1 - t0:.1f} s, baked {time.time() - t1:.1f} s")
         rows.append(dict(index=index, name=letter, id=hid, era=facts["era"], built=facts["built"],

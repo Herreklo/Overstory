@@ -403,9 +403,9 @@ def roof(soup, place, span, length, eave, pitch, wk, rng, verge_dir, side_dir, l
         else:
             raise ValueError("a roof needs its covering's record (laid)")
         tiles += n_c
-        # the boarding's underside under the overhangs (one face from the eave's edge to the ridge, the house hides
-        # the rest), painted with the trim. Under an open eave the overhang is the boarding alone on the rafters' tails,
-        # thin, and a frieze board closes the wall's top between the tails
+        # the boarding's underside under the eave's overhang, from its edge to the wall (inside, the house hides it;
+        # past the gables, the verge's underside below), painted with the trim. Under an open eave the overhang is the
+        # boarding alone on the rafters' tails, thin, and a frieze board closes the wall's top between the tails
         ev = wk["eaves"]
         fh, ft = ev["fasciaMm"] * MM, ev["fasciaThickMm"] * MM
         ztop = zt(ae)
@@ -416,15 +416,13 @@ def roof(soup, place, span, length, eave, pitch, wk, rng, verge_dir, side_dir, l
             q = [place(sgn * ae, r0, zb(ae)), place(sgn * ae, r1, zb(ae)), place(sgn * a_wall, r1, zb(a_wall)),
                  place(sgn * a_wall, r0, zb(a_wall))]
             oquad(soup, *q, down)
-            q = [place(sgn * a_wall, r0, zu(a_wall)), place(sgn * a_wall, r1, zu(a_wall)), place(0.0, r1, ridge_u),
-                 place(0.0, r0, ridge_u)]
-            oquad(soup, *q, down)
             soup.use(kind="trim", scheme="trim", seed=rng.random(), lap=1.0, shelter=1.0)
             q = [place(sgn * (a_wall + 0.002), -wall_out, eave - 0.06), place(sgn * (a_wall + 0.002), length + wall_out, eave - 0.06),
                  place(sgn * (a_wall + 0.002), length + wall_out, zb(a_wall)), place(sgn * (a_wall + 0.002), -wall_out, zb(a_wall))]
             oquad(soup, *q, out)
         else:
-            q = [place(sgn * ae, r0, zu(ae)), place(sgn * ae, r1, zu(ae)), place(0.0, r1, ridge_u), place(0.0, r0, ridge_u)]
+            q = [place(sgn * ae, r0, zu(ae)), place(sgn * ae, r1, zu(ae)), place(sgn * a_wall, r1, zu(a_wall)),
+                 place(sgn * a_wall, r0, zu(a_wall))]
             oquad(soup, *q, down)
         if fh > 0:
             soup.use(kind="trim", scheme="trim", seed=rng.random(), shelter=0.0)
@@ -553,13 +551,16 @@ def roof(soup, place, span, length, eave, pitch, wk, rng, verge_dir, side_dir, l
             a_ = sgn * ae
             oquad(soup, place(a_, r, zt(a_) + above - vb / cp), place(a_, ro, zt(a_) + above - vb / cp),
                   place(a_, ro, zt(a_) + above), place(a_, r, zt(a_) + above), side_dir(sgn))
-        # the verge's underside between the board and the wall; under an open eave the boarding alone, and the gable
+        # the verge's underside between the board and the wall, from the eave's wall line (the eave's own underside
+        # runs on past the gable to the corner) to the ridge; under an open eave the boarding alone, and the gable
         # wall's top closed up to it
         soup.use(kind="trim", scheme="trim", seed=rng.random(), shelter=1.0)
         zv = zb if open_eave else zu
         for sgn in (-1.0, 1.0):
             rin = -wall_out if rs < 0 else length + wall_out
-            q = [place(sgn * ae, r, zv(ae)), place(sgn * ae, rin, zv(ae)), place(0.0, rin, zv(0.0)), place(0.0, r, zv(0.0))]
+            a_wall = half + wall_out
+            q = [place(sgn * a_wall, r, zv(a_wall)), place(sgn * a_wall, rin, zv(a_wall)), place(0.0, rin, zv(0.0)),
+                 place(0.0, r, zv(0.0))]
             oquad(soup, *q, down)
             if open_eave:
                 rw_ = rin + rs * 0.002
@@ -580,7 +581,8 @@ def chimney(soup, place, r_at, a_at, zt_ridge, ch, rng, inside_z, cover=None, fl
         top -= 0.16
     soup.use(kind="render", scheme="none", seed=rng.random(), lap=0.5, shelter=0.0)
     a0, a1, r0, r1 = a_at - w / 2, a_at + w / 2, r_at - d / 2, r_at + d / 2
-    z0 = inside_z
+    # the stack is drawn from just under the covering (the attic hides the rest), so its faces are what shows
+    z0 = min(cover(a0), cover(a1)) - 0.1 if cover else inside_z
     faces = [((a0, r0), (a1, r0)), ((a1, r0), (a1, r1)), ((a1, r1), (a0, r1)), ((a0, r1), (a0, r0))]
     cx, cr = a_at, r_at
     for (pa, pr), (qa, qr) in faces:

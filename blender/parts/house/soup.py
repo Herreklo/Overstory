@@ -66,6 +66,8 @@ class Soup:
 
     def __init__(self):
         self.p, self.nrm, self.ch = [], [], []
+        # each triangle's face: a quad's two triangles share one (the bake lights a face as one)
+        self.fid, self._faces, self._quad = [], 0, None
         self.a = dict(kind=0, house=0, seed=0.0, year=1800.0, lap=0.5, shelter=0.0, scheme=0, band=0.0, lit=0.0)
         # the level drawn (0 near, 1 street, 2 city) and its error (m): a box shallower than the error shows only
         # its front, its sides being under a pixel at the distance the level is seen from (timber.json, levels)
@@ -87,6 +89,11 @@ class Soup:
             return
         n = norm(n)
         A = self.a
+        if self._quad is None:
+            self.fid.append(self._faces)
+            self._faces += 1
+        else:
+            self.fid.append(self._quad)
         for i, (p, t) in enumerate(((a, ta), (b, tb), (c, tc))):
             self.p.append(p)
             self.nrm.append(n if ns is None else ns[i])
@@ -101,10 +108,13 @@ class Soup:
         ta = ta or ((0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0))
         la = laps or (None, None, None, None)
         mk = marks or (None, None, None, None)
+        self._quad = self._faces
+        self._faces += 1
         self.tri(a, b, c, ta[0], ta[1], ta[2], None if laps is None else (la[0], la[1], la[2]),
                  None if ns is None else (ns[0], ns[1], ns[2]), None if marks is None else (mk[0], mk[1], mk[2]))
         self.tri(a, c, d, ta[0], ta[2], ta[3], None if laps is None else (la[0], la[2], la[3]),
                  None if ns is None else (ns[0], ns[2], ns[3]), None if marks is None else (mk[0], mk[2], mk[3]))
+        self._quad = None
 
     def box(self, f, s0, s1, z0, z1, w0, w1, skip=("back",), grain="s"):
         """A box in frame f's (s, z, w) space; its faces outward. skip names faces not drawn (back: the w0 face).
@@ -224,6 +234,8 @@ class Soup:
         self.p += other.p
         self.nrm += other.nrm
         self.ch += other.ch
+        self.fid += [f + self._faces for f in other.fid]
+        self._faces += other._faces
 
     def write(self, path, bake=None):
         """The R2B2 soup: magic, count, positions, normals, then the eight UV sets (Unity's frame: x, z, y).
