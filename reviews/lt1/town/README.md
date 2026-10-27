@@ -18,3 +18,4 @@ We started from 17:50 sea fog, as the brief asked. With the street's rig it give
 - r19: the masses' facets shaded part way to their round (lit and shaded sides, planes a hint); the water's light line only where the sun strikes.
 - r20–r21: the water as a mirror for the screen's reflections, at 0.6 of their strength; r20 (glossy with chop) gave blurred glows, r21 (blobby swell) scattered colour into the bay.
 - r22: parallel crests along the quay break the mirror into horizontal bands under each sjøhus; plots packed tighter along the lanes (narrower passages and front yards, more back houses and sheds). Small stills in `r22/small/`.
+- r23–r24: at the street the houses' walls and roofs take none of the look's brushwork (`town.json`, houseBrush): a wall is one coat, its mark its weatherboards' laps and a roof's its courses, near only; panes are dark glass, soft in sheen, or curtained in one window in two (`materials/glass.json`). Small stills in `r24/small/`.

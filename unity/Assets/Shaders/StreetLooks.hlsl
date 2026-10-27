@@ -388,6 +388,9 @@ half3 OS_ShadeP(InputData id, StreetSurface s, OSBake b, float3 positionWS)
 #else
     half brush = OS_Brush(positionWS, n) * _OS_Paint.w;
 #endif
+#ifdef OS_BRUSH_SHARE
+    brush *= OS_BRUSH_SHARE;    // a surface that takes only a share of the brushwork (the town's walls and roofs)
+#endif
 
     // the base: muted so light carries the colour, broken a little by the brush, darker and damper
     // where a surface looks at the ground

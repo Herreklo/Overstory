@@ -21,6 +21,8 @@ Shader "Overstory/Town"
         _WaveScale ("Wave scale (per metre)", Float) = 0.35
         _WaveStrength ("Wave strength", Float) = 0.1
         _WaveStretch ("Crests' length over their spacing", Float) = 4
+        _Brush ("Share of the look's brushwork", Float) = 1
+        _Laps ("Weatherboards' exposure or a roof's courses as they rise (m), 0 for none", Float) = 0
         _Card ("Leaf cards: each turned to the eye about its centre by its corner in uv (0 or 1)", Float) = 0
         _CardEdge ("A card full below the facing y, shut above x", Vector) = (0.6, 0.15, 0, 0)
     }
@@ -42,9 +44,12 @@ Shader "Overstory/Town"
         half _WaveScale;
         half _WaveStrength;
         half _WaveStretch;
+        half _Brush;
+        half _Laps;
         half _Card;
         float4 _CardEdge;
     CBUFFER_END
+    float4 _OS_Laps;    // the laps' line: x full within, y gone by (m), z its shade, w its share of a board
 
     #include "StreetSurface.hlsl"
 
@@ -93,6 +98,18 @@ Shader "Overstory/Town"
             return s;
         }
         half3 albedo = _BaseColor.rgb * lerp(half3(1, 1, 1), tint.rgb, _Tinted);
+        if (_Laps > 0 && abs(normalWS.y) < 0.95h)
+        {
+            // weatherboards and roof courses near only: the shadow each board's or course's lower edge lays on the one
+            // below, as a line
+            float f = frac(positionWS.y / _Laps);
+            float aa = max(fwidth(positionWS.y / _Laps), 1e-4);
+            half lap = (half)smoothstep(1.0 - _OS_Laps.w - aa, 1.0 - _OS_Laps.w + aa, f);
+            half near = 1.0h - (half)smoothstep(_OS_Laps.x, _OS_Laps.y, distance(positionWS, GetCameraPositionWS()));
+            // and gone where the boards are finer than a few pixels
+            near *= 1.0h - (half)smoothstep(0.15, 0.3, aa);
+            albedo *= 1.0h - _OS_Laps.z * lap * near;
+        }
         half smoothness = _Smoothness;
         if (_OS_Clay > 0.5)
         {
@@ -145,6 +162,7 @@ Shader "Overstory/Town"
             #pragma multi_compile_instancing
 
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
+            #define OS_BRUSH_SHARE _Brush
             #include "StreetLooks.hlsl"
 
             struct Attributes

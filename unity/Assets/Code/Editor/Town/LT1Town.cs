@@ -115,9 +115,10 @@ namespace Overstory.EditorTools.Town
             var townShader = Shader.Find("Overstory/Town");
             var cache = new Dictionary<string, Material>();
             // grey: a URP Lit grey of value v; light: the town shader in colour c (sRGB), tinted by the vertex colours
-            Material Mat(float v, Color c, bool tinted = false, float porosity = 0.5f, float smooth = 0.06f, float ground = 0.35f)
+            Material Mat(float v, Color c, bool tinted = false, float porosity = 0.5f, float smooth = 0.06f, float ground = 0.35f,
+                         float brush = 1f, float laps = 0f)
             {
-                string key = moment == null ? $"g{v}" : $"{ColorUtility.ToHtmlStringRGB(c)}{tinted}{porosity}{smooth}{ground}";
+                string key = moment == null ? $"g{v}" : $"{ColorUtility.ToHtmlStringRGB(c)}{tinted}{porosity}{smooth}{ground}{brush}{laps}";
                 if (cache.TryGetValue(key, out var hit))
                     return hit;
                 Material m;
@@ -135,6 +136,8 @@ namespace Overstory.EditorTools.Town
                     m.SetFloat("_Porosity", porosity);
                     m.SetFloat("_Smoothness", smooth);
                     m.SetFloat("_Ground", ground);
+                    m.SetFloat("_Brush", brush);
+                    m.SetFloat("_Laps", laps);
                 }
                 made.Add(m);
                 return cache[key] = m;
@@ -180,7 +183,7 @@ namespace Overstory.EditorTools.Town
             var trunk = Mat(0.26f, white, tinted: true, porosity: 0.6f);
             var timber = Mat(0.40f, tones?.boards ?? white, porosity: 0.7f);
             // the openings and trims take each house's paints in their vertex colours; the panes the glass's, lit or not
-            var trimM = Mat(0.78f, white, tinted: true, porosity: 0.2f, smooth: 0.15f);
+            var trimM = Mat(0.78f, white, tinted: true, porosity: 0.2f, smooth: 0.15f, brush: facts.brush);
             Material paneM;
             if (moment == null)
                 paneM = Mat(0.12f, white);
@@ -190,7 +193,7 @@ namespace Overstory.EditorTools.Town
                 paneM.SetColor("_BaseColor", white);
                 paneM.SetFloat("_Tinted", 1f);
                 paneM.SetFloat("_Porosity", 0f);
-                paneM.SetFloat("_Smoothness", 0.88f);
+                paneM.SetFloat("_Smoothness", F(Obj(facts.town["glass"])["smoothness"]));
                 paneM.SetFloat("_Ground", 0.35f);
                 paneM.SetFloat("_Pane", 1f);
                 paneM.SetVector("_PaneLit", facts.paneLit);
@@ -252,8 +255,10 @@ namespace Overstory.EditorTools.Town
             foreach (var p in town.placements)
             {
                 var (body, roof, foot) = Masses(p, town.ground, facts.Overhang(p));
-                Add(houses, $"house {p.id}", body, Mat(0.55f, tones?.Body(p) ?? white, porosity: 0.15f, smooth: 0.1f), made);
-                Add(houses, $"house {p.id} roof", roof, Mat(0.30f, tones?.Roof(p) ?? white, porosity: 0.35f, smooth: 0.12f), made);
+                Add(houses, $"house {p.id}", body, Mat(0.55f, tones?.Body(p) ?? white, porosity: 0.15f, smooth: 0.1f, brush: facts.brush,
+                                                       laps: facts.Laps(p)), made);
+                Add(houses, $"house {p.id} roof", roof, Mat(0.30f, tones?.Roof(p) ?? white, porosity: 0.35f, smooth: 0.12f, brush: facts.brush,
+                                                            laps: facts.Courses(p)), made);
                 Add(houses, $"house {p.id} plinth", foot, plinth, made);
                 Openings(p, town.ground, facts, trims, panes);
                 Roofline(p, facts, facts.Overhang(p), trims);
@@ -345,6 +350,7 @@ namespace Overstory.EditorTools.Town
                     {
                         stage.Apply();
                         Shader.SetGlobalFloat("_OS_AirClear", facts.airClear);
+                        Shader.SetGlobalVector("_OS_Laps", facts.laps);
                     }
                     string file = Path.Combine(dir, $"{v.name}-{m}.png");
                     LT1Render.Still(cam, file, grey: false, msaa: 4);
@@ -370,14 +376,18 @@ namespace Overstory.EditorTools.Town
             readonly Dictionary<string, (Color c, float girth)> trunks = new Dictionary<string, (Color, float)>();
             readonly Dictionary<string, Color> surfaces = new Dictionary<string, Color>();
             readonly Color[] boats, hedges;
-            readonly Dictionary<string, object> paint, schemeOf, town;
+            readonly Dictionary<string, object> paint, schemeOf;
             readonly Dictionary<string, Color> paints = new Dictionary<string, Color>();
             readonly Dictionary<int, Dictionary<string, object>> diaries = new Dictionary<int, Dictionary<string, object>>();
             readonly Dictionary<string, string> grain = new Dictionary<string, string>();
             readonly string pack;
             const int Year = 1989;
 
-            public readonly Dictionary<string, object> timber, openings, water, fringe;
+            public readonly Dictionary<string, object> timber, openings, water, fringe, town;
+            /// <summary>The share of the look's brushwork the houses' walls, roofs and trims take.</summary>
+            public readonly float brush;
+            /// <summary>The weatherboards' line near the eye: full within, gone by (m), its shade, its share of a board.</summary>
+            public readonly Vector4 laps;
             public readonly Color glass, boards;
             /// <summary>A lit room's light through its pane at a window glow of 1, linear.</summary>
             public readonly Vector4 paneLit;
@@ -396,11 +406,18 @@ namespace Overstory.EditorTools.Town
                 glass = Hex((string)Obj(town["glass"])["srgb"]);
                 water = Obj(town["water"]);
                 fringe = Obj(town["fringe"]);
+                brush = F(town["houseBrush"]);
+                var lp = Obj(town["laps"]);
+                laps = new Vector4(F(lp["fullM"]), F(lp["goneM"]), F(lp["shade"]), F(lp["share"]));
                 // the room behind a lit pane: its lamp on its walls and its curtains, half each (materials/glass.json)
                 var room = Obj(Read("materials/glass.json")["room"]);
                 Color lamp = Hex((string)room["srgbLamp"]).linear, walls = Hex((string)room["srgbWalls"]).linear,
                       cloth = Hex((string)Obj(room["curtains"])["srgb"]).linear;
                 var lit = lamp * Color.Lerp(walls, cloth, 0.5f) * F(evening["pane"]);
+                // by day a curtained pane shows its cloth in the daylight through the glass, as far as the cloth is opaque
+                var curtains = Obj(room["curtains"]);
+                curtainShare = F(curtains["share"]);
+                curtained = Color.Lerp(glass.linear, cloth * F(Obj(Read("materials/glass.json")["daylight"])["curtains"]), F(curtains["opacity"]));
                 paneLit = new Vector4(lit.r, lit.g, lit.b, 1f);
                 foreach (var kv in Obj(paint["colours"]))
                     paints[kv.Key] = Hex((string)Obj(kv.Value)["srgb"]);
@@ -570,6 +587,21 @@ namespace Overstory.EditorTools.Town
             }
 
             /// <summary>How far the eaves and verges stand out from the walls, by the era's working.</summary>
+            /// <summary>A roof's courses as they rise (m): its covering's course up the slope (materials/*.json, laid) by
+            /// the sine of its pitch.</summary>
+            public float Courses(Placement p)
+            {
+                var laid = Obj(Read($"materials/{Covering(p)}.json")["laid"]);
+                return F(laid["courseMm"]) * M * Mathf.Sin(p.pitch * Mathf.Deg2Rad);
+            }
+
+            /// <summary>A timber house's weatherboards' exposure (m), the middle of its working's.</summary>
+            public float Laps(Placement p)
+            {
+                var e = Arr(Obj(Working(p)["cladding"])["exposureMm"]);
+                return (F(e[0]) + F(e[1])) / 2f * M;
+            }
+
             public float Overhang(Placement p) => F(Obj(Working(p)["eaves"])["overhangMm"]) * M;
 
             /// <summary>The window in a wall at the date, as tools/houses.py has it: the era's, or what the latest
@@ -643,16 +675,23 @@ namespace Overstory.EditorTools.Town
 
             /// <summary>A roof's covering by the year it was laid (town.json, roofs), weathered from new to old over its
             /// record's years (materials/*.json, oldYears).</summary>
+            /// <summary>A roof's covering: the one of its year built (town.json, roofs).</summary>
+            string Covering(Placement p)
+            {
+                int built = Mathf.Max(Mathf.Max(Last(Diary(p), "built"), 1), p.year);
+                foreach (var o in Arr(town["roofs"]))
+                    if (built < (double)Obj(o)["to"])
+                        return (string)Obj(o)["material"];
+                return null;
+            }
+
             public Color Roof(Placement p)
             {
                 var d = Diary(p);
                 // a part grown later (a porch, a lean-to) is roofed in its own year
                 int built = Mathf.Max(Mathf.Max(Last(d, "built"), 1), p.year);
                 int laid = Mathf.Max(built, Last(d, "roof_retiled"));
-                string material = null;
-                foreach (var o in Arr(town["roofs"]))
-                    if (built < (double)Obj(o)["to"]) { material = (string)Obj(o)["material"]; break; }
-                var rec = Read($"materials/{material}.json");
+                var rec = Read($"materials/{Covering(p)}.json");
                 float age = Mathf.Clamp01((Year - laid) / (float)(double)rec["oldYears"]);
                 var c = Color.Lerp(Hex((string)rec["srgbNew"]), Hex((string)rec["srgbOld"]), age);
                 // one roof a little apart from the next, claiming nothing
@@ -663,6 +702,12 @@ namespace Overstory.EditorTools.Town
                 crowns.TryGetValue(t.species, out var c) ? Pick(c, Hash.Of($"town.crown.{t.id}")) : stand;
 
             /// <summary>A tree's bark and its trunk's width at the foot per metre of its height.</summary>
+            /// <summary>A window's panes by day (linear): dark glass, or the cloth of its curtains in a share of rooms.</summary>
+            public Color Pane(Placement p, string room) =>
+                Hash.Unit(Hash.Then(Seed(p.id, "curtains"), room)) < curtainShare ? curtained : glass.linear;
+            readonly float curtainShare;
+            readonly Color curtained;
+
             public (Color c, float girth) Trunk(Tree t) => trunks.TryGetValue(t.species, out var b) ? b : trunks["default"];
 
             public Color Surface(string name) => surfaces.TryGetValue(name, out var c) ? c : surfaces["setts"];
@@ -1869,7 +1914,7 @@ namespace Overstory.EditorTools.Town
                     float fr = (F(spec["frameMm"]) + F(spec["sashMm"])) * M, post = F(spec["frameMm"]) * M;
                     int cols = (int)F(spec["cols"]);
                     float pw = (w - 2 * fr - (cols - 1) * post) / cols;
-                    var gl = f.glass.linear;
+                    var gl = f.Pane(p, room);
                     panes.tint = new Color(gl.r, gl.g, gl.b, f.Lit(p, room) ? 1f : 0f);
                     for (int k = 0; k < cols; k++)
                     {
