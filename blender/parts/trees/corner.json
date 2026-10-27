@@ -17,11 +17,11 @@
   "birch": {
     "masses": 4,
     "masses_why": "three to five masses (art direction, the trees); a downy birch's crown in four: its top, two over the lane and one over the yard",
-    "lobes": [2, 4],
-    "shell": 0.84,
+    "lobes": [1, 2],
+    "shell": 0.78,
     "shell_why": "each mass drawn inside its foliage's fitted skin, so seams of sky open between masses",
     "lobe_shell": 0.95,
-    "seam": 0.35,
+    "seam": 0.7,
     "seam_why": "each mass moved this far out from the crown's middle, widening the seams",
     "tiers": 1.6,
     "shed": 0.33,
@@ -29,6 +29,9 @@
     "narrow": 0.62,
     "narrow_why": "the downy birch's crown drawn narrower than grown, its limbs ascending (Oslo 19 Sep, ref 03)",
     "mass_normal": 0.92,
+    "limb_sky": 0.3,
+    "limb_under": 0.5,
+    "limb_sky_why": "the sky a limb sees deep inside a mass (limb_under: under one, in a seam): the limbs dark in the crown's shade, white only where they come out of it (Dahl, Birch in a Storm, ref 14)",
     "lift": 0.18,
     "fallen": 0.25,
     "fallen_why": "20 October on the coast: a downy birch has dropped about a quarter of its leaves, the inner and low first",
@@ -37,8 +40,8 @@
     "underside": -0.35,
     "root": {"lobes": 5, "amp": 0.55, "height": 0.35},
     "levels": {
-      "near":   {"card": 1.15, "density": 2.4, "draw_tips_per_m": 8.0, "sides": 16, "shadow": true},
-      "street": {"card": 1.7,  "density": 1.7, "draw_tips_per_m": 20.0, "sides": 6,  "shadow": true},
+      "near":   {"card": 1.6,  "density": 1.8, "draw_tips_per_m": 8.0, "sides": 16, "shadow": true},
+      "street": {"card": 2.2,  "density": 1.4, "draw_tips_per_m": 20.0, "sides": 6,  "shadow": true},
       "far":    {"card": 2.6,  "density": 1.3, "draw_tips_per_m": 40.0, "sides": 5, "shadow": false}
     }
   },

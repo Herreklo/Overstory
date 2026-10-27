@@ -1,7 +1,8 @@
-"""The mass card: a clump of bold leaves as a painter blocks a crown's mass, solid within and broken only at its edge
+"""The mass card: a piece of a crown's mass as a painter blocks it, solid within and broken only at its edge
 (reviews/lt1/art-direction/README.md, the trees: masses, never leaves). Four cells, 2 by 2: a round clump, a wide one
-for a mass's underside, a notched one, and a thin one for a crown losing itself upward. Leaves are drawn larger than
-life (Firewatch's lesson) and only where the edge shows; inside, one solid value, no speckle.
+for a mass's underside, a notched one, and a thin one for a crown losing itself upward. The edge is a birch's: a fine
+fringe of small leaves (a few centimetres on a card of 1.6 m, never legible one by one past a few metres) and fine
+sprays standing out of it, so the outline has promontories and bays of sky; inside, one solid value, no speckle.
 
 Channels: r how far in from the clump's edge (0 at a leaf's tip, 1 in the solid core), g each leaf's own seed (0 the
 core), b 0, a coverage. Numpy only; deterministic (seeded from the part's name through blender/resolver/hashing.py).
@@ -78,7 +79,7 @@ def paint_cell(kind, seed):
     depth = np.clip((edge - rho) / 0.3, 0.0, 1.0).astype(np.float32)
     ids = np.zeros_like(cover)
     s = HS.Stream("mass-card-leaves", kind, seed)
-    L = 0.11 * n                       # a leaf, drawn larger than life
+    L = 0.035 * n                      # a leaf: about 5 cm on a near card of 1.6 m
     count = 0
 
     def at(a, reach):
@@ -86,29 +87,26 @@ def paint_cell(kind, seed):
         return cx + math.cos(a) * e * reach * sx * hw, cy + math.sin(a) * e * reach * sy * hw
 
     # the core's outline broken by leaves lying over it, each its own way (never a ring of teeth)
-    ring = 46 if kind != "thin" else 18
+    ring = 150 if kind != "thin" else 60
     for k in range(ring):
-        a = 2 * math.pi * (k + s.uniform(-0.4, 0.4)) / ring
-        bx, by = at(a, s.uniform(0.72, 0.98))
+        a = 2 * math.pi * (k + s.uniform(-0.45, 0.45)) / ring
+        bx, by = at(a, s.uniform(0.86, 1.0))
         count += 1
-        leaf(cover, ids, depth, xs, ys, bx, by, a + s.uniform(-1.1, 1.1), L * s.uniform(0.7, 1.1), count / 200.0)
-    # sprigs: a few leaves along a short twig standing out of the mass, uneven round it, so the outline has
-    # promontories and bays of sky (the broken edge of a painted mass)
-    sprigs = {"round": 11, "wide": 12, "notched": 9, "thin": 13}[kind]
-    for k in range(sprigs):
-        a = 2 * math.pi * (k + s.uniform(-0.45, 0.45)) / sprigs
-        bx, by = at(a, 0.85)
-        head = a + s.uniform(-0.45, 0.45)
-        reach = L * s.uniform(0.5, 1.6) * (1.3 if kind == "thin" else 1.0)
-        # leaves close enough along it to overlap: a sprig is one shape, never loose leaves in the air
-        m = max(2, int(math.ceil(reach / (0.45 * L))))
-        for j in range(m):
-            t = j / (m - 1)
-            px, py = bx + math.cos(head) * reach * t, by + math.sin(head) * reach * t
-            side = 1 if j % 2 == 0 else -1
+        leaf(cover, ids, depth, xs, ys, bx, by, a + s.uniform(-1.2, 1.2), L * s.uniform(0.7, 1.15), count / 2000.0)
+    # clumps: small sprays of leaves gathered round a twig's end, set on and just out of the outline, uneven round
+    # it, so the outline breaks at three scales (the core's broad lobes, the clumps, the leaves) with bays of sky
+    # between them (the broken edge of a painted mass)
+    clumps = {"round": 34, "wide": 36, "notched": 30, "thin": 30}[kind]
+    for k in range(clumps):
+        a = 2 * math.pi * (k + s.uniform(-0.5, 0.5)) / clumps
+        cxk, cyk = at(a, s.uniform(0.92, 1.5 if kind == "thin" else 1.25))
+        rad = L * s.uniform(1.2, 3.2) * (1.2 if kind == "thin" else 1.0)
+        for _ in range(int(4 + 3 * rad / L)):
+            # each leaf from a point inside the clump, heading out of it: the clump's own edge is leaf tips
+            q, d = s.uniform(0, 2 * math.pi), rad * math.sqrt(s.uniform(0.0, 1.0)) * 0.55
+            px, py = cxk + math.cos(q) * d, cyk + math.sin(q) * d
             count += 1
-            leaf(cover, ids, depth, xs, ys, px, py, head + side * s.uniform(0.2, 0.6), L * s.uniform(0.6, 1.0) * (1.0 - 0.25 * t),
-                 count / 200.0)
+            leaf(cover, ids, depth, xs, ys, px, py, q + s.uniform(-0.7, 0.7), L * s.uniform(0.7, 1.1), count / 2000.0)
     return depth, ids, cover
 
 

@@ -1,5 +1,5 @@
 {
-  "_": "The corner's trees as they are drawn (Code/Editor/Corner/CornerTrees.cs, Code/Editor/LT1CornerTrees.cs, Shaders/CornerTree.shader): the meshes from blender/parts/trees/corner.py, the look per habit and part. Colours sRGB; bands and values are the art direction's (the trees: masses, never leaves; near trees darker, with one lamp-lit side; crowns lost upward).",
+  "_": "The corner's trees as they are drawn (Code/Editor/Corner/CornerTrees.cs, Code/Editor/LT1CornerTrees.cs, Shaders/CornerTree.shader): the meshes from blender/parts/trees/corner.py, the look per habit and part. Colours sRGB; bands and values are the art direction's (the trees: masses, never leaves; near trees darker, with one lamp-lit side; crowns lost upward). near: the value at near[0] m and nearer, rising to 1 by near[1] m. The crown's autumn yellow is muted (nothing but the lamps and windows is warm in the blue hour).",
   "cache": "cache/trees/corner/trees.json",
   "atlas": "Assets/Art/Trees/Corner/mass_card_clusters.png",
   "levels": [
@@ -8,13 +8,13 @@
     {"name": "far", "to": 100000}
   ],
   "parts": [
-    {"habit": "birch", "part": "crown", "albedo": "#a39a6a", "albedo2": "#9c8458", "cutoff": 0.5,
+    {"habit": "birch", "part": "crown", "albedo": "#8f8b77", "albedo2": "#847867", "cutoff": 0.5,
      "bands": [0.42, -0.22, 0.1, 0.06], "values": [1.0, 0.66, 0.42, 0.15], "lost": [0.7, 0.55],
-     "lamp": [14.0, 0.6, 0.3, 0.25], "veil": 1.0},
+     "lamp": [14.0, 0.6, 0.3, 0.25], "veil": 1.0, "near": [12, 40, 0.75]},
     {"habit": "birch", "part": "bark", "albedo": "#a7a49c", "foot_colour": "#35312d", "twig_colour": "#4a3a35",
      "twig_r": [0.012, 0.045], "bark_tile": [0.30, 0.60],
      "foot": [1.1, 0.7, 0.4, 0.55], "marks": [3, 0.3, 0.45, 0.85], "mark_reach": 12,
-     "lost": [0.85, 0.3], "lamp": [14.0, 0.6, 0.3, 0.25], "veil": 1.0},
+     "lost": [0.85, 0.3], "lamp": [14.0, 0.6, 0.3, 0.25], "veil": 1.0, "near": [12, 40, 0.75]},
     {"habit": "spruce", "part": "solid", "albedo": "#2b372e", "albedo2": "#28322c",
      "bands": [0.5, -0.1, 0.1, 0.2], "values": [1.0, 0.7, 0.45, 0.2], "lost": [0.8, 0.2],
      "lamp": [14.0, 0.3, 0.3, 0.25], "veil": 1.0},

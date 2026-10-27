@@ -8,7 +8,8 @@
 // painted corner's (Paint.json's globals, ArtDirection/Paint.hlsl; it answers _P_Mode as PaintSurface does, and the air
 // is PaintAir's). Every value is a material property set from data (LT1CornerTrees.cs).
 //
-// Mesh: COLOR r the sky the point sees, g its height in the crown (0 its foot, 1 its top), b its lobe's up, a its seed.
+// Mesh: COLOR r the sky the point sees, g its height in the crown (0 its foot, 1 its top), b its lobe's up (wood: the
+// foliage's shade round it), a its seed.
 // Cards: UV0 the atlas, UV1 (mass, seed), UV2 the corner's offset in the view plane (m). Bark: UV0 tiles round and
 // along, UV1 (radius, height above the foot).
 Shader "Overstory/CornerTree"
@@ -36,6 +37,7 @@ Shader "Overstory/CornerTree"
         _LampColour ("Lamp-lit side: the lamp's colour (linear)", Color) = (1, 0.6, 0.3, 1)
         _LampPos ("Lamp-lit side: the lamp's head (world)", Vector) = (0, -1000, 0, 0)
         _Veil ("Painted: the share of the fog's veil it takes", Float) = 1
+        _Near ("Near trees darker: x from (m), y to (m), z the value at x and nearer", Vector) = (12, 40, 1, 0)
     }
 
     HLSLINCLUDE
@@ -62,6 +64,7 @@ Shader "Overstory/CornerTree"
         half4 _LampColour;
         float4 _LampPos;
         float _Veil;
+        float4 _Near;
     CBUFFER_END
 
     TEXTURE2D(_Cards); SAMPLER(sampler_Cards);
@@ -230,9 +233,13 @@ Shader "Overstory/CornerTree"
                 }
                 else
                 {
-                    albedo = lerp(_Albedo.rgb, _Albedo2.rgb, frac(seed * 7.31h));
+                    // one hue to a mass (the cards' own only a touch of it), so a mass reads as one shape
+                    half hue = part == 1 ? (half)frac(input.uv1.x * 0.618 + 0.17) * 0.85h + seed * 0.15h : frac(seed * 7.31h);
+                    albedo = lerp(_Albedo.rgb, _Albedo2.rgb, hue);
                     value = CT_MassValue(n.y, seed);
                 }
+                // near trees darker (the art direction): a value push by distance, the air does the rest far off
+                value *= lerp((half)_Near.z, 1.0h, (half)smoothstep(_Near.x, _Near.y, dist));
                 if (_Grey > 0.5)
                     albedo = 0.42h;
 
@@ -244,7 +251,8 @@ Shader "Overstory/CornerTree"
                     half up = part == 0 ? n.y : 0.5h;
                     half3 sky = lerp(lerp((half3)_P_SkyDown.rgb, (half3)_P_SkySide.rgb, smoothstep(-1.0h, 0.0h, up)),
                                      (half3)_P_SkyUp.rgb, smoothstep(0.0h, 1.0h, up));
-                    colour = albedo * sky * value * lerp(0.6h, 1.0h, input.color.r);
+                    // wood: the foliage's shade round it (b; its facing is the sky's own term); cards: the sky they see
+                    colour = albedo * sky * value * (part == 0 ? input.color.b : lerp(0.6h, 1.0h, input.color.r));
                     // one lamp-lit side: the faces turned to the lamp within its reach
                     float3 Ld = _LampPos.xyz - p;
                     float dl = length(Ld);

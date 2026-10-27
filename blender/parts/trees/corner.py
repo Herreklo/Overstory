@@ -288,8 +288,9 @@ def cards(mesh, tl, kind, lv, seed, H, vols, lobes, base):
     return count
 
 
-def bark(mesh, tl, lv, kind, H, sub="bark"):
-    """The trunk and limbs (tree.py's wood), its tips drawn only as the level shows them, the foot rooted."""
+def bark(mesh, tl, lv, kind, H, sub="bark", vols=()):
+    """The trunk and limbs (tree.py's wood), its tips drawn only as the level shows them, the foot rooted; wood inside
+    a mass sees little sky (its limbs dark in the crown's shade, white only where they come out of it)."""
     parts = dict(T.PARTS["birch"])
     parts["draw_tips_per_m"] = float(lv["draw_tips_per_m"])
     parts["winter_tips"] = T.drawn_tips(parts, H)
@@ -320,12 +321,29 @@ def bark(mesh, tl, lv, kind, H, sub="bark"):
         for i in f:
             Nacc[i] += n
     Nn = Nacc / np.maximum(np.linalg.norm(Nacc, axis=1, keepdims=True), 1e-12)
+    # how deep each vertex is in the foliage (each mass's whole skin, its seams too: the leaves round a limb shade
+    # it even where the drawn masses part)
+    deep = np.full(len(V), -1.0)
+    for v in vols:
+        if v is not None:
+            deep = np.maximum(deep, inside(v, V))
+    k_in = float(kind.get("limb_sky", 1.0))
+    shade = 1.0 - (1.0 - k_in) * np.clip((deep + 0.3) / 0.5, 0.0, 1.0)
+    # and under a mass: wood in a seam between masses sees the sky only from the side
+    k_under = float(kind.get("limb_under", 1.0))
+    for v in vols:
+        if v is not None:
+            q = V.copy()
+            q[:, 2] = v[0][2]
+            under = (V[:, 2] < v[0][2]) & (inside(v, q) > 0.0)
+            shade = np.where(under, np.minimum(shade, k_under), shade)
     li = 0
     for f in F:
         vs = []
         for i in f:
-            sky = 0.6 + 0.4 * max(Nn[i][2], 0.0)
-            vs.append(mesh.vert(tuple(V[i]), tuple(Nn[i]), (sky, 0.2, 1.0, 0.0), tuple(UV0[li]), tuple(UV1[li])))
+            sky = (0.6 + 0.4 * max(Nn[i][2], 0.0)) * float(shade[i])
+            # r the sky it sees (its facing and the foliage round it), b the foliage's shade alone
+            vs.append(mesh.vert(tuple(V[i]), tuple(Nn[i]), (sky, 0.2, float(shade[i]), 0.0), tuple(UV0[li]), tuple(UV1[li])))
             li += 1
         for j in range(1, len(vs) - 1):
             mesh.tri(sub, vs[0], vs[j], vs[j + 1])
@@ -364,7 +382,7 @@ def birch(tid, fact, kind, levels):
     for name in levels:
         lv = kind["levels"][name]
         mesh = Mesh()
-        bark(mesh, tl, lv, kind, H)
+        bark(mesh, tl, lv, kind, H, vols=vols)
         n = cards(mesh, tl, kind, lv, seed, H, vols, lobes, base)
         if lv.get("shadow"):
             proxies(mesh, vols, float(kind["shell"]))

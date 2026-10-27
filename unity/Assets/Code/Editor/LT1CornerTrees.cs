@@ -32,7 +32,7 @@ namespace Overstory.EditorTools
         {
             public string habit, part, albedo, albedo2, foot_colour, twig_colour;
             public float cutoff = 0.45f, mark_reach, veil = 1f;
-            public float[] bands, values, lost, lamp, foot, marks, bark_tile, twig_r;
+            public float[] bands, values, lost, lamp, foot, marks, bark_tile, twig_r, near;
         }
         [Serializable] public class Look { public string cache, atlas; public Level[] levels; public PartLook[] parts; }
         [Serializable] public class TreeLevel { public string level, file; public int drawn; }
@@ -168,6 +168,7 @@ namespace Overstory.EditorTools
             m.SetVector("_LampPos", lampHead);
             m.SetColor("_LampColour", lampSrgb);
             m.SetFloat("_Veil", l.veil);
+            m.SetVector("_Near", V(l.near, new Vector4(12f, 40f, 1f, 0f)));
             m.renderQueue = (int)RenderQueue.AlphaTest;
             return m;
         }
