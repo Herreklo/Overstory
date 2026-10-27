@@ -1,60 +1,44 @@
 # Now
 
-What is running and what is next, under about 1,100 words. The order, the boxes and this week are in `docs/plan.md`; each decision is in its design doc's In short; history is in `docs/experiments.md` and git.
+What is true today and what is next, in under 500 words. History is in `docs/experiments.md` and git; each decision is in its design doc's In short.
 
-**From 23 October: make, look, fix** (`CLAUDE.md`, How work runs; Øystein: "i do not want to spend all my money on admin"). From Monday every build runs that way, starting with R2b: one still of the wall stone beside reference 10, fixed until it reads as split stone, before any measuring.
+## The test (Øystein, 27 October)
 
-**Next job: the walked corner's first pass** (Øystein, 26 October: "should we not try to complete a version of each element"; "I only require work of the highest quality"). Every element the target frames show, each at the full bar and judged together against the targets, one short make, look, fix session at a time: the light and grade first (1c), then the houses' materials, the frame rate, the ground (setts, kerbs, paving, edges), the lamps, moss, grass and heath, and trees (Øystein, 27 October: trees and growth join the pass). Each is built through the real pipeline (data, history maps, a quick distance check), with the frame rate checked after each. People, the full motion and level sets, the town count and the port steps 4 to 7 and R3 to R7 wait until the corner reads. The gully's stone is at v1 (`9600ac4`). When these are in, one strict review of the whole corner against the targets names what each element needs, worst first, and a short round per element follows in that order; the stair's open points wait for it (the lichen's patches on the copings, its value and busyness at distance, the walls' share of the triangle budget, getting it into the app). Øystein, 26 October: "maybe we can do that at the end? Like a review per element?" The light (1c) passed its strict review in its third round (`reviews/lt1/light/first-pass/README.md`, stills in `reviews/lt1/light/third-round/`). The frame rate's first cuts are in (`reviews/perf/2026-10-27/frame-rate/README.md`): the fog bank from a camera-ray volume (blue hour 24 to 32% less offscreen), AO at half size, the style passes without copies, the beams only where they can reach (by day 20 to 25% less), the look unchanged on stills; the worst view, eye-on, is still over 16.7 ms in every light, with the sun's shadows, MSAA, SSR and the materials' town sky and growth left, each with its cure named. The next speed round joins the light's rebuild to the new direction. The full-screen timing runs after it, when Øystein says the Mac is free (27 October: "i will say when mac is free"). The houses' second round adds lit rooms behind the panes, doors, paint that fails board by board, and street and city levels, every tier within budget (`reviews/lt1/houses/first-pass/README.md`, Second round). The third round fixed the plinth, the panes, the boarding's louvres, the peel's spread and the cream (Third round in the same README; stills in `reviews/lt1/houses/third-round/final/`), Fable's recheck failed it, close, on coat age, D's wood and the flakes. The fourth round fixed those three (stills in `reviews/lt1/houses/fourth-round/final/`). It closed for the rebuild to the new art direction. Fable's recheck, which was already in flight, failed it closer (README). The systems and data it keeps are coat age by years, the schemes, `pine.json` and `timber.json`'s boarding. The per-corner light bake is not kept: its triangle diagonals read as wedges and hatching at one-eighth. The rebuild uses one value per board segment or a sampled map, and nothing on a wall may follow a triangle edge. What it leaves for the rebuild is in the README's Fourth round. For the light's rebuild: drizzle casts crisp shadows, its exposure renders white walls mid-grey, and the near haze lifts darks by about 0.04.
+Can the town be affected by its people and its environment over the years? Understory tells the inner story (friendships, goals, dreams, personalities). Overstory reflects it, so together they make a living world that can carry different kinds of games. Meanwhile it must look stunning, and stunning can mean many things (`CLAUDE.md`, What it is for).
 
-## Where we are (22 October)
+## Where we are (27 October, evening)
 
-- **LT1, the harbour street in 1989,** on branch `lt/1-harbour-street` (`docs/experiments.md`). `main` takes the branch at milestones Øystein has judged: the corner's stone, then the corner's houses, then LT1's end. Every commit is pushed to the branch meanwhile.
-- **Built:**
-  - the house generator at test quality (the stress test passing at strong and stronger; Øystein chose stronger);
-  - the heart in clay, with its land, ways, light, style and moods; the birches, closed as a look test only;
-  - the gully steps and stairs, mid-port: their baseline (stairs `bff7858b698f3efd`, walls `0a3d7db3100df20b`) is the regression reference only, to be redrawn in 2b;
-  - the cheek walls (a first pass, not reviewed); the shared systems; the measuring tools and the Unity lock; 1f, the clay time test; 1g's walk.
-- **Written and reviewed:** the architecture (`docs/building-blocks.md`) and the other design docs; the craft of fourteen areas (coverage and gaps: `docs/systems.md`).
+- **All build work is paused** while Øystein reviews the direction. Nothing is running.
+- **The research is done:** what Claude has made with Blender and Unity, and how good it looks. The coordinator is writing the review for Øystein: what is realistic, what looks amazing, what we build next. Nothing restarts until he has answered.
+- **The style is open again.** The art direction (`reviews/lt1/art-direction/README.md`, painterly realism in Stålenhag's line, stylised hard) was judged from one camera only, so its frame is a stage set, not a proven look. Øystein: "stunning could mean a lot of things".
+- **The painted corner:** a hook for elements, a scene (`unity/Assets/Experiments/LT1/Corner/LT1_PaintedCorner.unity`), an app (`unity/Builds/PaintedCorner/`) and a rebuild script (`tools/painted_corner.py`). The app still has half-made elements in it: grass in the sky, a void ground, floating houses. It does not go to Øystein again until it holds from every view.
+- **The paused elements,** each at a pushed point and none judged:
+  - the houses as hero assets (handover: `reviews/lt1/houses/hero/handover.md`);
+  - trees `5074681`;
+  - growth `5041e3e`;
+  - rock and ground `b56d316`.
 
-## The order
+## Rules learned this week
 
-From `docs/plan.md` (The order; This week). Answer what comes next from it; changing it takes a written proposal (`CLAUDE.md`, Decide once). Boxes are per cent of the weekly limit; at 1.5 times its box a step stops for a re-plan, written here.
-- **Now:** 1c in the walked corner (LA, L1 and L2 first; the rest sized from their gap), with the port's 2b beside it. On paper beside them: the areas study (`docs/town-plan.md`, TP6), which settles which areas the town has, why each is there, and how each reads from above. The zoom test judges the result.
-- **Then:** 1g's camera milestone, the zoom test (below); the strict review of port steps 0 to 2; R3 to R7; port steps 4 to 7; 1d; 1e; the setts, kerb and plinths. 1g's play is the milestone after the walk, beside 2b.
+- Every element is judged from all four views (eye level, the street stop, 12 m, high), never from one camera.
+- Nothing goes to Øystein that the coordinator has not looked at from all four.
+- Make, look, fix, with no admin (`CLAUDE.md`, How work runs).
 
-## Running now, by line of work
+## Held until the direction is set
 
-Each session commits its own work; a stopped one resumes from its files. Long work runs in its own session: a cleared chat stops its background agents.
-
-- **The playable corner (1g),** in `reviews/lt1/playable/` (`brief.md`, `pick.md`, `outline.md`, `premortem.md`).
-  - Phase 2's build is cut until a ladder of five cheap tests answers (`outline.md` §3; Øystein: "we need to be more sure what to test"); the case's build is sized only if it passes, with Øystein. He does not read `pick.md` or the case spec, so test 4 stays blind.
-  - *The walk, closed (22 October):* the app is `unity/Builds/Playable/OverstoryPlayable.app` (keys and baseline: `reviews/lt1/playable/walk/w7-report.md`). Øystein judged it from stills and a capture: scale "nice"; the climb "a bit boaty"; the frame rate "laggy and jumpy". The beams now cost about 1 ms (from 62); the birch is out until 1e. The gate's baseline is 27 to 60 fps (`docs/plan.md`). His walk of the app that evening: walking and the camera's control "horrible, slow and gluey" on a trackpad too (fixed later: the zoom test owns the control, trackpad included); from above, the cityscape and the light "great potential", "we just need to treat everything with great care."
-  - *Next, the case (Monday; tonight's usage went to making first, Øystein: "i want as soon as we can"):* the ladder's tests 5, 1 and 2a are done (`reviews/lt1/playable/ladder/`, not for Øystein). Before the ladder's test 2b (stills on the walk's build), the case's two fixes: from test 1, seed A's first telling becomes when to tell Olive (the named lines' ranking flips in 7 of 24 sweeps); from test 2a, Hannah's authored home or the vantage moves so one vantage sees both doors. The player lives at A with no trade (Øystein). Left from the cut W6, for the next heart rebuild: `heart_layout.py` casts A as a café, and a rebuild moves D's way into the golden views.
-  - *The camera:* 1g's camera milestone, after the walk and beside the port's 2b, holds whatever the game becomes (Øystein: "we just need to figure out if it is possible to make something where navigating over the city as well as moving trough the streets is nice"): is one continuous zoom, eye to city camera as `camera-and-composition.md` designs it, pleasant and quick to answer at both scales (the walk's control was "slow and gluey"), and does it hold its frame rate at the top? What the player controls and the camera's play tuning wait for the game.
-- **The gully port,** resumed at 2b: step 1, step 2a (hashes unchanged) and step 3's early rungs are done, with Fable's verdict in the docs.
-  - *Next:* 2b, the stones redrawn (Øystein: "very buggy and not nice"; Q15), running in its own session inside the playable corner; what's left, in order, is in `reviews/lt1/port-handover.md`. R2b's three stones (wall stone, step, coping) are done by make, look, fix, passed their strict review on Fable after patches, and are laid in the gully (`tools/r2b_gully.py`) with each stone its own value and the lichen a pale crust; Øystein judges `reviews/lt1/port/2b/r2b/gully/round04-sheet.jpg`, grounded and raked after his "floaty", and the open points are in `reviews/lt1/port/2b/r2b/report.md`. Steps 4 and 5 are done only as `reviews/lt1/port/foundation-needs.md` says.
-  - *22 October, night:* R0b is done (`cd79b22`): the pipeline makes none of the gully's one-pixel lines and specks, so the redraw owns them. The patches' third round did not pass as a finished face (`7270491`); the patches go to R2a's three stones in Unity (its own session, started by 2b) beside R1's second round. Weekly usage was 92% at 23:40; work stops at pushed points if it runs out, and resumes after the reset on Monday 26 October at 13:00.
-- **The corner's art direction** (Øystein, 27 October: "Stylisation means deciding what matters, pushing that harder than reality does, and removing almost everything else"; "Heavy things should look heavey, lived in things should look lived in"), in `reviews/lt1/art-direction/README.md`: painterly realism in VD1's line, stylised hard. It holds what matters, a target per light against today, and the rules for every element (weight and use, matte unless wet, broad shifts, one signature mark, contact shade, detail by distance from the focus). The engine frame `engine/street-1750-sea-fog.png` shows it (Fable: "Direction right; frame not yet its proof"; its notes taken in the last pass). The ink stylings and the code paintovers were not picked. The painted corner is a scene elements join through one hook (`[CornerElement]`, the page's Joining the corner), with an app Øystein can fly (`unity/Builds/PaintedCorner/PaintedCorner.app`), both rebuilt by `tools/painted_corner.py`. Next: the elements join it (houses, trees, growth, rock and ground), then the light's rebuild to the page's targets, then one proper review. Its open faults are in the page: the knuckle and walls are clay, and a warm wash on C's east face and a hot line on the left cheek wall have no lamp.
-- **The paper playtests, stopped** at 11 of 24 runs (Øystein: "Maybe stop playtest, and focus on building?"). Outcome and next: `docs/playtests/paper-1/analysis/interim.md`; the concepts are redesigned from its needs when people play the greybox.
-- **Held, on Opus:** the camera and play-craft studies' unread talks and masters (their Limits sections), each read before the step that rests on it; a review of the playtest programme when the greybox is close.
-- **One check command** (Øystein, 22 October: yes; `CLAUDE.md`, Working in the right order): after the reset on 26 October, `tools/check.py` gathers every machine check (budgets, seeds, hashes, data not code). It then runs once over the generators, shaders and C#, to size how much holds style, era or place in code. Rules it checks then shrink to a line in `CLAUDE.md`.
-- **Housekeeping:** a "22 October" label on older work takes its commit's date (`git blame`).
-- **Game ideas,** Inquest among them, are catalogued in `docs/ideas/README.md`, with Inquest's engine needs mapped to current request numbers.
-
-## Proposals (23 October)
-
-- `docs/proposals.md` is closed. Q19 is in `CLAUDE.md`. Q1 to Q18 are not reviewed as a batch: one that a build reaches is decided then, in a line. The docs' 56 disagreements (`reviews/docs-trim/disagreements.md`) are not worked on.
+- **The playable corner's case (1g)**, the zoom test and the camera milestone: `reviews/lt1/playable/`.
+- **The gully port at 2b:** the three stones are at v1 (`9600ac4`); what is left is in `reviews/lt1/port-handover.md`.
+- **The frame rate:** the eye-on view is over 16.7 ms in every light, with the cures named in `reviews/perf/2026-10-27/frame-rate/README.md`. The full-screen timing runs only when Øystein says the Mac is free.
+- **The paper playtests**, stopped at 11 of 24: `docs/playtests/paper-1/analysis/interim.md`.
 
 ## Waiting for Øystein
 
-What goes to him is in `CLAUDE.md` (How work runs). His decisions stand in their docs' In shorts and are not reopened without him. Open:
-- an optional 10 to 15 minute walk of the app, whenever suits him;
-- installing Unity's IL2CPP module when the port's step 5 needs it (`docs/research/building-blocks-decisions.md` §15). Recommended: yes;
-- downloads: public slides, papers and talk captions have a standing OK, logged in `docs/research/downloads.md` (its rules there); reference images and assets are still listed for him file by file;
-- a search for game ideas unanchored by our own docs: fresh agents given only Understory's question and what the engine can do (Øystein, 22 October: "I feel like these ideas are a bit too close"), now or after Monday's reset;
-- which game comes first: nothing is decided. The interface study's observer case keeps its play choices as defaults (`docs/research/interface-and-inspection.md`, For Øystein);
-- the exit criteria in `CLAUDE.md` (What it is for), a draft to agree with him, and the band, proposed as a shared milestone with the engine (`docs/engine-requests.md`).
+- The review's answer: the direction, and what we build next.
+- Installing Unity's IL2CPP module when the port's step 5 needs it. Recommended: yes.
+- Which game comes first. Nothing is decided; ideas are in `docs/ideas/README.md`.
+- The exit criteria in `CLAUDE.md`, a draft to agree with him.
+- Reference images and assets wait for his yes, file by file. Public slides, papers and captions have a standing OK (`docs/research/downloads.md`).
 
 ## Engine
 
-Round 41 is kept; the human test comes after round 42, homes after round 43. The real run is `fixtures/engine/understory-world-9989.json` (119 people, 2,635 events, 2026 to 2036). Requests: `docs/engine-requests.md`; for the next bundle, the event texts whose years the shift can't reach (`reviews/lt1/playable/premortem.md`).
+Round 41 is kept. The human test comes after round 42, homes after round 43. The real run is `fixtures/engine/understory-world-9989.json` (119 people, 2,635 events, 2026 to 2036). Requests: `docs/engine-requests.md`.
