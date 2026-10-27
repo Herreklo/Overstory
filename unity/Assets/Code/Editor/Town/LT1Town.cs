@@ -400,7 +400,7 @@ namespace Overstory.EditorTools.Town
             readonly string pack;
             const int Year = 1989;
 
-            public readonly Dictionary<string, object> timber, openings, water, fringe, town;
+            public readonly Dictionary<string, object> timber, openings, water, fringe, clusters, town;
             /// <summary>The stoves' smoke at the moment, or null where the pack has none.</summary>
             public readonly Dictionary<string, object> smoke;
             /// <summary>The share of the look's brushwork the houses' walls, roofs and trims take.</summary>
@@ -435,6 +435,7 @@ namespace Overstory.EditorTools.Town
                 glass = Hex((string)Obj(town["glass"])["srgb"]);
                 water = Obj(town["water"]);
                 fringe = Obj(town["fringe"]);
+                clusters = Obj(town["clusters"]);
                 smoke = town.TryGetValue("smoke", out var sk) ? Obj(sk) : null;
                 brush = F(town["houseBrush"]);
                 var lp = Obj(town["laps"]);
@@ -514,6 +515,17 @@ namespace Overstory.EditorTools.Town
                 // the city camera keys its lightest light, a white wall in the sun, not the light on level ground
                 if (town.TryGetValue("camera", out var cam))
                     r.postExposure += F(Obj(cam)["exposure"]);
+                // the shade's light from the sky (shade): fill of the rig's, and cool of the way to the zenith's hue at
+                // its own brightness, so the sun is the one warm light and the shade the sky's blue
+                if (town.TryGetValue("shade", out var sh))
+                {
+                    var o2 = Obj(sh);
+                    float fill = F(o2["fill"]), cool = F(o2["cool"]);
+                    Color Cool(Color c) => Color.Lerp(c, r.zenith * (c.grayscale / Mathf.Max(r.zenith.grayscale, 1e-3f)), cool) * fill;
+                    r.ambientSky = Cool(r.ambientSky);
+                    r.ambientEquator = Cool(r.ambientEquator);
+                    r.ambientGround = Cool(r.ambientGround);
+                }
                 if (!town.TryGetValue("air", out var o))
                     return;
                 var a = Obj(o);
@@ -1346,6 +1358,7 @@ namespace Overstory.EditorTools.Town
             var cc = new List<Color>();
             var centres = new List<Vector3>();   // each crown vertex's mass's centre
             var lows = new List<Vector3>();      // and the point under it its facets are shaded round
+            var wholes = new List<Vector3>();    // and its crown's, where the mass is one of its clusters
             var tv = new List<Vector3>();
             var tt = new List<int>();
             var tc = new List<Color>();
@@ -1361,6 +1374,11 @@ namespace Overstory.EditorTools.Town
                   fShare = F(fr["share"]);
             float Lo(string k) => F(Arr(fr[k])[0]);
             float Hi(string k) => F(Arr(fr[k])[1]);
+            var cl = facts.clusters;
+            float Lo2(string k) => F(Arr(cl[k])[0]);
+            float Hi2(string k) => F(Arr(cl[k])[1]);
+            float cCover = F(cl["cover"]), cWhole = F(cl["whole"]), cCore = F(cl["core"]);
+            int cMost = (int)F(cl["most"]);
             // a broadleaf crown is full low and rounds over at the top; a spruce is a spire
             Func<float, float> round = u => Mathf.Sqrt(Mathf.Sin(Mathf.PI * Mathf.Pow(u, 0.8f)));
             Func<float, float> cone = u => Mathf.Min(1f, u / 0.12f) * Mathf.Pow(1f - u, 0.95f);
@@ -1375,7 +1393,7 @@ namespace Overstory.EditorTools.Town
                 // radial, so it shades as the mass round it; the shader lays its corners across the view and opens it
                 // only where the crown turns from the eye
                 var limbs = new List<Vector3>();   // where each lobe hangs, for the limb that carries it
-                void Fringe(int k, int t0, Vector3 centre, float size, Color c)
+                void Fringe(int k, int t0, Vector3 centre, Vector3 round, float size, Color c)
                 {
                     for (int i = t0, j = 0; i < ct.Count; i += 3, j++)
                     {
@@ -1394,7 +1412,7 @@ namespace Overstory.EditorTools.Town
                         float len = size * H("s", Lo("spread"), Hi("spread"));
                         var at = a + (b - a) * u + (d - a) * v + n * len * fOut;
                         var jit = new Vector3(H("x", -1f, 1f), H("y", -1f, 1f), H("z", -1f, 1f));
-                        var nl = (n + (at - centre).normalized * fRadial + jit * fJitter).normalized;
+                        var nl = (n + (at - round).normalized * fRadial + jit * fJitter).normalized;
                         float turn = H("lean", -fTurn, fTurn), cs = Mathf.Cos(turn), sn = Mathf.Sin(turn);
                         Vector2 Corner(float px, float py) => new Vector2(px * cs - py * sn, px * sn + py * cs);
                         int n0 = lv.Count;
@@ -1407,11 +1425,13 @@ namespace Overstory.EditorTools.Town
                     }
                 }
                 // one mass of the crown, a little lighter or darker than the next (claiming nothing), and its fringe
-                void Mass(int k, float mx, float my, float z0, float z1, float rx, float ry, float a, Func<float, float> prof, float jit)
+                Vector3? whole = null;   // the crown's own round, where its masses are its leaf clusters
+                void Mass(int k, float mx, float my, float z0, float z1, float rx, float ry, float a, Func<float, float> prof, float jit,
+                          bool limb = true, float tone = 1f)
                 {
                     int t0 = ct.Count;
                     Blob(cv, ct, mx, my, z0, z1, rx, ry, a, prof, Hash.Then(id, (ulong)k), jit);
-                    var c = tint * R("tone", k, 0.86f, 1.1f);
+                    var c = tint * (tone * R("tone", k, 0.86f, 1.1f));
                     var centre = U(mx, my, (z0 + z1) / 2f);
                     var low = U(mx, my, (z0 + z1) / 2f - lift * (z1 - z0) / 2f);
                     while (cc.Count < cv.Count)
@@ -1419,21 +1439,37 @@ namespace Overstory.EditorTools.Town
                         cc.Add(c);
                         centres.Add(centre);
                         lows.Add(low);
+                        wholes.Add(whole ?? low);
                     }
-                    if (k > 0)
+                    if (k > 0 && limb)
                         limbs.Add(U(mx, my, z0 + 0.3f * (z1 - z0)));
-                    Fringe(k, t0, low, fSize * (rx + ry) / 2f, c);
+                    Fringe(k, t0, low, whole ?? low, fSize * (rx + ry) / 2f, c);
                 }
-                // lobes round the main mass, at their own heights and sides
-                void Lobes(int n, float c0, float off0, float off1, float rk0, float rk1, float zb1, float hz0, float hz1)
+                // a broadleaf's crown as its leaf clusters: a core, and masses the size of a branch's foliage (clusters,
+                // radiusM) set over the crown's envelope from its underside's edge to its top, as many as cover it (cover)
+                // up to most, so a big crown reads as many rounded masses and a small one as a few
+                void Clusters(float zb, float zt, float ex, float ey, float jit)
                 {
+                    float ez = (zt - zb) / 2f, zc = zb + ez;
+                    float cLo = Lo2("radiusM"), cHi = Hi2("radiusM"), cr = (cLo + cHi) / 2f;
+                    float area = 4f * Mathf.PI * Mathf.Pow(ex * ey * ez, 2f / 3f);
+                    int n = Mathf.Clamp(Mathf.RoundToInt(cCover * area / (Mathf.PI * cr * cr)), 3, cMost);
+                    whole = U(x, y, zc - lift * ez);
+                    // the core, so no sky shows between the clusters, a step darker as the crown's inside is (core)
+                    Mass(0, x, y, zb + ez * 0.15f, zt - ez * 0.3f, ex * 0.7f, ey * 0.7f, rot, round, jit, true, cCore);
                     for (int k = 1; k <= n; k++)
                     {
-                        float a = rot + k * 2.4f + R("a", k, -0.5f, 0.5f), off = r * R("off", k, off0, off1);
-                        float zb = z + c0 + (h - c0) * R("zb", k, 0f, zb1);
-                        Mass(k, x + Mathf.Cos(a) * off, y + Mathf.Sin(a) * off, zb, Mathf.Min(z + h * 0.97f, zb + (h - c0) * R("hz", k, hz0, hz1)),
-                             r * R("rk", k, rk0, rk1), r * R("ryk", k, rk0 * 0.85f, rk1 * 0.9f), a, round, 0.22f);
+                        // even over the envelope's height (as over a sphere's area), each a golden angle round from the last
+                        float s = Mathf.Clamp(Mathf.Lerp(-0.35f, 0.92f, (k - 0.5f) / n) + R("s", k, -0.06f, 0.06f), -0.4f, 0.95f);
+                        float a = rot + k * 2.39996f + R("a", k, -0.3f, 0.3f), sc = Mathf.Sqrt(1f - s * s);
+                        float rk = R("rk", k, cLo, cHi), inn = rk * 0.75f;
+                        // its centre in from the envelope by most of its radius, so its face stands just out of it
+                        float px = x + Mathf.Cos(a) * sc * Mathf.Max(0f, ex - inn), py = y + Mathf.Sin(a) * sc * Mathf.Max(0f, ey - inn);
+                        float pz = zc + s * Mathf.Max(0f, ez - inn);
+                        Mass(k, px, py, pz - rk * 0.7f, Mathf.Min(z + h, pz + rk * 0.8f), rk, rk * R("ryk", k, 0.8f, 1f), a, round, jit,
+                             s < 0.2f);
                     }
+                    whole = null;
                 }
                 float c0;
                 switch (tr.crown)
@@ -1443,10 +1479,9 @@ namespace Overstory.EditorTools.Town
                         Mass(0, x, y, z + c0, z + h, r, r, rot, cone, 0.12f);
                         break;
                     case "tall":
-                        // a birch: a tall narrow mass and two or three lobes hung off it, low on a tree grown in the open
+                        // a birch: a tall narrow crown of clusters, low on a tree grown in the open
                         c0 = 0.22f * h;
-                        Mass(0, x, y, z + c0, z + h, r * 0.72f, r * R("ry", 0, 0.6f, 0.72f), rot, round, 0.2f);
-                        Lobes(2 + (R("n", 0, 0f, 1f) < 0.5f ? 1 : 0), c0, 0.35f, 0.6f, 0.45f, 0.62f, 0.4f, 0.4f, 0.65f);
+                        Clusters(z + c0, z + h, r * 0.72f, r * R("ry", 0, 0.6f, 0.72f), 0.2f);
                         break;
                     case "flat":
                         // a pine: a bare trunk, an open crown of three masses, the top one widest, leaning with the wind
@@ -1460,10 +1495,9 @@ namespace Overstory.EditorTools.Town
                         }
                         break;
                     default:
-                        // a sycamore, rowan or apple: a domed crown with three lobes, so its outline is a cloud, not a ball
+                        // a sycamore, rowan or apple: a domed crown of clusters, so its outline is a cloud, not a ball
                         c0 = Mathf.Max(1.6f, 0.25f * h);
-                        Mass(0, x, y, z + c0, z + h, r * 0.8f, r * R("ry", 0, 0.7f, 0.85f), rot, round, 0.18f);
-                        Lobes(3, c0, 0.4f, 0.6f, 0.45f, 0.62f, 0.3f, 0.45f, 0.7f);
+                        Clusters(z + c0, z + h, r * 0.95f, r * R("ry", 0, 0.82f, 0.95f), 0.18f);
                         break;
                 }
                 // the trunk: six sides from below the ground into the crown, its girth by its height, half at the top
@@ -1533,7 +1567,8 @@ namespace Overstory.EditorTools.Town
                 ft.Add(i);
             }
             var crowns = Make("tree crowns", fv, ft, fc);
-            // each facet shaded part way to its mass's round, so the planes are a hint across a lit and a shaded side;
+            // each facet shaded part way to its mass's round (a cluster's part way to its crown's, clusters' whole), so
+            // the planes are a hint across a lit and a shaded side;
             // the round taken from a point under the mass's middle, so its underside turns to the sky's light as a
             // crown's leaves let it through, and never goes black
             var fn = crowns.normals;
@@ -1541,7 +1576,8 @@ namespace Overstory.EditorTools.Town
             {
                 if (Vector3.Dot(fn[i], fv[i] - centres[ct[i]]) < 0f)
                     fn[i] = -fn[i];
-                fn[i] = Vector3.Lerp(fn[i], (fv[i] - lows[ct[i]]).normalized, soften).normalized;
+                var own = Vector3.Lerp((fv[i] - lows[ct[i]]).normalized, (fv[i] - wholes[ct[i]]).normalized, cWhole).normalized;
+                fn[i] = Vector3.Lerp(fn[i], own, soften).normalized;
             }
             crowns.normals = fn;
             var trunks = Make("tree trunks", tv, tt, tc);
