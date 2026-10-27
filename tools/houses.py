@@ -71,7 +71,8 @@ def bake_soup(soup, ground):
     close by. The house only knows itself; the ground is the carved ground's height under each sample. A ray that
     meets the house itself brings back one bounce: what the face it meets sees of sky and ground, times BOUNCE, so a
     rafter's side under a deep eave is lit by the boards round it, not black. A joint (the slot between stones drawn as
-    one face, from the street tier) sees past its own stones: their shade is in its share (lime-mortar.json, jointFar)."""
+    one face, from the street tier) and the mortar behind the stones see past them: their shade is in the joint's share
+    (lime-mortar.json, jointView and jointFar). A stone's facet sees one light, the mean of its triangles'."""
     import importlib.util
     from mathutils import Vector
     from mathutils.bvhtree import BVHTree
@@ -83,6 +84,7 @@ def bake_soup(soup, ground):
     tree = BVHTree.FromPolygons(verts, polys, epsilon=0.0)
     from soup import KINDS
     kinds = [int(soup.ch[3 * t][2]) for t in range(len(polys))]
+    through = (KINDS["joint"], KINDS["mortar"])
     first, hits = [], []
     for t in range(len(polys)):
         a, b, c = verts[3 * t], verts[3 * t + 1], verts[3 * t + 2]
@@ -98,7 +100,7 @@ def bake_soup(soup, ground):
             h = o.z - ground(o.x, o.y)
             for d in dirs:
                 hit, hn, face, dist = tree.ray_cast(o, d, BK.REACH)
-                while hit is not None and kinds[t] == KINDS["joint"] and kinds[face] == KINDS["stone"]:
+                while hit is not None and kinds[t] in through and kinds[face] == KINDS["stone"]:
                     hit, hn, face, dist = tree.ray_cast(hit + d * 1e-4, d, BK.REACH)
                 if hit is not None:
                     near += dist < BK.NEAR
@@ -112,11 +114,33 @@ def bake_soup(soup, ground):
         k = float(len(samples) * len(dirs))
         first.append((sky / k, gnd / k, 1.0 - near / k))
         hits.append((met, k))
-    out = []
+    seen = []
     for (sky, gnd, op), (met, k) in zip(first, hits):
         sky += BOUNCE * sum(first[f][0] for f in met) / k
         gnd += BOUNCE * sum(first[f][1] for f in met) / k
-        out += [(sky, gnd, op)] * 3
+        seen.append((sky, gnd, op))
+    # a stone's facet is one plane a hand wide: it sees one light, whatever triangles it is cut into (else each
+    # triangle of its fan shows as a shard)
+    facets = {}
+    for t in range(len(polys)):
+        if kinds[t] != KINDS["stone"]:
+            continue
+        a, b, c = verts[3 * t], verts[3 * t + 1], verts[3 * t + 2]
+        n = (b - a).cross(c - a)
+        area = n.length
+        if area < 1e-12:
+            continue
+        n = n / area
+        key = (round(soup.ch[3 * t][4], 6), round(n.x * 50), round(n.y * 50), round(n.z * 50))
+        facets.setdefault(key, []).append((t, area))
+    for tris in facets.values():
+        total = sum(w for _, w in tris)
+        mean = tuple(sum(seen[t][i] * w for t, w in tris) / total for i in range(3))
+        for t, _ in tris:
+            seen[t] = mean
+    out = []
+    for s in seen:
+        out += [s] * 3
     return out
 
 

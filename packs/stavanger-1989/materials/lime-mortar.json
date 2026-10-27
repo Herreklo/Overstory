@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "material": "lime-mortar",
-  "describes": "Lime mortar in a fieldstone plinth's joints: pale when struck, darkening with damp and dirt in the deep joints.",
+  "describes": "Lime mortar pointed nearly flush in a split-stone plinth's joints: pale when struck, greyed by damp and dirt.",
   "srgb": "A29D92",
   "gloss": 0.05,
   "water": [
@@ -10,13 +10,13 @@
     0.7,
     0.5
   ],
-  "jointView": 0.5,
-  "jointFar": 0.25,
+  "jointView": 0.85,
+  "jointFar": 0.8,
   "provenance": "authored",
   "notes": {
     "srgb": "Judged by look; a joint at Dale is dark, never black (LT1Stone's soil note).",
     "water": "Its water profile as the town's (Shaders/Water.hlsl, Overstory.World.WaterPack): how much it darkens wet, how glossy its wet film, how long it holds water, how readily run-off stains it. Lime soaks it up and stays dark. Judged by look.",
-    "jointFar": "The share of the open wall's light a joint shows as one face, at a level that draws no stone sides (from the street tier; its bake sees past its own stones): the slot's back and its sides together. A joint 8-18 mm wide and 40 mm deep sees about a sixth of the sky at its back and a third on its sides, so about a quarter; checked by look against the near tier's plinth from the street stop and from 12 m (round 2).",
-    "jointView": "The share of the sky, the ground and a lamp a joint's back sees between its rounded stones: a joint of 20 mm, 40 mm back, between arrises that fall away. At 0.3 every joint drew a black line round its stone, a cobble; 0.5 by look (round 9)."
+    "jointFar": "The share of the open wall's light a joint shows as one face, at a level that draws no stone sides (from the street tier): pointed about 8 mm behind the faces, 10-18 mm wide, its back sees most of the sky; about 0.8, as the near tier's (round 3).",
+    "jointView": "The share of the sky, the ground and a lamp a joint's back sees between its stones: pointed nearly flush (timber.json, plinth pointMm), between arrises chamfered to it, about 0.85 (round 3; at 40 mm deep it was 0.5)."
   }
 }
