@@ -88,7 +88,8 @@ namespace Overstory.EditorTools
         /// </summary>
         public static void Offscreen()
         {
-            const int batches = 6, perBatch = 6;
+            int batches = int.Parse(Cli.Arg("-batches", "6"), CultureInfo.InvariantCulture);
+            const int perBatch = 6;
             string repo = Path.GetFullPath(Path.Combine(Application.dataPath, "..", ".."));
             var urp = (UniversalRenderPipelineAsset)GraphicsSettings.currentRenderPipeline;
             float reach = urp.shadowDistance;
@@ -124,6 +125,7 @@ namespace Overstory.EditorTools
                         if (v < 0)
                             throw new System.ArgumentException($"no view {viewName}");
                         corner.SetView(v);
+                        Debug.Log($"[LT1Perf] beams weight {viewName}@{light}: {SunBeamsFeature.Weight(corner.stage.view):F5}");
                         var cells = new List<string>();
                         var cam = corner.stage.view;
                         var camData = cam.GetUniversalAdditionalCameraData();

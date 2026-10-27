@@ -59,6 +59,30 @@ namespace Overstory.Scenes
             full.Create();
         }
 
+        [Tooltip("The beams' weight in a view (Weight) under which they are not drawn: they add less than the frame's grain there.")]
+        public float unseen = 0f;
+
+        /// <summary>
+        /// The most the beams can weigh anywhere in this camera's view, before their march's own scatter: the sun's light
+        /// (its brightest channel) times the shafts, the haze's weight in the beams and the phase (SunBeamsQuarter.shader)
+        /// at the view's ray closest to the sun, taken no further from it than the frame's corners allow, so the weight is
+        /// never less than the frame's own. In the walk's lights the beams add at most 1/255 (4x4 means) up to 0.156 and
+        /// show from 1.66 (reviews/perf/2026-10-27/frame-rate/README.md).
+        /// </summary>
+        public static float Weight(Camera cam)
+        {
+            var beams = Shader.GetGlobalVector(BeamsPass.SunBeamsId);
+            var sun = Shader.GetGlobalVector(BeamsPass.SunColId);
+            var toSun = ((Vector3)Shader.GetGlobalVector(CloudMapPass.SunDirId)).normalized;
+            float tv = Mathf.Tan(cam.fieldOfView * 0.5f * Mathf.Deg2Rad), th = tv * cam.aspect;
+            float corner = Mathf.Atan(Mathf.Sqrt(tv * tv + th * th));
+            float angle = Mathf.Max(0f, Vector3.Angle(cam.transform.forward, toSun) * Mathf.Deg2Rad - corner);
+            float mu = Mathf.Cos(angle), g = beams.z, g2 = g * g;
+            float hg = (1f - g2) / Mathf.Pow(Mathf.Max(1f + g2 - 2f * g * mu, 1e-4f), 1.5f);
+            float phase = (0.25f + 0.75f * hg) / (4f * Mathf.PI);
+            return Mathf.Max(sun.x, Mathf.Max(sun.y, sun.z)) * beams.x * Mathf.Max(beams.w, 1f) * phase;
+        }
+
         public override void AddRenderPasses(ScriptableRenderer renderer, ref RenderingData renderingData)
         {
             var type = renderingData.cameraData.cameraType;
@@ -79,6 +103,9 @@ namespace Overstory.Scenes
             var beams = Shader.GetGlobalVector(BeamsPass.SunBeamsId);
             var sun = Shader.GetGlobalVector(BeamsPass.SunColId);
             if (beams.x <= 0f || sun.x + sun.y + sun.z <= 0.001f)
+                return;
+            // (a view that the beams cannot reach: looking away from the sun, they add less than the frame's grain)
+            if (Weight(renderingData.cameraData.camera) < unseen)
                 return;
             pass.arm = arm ?? "";
             pass.ConfigureInput(ScriptableRenderPassInput.Depth);
@@ -110,7 +137,7 @@ namespace Overstory.Scenes
             internal static readonly int CloudMapRectId = Shader.PropertyToID("_OS_CloudMapRect");
             static readonly int CloudsId = Shader.PropertyToID("_OS_Clouds");
             static readonly int DriftId = Shader.PropertyToID("_OS_CloudDrift");
-            static readonly int SunDirId = Shader.PropertyToID("_OS_SunDir");
+            internal static readonly int SunDirId = Shader.PropertyToID("_OS_SunDir");
             static readonly int BlitScaleBiasId = Shader.PropertyToID("_BlitScaleBias");
             static readonly MaterialPropertyBlock Block = new MaterialPropertyBlock();
 

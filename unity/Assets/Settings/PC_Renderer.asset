@@ -150,6 +150,7 @@ MonoBehaviour:
   shader: {fileID: 4800000, guid: e0de2b356d234dae89e78aafc5145924, type: 3}
   fullSize: 0
   fullMaterial: {fileID: 2100000, guid: be50fdd85cfdd4356bb07440e5b88be6, type: 2}
+  unseen: 0.17
 --- !u!114 &8731856260101704842
 MonoBehaviour:
   m_ObjectHideFlags: 1
