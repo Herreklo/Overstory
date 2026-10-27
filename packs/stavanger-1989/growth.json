@@ -21,12 +21,14 @@
     "lichen": {
       "ratio": [1.40, 1.43, 1.34],
       "fullYears": 100,
-      "shareMax": 0.72,
-      "patch": 0.55,
-      "warp": 0.6,
-      "edge": 0.05,
-      "edgeDepth": 0.35,
-      "soft": [0.06, 0.015]
+      "shareMax": 0.6,
+      "spacing": [1.6, 0.18],
+      "smallShare": 0.3,
+      "lobe": [0.05, 0.35],
+      "soft": 0.03,
+      "softFar": 0.035,
+      "outline": [0.5, 0.35],
+      "cluster": [4.0, 0.6, 1.0]
     },
     "moss": {
       "ratio": [0.74, 0.84, 0.62],
@@ -42,6 +44,7 @@
     ],
     "fade": 0.15,
     "thin": { "from": 30.0, "keepAt120": 0.25, "widen": 1.6 },
+    "look": { "calm": 0.35, "lamp": 1.0, "veil": 1.0, "root": 0.4, "tipLift": 1.0, "hueDetail": 0.5, "wet": 0.6, "shrinkBand": 0.08, "sink": 0.04, "minPx": 2.2 },
     "budget": {
       "trisPerTuft": [72, 24, 8],
       "tuftsPerSqm": 8.0,
@@ -53,7 +56,7 @@
         "what": "ling (Calluna), browned after flowering: stiff, wiry twigs fanning up from a woody base, darker at the base, rust-brown tips",
         "height": [0.22, 0.42],
         "width": [0.30, 0.55],
-        "blades": [16, 7, 3],
+        "blades": [14, 8, 6],
         "segments": [3, 2, 1],
         "bladeWidth": 0.018,
         "lean": [0.35, 0.75],
@@ -66,7 +69,7 @@
         "what": "common juniper, dark and upright: flame-shaped shoots, nearly black in fog",
         "height": [0.55, 1.3],
         "width": [0.35, 0.7],
-        "blades": [14, 6, 3],
+        "blades": [14, 8, 6],
         "segments": [3, 2, 1],
         "bladeWidth": 0.07,
         "lean": [0.05, 0.3],
@@ -79,7 +82,7 @@
         "what": "wavy hair-grass and purple moor-grass gone to straw: fine blades, straw tips over a darker base",
         "height": [0.25, 0.45],
         "width": [0.20, 0.35],
-        "blades": [12, 6, 3],
+        "blades": [12, 8, 6],
         "segments": [3, 2, 1],
         "bladeWidth": 0.010,
         "lean": [0.4, 0.9],
@@ -92,7 +95,7 @@
         "what": "long yard grass (cocksfoot, Yorkshire fog, couch) uncut since 1986: tall, lodged, straw-tipped, some seed heads standing",
         "height": [0.40, 0.75],
         "width": [0.25, 0.45],
-        "blades": [12, 6, 3],
+        "blades": [12, 8, 6],
         "segments": [3, 2, 1],
         "bladeWidth": 0.012,
         "lean": [0.45, 1.05],
@@ -105,7 +108,7 @@
         "what": "short grass coming back over a path still walked now and then",
         "height": [0.12, 0.22],
         "width": [0.15, 0.25],
-        "blades": [9, 5, 3],
+        "blades": [9, 6, 4],
         "segments": [2, 1, 1],
         "bladeWidth": 0.009,
         "lean": [0.4, 0.9],
@@ -123,7 +126,7 @@
         "bladeWidth": 0.012,
         "lean": [0.04, 0.2],
         "curl": 0.05,
-        "pods": [5, 3, 0],
+        "pods": [10, 4, 0],
         "base": "#3a2420",
         "tip": "#6e3a2c",
         "seed": "#a9a49a",
@@ -140,8 +143,10 @@
       "yard": {
         "what": "a yard let go since 1986: long grass over it all, willowherb in stands along the walls and the edge",
         "mix": { "yardGrass": 0.86, "willowherb": 0.14 },
-        "perSqm": 4.5,
-        "clump": [1.4, 0.6]
+        "perSqm": 6.0,
+        "clump": [1.4, 0.5],
+        "lip": [1.0, 0.55, 1.3],
+        "lipRow": [0.22, [0.1, 0.5]]
       },
       "path": {
         "what": "the path to the door grassing over: short grass, thinnest down the middle",
@@ -153,7 +158,7 @@
   },
   "notes": {
     "rock": "on_rock's rules (interface-growth-rock.md): lichen wants the open, rain-washed faces: none on a face leaning out past overhang (the normal's up), full from fullRain, times the sky it sees to skyPower. The damp foot (the height over its ground, m) takes moss over lichen: lichen from footLichen[0] to full at [1], moss full at footMoss[0] to none at [1], at most footMossMax. A joint (m to the nearest): no lichen inside jointLip, moss from full at jointMoss[0] to none at [1]. A low north face with little sky: moss up to northMossMax as an upright face's sky falls from northShade[0] to [1]. Moss fills in over mossYearsFull years; where it grows it takes mossOverLichen of the lichen's place. Rates and the delay before the first crust are growth.py's (LICHEN_DELAY).",
-    "painted": "How the crusts and the moss show in the painted corner (the art-direction page, The growth: flat crusts that follow the rock, matte, within 5 L* of their surface at blue hour, never mounds; broad shapes, never noise). lichen.ratio: the crust's albedo over its rock's (1.4: a face at L* 11 reads 14, a top at 22 reads 26.5), a touch warmer and greener. A century's quiet surface is covered to shareMax, reached at fullYears. The crusts are a few big shapes per face (patch: their size, m; warp: how far their edges wander), with a lobed edge (edge: its size, m; edgeDepth: how far it bites) only where the page keeps detail; soft: the edge's softness near and far. moss.ratio: darker and greener than its stone (a pigment: the joint's dark is the light's); patch its shapes' size, soft their edge.",
-    "tufts": "levels: each level's reach from the eye (m), crossfaded over fade of it. thin: past from (m) the far tufts thin out, a quarter kept at 120 m, the kept ones widened (the far heath as fewer, bigger clumps; Ghost of Tsushima doubles a far tile's size at the same count). budget: the most triangles a tuft of any species may have at each level, the most tufts per m² of any habitat, and the corner's whole draw (triangles and tufts in either final view); tools/growth_budget.py fails over them. species: heights and widths (m), blades per level, segments per blade per level, a blade's width at its base (m), lean (how far a blade tips from upright, 0 to 1, from the clump's middle out), curl (how far its tip bends over), base and tip (sRGB, its root and its tip: dark to light, Ghost of Tsushima), clumpHue (how much one clump's hue differs from the next: slight). habitats: the species' shares, tufts per m² at the fullest, and clump: the patches' size (m) and how far between them the cover drops (0 none, 1 bare)."
+    "painted": "How the crusts and the moss show in the painted corner (the art-direction page, The growth: flat crusts that follow the rock, matte, within 5 L* of their surface at blue hour, never mounds; a few broad value shifts, never noise). lichen.ratio: the crust's albedo over its rock's (1.4: a face at L* 11 reads 14, a top at 22 reads 26.5), a touch warmer and greener. A century's quiet surface is covered to shareMax, reached at fullYears. A crust grows out from where it took, so it is drawn as colonies: discs with a lobed edge that merge into scalloped patches where they crowd (reference 15), two sizes (spacing: m between the big ones and the small ones; smallShare: the small ones' part of the cover), their edge bitten by lobe (size m, depth of a radius), soft its least softness (of a spacing). They cluster (cluster: the clusters' size m, how much they vary the share, and how sharply they part, 0 to 1), so a face takes a few broad shifts. The big ones are the shapes and hold past the focus; the small ones and the lobes are marks, gone past it (their share given to the big), where the edge softens to softFar (of a spacing); the big ones keep their own outline at every distance (outline: its bumps' size m and how far they bite, of a cell), so none is a circle. Once a colony spans a few pixels, it is seen as its share. moss.ratio: darker and greener than its stone (a pigment: the joint's dark is the light's); patch its shapes' size, soft their edge.",
+    "tufts": "levels: each level's reach from the eye (m), crossfaded over fade of it. thin: past from (m) the far tufts thin out, a quarter kept at 120 m, the kept ones widened (the far heath as fewer, bigger clumps; Ghost of Tsushima doubles a far tile's size at the same count). budget: the most triangles a tuft of any species may have at each level, the most tufts per m² of any habitat, and the corner's whole draw (triangles and tufts in either final view); blender/parts/growth/corner.py prints them and fails over any. species: heights and widths (m), blades per level, segments per blade per level, a blade's width at its base (m), lean (how far a blade tips from upright, 0 to 1, from the clump's middle out), curl (how far its tip bends over), base and tip (sRGB, its root and its tip: dark to light, Ghost of Tsushima), clumpHue (how much one clump's hue differs from the next: slight). habitats: the species' shares, tufts per m² at the fullest, and clump: the patches' size (m) and how far between them the cover drops (0 none, 1 bare); a yard's lip: how near its edge (m) the long grass falls out over it, how far it leans there (rad), and how much taller it stands at the edge (never thinned there: the rankest grass is where no one treads); lipRow: a row of it along the lip itself, a tuft every so many m, set in from the edge by between these (m), so the edge is a fringe."
   }
 }

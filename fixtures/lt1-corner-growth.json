@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "describes": "Where the walked corner's ground growth stands, as far as the record does not yet say: the extent of D's yard and of the path to its door (ground_history: weeds in D's yard since 1986, the path grassing over), and of the heath above E (ground_history: heath since 1958; heath_above). The facts (what grows, since when) are fixtures/lt1-corner.json's; these are only the shapes the record lacks.",
+  "provenance": "fixture: authored for LT1's corner until the engine gives a place's ground cover and its extent (docs/engine-requests.md, growth)",
+  "of": "fixtures/lt1-corner.json",
+  "yard": {
+    "fact": "ground_history: weeds, D's yard, 1986",
+    "house": 1107,
+    "polygon": [[52.9, 38.0], [53.6, 35.0], [55.0, 33.1], [57.0, 32.4], [61.0, 32.4], [62.6, 33.3], [63.8, 35.2], [64.4, 37.5], [64.6, 44.5], [60.6, 44.5], [60.6, 40.5], [53.6, 40.5], [53.6, 38.0]],
+    "walls": [[[53.6, 40.5], [60.6, 40.5]], [[60.6, 40.5], [60.6, 44.5]]],
+    "lip": [[53.6, 35.0], [55.0, 33.1], [57.0, 32.4], [61.0, 32.4], [62.6, 33.3], [63.8, 35.2], [64.4, 37.5]],
+    "onGround": [12.35, 13.2]
+  },
+  "path": {
+    "fact": "ground_history: weeds, D's yard, 1986: the path to the door grassing over",
+    "line": [[52.75, 38.2], [53.05, 40.5], [53.1, 43.0], [53.55, 44.3]],
+    "width": 1.0,
+    "walked": 0.35,
+    "onGround": [11.9, 13.2]
+  },
+  "heath": {
+    "fact": "ground_history: heath, the hillside above E, 1958 (heath_above: the ground above it)",
+    "box": [20.0, 58.0, 80.0, 125.0],
+    "clear": 1.5,
+    "steps": 1.0
+  },
+  "notes": {
+    "yard": "D's pad on the knuckle's top (the fine grid's 12.6 m), less D's own footprint (cache/houses/houses.json) and the path. walls: D's walls round it; lip: the pad's edge over the knuckle's face (street m). Willowherb stands along both; the long grass at the lip leans out over it. onGround: the ground heights (m) a tuft may stand on; off them (the lip's fall, the rising ground behind) none.",
+    "path": "From the steps' head (fixture steps, 52.5, 38.4) to D's door on its west face (cache/houses/D.bin, the door at y 43.8 to 44.8), its centre line and width (m). walked: the share of its width down the middle still bare, the rest grassing over.",
+    "heath": "The ground above heath_above in this box (street m, x0 y0 x1 y1), less every house's footprint and the steps by clear and steps (m)."
+  }
+}

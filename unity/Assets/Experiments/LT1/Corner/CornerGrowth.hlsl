@@ -1,7 +1,8 @@
 // Growth in the painted corner: lichen and moss over a surface's albedo. PaintSurface.shader (ArtDirection) calls it for
 // laid stone (class 3) and for every element's own surface (class 10), after the surface's own albedo and before the
-// wet film and the light. The growth session owns this file: it may call Shaders/Growth.hlsl from here, so no
-// art-direction file changes for growth. Until then it returns the albedo unchanged.
+// wet film and the light. The growth session owns this file: it calls the growth's painted layer
+// (Shaders/GrowthPaint.hlsl, its values set as globals by the growth element, Code/Editor/Corner/LT1CornerGrowth.cs),
+// so no art-direction file changes for growth.
 //
 //     albedo      the surface's albedo (linear), its own value from the page
 //     cls         3 laid stone, 10 an element's own surface
@@ -17,9 +18,11 @@
 #ifndef OS_CORNER_GROWTH_INCLUDED
 #define OS_CORNER_GROWTH_INCLUDED
 
+#include "Assets/Shaders/GrowthPaint.hlsl"
+
 half3 CornerGrowth(half3 albedo, int cls, float2 uv0, float lichen, float moss, float sky, float3 positionWS, half3 normalWS, half detail, float footprint)
 {
-    return albedo;
+    return OS_PaintGrowth(albedo, uv0, lichen, moss, sky, positionWS, normalWS, detail, footprint);
 }
 
 #endif

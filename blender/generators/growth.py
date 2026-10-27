@@ -86,3 +86,201 @@ def on_rock(points, normals, sky, foot, joint, years_bare, rules=None):
     m = moss(damp, 0.0, years)
     lichen = lichen_years(years, 0.0, sky ** R["skyPower"]) * washed * (1.0 - R["mossOverLichen"] * m)
     return lichen, m
+
+
+# ---- tufts: the heath above E, the weeds in D's yard (place_tufts) ---------------------------------------------------
+
+def _value_noise(key, x, y, scale):
+    """A seeded value noise at points (arrays, m) on a lattice scale m across: smooth, 0 to 1."""
+    import hashing as HS
+    gx, gy = np.asarray(x, float) / scale, np.asarray(y, float) / scale
+    ix, iy = np.floor(gx).astype(np.int64), np.floor(gy).astype(np.int64)
+    fx, fy = gx - ix, gy - iy
+    fx, fy = fx * fx * (3 - 2 * fx), fy * fy * (3 - 2 * fy)
+
+    def at(i, j):
+        return np.array([HS.unit(HS.h(*key, int(a), int(b))) for a, b in zip(np.ravel(i), np.ravel(j))]).reshape(np.shape(i))
+    a, b, c, d = at(ix, iy), at(ix + 1, iy), at(ix, iy + 1), at(ix + 1, iy + 1)
+    return (a * (1 - fx) + b * fx) * (1 - fy) + (c * (1 - fx) + d * fx) * fy
+
+
+def _inside(poly, x, y):
+    """Even-odd test of points against a polygon [(x, y)]."""
+    x, y = np.asarray(x, float), np.asarray(y, float)
+    inside = np.zeros(x.shape, bool)
+    n = len(poly)
+    for i in range(n):
+        (x1, y1), (x2, y2) = poly[i], poly[(i + 1) % n]
+        cross = ((y1 > y) != (y2 > y)) & (x < (x2 - x1) * (y - y1) / np.where(y2 != y1, y2 - y1, 1e-12) + x1)
+        inside ^= cross
+    return inside
+
+
+def _to_line(line, x, y):
+    """Distance of points to a polyline [(x, y)], m."""
+    x, y = np.asarray(x, float), np.asarray(y, float)
+    best = np.full(x.shape, np.inf)
+    for (x1, y1), (x2, y2) in zip(line[:-1], line[1:]):
+        dx, dy = x2 - x1, y2 - y1
+        t = np.clip(((x - x1) * dx + (y - y1) * dy) / max(dx * dx + dy * dy, 1e-12), 0.0, 1.0)
+        best = np.minimum(best, np.hypot(x - (x1 + t * dx), y - (y1 + t * dy)))
+    return best
+
+
+def _cells(key, box, per_sqm):
+    """Candidate feet on a jittered grid over a box (x0, y0, x1, y1), one a cell at the habitat's fullest density;
+    each cell's draws keyed by its own indices, so a cell never moves when the box does."""
+    import hashing as HS
+    c = 1.0 / np.sqrt(per_sqm)
+    x0, y0, x1, y1 = box
+    rows = []
+    for iy in range(int(np.floor(y0 / c)), int(np.ceil(y1 / c))):
+        for ix in range(int(np.floor(x0 / c)), int(np.ceil(x1 / c))):
+            S = HS.Stream(*key, ix, iy)
+            rows.append(((ix + S.random()) * c, (iy + S.random()) * c, S.random(), S.random(), S.random(), S.random(),
+                         S.random(), S.random(), S.random(), S.random(), S.random()))
+    return np.array(rows, float).reshape(-1, 11)
+
+
+def place_tufts(where, ground, footprints, steps, heath_above, seed, rules=None, variants=4):
+    """Where the tufts stand, from the record (ground_history: heath above E since 1958, weeds in D's yard since 1986)
+    and the extents it lacks (fixtures/lt1-corner-growth.json: where): seeded feet on a jittered grid, thinned into
+    patches by a seeded field (habitats' clump), each a species by the habitat's mix (willowherb in stands along a
+    yard's walls and lip; the path's walked middle bare), its variant, turn, size, lean, and its rank (which stay as
+    the far ones thin) and hue (one clump from the next) as seeded texture. ground(x, y): the ground's height (m);
+    footprints: houses' corners [(x, y)]; steps: lines [(x, y)] the heath stays off; heath_above (m).
+
+    Returns rows (species, variant, habitat, x, y, z, turn, scale, lean x, lean y, rank, hue) and each habitat's
+    area (m²)."""
+    T = (rules or pack())["tufts"]
+    H = T["habitats"]
+    species = list(T["species"])
+    out, area = [], {}
+
+    def emit(hab, pts, pick, size=None):
+        for k, p in enumerate(pts):
+            sp = pick[k]
+            if sp is None:
+                continue
+            z = float(ground(p[0], p[1]))
+            s = (0.85 + 0.3 * p[5]) * (1.0 if size is None else size[k])
+            out.append((sp, int(p[6] * variants) % variants, hab, round(p[0], 3), round(p[1], 3), round(z, 3),
+                        round(2 * np.pi * p[4], 4), round(s, 3), round((p[7] - 0.5) * 0.16, 4),
+                        round((p[8] - 0.5) * 0.16, 4), round(p[9], 4), round(p[10], 4)))
+
+    def patches(hab, P):
+        n = _value_noise((seed, "growth clump", hab), P[:, 0], P[:, 1], H[hab]["clump"][0])
+        keep = (1.0 - H[hab]["clump"][1]) + H[hab]["clump"][1] * np.clip((n - 0.3) / 0.4, 0.0, 1.0)
+        return P[P[:, 2] < keep]
+
+    def mix_pick(hab, u):
+        m = H[hab]["mix"]
+        names, w = list(m), np.cumsum(list(m.values()))
+        return [names[min(int(np.searchsorted(w, x * w[-1], side="right")), len(names) - 1)] for x in u]
+
+    # D's yard: long grass over it all, willowherb in stands along its walls and its lip
+    import hashing as HS
+    Y, Pth = where["yard"], where["path"]
+    poly = Y["polygon"]
+    xs, ys = [p[0] for p in poly], [p[1] for p in poly]
+    P = _cells((seed, "growth tuft", "yard"), (min(xs), min(ys), max(xs), max(ys)), H["yard"]["perSqm"])
+    P = P[_inside(poly, P[:, 0], P[:, 1])]
+    P = P[_to_line(Pth["line"], P[:, 0], P[:, 1]) > 0.5 * Pth["width"] + 0.1]
+    z = np.array([ground(x, y) for x, y in P[:, :2]])
+    P = P[(z >= Y["onGround"][0]) & (z <= Y["onGround"][1])]
+    G = _cells((seed, "area", "yard"), (min(xs), min(ys), max(xs), max(ys)), 16.0)
+    area["yard"] = float(np.sum(_inside(poly, G[:, 0], G[:, 1]))) / 16.0
+    # the rankest grass stands at the untrodden lip: it is never thinned there, and stands taller toward it
+    reach, most, rank = H["yard"]["lip"]
+    near = _to_line(Y["lip"], P[:, 0], P[:, 1]) < reach
+    kept = patches("yard", P)
+    P = np.concatenate([kept, P[near & ~np.isin(P[:, 0] * 1e4 + P[:, 1], kept[:, 0] * 1e4 + kept[:, 1])]])
+    # and a row of it along the lip itself, so its edge is a fringe, never a dotted line
+    step, inset = H["yard"]["lipRow"]
+    lip = np.array(Y["lip"], float)
+    row = []
+    for j, (a, b) in enumerate(zip(lip[:-1], lip[1:])):
+        ab = b - a
+        L = float(np.hypot(*ab))
+        side = np.array([-ab[1], ab[0]]) / max(L, 1e-9)
+        for k in range(int(np.ceil(L / step))):
+            S = HS.Stream(seed, "growth lip row", "yard", j, k)
+            t = (k + S.random()) * step / L
+            off = S.uniform(inset[0], inset[1])
+            for sgn in (1.0, -1.0):
+                q = a + min(t, 1.0) * ab + sgn * off * side
+                if _inside(poly, np.array([q[0]]), np.array([q[1]]))[0]:
+                    row.append([q[0], q[1]] + [S.random() for _ in range(9)])
+                    break
+    if row:
+        R = np.array(row, float)
+        zr = np.array([ground(x, y) for x, y in R[:, :2]])
+        R = R[(zr >= Y["onGround"][0]) & (zr <= Y["onGround"][1])
+              & (_to_line(Pth["line"], R[:, 0], R[:, 1]) > 0.5 * Pth["width"] + 0.1)]
+        P = np.concatenate([P, R])
+    dlip = _to_line(Y["lip"], P[:, 0], P[:, 1])
+    tall = 1.0 + (rank - 1.0) * np.clip(1.0 - dlip / reach, 0.0, 1.0)
+    edge = np.min([_to_line(e, P[:, 0], P[:, 1]) for e in Y["walls"] + [Y["lip"]]], axis=0)
+    stand = _value_noise((seed, "growth stand", "yard"), P[:, 0], P[:, 1], 1.6)
+    w = H["yard"]["mix"]["willowherb"]
+    herb = P[:, 3] < np.clip(w * 4.0 * np.clip((stand - 0.45) / 0.2, 0, 1) * np.clip(1.6 - edge / 1.2, 0, 1), 0, 0.95)
+    n0 = len(out)
+    emit("yard", P, ["willowherb" if hb else "yardGrass" for hb in herb], size=list(tall))
+    # the long grass at the lip falls out over it (nothing holds it up on the open side)
+    for k in range(n0, len(out)):
+        r = list(out[k])
+        if r[0] != "yardGrass":
+            continue
+        best, to = np.inf, None
+        for a, b in zip(lip[:-1], lip[1:]):
+            ab = b - a
+            t = float(np.clip(np.dot([r[3], r[4]] - a, ab) / max(np.dot(ab, ab), 1e-12), 0.0, 1.0))
+            q = a + t * ab
+            dq = float(np.hypot(q[0] - r[3], q[1] - r[4]))
+            if dq < best:
+                best, to = dq, (q - [r[3], r[4]]) / max(dq, 1e-6)
+        if best < reach:
+            lean = most * (1.0 - best / reach)
+            r[8] = round(r[8] + lean * float(to[0]), 4)
+            r[9] = round(r[9] + lean * float(to[1]), 4)
+            out[k] = tuple(r)
+
+    # the path to D's door: grassing over, its walked middle bare
+    lx, ly = [p[0] for p in Pth["line"]], [p[1] for p in Pth["line"]]
+    hw = 0.5 * Pth["width"]
+    P = _cells((seed, "growth tuft", "path"), (min(lx) - hw, min(ly) - hw, max(lx) + hw, max(ly) + hw), H["path"]["perSqm"])
+    d = _to_line(Pth["line"], P[:, 0], P[:, 1])
+    P, d = P[d < hw], d[d < hw]
+    z = np.array([ground(x, y) for x, y in P[:, :2]])
+    ok = (z >= Pth["onGround"][0]) & (z <= Pth["onGround"][1]) & (d > Pth["walked"] * hw)
+    P, d = P[ok], d[ok]
+    area["path"] = 2.0 * hw * float(np.sum(np.hypot(np.diff(lx), np.diff(ly))))
+    P = patches("path", P)
+    d = _to_line(Pth["line"], P[:, 0], P[:, 1])
+    emit("path", P, ["pathGrass"] * len(P), size=list(0.7 + 0.4 * (d / hw)))
+
+    # the heath above E: heather the matrix, hair-grass in its gaps, a juniper here and there
+    Hh = where["heath"]
+    P = _cells((seed, "growth tuft", "heath"), Hh["box"], H["heath"]["perSqm"])
+    z = np.array([ground(x, y) for x, y in P[:, :2]])
+    ok = z > heath_above
+    for fp in footprints:
+        fx, fy = [p[0] for p in fp], [p[1] for p in fp]
+        ok &= ~((P[:, 0] > min(fx) - Hh["clear"]) & (P[:, 0] < max(fx) + Hh["clear"])
+                & (P[:, 1] > min(fy) - Hh["clear"]) & (P[:, 1] < max(fy) + Hh["clear"]))
+    for ln in steps:
+        ok &= _to_line(ln, P[:, 0], P[:, 1]) > Hh["steps"]
+    G = _cells((seed, "area", "heath"), Hh["box"], 1.0)
+    gz = np.array([ground(x, y) for x, y in G[:, :2]])
+    area["heath"] = float(np.sum(gz > heath_above))
+    P = patches("heath", P[ok])
+    gaps = _value_noise((seed, "growth gaps", "heath"), P[:, 0], P[:, 1], 2.4)
+    pick = []
+    for k, p in enumerate(P):
+        if p[3] < H["heath"]["mix"]["juniper"]:
+            pick.append("juniper")
+        else:
+            grass = H["heath"]["mix"]["heathGrass"] * (0.4 + 1.6 * gaps[k])
+            pick.append("heathGrass" if p[10] < grass else "heather")
+    emit("heath", P, pick)
+    return out, area
