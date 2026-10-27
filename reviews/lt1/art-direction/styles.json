@@ -1,6 +1,6 @@
 {
   "_": "Three directions for the walked corner that differ in styling, not only in value plan (tools/style_dir.py). Each is an idea in one sentence, a value plan (L* of each mass before the air, what lamps and sky add), and a styling: how surfaces, edges, detail, air and history are drawn. The masses are directions.json's (things the facts place). Anchored on nothing we made before: no render's surface detail is used.",
-  "views": {"street": {"masses": [{"name": "C.plinth.joint", "like": "C.plinth", "cls": [2], "box": [30, 28, 0, 46, 41, 30], "kinds": [14], "z": [0, 8.6], "_": "the plinth's joints are the plinth, not the wall"}]}},
+  "masses_more": [{"name": "C.plinth.joint", "like": "C.plinth", "cls": [2], "box": [30, 28, 0, 46, 41, 30], "kinds": [14], "z": [0, 8.6], "_": "the plinth's joints are the plinth, not the wall"}],
   "directions": {
     "print": {
       "moment": "1750-sea-fog",
@@ -54,6 +54,25 @@
       "calm_keep": ["tread"],
       "pool_soft_px": 3,
       "clean_px": 1
+    },
+    "kept": {
+      "moment": "1750-sea-fog",
+      "idea": "The hour prints the town in its two inks on paper, in flat blocks cut clean where they meet; only what people paint and keep shows its own colour, and the white houses are the paper itself, tinted as their coats age.",
+      "picked": "Fable's art director, round 1, 27 October: Two inks' rule printed Print's way",
+      "styling": {"kind": "keptprint", "paper": "#f3eee3", "cool": "#4b5aa6", "warm": "#eb9a48", "steps": [8, 18, 30, 44, 58, 72, 80, 88, 96], "warm_steps": [0.0, 0.5, 0.9], "warm_at": [0.22, 0.55], "warm_soft_px": 3, "sky_warm": 0.6, "own_drain": 0.5, "own": [{"name": "pantiles", "masses": ["D.roof"], "kinds": [5], "from": "1300-drizzle"}, {"name": "doors", "cls": [2], "kinds": [9], "from": "1300-drizzle"}], "cut": {"deg": 24, "rel": 0.03, "near_m": 14, "far_m": 42, "base": 0.0, "up": 1.0, "lamp": 0.3, "r0": 0.1, "r1": 0.5, "L": 44, "soft_px": 0, "default": 0.0, "masses": {"tread": {"line": 1.0}, "coping": {"line": 1.0}, "knuckle.top": {"line": 0.6}}}, "warm_min_L": 56, "key": {"srgb": "#1b2033", "from_L": 48, "full_L": 10, "k": 0.7}, "warm_share": 0.85, "coats": {"from": "1300-drizzle", "masses": ["C.wall", "C.east", "D.wall", "far.wall", "house"], "kinds": [0], "run_px": 22, "below": [0.93, 0.8], "states": [{"name": "fresh", "dL": 0}, {"name": "aged", "dL": -9}, {"name": "bare", "dL": -20, "warm": 0.55}], "local_px": 30}},
+      "masses": {"rest": {"L": 40}, "ground": {"L": 30, "sky": 10, "lamp": 30}, "curtain": {"L": 12}, "curtain.foot": {"L": 9}, "knuckle": {"L": 10}, "knuckle.top": {"L": 22}, "knuckle.foot": {"L": 8}, "town": {"L": 66}, "town.roof": {"L": 56}, "stone": {"L": 22, "lamp": 26}, "coping": {"L": 34, "sky": 14, "lamp": 30}, "tread": {"L": 26, "sky": 16, "lamp": 30}, "house": {"L": 84}, "C.wall": {"L": 90}, "C.east": {"L": 78, "lamp": 14}, "C.roof": {"L": 34}, "C.plinth": {"L": 30, "lamp": 16}, "C.glass": {"L": 18}, "D.wall": {"L": 76}, "D.roof": {"L": 36}, "far.wall": {"L": 80}, "far.roof": {"L": 66}},
+      "sky": {"horizon": 54, "zenith": 30, "deg": 32, "deg0": 6},
+      "air": {"L": 60, "m": 26, "from_m": 14, "height_m": 40, "sky_share": 0.2, "fog": 0.15, "steps": [0.0, 0.4, 0.7]},
+      "glow": {"towards": [46.0, 62.0, 13.0], "deg_wide": 30, "deg_up": 5.0, "deg_down": 7, "L": 12, "warm": 0.8, "sky_share": 1.0, "srgb": "#f6c39a", "in_air": true},
+      "windows": 76,
+      "wet": {"streak_deg": [2.0, 14.0], "L": 30},
+      "lamp": {"default": {"post": 10, "glass": 97, "halo_m": 0.35, "halo_L": 30}, "landing": {"halo_m": 0.5, "halo_L": 36}, "lower": {"halo_m": 0.28}},
+      "lamp_boost": 1.6,
+      "calm_px": 3,
+      "calm_keep": ["tread"],
+      "pool_soft_px": 3,
+      "clean_px": 1,
+      "colour": {"warm": "#eb9a48", "swatches": ["#f3eee3", "#4b5aa6", "#eb9a48", "#1b2033"]}
     }
   }
 }
