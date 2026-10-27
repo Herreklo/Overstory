@@ -8,9 +8,9 @@ Can the town be affected by its people and its environment over the years? Under
 
 ## Where we are (27 October, evening)
 
-- **All build work is paused** while Øystein reviews the direction. Nothing is running.
-- **The research is done:** what Claude has made with Blender and Unity, and how good it looks. The coordinator is writing the review for Øystein: what is realistic, what looks amazing, what we build next. Nothing restarts until he has answered.
-- **The style is open again.** The art direction (`reviews/lt1/art-direction/README.md`, painterly realism in Stålenhag's line, stylised hard) was judged from one camera only, so its frame is a stage set, not a proven look. Øystein: "stunning could mean a lot of things".
+- **Øystein's decision (27 October): build one amazing-looking town, "to see if we are able to".** LT1's town, Harbour Row and the town above it, at one moment, judged from the city camera, built from facts through the generators so it can be shown ten years on next. It runs in its own session; report and stills in `reviews/lt1/town/`.
+- **The review behind it:** code-built work is strong at architecture from facts, light and systems, and weak at close-range organic form and fine detail. Good-looking work gets its look from shape, light, palette and many small meaningful things, seen from the views it was made for.
+- **The style stays** (`reviews/lt1/art-direction/README.md`, painterly realism in Stålenhag's line, stylised hard); its frame was judged from one camera only, so the town is its real test.
 - **The painted corner:** a hook for elements, a scene (`unity/Assets/Experiments/LT1/Corner/LT1_PaintedCorner.unity`), an app (`unity/Builds/PaintedCorner/`) and a rebuild script (`tools/painted_corner.py`). The app still has half-made elements in it: grass in the sky, a void ground, floating houses. It does not go to Øystein again until it holds from every view.
 - **The paused elements,** each at a pushed point and none judged:
   - the houses as hero assets (handover: `reviews/lt1/houses/hero/handover.md`);
@@ -33,7 +33,6 @@ Can the town be affected by its people and its environment over the years? Under
 
 ## Waiting for Øystein
 
-- The review's answer: the direction, and what we build next.
 - Installing Unity's IL2CPP module when the port's step 5 needs it. Recommended: yes.
 - Which game comes first. Nothing is decided; ideas are in `docs/ideas/README.md`.
 - The exit criteria in `CLAUDE.md`, a draft to agree with him.
