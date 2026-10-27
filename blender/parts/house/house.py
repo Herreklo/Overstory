@@ -210,9 +210,13 @@ def build(b, facts, timber, ground, date, index, seed, lit_share, tier="near"):
                     left=cb["widthMm"] * MM, right=cb["widthMm"] * MM, year=facts["built"],
                     scheme="back" if name == "back" else "body")
         n = C.clad(soup, f, wall, outlines, lines, dict(cl, marks=timber["marks"]), rng, shelter, patches)
-        ext = cl["butMm"] * MM + cb["proudMm"] * MM if name in ("front", "back") else 0.0
+        # the front and back's corner boards and drip board run past the corner by the side wall's own (pushed) depth
+        pu = timber["push"]
+        ends = name in ("front", "back")
+        ext = cl["butMm"] * MM + cb["proudMm"] * MM * pu["trimProud"] if ends else 0.0
+        ext_db = cl["butMm"] * MM + db["proudMm"] * MM * pu["trimProud"] if ends else 0.0
         C.corner_boards(soup, f, wall, z0, eave, cb, out_w, ext, ext, rng)
-        C.drip_board(soup, f, -ext, L + ext, zdrip, db, out_w, rng)
+        C.drip_board(soup, f, -ext_db, L + ext_db, zdrip, db, out_w, rng)
         # the plinth, down below the lowest ground along the wall
         gz = min(ground(*(o[0] + u[0] * L * t, o[1] + u[1] * L * t)) for t in (0.0, 0.25, 0.5, 0.75, 1.0)) - base
         P.plinth(soup, f, -ext * 0.5, L + ext * 0.5, min(gz, -0.25) - 0.35, zdrip + 0.02, wk["plinth"], out_w - 0.006,

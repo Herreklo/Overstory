@@ -108,7 +108,7 @@ def _face(soup, f, edges, zf, zt, dep, lz, s, end, sills, mk):
                   marks=(mark(a0, zf), mark(a1, zf), mark(b1, zt), mark(b0, zt)))
 
 
-def clad(soup, f, wall, openings, lines, cl, rng, shelter, patches=()):
+def clad(soup, f, wall, openings, lines, cl, rng, shelter, patches=(), sills=None, butts=()):
     """Rebated boards over the wall, course by course. A single-rebated board's face leans back by its step, so each
     course stands proud of the one above it; a double-rebated board's faces lie in one plane, a groove at each joint.
 
@@ -117,7 +117,10 @@ def clad(soup, f, wall, openings, lines, cl, rng, shelter, patches=()):
     lines: the story pole's course lines. cl: the working's cladding. rng: the wall's stream (hashing.Stream).
     shelter(z): how sheltered a height is (0 open, 1 under the eave's overhang).
     patches: (s0, s1, z0, z1, year): where a later change boarded in part of an old opening; the boards there are
-    that year's, cut at the old opening's sides."""
+    that year's, cut at the old opening's sides.
+    sills: (s0, s1, z) the sills whose run-off reaches the boards (their outline's foot), else each opening's foot.
+    butts: outlines (s0, s1, z0, z1) the boards stop at with no trim over their ends (a later infill, its own boards
+    thinner): each board ending there shows its end grain."""
     but = cl["butMm"] * MM
     top = but - cl["stepMm"] * MM
     groove = cl["grooveMm"] * MM
@@ -131,7 +134,13 @@ def clad(soup, f, wall, openings, lines, cl, rng, shelter, patches=()):
         top_ = ridge - 0.08 if ridge is not None else lines[-1]
         lines = [lines[0], eave, top_] if ridge is not None and top_ > eave + 0.1 else [lines[0], lines[-1]]
     # the sills water runs off: each casing's foot, over its width
-    sills = [(o[0], o[1], o[2]) for o in openings]
+    if sills is None:
+        sills = [(o[0], o[1], o[2]) for o in openings]
+    openings = list(openings) + list(butts)
+
+    def butted(sv, side, za, zb):
+        # whether a run's end at sv meets an infill's side (side 0: its left side, s0; 1: its right, s1)
+        return any(abs(sv - b[side]) < 1e-4 and b[2] < zb - 0.004 and b[3] > za + 0.004 for b in butts)
     prev_joints = []
     boards = 0
     for i in range(len(lines) - 1):
@@ -228,6 +237,13 @@ def clad(soup, f, wall, openings, lines, cl, rng, shelter, patches=()):
                                   f.at(sb1 - gap, zt, dep(zt)))
                     if s > a0 + 0.01:
                         soup.quad(f.at(sa0, zf, 0.0), f.at(sa0, zf, dep(zf)), f.at(sb0, zt, dep(zt)), f.at(sb0, zt, 0.0))
+                    if soup.level == 0:
+                        # where the board stops at an infill with no trim over its end: its end grain, standing
+                        # proud of the thinner boards beside it
+                        if end >= a1 - 0.01 and butted(a1, 0, za, zb):
+                            soup.quad(f.at(sa1, zf, dep(zf)), f.at(sa1, zf, 0.0), f.at(sb1, zt, 0.0), f.at(sb1, zt, dep(zt)))
+                        if s <= a0 + 0.01 and butted(a0, 1, za, zb):
+                            soup.quad(f.at(sa0, zf, 0.0), f.at(sa0, zf, dep(zf)), f.at(sb0, zt, dep(zt)), f.at(sb0, zt, 0.0))
                     boards += 1
                 if end < a1 and not notch and z_hi >= zb - 1e-4:
                     joints.append(end)
@@ -239,36 +255,38 @@ def clad(soup, f, wall, openings, lines, cl, rng, shelter, patches=()):
 def corner_boards(soup, f, wall, z0, z1, cb, out_w, extend_left, extend_right, rng):
     """The corner boards at the wall's ends, standing proud of the cladding (out_w: the cladding's face). A wall whose
     board laps its neighbour's runs past the corner by that board's thickness."""
+    pu = soup.push
     w = cb["widthMm"] * MM
-    t = out_w + cb["proudMm"] * MM
+    # proud as the casings are, by the style's push: the edge the wall turns on, found against the next wall's light
+    t = out_w + cb["proudMm"] * MM * pu["trimProud"]
     w0 = out_w if soup.level >= 2 else 0.0     # at the city level only its part proud of the cladding (casing)
     L = wall["length"]
+    ch = pu["chamferMm"]["trim"] * MM
     soup.use(kind="trim", lap=0.5, scheme="trim")
     for side, ext in ((0, extend_left), (1, extend_right)):
         soup.use(seed=rng.random())
+        # its arrises chamfered (near); its foot on the drip board and its head under the eave hidden
         if side == 0:
-            soup.box(f, -ext, w, z0, z1, w0, t, grain="z")
+            soup.bbox(f, -ext, w, z0, z1, w0, t, ch, skip=("back", "bottom", "top"), grain="z")
         else:
-            soup.box(f, L - w, L + ext, z0, z1, w0, t, grain="z")
+            soup.bbox(f, L - w, L + ext, z0, z1, w0, t, ch, skip=("back", "bottom", "top"), grain="z")
 
 
 def drip_board(soup, f, s0, s1, z0, db, out_w, rng):
-    """The drip board along the cladding's foot, over the plinth: a thick board whose top slopes out to shed water."""
-    h, p, sl = db["heightMm"] * MM, db["proudMm"] * MM, db["slopeMm"] * MM
+    """The drip board along the cladding's foot, over the plinth: a thick board whose top slopes out to shed water,
+    proud by the style's push, its nose's arrises chamfered (near), so its lit top and its dark underside read as one
+    heavy line over the plinth."""
+    pu = soup.push
+    h, p, sl = db["heightMm"] * MM, db["proudMm"] * MM * pu["trimProud"], db["slopeMm"] * MM
     soup.use(kind="trim", seed=rng.random(), lap=0.5, scheme="trim", shelter=0.0)
     w1 = out_w + p
-    # front, its top sloping back up to the cladding, its underside
-    soup.quad(f.at(s0, z0, w1), f.at(s1, z0, w1), f.at(s1, z0 + h, w1), f.at(s0, z0 + h, w1),
-              ta=[(s0, z0), (s1, z0), (s1, z0 + h), (s0, z0 + h)])
-    soup.quad(f.at(s0, z0 + h, w1), f.at(s1, z0 + h, w1), f.at(s1, z0 + h + sl, out_w * 0.5),
-              f.at(s0, z0 + h + sl, out_w * 0.5), ta=[(s0, 0), (s1, 0), (s1, 0.04), (s0, 0.04)])
-    soup.quad(f.at(s0, z0, 0.0), f.at(s1, z0, 0.0), f.at(s1, z0, w1), f.at(s0, z0, w1),
-              ta=[(s0, 0), (s1, 0), (s1, 0.04), (s0, 0.04)])
-    for s, sgn in ((s0, -1), (s1, 1)):
-        a, b = (f.at(s, z0, 0.0), f.at(s, z0, w1)) if sgn > 0 else (f.at(s, z0, w1), f.at(s, z0, 0.0))
-        c, d = (f.at(s, z0 + h + sl, out_w * 0.5), f.at(s, z0 + h, w1)) if sgn < 0 else \
-               (f.at(s, z0 + h, w1), f.at(s, z0 + h + sl, out_w * 0.5))
-        soup.quad(a, b, c if sgn > 0 else d, d if sgn > 0 else c)
+    wb = out_w * 0.5
+    c = min(pu["chamferMm"]["trim"] * MM, 0.25 * h) if soup.level == 0 else 0.0
+    # its section (w, z): the underside, the nose, the top weathering back up into the cladding
+    k = sl / max(w1 - wb, 1e-6)
+    pts = [(0.0, z0), (w1 - c, z0), (w1, z0 + c), (w1, z0 + h - c), (w1 - c, z0 + h + c * k), (wb, z0 + h + sl),
+           (0.0, z0 + h + sl)] if c > 0 else [(0.0, z0), (w1, z0), (w1, z0 + h), (wb, z0 + h + sl), (0.0, z0 + h + sl)]
+    section(soup, f, s0, s1, pts)
     return z0 + h
 
 
