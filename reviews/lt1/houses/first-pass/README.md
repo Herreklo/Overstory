@@ -23,3 +23,27 @@ Stills: `../second-round/final/`: the street stop at the street tier, C's east a
 7. D's pantile roof against C's slate comes from the workings' data and needs confirming.
 
 **Owed:** the seven faults. C's door and bislag and D's lean-to are in no still's view. Also owed: the pantile's wave and glass waviness; the frame time on Øystein's Mac; the archive photos, which wait for his yes; the lamps' bounce, which belongs to the lamps element. About 45 frames were rendered this round, in 23 Unity runs.
+
+## Third round (27 October)
+
+Stills: `../third-round/final/`: the street stop at the street tier, C's east and D's west walls at eye level, in blue hour and drizzle, and the 2005 pair. What changed:
+- The plinth is split granite blocks, pointed flush.
+- Unlit panes show their room by daylight and reflect the sky seen through the air.
+- D's boarding is reused formwork boards nailed upright, each greying at its own pace, with rust run from its nails.
+- Paint fails first where water works in: under a sill's run-off, at end grain, at the foot and on the rain side.
+- Dirt gathers by the same water, and little on the open wall.
+- The old town's white scheme from 1956 keeps a coat's white, so C's 1998 repaint reads the same white. It also turned C's, D's and E's 1989 colours to whites.
+- Curtains fold.
+
+`tools/check.py` passes every tier at 1989 and 2005.
+
+**Strict review (Fable, 27 October): FAIL, close.** Of round 2's seven faults, these are fixed: the plinth (1), the panes (2), the boarding as louvres (4), the peel's distribution (5) and the cream (6). C's patch band (3) was the lamp post's shadow, which is the light's. The pantile against slate (7) is confirmed from the workings. The recheck of only the changed stills passed the plinth, the panes and the curtains and failed on three points:
+- Coat age doesn't step from 2 to 6 or 7 to 22 years.
+- D's boards need a wood material: mixed grey-browns, grain, rust streaks rather than dashes, and silvering by 2005 (wet silvered wood is mid grey-brown, not charcoal).
+- The flakes are a noise field; they should be bounded by the boards, run long along the grain and be heaviest at the drip, the ends, below the sills and at the foot.
+
+After the recheck, the soiling was driven by water: C's 2005 coat now shows run-off under its sills and D's 2005 wall no longer reads tarred. This has not been rechecked.
+
+**Not the houses':** hard directional shadows in drizzle (the lamp post, a chimney stepped down a gable, the rafter tails); the lamps' pools and bounce; the gable's blue in blue hour; the wet ground; and the near air, which lifts every dark surface by about 0.04 (linear) and flattens the plinth and boarding.
+
+**Owed (a fourth round):** the three recheck points; a light S-shaped mark at the foot of D's upper-left boarding in 1989; finer curtain folds and header. Still owed from before: C's bislag, D's lean-to, the pantile's wave, the frame time and the archive photos (these wait for Øystein's yes). About 60 views, each with a grey twin, were rendered in about 34 Unity runs.
