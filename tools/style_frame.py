@@ -82,6 +82,10 @@ def box1(a, r, axis):
     return ((hi - lo) / (2 * r + 1)).astype(np.float32)
 
 
+def blur_rgb(a, sigma):
+    return np.stack([blur(a[..., k], sigma) for k in range(a.shape[-1])], -1)
+
+
 def box(a, r):
     return box1(box1(a, r, 0), r, 1)
 
@@ -223,6 +227,11 @@ def add_lamps(img, P, n, dist, sky, cls, rays, cam, lamps, kinds, air, w, h, wet
         reach = smoothstep(kind["reach"], kind["reach"] * 0.6, np.sqrt(r2))
         e = kind["power"] * facing / r2 * reach
         e = np.where(sky, 0.0, e) * shadow(P, head, dist, cam, w, h, kind.get("shadow_steps", 24))
+        # the lamp's own clay stand-in takes none of its light: it is painted out later
+        base = np.array(lamp["base"], np.float32)
+        own = (np.sqrt(((P[..., :2] - base[None, None, :2]) ** 2).sum(-1)) < kind["clay_box_m"]) \
+            & (P[..., 2] > base[2] - 0.05) & (P[..., 2] < head[2] + 0.5)
+        e = np.where(blur(own.astype(np.float32), 1.5) > 0.05, 0.0, e)
         pool = np.maximum(pool, np.clip(e / kind["pool_full"], 0, 1))
         if wet:
             # the lamp in the wet: a glossy lobe round the mirror direction, long towards the eye on flat ground
@@ -342,8 +351,10 @@ def shadow(P, head, dist, cam, w, h, steps):
     pos, basis = cam
     vis = np.ones(dist.shape, np.float32)
     flat = P.reshape(-1, 3)
+    # the march stops short of the head itself, so a lamp the render draws does not shade its own light
+    reach = 1 - 0.6 / np.maximum(np.linalg.norm(head[None, :] - flat, axis=-1, keepdims=True), 0.7)
     for k in range(1, steps):
-        t = k / steps
+        t = k / steps * reach
         q = flat * (1 - t) + head[None, :] * t
         px, qd, z = project(q, pos, basis, w, h)
         ix = np.clip(px[:, 0].astype(np.int32), 0, w - 1)
@@ -364,10 +375,16 @@ def draw_lantern(img, lamp, kind, dist, cam, w, h, P=None, cls=None):
     if P is not None and not lamp.get("add", False):
         flat = np.sqrt(((P[..., :2] - base[None, None, :2]) ** 2).sum(-1))
         box = (cls == 1) & (flat < kind["clay_box_m"]) & (P[..., 2] > base[2] - 0.05) & (P[..., 2] < head[2] + 0.5)
-        box = blur(box.astype(np.float32), 1.0) > 0.2
-        behind = blur(np.where(box[..., None], 0.0, out), 6.0)
-        weight = blur((~box).astype(np.float32), 6.0)[..., None]
-        out = np.where(box[..., None], behind / np.maximum(weight, 1e-3), out)
+        box = blur(box.astype(np.float32), 1.5) > 0.05
+        # each row across the box takes what stands either side of it, as a painter fills a post's place
+        cols = np.arange(w)[None, :].repeat(h, 0)
+        left = np.maximum.accumulate(np.where(box, -1, cols), axis=1)
+        right = np.minimum.accumulate(np.where(box, w, cols)[:, ::-1], axis=1)[:, ::-1]
+        lc, rc = np.clip(left, 0, w - 1), np.clip(right, 0, w - 1)
+        t = np.clip((cols - left) / np.maximum(right - left, 1), 0, 1)[..., None]
+        rows = np.arange(h)[:, None]
+        fill = out[rows, lc] * (1 - t) + out[rows, rc] * t
+        out = np.where(box[..., None], blur_rgb(fill, 1.0), out)
     _, hd, _ = project(head[None], pos, basis, w, h)
     ppm = h / (2 * float(hd[0]) * basis[3])  # pixels per metre at the lamp
     yy, xx = np.mgrid[0:h, 0:w].astype(np.float32)
@@ -376,13 +393,13 @@ def draw_lantern(img, lamp, kind, dist, cam, w, h, P=None, cls=None):
 
     def part(z0, z1, half0, half1, colour):
         nonlocal out
-        a, b = np.array([[head[0], head[1], z0], [head[0], head[1], z1]], np.float32), None
-        (x0, y0), (x1, y1) = project(a, pos, basis, w, h)[0]
+        a = np.array([[head[0], head[1], z0], [head[0], head[1], z1]], np.float32)
+        ((x0, y0), (x1, y1)), (d0, d1), _ = project(a, pos, basis, w, h)
         t = np.clip((yy - y1) / max(y0 - y1, 1e-3), 0, 1)
         half = (half1 + (half0 - half1) * t) * ppm
         cx = x1 + (x0 - x1) * t
         inside = np.clip(half - np.abs(xx - cx) + 0.5, 0, 1) * np.clip(np.minimum(yy - y1, y0 - yy) + 0.5, 0, 1)
-        m = inside * (dist > float(hd[0]) - 0.4)
+        m = inside * (dist > (d1 + (d0 - d1) * t) - 0.4)
         out = out * (1 - m[..., None]) + m[..., None] * colour
 
     hz = head[2]
@@ -515,7 +532,21 @@ def value_plan(img, plan, dist, sky, pool, focus_w, lit, local, glow_l, ps):
     return img * gain[..., None]
 
 
-def colour_script(img, cs, focus_w, pool, lit, sky, glow):
+def accents(cs, P, ps):
+    """The moment's one accent, by what a surface is (a house kind, a class) and where (a box in street metres):
+    keeps its own hue and more of its chroma than anything round it."""
+    k = np.zeros(ps["dist"].shape, np.float32)
+    for a in cs.get("accents", []):
+        m = np.isin(ps["cls"], a.get("cls", [2])) & ~ps["sky"]
+        if "kinds" in a:
+            m &= np.isin(ps["kind"], a["kinds"])
+        if "box" in a:
+            m &= np.all((P >= np.array(a["box"][:3], np.float32)) & (P <= np.array(a["box"][3:], np.float32)), -1)
+        k = np.maximum(k, blur(m.astype(np.float32), 1.0) * a["chroma"])
+    return k
+
+
+def colour_script(img, cs, focus_w, pool, lit, sky, glow, accent=None):
     """Colour by value: each pixel keeps its value and takes its hue between the shade's colour (darks) and the
     light's (lights), mixed with its own by the script's strength; chroma placed at the focus, drained away."""
     y = np.maximum(luma(img), 1e-5)
@@ -538,6 +569,10 @@ def colour_script(img, cs, focus_w, pool, lit, sky, glow):
     keep = cs["chroma_far"] + (cs["chroma_focus"] - cs["chroma_far"]) * np.maximum(focus_w, pool)
     keep = np.where(lit, 1.0, keep)
     keep = np.where(sky, cs.get("chroma_sky", keep), keep)
+    if accent is not None:
+        a = np.clip(accent, 0, None)
+        hue = own * (a > 0)[..., None] * np.minimum(a, 1)[..., None] + hue * (1 - np.minimum(a, 1))[..., None]
+        keep = np.where(a > 0, np.maximum(keep * (1 - np.minimum(a, 1)), a), keep)
     hue = grey + (hue - grey) * keep[..., None]
     hue = hue / np.maximum(luma(hue)[..., None], 1e-5)
     return hue * y[..., None]
@@ -587,6 +622,14 @@ def value_study(img, out_base):
     return share
 
 
+def merged(base, over):
+    """A moment's recipe with a view's own changes laid over it, key by key."""
+    out = dict(base)
+    for k, v in over.items():
+        out[k] = merged(out[k], v) if isinstance(v, dict) and isinstance(out.get(k), dict) else v
+    return out
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("view")
@@ -598,7 +641,7 @@ def main():
     recipe = json.load(open(a.recipe))
     view = recipe["views"][a.view]
     mo = recipe["moments"][a.moment]
-    frame = {**mo, **view.get("moments", {}).get(a.moment, {})}
+    frame = merged(mo, view.get("moments", {}).get(a.moment, {}))
     img = load_render(a.view, a.moment)
     h, w = img.shape[:2]
     ps = load_passes(a.view)
@@ -630,7 +673,7 @@ def main():
     if a.values_only:
         print("values", value_study(img, out))
         return
-    img = colour_script(img, frame["colour"], focus_w, pool, ps["lit"], ps["sky"], glow_l)
+    img = colour_script(img, frame["colour"], focus_w, pool, ps["lit"], ps["sky"], glow_l, accents(frame["colour"], P, ps))
     img = edges_and_marks(img, ps["dist"], ps["sky"], focus_w, pool, frame["edges"])
     img = lens(img, frame["lens"], h, w)
     write_png(f"{out}.png", (srgb(img) * 255).round())
