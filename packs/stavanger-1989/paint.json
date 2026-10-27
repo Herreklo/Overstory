@@ -20,11 +20,13 @@
     { "from": 1850, "to": 1884, "body": ["oker", "kremhvit", "perlegraa", "blyhvit"], "back": null, "trim": ["blyhvit", "jernoksidbrun"], "window": ["jernoksidbrun", "mosegroenn"], "door": ["mosegroenn", "jernoksidbrun", "oksidroed"] },
     { "from": 1884, "to": 1910, "body": ["blyhvit", "perlegraa", "kremhvit"], "back": null, "trim": ["blyhvit"], "window": ["blyhvit", "perlegraa"], "door": ["mosegroenn", "stavangerblaa", "jernoksidbrun"] },
     { "from": 1910, "to": 1945, "body": ["blyhvit", "kremhvit"], "back": null, "trim": ["mosegroenn", "blyhvit"], "window": ["blyhvit"], "door": ["mosegroenn", "stavangerblaa"] },
-    { "from": 1945, "to": 1990, "body": ["titanhvit", "bergesengroenn", "oker", "kremhvit", "oksidroed", "stavangerblaa"], "back": null, "trim": ["titanhvit"], "window": ["titanhvit"], "door": ["mosegroenn", "stavangerblaa", "oksidroed", "jernoksidbrun"] }
+    { "from": 1945, "to": 1990, "body": ["titanhvit", "bergesengroenn", "oker", "kremhvit", "oksidroed", "stavangerblaa"], "back": null, "trim": ["titanhvit"], "window": ["titanhvit"], "door": ["mosegroenn", "stavangerblaa", "oksidroed", "jernoksidbrun"] },
+    { "from": 1990, "to": 2040, "body": ["blyhvit", "kremhvit", "kitthvit", "oker", "perlegraa"], "back": null, "trim": ["blyhvit"], "window": ["blyhvit", "jernoksidbrun"], "door": ["mosegroenn", "stavangerblaa", "jernoksidbrun"] }
   ],
   "systems": [
     { "from": 1700, "to": 1950, "paint": "paint-linseed" },
-    { "from": 1950, "to": 1990, "paint": "paint-alkyd", "or": "paint-acrylic", "orFrom": 1975, "orShare": 0.25 }
+    { "from": 1950, "to": 1990, "paint": "paint-alkyd", "or": "paint-acrylic", "orFrom": 1975, "orShare": 0.25 },
+    { "from": 1990, "to": 2040, "paint": "paint-alkyd", "or": "paint-acrylic", "orFrom": 1990, "orShare": 0.5 }
   ],
   "care": {
     "intervalYears": [15, 8],
@@ -38,7 +40,7 @@
   "notes": {
     "weather": "How much harder a coat weathers where it is most exposed, as a share more: a wall facing south (sun), the lowest footM of a wall (splash; paint fails first on the lowest boards), a board's lap edge (water stands on it), falling off fast above it. The research's order of failure; the numbers judged by look.",
     "colours": "The Stavanger colour guide's NCS codes (reviews/lt1/houses/first-pass/research-subject.md, 2. Paint); their sRGB as plan-home.com prints each NCS S code (fetched 27 October 2026), a screen value, to check against an NCS fan deck. Stavangerblaa is the guide's NCS S 7020-R90B.",
-    "periods": "The research's colours by period: before about 1850 white was dear, so white fronts and red or ochre backs ('back') with dark windows; 1850-84 ochres, browns, white and grey with dark windows and contrasting trims; 1884-1910 whites and greys; 1910-40 green trims, white with blue; from 1945 alkyd brought pastels, dark red and blue, with white windows. Doors most often green, otherwise blue-black, red or brown. Which colour of a period's list a house took is drawn from its seed. A 'back' of null paints the back as the body.",
+    "periods": "The research's colours by period: before about 1850 white was dear, so white fronts and red or ochre backs ('back') with dark windows; 1850-84 ochres, browns, white and grey with dark windows and contrasting trims; 1884-1910 whites and greys; 1910-40 green trims, white with blue; from 1945 alkyd brought pastels, dark red and blue, with white windows. Doors most often green, otherwise blue-black, red or brown. From 1990 (this pack's assumption, so a house can be walked to a later date): the old town's whites and the period colours the colour guide recommends again, with white or dark windows. Which colour of a period's list a house took is drawn from its seed. A 'back' of null paints the back as the body.",
     "systems": "Linseed oil paint was the rule until about 1960; alkyd oil paint (Drygolin) from 1948 and pure alkyd from the early 1960s; acrylic beside alkyd from the 1960s, never dated as the usual choice (the research). 1950 as the switch and acrylic's quarter share from 1975 are this pack's assumptions.",
     "care": "Repainted every 8-15 years, the south wall more often (the research): intervalYears runs from a house of wealth 0 (15) to one of 1000 (8), each interval drawn within intervalJitter of it, so a house nobody neglects never wears a coat much past 15 years. A care repaint chooses its colours again from its own period at recolourShare (the research: colour follows the repaint's date; 0.5 an assumption), otherwise it matches the faded coat; a dated repaint always chooses again, a restoration never. lapFactor 0.8 put every lap edge of a kept nine-year alkyd coat past its onset (the strict review, 27 October): 0.3, the lap³ still gathering the loss at the edges."
   }

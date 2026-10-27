@@ -11,7 +11,7 @@
       "casing": { "widthMm": 122, "proudMm": 25, "headMm": 210, "capMm": 30, "capProudMm": 120, "sillMm": 50, "sillProudMm": 95, "hornMm": 30, "brackets": null },
       "eaves": { "overhangMm": 140, "fasciaMm": 150, "fasciaThickMm": 28, "rafterTails": false, "gutter": false },
       "verge": { "overhangMm": 90, "boardMm": 205, "thickMm": 32 },
-      "openings": { "bayMm": [1700, 2800], "edgeMm": 1150, "window": "empire-6", "sillMm": 820, "gable": "small", "door": "centre" },
+      "openings": { "bayMm": [1700, 2800], "edgeMm": 1150, "window": "empire-6", "sillMm": 820, "gable": "small", "door": "centre", "doorKind": "paired-square" },
       "roof": { "cover": "pantile", "material": "clay-pantile", "gaugeMm": 300, "buttMm": 40 },
       "chimney": { "count": 1, "sizeMm": [700, 700], "aboveRidgeMm": 850, "crown": "slab" },
       "plinth": { "kind": "fieldstone", "material": "fieldstone", "foundationMm": [300, 460], "courseMm": [200, 400], "stoneMm": [280, 1000], "stonePerHeight": [1.1, 3.4], "courseDrawPower": [0.5, 1.2], "snapMm": 45, "bondLeastMm": 110, "shortMm": 160, "jointMm": [8, 18], "bedMm": 40, "roundMm": [15, 38], "roundSegments": 2, "domeMm": [6, 20], "setOutMm": [-14, 16], "turnDeg": [-2.5, 2.5] }
@@ -25,7 +25,7 @@
       "casing": { "widthMm": 125, "proudMm": 25, "headMm": 250, "capMm": 30, "capProudMm": 180, "sillMm": 55, "sillProudMm": 120, "hornMm": 40, "brackets": [480, 125, 50] },
       "eaves": { "overhangMm": 600, "fasciaMm": 0, "fasciaThickMm": 0, "rafterTails": true, "rafterMm": [75, 150], "rafterSpacingMm": 900, "gutter": true },
       "verge": { "overhangMm": 520, "boardMm": 215, "thickMm": 32 },
-      "openings": { "bayMm": [1600, 2700], "edgeMm": 1100, "window": "tpost-6", "sillMm": 800, "gable": "pair", "door": "side" },
+      "openings": { "bayMm": [1600, 2700], "edgeMm": 1100, "window": "tpost-6", "sillMm": 800, "gable": "pair", "door": "side", "doorKind": "paired-glazed" },
       "roof": { "cover": "slate", "material": "roof-slate", "gaugeMm": 210, "buttMm": 12 },
       "chimney": { "count": 2, "sizeMm": [560, 680], "aboveRidgeMm": 950, "crown": "corbelled" },
       "plinth": { "kind": "fieldstone", "material": "fieldstone", "foundationMm": [300, 460], "courseMm": [220, 380], "stoneMm": [320, 1100], "stonePerHeight": [1.2, 3.4], "courseDrawPower": [0.5, 1.2], "snapMm": 45, "bondLeastMm": 120, "shortMm": 170, "jointMm": [8, 16], "bedMm": 40, "roundMm": [12, 32], "roundSegments": 2, "domeMm": [5, 17], "setOutMm": [-12, 14], "turnDeg": [-2, 2] }
@@ -39,10 +39,15 @@
   "windowsByYear": [
     { "from": 1955, "to": 1989, "window": "husmor", "note": "the husmorvindu: one big pane on a pivot, easy to wash; set in a smaller opening, the old casings lost, the rest of the old hole boarded in" }
   ],
+  "doors": {
+    "paired-square": { "leaves": 2, "wMm": 1150, "hMm": 2050, "thresholdMm": 110, "frameMm": 75, "setBackMm": 70, "leafMm": 45, "stileMm": 115, "railMm": 110, "bottomRailMm": 210, "lockRailMm": 160, "panelRows": 3, "glazedRows": 0, "fieldMm": 16, "raiseMm": 32, "lightMm": 380, "lightCols": 3, "barMm": 24, "handleMm": [32, 120, 55], "handleAtMm": 1000, "step": { "riserMm": [140, 200], "treadMm": 340, "overhangMm": 120 } },
+    "paired-glazed": { "leaves": 2, "wMm": 1200, "hMm": 2150, "thresholdMm": 110, "frameMm": 75, "setBackMm": 70, "leafMm": 45, "stileMm": 115, "railMm": 110, "bottomRailMm": 210, "lockRailMm": 160, "panelRows": 3, "glazedRows": 1, "fieldMm": 16, "raiseMm": 32, "lightMm": 420, "lightCols": 2, "barMm": 24, "handleMm": [32, 120, 55], "handleAtMm": 1000, "step": { "riserMm": [140, 200], "treadMm": 340, "overhangMm": 120 } }
+  },
   "lostTrims": { "widthMm": 68, "proudMm": 14, "sillMm": 34, "sillProudMm": 40 },
   "boarding": { "thickMm": 22, "overlapMm": 70 },
   "provenance": "authored",
   "notes": {
+    "doors": "Doors were paired, with square panels and an overlight, and opened inward (the research, 3. Windows and doors); a sveitser door's upper fields glazed (inf.). Sizes are this pack's assumptions, judged by look: a pair 1150-1200 wide and 2050-2150 high with its overlight, set back 70 mm in the reveal, on a threshold board 110 mm over the drip board's line; stone steps of 140-200 mm risers and 340 mm treads down to the ground. A working's door is where on the front it stands (centre, or the first bay, at the side); doorKind is which of these.",
     "sources": "reviews/lt1/houses/first-pass/research-subject.md: the claddings by era (single-rebated to about 1875, double-rebated sveitser), the trims (Heng 2015: side trims 120-125 x 25, the head's drip board 30 thick at about 20 degrees standing 180 proud over the window, the sill's 120, frame to drip board about 250, brackets 480 x 125 x 50), barge boards 28-34 x 195-220 [Mandal], almost no overhang on classical roofs and a deep one with rafter ends on sveitser roofs, pantiles on battens about 30 cm apart, slate on sveitser roofs, one big chimney at mid-ridge on a classical house and two or more with corbelled crowns on a sveitser one, gutters only from the sveitser era, grey fieldstone plinths, the husmorvindu and its lost trims.",
     "exposureMm": "No source gave a Stavanger board width: classical widths vary within a wall (the range is drawn per course), sveitser boards are machine-run and even. Board thickness 25-32 mm.",
     "husmor": "Its size and the patch of new boards where the old, larger opening was are this pack's reading of 'openings were often made smaller' and 'the trims were usually lost' (the note's (inf.)).",

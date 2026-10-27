@@ -16,6 +16,7 @@ sys.path.insert(0, HERE)
 sys.path.insert(0, os.path.join(HERE, "..", "..", "resolver"))
 
 import carpentry as C  # noqa: E402
+import doors as DR  # noqa: E402
 import hashing as HS  # noqa: E402
 import plinth as P  # noqa: E402
 import roof as R  # noqa: E402
@@ -122,6 +123,16 @@ def build(b, facts, timber, ground, date, index, seed, lit_share):
         sill = op["sillMm"] * MM
         era_holes = [(s - es["wMm"] * MM / 2, s + es["wMm"] * MM / 2, sill, sill + es["hMm"] * MM, False)
                      for s in bays(L, op)]
+        # the door on the front, where the plan has it (the layout's door paths lead there): the era's door, in the
+        # middle of the front or in its first bay at the side; it takes the bay it stands in
+        dsp, door_hole = None, None
+        if name == "front" and op.get("door"):
+            dsp = timber["doors"][op["doorKind"]]
+            sd = L / 2 if op["door"] == "centre" else bays(L, op)[0]
+            dw, foot = dsp["wMm"] * MM, dsp["thresholdMm"] * MM
+            door_hole = (sd - dw / 2, sd + dw / 2, foot, foot + dsp["hMm"] * MM)
+            clear = dw / 2 + cs["widthMm"] * MM * 2 + es["wMm"] * MM / 2 + 0.1
+            era_holes = [h for h in era_holes if abs(0.5 * (h[0] + h[1]) - sd) > clear]
         if gable and ridge_u - eave > 1.9:
             uw, uh = es["wMm"] * MM * 0.8, es["hMm"] * MM * 0.72
             # the loft's windows on its floor: a storey and a floor's depth up, at the sill's height
@@ -134,6 +145,8 @@ def build(b, facts, timber, ground, date, index, seed, lit_share):
         keys = []
         for h in era_holes:
             keys += [h[2] - cs["sillMm"] * MM, h[3] + (cs["headMm"] + cs["capMm"]) * MM]
+        if door_hole is not None:
+            keys.append(door_hole[3] + (cs["headMm"] + cs["capMm"]) * MM)
         z0 = zdrip + db["heightMm"] * MM
         lines = C.story_pole(z0, keys, top, cl["exposureMm"])
         # what is in each opening at the date: the era's window in its casing, or a later one in a smaller opening
@@ -171,6 +184,21 @@ def build(b, facts, timber, ground, date, index, seed, lit_share):
                 lit = (0.05 + 0.95 * HS.unit(HS.h(seed, hid, name, int(s0 * 1000), "room"))) if kl < lit_share else 0.0
             WN.window(soup, f, (s0, s1, za, zb), sp, out_w, rng, lit, sp["paint"])
             report["windows"] += 1
+        if door_hole is not None:
+            ds0, ds1, dz0, dz1 = door_hole
+            soup.use(year=float(facts["built"]))
+            ol = C.casing(soup, f, ds0, ds1, dz0, dz1, cs, out_w, rng, with_sill=False)
+            outlines.append((ol[0], ol[1], zdrip, ol[3]))
+            C.reveal(soup, f, ds0, ds1, dz0, dz1, out_w + cs["proudMm"] * MM, out_w - 0.004)
+            DR.threshold(soup, f, ol[0], ol[1], zdrip, dz0, out_w, rng)
+            DR.door(soup, f, door_hole, dsp, out_w, rng, 0.0)
+            if boarded is not None:
+                soup.use(year=float(boarded))
+                WN.boarded(soup, f, (ol[0], ol[1], dz0, ol[3]), out_w, cs["proudMm"] * MM, timber["boarding"], rng,
+                           float(boarded))
+            gp = f.at(0.5 * (ds0 + ds1), 0.0, 0.3)
+            DR.steps(soup, f, ol[0], ol[1], zdrip, ground(gp[0], gp[1]) - base, dsp["step"], rng)
+            report["door"] = dict(wall=name, at=round(0.5 * (ds0 + ds1), 2))
         soup.use(year=float(facts["built"]))
         wall = dict(length=L, eave=eave, ridge=ridge_u if gable else None,
                     left=cb["widthMm"] * MM, right=cb["widthMm"] * MM, year=facts["built"],
