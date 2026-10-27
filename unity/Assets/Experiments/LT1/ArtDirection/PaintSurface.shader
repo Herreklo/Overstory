@@ -8,7 +8,8 @@
 // _Class: 1 clay, 2 a house, 3 laid stone, 4 a tree, 6 anything else, 7 a lantern's glass, 8 a lantern's metal,
 // 9 a designed shape (a tuft of heather or grass) with its own slot (_Slot).
 // House meshes (House.shader): UV0 metres along and up; UV1 x the kind, y the house's row; UV3 the bake (x sky);
-// UV4 y a lit window's seed; UV5 x the height on a board from its lap edge (0) to its top (1); UV6 x the coat scheme.
+// UV2 x a piece's seed (each board its own); UV4 y a lit window's seed; UV5 x the height on a board from its lap edge (0)
+// to its top (1); UV6 x the coat scheme; UV7 x a sill's run-off over it.
 // Stone (Stone.shader): UV2 x the face (0 top, 1 rounded edge, 2 split, 3 bed, 4 pointing, 5 dab, 6 soil); UV3 the bake.
 // Clay (Street.shader): UV0 the palette, COLOR the bake (r sky, a a lit window's seed under one).
 Shader "Hidden/Overstory/PaintSurface"
@@ -39,6 +40,7 @@ Shader "Hidden/Overstory/PaintSurface"
     float4 _P_MassMin[16];
     float4 _P_MassMax[16];
     float4 _P_MassN[16];
+    float4 _P_MassFoot[16];   // a mass's foot where it sits into the ground: x the ground (street z), y the band's height, z how much darker
     float _P_MassCount;
     // what the frame hides (a stand-in a lantern replaces): min, max xyz, w the class
     float4 _P_HideMin[4];
@@ -96,6 +98,15 @@ Shader "Hidden/Overstory/PaintSurface"
             float4 _P_SkyUp, _P_SkySide, _P_SkyDown, _P_SkyKey, _P_SkyKeyDir, _P_Occlusion;
             float4 _P_Wet, _P_Refl, _P_Streak, _P_StreakB, _P_Pool, _P_Board, _P_Nose;
             float4 _P_Focus, _P_FocusShape, _P_Lines, _P_Window, _P_Coat, _P_CoatB;
+            float4 _P_BoardStep;      // x each board's value apart (its seed), near the focus
+            float4 _P_Sill;           // a sill's run-off: x how much darker at full, y its streaks a metre, z the share of it a new coat shows, w years to full
+            float4 _P_Tile, _P_TileB; // a pantile's mark: x the covering's slot, y the roll's width (m), z the wave's depth, w the course's shadow; B x the course (m), y its shadowed share
+            float4 _P_Wear, _P_WearMin, _P_WearMax, _P_WearB;  // the worn flight: x its centreline (street x), y z the path's half width whole and gone, w the fact's strength; the box; B the edges' and the middle's value, the edges' and the middle's gloss
+            float4 _P_Crack;          // the rock's lines: x its slot, y the line's darkness, z the lip's light, w the lip's width (m)
+            float4 _P_CrackA[24];     // each line's ends (world), w its width there (m): a line tapers to its ends
+            float4 _P_LadderA, _P_LadderAB, _P_LadderB, _P_LadderBB;  // the two flights (street boxes, min and max): only their noses make the ladder of light
+            float4 _P_CrackB[24];
+            float _P_CrackCount;
             float _P_Date;
             float4 _P_LampPos[8];     // xyz each lamp's head (world)
             float4 _P_LampFill[8];
@@ -114,6 +125,7 @@ Shader "Hidden/Overstory/PaintSurface"
                 float2 uv4 : TEXCOORD4;
                 float2 uv5 : TEXCOORD5;
                 float2 uv6 : TEXCOORD6;
+                float2 uv7 : TEXCOORD7;
                 half4 color : COLOR;
             };
 
@@ -125,7 +137,7 @@ Shader "Hidden/Overstory/PaintSurface"
                 float4 a : TEXCOORD2;   // uv0, uv1
                 float4 b : TEXCOORD3;   // uv2, uv3
                 float4 c : TEXCOORD4;   // uv4, uv5
-                float2 e : TEXCOORD5;   // uv6
+                float4 e : TEXCOORD5;   // uv6, uv7
                 half4 color : TEXCOORD6;
             };
 
@@ -138,7 +150,7 @@ Shader "Hidden/Overstory/PaintSurface"
                 o.a = float4(input.uv0, input.uv1);
                 o.b = float4(input.uv2, input.uv3);
                 o.c = float4(input.uv4, input.uv5);
-                o.e = input.uv6;
+                o.e = float4(input.uv6, input.uv7);
                 o.color = input.color;
                 return o;
             }
@@ -187,7 +199,9 @@ Shader "Hidden/Overstory/PaintSurface"
                 // the screen's rates first, outside any branch
                 float dUp = length(float2(ddx(i.a.y), ddy(i.a.y)));
                 float dBoard = length(float2(ddx(i.c.z), ddy(i.c.z)));
+                float pxm = length(fwidth(i.positionWS)) * 0.7;
                 float fwBoard = max(fwidth(i.c.z), 1e-5);
+                float fwAlong = max(fwidth(i.a.x), 1e-5), fwUp = max(fwidth(i.a.y), 1e-5);
                 if (P_Hidden(i.positionWS))
                     discard;
                 float3 p = i.positionWS;
@@ -244,7 +258,34 @@ Shader "Hidden/Overstory/PaintSurface"
                             float wd = max(w, _P_Lines.z * fw);
                             half cover = (half)saturate(w / fw);
                             line_ = (half)smoothstep(1.0 - wd - 0.5 * fw, 1.0 - wd + 0.5 * fw, t) * (half)_P_Lines.y * detail * cover;
+                            // each board a step of its own value (its seed, claiming nothing), whole only near the focus
+                            albedo *= 1.0h + (half)_P_BoardStep.x * (frac((half)i.b.x * 7.77h) * 2.0h - 1.0h) * detail;
+                            // a sill's run-off (the mesh's mark): a few broad streaks down from each sill, darker the
+                            // older the coat
+                            float run = i.e.z;
+                            if (run > 0.0)
+                            {
+                                float sx = i.a.x * _P_Sill.y;
+                                half streak = (half)smoothstep(0.25, 0.85, 0.5 + 0.5 * sin(sx * 6.2832 + 2.1 * sin(sx * 2.3 + (float)row)));
+                                half grown = lerp((half)_P_Sill.z, 1.0h, saturate(age / max((half)_P_Sill.w, 0.5h)));
+                                albedo *= 1.0h - (half)_P_Sill.x * (half)(run * run) * lerp(0.35h, 1.0h, streak) * grown;
+                            }
                         }
+                    }
+                    if (slot == (int)(_P_Tile.x + 0.5))
+                    {
+                        // the pantile's mark: its rolls' wave across the slope, each course's lip a shadow line; both lost
+                        // where a roll is under four pixels
+                        half seen = (half)saturate(_P_Tile.y / (4.0 * fwAlong) - 0.5);
+                        // (across the slope: the eaves' run, from the face's own facing)
+                        float along = dot(p.xz, normalize(float2(-n.z, n.x) + 1e-5));
+                        seen = (half)saturate(_P_Tile.y / (4.0 * max(pxm, 1e-4)) - 0.5);
+                        half wave = (half)sin(along * 6.2832 / max(_P_Tile.y, 0.05));
+                        albedo *= 1.0h + (half)_P_Tile.z * wave * seen;
+                        float ct = frac(i.a.y / max(_P_TileB.x, 0.05));
+                        float cw = max((float)_P_TileB.y, 1.5 * fwUp / max(_P_TileB.x, 0.05));
+                        half lip = (half)smoothstep(1.0 - cw - fwUp / _P_TileB.x, 1.0 - cw, ct) * (half)saturate(_P_TileB.x / (3.0 * fwUp) - 0.5);
+                        albedo *= 1.0h - (half)_P_Tile.w * lip;
                     }
                     if (kind == 4 || kind == 10)
                     {
@@ -299,15 +340,58 @@ Shader "Hidden/Overstory/PaintSurface"
                         slot = (int)(_P_Clay.y + 0.5);
                     else if (n.y > _P_ClayRoof.x)
                         slot = (int)(_P_Clay.z + 0.5);
+                    int mass = -1;
                     for (int k = 0; k < (int)_P_MassCount; k++)
                     {
                         if (P_In(s, _P_MassMin[k].xyz, _P_MassMax[k].xyz) && n.y >= _P_MassN[k].x && n.y <= _P_MassN[k].y)
                         {
                             slot = (int)(_P_MassMin[k].w + 0.5);
+                            mass = k;
                             break;
                         }
                     }
                     albedo = lerp((half3)_P_Albedo[slot].rgb, pal, (half)_P_SurfB[slot].z);
+                    if (mass >= 0 && _P_MassFoot[mass].y > 0.0)
+                    {
+                        // a heavy mass sits into the ground: its foot darker and denser, up from where it meets it
+                        float4 ft = _P_MassFoot[mass];
+                        albedo *= 1.0h - (half)ft.z * (1.0h - (half)smoothstep(ft.x, ft.x + ft.y, s.z));
+                    }
+                    if (slot == (int)(_P_Crack.x + 0.5) && _P_CrackCount > 0.5)
+                    {
+                        // the rock's few crack and bedding lines (data): a dark line, measured across the view, with a
+                        // lit lip on its upper side where the edge above it catches the sky
+                        float3 fwd = -UNITY_MATRIX_V[2].xyz, rgt = UNITY_MATRIX_V[0].xyz, upv = UNITY_MATRIX_V[1].xyz;
+                        float3 q = p - _WorldSpaceCameraPos;
+                        float z = max(dot(q, fwd), 0.1);
+                        float2 ps = float2(dot(q, rgt), dot(q, upv)) / z;
+                        float best = 1e4, side = 0.0, width = 0.0;
+                        for (int c = 0; c < (int)_P_CrackCount; c++)
+                        {
+                            float3 qa = _P_CrackA[c].xyz - _WorldSpaceCameraPos, qb = _P_CrackB[c].xyz - _WorldSpaceCameraPos;
+                            float2 pa = float2(dot(qa, rgt), dot(qa, upv)) / max(dot(qa, fwd), 0.1);
+                            float2 pb = float2(dot(qb, rgt), dot(qb, upv)) / max(dot(qb, fwd), 0.1);
+                            float2 ab = pb - pa;
+                            float t = saturate(dot(ps - pa, ab) / max(dot(ab, ab), 1e-8));
+                            float2 e = ps - (pa + t * ab);
+                            float dm = length(e) * z;
+                            if (dm < best)
+                            {
+                                best = dm;
+                                float2 nrm = normalize(float2(-ab.y, ab.x) + 1e-6);
+                                if (nrm.y - 0.3 * nrm.x < 0.0)
+                                    nrm = -nrm;
+                                side = dot(e, nrm) * z;
+                                width = lerp(_P_CrackA[c].w, _P_CrackB[c].w, t);
+                            }
+                        }
+                        float aa = max(pxm, 1e-4);
+                        half core = (half)(1.0 - smoothstep(0.5 * width - 0.5 * aa, 0.5 * width + 0.5 * aa, best));
+                        half lipT = (half)(smoothstep(0.5 * width - 0.5 * aa, 0.5 * width + 0.5 * aa, side)
+                                  * (1.0 - smoothstep(0.5 * width + _P_Crack.w - 0.5 * aa, 0.5 * width + _P_Crack.w + 0.5 * aa, side)))
+                                  * (half)(side > 0.85 * best);
+                        albedo *= (1.0h - (half)_P_Crack.y * core) * (1.0h + (half)_P_Crack.z * lipT);
+                    }
                     if (max(emit.r, max(emit.g, emit.b)) > 0.02h && grp.r > 0.5h)
                     {
                         half k = frac((half)i.color.a * 7.13h);
@@ -326,6 +410,15 @@ Shader "Hidden/Overstory/PaintSurface"
                 half wetUp = saturate((n.y - (half)_P_Wet.y) / max((half)(_P_Wet.z - _P_Wet.y), 1e-3h));
                 half wet = (half)_P_Wet.x * wetUp * (half)_P_Albedo[slot].a;
                 albedo *= 1.0h - (half)_P_Wet.w * wet;
+                // the worn flight (ground_history: the busy middle worn smooth): a lighter, glossier wet path up the
+                // middle of each tread, its edges matte and darker
+                half gloss = 1.0h;
+                if (cls == 3 && (slot == 16 || slot == 17) && P_In(s, _P_WearMin.xyz, _P_WearMax.xyz))
+                {
+                    half worn = (half)(1.0 - smoothstep(_P_Wear.y, _P_Wear.z, abs(s.x - _P_Wear.x))) * (half)_P_Wear.w;
+                    albedo *= lerp((half)_P_WearB.x, (half)_P_WearB.y, worn);
+                    gloss = lerp((half)_P_WearB.z, (half)_P_WearB.w, worn);
+                }
 
                 // the sky's light by the face's normal, calmed toward one value on the masses whose facets are lost
                 // (a board's own tilt and warp are kept from the sky's light: the wall reads as one plane, and a
@@ -354,6 +447,8 @@ Shader "Hidden/Overstory/PaintSurface"
                     // only the noses that face the eye make the ladder: a coping's edge, running up the flight, is lost
                     float3 vh = normalize(float3(V.x, 0.0, V.z) + 1e-5);
                     facing = (half)smoothstep(0.5, 0.8, dot(face, vh));
+                    // and only a flight's: a cheek's coping keeps its pool but makes no ladder
+                    facing *= (P_In(s, _P_LadderA.xyz, _P_LadderAB.xyz) || P_In(s, _P_LadderB.xyz, _P_LadderBB.xyz)) ? 1.0h : 0.0h;
                 }
                 half3 caught = 0.0h;
                 InputData inputData = (InputData)0;
@@ -416,7 +511,8 @@ Shader "Hidden/Overstory/PaintSurface"
                 float3 R = reflect(-V, (float3)n);
                 half nv = saturate(dot((float3)n, V));
                 half F = (half)_P_Refl.x + (1.0h - (half)_P_Refl.x) * pow(1.0h - nv, (half)_P_Refl.z);
-                half3 refl = P_Sky(R) * (F * max(wet, B.y * wetUp) * (half)_P_Refl.y);
+                // (glass mirrors the sky whatever way it faces: the room's glow reads behind it)
+                half3 refl = P_Sky(R) * (F * max(wet, B.y * (cls == 3 ? wetUp : 1.0h)) * (half)_P_Refl.y);
                 if (rounded)
                 {
                     // the lit fog over the gully's top caught on every nose: what its best normal mirrors
@@ -428,7 +524,7 @@ Shader "Hidden/Overstory/PaintSurface"
 
                 // the lap's line is a shadow: it takes the lamp's light whole and the sky's in part (lost in shade)
                 half3 lit = albedo * ((E + fill * B.w) * (1.0h - line_ * (1.0h - (half)_P_Lines.w)) + lamps * (B.w * (1.0h - line_)));
-                half3 colour = lit + refl + streaks + caught + emission;
+                half3 colour = lit + (refl + streaks + caught) * gloss + emission;
                 return float4(colour, 1.0);
             }
             ENDHLSL

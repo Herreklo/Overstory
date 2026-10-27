@@ -162,7 +162,8 @@ namespace Overstory.EditorTools
 
         [System.Serializable] class PGlobal { public string name, srgb; public float[] v, pos, dir; public float a = 1f, w; }
         [System.Serializable] class PSurface { public int slot; public string srgb; public float keep, wet, calm, gloss; public float lamp = 1f, veil = 1f; }
-        [System.Serializable] class PMass { public int slot; public float[] box, nz; }
+        [System.Serializable] class PMass { public int slot; public float[] box, nz, foot; }
+        [System.Serializable] class PCrack { public string name; public float width; public float[] points; }
         [System.Serializable] class PClay { public int wall, ground, roof, glass; public float[] roofNz; }
         [System.Serializable] class PHide { public float[] box; public int cls; }
         [System.Serializable] class PCover { public string name; public int slot; }
@@ -184,6 +185,7 @@ namespace Overstory.EditorTools
             public PCover[] covers;
             public PLantern lantern;
             public PTuft[] tufts;
+            public PCrack[] cracks;
             public PLamp[] lamps;
         }
         // the houses' records (cache/houses/houses.json): only what the painted frame reads, their coats and roofs
@@ -380,13 +382,39 @@ namespace Overstory.EditorTools
                 var mMin = new Vector4[16];
                 var mMax = new Vector4[16];
                 var mN = new Vector4[16];
+                var mFoot = new Vector4[16];
                 for (int k = 0; k < P.masses.Length; k++)
                 {
                     var b = P.masses[k].box;
                     mMin[k] = new Vector4(b[0], b[1], b[2], P.masses[k].slot);
                     mMax[k] = new Vector4(b[3], b[4], b[5], 1f);
                     mN[k] = new Vector4(P.masses[k].nz[0], P.masses[k].nz[1], 0f, 0f);
+                    var f = P.masses[k].foot;
+                    if (Has(f))
+                        mFoot[k] = new Vector4(f[0], f[1], f[2], 0f);
                 }
+                Shader.SetGlobalVectorArray("_P_MassFoot", mFoot);
+                // the rock's crack and bedding lines: each a run of street points, cut into segments (world)
+                var crA = new Vector4[24];
+                var crB = new Vector4[24];
+                int crN = 0;
+                if (P.cracks != null)
+                    foreach (var cr in P.cracks)
+                    {
+                        // a line is widest in its middle and tapers to its two ends
+                        int last = cr.points.Length / 3 - 1;
+                        float Wd(int j) => cr.width * (j == 0 || j == last ? 0.15f : 1f);
+                        for (int j = 0; j < last && crN < 24; j++, crN++)
+                        {
+                            Vector3 a = Street(new[] { cr.points[3 * j], cr.points[3 * j + 1], cr.points[3 * j + 2] });
+                            Vector3 bb = Street(new[] { cr.points[3 * j + 3], cr.points[3 * j + 4], cr.points[3 * j + 5] });
+                            crA[crN] = new Vector4(a.x, a.y, a.z, Wd(j));
+                            crB[crN] = new Vector4(bb.x, bb.y, bb.z, Wd(j + 1));
+                        }
+                    }
+                Shader.SetGlobalVectorArray("_P_CrackA", crA);
+                Shader.SetGlobalVectorArray("_P_CrackB", crB);
+                Shader.SetGlobalFloat("_P_CrackCount", crN);
                 Shader.SetGlobalVectorArray("_P_MassMin", mMin);
                 Shader.SetGlobalVectorArray("_P_MassMax", mMax);
                 Shader.SetGlobalVectorArray("_P_MassN", mN);

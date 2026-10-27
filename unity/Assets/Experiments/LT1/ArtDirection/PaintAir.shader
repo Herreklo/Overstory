@@ -28,7 +28,8 @@ Shader "Hidden/Overstory/PaintAir"
             sampler2D _MainTex;
             sampler2D _P_Dist;
             float4 _P_Dist_TexelSize;
-            float4 _P_Rim;                                          // x strength, y the band (share of the frame's height), z the sky it mirrors (elevation, deg), w the gap behind (m)
+            float4 _P_Rim;
+            float4 _P_Contact;                                      // x strength, y the reach (m), z the curve, w the most the reach may span (share of the frame's height)                                          // x strength, y the band (share of the frame's height), z the sky it mirrors (elevation, deg), w the gap behind (m)
             float4 _P_CamPos, _P_CamFwd, _P_CamRight, _P_CamUp;   // right and up scaled by the half view's tangent
             float4 _P_FogD, _P_FogW, _P_FogA;
             float4 _P_Grade;                                        // x vignette, y exposure, z the shoulder's start
@@ -49,6 +50,57 @@ Shader "Hidden/Overstory/PaintAir"
                 return min(x, k) + s * (1.0 - exp(-over / s));
             }
 
+            // the point a pixel of the distance pass sees (world), and whether anything stands there
+            float3 PointAt(float2 q, out float there)
+            {
+                float3 o = tex2Dlod(_P_Dist, float4(q, 0, 0)).rgb;
+                float oc = saturate(o.y);
+                there = oc > 0.5 ? 1.0 : 0.0;
+                float od = oc > 1e-3 ? o.x / oc : 1e4;
+                float3 dr = normalize(_P_CamFwd.xyz + (q.x * 2.0 - 1.0) * _P_CamRight.xyz + (q.y * 2.0 - 1.0) * _P_CamUp.xyz);
+                return _P_CamPos.xyz + dr * od;
+            }
+
+            // contact shade: how much of the open half round a point the things beside it close off, within a short
+            // reach (m), so every junction (a wall's foot, under a coping's lip, a riser's back) takes a little shade.
+            // Each pixel of a 2x2 block turns the pattern a quarter, and the frame's 2x downsample averages them: no noise
+            float Contact(float2 uv, float d, float2 pix)
+            {
+                float there;
+                float3 P = PointAt(uv, there);
+                float2 px = _P_Dist_TexelSize.xy;
+                float t0, t1, t2, t3;
+                float3 Pr = PointAt(uv + float2(px.x, 0), t0), Pl = PointAt(uv - float2(px.x, 0), t1);
+                float3 Pu = PointAt(uv + float2(0, px.y), t2), Pd = PointAt(uv - float2(0, px.y), t3);
+                float3 dx = dot(Pr - P, Pr - P) < dot(P - Pl, P - Pl) ? Pr - P : P - Pl;
+                float3 dy = dot(Pu - P, Pu - P) < dot(P - Pd, P - Pd) ? Pu - P : P - Pd;
+                float3 n = normalize(cross(dx, dy) + 1e-7);
+                if (dot(n, _P_CamPos.xyz - P) < 0.0)
+                    n = -n;
+                float R = _P_Contact.y;
+                float tanX = length(_P_CamRight.xyz), tanY = length(_P_CamUp.xyz);
+                float2 span = float2(1.0 / (2.0 * tanX), 1.0 / (2.0 * tanY)) * (R / max(d, 0.1));
+                span *= min(1.0, _P_Contact.w / max(span.y, 1e-6));
+                int2 ip = int2(pix) & 1;
+                float turn = (ip.x + 2 * ip.y) * 1.5708 + 0.39;
+                float sum = 0.0;
+                const int N = 12;
+                [unroll] for (int j = 0; j < N; j++)
+                {
+                    float a = j * 2.39996 + turn;
+                    float r = (j + 0.5 + 0.25 * (ip.x + 2 * ip.y)) / (N + 1.0);
+                    float2 q = uv + float2(cos(a), sin(a)) * span * r;
+                    float ok;
+                    float3 S = PointAt(q, ok);
+                    float3 v = S - P;
+                    float vv = dot(v, v);
+                    float o = saturate(dot(v, n) * rsqrt(max(vv, 1e-8)) - 0.15) * saturate(1.0 - vv / (R * R));
+                    sum += o * ok;
+                }
+                float ao = saturate(1.0 - _P_Contact.x * 2.0 * sum / N);
+                return pow(ao, max(_P_Contact.z, 0.1));
+            }
+
             float4 Frag(v2f_img i) : SV_Target
             {
                 float2 uv = i.uv;
@@ -62,6 +114,8 @@ Shader "Hidden/Overstory/PaintAir"
                 // the sky where nothing stands; the fog's layers over what does
                 float3 sky = P_Sky(dir);
                 float3 surf = c > 1e-3 ? colour / c : 0.0;
+                if (c > 0.5 && _P_Contact.x > 0.0)
+                    surf *= Contact(uv, d, i.pos.xy);
                 float a = _P_FogA.x + veil * (
                       (_P_FogA.y - _P_FogA.x) * Step(d, _P_FogD.x, _P_FogW.x)
                     + (_P_FogA.z - _P_FogA.y) * Step(d, _P_FogD.y, _P_FogW.y)
