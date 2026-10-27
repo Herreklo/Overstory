@@ -166,8 +166,9 @@ namespace Overstory.EditorTools
         [System.Serializable] class PClay { public int wall, ground, roof, glass; public float[] roofNz; }
         [System.Serializable] class PHide { public float[] box; public int cls; }
         [System.Serializable] class PCover { public string name; public int slot; }
+        [System.Serializable] class PTuft { public string name; public int slot; public float[] from, to, lumps; public float depth, overhang, drop; public float shape = 0.6f; }
         [System.Serializable] class PLantern { public float post, glassH, glassBottom, glassTop, capH, capW; public int glassSlot, metalSlot; }
-        [System.Serializable] class PLamp { public string id, srgb; public float[] @base, head, halo; public float power, white, haloStrength; }
+        [System.Serializable] class PLamp { public string id, srgb; public float[] @base, head, halo; public float[] fill = new float[2]; public string fillSrgb; public float power, white, haloStrength; public float @catch = 1f; }
         [System.Serializable]
         class PaintData
         {
@@ -182,6 +183,7 @@ namespace Overstory.EditorTools
             public PHide[] hide;
             public PCover[] covers;
             public PLantern lantern;
+            public PTuft[] tufts;
             public PLamp[] lamps;
         }
         // the houses' records (cache/houses/houses.json): only what the painted frame reads, their coats and roofs
@@ -424,7 +426,11 @@ namespace Overstory.EditorTools
                 // the lamps at their places: each a 1955 lantern (post, glass, cap) with its light, shadowed
                 var lampPos = new Vector4[8];
                 var lampHalo = new Vector4[8];
+                var lampFill = new Vector4[8];
+                var lampCatch = new Vector4[8];
                 float lampReach = globals.TryGetValue("_P_Pool", out var pool) ? pool.w : 16f;
+                // the light reaches as far as its streak holds on the wet (the pool's own reach is the shader's)
+                float lightReach = lampReach * (globals.TryGetValue("_P_Streak", out var streak) ? Mathf.Max(1f, streak.w) : 1f);
                 var lt = P.lantern;
                 for (int k = 0; k < P.lamps.Length && k < 8; k++)
                 {
@@ -442,15 +448,24 @@ namespace Overstory.EditorTools
                     ColorUtility.TryParseHtmlString(lamp.srgb, out var lc);
                     light.color = lc;
                     light.intensity = lamp.power;
-                    light.range = lampReach;
+                    light.range = lightReach;
                     light.shadows = LightShadows.Soft;
                     light.shadowNearPlane = 0.05f;
                     var hc = LinearOf(lamp.srgb) * lamp.haloStrength;
                     lampPos[k] = new Vector4(head.x, head.y, head.z, lamp.halo[0]);
                     lampHalo[k] = new Vector4(hc.r, hc.g, hc.b, lamp.halo[1]);
+                    var fc = LinearOf(string.IsNullOrEmpty(lamp.fillSrgb) ? lamp.srgb : lamp.fillSrgb) * (lamp.fill != null && lamp.fill.Length > 0 ? lamp.fill[0] : 0f);
+                    lampCatch[k] = new Vector4(lamp.@catch, 0f, 0f, 0f);
+                    lampFill[k] = new Vector4(fc.r, fc.g, fc.b, lamp.fill != null && lamp.fill.Length > 1 ? lamp.fill[1] : 1f);
                 }
+                // the designed mats of heather and grass breaking the curtain's straight tops
+                if (P.tufts != null)
+                    foreach (var tf in P.tufts)
+                        Part(root, made, paint, $"tuft {tf.name}", Tuft(tf), 9f, 0f, tf.slot);
                 Shader.SetGlobalVectorArray("_P_LampPos", lampPos);
                 Shader.SetGlobalVectorArray("_P_LampHalo", lampHalo);
+                Shader.SetGlobalVectorArray("_P_LampFill", lampFill);
+                Shader.SetGlobalVectorArray("_P_LampCatch", lampCatch);
                 Shader.SetGlobalFloat("_P_LampCount", Mathf.Min(P.lamps.Length, 8));
 
                 // the colour and the distance, each supersampled and anti-aliased; then the air over both
@@ -593,7 +608,7 @@ namespace Overstory.EditorTools
 
         /// <summary>One part of a lantern: its mesh drawn with the painted surface as a class, casting no shadow (the
         /// lamp's light sits inside it).</summary>
-        static void Part(GameObject root, List<Object> made, Material paint, string name, Mesh mesh, float cls, float emit)
+        static void Part(GameObject root, List<Object> made, Material paint, string name, Mesh mesh, float cls, float emit, float slot = 0f)
         {
             made.Add(mesh);
             var g = new GameObject(name);
@@ -605,7 +620,54 @@ namespace Overstory.EditorTools
             var b = new MaterialPropertyBlock();
             b.SetFloat(ClassId, cls);
             b.SetFloat("_Emit", emit);
+            b.SetFloat("_Slot", slot);
             mr.SetPropertyBlock(b);
+        }
+
+        /// <summary>A designed mat of heather or grass along a straight top edge (Paint.json, tufts): a run of rounded
+        /// lumps (along, half width, height in metres), each section an arch from just over the lip, draped a little
+        /// down its face, back into the top. Its silhouette is the point: few, large shapes, no texture.</summary>
+        static Mesh Tuft(PTuft tf)
+        {
+            Vector3 a = Street(tf.from), b = Street(tf.to);
+            Vector3 run = b - a;
+            float len = run.magnitude;
+            Vector3 along = run / Mathf.Max(len, 1e-4f);
+            Vector3 back = Vector3.Cross(along, Vector3.up).normalized;
+            int N = Mathf.Max(2, Mathf.CeilToInt(len / 0.04f)), M = 12;
+            var v = new List<Vector3>();
+            var t = new List<int>();
+            for (int i = 0; i <= N; i++)
+            {
+                float u = len * i / N, h = 0f;
+                for (int k = 0; k + 2 < tf.lumps.Length; k += 3)
+                {
+                    float q = (u - tf.lumps[k]) / Mathf.Max(tf.lumps[k + 1], 1e-3f);
+                    if (q * q < 1f)
+                        h = Mathf.Max(h, tf.lumps[k + 2] * Mathf.Pow(1f - q * q, tf.shape));
+                }
+                float sc = Mathf.Clamp01(h / 0.12f);
+                for (int j = 0; j <= M; j++)
+                {
+                    float th = Mathf.PI * j / M;
+                    float yb = -tf.overhang * sc + (tf.depth + tf.overhang * sc) * (1f - Mathf.Cos(th)) * 0.5f;
+                    float zc = -tf.drop * sc + (h + tf.drop * sc) * Mathf.Sin(th);
+                    v.Add(a + along * u + back * yb + Vector3.up * zc);
+                }
+            }
+            for (int i = 0; i < N; i++)
+                for (int j = 0; j < M; j++)
+                {
+                    int p00 = i * (M + 1) + j, p01 = p00 + 1, p10 = p00 + M + 1, p11 = p10 + 1;
+                    t.Add(p00); t.Add(p01); t.Add(p10);
+                    t.Add(p10); t.Add(p01); t.Add(p11);
+                }
+            var mesh = new Mesh { name = tf.name, indexFormat = UnityEngine.Rendering.IndexFormat.UInt32 };
+            mesh.SetVertices(v);
+            mesh.SetTriangles(t, 0);
+            mesh.RecalculateNormals();
+            mesh.RecalculateBounds();
+            return mesh;
         }
 
         /// <summary>A square frustum round a vertical axis (Unity metres): from y0 at half width r0 to y1 at r1, flat

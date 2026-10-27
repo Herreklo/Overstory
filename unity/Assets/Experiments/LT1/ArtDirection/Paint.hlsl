@@ -6,7 +6,7 @@
 
 float4 _P_SkyZenith;    // rgb linear
 float4 _P_SkyHorizon;
-float4 _P_SkyShape;     // x the gradient's curve
+float4 _P_SkyShape;     // x the gradient's curve, y the height (sine) under which the sky is all horizon: the fog bank's top
 float4 _P_Glow;         // rgb, w its strength in the sky
 float4 _P_GlowDir;      // xyz unit (world)
 float4 _P_GlowShape;    // x half width (rad), y up, z down, w its share in the fog
@@ -28,7 +28,7 @@ half P_GlowAt(float3 d)
 // The sky along a direction: horizon to zenith on its curve, the lit fog's glow over it.
 half3 P_Sky(float3 d)
 {
-    float t = pow(saturate(d.y), max(_P_SkyShape.x, 0.05));
+    float t = pow(saturate((d.y - _P_SkyShape.y) / max(1.0 - _P_SkyShape.y, 1e-3)), max(_P_SkyShape.x, 0.05));
     half3 c = (half3)lerp(_P_SkyHorizon.rgb, _P_SkyZenith.rgb, t);
     return lerp(c, (half3)_P_Glow.rgb, saturate(P_GlowAt(d) * (half)_P_Glow.w));
 }

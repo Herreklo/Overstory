@@ -5,7 +5,8 @@
 // the wet film mirroring the sky and each lamp as one long streak. History is the houses' coats (their age), drawn as
 // whole shapes. The air is PaintAir.shader's, after. Every value is a global from Paint.json.
 //
-// _Class: 1 clay, 2 a house, 3 laid stone, 4 a tree, 6 anything else, 7 a lantern's glass, 8 a lantern's metal.
+// _Class: 1 clay, 2 a house, 3 laid stone, 4 a tree, 6 anything else, 7 a lantern's glass, 8 a lantern's metal,
+// 9 a designed shape (a tuft of heather or grass) with its own slot (_Slot).
 // House meshes (House.shader): UV0 metres along and up; UV1 x the kind, y the house's row; UV3 the bake (x sky);
 // UV4 y a lit window's seed; UV5 x the height on a board from its lap edge (0) to its top (1); UV6 x the coat scheme.
 // Stone (Stone.shader): UV2 x the face (0 top, 1 rounded edge, 2 split, 3 bed, 4 pointing, 5 dab, 6 soil); UV3 the bake.
@@ -16,6 +17,7 @@ Shader "Hidden/Overstory/PaintSurface"
     {
         _Class ("Class", Float) = 0
         _Emit ("A lantern's head: how white", Float) = 0
+        _Slot ("A designed shape's slot", Float) = 0
     }
 
     HLSLINCLUDE
@@ -24,6 +26,7 @@ Shader "Hidden/Overstory/PaintSurface"
     CBUFFER_START(UnityPerMaterial)
         float _Class;
         float _Emit;
+        float _Slot;
     CBUFFER_END
 
     // what a face is: per slot (Paint.json, surfaces) rgb its value (linear) and a its wet share; B x calm, y gloss,
@@ -91,9 +94,13 @@ Shader "Hidden/Overstory/PaintSurface"
             float4 _P_ClayRoof;       // x y the normal's up a roof takes
             float4 _P_Lantern;        // x its glass's slot, y its metal's
             float4 _P_SkyUp, _P_SkySide, _P_SkyDown, _P_SkyKey, _P_SkyKeyDir, _P_Occlusion;
-            float4 _P_Wet, _P_Refl, _P_Streak, _P_StreakB, _P_Pool, _P_Board;
+            float4 _P_Wet, _P_Refl, _P_Streak, _P_StreakB, _P_Pool, _P_Board, _P_Nose;
             float4 _P_Focus, _P_FocusShape, _P_Lines, _P_Window, _P_Coat, _P_CoatB;
             float _P_Date;
+            float4 _P_LampPos[8];     // xyz each lamp's head (world)
+            float4 _P_LampFill[8];
+            float4 _P_LampCatch[8];   // x how much of its light a nose catches (the focus whole, the others under it)    // rgb the light its lit fog sheds round it, w how far (m): unshadowed, from every side
+            float _P_LampCount;
             float _P_Mode;            // 0 the colour, 1 the distance from the eye (r) and the coverage (g), for the air; 2 the slot; 3 the street point
 
             struct Attributes
@@ -156,6 +163,23 @@ Shader "Hidden/Overstory/PaintSurface"
             #else
                 return _AdditionalLightsPosition[li].xyz;
             #endif
+            }
+
+            // a rounded wet edge (a tread's nose) holds every normal from its face to its top, so it catches a light
+            // wherever the half vector lies in that arc: the best normal there, and how near the half vector lies to
+            // the arc's plane (x along the edge's run, sigma its roughness)
+            half P_Round(float3 Ls, float3 V, float3 axis, float3 face, float sigma, out float3 nStar)
+            {
+                float3 H = normalize(Ls + V);
+                float ha = dot(H, axis);
+                nStar = normalize(H - axis * ha + float3(0.0, 1e-5, 0.0));
+                half inArc = (half)(saturate(dot(nStar, face) * 8.0 + 0.5) * saturate(nStar.y * 8.0 + 0.5));
+                return (half)exp(-(ha * ha) / max(sigma * sigma, 1e-6)) * inArc;
+            }
+
+            half P_Fresnel(half nv)
+            {
+                return (half)_P_Refl.x + (1.0h - (half)_P_Refl.x) * pow(1.0h - saturate(nv), (half)_P_Refl.z);
             }
 
             float4 Frag(Varyings i, bool front : SV_IsFrontFace) : SV_Target
@@ -246,6 +270,11 @@ Shader "Hidden/Overstory/PaintSurface"
                     emission = (half3)_P_Albedo[slot].rgb * (half)_Emit;
                     albedo = 0.0h;
                 }
+                else if (cls == 9)
+                {
+                    slot = (int)(_Slot + 0.5);
+                    albedo = (half3)_P_Albedo[slot].rgb;
+                }
                 else if (cls == 8)
                 {
                     slot = (int)(_P_Lantern.y + 0.5);
@@ -313,6 +342,20 @@ Shader "Hidden/Overstory/PaintSurface"
 
                 // the lamps: a compact pool each, shadowed, little over its cap; on a wet face its streak
                 half3 lamps = 0.0h, streaks = 0.0h;
+                // a nose: its run (axis) and the way its face looks (face), from its own normal
+                bool rounded = cls == 3 && B.y > 0.5h;
+                float3 face = float3(0.0, 0.0, -1.0), axis = float3(1.0, 0.0, 0.0);
+                float3 nh = float3(n.x, 0.0, n.z);
+                half facing = 0.0h;
+                if (rounded && dot(nh, nh) > 1e-4)
+                {
+                    face = normalize(nh);
+                    axis = normalize(cross(float3(0.0, 1.0, 0.0), face));
+                    // only the noses that face the eye make the ladder: a coping's edge, running up the flight, is lost
+                    float3 vh = normalize(float3(V.x, 0.0, V.z) + 1e-5);
+                    facing = (half)smoothstep(0.5, 0.8, dot(face, vh));
+                }
+                half3 caught = 0.0h;
                 InputData inputData = (InputData)0;
                 inputData.positionWS = p;
                 inputData.normalizedScreenSpaceUV = GetNormalizedScreenSpaceUV(i.positionCS);
@@ -344,18 +387,48 @@ Shader "Hidden/Overstory/PaintSurface"
                         half hold = (half)saturate(1.0 - d / (_P_Pool.w * _P_Streak.w));
                         streaks += l.color * (sk * sqrt(hold) * sh * wet * (half)_P_Streak.z * B.w);
                     }
+                    if (rounded)
+                    {
+                        // a lamp caught on the nose: a short bright dash where the half vector meets the arc, held
+                        // over the light's reach, so the noses under a lamp make a ladder down the flight
+                        float3 nl;
+                        half k = P_Round(Ld, V, axis, face, _P_Nose.z, nl);
+                        for (int c = 0; c < (int)_P_LampCount; c++)
+                            if (distance(lp, _P_LampPos[c].xyz) < 0.05)
+                                k *= (half)_P_LampCatch[c].x;
+                        half hold = (half)pow(saturate(1.0 - d / (_P_Pool.w * _P_Streak.w)), max(_P_Nose.w, 0.5));
+                        caught += l.color * (k * P_Fresnel((half)dot(nl, V)) * hold * sh * (half)_P_Nose.y * B.w * facing);
+                    }
                 LIGHT_LOOP_END
             #endif
+
+                // each lamp's lit fog: a soft light round it from every side, so what stands near the focus is lighter
+                // (soft as the sky's: a board's lap line is found only by a lamp's own raking light)
+                half3 fill = 0.0h;
+                for (int f = 0; f < (int)_P_LampCount; f++)
+                {
+                    float3 dl = (float3)_P_LampPos[f].xyz - p;
+                    float r = max(_P_LampFill[f].w, 1e-3);
+                    fill += (half3)_P_LampFill[f].rgb * (half)exp(-dot(dl, dl) / (r * r));
+                }
 
                 // the wet film (and a glossy face) mirrors the sky, more at a grazing look
                 float3 R = reflect(-V, (float3)n);
                 half nv = saturate(dot((float3)n, V));
                 half F = (half)_P_Refl.x + (1.0h - (half)_P_Refl.x) * pow(1.0h - nv, (half)_P_Refl.z);
                 half3 refl = P_Sky(R) * (F * max(wet, B.y * wetUp) * (half)_P_Refl.y);
+                if (rounded)
+                {
+                    // the lit fog over the gully's top caught on every nose: what its best normal mirrors
+                    float3 ng;
+                    half kg = P_Round(_P_GlowDir.xyz, V, axis, face, 10.0, ng);
+                    caught += P_Sky(reflect(-V, ng)) * (kg * P_Fresnel((half)dot(ng, V)) * (half)_P_Nose.x * facing);
+                    refl = 0.0h;
+                }
 
                 // the lap's line is a shadow: it takes the lamp's light whole and the sky's in part (lost in shade)
-                half3 lit = albedo * (E * (1.0h - line_ * (1.0h - (half)_P_Lines.w)) + lamps * (B.w * (1.0h - line_)));
-                half3 colour = lit + refl + streaks + emission;
+                half3 lit = albedo * ((E + fill * B.w) * (1.0h - line_ * (1.0h - (half)_P_Lines.w)) + lamps * (B.w * (1.0h - line_)));
+                half3 colour = lit + refl + streaks + caught + emission;
                 return float4(colour, 1.0);
             }
             ENDHLSL

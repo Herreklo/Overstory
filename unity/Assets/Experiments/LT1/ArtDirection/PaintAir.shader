@@ -27,6 +27,8 @@ Shader "Hidden/Overstory/PaintAir"
 
             sampler2D _MainTex;
             sampler2D _P_Dist;
+            float4 _P_Dist_TexelSize;
+            float4 _P_Rim;                                          // x strength, y the band (share of the frame's height), z the sky it mirrors (elevation, deg), w the gap behind (m)
             float4 _P_CamPos, _P_CamFwd, _P_CamRight, _P_CamUp;   // right and up scaled by the half view's tangent
             float4 _P_FogD, _P_FogW, _P_FogA;
             float4 _P_Grade;                                        // x vignette, y exposure, z the shoulder's start
@@ -64,6 +66,28 @@ Shader "Hidden/Overstory/PaintAir"
                       (_P_FogA.y - _P_FogA.x) * Step(d, _P_FogD.x, _P_FogW.x)
                     + (_P_FogA.z - _P_FogA.y) * Step(d, _P_FogD.y, _P_FogW.y)
                     + (_P_FogA.w - _P_FogA.z) * Step(d, _P_FogD.z, _P_FogW.z));
+                // the near curtain's top edges found: a wet arris mirrors the bright band of the sky over the fog where
+                // the curtain meets something behind it (the clay has no arris; the edge is drawn where it stands)
+                if (c > 0.5 && veil < 0.05 && _P_Rim.x > 0.0)
+                {
+                    float band = _P_Rim.y;
+                    float found = 0.0;
+                    [unroll] for (int j = 1; j <= 8; j++)
+                    {
+                        float2 q = uv + float2(0.0, band * j / 8.0);
+                        float3 o = tex2Dlod(_P_Dist, float4(q, 0, 0)).rgb;
+                        float oc = saturate(o.y);
+                        float od = oc > 1e-3 ? o.x / oc : 1e4;
+                        float ov = oc > 1e-3 ? o.z / oc : 1.0;
+                        bool behind = oc < 0.5 || (ov > 0.05 && od > d + _P_Rim.w);
+                        if (behind && found == 0.0)
+                            found = 1.0 - (j - 1.0) / 8.0;
+                    }
+                    float3 flat = normalize(float3(dir.x, 0.0, dir.z) + 1e-5);
+                    float e = radians(_P_Rim.z);
+                    float3 rd = normalize(flat * cos(e) + float3(0.0, sin(e), 0.0));
+                    surf += P_Sky(rd) * (_P_Rim.x * found * found);
+                }
                 float3 fogged = lerp(surf, P_Fog(dir), saturate(a));
                 float3 result = c * fogged + (1.0 - c) * sky;
 
