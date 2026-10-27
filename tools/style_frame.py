@@ -217,7 +217,7 @@ def add_lamps(img, P, n, dist, sky, cls, rays, cam, lamps, kinds, air, w, h, wet
     pos, basis = cam
     pool = np.zeros(img.shape[:2], np.float32)
     for lamp in lamps:
-        kind = kinds[lamp["kind"]]
+        kind = lamp.get("_kind") or kinds[lamp["kind"]]
         colour = hexlin(kind["srgb"])
         head = np.array(lamp["head"], np.float32)
         L = head[None, None, :] - P
@@ -262,14 +262,15 @@ def wet_sheen(img, wet, ps, rays):
     return img * dark[..., None] + (up * f)[..., None] * sheen[None, None, :]
 
 
-def draw_lamps(img, P, dist, cls, cam, lamps, kinds, air, w, h):
-    """The lamps themselves, after the value plan: a light that means people keeps its own value."""
+def draw_lamps(img, P, dist, cls, cam, lamps, kinds, air, w, h, lit):
+    """The lamps themselves, after the value plan: a light that means people keeps its own value. A lamp stands
+    in every light; it glows only when the moment lights it."""
     for lamp in lamps:
-        kind = kinds[lamp["kind"]]
+        kind = lamp.get("_kind") or kinds[lamp["kind"]]
         head = np.array(lamp["head"], np.float32)
-        if lamp.get("add", False):
+        if lit:
             img = glow(img, head, kind, hexlin(kind["srgb"]), dist, cam, air, w, h)
-        img = draw_lantern(img, lamp, kind, dist, cam, w, h, P, cls)
+        img = draw_lantern(img, lamp, kind, dist, cam, w, h, P, cls, lit)
     return img
 
 
@@ -304,7 +305,8 @@ def mirror(img, wet, ps, P, rays, cam, w, h):
         found |= take
         t *= 1.16
     # a ray that leaves the picture upwards finds the sky beyond the frame: the sky's colour at the picture's top
-    away = ~found & (r[:, 2] > 0.05)
+    px_end, _, z_end = project(p0 + r * t, pos, basis, w, h)
+    away = ~found & (r[:, 2] > 0.05) & ((px_end[:, 1] < 0) | (z_end <= 0))
     top = ps["sky"][: h // 6]
     if top.any() and away.any():
         got[away] = img[: h // 6][top].mean(0)
@@ -349,23 +351,26 @@ def surface_albedo(img):
 def shadow(P, head, dist, cam, w, h, steps):
     """1 where the lamp sees the point, 0 where something on screen stands between (screen-space, as games do)."""
     pos, basis = cam
-    vis = np.ones(dist.shape, np.float32)
+    hits = np.zeros(dist.shape, np.float32)
     flat = P.reshape(-1, 3)
     # the march stops short of the head itself, so a lamp the render draws does not shade its own light
-    reach = 1 - 0.6 / np.maximum(np.linalg.norm(head[None, :] - flat, axis=-1, keepdims=True), 0.7)
+    # and starts clear of the surface it leaves, so a face lit at a grazing angle does not shade itself
+    span = np.maximum(np.linalg.norm(head[None, :] - flat, axis=-1, keepdims=True), 0.7)
+    reach, start = 1 - 0.6 / span, np.minimum(0.6 / span, 0.4)
     for k in range(1, steps):
-        t = k / steps * reach
+        t = start + (reach - start) * k / steps
         q = flat * (1 - t) + head[None, :] * t
         px, qd, z = project(q, pos, basis, w, h)
         ix = np.clip(px[:, 0].astype(np.int32), 0, w - 1)
         iy = np.clip(px[:, 1].astype(np.int32), 0, h - 1)
         scene = dist[iy, ix]
         blocked = (scene < qd - 0.35) & (scene > qd - 6.0) & (z > 0.1)
-        vis = np.minimum(vis, np.where(blocked, 0.0, 1.0).reshape(dist.shape))
-    return blur(vis, 1.5)
+        hits = hits + blocked.reshape(dist.shape)
+    # a shadow needs a few blocked samples: one alone is the march's aliasing, not a thing in the way
+    return blur(1 - np.clip((hits - 1) / 2.0, 0, 1), 1.5)
 
 
-def draw_lantern(img, lamp, kind, dist, cam, w, h, P=None, cls=None):
+def draw_lantern(img, lamp, kind, dist, cam, w, h, P=None, cls=None, lit=True):
     """The lamp as its kind draws it (the kind's parts, in metres: a post, a glass lantern, a cap), hidden by
     whatever stands in front. A lamp the render already stands as a clay box is painted out first, from its own
     place, so the frame shows the lantern the lamps element will make, not the box."""
@@ -389,7 +394,7 @@ def draw_lantern(img, lamp, kind, dist, cam, w, h, P=None, cls=None):
     ppm = h / (2 * float(hd[0]) * basis[3])  # pixels per metre at the lamp
     yy, xx = np.mgrid[0:h, 0:w].astype(np.float32)
     post = lin(np.array(kind["post_srgb"], np.float32) / 255.0)
-    glass = hexlin(kind["srgb"]) * kind["head_white"]
+    glass = hexlin(kind["srgb"]) * kind["head_white"] if lit else hexlin(kind["glass_unlit_srgb"])
 
     def part(z0, z1, half0, half1, colour):
         nonlocal out
@@ -424,7 +429,7 @@ def glow(img, head, kind, colour, dist, cam, air, w, h):
     px_m = h / (2 * hd * basis[3])
     halo = np.zeros((h, w), np.float32)
     for size, share in kind["halo"]:
-        s = size * px_m * (1 + fog * hd / 40.0)
+        s = size * kind.get("halo_size", 1.0) * px_m * (1 + fog * hd / 40.0)
         halo += share * np.exp(-(rr / max(s, 1.0)) ** 2)
     front = smoothstep(hd - 2.0, hd + 1.0, dist)
     behind = 0.35 + 0.65 * front
@@ -455,6 +460,7 @@ def local_value(plan, ps):
     off += np.where(house & np.isin(ps["kind"], (0, 2, 3, 12)), lv.get("paint", 0.0), 0.0)
     off += np.where(house & (ps["kind"] == 5), lv.get("roof", 0.0), 0.0)
     off += np.where(ps["cls"] == 3, lv.get("stone", 0.0), 0.0)
+    off += np.where((ps["cls"] == 3) & up, lv.get("tread", 0.0), 0.0)
     off += np.where((ps["cls"] == 1) & up, lv.get("ground", 0.0), 0.0)
     off += np.where((ps["cls"] == 1) & ~up, lv.get("clay", 0.0), 0.0)
     return blur(off, 1.0)
@@ -513,6 +519,7 @@ def value_plan(img, plan, dist, sky, pool, focus_w, lit, local, glow_l, ps):
         c, d = m["to"]
         t = np.clip((L - a) / max(b - a, 1e-3), 0, 1)
         tl = tl + (c + (d - c) * t - tl) * m.get("share", 1.0) * m["mask"]
+        tl = tl + m.get("sky_lift", 0.0) * np.clip(ps["normal"][..., 2], 0, 1) * m["mask"]
     # the veil: away from the focus the middle distance leans to the air's value, so the found edges are the focus's
     veil = plan.get("veil")
     if veil:
@@ -524,9 +531,10 @@ def value_plan(img, plan, dist, sky, pool, focus_w, lit, local, glow_l, ps):
     lift = plan.get("pool_lift", 0.0)
     held = sum((m["mask"] for m in ps.get("masses", [])), np.zeros_like(L))
     tl = tl * (1 - pool) + (np.maximum(tl, L * (1 - held) + tl * held) + lift) * pool
-    tl = np.where(lit, np.maximum(tl, L), tl)
+    tl = np.where(lit, np.minimum(np.maximum(tl, L), plan.get("lit_max", 100.0)), tl)
     # the wet's shine is a signal (the treads' lines leading up), kept with the focus and the pools
     calm = plan["calm"] + (1 - plan["calm"]) * np.maximum(np.maximum(focus_w, pool), ps.get("shine", 0) * plan.get("shine_keep", 0.0))
+    calm = calm + (plan.get("focus_detail", 1.0) - 1.0) * focus_w
     ly2 = np.log(np.maximum(from_lstar(tl), 1e-5)) + detail * calm
     gain = np.exp(ly2) / y
     return img * gain[..., None]
@@ -589,7 +597,9 @@ def edges_and_marks(img, dist, sky, focus_w, pool, em):
     want = np.where(sky, em.get("sky_px", 0.0), want)
     out = by_radius(img, want, em["radii"], kuwahara)
     soft = em["lost_px"] * np.maximum(far * (1 - focus_w), dark * em["dark_share"] * (1 - focus_w))
-    return by_radius(out, soft, [1.0, 2.5, 5.0], lambda a, r: np.stack([blur(a[..., k], r) for k in range(3)], -1))
+    # the sky as a few soft shapes: a painter's sky, not the render's every wisp
+    soft = np.where(sky, em.get("sky_soft_px", 0.0), soft)
+    return by_radius(out, soft, [1.0, 2.5, 5.0, 12.0], lambda a, r: blur_rgb(a, r))
 
 
 def lens(img, ln, h, w):
@@ -654,10 +664,13 @@ def main():
     rf = np.sqrt(((xx - fx) / w) ** 2 + ((yy - fy) / h) ** 2)
     focus_w = np.exp(-(rf / view["focus_radius"]) ** 2).astype(np.float32)
     ps["lit"] = lit_panes(img, ps, frame.get("lit_from", 0.08))
-    lamps = [l for l in recipe["lamps"] if frame.get("lamps_on", False)]
-    img, pool = add_lamps(img, P, ps["normal"], ps["dist"], ps["sky"], ps["cls"], rays, cam, lamps,
+    # each lamp's kind with this moment's art over it (a painter's subordination of one lamp to another)
+    lamps = [{**l, "_kind": {**recipe["lamp_kinds"][l["kind"]], **frame.get("lamp_art", {}).get(l["id"], {})}}
+             for l in recipe["lamps"]]
+    lit_on = frame.get("lamps_on", False)
+    img, pool = add_lamps(img, P, ps["normal"], ps["dist"], ps["sky"], ps["cls"], rays, cam, lamps if lit_on else [],
                           recipe["lamp_kinds"], frame.get("air", {}), w, h, frame.get("wet")) \
-        if lamps else (img, np.zeros((h, w), np.float32))
+        if lit_on else (img, np.zeros((h, w), np.float32))
     ps["masses"] = masses(frame["values"], P, ps)
     for m in ps["masses"]:
         pool = pool * (1 - (1 - m.get("pool", 1.0)) * m["mask"])
@@ -667,7 +680,7 @@ def main():
     glow_l = air_glow(frame["values"], ps, rays)
     img = value_plan(img, frame["values"], ps["dist"], ps["sky"], pool, focus_w, ps["lit"],
                      local_value(frame["values"], ps), glow_l, ps)
-    img = draw_lamps(img, P, ps["dist"], ps["cls"], cam, lamps, recipe["lamp_kinds"], frame.get("air", {}), w, h)
+    img = draw_lamps(img, P, ps["dist"], ps["cls"], cam, lamps, recipe["lamp_kinds"], frame.get("air", {}), w, h, lit_on)
     out = a.out or os.path.join(AD, "frames", f"{a.view}-{a.moment}")
     os.makedirs(os.path.dirname(out), exist_ok=True)
     if a.values_only:

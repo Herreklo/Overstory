@@ -21,6 +21,25 @@
       "dark_share": 0.1,
       "mark_px": [1, 6],
       "near_m": 20
+     },
+     "lamp_art": {
+      "lower": {
+       "halo_strength": 1.2,
+       "halo_size": 2.0
+      },
+      "upper": {
+       "halo_size": 3.2
+      },
+      "top": {
+       "halo_size": 3.2
+      }
+     },
+     "values": {
+      "lit_max": 72,
+      "mass_px": 24,
+      "local": {
+       "tread": 10
+      }
      }
     }
    }
@@ -46,28 +65,32 @@
    "kind": "lantern-1955",
    "base": [44.2, 36.8, 8.0],
    "head": [44.2, 36.8, 11.3],
-   "add": false
+   "add": false,
+   "id": "landing"
   },
   {
    "name": "Gully Steps, lower flight (on the cheek wall)",
    "kind": "lantern-1955",
    "base": [50.55, 30.17, 6.38],
    "head": [50.55, 30.17, 9.68],
-   "add": true
+   "add": true,
+   "id": "lower"
   },
   {
    "name": "Gully Steps, upper flight",
    "kind": "lantern-1955",
    "base": [44.4, 53.84, 9.33],
    "head": [44.4, 53.84, 12.63],
-   "add": true
+   "add": true,
+   "id": "upper"
   },
   {
    "name": "Gully Steps, top",
    "kind": "lantern-1955",
    "base": [48.6, 77.84, 15.08],
    "head": [48.6, 77.84, 18.38],
-   "add": true
+   "add": true,
+   "id": "top"
   }
  ],
  "lamp_kinds": {
@@ -88,7 +111,8 @@
    "halo_px": 26,
    "glass_m": 0.38,
    "cap_m": 0.16,
-   "clay_box_m": 0.45
+   "clay_box_m": 0.45,
+   "glass_unlit_srgb": "#6f7a80"
   }
  },
  "moments": {
@@ -107,7 +131,7 @@
      {
       "m": [0, 22],
       "from": [4, 40],
-      "to": [10, 34]
+      "to": [20, 38]
      },
      {
       "m": [22, 50],
@@ -135,7 +159,7 @@
      "roof": -4.0,
      "stone": -2.0,
      "ground": -8,
-     "clay": -7
+     "clay": -2
     },
     "glow": {
      "towards": [-1.8, 68.0, 12.4],
@@ -160,13 +184,15 @@
       "box": [49.6, 14, 2.9, 66, 36, 16],
       "cls": [1],
       "from": [8, 45],
-      "to": [10, 16],
+      "to": [12, 18],
       "share": 0.85,
       "pool": 1.0,
-      "steep_only": true
+      "steep_only": false,
+      "sky_lift": 16
      }
     ],
-    "shine_keep": 1.0
+    "shine_keep": 1.0,
+    "focus_detail": 1.3
    },
    "colour": {
     "ramp": [[0.0, "#0c0e2e"], [0.3, "#262e66"], [0.55, "#6874a8"], [0.75, "#c9b5b0"], [0.95, "#ffd9a6"]],
@@ -200,8 +226,8 @@
     "grain": 0.035
    },
    "wet": {
-    "lobe": 60.0,
-    "lamp": 0.6,
+    "lobe": 25,
+    "lamp": 1.0,
     "share": 1.0,
     "fresnel0": 0.04,
     "air_srgb": "#8d8fc0",
@@ -213,10 +239,28 @@
     "streak_px": 6,
     "patch_px": 9,
     "patch_soft": 0.18
+   },
+   "lamp_art": {
+    "_": "a painter's subordination: the nearest lantern under the Landing's, the far ones' halos wider in the fog",
+    "lower": {
+     "power": 1.2,
+     "head_white": 2.4,
+     "halo_strength": 0.35
+    },
+    "landing": {
+     "halo_strength": 1.0,
+     "halo_size": 1.6
+    },
+    "upper": {
+     "halo_size": 1.6
+    },
+    "top": {
+     "halo_size": 1.6
+    }
    }
   },
   "1300-drizzle": {
-   "_": "Friday 20 October 1989, 13:00: drizzle under a bright overcast. Key: the silver of the overcast in every wet surface, sky lightest, then the wet treads and puddles that mirror it, the roofs, the walls. Accent: C's oxide-red door (1988), the one warm and saturated thing. Darkest: the near retaining wall's foot and the dark glass.",
+   "_": "Friday 20 October 1989, 13:00: drizzle under a bright overcast. Key: the silver of the overcast in every wet surface, sky lightest, then the wet treads and puddles that mirror it, the roofs, the walls. Accent: the wet red of the pantile roofs (D from the street; C's oxide-red door where a view sees it). Darkest: the near retaining wall's foot and the dark glass.",
    "lamps_on": false,
    "air": {
     "fog": 0.3
@@ -231,7 +275,7 @@
      {
       "m": [0, 22],
       "from": [10, 60],
-      "to": [24, 52]
+      "to": [28, 52]
      },
      {
       "m": [22, 50],
@@ -258,8 +302,9 @@
      "paint": 10.0,
      "roof": -8.0,
      "stone": -4.0,
-     "ground": -2.0,
-     "clay": -6.0
+     "ground": 4,
+     "clay": -2,
+     "tread": 22
     },
     "merge": {
      "px": 40,
@@ -270,34 +315,36 @@
       "name": "the rock knuckle, wet",
       "box": [49.6, 14, 2.9, 66, 36, 16],
       "cls": [1],
-      "steep_only": true,
+      "steep_only": false,
       "from": [20, 65],
       "to": [34, 44],
       "share": 0.8,
-      "pool": 1.0
+      "pool": 1.0,
+      "sky_lift": 15
      }
     ],
     "veil": {
      "m": [26, 60],
      "lstar": 72,
      "share": 0.4
-    }
+    },
+    "focus_detail": 1.3
    },
    "colour": {
     "ramp": [[0.0, "#1c2427"], [0.35, "#475558"], [0.6, "#879495"], [0.8, "#c2c9c5"], [0.95, "#eef0ea"]],
-    "strength": 0.5,
+    "strength": 0.3,
     "keep_lit": 0.9,
     "keep_pool": 0.0,
     "chroma_focus": 1.1,
-    "chroma_far": 0.55,
+    "chroma_far": 0.8,
     "chroma_sky": 0.5,
     "accents": [
      {
-      "name": "C's oxide-red door",
+      "name": "D's wet pantile roof",
       "cls": [2],
-      "kinds": [9],
-      "box": [36, 28, 5, 42, 34, 10],
-      "chroma": 1.6
+      "kinds": [5],
+      "box": [52, 38, 12, 62, 48, 23],
+      "chroma": 2.0
      }
     ]
    },
@@ -352,12 +399,12 @@
      {
       "m": [0, 22],
       "from": [10, 75],
-      "to": [26, 62]
+      "to": [22, 62]
      },
      {
       "m": [22, 50],
       "from": [15, 90],
-      "to": [30, 88]
+      "to": [22, 94]
      },
      {
       "m": [50, 130],
@@ -372,7 +419,7 @@
     ],
     "sky": {
      "from": [50, 85],
-     "to": [70, 78],
+     "to": [72, 76],
      "up": [5, 32, -8]
     },
     "local": {
@@ -391,10 +438,10 @@
       "name": "the rock knuckle",
       "box": [49.6, 14, 2.9, 66, 36, 16],
       "cls": [1],
-      "steep_only": true,
+      "steep_only": false,
       "from": [20, 85],
-      "to": [34, 58],
-      "share": 0.8,
+      "to": [28, 84],
+      "share": 0.4,
       "pool": 1.0
      },
      {
@@ -408,19 +455,30 @@
      }
     ],
     "veil": {
-     "m": [30, 70],
+     "m": [45, 90],
      "lstar": 70,
-     "share": 0.3
-    }
+     "share": 0.2
+    },
+    "glow": {
+     "towards": [-1.8, 68.0, 12.4],
+     "deg_wide": 30.0,
+     "deg_up": 6.0,
+     "deg_down": 10.0,
+     "lstar": 5.0,
+     "veil_m": 60.0
+    },
+    "focus_detail": 1.3
    },
    "colour": {
-    "ramp": [[0.0, "#1c1c3c"], [0.3, "#3d4880"], [0.55, "#8a8fb4"], [0.75, "#f0c79a"], [0.92, "#ffe2b8"]],
+    "ramp": [[0.0, "#1c1c3c"], [0.3, "#3d4880"], [0.55, "#8a8fb4"], [0.75, "#efcfae"], [0.92, "#fff4e2"]],
     "strength": 0.5,
     "keep_lit": 0.9,
     "keep_pool": 0.0,
     "chroma_focus": 1.2,
     "chroma_far": 0.6,
-    "chroma_sky": 0.75
+    "chroma_sky": 0.75,
+    "glow_srgb": "#ffd6b0",
+    "glow_share": 0.3
    },
    "edges": {
     "near_m": 24,
@@ -433,7 +491,8 @@
     "focus_keep": 0.9,
     "pool_keep": 0.0,
     "lost_px": 3.0,
-    "sky_px": 10
+    "sky_px": 10,
+    "sky_soft_px": 12
    },
    "lens": {
     "halo_from": 0.8,
