@@ -360,9 +360,10 @@ Shader "Overstory/House"
                     half wet = OS_WetNow(saturate(lies * rain), n.y, water.z) * rain;
                     OS_Wet(s.albedo, s.smoothness, s.normalWS, wet, water, saturate(s.smoothness * 1.6h), 0.0h, n.y);
                 }
-                // a joint's back sees only a share of the sky and of a lamp between its stones: all its light, less
+                // a joint's back sees only a share of the sky and of a lamp between its stones: all its light, less;
+                // a centimetre's mark, it goes to the plinth's mean with the flakes (OS_Near)
                 if (kind == K_MORTAR)
-                    s.albedo *= _Joint;
+                    s.albedo *= lerp(1.0h, _Joint, OS_Near(0.5 * max(length(ddx(input.positionWS)), length(ddy(input.positionWS)))));
 
                 InputData id = (InputData)0;
                 id.positionWS = input.positionWS;

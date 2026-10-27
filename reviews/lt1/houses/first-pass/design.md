@@ -13,7 +13,7 @@ All are in `blender/parts/house/`; `house.build` chooses, fits and places them, 
 | Windows and boarding (`windows.window`, `glass`, `boarded`) | fitted | the era's window, or the year's (`windowsByYear`) after `windows_replaced`; boards nailed over them while `boarded` and before `unboarded` |
 | Roof: covering, ridge, soffits, fascia, gutter, bargeboards, rafter tails, chimney | fitted | the house's span, length, eave and pitch; the era's eaves, verge, cover and chimney |
 | Plinth (`plinth.plinth`) | fitted | the ground under the wall (carved terrain), from below it to the sill; laid by the town's mason (`tools/r2b_wall.lay`), each fieldstone placed and turned, never bent |
-| Coats (`coats.coats`) | rule | `built`, `wealth`, and the events `repainted`, `restored`, `windows_replaced`, `neglected`, `boarded`, `unboarded`; the period's colours drawn by the seed |
+| Coats (`coats.coats`) | rule | `built`, `wealth`, and the events `repainted`, `restored`, `windows_replaced`, `neglected`, `boarded`, `unboarded`; the colours drawn by the seed from the period of each repaint (a care repaint at `recolourShare`) |
 
 ## What is data
 
@@ -33,6 +33,6 @@ Code holds only rules true everywhere: exposure runs a coat's years faster; it c
 
 ## Open
 
-- The street (8,000) and city (1,500) tiers are not built; only the near tier is (C 34,799, D 32,244, E 12,555 of 40,000).
+- The street (8,000) and city (1,500) tiers are not built; only the near tier is (C 34,979, D 32,364, E 12,555 of 40,000).
 - Not built: doors and C's bislag, D's lean-to (`extended` 1950), the pantile's wave, glass waviness, run-off streaks under sills.
 - Not the houses' to fix: the lamps' bounce fill under C's eave (the lamps element) and the gable's blue in blue hour (the light).

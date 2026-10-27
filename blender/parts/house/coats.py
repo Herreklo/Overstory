@@ -4,8 +4,8 @@ wears, the year and paint of its top coat, the colour under it and how many coat
 The care rule walks the house's life from the year it was built: a coat on every part then, in its period's colours; a
 repaint every interval its wealth keeps (longer after a 'neglected' event, none while it stands boarded); a dated
 'repainted' or 'restored' event puts a coat on in its year, a repaint choosing its colours again from its period; new
-windows come painted in their year. The care rule's repaints keep the colours and show no year a player can read; only
-the dated events change what a house wears. Pure Python: tools/houses.py writes the result into houses.json.
+windows come painted in their year. A care repaint chooses its colours again from its own period at the rule's
+recolourShare, otherwise keeps them; it shows no year a player can read. Pure Python: tools/houses.py writes the result into houses.json.
 """
 
 import os
@@ -64,7 +64,7 @@ def coats(facts, paint, seed, date):
     for e in [e for e in facts["events"] if e["year"] <= date]:
         y, kind, prm = e["year"], e["kind"], e.get("params", {})
         while active and due <= y:
-            coat(due, PARTS, False)
+            coat(due, PARTS, rng.random() < care["recolourShare"])
             due += interval(neglect)
         if kind in ("repainted", "restored"):
             coat(y, PARTS, kind == "repainted")
@@ -80,7 +80,7 @@ def coats(facts, paint, seed, date):
         elif kind == "unboarded" and prm.get("scope") == "all":
             active, due = True, y + interval(neglect)
     while active and due <= date:
-        coat(due, PARTS, False)
+        coat(due, PARTS, rng.random() < care["recolourShare"])
         due += interval(neglect)
     out = {}
     for part, st in stack.items():
