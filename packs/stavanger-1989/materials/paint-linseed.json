@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "material": "paint-linseed",
+  "describes": "Linseed oil paint, the rule until about 1960: it mattes, chalks and thins to the grain, then scales in small flakes.",
+  "chalk": {
+    "perDecade": 0.3,
+    "towardValue": 0.5,
+    "keepChroma": 0.35
+  },
+  "gloss": {
+    "new": 0.42,
+    "old": 0.12,
+    "halfYears": 3
+  },
+  "peel": {
+    "onsetYears": 8,
+    "spanYears": 30,
+    "flakeMm": 9,
+    "alongGrain": 3.0
+  },
+  "water": [
+    0.25,
+    0.45,
+    0.2,
+    0.4
+  ],
+  "provenance": "authored",
+  "notes": {
+    "chalk": "How far a decade at full weather draws the coat towards its chalk: a flat, paler or greyer coat whose value goes towards towardValue (linear) and which keeps keepChroma of its colour; light colours drift grey, dark ones fade (the research). Linseed chalks most of the three. Judged by look.",
+    "gloss": "Smoothness when new and when old, and the years it takes to lose half the difference: a fresh oil coat has a soft sheen that goes in a few seasons. Judged by look.",
+    "peel": "Its loss at full weather begins onsetYears after the coat and is whole spanYears later; it goes in flakes about flakeMm across, alongGrain times longer along the board. Linseed scales late and small, a coat lasting 8-15 years before a repaint (the research). Judged by look.",
+    "water": "Its water profile as the town's (Shaders/Water.hlsl, Overstory.World.WaterPack): how much it darkens wet, how glossy its wet film, how long it holds water, how readily run-off stains it. An oil film sheds water but a chalked one drinks a little. Judged by look."
+  }
+}

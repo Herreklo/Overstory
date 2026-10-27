@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "material": "fieldstone",
+  "describes": "Grey gathered stone, gneiss and granite boulders split or laid as found, the plinths of the timber houses, set in lime mortar and left their own colour.",
+  "srgb": "8C8A84",
+  "valueSpread": 0.16,
+  "warmSpread": 0.05,
+  "gloss": 0.1,
+  "water": [
+    0.5,
+    0.6,
+    0.2,
+    0.35
+  ],
+  "provenance": "authored",
+  "notes": {
+    "srgb": "The mean stone as a screen colour, judged by look; each stone differs by its seed up to valueSpread in value and warmSpread towards warm or cool (a wall of one colour reads as one band, R2b's strict review). Plinths kept their own material colour (the research).",
+    "water": "Its water profile as the town's (Shaders/Water.hlsl): near the town's granite (LT1Stone: 0.45, 0.9, 0.1, 0.3), a fieldstone's weathered, rougher face darkening a little more and glazing less. Judged by look."
+  }
+}

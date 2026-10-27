@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "material": "pine",
+  "describes": "Sawn Norway pine and spruce, the boards, trims and frames: pale and warm when new, silver-grey within a few years in the weather where no paint keeps the light off.",
+  "srgbNew": "D2B68A",
+  "srgbWeathered": "8F8B82",
+  "weatherHalfYears": 1.5,
+  "gloss": 0.08,
+  "water": [
+    0.7,
+    0.1,
+    0.6,
+    0.6
+  ],
+  "provenance": "authored",
+  "notes": {
+    "srgb": "New pine and weathered grey wood as screen colours, judged by look against the research's photographs; to check against a measured swatch.",
+    "weatherHalfYears": "Bare wood greys in sunlight within one to three years: half the way in this many years at full weather.",
+    "water": "Its water profile as the town's (Shaders/Water.hlsl, Overstory.World.WaterPack): how much it darkens wet, how glossy its wet film, how long it holds water, how readily run-off stains it. Bare weathered wood drinks rain and goes dark, stays wet, stains. Judged by look."
+  }
+}

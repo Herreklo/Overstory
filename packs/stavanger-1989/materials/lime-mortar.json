@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "material": "lime-mortar",
+  "describes": "Lime mortar in a fieldstone plinth's joints: pale when struck, darkening with damp and dirt in the deep joints.",
+  "srgb": "A29D92",
+  "gloss": 0.05,
+  "water": [
+    0.7,
+    0.05,
+    0.7,
+    0.5
+  ],
+  "jointView": 0.5,
+  "provenance": "authored",
+  "notes": {
+    "srgb": "Judged by look; a joint at Dale is dark, never black (LT1Stone's soil note).",
+    "water": "Its water profile as the town's (Shaders/Water.hlsl, Overstory.World.WaterPack): how much it darkens wet, how glossy its wet film, how long it holds water, how readily run-off stains it. Lime soaks it up and stays dark. Judged by look.",
+    "jointView": "The share of the sky, the ground and a lamp a joint's back sees between its rounded stones: a joint of 20 mm, 40 mm back, between arrises that fall away. At 0.3 every joint drew a black line round its stone, a cobble; 0.5 by look (round 9)."
+  }
+}

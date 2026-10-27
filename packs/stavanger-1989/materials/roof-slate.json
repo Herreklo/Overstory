@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "material": "roof-slate",
+  "describes": "Thin roofing slate in courses, the sveitser house's roof: a dark blue-grey that weathers a little lighter and duller.",
+  "srgbNew": "3F444C",
+  "srgbOld": "565A5E",
+  "oldYears": 80,
+  "gloss": 0.3,
+  "water": [
+    0.15,
+    0.7,
+    0.1,
+    0.2
+  ],
+  "provenance": "authored",
+  "notes": {
+    "srgb": "Screen colours judged by look; not the town's own slaty rock (slate.json), which is a wall and step stone.",
+    "water": "Its water profile as the town's (Shaders/Water.hlsl, Overstory.World.WaterPack): how much it darkens wet, how glossy its wet film, how long it holds water, how readily run-off stains it. Slate sheds water and glazes, as the town's slate. Judged by look."
+  }
+}

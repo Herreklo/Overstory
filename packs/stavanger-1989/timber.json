@@ -1,0 +1,52 @@
+{
+  "schemaVersion": 2,
+  "describes": "How this pack's builders clad, trimmed, glazed and roofed a timber house, by the era it was built in, and what later decades put in its openings. The house assembler (tools/houses.py) reads it with the house's facts (its era, storeys, footprint, roof and dated events); the parts' functions (blender/parts/house/) have no defaults: a missing key is an error. Sizes are millimetres; a pair is a range the seed draws in. Coats are in paint.json and materials/paint-*.json, the boards' wood in materials/pine.json.",
+  "workings": {
+    "classical": {
+      "years": [1790, 1875],
+      "storeyMm": 2450, "floorMm": 280,
+      "cladding": { "kind": "single-rebate", "exposureMm": [145, 195], "butMm": 28, "stepMm": 13, "grooveMm": 0, "boardLengthMm": [2600, 5200], "jointGapMm": 2, "tiltJitterMm": 1.6 },
+      "corner": { "widthMm": 150, "proudMm": 22 },
+      "dripBoard": { "heightMm": 130, "proudMm": 36, "slopeMm": 16 },
+      "casing": { "widthMm": 122, "proudMm": 25, "headMm": 210, "capMm": 30, "capProudMm": 120, "sillMm": 50, "sillProudMm": 95, "hornMm": 30, "brackets": null },
+      "eaves": { "overhangMm": 140, "fasciaMm": 150, "fasciaThickMm": 28, "rafterTails": false, "gutter": false },
+      "verge": { "overhangMm": 90, "boardMm": 205, "thickMm": 32 },
+      "openings": { "bayMm": [1700, 2800], "edgeMm": 1150, "window": "empire-6", "sillMm": 820, "gable": "small", "door": "centre" },
+      "roof": { "cover": "pantile", "material": "clay-pantile", "gaugeMm": 300, "buttMm": 40 },
+      "chimney": { "count": 1, "sizeMm": [700, 700], "aboveRidgeMm": 850, "crown": "slab" },
+      "plinth": { "kind": "fieldstone", "material": "fieldstone", "foundationMm": [300, 460], "courseMm": [200, 400], "stoneMm": [280, 1000], "stonePerHeight": [1.1, 3.4], "courseDrawPower": [0.5, 1.2], "snapMm": 45, "bondLeastMm": 110, "shortMm": 160, "jointMm": [14, 30], "bedMm": 40, "roundMm": [30, 75], "roundSegments": 2, "domeMm": [12, 40], "setOutMm": [-14, 16], "turnDeg": [-2.5, 2.5] }
+    },
+    "chalet": {
+      "years": [1865, 1915],
+      "storeyMm": 2700, "floorMm": 300,
+      "cladding": { "kind": "double-rebate", "exposureMm": [118, 138], "butMm": 22, "stepMm": 0, "grooveMm": 7, "boardLengthMm": [3000, 5400], "jointGapMm": 2, "tiltJitterMm": 0.8 },
+      "corner": { "widthMm": 165, "proudMm": 24 },
+      "dripBoard": { "heightMm": 150, "proudMm": 40, "slopeMm": 18 },
+      "casing": { "widthMm": 125, "proudMm": 25, "headMm": 250, "capMm": 30, "capProudMm": 180, "sillMm": 55, "sillProudMm": 120, "hornMm": 40, "brackets": [480, 125, 50] },
+      "eaves": { "overhangMm": 600, "fasciaMm": 0, "fasciaThickMm": 0, "rafterTails": true, "rafterMm": [75, 150], "rafterSpacingMm": 900, "gutter": true },
+      "verge": { "overhangMm": 520, "boardMm": 215, "thickMm": 32 },
+      "openings": { "bayMm": [1600, 2700], "edgeMm": 1100, "window": "tpost-6", "sillMm": 800, "gable": "pair", "door": "side" },
+      "roof": { "cover": "slate", "material": "roof-slate", "gaugeMm": 210, "buttMm": 12 },
+      "chimney": { "count": 2, "sizeMm": [560, 680], "aboveRidgeMm": 950, "crown": "corbelled" },
+      "plinth": { "kind": "fieldstone", "material": "fieldstone", "foundationMm": [300, 460], "courseMm": [220, 380], "stoneMm": [320, 1100], "stonePerHeight": [1.2, 3.4], "courseDrawPower": [0.5, 1.2], "snapMm": 45, "bondLeastMm": 120, "shortMm": 170, "jointMm": [12, 26], "bedMm": 40, "roundMm": [25, 65], "roundSegments": 2, "domeMm": [10, 34], "setOutMm": [-12, 14], "turnDeg": [-2, 2] }
+    }
+  },
+  "windows": {
+    "empire-6": { "wMm": 880, "hMm": 1300, "frameMm": 72, "sashMm": 46, "barMm": 24, "cols": 2, "rows": 3, "top": 0, "post": true, "glass": "cylinder", "trims": "era", "paint": "window" },
+    "tpost-6": { "wMm": 960, "hMm": 1520, "frameMm": 74, "sashMm": 50, "barMm": 26, "cols": 2, "rows": 2, "top": 380, "post": true, "glass": "cylinder", "trims": "era", "paint": "window" },
+    "husmor": { "wMm": 860, "hMm": 1080, "frameMm": 58, "sashMm": 62, "barMm": 0, "cols": 1, "rows": 1, "top": 0, "post": false, "glass": "float", "trims": "lost", "paint": "window" }
+  },
+  "windowsByYear": [
+    { "from": 1955, "to": 1989, "window": "husmor", "note": "the husmorvindu: one big pane on a pivot, easy to wash; set in a smaller opening, the old casings lost, the rest of the old hole boarded in" }
+  ],
+  "lostTrims": { "widthMm": 68, "proudMm": 14, "sillMm": 34, "sillProudMm": 40 },
+  "boarding": { "thickMm": 22, "overlapMm": 70 },
+  "provenance": "authored",
+  "notes": {
+    "sources": "reviews/lt1/houses/first-pass/research-subject.md: the claddings by era (single-rebated to about 1875, double-rebated sveitser), the trims (Heng 2015: side trims 120-125 x 25, the head's drip board 30 thick at about 20 degrees standing 180 proud over the window, the sill's 120, frame to drip board about 250, brackets 480 x 125 x 50), barge boards 28-34 x 195-220 [Mandal], almost no overhang on classical roofs and a deep one with rafter ends on sveitser roofs, pantiles on battens about 30 cm apart, slate on sveitser roofs, one big chimney at mid-ridge on a classical house and two or more with corbelled crowns on a sveitser one, gutters only from the sveitser era, grey fieldstone plinths, the husmorvindu and its lost trims.",
+    "exposureMm": "No source gave a Stavanger board width: classical widths vary within a wall (the range is drawn per course), sveitser boards are machine-run and even. Board thickness 25-32 mm.",
+    "husmor": "Its size and the patch of new boards where the old, larger opening was are this pack's reading of 'openings were often made smaller' and 'the trims were usually lost' (the note's (inf.)).",
+    "storeyMm": "No source gave storey heights: a classical cottage's lower rooms and a sveitser house's taller ones, an assumption; the loft's floor a storey and a floor's depth over the ground floor's.",
+    "boarding": "No source on how an empty house was boarded: rough sawn boards nailed across the casings, unpainted, an assumption."
+  }
+}

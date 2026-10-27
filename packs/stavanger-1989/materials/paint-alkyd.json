@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "material": "paint-alkyd",
+  "describes": "Alkyd oil paint, from 1948 (Drygolin) and pure alkyd from the early 1960s: a thick, tight film that holds its colour, then blisters and peels in sheets, worst over old linseed.",
+  "chalk": {
+    "perDecade": 0.1,
+    "towardValue": 0.5,
+    "keepChroma": 0.55
+  },
+  "gloss": {
+    "new": 0.62,
+    "old": 0.24,
+    "halfYears": 5
+  },
+  "peel": {
+    "onsetYears": 12,
+    "spanYears": 30,
+    "flakeMm": 55,
+    "alongGrain": 2.2
+  },
+  "water": [
+    0.1,
+    0.6,
+    0.1,
+    0.3
+  ],
+  "provenance": "authored",
+  "notes": {
+    "chalk": "How far a decade at full weather draws the coat towards its chalk: a flat, paler or greyer coat whose value goes towards towardValue (linear) and which keeps keepChroma of its colour; light colours drift grey, dark ones fade (the research). Linseed chalks most of the three. Judged by look.",
+    "gloss": "A glossier film than oil, lasting longer. Judged by look.",
+    "peel": "Holds, then goes in sheets (the research: blisters and peels in sheets over linseed): large flakes, a loss that runs over decades on an open wall and much faster where water stands (paint.json's weather). Judged by look.",
+    "water": "Its water profile as the town's (Shaders/Water.hlsl, Overstory.World.WaterPack): how much it darkens wet, how glossy its wet film, how long it holds water, how readily run-off stains it. A tight film: sheds water, glosses, dries fast. Judged by look."
+  }
+}

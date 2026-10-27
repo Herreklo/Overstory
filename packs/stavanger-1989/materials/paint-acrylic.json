@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "material": "paint-acrylic",
+  "describes": "Acrylic house paint, beside alkyd from the 1960s: a flexible, open film that chalks a little and seldom peels.",
+  "chalk": {
+    "perDecade": 0.08,
+    "towardValue": 0.5,
+    "keepChroma": 0.6
+  },
+  "gloss": {
+    "new": 0.34,
+    "old": 0.2,
+    "halfYears": 6
+  },
+  "peel": {
+    "onsetYears": 14,
+    "spanYears": 36,
+    "flakeMm": 25,
+    "alongGrain": 2.0
+  },
+  "water": [
+    0.15,
+    0.4,
+    0.15,
+    0.35
+  ],
+  "provenance": "authored",
+  "notes": {
+    "all": "No source dated or measured it for this town; the values are an assumption judged by look, kept apart so a source can replace them.",
+    "water": "Its water profile as the town's (Shaders/Water.hlsl, Overstory.World.WaterPack): how much it darkens wet, how glossy its wet film, how long it holds water, how readily run-off stains it. An open film: sheds water, a soft sheen. Judged by look."
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "material": "glass",
+  "describes": "Window glass, the panes of every window: dark where no room is lit behind it, reflecting the sky.",
+  "srgbDark": "1C2126",
+  "gloss": 0.92,
+  "provenance": "authored",
+  "notes": {
+    "srgbDark": "An unlit room seen through the glass."
+  }
+}

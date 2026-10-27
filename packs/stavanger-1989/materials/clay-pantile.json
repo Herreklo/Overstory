@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "material": "clay-pantile",
+  "describes": "Red clay pantiles on battens, the classical house's roof: fired orange-red, darkening and greening with soot, moss and lichen over the decades.",
+  "srgbNew": "A9532F",
+  "srgbOld": "6E4134",
+  "oldYears": 60,
+  "gloss": 0.18,
+  "water": [
+    0.55,
+    0.25,
+    0.5,
+    0.4
+  ],
+  "provenance": "authored",
+  "notes": {
+    "srgb": "Screen colours judged by look; the old one is the tile under a century of the town's soot and moss.",
+    "oldYears": "The tile is halfway to its old colour at half these years since it was laid (the house's building, unless a 'roof_retiled' event).",
+    "water": "Its water profile as the town's (Shaders/Water.hlsl, Overstory.World.WaterPack): how much it darkens wet, how glossy its wet film, how long it holds water, how readily run-off stains it. Fired clay soaks and darkens, slowly dries. Judged by look."
+  }
+}

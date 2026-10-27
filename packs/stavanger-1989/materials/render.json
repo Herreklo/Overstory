@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "material": "render",
+  "describes": "Cement render over a brick chimney stack: a mid grey, streaked darker by soot and rain.",
+  "srgb": "86847F",
+  "gloss": 0.08,
+  "water": [
+    0.6,
+    0.05,
+    0.6,
+    0.6
+  ],
+  "provenance": "authored",
+  "notes": {
+    "srgb": "Judged by look.",
+    "water": "Its water profile as the town's (Shaders/Water.hlsl, Overstory.World.WaterPack): how much it darkens wet, how glossy its wet film, how long it holds water, how readily run-off stains it. Cement render soaks and stays dark. Judged by look."
+  }
+}

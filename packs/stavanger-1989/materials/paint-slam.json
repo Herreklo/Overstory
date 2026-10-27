@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "material": "paint-slam",
+  "describes": "Slam paint (Falu-type red: iron-oxide pigment in a rye-flour and linseed binder), the red of outbuildings and backs: no film to lift, it powders away instead, chalking fast and staying matt.",
+  "chalk": {
+    "perDecade": 0.55,
+    "towardValue": 0.42,
+    "keepChroma": 0.7
+  },
+  "gloss": {
+    "new": 0.06,
+    "old": 0.04,
+    "halfYears": 1
+  },
+  "peel": {
+    "onsetYears": 30,
+    "spanYears": 50,
+    "flakeMm": 4,
+    "alongGrain": 1.5
+  },
+  "water": [
+    0.45,
+    0.05,
+    0.4,
+    0.6
+  ],
+  "provenance": "authored",
+  "notes": {
+    "chalk": "Slam paint has no film: its binder washes out and the pigment powders off, so it chalks fast but keeps its red (a binder-poor paint keeps its hue as it pales). Judged by look.",
+    "peel": "It does not flake as a film does; past decades the wood shows through in fine powdered patches, drawn here as small, late, soft losses.",
+    "water": "Porous and matt: darkens wet, takes no glaze, stains readily."
+  }
+}

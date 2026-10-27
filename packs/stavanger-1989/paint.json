@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "describes": "What this pack's houses were painted with and how they were kept: the colours (NCS codes and the sRGB they print as), the colours each period chose for each part of a house, the paint system of each period (materials/paint-*.json says how each ages), and the care rule that repaints a house from its wealth and its dated events. tools/houses.py walks each house's life by these to its coats on the date; the house shader reads the coats. Nothing here is a dated event: a repaint the care rule makes shows no year a player can read (docs/facts-contract.md, Keepers and care).",
+  "colours": {
+    "blyhvit":       { "ncs": "S 0502-Y",    "srgb": "F7EFE4" },
+    "titanhvit":     { "ncs": "S 0502-G50Y", "srgb": "EEEEE6" },
+    "kitthvit":      { "ncs": "S 0603-Y20R", "srgb": "F1EADA" },
+    "kremhvit":      { "ncs": "S 1005-Y30R", "srgb": "E3D8C6" },
+    "perlegraa":     { "ncs": "S 1505-G90Y", "srgb": "D7D0BE" },
+    "bergesengroenn":{ "ncs": "S 3020-G30Y", "srgb": "95A686" },
+    "oker":          { "ncs": "S 3030-Y20R", "srgb": "BB945D" },
+    "falunroed":     { "ncs": "S 4550-Y80R", "srgb": "842D23" },
+    "oksidroed":     { "ncs": "S 6030-Y70R", "srgb": "6F3623" },
+    "jernoksidbrun": { "ncs": "S 7020-Y60R", "srgb": "5F3926" },
+    "mosegroenn":    { "ncs": "S 7020-G",    "srgb": "174332" },
+    "stavangerblaa": { "ncs": "S 7020-R90B", "srgb": "14324A" }
+  },
+  "periods": [
+    { "from": 1700, "to": 1850, "body": ["blyhvit", "kitthvit"], "back": ["falunroed", "oker"], "trim": ["blyhvit"], "window": ["jernoksidbrun", "mosegroenn"], "door": ["mosegroenn", "jernoksidbrun", "oksidroed"] },
+    { "from": 1850, "to": 1884, "body": ["oker", "kremhvit", "perlegraa", "blyhvit"], "back": null, "trim": ["blyhvit", "jernoksidbrun"], "window": ["jernoksidbrun", "mosegroenn"], "door": ["mosegroenn", "jernoksidbrun", "oksidroed"] },
+    { "from": 1884, "to": 1910, "body": ["blyhvit", "perlegraa", "kremhvit"], "back": null, "trim": ["blyhvit"], "window": ["blyhvit", "perlegraa"], "door": ["mosegroenn", "stavangerblaa", "jernoksidbrun"] },
+    { "from": 1910, "to": 1945, "body": ["blyhvit", "kremhvit"], "back": null, "trim": ["mosegroenn", "blyhvit"], "window": ["blyhvit"], "door": ["mosegroenn", "stavangerblaa"] },
+    { "from": 1945, "to": 1990, "body": ["titanhvit", "bergesengroenn", "oker", "kremhvit", "oksidroed", "stavangerblaa"], "back": null, "trim": ["titanhvit"], "window": ["titanhvit"], "door": ["mosegroenn", "stavangerblaa", "oksidroed", "jernoksidbrun"] }
+  ],
+  "systems": [
+    { "from": 1700, "to": 1950, "paint": "paint-linseed" },
+    { "from": 1950, "to": 1990, "paint": "paint-alkyd", "or": "paint-acrylic", "orFrom": 1975, "orShare": 0.25 }
+  ],
+  "care": {
+    "intervalYears": [15, 8],
+    "intervalJitter": 0.2,
+    "neglect": "an event 'neglected' with amount a (per mille) from its year lengthens every later interval by 1 / (1 - a/1000); 'boarded' over the whole house stops repainting until 'unboarded'; 'restored' and 'repainted' put on a coat in their year",
+    "windowsNew": "a window put in by an event 'windows_replaced' comes painted in its year, in the period's window colour"
+  },
+  "weather": { "southFactor": 0.6, "footM": 0.45, "footFactor": 0.8, "lapFactor": 0.8 },
+  "provenance": "authored",
+  "notes": {
+    "weather": "How much harder a coat weathers where it is most exposed, as a share more: a wall facing south (sun), the lowest footM of a wall (splash; paint fails first on the lowest boards), a board's lap edge (water stands on it), falling off fast above it. The research's order of failure; the numbers judged by look.",
+    "colours": "The Stavanger colour guide's NCS codes (reviews/lt1/houses/first-pass/research-subject.md, 2. Paint); their sRGB as plan-home.com prints each NCS S code (fetched 27 October 2026), a screen value, to check against an NCS fan deck. Stavangerblaa is the guide's NCS S 7020-R90B.",
+    "periods": "The research's colours by period: before about 1850 white was dear, so white fronts and red or ochre backs ('back') with dark windows; 1850-84 ochres, browns, white and grey with dark windows and contrasting trims; 1884-1910 whites and greys; 1910-40 green trims, white with blue; from 1945 alkyd brought pastels, dark red and blue, with white windows. Doors most often green, otherwise blue-black, red or brown. Which colour of a period's list a house took is drawn from its seed. A 'back' of null paints the back as the body.",
+    "systems": "Linseed oil paint was the rule until about 1960; alkyd oil paint (Drygolin) from 1948 and pure alkyd from the early 1960s; acrylic beside alkyd from the 1960s, never dated as the usual choice (the research). 1950 as the switch and acrylic's quarter share from 1975 are this pack's assumptions.",
+    "care": "Repainted every 8-15 years, the south wall more often (the research): intervalYears runs from a house of wealth 0 (15) to one of 1000 (8), each interval drawn within intervalJitter of it, so a house nobody neglects never wears a coat much past 15 years. A colour is kept through the care rule's repaints (each repaint matched the faded coat); only a dated repaint or a restoration chooses again, from its period."
+  }
+}
