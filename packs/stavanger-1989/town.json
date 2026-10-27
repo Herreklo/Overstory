@@ -3,30 +3,191 @@
   "describes": "The town seen whole from the city camera (unity/Assets/Code/Editor/Town/LT1Town.cs, Light): one mean colour for each thing no single material record holds at that distance. That covers the ground's cover, the trees' crowns in late October, the lanes' surfaces and the boats' paints. It also says which paints and roofs the houses take from paint.json and materials/*.json. Nearer tiers draw the materials themselves.",
   "provenance": "authored",
   "cover": {
-    "grass": {"srgb": "6B7446", "spread": 0.08},
-    "garden": {"srgb": "5C6A3A", "spread": 0.05},
-    "heath": {"srgb": "6B5846", "spread": 0.14},
-    "rock": {"srgb": "7A7970", "spread": 0.12},
-    "forest floor": {"srgb": "4B4535", "spread": 0.06},
-    "made": {"srgb": "8B8577", "spread": 0.04}
+    "grass": {
+      "srgb": "6B7446",
+      "spread": 0.08
+    },
+    "garden": {
+      "srgb": "5C6A3A",
+      "spread": 0.05
+    },
+    "heath": {
+      "srgb": "6B5846",
+      "spread": 0.14
+    },
+    "rock": {
+      "srgb": "7A7970",
+      "spread": 0.12
+    },
+    "forest floor": {
+      "srgb": "4B4535",
+      "spread": 0.06
+    },
+    "made": {
+      "srgb": "8B8577",
+      "spread": 0.04
+    }
   },
   "land": "5E5A44",
   "crowns": {
-    "spruce": ["27382B", "2E3D2E", "233226"],
-    "pine": ["35432F", "3C4A33"],
-    "birch": ["A68A3E", "94803A", "7C7A3E"],
-    "rowan": ["8A4E2C", "7A5A30"],
-    "sycamore": ["7E7A3A", "8E7034"],
-    "apple": ["66703A", "7A7438"]
+    "spruce": [
+      "27382B",
+      "2E3D2E",
+      "233226"
+    ],
+    "pine": [
+      "35432F",
+      "3C4A33"
+    ],
+    "birch": [
+      "9E8A4C",
+      "8E7E44",
+      "7C7A44",
+      "6E6458"
+    ],
+    "rowan": [
+      "8A4E2C",
+      "7A5A30"
+    ],
+    "sycamore": [
+      "7E7A3A",
+      "8E7034"
+    ],
+    "apple": [
+      "66703A",
+      "7A7438"
+    ]
   },
   "stand": "2A392C",
   "trunk": "4A443C",
-  "surfaces": {"setts": "7E7B73", "asphalt": "4D4D4B", "gravel": "8F897B", "row": "575652", "square": "7E7B73", "churchyard": "8F897B"},
-  "boats": ["titanhvit", "titanhvit", "titanhvit", "stavangerblaa", "falunroed", "mosegroenn", "kremhvit"],
+  "surfaces": {
+    "setts": "7E7B73",
+    "asphalt": "4D4D4B",
+    "gravel": "8F897B",
+    "row": "575652",
+    "square": "7E7B73",
+    "churchyard": "8F897B"
+  },
+  "boats": [
+    "titanhvit",
+    "titanhvit",
+    "titanhvit",
+    "stavangerblaa",
+    "falunroed",
+    "mosegroenn",
+    "kremhvit"
+  ],
   "fences": "titanhvit",
-  "scheme": {"name": "the old town's white", "grains": ["old"]},
+  "scheme": {
+    "name": "the old town's white",
+    "grains": [
+      "old"
+    ]
+  },
   "warehouses": "back",
-  "roofs": [{"to": 1880, "material": "clay-pantile"}, {"to": 9999, "material": "roof-slate"}],
-  "neglect": {"toward": "soil", "share": 0.22},
-  "notes": "Cover tones are wet ground in late October on the Rogaland coast: olive grass, heather and dead bracken going brown, grey gneiss with lichen. Birch is past its yellow peak, rowan has turned, and sycamore and apple are half green. The old lanes keep the old town's white (paint.json, schemes). A warehouse takes its period's back-of-house paints, falun red and ochre. A roof takes the covering of its year built. A neglected house's paint goes part way toward the soil's colour, as grime and chalking read from afar."
+  "roofs": [
+    {
+      "to": 1880,
+      "material": "clay-pantile"
+    },
+    {
+      "to": 9999,
+      "material": "roof-slate"
+    }
+  ],
+  "neglect": {
+    "toward": "soil",
+    "share": 0.22
+  },
+  "glass": {
+    "srgb": "1B2024"
+  },
+  "openings": {
+    "warehouse": {
+      "window": {
+        "wMm": 700,
+        "hMm": 900
+      },
+      "bayMm": [
+        2600,
+        4200
+      ],
+      "edgeMm": 1300,
+      "sillMm": 1000,
+      "hatch": {
+        "wMm": 1300,
+        "hMm": 1900
+      },
+      "port": {
+        "wMm": 2200,
+        "hMm": 2500
+      }
+    },
+    "outhouse": {
+      "door": {
+        "wMm": 900,
+        "hMm": 1900
+      }
+    },
+    "church": {
+      "window": {
+        "wMm": 1300,
+        "hMm": 3400
+      },
+      "bayMm": [
+        3400,
+        4600
+      ],
+      "edgeMm": 2400,
+      "sillMm": 2200,
+      "door": {
+        "wMm": 1700,
+        "hMm": 3000
+      },
+      "doorWall": "left"
+    },
+    "porch": {
+      "door": {
+        "wMm": 950,
+        "hMm": 2000
+      },
+      "window": {
+        "wMm": 600,
+        "hMm": 900
+      },
+      "sillMm": 1000,
+      "glazed": [
+        "chalet"
+      ]
+    },
+    "lean-to": {
+      "window": {
+        "wMm": 600,
+        "hMm": 700
+      },
+      "sillMm": 1150
+    }
+  },
+  "evening": {
+    "home": 0.82,
+    "room": 0.55,
+    "kinds": {
+      "house": 1.0,
+      "wing": 0.8,
+      "warehouse": 0.12,
+      "outhouse": 0.0,
+      "church": 0.0,
+      "tower": 0.0,
+      "ark": 1.0,
+      "porch": 0.3,
+      "lean-to": 0.2
+    },
+    "pane": 2.0
+  },
+  "workingOf": {
+    "jugend": "chalet",
+    "functionalist": "chalet",
+    "seventies": "chalet"
+  },
+  "notes": "Cover tones are wet ground in late October on the Rogaland coast: olive grass, heather and dead bracken going brown, grey gneiss with lichen. Birch is past its yellow peak and one in four is bare (its twigs a grey-violet mass from afar), rowan has turned, and sycamore and apple are half green. The old lanes keep the old town's white (paint.json, schemes). A warehouse takes its period's back-of-house paints, falun red and ochre. A roof takes the covering of its year built. A neglected house's paint goes part way toward the soil's colour, as grime and chalking read from afar. A sjøhus has small windows along its sides and a stack of loading hatches in each gable, the port at the quay; the church tall windows along its sides and its door in the west gable. A porch has its door in its gable to the lane, glazed sides where its era glazed them; a lean-to one small window at its back. At 17:50 in late October most households are home and a room in two is lit: a lit window is the moment's (local scene state, seeded, claiming nothing), never in a house its diary says is empty or boarded; its light is the room's lamp on its walls and curtains (materials/glass.json), pane its brightness at a window glow of 1. By day a pane is dark glass. An era timber.json has no working for yet is drawn at this tier by the nearest one it names (workingOf), until its own is written."
 }

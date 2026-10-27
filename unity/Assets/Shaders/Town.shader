@@ -1,6 +1,7 @@
 // The town at the city tier (Code/Editor/Town/LT1Town.cs, Light): each mass one colour from the pack, times its vertex
 // colour where the mass carries one (the ground's cover, a tree's crown, a boat's paint), lit and aired exactly as the
-// street is (StreetLooks.hlsl, StreetSurface.hlsl): the same sun, sky, shade, brush, rain and air, its own colours.
+// street is (StreetLooks.hlsl, StreetSurface.hlsl): the same sun, sky, shade, brush, rain and air, its own colours. A
+// pane (_Pane 1) gives out its room's light where its vertex alpha says the room is lit, as bright as the rig's windows.
 Shader "Overstory/Town"
 {
     Properties
@@ -10,6 +11,8 @@ Shader "Overstory/Town"
         _Smoothness ("Smoothness", Range(0, 1)) = 0.08
         _Porosity ("Porosity: how far rain darkens it and keeps it matt", Range(0, 1)) = 0.5
         _Ground ("The share of the ground's light a face sees (the bake's green)", Range(0, 1)) = 0.35
+        _Pane ("A window's pane: lit by its vertex alpha (0 or 1)", Float) = 0
+        [HDR] _PaneLit ("A lit room's light through its pane, at a window glow of 1", Color) = (1, 0.7, 0.4, 1)
     }
 
     HLSLINCLUDE
@@ -21,6 +24,8 @@ Shader "Overstory/Town"
         half _Smoothness;
         half _Porosity;
         half _Ground;
+        half _Pane;
+        half4 _PaneLit;
     CBUFFER_END
 
     #include "StreetSurface.hlsl"
@@ -40,7 +45,7 @@ Shader "Overstory/Town"
         albedo *= lerp(1.0h, 1.0h - 0.5h * _Porosity, wet);
         smoothness = lerp(smoothness, max(smoothness, lerp(0.85h, 0.2h, _Porosity * _Porosity)), wet);
         s.albedo = albedo;
-        s.emission = 0;
+        s.emission = _Pane > 0.5 ? _PaneLit.rgb * tint.a * _OS_WindowGlow : 0;
         s.smoothness = smoothness;
         s.metallic = 0;
         s.normalWS = normalWS;

@@ -496,6 +496,121 @@ def placement(pid, kind, of, lane, side, fp, base, eave, pitch, roof):
                 footprint=[v for x, y in fp for v in (mm(x), mm(y))])
 
 
+PACK = os.path.join(ROOT, "packs", "stavanger-1989")
+TIMBER = json.load(open(os.path.join(PACK, "timber.json")))
+WORKING_OF = json.load(open(os.path.join(PACK, "town.json")))["workingOf"]
+
+# how a house grows over its life (a stand-in for the engine's fabric pass): the share of houses of an era that were
+# built with the part, the share that had it added later and when. An ark through the long eave of a low house; a porch
+# (bislag) at the door where the yard has room for it; a lean-to at the back or a gable end
+GROWN = {
+    "ark": dict(built={"chalet": 0.5}, later={"classical": 0.3}, years=(1885, 1950)),
+    "porch": dict(built={"chalet": 0.6}, later={"classical": 0.35}, years=(1890, 1935), yard=1.9),
+    "lean-to": dict(built={}, later={"classical": 0.3, "chalet": 0.25}, years=(1905, 1975)),
+}
+
+
+def working(era):
+    w = TIMBER["workings"]
+    return w[era] if era in w else w[WORKING_OF[era]]
+
+
+def bays(length, op):
+    """Where a wall's openings sit (their centres), as blender/parts/house/house.py sets them."""
+    b0, b1, edge = op["bayMm"][0] / 1000.0, op["bayMm"][1] / 1000.0, op["edgeMm"] / 1000.0
+    room = length - 2 * edge
+    if room < b0 * 0.75:
+        return [length / 2]
+    gaps = max(1, math.ceil(room / b1 - 1e-6))
+    return [edge + room * i / gaps for i in range(gaps + 1)]
+
+
+def grow_parts(house, dy, fp, era, yardd, ground, placements, lane, side):
+    """What the house grew over its life, each part a placement of its own and, where it came later, an event in its
+    diary: an ark, a porch, a lean-to (GROWN). A part is only grown where it fits."""
+    hid = house["id"]
+    rs = HS.Stream(WORLD, hid, "grown")
+    built = next(e for e in dy["events"] if e["kind"] == "built")
+    by, storeys = built["year"], built["params"]["storeys"]
+    (fx0, fy0), (fx1, fy1) = fp[0], fp[1]
+    w = math.hypot(fx1 - fx0, fy1 - fy0)
+    ux, uy = (fx1 - fx0) / w, (fy1 - fy0) / w
+    nx, ny = -uy, ux
+    d = math.hypot(fp[3][0] - fx0, fp[3][1] - fy0)
+    base, eave, pitch = house["base"] / 1000.0, house["eave"] / 1000.0, house["pitch"]
+    wk = working(era)
+
+    def when(part):
+        g = GROWN[part]
+        r = rs.random()
+        b, later = g["built"].get(era, 0.0), g["later"].get(era, 0.0)
+        y = int(rs.uniform(*g["years"]))
+        if r < b:
+            return by
+        if r < b + later and by + 5 < y < WORLD:
+            return y
+        return None
+
+    def grew(part, year, cause):
+        if year == by:
+            built["params"].setdefault("parts", []).append(part)
+        else:
+            dy["events"].append(dict(id=max(e["id"] for e in dy["events"]) + 1, year=year, kind="extended",
+                                     params=dict(part=part), cause=cause))
+
+    def part(pid, kind, pfp, b, e, p, roof, year):
+        pl = placement(pid, kind, hid, lane, side, pfp, b, e, p, roof)
+        pl["year"] = year
+        placements.append(pl)
+
+    # an ark: the front wall carried up through the long eave under a gable of its own, the loft made a room
+    if house["kind"] == "house" and house["roof"] == "eaves" and storeys in (1500, 2500) and w >= 8.0:
+        y = when("ark")
+        if y:
+            aw = min(4.2, max(2.6, w * rs.uniform(0.3, 0.4)))
+            ap = pitch if era == "classical" else rs.uniform(44, 50)
+            ridge = eave + d / 2 * math.tan(math.radians(pitch))
+            # its ridge a little under the house's
+            ae = min(eave + rs.uniform(1.3, 1.8), ridge - 0.25 - aw / 2 * math.tan(math.radians(ap)))
+            if ae > eave + 0.9:
+                cx, cy = (fx0 + fx1) / 2, (fy0 + fy1) / 2
+                part(hid * 100 + 4, "ark", rect(cx, cy, ux, uy, aw, d / 2 + 0.4), eave - 0.5, ae, ap, "gable", y)
+                grew("ark", y, "the loft made into rooms")
+    # a porch at the door, its gable to the lane, where the yard in front has room
+    if house["kind"] == "house" and yardd >= GROWN["porch"]["yard"]:
+        y = when("porch")
+        if y:
+            op = wk["openings"]
+            s = w / 2 if op["door"] == "centre" else bays(w, op)[0]
+            pw, pd = rs.uniform(2.2, 2.8), min(yardd - 0.5, rs.uniform(1.6, 2.2))
+            s = min(max(s, pw / 2 + 0.2), w - pw / 2 - 0.2)
+            px, py = fx0 + ux * s - nx * pd, fy0 + uy * s - ny * pd
+            pfp = rect(px, py, ux, uy, pw, pd)
+            if pd >= 1.2 and ground.free(pfp, 0.05, 0.3, ignore=(fp,)):
+                ground.claim(pfp)
+                part(hid * 100 + 3, "porch", pfp, base, base + 2.55, rs.uniform(38, 46), "gable", y)
+                grew("porch", y, "a porch to keep the weather from the door")
+    # a lean-to against the back or a gable end, its roof falling away from the house
+    y = when("lean-to")
+    if y:
+        lw, ld = rs.uniform(2.4, 4.0), rs.uniform(1.8, 2.6)
+        (bx1, by1), (bx0, by0) = fp[2], fp[3]
+        spots = [((bx0 + bx1) / 2 + ux * e * (w / 2 - lw / 2 - 0.3), (by0 + by1) / 2 + uy * e * (w / 2 - lw / 2 - 0.3), ux, uy)
+                 for e in (-1.0, 1.0)]
+        spots += [((fx0 + bx0) / 2, (fy0 + by0) / 2, nx, ny), ((fx1 + bx1) / 2, (fy1 + by1) / 2, -nx, -ny)]
+        order = sorted(range(len(spots)), key=lambda i: rs.random())
+        for i in order:
+            cx, cy, lux, luy = spots[i]
+            lfp = rect(cx, cy, lux, luy, lw if i < 2 else min(lw, d - 1.0), ld)
+            if (i < 2 or d - 1.0 >= 2.2) and ground.free(lfp, 0.3, ignore=(fp,)):
+                ground.claim(lfp)
+                lb = min(base, natural(cx, cy) + 0.15)
+                part(hid * 100 + 5, "lean-to", lfp, lb, lb + 2.3, rs.uniform(14, 22), "shed", y)
+                grew("lean-to", y, "more room at the back")
+                break
+    dy["events"].sort(key=lambda e: (e["year"], e["id"]))
+
+
 def yard_things(house, fp, grain, base, built, ground, placements, gardens, rs, lane, side):
     """A house's wing and outhouse, and where its garden trees may stand: all behind it, on its plot."""
     hid = house["id"]
@@ -874,7 +989,7 @@ def grow():
         def blocked(t, w):
             return any(abs(t - c_) < w / 2 + 2.0 for c_ in crossings.get(lid, []))
 
-        def add_house(hid_, fp, cz, side, built, era, dy, rs_, roof_w):
+        def add_house(hid_, fp, cz, side, built, era, dy, rs_, roof_w, yardd):
             nonlocal hid
             ground.claim(fp)
             buildings.append(dy)
@@ -909,6 +1024,7 @@ def grow():
                     placements.append(placement(hid, "house", 0, lid, "back", bfp, bb, bb + storey_height(bst, bera),
                                                 rb.uniform(34, 44), "eaves"))
             yard_things(house, fp, spec["grain"], base, built, ground, placements, gardens, rs_, lid, side)
+            grow_parts(house, dy, fp, era, yardd, ground, placements, lid, side)
 
         # lt1-street.json's houses for this lane stand on its uphill side in their authored order, each taking the
         # first plot at or past its authored x
@@ -974,14 +1090,14 @@ def grow():
                     queue.pop(0)
                     rh = HS.Stream(WORLD, auth["id"], "harbour", "plot")
                     built = next(e for e in auth["events"] if e["kind"] == "built")
-                    add_house(auth["id"], fp, cz, side, built["year"], built["params"]["era"], auth, rh, 0.45)
+                    add_house(auth["id"], fp, cz, side, built["year"], built["params"]["era"], auth, rh, 0.45, yardd)
                 else:
                     hid += 1
                     rh = HS.Stream(WORLD, hid, "diary")
                     built = int(rh.uniform(b0, b1))
                     era = era_for(built, HS.h(WORLD, hid, "era"))
                     dy = diary(hid, built, era, rh, spec["grain"], STOREYS[spec["grain"]])
-                    add_house(hid, fp, cz, side, built, era, dy, rh, 0.55 if spec["grain"] == "villa" else 0.45)
+                    add_house(hid, fp, cz, side, built, era, dy, rh, 0.55 if spec["grain"] == "villa" else 0.45, yardd)
                 run -= 1
                 t += w + (g["within"] if run > 0 else rs.uniform(*g["passage"]))
     for p in placements:
@@ -1069,23 +1185,25 @@ def plant(gardens, ground, places, top_line):
             top_y = at(top_line, tacc, tt)[0][1] if tt is not None else building_line(x) + 140.0
             above = y - top_y - f["above"]
             patch = noise(x, y, [(70.0, 1.0), (23.0, 0.5)])
+            # wild trees come up in clumps with open ground between, never evenly: a seed tree and its seedlings
+            clump = 1.8 if noise(x, y, [(15.0, 1.0), (6.0, 0.5)]) > 0.2 else 0.25
             if any(in_planting(pl, x, y) for pl in SITE["plantings"]):
                 continue                                         # planted in its own rows, above
             if above > 0:
                 # the heath, grazed until the 1950s: birch coming up in groves along the town's edge and the hollows,
                 # a few pines and rowans out on it
                 grove = patch > 0.15 and above < 70
-                p = (0.5 if grove else 0.006) - (0.15 if above < 10 else 0.0)
+                p = (0.5 * clump if grove else 0.006) - (0.15 if above < 10 else 0.0)
                 pool = [("birch", 6), ("rowan", 1)] if grove else [("pine", 3), ("birch", 2), ("rowan", 1)]
                 age = rs.uniform(15, 40) if grove else rs.uniform(20, 90)
                 cause = "birch coming up as grazing stopped" if grove else "self-seeded on the heath"
             elif e > 0.2:
-                p = 0.22 * e + 0.15 * patch
+                p = (0.22 * e + 0.15 * patch) * clump
                 pool = [("pine", 4), ("birch", 3), ("rowan", 1)]
                 age = rs.uniform(15, 90)
                 cause = "self-seeded on the rock"
             else:
-                p = 0.10 + 0.08 * patch
+                p = (0.10 + 0.08 * patch) * clump
                 pool = [("birch", 4), ("rowan", 2), ("sycamore", 2)]
                 age = rs.uniform(10, 60)
                 cause = "self-seeded on the slope"

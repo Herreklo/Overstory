@@ -38,7 +38,7 @@ namespace Overstory.EditorTools.Town
         [Serializable]
         public class Placement
         {
-            public int id, of, x, y, w, d, @base, eave, pitch;
+            public int id, of, x, y, w, d, @base, eave, pitch, year;
             public float angle;
             public string kind, lane, side, roof;
             public int[] footprint, chimneys;
@@ -72,6 +72,12 @@ namespace Overstory.EditorTools.Town
         static Vector3 U(float x, float y, float z) => new Vector3(x, z, y);   // street frame (m) to Unity
         const float M = 0.001f;
 
+        // the pack's records as R2aPatches.Json reads them
+        static Color Hex(string h) => ColorUtility.TryParseHtmlString("#" + h, out var c) ? c : throw new FormatException($"not a colour: {h}");
+        static Dictionary<string, object> Obj(object o) => (Dictionary<string, object>)o;
+        static List<object> Arr(object o) => (List<object>)o;
+        static float F(object o) => (float)(double)o;
+
         /// <summary>The views: the two city cameras, the street stop and the roam's poses (street frame, m).</summary>
         public static readonly (string name, Vector3 pos, Vector3 target, float fov)[] Views =
         {
@@ -101,7 +107,9 @@ namespace Overstory.EditorTools.Town
             EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
             var made = new List<Object>();
             var root = new GameObject(moment == null ? "Town (grey)" : "Town");
-            var tones = moment == null ? null : new Tones(Path.Combine(repo, "packs", "stavanger-1989"), town);
+            // the pack's facts for the houses' working in every render; its colours only in light
+            var facts = new Tones(Path.Combine(repo, "packs", "stavanger-1989"), town);
+            var tones = moment == null ? null : facts;
 
             var lit = Shader.Find("Universal Render Pipeline/Lit");
             var townShader = Shader.Find("Overstory/Town");
@@ -151,7 +159,24 @@ namespace Overstory.EditorTools.Town
             var crown = Mat(0.34f, white, tinted: true, porosity: 0.3f, smooth: 0.08f, ground: 0.2f);
             var standM = Mat(0.34f, tones?.stand ?? white, porosity: 0.3f, smooth: 0.08f, ground: 0.2f);
             var trunk = Mat(0.26f, tones?.trunk ?? white, porosity: 0.6f);
-            var timber = Mat(0.40f, tones?.timber ?? white, porosity: 0.7f);
+            var timber = Mat(0.40f, tones?.boards ?? white, porosity: 0.7f);
+            // the openings and trims take each house's paints in their vertex colours; the panes the glass's, lit or not
+            var trimM = Mat(0.78f, white, tinted: true, porosity: 0.2f, smooth: 0.15f);
+            Material paneM;
+            if (moment == null)
+                paneM = Mat(0.12f, white);
+            else
+            {
+                paneM = new Material(townShader) { name = "pane", hideFlags = HideFlags.DontSave };
+                paneM.SetColor("_BaseColor", white);
+                paneM.SetFloat("_Tinted", 1f);
+                paneM.SetFloat("_Porosity", 0f);
+                paneM.SetFloat("_Smoothness", 0.88f);
+                paneM.SetFloat("_Ground", 0.35f);
+                paneM.SetFloat("_Pane", 1f);
+                paneM.SetVector("_PaneLit", facts.paneLit);
+                made.Add(paneM);
+            }
             var hull = Mat(0.62f, white, tinted: true, porosity: 0.1f, smooth: 0.35f);
 
             Add(root, "ground", GroundMesh(town.ground, true, tones), town.ground.cover != null ? covered : ground, made);
@@ -181,13 +206,18 @@ namespace Overstory.EditorTools.Town
                 Add(root, "stands", Stands(town.stands, town.ground), standM, made);
             var houses = new GameObject("houses");
             houses.transform.SetParent(root.transform, false);
+            var trims = new MB();
+            var panes = new MB();
             foreach (var p in town.placements)
             {
-                var (body, roof, foot) = Masses(p, town.ground);
+                var (body, roof, foot) = Masses(p, town.ground, facts.Overhang(p));
                 Add(houses, $"house {p.id}", body, Mat(0.55f, tones?.Body(p) ?? white, porosity: 0.15f, smooth: 0.1f), made);
                 Add(houses, $"house {p.id} roof", roof, Mat(0.30f, tones?.Roof(p) ?? white, porosity: 0.35f, smooth: 0.12f), made);
                 Add(houses, $"house {p.id} plinth", foot, plinth, made);
+                Openings(p, town.ground, facts, trims, panes);
             }
+            Add(houses, "openings and trims", trims.Make("openings"), trimM, made);
+            Add(houses, "panes", panes.Make("panes"), paneM, made);
 
             var camGo = new GameObject("Camera") { tag = "MainCamera" };
             var cam = camGo.AddComponent<Camera>();
@@ -279,7 +309,7 @@ namespace Overstory.EditorTools.Town
         {
             public readonly Color[] cover;
             public readonly float[] spread;
-            public readonly Color land, stand, trunk, fence, stone, timber;
+            public readonly Color land, stand, trunk, fence, stone;
             readonly Dictionary<string, Color[]> crowns = new Dictionary<string, Color[]>();
             readonly Dictionary<string, Color> surfaces = new Dictionary<string, Color>();
             readonly Color[] boats;
@@ -290,9 +320,12 @@ namespace Overstory.EditorTools.Town
             readonly string pack;
             const int Year = 1989;
 
-            static Color Hex(string h) => ColorUtility.TryParseHtmlString("#" + h, out var c) ? c : throw new FormatException($"not a colour: {h}");
-            static Dictionary<string, object> Obj(object o) => (Dictionary<string, object>)o;
-            static List<object> Arr(object o) => (List<object>)o;
+            public readonly Dictionary<string, object> timber, openings;
+            public readonly Color glass, boards;
+            /// <summary>A lit room's light through its pane at a window glow of 1, linear.</summary>
+            public readonly Vector4 paneLit;
+            readonly Dictionary<string, object> evening;
+
             Dictionary<string, object> Read(string name) => Obj(R2aPatches.Json.Parse(File.ReadAllText(Path.Combine(pack, name))));
 
             public Tones(string pack, Town t)
@@ -300,6 +333,16 @@ namespace Overstory.EditorTools.Town
                 this.pack = pack;
                 town = Read("town.json");
                 paint = Read("paint.json");
+                timber = Read("timber.json");
+                openings = Obj(town["openings"]);
+                evening = Obj(town["evening"]);
+                glass = Hex((string)Obj(town["glass"])["srgb"]);
+                // the room behind a lit pane: its lamp on its walls and its curtains, half each (materials/glass.json)
+                var room = Obj(Read("materials/glass.json")["room"]);
+                Color lamp = Hex((string)room["srgbLamp"]).linear, walls = Hex((string)room["srgbWalls"]).linear,
+                      cloth = Hex((string)Obj(room["curtains"])["srgb"]).linear;
+                var lit = lamp * Color.Lerp(walls, cloth, 0.5f) * F(evening["pane"]);
+                paneLit = new Vector4(lit.r, lit.g, lit.b, 1f);
                 foreach (var kv in Obj(paint["colours"]))
                     paints[kv.Key] = Hex((string)Obj(kv.Value)["srgb"]);
                 paints["soil"] = Hex((string)Obj(paint["soil"])["srgb"]);
@@ -318,7 +361,7 @@ namespace Overstory.EditorTools.Town
                 trunk = Hex((string)town["trunk"]);
                 fence = paints[(string)town["fences"]];
                 stone = Hex((string)Read("materials/fieldstone.json")["srgb"]);
-                timber = Hex((string)Read("materials/pine.json")["srgbWeathered"]);
+                boards = Hex((string)Read("materials/pine.json")["srgbWeathered"]);
                 foreach (var kv in Obj(town["crowns"]))
                     crowns[kv.Key] = Arr(kv.Value).ConvertAll(o => Hex((string)o)).ToArray();
                 foreach (var kv in Obj(town["surfaces"]))
@@ -372,25 +415,142 @@ namespace Overstory.EditorTools.Town
                 var d = Diary(p);
                 int painted = Last(d, "built", "repainted");
                 var period = Period(painted > 0 ? painted : 1900);
-                var scheme = Obj(town["scheme"]);
-                string g = p.lane != null && grain.TryGetValue(p.lane, out var gg) ? gg : null;
-                bool kept = schemeOf != null && Year >= (double)schemeOf["from"]
-                    && (g != null && Arr(scheme["grains"]).Contains(g) || scheme.TryGetValue("kinds", out var k) && Arr(k).Contains(p.kind));
                 object list;
                 if ((p.kind == "warehouse" || p.kind == "outhouse") && period["back"] != null)
                     list = period["back"];
-                else if (kept)
+                else if (Kept(p))
                     list = schemeOf["body"];
                 else
                     list = period["body"];
-                int id = d != null ? (int)(double)d["id"] : p.id;
-                var c = paints[(string)Pick(Arr(list), Seed(id, p.kind == "outhouse" ? "back" : "body"))];
-                if (Last(d, "neglected") > painted)
+                return Worn(p, paints[(string)Pick(Arr(list), Seed(Id(p), p.kind == "outhouse" ? "back" : "body"))]);
+            }
+
+            /// <summary>A part's paint (trim, window, door): the scheme's where it holds and names the part, else the
+            /// period's of the house's last painting; worn as its body is.</summary>
+            public Color Paint(Placement p, string part)
+            {
+                var d = Diary(p);
+                int painted = Last(d, "built", "repainted");
+                var period = Period(painted > 0 ? painted : 1900);
+                object list = Kept(p) && schemeOf.ContainsKey(part) ? schemeOf[part] : period[part];
+                return Worn(p, paints[(string)Pick(Arr(list), Seed(Id(p), part))]);
+            }
+
+            /// <summary>A part's paint as a period chose it (a window put in by an event comes painted in its year).</summary>
+            public Color PaintOf(int year, Placement p, string part) =>
+                Worn(p, paints[(string)Pick(Arr(Period(year)[part]), Seed(Id(p), $"{part}.{year}"))]);
+
+            int Id(Placement p) { var d = Diary(p); return d != null ? (int)(double)d["id"] : p.id; }
+
+            /// <summary>The year of its last painting (built or repainted).</summary>
+            public int Painted(Placement p) => Last(Diary(p), "built", "repainted");
+
+            bool Kept(Placement p)
+            {
+                var scheme = Obj(town["scheme"]);
+                string g = p.lane != null && grain.TryGetValue(p.lane, out var gg) ? gg : null;
+                return schemeOf != null && Year >= (double)schemeOf["from"]
+                    && (g != null && Arr(scheme["grains"]).Contains(g) || scheme.TryGetValue("kinds", out var k) && Arr(k).Contains(p.kind));
+            }
+
+            /// <summary>A house left to decline since its last painting goes part way to the soil's colour.</summary>
+            Color Worn(Placement p, Color c)
+            {
+                var d = Diary(p);
+                if (Last(d, "neglected") <= Last(d, "built", "repainted"))
+                    return c;
+                var n = Obj(town["neglect"]);
+                return Color.Lerp(c, paints[(string)n["toward"]], F(n["share"]));
+            }
+
+            /// <summary>The era its builder worked in (its diary's built event), and that era's working (timber.json).</summary>
+            public string Era(Placement p)
+            {
+                var d = Diary(p);
+                if (d != null)
+                    foreach (var e in Arr(d["events"]))
+                        if ((string)Obj(e)["kind"] == "built" && Obj(Obj(e)["params"]).TryGetValue("era", out var era))
+                            return (string)era;
+                return "classical";
+            }
+
+            public Dictionary<string, object> Working(Placement p)
+            {
+                var workings = Obj(timber["workings"]);
+                string era = Era(p);
+                return Obj(workings.TryGetValue(era, out var w) ? w : workings[(string)Obj(town["workingOf"])[era]]);
+            }
+
+            /// <summary>How far the eaves and verges stand out from the walls, by the era's working.</summary>
+            public float Overhang(Placement p) => F(Obj(Working(p)["eaves"])["overhangMm"]) * M;
+
+            /// <summary>The window in a wall at the date, as tools/houses.py has it: the era's, or what the latest
+            /// replacement put in (timber.json, windowsByYear), unless a restoration since put the era's back. wall 0 is
+            /// the front (an event's scope 'street'), 2 the back; upper, a gable's loft window.</summary>
+            public (string kind, int year) WindowAt(Placement p, int wall, bool upper)
+            {
+                string kind = (string)Obj(Working(p)["openings"])["window"];
+                int year = Last(Diary(p), "built");
+                var d = Diary(p);
+                if (d == null)
+                    return (kind, year);
+                foreach (var o in Arr(d["events"]))
                 {
-                    var n = Obj(town["neglect"]);
-                    c = Color.Lerp(c, paints[(string)n["toward"]], (float)(double)n["share"]);
+                    var e = Obj(o);
+                    int y = (int)(double)e["year"];
+                    if (y > Year)
+                        break;
+                    var pr = e.TryGetValue("params", out var q) && q != null ? Obj(q) : new Dictionary<string, object>();
+                    string scope = pr.TryGetValue("scope", out var s) ? (string)s : "all";
+                    bool hit = scope == "all" || scope == "street" && wall == 0 || scope == "back" && wall == 2 || scope == "upper" && upper;
+                    if (!hit)
+                        continue;
+                    if ((string)e["kind"] == "windows_replaced")
+                    {
+                        foreach (var w in Arr(timber["windowsByYear"]))
+                            if (y >= (double)Obj(w)["from"] && y <= (double)Obj(w)["to"])
+                                kind = (string)Obj(w)["window"];
+                        year = y;
+                    }
+                    else if ((string)e["kind"] == "restored" && pr.TryGetValue("windows", out var wo) && (string)wo == "original")
+                    {
+                        kind = (string)Obj(Working(p)["openings"])["window"];
+                        year = y;
+                    }
                 }
-                return c;
+                return (kind, year);
+            }
+
+            /// <summary>What is boarded up on the date: "" nothing, else the boarded event's scope (ground, all).</summary>
+            public string Boarded(Placement p)
+            {
+                var d = Diary(p);
+                string scope = "";
+                if (d != null)
+                    foreach (var o in Arr(d["events"]))
+                    {
+                        var e = Obj(o);
+                        if ((string)e["kind"] == "boarded")
+                            scope = e.TryGetValue("params", out var q) && Obj(q).TryGetValue("scope", out var s) ? (string)s : "all";
+                        else if ((string)e["kind"] == "unboarded")
+                            scope = "";
+                    }
+                return scope;
+            }
+
+            /// <summary>Whether a room is lit at the evening's moment (town.json, evening): never in a house its diary
+            /// leaves empty (let go and not restored, or boarded); else the household home or not, and each room in turn,
+            /// by seed (local scene state, claiming nothing).</summary>
+            public bool Lit(Placement p, string room)
+            {
+                var d = Diary(p);
+                if (Boarded(p) != "" || Last(d, "neglected") > Last(d, "restored"))
+                    return false;
+                var kinds = Obj(evening["kinds"]);
+                float share = kinds.TryGetValue(p.kind, out var k) ? F(k) : 0f;
+                if (share <= 0f || Hash.Unit(Seed(Id(p), "home")) >= F(evening["home"]))
+                    return false;
+                return Hash.Unit(Hash.Then(Seed(p.id, "lit"), room)) < F(evening["room"]) * share;
             }
 
             /// <summary>A roof's covering by the year it was laid (town.json, roofs), weathered from new to old over its
@@ -398,7 +558,8 @@ namespace Overstory.EditorTools.Town
             public Color Roof(Placement p)
             {
                 var d = Diary(p);
-                int built = Mathf.Max(Last(d, "built"), 1);
+                // a part grown later (a porch, a lean-to) is roofed in its own year
+                int built = Mathf.Max(Mathf.Max(Last(d, "built"), 1), p.year);
                 int laid = Mathf.Max(built, Last(d, "roof_retiled"));
                 string material = null;
                 foreach (var o in Arr(town["roofs"]))
@@ -589,12 +750,13 @@ namespace Overstory.EditorTools.Town
 
         // -- trees: a crown by its kind and a trunk, all in two meshes -------------------------------------------------
 
-        /// <summary>A crown's blob: rings of seven between a bottom and a top point, its radius at each height from prof
-        /// (0 at the bottom, 1 at the top), in plan an ellipse rx by ry turned by rot.</summary>
+        /// <summary>A crown's mass: rings of six between a bottom and a top point, its radius at each height from prof
+        /// (0 at the bottom, 1 at the top), in plan an ellipse rx by ry turned by rot; each ring point pushed in or out
+        /// by up to jit of its radius (its seed's), so the facets are chunky and no two masses alike.</summary>
         static void Blob(List<Vector3> cv, List<int> ct, float x, float y, float z0, float z1, float rx, float ry, float rot,
-                         Func<float, float> prof)
+                         Func<float, float> prof, ulong seed, float jit)
         {
-            const int seg = 7, rings = 6;
+            const int seg = 6, rings = 5;
             int n0 = cv.Count;
             cv.Add(U(x, y, z0 + (z1 - z0) * 0.6f * prof(0.05f) / rings));   // the underside nearly flat where the profile is full low
             for (int k = 1; k < rings; k++)
@@ -602,10 +764,13 @@ namespace Overstory.EditorTools.Town
                 float u = k / (float)rings, f = prof(u);
                 for (int s = 0; s < seg; s++)
                 {
-                    float a = rot + s * Mathf.PI * 2f / seg;
-                    float ca = Mathf.Cos(a) * rx * f, sa = Mathf.Sin(a) * ry * f;
+                    ulong h = Hash.Then(Hash.Then(seed, (ulong)k), (ulong)s);
+                    float a = rot + (s + Hash.Range(h, -0.2f, 0.2f)) * Mathf.PI * 2f / seg;
+                    float push = 1f + jit * Hash.Range(Hash.Then(h, "r"), -1f, 1f);
+                    float ca = Mathf.Cos(a) * rx * f * push, sa = Mathf.Sin(a) * ry * f * push;
+                    float zu = u + jit * 0.5f / rings * Hash.Range(Hash.Then(h, "z"), -1f, 1f);
                     cv.Add(U(x + ca * Mathf.Cos(rot) - sa * Mathf.Sin(rot), y + ca * Mathf.Sin(rot) + sa * Mathf.Cos(rot),
-                             z0 + (z1 - z0) * u));
+                             z0 + (z1 - z0) * zu));
                 }
             }
             cv.Add(U(x, y, z1));
@@ -637,24 +802,41 @@ namespace Overstory.EditorTools.Town
             foreach (var tr in trees)
             {
                 float x = tr.x * M, y = tr.y * M, z = tr.z * M, h = tr.h * M, r = tr.r * M;
-                float R(string what, int k, float lo, float hi) => Hash.Range(Hash.Then(Hash.Then(Hash.Of(tr.id), what), (ulong)k), lo, hi);
+                ulong id = Hash.Of(tr.id);
+                float R(string what, int k, float lo, float hi) => Hash.Range(Hash.Then(Hash.Then(id, what), (ulong)k), lo, hi);
                 float rot = R("turn", 0, 0f, Mathf.PI * 2f);
+                var tint = tones == null ? Color.white : tones.Crown(tr).linear;
+                // one mass of the crown, a little lighter or darker than the next (claiming nothing)
+                void Mass(int k, float mx, float my, float z0, float z1, float rx, float ry, float a, Func<float, float> prof, float jit)
+                {
+                    Blob(cv, ct, mx, my, z0, z1, rx, ry, a, prof, Hash.Then(id, (ulong)k), jit);
+                    var c = tint * R("tone", k, 0.86f, 1.1f);
+                    while (cc.Count < cv.Count)
+                        cc.Add(c);
+                }
+                // lobes round the main mass, at their own heights and sides
+                void Lobes(int n, float c0, float off0, float off1, float rk0, float rk1, float zb1, float hz0, float hz1)
+                {
+                    for (int k = 1; k <= n; k++)
+                    {
+                        float a = rot + k * 2.4f + R("a", k, -0.5f, 0.5f), off = r * R("off", k, off0, off1);
+                        float zb = z + c0 + (h - c0) * R("zb", k, 0f, zb1);
+                        Mass(k, x + Mathf.Cos(a) * off, y + Mathf.Sin(a) * off, zb, Mathf.Min(z + h * 0.97f, zb + (h - c0) * R("hz", k, hz0, hz1)),
+                             r * R("rk", k, rk0, rk1), r * R("ryk", k, rk0 * 0.85f, rk1 * 0.9f), a, round, 0.22f);
+                    }
+                }
                 float c0;
                 switch (tr.crown)
                 {
                     case "cone":
                         c0 = 0.04f * h;
-                        Blob(cv, ct, x, y, z + c0, z + h, r, r, rot, cone);
+                        Mass(0, x, y, z + c0, z + h, r, r, rot, cone, 0.12f);
                         break;
                     case "tall":
-                        // a birch: one tall crown with a lobe off it
+                        // a birch: a tall narrow mass and two or three lobes hung off it
                         c0 = 0.3f * h;
-                        Blob(cv, ct, x, y, z + c0, z + h, r, r * R("ry", 0, 0.8f, 1f), rot, round);
-                        {
-                            float a = R("lobe", 0, 0f, 6.28f), off = r * R("off", 0, 0.35f, 0.55f);
-                            Blob(cv, ct, x + Mathf.Cos(a) * off, y + Mathf.Sin(a) * off, z + c0 + (h - c0) * 0.1f,
-                                 z + c0 + (h - c0) * R("lt", 0, 0.55f, 0.75f), r * 0.6f, r * 0.55f, rot, round);
-                        }
+                        Mass(0, x, y, z + c0, z + h, r * 0.72f, r * R("ry", 0, 0.6f, 0.72f), rot, round, 0.2f);
+                        Lobes(2 + (R("n", 0, 0f, 1f) < 0.5f ? 1 : 0), c0, 0.35f, 0.6f, 0.45f, 0.62f, 0.4f, 0.4f, 0.65f);
                         break;
                     case "flat":
                         // a pine: a bare trunk, an open crown of three masses, the top one widest, leaning with the wind
@@ -663,26 +845,17 @@ namespace Overstory.EditorTools.Town
                         {
                             float a = rot + k * 2.1f + R("a", k, -0.4f, 0.4f), off = k == 0 ? r * 0.15f : r * R("off", k, 0.3f, 0.5f);
                             float zb = z + c0 + (h - c0) * (k == 0 ? 0.3f : R("zb", k, 0f, 0.35f));
-                            Blob(cv, ct, x + Mathf.Cos(a) * off, y + Mathf.Sin(a) * off, zb, zb + (h - c0) * R("hz", k, 0.55f, 0.7f),
-                                 r * (k == 0 ? 0.85f : R("rk", k, 0.55f, 0.7f)), r * R("ryk", k, 0.5f, 0.7f), a, round);
+                            Mass(k, x + Mathf.Cos(a) * off, y + Mathf.Sin(a) * off, zb, zb + (h - c0) * R("hz", k, 0.55f, 0.7f),
+                                 r * (k == 0 ? 0.85f : R("rk", k, 0.55f, 0.7f)), r * R("ryk", k, 0.5f, 0.7f), a, round, 0.18f);
                         }
                         break;
                     default:
-                        // a sycamore, rowan or apple: a domed crown with two lobes, so its outline is a cloud, not a ball
+                        // a sycamore, rowan or apple: a domed crown with three lobes, so its outline is a cloud, not a ball
                         c0 = Mathf.Max(1.6f, 0.25f * h);
-                        Blob(cv, ct, x, y, z + c0, z + h, r * 0.85f, r * R("ry", 0, 0.75f, 0.9f), rot, round);
-                        for (int k = 0; k < 2; k++)
-                        {
-                            float a = rot + k * 2.6f + R("a", k, -0.5f, 0.5f), off = r * R("off", k, 0.4f, 0.55f);
-                            float zb = z + c0 + (h - c0) * R("zb", k, 0.05f, 0.25f);
-                            Blob(cv, ct, x + Mathf.Cos(a) * off, y + Mathf.Sin(a) * off, zb, zb + (h - c0) * R("hz", k, 0.5f, 0.7f),
-                                 r * R("rk", k, 0.5f, 0.65f), r * R("ryk", k, 0.45f, 0.6f), a, round);
-                        }
+                        Mass(0, x, y, z + c0, z + h, r * 0.8f, r * R("ry", 0, 0.7f, 0.85f), rot, round, 0.18f);
+                        Lobes(3, c0, 0.4f, 0.6f, 0.45f, 0.62f, 0.3f, 0.45f, 0.7f);
                         break;
                 }
-                var tint = tones == null ? Color.white : tones.Crown(tr).linear;
-                while (cc.Count < cv.Count)
-                    cc.Add(tint);
                 // the trunk: a square post from below the ground into the crown
                 float tw = Mathf.Clamp(h * 0.025f, 0.12f, 0.4f);
                 var post = Prism(new[] { new Vector2(x - tw, y - tw), new Vector2(x + tw, y - tw), new Vector2(x + tw, y + tw), new Vector2(x - tw, y + tw) }, z - 1f, z + c0 + (h - c0) * 0.3f);
@@ -916,7 +1089,7 @@ namespace Overstory.EditorTools.Town
 
         // -- a house as masses: body, roof, plinth -----------------------------------------------------------------------
 
-        static (Mesh body, Mesh roof, Mesh foot) Masses(Placement p, Grid g)
+        static (Mesh body, Mesh roof, Mesh foot) Masses(Placement p, Grid g, float overhang)
         {
             var fp = new Vector2[4];
             for (int i = 0; i < 4; i++)
@@ -932,7 +1105,8 @@ namespace Overstory.EditorTools.Town
             }
             var walls = new MB();
             walls.Add(Prism(fp, b, e));
-            var foot = Prism(fp, low - 0.3f, b);
+            // an ark stands on the house's walls, not on the ground
+            var foot = p.kind == "ark" ? new Mesh { name = "none", hideFlags = HideFlags.DontSave } : Prism(fp, low - 0.3f, b);
             Vector2 u0 = (fp[1] - fp[0]).normalized, n0 = (fp[3] - fp[0]).normalized;
             float W0 = Vector2.Distance(fp[0], fp[1]), D0 = Vector2.Distance(fp[0], fp[3]);
             if (p.chimneys != null && p.chimneys.Length >= 4 && p.roof != "spire")
@@ -953,10 +1127,10 @@ namespace Overstory.EditorTools.Town
                 }
                 foot = mb.Make("plinth and chimneys");
             }
-            // the roof: ridge along the front (eaves) or front to back (gable), the eaves out 0.4 m
+            // the roof: ridge along the front (eaves) or front to back (gable), the eaves and verges out by the era's
             Vector2 u = (fp[1] - fp[0]).normalized, n = (fp[3] - fp[0]).normalized;
             float W = Vector2.Distance(fp[0], fp[1]), D = Vector2.Distance(fp[0], fp[3]);
-            float o = 0.4f, tan = Mathf.Tan(p.pitch * Mathf.Deg2Rad);
+            float o = overhang, tan = Mathf.Tan(p.pitch * Mathf.Deg2Rad);
             Vector2 c0 = fp[0] - u * o - n * o;
             float L = W + 2 * o, S = D + 2 * o;
             var v = new List<Vector3>();
@@ -975,6 +1149,13 @@ namespace Overstory.EditorTools.Town
                     Vector2 q0 = fp[i] + (fp[i] - apex).normalized * 0.3f, q1 = fp[(i + 1) % 4] + (fp[(i + 1) % 4] - apex).normalized * 0.3f;
                     Tri(U(q0.x, q0.y, e), U(apex.x, apex.y, za), U(q1.x, q1.y, e));
                 }
+            }
+            else if (p.roof == "shed")
+            {
+                // a lean-to's: high against the house at its front, falling away to its back; its ends walled up to it
+                Quad(P(0, 0, e + (D + o) * tan), P(L, 0, e + (D + o) * tan), P(L, S, e - o * tan), P(0, S, e - o * tan));
+                Gable(P(o, o, e), P(o, o, e + D * tan), P(o, S - o, e));
+                Gable(P(L - o, S - o, e), P(L - o, o, e + D * tan), P(L - o, o, e));
             }
             else if (p.roof == "gable")
             {
@@ -999,6 +1180,258 @@ namespace Overstory.EditorTools.Town
             roof.RecalculateNormals();
             DoubleSided(roof);
             return (walls.Make("walls"), roof, foot);
+        }
+
+        /// <summary>Where a wall's openings sit (their centres), as tools/houses.py sets them: the first and last at the
+        /// working's distance from the corners, the rest evenly between, the fewest that keep the spacing within its
+        /// widest.</summary>
+        static List<float> Bays(float length, float b1, float edge, float b0)
+        {
+            float room = length - 2 * edge;
+            if (room < b0 * 0.75f)
+                return new List<float> { length / 2 };
+            int gaps = Mathf.Max(1, Mathf.CeilToInt(room / b1 - 1e-6f));
+            var s = new List<float>();
+            for (int i = 0; i <= gaps; i++)
+                s.Add(edge + room * i / gaps);
+            return s;
+        }
+
+        /// <summary>A building's openings at the city tier, where its builder set them (timber.json, workings: the
+        /// windows in bays on each storey, the door in the front, the gables' loft windows; town.json, openings: a
+        /// sjøhus's windows, hatches and port, the church's), as its diary has them in 1989: a window replaced in its
+        /// year's kind, the ground floor boarded on an empty house. Each window its casing in the trim's paint, its sash
+        /// in the window's and its glass in panes; the corner boards in the trim's paint; a stone step up to the door.
+        /// The panes' vertex alpha is their room's light at the evening's moment.</summary>
+        static void Openings(Placement p, Grid g, Tones f, MB trim, MB panes)
+        {
+            if (p.kind == "tower")
+                return;
+            var fp = new Vector2[4];
+            for (int i = 0; i < 4; i++)
+                fp[i] = new Vector2(p.footprint[2 * i] * M, p.footprint[2 * i + 1] * M);
+            Vector2 centre = 0.25f * (fp[0] + fp[1] + fp[2] + fp[3]);
+            float b = p.@base * M, e = p.eave * M;
+            bool gableRoof = p.roof == "gable";
+            float W = Vector2.Distance(fp[0], fp[1]), D = Vector2.Distance(fp[0], fp[3]);
+            float zr = e + (gableRoof ? W : D) / 2 * Mathf.Tan(p.pitch * Mathf.Deg2Rad);
+            var wk = f.Working(p);
+            var op = Obj(wk["openings"]);
+            var cs = Obj(wk["casing"]);
+            float storey = (F(wk["storeyMm"]) + F(wk["floorMm"])) * M;
+            float cw = F(cs["widthMm"]) * M, head = (F(cs["headMm"]) + F(cs["capMm"])) * M, sillC = F(cs["sillMm"]) * M;
+            int full = Mathf.Max(1, Mathf.FloorToInt((e - b + 0.6f) / storey));
+            string boarded = f.Boarded(p);
+            Color trimC = f.Paint(p, "trim").linear, doorC = f.Paint(p, "door").linear, boards = f.boards.linear;
+            var windows = Obj(f.timber["windows"]);
+            bool house = p.kind == "house" || p.kind == "wing";
+            Dictionary<string, object> kindOp = f.openings.TryGetValue(p.kind, out var ko) ? Obj(ko) : null;
+
+            for (int i = 0; i < 4; i++)
+            {
+                Vector2 a = fp[i], c = fp[(i + 1) % 4];
+                float L = Vector2.Distance(a, c);
+                Vector2 d = (c - a) / L, nrm = new Vector2(d.y, -d.x);
+                if (Vector2.Dot(nrm, 0.5f * (a + c) - centre) < 0f)
+                    nrm = -nrm;
+                bool gableEnd = gableRoof ? i % 2 == 0 : i % 2 == 1;
+                float Half(float z) => z <= e ? L / 2 : L / 2 * (zr - z) / (zr - e);
+
+                void Rect(MB mb, float s0, float s1, float z0, float z1, float off)
+                {
+                    Vector2 p0 = a + d * s0 + nrm * off, p1 = a + d * s1 + nrm * off;
+                    mb.Quad(U(p0.x, p0.y, z0), U(p1.x, p1.y, z0), U(p1.x, p1.y, z1), U(p0.x, p0.y, z1));
+                }
+
+                // a window: its casing (none where it was lost with the old window), its sash, its glass in its columns
+                void Window(float s, float z0, float w, float h, string kind, int year, bool shut, string room)
+                {
+                    var spec = Obj(windows[kind]);
+                    bool lost = (string)spec["trims"] == "lost";
+                    if (!lost)
+                    {
+                        trim.tint = trimC;
+                        Rect(trim, s - w / 2 - cw, s + w / 2 + cw, z0 - sillC, z0 + h + head, 0.02f);
+                    }
+                    if (shut)
+                    {
+                        trim.tint = boards;
+                        Rect(trim, s - w / 2, s + w / 2, z0, z0 + h, 0.03f);
+                        return;
+                    }
+                    trim.tint = (year > Last(p) ? f.PaintOf(year, p, "window") : f.Paint(p, "window")).linear;
+                    Rect(trim, s - w / 2, s + w / 2, z0, z0 + h, 0.03f);
+                    float fr = (F(spec["frameMm"]) + F(spec["sashMm"])) * M, post = F(spec["frameMm"]) * M;
+                    int cols = (int)F(spec["cols"]);
+                    float pw = (w - 2 * fr - (cols - 1) * post) / cols;
+                    var gl = f.glass.linear;
+                    panes.tint = new Color(gl.r, gl.g, gl.b, f.Lit(p, room) ? 1f : 0f);
+                    for (int k = 0; k < cols; k++)
+                    {
+                        float x0 = s - w / 2 + fr + k * (pw + post);
+                        Rect(panes, x0, x0 + pw, z0 + fr, z0 + h - fr, 0.04f);
+                    }
+                }
+
+                // a door: its casing, its leaves (or the boards over them), a stone step up from the ground to its sill
+                void Door(float s, float w, float h, float threshold)
+                {
+                    trim.tint = trimC;
+                    Rect(trim, s - w / 2 - cw, s + w / 2 + cw, b, b + threshold + h + head, 0.02f);
+                    trim.tint = boarded != "" ? boards : doorC;
+                    Rect(trim, s - w / 2, s + w / 2, b + threshold, b + threshold + h, 0.03f);
+                    Vector2 q = a + d * s;
+                    float gz = GroundAt(g, q.x + nrm.x * 0.6f, q.y + nrm.y * 0.6f);
+                    if (b - gz > 0.08f)
+                    {
+                        Vector2 hw = d * (w / 2 + 0.25f), o = nrm * 0.9f;
+                        trim.tint = f.stone.linear;
+                        trim.Add(Prism(new[] { q - hw, q + hw, q + hw + o, q - hw + o }, gz - 0.2f, b));
+                    }
+                }
+
+                // the corner boards, at both ends of the wall up to its eaves
+                if (p.kind != "outhouse")
+                {
+                    var corner = Obj(wk["corner"]);
+                    float wc = F(corner["widthMm"]) * M, pc = F(corner["proudMm"]) * M;
+                    trim.tint = trimC;
+                    Rect(trim, 0f, wc, b, e, pc);
+                    Rect(trim, L - wc, L, b, e, pc);
+                }
+
+                if (house)
+                {
+                    var (wkind, wyear) = f.WindowAt(p, i, false);
+                    var spec = Obj(windows[wkind]);
+                    float w = F(spec["wMm"]) * M, h = F(spec["hMm"]) * M, sill = F(op["sillMm"]) * M;
+                    var bays = Bays(L, F(Arr(op["bayMm"])[1]) * M, F(op["edgeMm"]) * M, F(Arr(op["bayMm"])[0]) * M);
+                    // the door on a house's front: the era's, in its middle or its first bay; it takes the bays it stands in
+                    float sd = -100f, clear = 0f;
+                    if (i == 0 && p.kind == "house" && op.TryGetValue("door", out var dk) && dk != null)
+                    {
+                        var dsp = Obj(Obj(f.timber["doors"])[(string)op["doorKind"]]);
+                        float dw = F(dsp["wMm"]) * M;
+                        sd = (string)dk == "centre" ? L / 2 : bays[0];
+                        clear = dw / 2 + cw * 2 + w / 2 + 0.1f;
+                        Door(sd, dw, F(dsp["hMm"]) * M, F(dsp["thresholdMm"]) * M);
+                    }
+                    for (int k = 0; k < full; k++)
+                    {
+                        float z0 = b + k * storey + sill;
+                        if (z0 + h > e - 0.1f)
+                            break;
+                        for (int j = 0; j < bays.Count; j++)
+                            if (k > 0 || Mathf.Abs(bays[j] - sd) > clear)
+                                Window(bays[j], z0, w, h, wkind, wyear, k == 0 && boarded != "" || boarded == "all",
+                                       $"{i}.{k}.{j / 2}");
+                    }
+                    // the loft's windows in a gable, on its floor: a storey and a floor's depth over the top storey
+                    if (gableEnd && zr - e > 1.9f)
+                    {
+                        var (ukind, uyear) = f.WindowAt(p, i, true);
+                        var us = Obj(windows[ukind]);
+                        float uw = F(us["wMm"]) * M * 0.8f, uh = F(us["hMm"]) * M * 0.72f;
+                        float zu = b + full * storey + sill * 0.75f;
+                        if (zu + uh < zr - 0.6f && Half(zu + uh) > uw)
+                        {
+                            bool pair = (string)op["gable"] == "pair" && Half(zu + uh) > uw + 0.6f;
+                            foreach (var s in pair ? new[] { L / 2 - uw * 0.75f, L / 2 + uw * 0.75f } : new[] { L / 2 })
+                                Window(s, zu, uw, uh, ukind, uyear, boarded == "all", $"{i}.loft");
+                        }
+                    }
+                }
+                else if (p.kind == "warehouse" && kindOp != null)
+                {
+                    var ws = Obj(kindOp["window"]);
+                    float w = F(ws["wMm"]) * M, h = F(ws["hMm"]) * M, sill = F(kindOp["sillMm"]) * M;
+                    if (!gableEnd)
+                    {
+                        var bays = Bays(L, F(Arr(kindOp["bayMm"])[1]) * M, F(kindOp["edgeMm"]) * M, F(Arr(kindOp["bayMm"])[0]) * M);
+                        for (int k = 0; k < full; k++)
+                        {
+                            float z0 = b + k * storey + sill;
+                            if (z0 + h > e - 0.1f)
+                                break;
+                            for (int j = 0; j < bays.Count; j++)
+                                Window(bays[j], z0, w, h, (string)op["window"], 0, boarded == "all" || k == 0 && boarded != "",
+                                       $"{i}.{k}.{j / 2}");
+                        }
+                    }
+                    else
+                    {
+                        // the gable: the port on the quay, a hatch on each floor above it and one in the loft
+                        var port = Obj(kindOp["port"]);
+                        var hatch = Obj(kindOp["hatch"]);
+                        float hw = F(hatch["wMm"]) * M, hh = F(hatch["hMm"]) * M;
+                        if (i == 0)
+                            Door(L / 2, F(port["wMm"]) * M, F(port["hMm"]) * M, 0f);
+                        for (int k = 1; k <= full; k++)
+                        {
+                            float z0 = b + k * storey + 0.3f;
+                            if (z0 + hh > zr - 0.5f || Half(z0 + hh) < hw / 2 + cw + 0.2f)
+                                break;
+                            trim.tint = trimC;
+                            Rect(trim, L / 2 - hw / 2 - cw, L / 2 + hw / 2 + cw, z0 - sillC, z0 + hh + head, 0.02f);
+                            trim.tint = doorC;
+                            Rect(trim, L / 2 - hw / 2, L / 2 + hw / 2, z0, z0 + hh, 0.03f);
+                        }
+                    }
+                }
+                else if (p.kind == "church" && kindOp != null)
+                {
+                    var ws = Obj(kindOp["window"]);
+                    float w = F(ws["wMm"]) * M, h = F(ws["hMm"]) * M, sill = F(kindOp["sillMm"]) * M;
+                    if (!gableEnd)
+                        foreach (var s in Bays(L, F(Arr(kindOp["bayMm"])[1]) * M, F(kindOp["edgeMm"]) * M, F(Arr(kindOp["bayMm"])[0]) * M))
+                            if (b + sill + h < e - 0.3f)
+                                Window(s, b + sill, w, h, (string)op["window"], 0, false, $"{i}");
+                    string[] names = { "front", "right", "back", "left" };
+                    if (names[i] == (string)kindOp["doorWall"])
+                    {
+                        var dsp = Obj(kindOp["door"]);
+                        Door(L / 2, F(dsp["wMm"]) * M, F(dsp["hMm"]) * M, 0.15f);
+                    }
+                }
+                else if (p.kind == "ark" && i == 0)
+                {
+                    // the ark's front: the loft's windows, a pair where it is wide enough
+                    var (akind, ayear) = f.WindowAt(p, 0, true);
+                    var spec = Obj(windows[akind]);
+                    float w = F(spec["wMm"]) * M * 0.9f, z0 = b + 0.55f, h = Mathf.Min(F(spec["hMm"]) * M * 0.85f, e - 0.15f - z0);
+                    foreach (var s in L >= 2 * w + 1f ? new[] { L / 2 - w * 0.65f, L / 2 + w * 0.65f } : new[] { L / 2 })
+                        Window(s, z0, w, h, akind, ayear, boarded == "all", "ark");
+                }
+                else if (p.kind == "porch" && kindOp != null)
+                {
+                    // the porch's door in its gable to the lane; its sides glazed where its era glazed them
+                    if (i == 0)
+                    {
+                        var dsp = Obj(kindOp["door"]);
+                        Door(L / 2, F(dsp["wMm"]) * M, F(dsp["hMm"]) * M, 0.05f);
+                    }
+                    else if (i != 2 && Arr(kindOp["glazed"]).Contains(f.Era(p)))
+                    {
+                        var ws = Obj(kindOp["window"]);
+                        Window(L / 2, b + F(kindOp["sillMm"]) * M, F(ws["wMm"]) * M, F(ws["hMm"]) * M,
+                               (string)op["window"], 0, boarded != "", "porch");
+                    }
+                }
+                else if (p.kind == "lean-to" && kindOp != null && i == 2)
+                {
+                    var ws = Obj(kindOp["window"]);
+                    var (lkind, lyear) = f.WindowAt(p, 2, false);
+                    Window(L / 2, b + F(kindOp["sillMm"]) * M, F(ws["wMm"]) * M, F(ws["hMm"]) * M, lkind, lyear,
+                           boarded == "all", "lean-to");
+                }
+                else if (p.kind == "outhouse" && kindOp != null && i == 0)
+                {
+                    var dsp = Obj(kindOp["door"]);
+                    Door(L / 2, F(dsp["wMm"]) * M, F(dsp["hMm"]) * M, 0.05f);
+                }
+            }
+
+            int Last(Placement q) => f.Painted(q);
         }
 
         static Mesh Prism(Vector2[] fp, float z0, float z1)
