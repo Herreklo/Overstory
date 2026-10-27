@@ -88,6 +88,7 @@ def main(argv):
           + (f" (not: {', '.join(unknown)})" if unknown else ""))
     if unknown:
         fails.append("paint colours")
+    fails += __import__("check_trees").check()  # the corner's trees (tools/check_trees.py)
     if missing:
         print(f"missing  not built: {', '.join(missing)}")
     if fails:

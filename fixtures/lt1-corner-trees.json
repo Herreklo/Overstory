@@ -1,0 +1,67 @@
+{
+  "_": "The corner's trees: values its record (lt1-corner.json, trees) lacks, each a FIXTURE VALUE until the engine provides it (docs/engine-requests.md). Street axes: x across the lane (+x from C's yard over the wall into the lane), y up the hill, z up; metres. Facts stay in lt1-corner.json; nothing here claims a history the record does not hold.",
+  "date": [1989, 10, 20],
+  "record": "fixtures/lt1-corner.json",
+  "trees": [
+    {
+      "id": "birch-yard",
+      "habit": "birch",
+      "height": 14.0,
+      "height_why": "fixture value: about 14 m (docs/experiments.md, LT1, the corner's trees)",
+      "lean": [1.0, 0.0],
+      "lean_deg": 15.0,
+      "lean_upright": 0.45,
+      "lean_why": "fixture value: leaning over the wall into the lane (docs/experiments.md, LT1, the corner's trees): towards the open sky over the lane, away from C; its crown rights itself above (lean_upright: the share of the lean its top takes back)",
+      "exposure": 0.25,
+      "exposure_why": "fixture value: a yard tree sheltered by C and the wall, open to the lane",
+      "origin": "self-seeded",
+      "levels": ["near", "street", "far"]
+    },
+    {
+      "id": "spruce-e",
+      "habit": "spruce",
+      "height": 18.0,
+      "height_why": "fixture value: about 18 m (docs/experiments.md, LT1, the corner's trees)",
+      "exposure": 0.35,
+      "exposure_why": "fixture value: a garden tree behind E, on the hill's open shoulder",
+      "origin": "planted",
+      "levels": ["street", "far"]
+    },
+    {
+      "id": "birch-heath-1",
+      "habit": "birch",
+      "height": 6.0,
+      "height_why": "fixture value: a heath birch on thin soil in the sea wind, about 27 years",
+      "exposure": 0.8,
+      "origin": "self-seeded",
+      "levels": ["far"]
+    },
+    {
+      "id": "birch-heath-2",
+      "habit": "birch",
+      "height": 5.0,
+      "height_why": "fixture value: about 23 years on the heath",
+      "exposure": 0.8,
+      "origin": "self-seeded",
+      "levels": ["far"]
+    },
+    {
+      "id": "birch-heath-3",
+      "habit": "birch",
+      "height": 4.0,
+      "height_why": "fixture value: about 18 years on the heath",
+      "exposure": 0.8,
+      "origin": "self-seeded",
+      "levels": ["far"]
+    },
+    {
+      "id": "birch-heath-4",
+      "habit": "birch",
+      "height": 3.0,
+      "height_why": "fixture value: about 13 years on the heath",
+      "exposure": 0.8,
+      "origin": "self-seeded",
+      "levels": ["far"]
+    }
+  ]
+}

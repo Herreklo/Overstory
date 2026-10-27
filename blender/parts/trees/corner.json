@@ -1,0 +1,76 @@
+{
+  "_": "How the corner's trees are drawn, by habit: data for blender/parts/trees/corner.py (the build) and unity/Assets/Code/Editor/LT1CornerTrees.cs (the look). Style and species values only; the facts (where, when, how tall) are fixtures/lt1-corner.json and fixtures/lt1-corner-trees.json. Lengths in metres.",
+  "levels": {
+    "_": "Each level's reach from the eye (m): near to 20 (the street stop and eye level), street to 60, far beyond (silhouettes in the air past 130 m are the far level's).",
+    "near": 20.0,
+    "street": 60.0,
+    "far": 400.0
+  },
+  "budget": {
+    "_": "Triangles a level may draw (tools/check_trees.py): the near birch at the street stop, a far tree; each level at most share of the one before.",
+    "near": 30000,
+    "street": 12000,
+    "far": 2500,
+    "far_heath": 600,
+    "share": 0.6
+  },
+  "birch": {
+    "masses": 4,
+    "masses_why": "three to five masses (art direction, the trees); a downy birch's crown in four: its top, two over the lane and one over the yard",
+    "lobes": [2, 4],
+    "shell": 0.84,
+    "shell_why": "each mass drawn inside its foliage's fitted skin, so seams of sky open between masses",
+    "lobe_shell": 0.95,
+    "seam": 0.35,
+    "seam_why": "each mass moved this far out from the crown's middle, widening the seams",
+    "tiers": 1.6,
+    "shed": 0.33,
+    "shed_why": "a downy birch sheds its shaded lower limbs (self-pruning, a pioneer that cannot bear shade): in a yard between houses its crown starts a third of its height up",
+    "narrow": 0.62,
+    "narrow_why": "the downy birch's crown drawn narrower than grown, its limbs ascending (Oslo 19 Sep, ref 03)",
+    "mass_normal": 0.92,
+    "lift": 0.18,
+    "fallen": 0.25,
+    "fallen_why": "20 October on the coast: a downy birch has dropped about a quarter of its leaves, the inner and low first",
+    "lost_up": [0.72, 0.62],
+    "lost_up_why": "from this share of the crown's height up the masses thin (cards dropped up to the second value at the top) and take the thin card: the crown lost upward",
+    "underside": -0.35,
+    "root": {"lobes": 5, "amp": 0.55, "height": 0.35},
+    "levels": {
+      "near":   {"card": 1.15, "density": 2.4, "draw_tips_per_m": 8.0, "sides": 16, "shadow": true},
+      "street": {"card": 1.7,  "density": 1.7, "draw_tips_per_m": 20.0, "sides": 6,  "shadow": true},
+      "far":    {"card": 2.6,  "density": 1.3, "draw_tips_per_m": 40.0, "sides": 5, "shadow": false}
+    }
+  },
+  "birch_heath": {
+    "habit": "birch",
+    "masses": 2,
+    "lobes": [2, 3],
+    "shell": 0.85,
+    "mass_normal": 0.75,
+    "lift": 0.18,
+    "fallen": 0.35,
+    "lost_up": [0.8, 0.4],
+    "underside": -0.35,
+    "root": {"lobes": 4, "amp": 0.4, "height": 0.25},
+    "levels": {
+      "far": {"card": 1.3, "density": 1.4, "draw_tips_per_m": 30.0, "sides": 4, "shadow": false}
+    }
+  },
+  "spruce": {
+    "crown_base": 0.8,
+    "crown_base_why": "a planted garden spruce keeps its skirt to the ground",
+    "width": 0.36,
+    "width_why": "crown diameter at its foot as a share of the height (Norway spruce, open grown)",
+    "whorl": [0.42, 0.75],
+    "whorl_why": "the whorls' spacing near the top and at the foot (m)",
+    "branches": [5, 7],
+    "droop": 0.45,
+    "curtain": 0.55,
+    "leader": 0.9,
+    "levels": {
+      "street": {"whorl_scale": 1.0, "segments": 3, "sides": 6, "shadow": true},
+      "far":    {"whorl_scale": 2.0, "segments": 2, "sides": 4, "shadow": false}
+    }
+  }
+}
