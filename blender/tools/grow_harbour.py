@@ -1414,13 +1414,16 @@ def walls(poly, level, parapet, step=2.0):
 
 # -- the ground, carved where the town stands ----------------------------------------------------------------------------
 
-COVER = ["grass", "garden", "heath", "rock", "forest floor", "made"]
+COVER = ["grass", "garden", "heath", "rock", "forest floor", "made", "litter"]
+SHEDS = {"birch", "rowan", "sycamore", "apple"}   # the trees that drop their leaves in October
+LITTER = 0.9                                         # how far out under its crown a tree's fallen leaves lie
 
 
-def cover(Z, kind, gardens, top_line, yards=()):
+def cover(Z, kind, gardens, top_line, yards=(), trees=()):
     """What covers the ground at each point, for its tone (index in COVER) and a patch value 0-15 from the land's
     own lattice: made ground; the rock of the banks and of slopes too steep to hold soil; the spruce stands' needles;
-    the heath above the top lane; the gardens behind the houses; grass on the rest of the town's slopes."""
+    October's fallen leaves under the crowns of the trees that shed them; the heath above the top lane; the gardens
+    behind the houses; grass on the rest of the town's slopes."""
     g = GRID
     ny, nx = len(Z), len(Z[0])
     tacc = along(top_line)
@@ -1443,6 +1446,17 @@ def cover(Z, kind, gardens, top_line, yards=()):
             for i in range(max(0, int(math.floor((x0 - g["x0"]) / g["step"]))), min(nx, int(math.ceil((x1 - g["x0"]) / g["step"])) + 1)):
                 if inside(yd["poly"], g["x0"] + i * g["step"], g["y0"] + j * g["step"]):
                     plot[(i, j)] = yd
+    litter = set()
+    for tr in trees:
+        if tr["species"] not in SHEDS:
+            continue
+        rr = tr["r"] / 1000.0 * LITTER
+        ci, cj = int(round((tr["x"] / 1000.0 - g["x0"]) / g["step"])), int(round((tr["y"] / 1000.0 - g["y0"]) / g["step"]))
+        n = int(rr / g["step"]) + 1
+        for dj in range(-n, n + 1):
+            for di in range(-n, n + 1):
+                if (di * di + dj * dj) * g["step"] ** 2 <= rr * rr:
+                    litter.add((ci + di, cj + dj))
     out = []
     for j in range(ny):
         y = g["y0"] + j * g["step"]
@@ -1457,6 +1471,8 @@ def cover(Z, kind, gardens, top_line, yards=()):
                 c = 3
             elif any(in_planting(pl, x, y) for pl in SITE["plantings"]):
                 c = 4
+            elif (i, j) in litter:
+                c = 6
             elif (i, j) in plot:
                 yd = plot[(i, j)]
                 out.append((1 if yd["kept"] else 2) * 16 + yd["patch"])
@@ -1472,7 +1488,7 @@ def cover(Z, kind, gardens, top_line, yards=()):
     return out
 
 
-def carve(lines, placements, places, gardens, top_line, yards=(), stairs=()):
+def carve(lines, placements, places, gardens, top_line, yards=(), stairs=(), trees=()):
     g = GRID
     nx = int(round((g["x1"] - g["x0"]) / g["step"])) + 1
     ny = int(round((g["y1"] - g["y0"]) / g["step"])) + 1
@@ -1567,7 +1583,7 @@ def carve(lines, placements, places, gardens, top_line, yards=(), stairs=()):
                         kind[j][i] = 3
     return dict(x0=mm(g["x0"]), y0=mm(g["y0"]), step=mm(g["step"]), nx=nx, ny=ny,
                 z=[mm(v) for row in Z for v in row], kind=[v for row in kind for v in row],
-                cover=cover(Z, kind, gardens, top_line, yards))
+                cover=cover(Z, kind, gardens, top_line, yards, trees))
 
 
 def coarse():
@@ -1604,7 +1620,7 @@ def main(argv):
     lanes, stairs, buildings, placements, lines, gardens, ground, places, piers, boats, fences, yards = grow()
     top = max(SITE["lanes"], key=lambda s: s.get("z", 0.0))["id"]
     trees = plant(gardens, ground, places, lines[top])
-    grid = carve(lines, placements, places, gardens, lines[top], yards, stairs)
+    grid = carve(lines, placements, places, gardens, lines[top], yards, stairs, trees)
     fixture = dict(
         schemaVersion=1,
         note="LT1's harbour town grown by blender/tools/grow_harbour.py from its site (a stand-in for the engine's "

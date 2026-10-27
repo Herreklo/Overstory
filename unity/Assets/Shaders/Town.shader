@@ -24,6 +24,7 @@ Shader "Overstory/Town"
         _WaveWobble ("How far a crest wavers along its length (radians)", Float) = 3
         _Brush ("Share of the look's brushwork", Float) = 1
         _Laps ("Weatherboards' exposure or a roof's courses as they rise (m), 0 for none", Float) = 0
+        _Contact ("Walls: the sky hidden under the eaves and at the foot, from the vertex colour (0 or 1)", Float) = 0
         _Card ("Leaf cards: each turned to the eye about its centre by its corner in uv (0 or 1)", Float) = 0
         _CardEdge ("A card full below the facing y, shut above x", Vector) = (0.6, 0.15, 0, 0)
     }
@@ -47,10 +48,12 @@ Shader "Overstory/Town"
         half _WaveStretch; half _WaveWobble;
         half _Brush;
         half _Laps;
+        half _Contact;
         half _Card;
         float4 _CardEdge;
     CBUFFER_END
     float4 _OS_Laps;    // the laps' line: x full within, y gone by (m), z its shade, w its share of a board
+    float4 _OS_Contact; // the sky a wall loses: x under the eaves within (m), y its share there, z above the foot within, w its share
 
     #include "StreetSurface.hlsl"
 
@@ -226,6 +229,14 @@ Shader "Overstory/Town"
                 // no bake at this tier: every face sees its whole sky and a share of the ground
                 OSBake b = OS_ReadBake(half4(1, _Ground, 1, 1));
                 b.town = OS_TownSky(input.positionWS, s.normalWS);
+                if (_Contact > 0.5)
+                {
+                    // a wall's sky, hidden under its eaves by the overhang and at its foot by the ground and its
+                    // neighbours: its height above the foot and depth below the eaves in its vertex colour (LT1Town)
+                    half h = input.color.g * 10.0h, d = input.color.b * 10.0h;
+                    b.sky *= (1.0h - _OS_Contact.y * (1.0h - smoothstep(0.0h, (half)_OS_Contact.x, d)))
+                           * (1.0h - _OS_Contact.w * (1.0h - smoothstep(0.0h, (half)_OS_Contact.z, h)));
+                }
 
             #if defined(_OS_LOOK_B)
                 half3 colour = OS_ShadeB(id, s, b, input.positionWS);

@@ -116,9 +116,9 @@ namespace Overstory.EditorTools.Town
             var cache = new Dictionary<string, Material>();
             // grey: a URP Lit grey of value v; light: the town shader in colour c (sRGB), tinted by the vertex colours
             Material Mat(float v, Color c, bool tinted = false, float porosity = 0.5f, float smooth = 0.06f, float ground = 0.35f,
-                         float brush = 1f, float laps = 0f)
+                         float brush = 1f, float laps = 0f, float contact = 0f)
             {
-                string key = moment == null ? $"g{v}" : $"{ColorUtility.ToHtmlStringRGB(c)}{tinted}{porosity}{smooth}{ground}{brush}{laps}";
+                string key = moment == null ? $"g{v}" : $"{ColorUtility.ToHtmlStringRGB(c)}{tinted}{porosity}{smooth}{ground}{brush}{laps}{contact}";
                 if (cache.TryGetValue(key, out var hit))
                     return hit;
                 Material m;
@@ -138,6 +138,7 @@ namespace Overstory.EditorTools.Town
                     m.SetFloat("_Ground", ground);
                     m.SetFloat("_Brush", brush);
                     m.SetFloat("_Laps", laps);
+                    m.SetFloat("_Contact", contact);
                 }
                 made.Add(m);
                 return cache[key] = m;
@@ -209,6 +210,11 @@ namespace Overstory.EditorTools.Town
             Add(root, "land", GroundMesh(town.coarse, false, null), ground, made);
             Add(root, "water", moment == null ? Plane(-1600f, -1400f, 1700f, 1900f, town.quay.water * M) : Water(town, facts.water), water, made);
             Add(root, "quay wall", QuayWall(town.quay), plinth, made);
+            {
+                var (coping, bollards) = Coping(town, facts);
+                Add(root, "quay coping", coping, Mat(0.58f, tones?.copingStone ?? white, porosity: 0.3f, smooth: 0.1f), made);
+                Add(root, "bollards", bollards, Mat(0.12f, tones?.bollardIron ?? white, porosity: 0f, smooth: 0.3f), made);
+            }
             if (tones != null)
                 Add(root, "wet bands", WetBands(town, F(facts.water["wetM"])), Mat(0.2f, tones.stone * F(facts.water["wet"]), porosity: 0f, smooth: 0.3f), made);
             if (town.walls != null)
@@ -257,7 +263,7 @@ namespace Overstory.EditorTools.Town
             {
                 var (body, roof, foot) = Masses(p, town.ground, facts.Overhang(p));
                 Add(houses, $"house {p.id}", body, Mat(0.55f, tones?.Body(p) ?? white, porosity: 0.15f, smooth: 0.1f, brush: facts.brush,
-                                                       laps: facts.Laps(p)), made);
+                                                       laps: facts.Laps(p), contact: 1f), made);
                 Add(houses, $"house {p.id} roof", roof, Mat(0.30f, tones?.Roof(p) ?? white, porosity: 0.35f, smooth: 0.12f, brush: facts.brush,
                                                             laps: facts.Courses(p)), made);
                 Add(houses, $"house {p.id} plinth", foot, plinth, made);
@@ -352,6 +358,7 @@ namespace Overstory.EditorTools.Town
                         stage.Apply();
                         Shader.SetGlobalFloat("_OS_AirClear", facts.airClear);
                         Shader.SetGlobalVector("_OS_Laps", facts.laps);
+                        Shader.SetGlobalVector("_OS_Contact", facts.contact);
                     }
                     string file = Path.Combine(dir, $"{v.name}-{m}.png");
                     LT1Render.Still(cam, file, grey: false, msaa: 4);
@@ -389,6 +396,14 @@ namespace Overstory.EditorTools.Town
             public readonly float brush;
             /// <summary>The weatherboards' line near the eye: full within, gone by (m), its shade, its share of a board.</summary>
             public readonly Vector4 laps;
+            /// <summary>The sky a wall loses under its eaves and at its foot: under the eaves within (m), its share there,
+            /// above the foot within (m), its share there.</summary>
+            public readonly Vector4 contact;
+            /// <summary>The quay's coping (its width and height, m) and its bollards (every so many metres, from and to; their
+            /// width and height, m), and their colours.</summary>
+            public readonly Vector2 coping;
+            public readonly Vector4 bollards;
+            public readonly Color copingStone, bollardIron;
             public readonly Color glass, boards;
             /// <summary>A lit room's light through its pane at a window glow of 1, linear.</summary>
             public readonly Vector4 paneLit;
@@ -410,6 +425,15 @@ namespace Overstory.EditorTools.Town
                 brush = F(town["houseBrush"]);
                 var lp = Obj(town["laps"]);
                 laps = new Vector4(F(lp["fullM"]), F(lp["goneM"]), F(lp["shade"]), F(lp["share"]));
+                var ct = Obj(town["contact"]);
+                contact = new Vector4(F(ct["eaveM"]), F(ct["eave"]), F(ct["footM"]), F(ct["foot"]));
+                var qy = Obj(town["quay"]);
+                var cp = Obj(qy["coping"]);
+                var bl = Obj(qy["bollards"]);
+                coping = new Vector2(F(cp["widthM"]), F(cp["heightM"]));
+                copingStone = Hex((string)cp["srgb"]);
+                bollards = new Vector4(F(Arr(bl["everyM"])[0]), F(Arr(bl["everyM"])[1]), F(bl["widthM"]), F(bl["heightM"]));
+                bollardIron = Hex((string)bl["srgb"]);
                 // the room behind a lit pane: its lamp on its walls and its curtains, half each (materials/glass.json)
                 var room = Obj(Read("materials/glass.json")["room"]);
                 Color lamp = Hex((string)room["srgbLamp"]).linear, walls = Hex((string)room["srgbWalls"]).linear,
@@ -481,7 +505,7 @@ namespace Overstory.EditorTools.Town
                 r.fogHeightFalloff = F(a["heightFalloff"]);
                 r.fogMidDistance = F(a["midM"]);
                 r.fogFarDistance = F(a["farM"]);
-                r.fogMidColour = r.fogColour;
+                r.fogMidColour = Color.Lerp(r.fogColour, r.zenith, F(a["midToZenith"]));
                 r.fogFarColour = Color.Lerp(r.fogColour, r.zenith, F(a["farToZenith"]));
                 r.hazeDensity = F(a["haze"]);
                 r.hazeHeight = F(a["hazeHeight"]);
@@ -763,9 +787,9 @@ namespace Overstory.EditorTools.Town
             m.triangles = t;
             if (fine && g.cover != null && g.cover.Length == v.Length)
             {
-                // grass, garden, heath, rock, forest floor, made: a tone each, and how far its patches swing it
-                float[] tone = { 0.43f, 0.48f, 0.33f, 0.52f, 0.24f, 0.40f };
-                float[] swing = { 0.05f, 0.03f, 0.09f, 0.08f, 0.04f, 0.02f };
+                // grass, garden, heath, rock, forest floor, made, litter: a tone each, and how far its patches swing it
+                float[] tone = { 0.43f, 0.48f, 0.33f, 0.52f, 0.24f, 0.40f, 0.36f };
+                float[] swing = { 0.05f, 0.03f, 0.09f, 0.08f, 0.04f, 0.02f, 0.06f };
                 var col = new Color[v.Length];
                 for (int i = 0; i < v.Length; i++)
                 {
@@ -819,6 +843,72 @@ namespace Overstory.EditorTools.Town
             m.RecalculateNormals();
             DoubleSided(m);
             return m;
+        }
+
+        /// <summary>The quay's coping, a course of dressed stone along its face, standing proud of the quay; and its
+        /// bollards on it, every so many metres (seeded). Neither runs where a sjøhus stands on the edge or a pier leaves
+        /// it.</summary>
+        static (Mesh coping, Mesh bollards) Coping(Town town, Tones facts)
+        {
+            var q = town.quay;
+            float top = q.top * M, cw = facts.coping.x, chh = facts.coping.y;
+            var houses = new List<Vector2[]>();
+            foreach (var p in town.placements)
+                if (p.lane == "quay")
+                {
+                    var fp = new Vector2[4];
+                    for (int k = 0; k < 4; k++)
+                        fp[k] = new Vector2(p.footprint[2 * k], p.footprint[2 * k + 1]) * M;
+                    houses.Add(fp);
+                }
+            bool Clear(Vector2 at)
+            {
+                foreach (var fp in houses)
+                {
+                    bool inside = false;
+                    for (int a = 0, b = 3; a < 4; b = a++)
+                        if ((fp[a].y > at.y) != (fp[b].y > at.y) && at.x < (fp[b].x - fp[a].x) * (at.y - fp[a].y) / (fp[b].y - fp[a].y) + fp[a].x)
+                            inside = !inside;
+                    if (inside)
+                        return false;
+                }
+                if (town.piers != null)
+                    foreach (var pr in town.piers)
+                        if (Vector2.Distance(at, new Vector2(pr.points[0], pr.points[1]) * M) < pr.width * M / 2f + 0.6f)
+                            return false;
+                return true;
+            }
+            var stone = new MB();
+            var iron = new MB();
+            int count = q.edge.Length / 2;
+            float run = 0f, next = Hash.Range(Hash.Of("town.bollard.0"), facts.bollards.x, facts.bollards.y);
+            int nb = 0;
+            for (int i = 0; i + 1 < count; i++)
+            {
+                Vector2 a = QuayAt(q, i) + QuayOut(q, i) * 1.0f, b = QuayAt(q, i + 1) + QuayOut(q, i + 1) * 1.0f;
+                Vector2 ai = a - QuayOut(q, i) * cw, bi = b - QuayOut(q, i + 1) * cw;
+                float len = Vector2.Distance(a, b);
+                if (Clear(0.5f * (a + b) - QuayOut(q, i) * (cw / 2f)))
+                    stone.Add(Prism(new[] { a, b, bi, ai }, top - 0.1f, top + chh));
+                // the bollards along it, set back from the face on the coping
+                while (run + len >= next)
+                {
+                    float f = (next - run) / len;
+                    var at = Vector2.Lerp(a, b, f) - QuayOut(q, i) * (cw / 2f);
+                    if (Clear(at))
+                    {
+                        float hw = facts.bollards.z / 2f, cap = hw * 1.3f, h = top + chh + facts.bollards.w;
+                        var o = QuayOut(q, i);
+                        var t = new Vector2(-o.y, o.x);
+                        iron.Add(Prism(new[] { at - t * hw - o * hw, at + t * hw - o * hw, at + t * hw + o * hw, at - t * hw + o * hw }, top + chh, h - 0.08f));
+                        iron.Add(Prism(new[] { at - t * cap - o * cap, at + t * cap - o * cap, at + t * cap + o * cap, at - t * cap + o * cap }, h - 0.12f, h));
+                    }
+                    nb++;
+                    next += Hash.Range(Hash.Of($"town.bollard.{nb}"), facts.bollards.x, facts.bollards.y);
+                }
+                run += len;
+            }
+            return (stone.Make("quay coping"), iron.Make("bollards"));
         }
 
         static Vector2 QuayAt(Quay q, int i) => new Vector2(q.edge[2 * i] * M, q.edge[2 * i + 1] * M);
@@ -1227,6 +1317,7 @@ namespace Overstory.EditorTools.Town
             var ct = new List<int>();
             var cc = new List<Color>();
             var centres = new List<Vector3>();   // each crown vertex's mass's centre
+            var lows = new List<Vector3>();      // and the point under it its facets are shaded round
             var tv = new List<Vector3>();
             var tt = new List<int>();
             var tc = new List<Color>();
@@ -1238,7 +1329,8 @@ namespace Overstory.EditorTools.Town
             var lt = new List<int>();
             var fr = facts.fringe;
             float fSize = F(fr["size"]), fWidth = F(fr["width"]), fTail = F(fr["tail"]), fTurn = F(fr["turn"]), fOut = F(fr["out"]),
-                  fRadial = F(fr["radial"]), fJitter = F(fr["jitter"]), soften = F(fr["soften"]);
+                  fRadial = F(fr["radial"]), fJitter = F(fr["jitter"]), soften = F(fr["soften"]), lift = F(fr["lift"]),
+                  fShare = F(fr["share"]);
             float Lo(string k) => F(Arr(fr[k])[0]);
             float Hi(string k) => F(Arr(fr[k])[1]);
             // a broadleaf crown is full low and rounds over at the top; a spruce is a spire
@@ -1254,6 +1346,7 @@ namespace Overstory.EditorTools.Town
                 // the crown's edge: a leaf stroke on each upper facet of a mass, out of it a little and turned part way
                 // radial, so it shades as the mass round it; the shader lays its corners across the view and opens it
                 // only where the crown turns from the eye
+                var limbs = new List<Vector3>();   // where each lobe hangs, for the limb that carries it
                 void Fringe(int k, int t0, Vector3 centre, float size, Color c)
                 {
                     for (int i = t0, j = 0; i < ct.Count; i += 3, j++)
@@ -1266,6 +1359,8 @@ namespace Overstory.EditorTools.Town
                             continue;   // the underside
                         ulong hk = Hash.Then(Hash.Then(Hash.Then(id, "leaf"), (ulong)k), (ulong)j);
                         float H(string what, float lo, float hi) => Hash.Range(Hash.Then(hk, what), lo, hi);
+                        if (H("share", 0f, 1f) >= fShare)
+                            continue;
                         float u = H("u", 0f, 1f), v = H("v", 0f, 1f);
                         if (u + v > 1f) { u = 1f - u; v = 1f - v; }
                         float len = size * H("s", Lo("spread"), Hi("spread"));
@@ -1290,12 +1385,16 @@ namespace Overstory.EditorTools.Town
                     Blob(cv, ct, mx, my, z0, z1, rx, ry, a, prof, Hash.Then(id, (ulong)k), jit);
                     var c = tint * R("tone", k, 0.86f, 1.1f);
                     var centre = U(mx, my, (z0 + z1) / 2f);
+                    var low = U(mx, my, (z0 + z1) / 2f - lift * (z1 - z0) / 2f);
                     while (cc.Count < cv.Count)
                     {
                         cc.Add(c);
                         centres.Add(centre);
+                        lows.Add(low);
                     }
-                    Fringe(k, t0, centre, fSize * (rx + ry) / 2f, c);
+                    if (k > 0)
+                        limbs.Add(U(mx, my, z0 + 0.3f * (z1 - z0)));
+                    Fringe(k, t0, low, fSize * (rx + ry) / 2f, c);
                 }
                 // lobes round the main mass, at their own heights and sides
                 void Lobes(int n, float c0, float off0, float off1, float rk0, float rk1, float zb1, float hz0, float hz1)
@@ -1354,6 +1453,29 @@ namespace Overstory.EditorTools.Town
                     int a0 = m0 + 2 * s6, b0 = m0 + 2 * ((s6 + 1) % 6);
                     tt.AddRange(new[] { a0, a0 + 1, b0 + 1, a0, b0 + 1, b0 });
                 }
+                // the limbs: the trunk forks below its top into one limb for each lobe, four-sided, thinning out
+                var fork = U(x, y, zt - (zt - z - c0) * 0.6f);
+                foreach (var end in limbs)
+                {
+                    var dir = (end - fork).normalized;
+                    var side = Vector3.Cross(dir, Vector3.up).normalized;
+                    if (side.sqrMagnitude < 0.5f)
+                        side = Vector3.right;
+                    var up2 = Vector3.Cross(side, dir);
+                    int l0 = tv.Count;
+                    for (int s4 = 0; s4 < 4; s4++)
+                    {
+                        float a = s4 * Mathf.PI / 2f;
+                        var o = side * Mathf.Cos(a) + up2 * Mathf.Sin(a);
+                        tv.Add(fork + o * w1 * 0.8f);
+                        tv.Add(end + o * w1 * 0.35f);
+                    }
+                    for (int s4 = 0; s4 < 4; s4++)
+                    {
+                        int a0 = l0 + 2 * s4, b0 = l0 + 2 * ((s4 + 1) % 4);
+                        tt.AddRange(new[] { a0, a0 + 1, b0 + 1, a0, b0 + 1, b0 });
+                    }
+                }
                 var barkC = coloured ? bark.linear : Color.white;
                 while (tc.Count < tv.Count)
                     tc.Add(barkC);
@@ -1383,14 +1505,15 @@ namespace Overstory.EditorTools.Town
                 ft.Add(i);
             }
             var crowns = Make("tree crowns", fv, ft, fc);
-            // each facet shaded part way to its mass's round, so the planes are a hint across a lit and a shaded side
+            // each facet shaded part way to its mass's round, so the planes are a hint across a lit and a shaded side;
+            // the round taken from a point under the mass's middle, so its underside turns to the sky's light as a
+            // crown's leaves let it through, and never goes black
             var fn = crowns.normals;
             for (int i = 0; i < fn.Length; i++)
             {
-                var radial = (fv[i] - centres[ct[i]]).normalized;
-                if (Vector3.Dot(fn[i], radial) < 0f)
+                if (Vector3.Dot(fn[i], fv[i] - centres[ct[i]]) < 0f)
                     fn[i] = -fn[i];
-                fn[i] = Vector3.Lerp(fn[i], radial, soften).normalized;
+                fn[i] = Vector3.Lerp(fn[i], (fv[i] - lows[ct[i]]).normalized, soften).normalized;
             }
             crowns.normals = fn;
             var trunks = Make("tree trunks", tv, tt, tc);
@@ -1794,7 +1917,21 @@ namespace Overstory.EditorTools.Town
             roof.SetTriangles(t, 0);
             roof.RecalculateNormals();
             DoubleSided(roof);
-            return (walls.Make("walls"), roof, foot);
+            // what each wall sees of the sky, for the town shader's contact shade (_Contact): its height above the foot
+            // (green) and, on the walls under the eaves (along the ridge), its depth below them (blue), in tens of metres
+            var body = walls.Make("walls");
+            Vector2 ridge = p.roof == "gable" ? (fp[3] - fp[0]).normalized : (fp[1] - fp[0]).normalized;
+            var bv = body.vertices;
+            var bn = body.normals;
+            var bc = new Color[bv.Length];
+            for (int i = 0; i < bv.Length; i++)
+            {
+                var flat = new Vector2(bn[i].x, bn[i].z);
+                bool under = Mathf.Abs(bn[i].y) < 0.5f && flat.sqrMagnitude > 1e-4f && Mathf.Abs(Vector2.Dot(flat.normalized, ridge)) < 0.3f;
+                bc[i] = new Color(1f, Mathf.Clamp01((bv[i].y - b) / 10f), under ? Mathf.Clamp01((e - bv[i].y) / 10f) : 1f, 1f);
+            }
+            body.colors = bc;
+            return (body, roof, foot);
         }
 
         /// <summary>The roof's edges as the era made them (timber.json, verge and eaves): a barge board under each rake of a
