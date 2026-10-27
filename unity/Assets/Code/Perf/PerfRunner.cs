@@ -443,6 +443,9 @@ namespace Overstory.Perf
                     fl.fullSize = config == "foglights-full";
                     TownLights.cullToView = !fl.fullSize; // (as it was: every lamp at every pixel)
                 }
+                // the bank's volume (HazeVolumeFeature); the 'march' arm marches it at every pixel instead, as before
+                if (features.TryGetValue("HazeVolume", out var haze))
+                    haze.feature.SetActive(haze.on && config != "march");
             }
 
             var recorders = Counters.Select(c => ProfilerRecorder.StartNew(c.category, c.counter, 1)).ToArray();

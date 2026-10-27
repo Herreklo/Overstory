@@ -1,0 +1,56 @@
+// The fog bank along the camera's rays, once a frame (Overstory.Scenes.HazeVolumeFeature): a grid of rays over the
+// screen, a sixteenth of its width and height, each integrated from the eye outwards through the same air every
+// surface shades with (StreetSurface.hlsl: OS_HazeDensity, the bank's thickening off the eye, OS_GlowAt), and the
+// optical depth and the glow scattered towards the eye written at each of a set of distances, closer together near
+// the eye. A surface then reads its own ray at its own distance (OS_HazeLookup) in place of a twelve-step march.
+#pragma kernel Fill
+
+#define OS_AIR_ONLY
+#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
+#include "StreetSurface.hlsl"
+
+RWTexture3D<float4> _OS_HazeVolOut;
+float4x4 _OS_HazeInvVP;   // the inverse of the camera's view-projection (Unity's own convention)
+float4 _OS_HazeEye;       // xyz the eye
+float4 _OS_HazeGrid;      // x rays across, y rays down, z slices, w steps a slice
+float4 _OS_HazeSlices;    // x d0 (m), y log2(1 + reach / d0)
+
+float SliceDistance(float k)
+{
+    return _OS_HazeSlices.x * (exp2(_OS_HazeSlices.y * k / (_OS_HazeGrid.z - 1.0)) - 1.0);
+}
+
+[numthreads(8, 8, 1)]
+void Fill(uint3 id : SV_DispatchThreadID)
+{
+    if (id.x >= (uint)_OS_HazeGrid.x || id.y >= (uint)_OS_HazeGrid.y)
+        return;
+    float2 uv = (id.xy + 0.5) / _OS_HazeGrid.xy;
+    float4 far = mul(_OS_HazeInvVP, float4(uv * 2.0 - 1.0, 1.0, 1.0));
+    float3 o = _OS_HazeEye.xyz;
+    float3 dir = normalize(far.xyz / far.w - o);
+    int slices = (int)_OS_HazeGrid.z;
+    int steps = max((int)_OS_HazeGrid.w, 1);
+    float tau = 0.0;
+    float3 glow = 0;
+    float prev = 0.0;
+    _OS_HazeVolOut[uint3(id.xy, 0)] = 0;
+    [loop]
+    for (int k = 1; k < slices; k++)
+    {
+        float next = SliceDistance(k);
+        float ds = (next - prev) / steps;
+        [loop]
+        for (int m = 0; m < steps; m++)
+        {
+            float s = prev + (m + 0.5) * ds;
+            float3 p = o + dir * s;
+            // as OS_HazeMarch: the bank thickens away from the eye
+            float sigma = OS_HazeDensity(p) * (_OS_Haze.z > 0.0 ? 1.0 - exp(-s / _OS_Haze.z) : 1.0);
+            glow += exp(-tau) * sigma * OS_GlowAt(p) * ds;
+            tau += sigma * ds;
+        }
+        _OS_HazeVolOut[uint3(id.xy, k)] = float4(glow, tau);
+        prev = next;
+    }
+}

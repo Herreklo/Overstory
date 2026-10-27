@@ -66,7 +66,8 @@ MonoBehaviour:
   - {fileID: -3321604832369709658}
   - {fileID: 8731856260101704842}
   - {fileID: 8216860144099698673}
-  m_RendererFeatureMap: ad6b866f10d7b46cf1166e613c9fc7435c9e1877f67743bea6ed61ea004ae7d18a0c225501c92d79f1a7202ac4260872l
+  - {fileID: 5263910484215550331}
+  m_RendererFeatureMap: ad6b866f10d7b46cf1166e613c9fc7435c9e1877f67743bea6ed61ea004ae7d18a0c225501c92d79f1a7202ac42608727b511f2db22a0d49l
   xrSystemData: {fileID: 0}
   postProcessData: {fileID: 11400000, guid: 41439944d30ece34e96484bdb6645b55, type: 2}
   m_AssetVersion: 3
@@ -171,3 +172,22 @@ MonoBehaviour:
   passIndex: 0
   bindDepthStencilAttachment: 0
   m_Version: 1
+--- !u!114 &5263910484215550331
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4143bde8c2da4709bc05a027d433dc08, type: 3}
+  m_Name: HazeVolume
+  m_EditorClassIdentifier: Assembly-CSharp::Overstory.Scenes.HazeVolumeFeature
+  m_Active: 1
+  compute: {fileID: 7200000, guid: 81f3c0b433104344ae0b9e2d4e5bed45, type: 3}
+  tile: 16
+  slices: 128
+  steps: 2
+  reach: 3000
+  near: 1

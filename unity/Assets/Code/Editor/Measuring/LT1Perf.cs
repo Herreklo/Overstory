@@ -75,6 +75,134 @@ namespace Overstory.EditorTools
         public static void BuildPlayable() =>
             BuildAndRun(() => ComposePlayable(), PlayableScenePath, PlayableApp, $"reviews/perf/{System.DateTime.Now:yyyy-MM-dd}/playable");
 
+        /// <summary>
+        /// The walk's scene timed and drawn offscreen in the editor, with no window on the screen: the playable scene as
+        /// BuildPlayable last composed it (or composed again with -compose), each light and view drawn as the player draws
+        /// it (PlayerFrame: 2560 by 1440, the game's MSAA), the arms in turn, a batch of six each a round, six rounds after one
+        /// that primes, the median kept; the arms: 'all'; 'march' (HazeVolumeFeature off: the bank marched at every pixel, as before); '-Name' (the renderer
+        /// feature of that name off). The editor's own work is in the numbers, so they serve an A/B between the arms of one
+        /// run; tools/perf.sh gives the frame. With -stills, each arm's frame of each view is kept (VIEW-LIGHT-ARM.png).
+        ///
+        ///     Unity -batchmode -quit -projectPath unity -executeMethod Overstory.EditorTools.LT1Perf.Offscreen
+        ///         [-lights 1750-blue-hour,...] [-views eye-on,street] [-arms all,march] [-stills dir] [-out file.md] [-compose]
+        /// </summary>
+        public static void Offscreen()
+        {
+            const int batches = 6, perBatch = 6;
+            string repo = Path.GetFullPath(Path.Combine(Application.dataPath, "..", ".."));
+            var urp = (UniversalRenderPipelineAsset)GraphicsSettings.currentRenderPipeline;
+            float reach = urp.shadowDistance;
+            bool async = ShaderUtil.allowAsyncCompilation;
+            ShaderUtil.allowAsyncCompilation = false;
+            var data = AssetDatabase.LoadAssetAtPath<UniversalRendererData>("Assets/Settings/PC_Renderer.asset");
+            var features = data.rendererFeatures.Where(f => f != null).ToList();
+            var on0 = features.Select(f => f.isActive).ToList();
+            var lights = Cli.Arg("-lights", "1750-blue-hour").Split(',');
+            var views = Cli.Arg("-views", "eye-on,street").Split(',');
+            var arms = Cli.Arg("-arms", "all,march").Split(',');
+            string stills = Cli.Arg("-stills", null);
+            string outFile = Cli.Arg("-out", "");
+            var rows = new List<string>();
+            try
+            {
+                if (Cli.Flag("-compose") || !File.Exists(Path.Combine(Application.dataPath, "..", PlayableScenePath)))
+                    ComposePlayable();
+                else
+                    EditorSceneManager.OpenScene(PlayableScenePath, OpenSceneMode.Single);
+                var corner = Object.FindAnyObjectByType<Overstory.Play.PlayCorner>()
+                             ?? throw new MissingReferenceException("[LT1Perf] no PlayCorner in the playable scene");
+                corner.Begin();
+                foreach (var light in lights)
+                {
+                    int m = System.Array.FindIndex(corner.moments, x => x.name == light);
+                    if (m < 0)
+                        throw new System.ArgumentException($"no light {light}");
+                    corner.SetLight(m);
+                    foreach (var viewName in views)
+                    {
+                        int v = System.Array.FindIndex(corner.views, x => x.name == viewName);
+                        if (v < 0)
+                            throw new System.ArgumentException($"no view {viewName}");
+                        corner.SetView(v);
+                        var cells = new List<string>();
+                        var cam = corner.stage.view;
+                        var camData = cam.GetUniversalAdditionalCameraData();
+                        var sun = corner.stage.sun;
+                        var (clear0, post0, colour0, msaa0) = (cam.clearFlags, camData.renderPostProcessing, camData.requiresColorOption, urp.msaaSampleCount);
+                        var shadows0 = sun != null ? sun.shadows : LightShadows.None;
+                        // an arm is what it turns off, joined by '+'
+                        void Arm(string arm)
+                        {
+                            var off = arm.Split('+');
+                            for (int i = 0; i < features.Count; i++)
+                                features[i].SetActive(on0[i] && !off.Contains("-" + features[i].name) && !(off.Contains("march") && features[i] is HazeVolumeFeature));
+                            if (sun != null)
+                                sun.shadows = off.Contains("shadows") ? LightShadows.None : shadows0;
+                            cam.clearFlags = off.Contains("sky") ? CameraClearFlags.SolidColor : clear0;
+                            camData.renderPostProcessing = post0 && !off.Contains("post");
+                            camData.requiresColorOption = off.Contains("opaquetex") ? CameraOverrideOption.Off : colour0;
+                            urp.msaaSampleCount = off.Contains("msaa") ? 1 : msaa0;
+                        }
+                        // each arm's still from its own warmed frame; then the arms timed in turn, a batch each a round,
+                        // so whatever else the machine does falls on every arm alike
+                        foreach (var arm in arms)
+                        {
+                            Arm(arm);
+                            using var still = new PlayerFrame(corner.stage.view);
+                            still.Render(LT1Time.WarmUp + 1);
+                            if (stills != null)
+                                still.Save(Path.Combine(repo, stills, $"{viewName}-{light}-{arm}.png"));
+                            still.Wait();
+                        }
+                        var ms = arms.ToDictionary(a => a, a => new List<double>());
+                        for (int b = 0; b <= batches; b++)
+                            foreach (var arm in arms)
+                            {
+                                Arm(arm);
+                                using var frame = new PlayerFrame(cam); // (the arm's own sample count)
+                                frame.Render(2); // (the arm's first frames prime it)
+                                frame.Wait();
+                                var clock = System.Diagnostics.Stopwatch.StartNew();
+                                frame.Render(perBatch);
+                                frame.Wait();
+                                if (b > 0) // (the first round only primes)
+                                    ms[arm].Add(clock.Elapsed.TotalMilliseconds / perBatch);
+                            }
+                        Arm("all");
+                        foreach (var arm in arms)
+                        {
+                            var t = ms[arm];
+                            t.Sort();
+                            cells.Add($"{t[t.Count / 2]:F1}");
+                            Debug.Log($"[LT1Perf] offscreen {viewName}@{light} {arm}: {t[t.Count / 2]:F2} ms (batches {string.Join(" ", t.Select(x => x.ToString("F1")))})");
+                        }
+                        rows.Add($"| {viewName}@{light} | {string.Join(" | ", cells)} |");
+                    }
+                }
+            }
+            finally
+            {
+                for (int i = 0; i < features.Count; i++)
+                    features[i].SetActive(on0[i]);
+                urp.shadowDistance = reach;
+                ShaderUtil.allowAsyncCompilation = async;
+            }
+            var md = new StringBuilder();
+            md.AppendLine($"Milliseconds a frame, offscreen in the editor (LT1Perf.Offscreen; {SystemInfo.graphicsDeviceName}, " +
+                          $"{PlayerFrame.Width}x{PlayerFrame.Height}, the game's MSAA, median of {batches} batches of {perBatch}).").AppendLine();
+            md.AppendLine($"| View and light | {string.Join(" | ", arms)} |");
+            md.AppendLine($"| --- |{string.Concat(Enumerable.Repeat(" --- |", arms.Length))}");
+            foreach (var r in rows)
+                md.AppendLine(r);
+            Debug.Log("[LT1Perf] offscreen\n" + md);
+            if (outFile != "")
+            {
+                string path = Path.Combine(repo, outFile);
+                Directory.CreateDirectory(Path.GetDirectoryName(path));
+                File.WriteAllText(path, md.ToString());
+            }
+        }
+
         static void BuildAndRun(System.Action compose, string scenePath, string appPath, string defaultOut)
         {
             var urp = (UniversalRenderPipelineAsset)GraphicsSettings.currentRenderPipeline;

@@ -44,6 +44,15 @@ namespace Overstory.EditorTools
                 LT1Render.Render(cam, target);
         }
 
+        /// <summary>Waits until the GPU has drawn every render asked so far (one texel read back), for timing.</summary>
+        public void Wait()
+        {
+            var probe = RenderTexture.GetTemporary(1, 1, 0, RenderTextureFormat.ARGB32);
+            Graphics.Blit(target, probe);
+            AsyncGPUReadback.Request(probe).WaitForCompletion();
+            RenderTexture.ReleaseTemporary(probe);
+        }
+
         /// <summary>Reads the last render back (sRGB bytes, bottom row first).</summary>
         public Texture2D Read()
         {

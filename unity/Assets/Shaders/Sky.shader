@@ -150,7 +150,7 @@ Shader "Overstory/Sky"
                     float tau;
                     float3 glow = 0;
                     if (_OS_Bank.x > 0.5)
-                        OS_HazeMarch(_WorldSpaceCameraPos, d, 3000.0, tau, glow); // the bank and the town's glow in it
+                        OS_HazeAlong(_WorldSpaceCameraPos, d, 3000.0, tau, glow); // the bank and the town's glow in it
                     else
                         tau = _OS_Haze.x * exp(-max(_WorldSpaceCameraPos.y, 0.0) / H) * H / max(d.y, 0.012);
                     half sun = (half)pow(saturate(dot(d, _OS_SunDir.xyz)), max(_OS_FogSun.w, 1.0));

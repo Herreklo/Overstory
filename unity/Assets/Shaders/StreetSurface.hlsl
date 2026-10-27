@@ -59,6 +59,8 @@ float OS_Noise(float2 p)
                 lerp(OS_Hash(i + float2(0, 1)), OS_Hash(i + float2(1, 1)), u.x), u.y);
 }
 
+// (OS_AIR_ONLY: the air alone, for the haze's volume, HazeVolume.compute, which has no surface to shade)
+#if !defined(OS_AIR_ONLY)
 StreetSurface OS_StreetSurface(float2 uv, float3 positionWS, half3 normalWS)
 {
     StreetSurface s;
@@ -156,6 +158,8 @@ void OS_CardClip(float2 card, float3 positionWS)
     float n = OS_Noise(c * 4.5 + positionWS.xz * 0.31) * 0.6 + OS_Noise(c * 10.0 - positionWS.y * 0.43) * 0.4;
     clip(1.0 - r + (n - 0.5) * 0.9 - 0.18);
 }
+
+#endif // OS_AIR_ONLY
 
 // The weather's cloud layer, one pattern for the sky and for the shadows it casts on the town.
 float4 _OS_Clouds;      // x cover (0 none, 1 overcast), y feature size (m), z softness, w layer height (m)
@@ -287,6 +291,44 @@ void OS_HazeMarch(float3 o, float3 dir, float dist, out float tau, out float3 gl
     }
 }
 
+// The bank along the camera's own rays, worked out once a frame (Overstory.Scenes.HazeVolumeFeature,
+// HazeVolume.compute): for a grid of rays over the screen, the optical depth and the town's glow scattered towards the
+// eye, integrated from the eye out to each of a set of distances. A point on the screen reads its ray's value at its own
+// distance in one lookup instead of marching twelve steps; a point off the screen (a pane's reflected sky) marches.
+TEXTURE3D(_OS_HazeVol);
+SAMPLER(sampler_OS_HazeVol);
+float4x4 _OS_HazeVP;     // the view-projection the volume was made for (Unity's own convention: y up, z -1 to 1)
+float4 _OS_HazeVolInfo;  // x 1 while the volume is this camera's, y its slices, z d0 (m), w log2(1 + reach / d0)
+
+// The bank's optical depth and glow from the eye to p, dist from it (at most the volume's reach): false off the volume
+bool OS_HazeLookup(float3 p, float dist, out float tau, out float3 glow)
+{
+    tau = 0.0;
+    glow = 0;
+    if (_OS_HazeVolInfo.x < 0.5)
+        return false;
+    float4 h = mul(_OS_HazeVP, float4(p, 1.0));
+    if (h.w <= 1e-4)
+        return false;
+    float2 uv = h.xy / h.w * 0.5 + 0.5;
+    if (any(uv < -0.02) || any(uv > 1.02))
+        return false;
+    float n = _OS_HazeVolInfo.y;
+    float k = (n - 1.0) * log2(1.0 + dist / _OS_HazeVolInfo.z) / _OS_HazeVolInfo.w;
+    float4 v = SAMPLE_TEXTURE3D_LOD(_OS_HazeVol, sampler_OS_HazeVol, float3(saturate(uv), (k + 0.5) / n), 0);
+    tau = v.a;
+    glow = v.rgb;
+    return true;
+}
+
+// The haze from the eye o along dir to dist: from the volume where it holds the point, else marched
+void OS_HazeAlong(float3 o, float3 dir, float dist, out float tau, out float3 glow)
+{
+    [branch]
+    if (!OS_HazeLookup(o + dir * dist, dist, tau, glow))
+        OS_HazeMarch(o, dir, dist, tau, glow);
+}
+
 // The mean density along a straight path through air that thins exponentially with height (k per metre, from the
 // base height), relative to the density at the base.
 float OS_MeanDensity(float3 v, float k, float base)
@@ -327,7 +369,7 @@ half3 OS_Atmosphere(half3 colour, float3 positionWS)
     float tauHaze;
     float3 glow = 0;
     if (_OS_Bank.x > 0.5)
-        OS_HazeMarch(_WorldSpaceCameraPos, v / max(d, 1e-4), min(d, 3000.0), tauHaze, glow);
+        OS_HazeAlong(_WorldSpaceCameraPos, v / max(d, 1e-4), min(d, 3000.0), tauHaze, glow);
     else
         tauHaze = _OS_Haze.x * d * OS_MeanDensity(v, 1.0 / max(_OS_Haze.y, 1.0), 0.0);
     float hidden = min(1.0 - exp(-(tauAir + tauHaze)), _OS_FogParams.w);
