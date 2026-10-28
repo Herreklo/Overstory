@@ -316,7 +316,7 @@ def main():
                   "paintFlat": v["paint"].get("flat", 1.0), "underSmooth": v["under"]["smooth"], "scanMetres": two(side[tiles[k]]["metres"])}
                  for k, v in M.items()],
         "tileMetres": tile_m, "dirtL": sh["dirtL"], "waterL": sh["waterL"], "cavityL": sh["cavityL"],
-        "lapDark": sh["lapDark"], "lapReach": sh["lapReachMm"] / 1000.0,
+        "lipL": sh["lipL"], "crackL": sh["crackL"], "lapDark": sh["lapDark"], "lapCore": sh["lapCoreMm"] / 1000.0, "lapReach": sh["lapReachMm"] / 1000.0, "lapPage": sh["lapPageMm"] / 1000.0, "lapStep": json.load(open(os.path.join(FL.ROOT, "blender", "parts", "finish", "classical.json")))["cladding"]["stepMm"] / 1000.0,
         "lapScale": json.load(open(os.path.join(FL.ROOT, "blender", "parts", "finish", "corner.json")))["lapReach"],
         "groundL": spec["ground"]["L"], "groundSmooth": spec["ground"]["smooth"],
     }

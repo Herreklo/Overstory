@@ -16,8 +16,8 @@ both levels. UV0 is the tileable's (metres along the grain) or the trim sheet's 
 chamfer face), G the piece's seed, B the under layer forced (mortar), A on a near board how far below the next course's
 butt the corner sits (0..1 over `lapReach` metres; exact across the face, which is planar), 1 elsewhere.
 
-Timber follows the frame (settle, sag, lean: classical.json bends); stones, the boarding of 1986 and the downpipe are
-rigid and only moved and turned (BB3).
+Timber follows the frame (settle, sag, lean: classical.json bends); stones and the boarding of 1986 are rigid and
+only moved and turned (BB3).
 """
 
 import json
@@ -87,16 +87,18 @@ class Frame:
     def __init__(self, W, F, z_sill, z_top):
         b = W["bends"]
         c = F.age / 100.0
-        self.settle = min(b["settleMostMm"], b["settleMmPerCentury"] * c) * MM
+        self.settle = min(b["settleMostMm"], b["settleMmPerCentury"] * c) * MM * W["push"]["settle"]
         self.sag = min(b["sagMostMm"], b["sagMmPerCentury"] * c) * MM
         self.lean = min(b["leanMostMm"], b["leanMmPerCentury"] * c) * MM
         self.L = b["frameLengthMm"] * MM
+        self.reach = b["settleReachMm"] * MM
         self.z_sill, self.z_top = z_sill, z_top
 
     def offset(self, p):
         x, y, z = p
-        fx, fy = max(0.0, 1.0 - x / self.L), max(0.0, 1.0 - y / self.L)
-        dz = -self.settle * fx * fy
+        # the settled corner's sill beam bends down to it over `reach`, steepest at the corner
+        fx, fy = max(0.0, 1.0 - x / self.reach), max(0.0, 1.0 - y / self.reach)
+        dz = -self.settle * (fx * fy) ** 2
         h = min(1.0, max(0.0, (z - self.z_sill) / (self.z_top - self.z_sill)))
         s = math.sin(math.pi * min(1.0, max(0.0, x / self.L)))
         dz -= self.sag * s * h
@@ -291,7 +293,7 @@ class Corner:
         self.S, self.W, self.F, self.M = spec, W, F, mats
         self.pieces = []
         self.features = {"butts": [], "nails": [], "sill": None, "eave": None, "foot": None, "casing": None,
-                         "joints": [], "cornerBoard": None, "pipe": None}
+                         "joints": [], "cornerBoard": None, "pipe": None, "drips": []}
         cl = W["cladding"]
         self.step = cl["stepMm"] * MM
         self.push = W["push"]
@@ -407,7 +409,7 @@ class Corner:
                     # then the face back to the top, which tucks under the course above
                     prof = [(0.0, 0.0, "front", False), (0.0, s - c, "front", True), (c, s, "front", False),
                             (h, 0.0, "front", False)]
-                    nseg = max(1, round((b - a) / 0.75))
+                    nseg = max(1, round((b - a) / 0.5))
                     off = (self.seed(wall, ci, bi, "u") * 7.0, self.seed(wall, ci, bi, "v") * 7.0)
                     extrude(pc, "near", prof, Vector((a, 0.0, zb)), Vector((b - a, 0, 0)), Vector((0, 0, 1)),
                             Vector((0, -1, 0)), nseg=nseg, planar=planar, tile_off=off,
@@ -426,10 +428,10 @@ class Corner:
                         if i == 1 and j == 1:
                             continue
                         self.quad_planar(pc, "street", planar, xs[i], xs[i + 1], zc[j], zc[j + 1], ymid,
-                                         nseg=max(1, round((xs[i + 1] - xs[i]) / 0.75)))
+                                         nseg=max(1, round((xs[i + 1] - xs[i]) / 0.4)))
                 self.end_cap_plane(pc, planar, x_hi, z0, z1, s, flip=True)
             else:
-                self.quad_planar(pc, "street", planar, x_lo, x_hi, z0, z1, ymid, nseg=2)
+                self.quad_planar(pc, "street", planar, x_lo, x_hi, z0, z1, ymid, nseg=4)
                 # the triangle under the verge's foot
                 t = math.tan(self.pitch)
                 tri = [Vector((-0.42, ymid, z1)), Vector((0.0, ymid, z1)), Vector((-0.42, ymid, z1 + 0.42 * t))]
@@ -555,21 +557,23 @@ class Corner:
         self.features["casing"] = (x0 - self.cw, x1 + self.cw, za, zb + self.cap_t)
 
     def cap(self, x, length, z, proud, t, slope):
-        """The head's water board: its top falls outward by `slope`, its front edge and top arris chamfered."""
+        """The head's drip cap: a flat board whose top falls outward by `slope`, the top's front arris chamfered, and
+        a drip nose under its front edge so water leaves it clear of the casing."""
         c = self.ch["cap"]
+        ct = self.ch["capTop"]
+        dw, dh = [v * MM for v in self.W["casing"]["capDripMm"]]
         pc = self.make("casing/cap", "trims", ("near", "street"), self.street_m)
         d = proud
         rise = d * math.tan(slope)
         for lv in ("near", "street"):
-            cc = c if lv == "near" else 0.0
-            # section (p up, q out): under the board out to its front, the front, then the top falling outward from
-            # the wall; the front's two arrises worn, the top one less (it meets a sloped face)
-            if cc:
-                c2 = cc * 0.6
-                prof = [(0.0, 0.0, "bottom", False), (0.0, d - cc, "front", True), (cc, d, "front", False),
-                        (t - c2, d, "front", True), (t + rise * c2 / d, d - c2, "top", False), (t + rise, 0.0, "top", False)]
+            # section (p up, q out): under the board out to the drip nose, down its back and under it, the flat front,
+            # the top's chamfered arris, then the top rising back to the wall
+            if lv == "near":
+                prof = [(0.0, 0.0, "bottom", False), (0.0, d - dw, "bottom", False), (-dh, d - dw, "bottom", False),
+                        (-dh, d - c, "front", True), (-dh + c, d, "front", False),
+                        (t - ct, d, "front", True), (t + rise * ct / d, d - ct, "top", False), (t + rise, 0.0, "top", False)]
             else:
-                prof = [(0.0, 0.0, "bottom", False), (0.0, d, "front", False), (t, d, "top", False),
+                prof = [(0.0, 0.0, "bottom", False), (-dh, d, "front", False), (t, d, "top", False),
                         (t + rise, 0.0, "top", False)]
             NOMINAL[(pc.id, "bottom")] = d
             NOMINAL[(pc.id, "front")] = t
@@ -617,14 +621,16 @@ class Corner:
                   Vector((0, 0, 1)), Vector((0, -1, 0)), fh, ft, self.ch["fascia"], nseg=4,
                   groups=("bottom", "front", "top"), caps=(True, True))
         self.features["eave"] = (zt, -ov - ft)
-        # the gutter: zinc half-round on hooks every 700 mm, its back under the tiles' foot
-        rw = self.W["rainwater"]
-        r = rw["gutterRadiusMm"] * MM
-        gy = -ov - ft - r - 0.012
-        gz = zt - st - 0.01 + fh - 0.035
-        gx0 = xa + 0.01
-        self.gutter(gx0, self.lx, gy, gz, r, rw)
-        self.downpipe(gx0, gy, gz, r, rw)
+        # a gutter and downpipe only where the working has rainwater; the classical one has none, so the roof's
+        # water leaves each pan at the eave's drip line (tiles())
+        rw = self.W.get("rainwater")
+        if rw:
+            r = rw["gutterRadiusMm"] * MM
+            gy = -ov - ft - r - 0.012
+            gz = zt - st - 0.01 + fh - 0.035
+            gx0 = xa + 0.01
+            self.gutter(gx0, self.lx, gy, gz, r, rw)
+            self.downpipe(gx0, gy, gz, r, rw)
         # the verge's barge board, its foot over the gable's corner
         bt = vg["thickMm"] * MM * self.push["bargeThick"]
         bw = vg["boardMm"] * MM
@@ -769,7 +775,7 @@ class Corner:
             pl = F.between(*bt["pastCasingMm"], "batten", i, "left") * MM
             pr = F.between(*bt["pastCasingMm"], "batten", i, "right") * MM
             bx0, bx1 = x0 - self.cw - pl, x1 + self.cw + pr
-            tilt = math.radians(bt["outOfLevelDeg"]) * (2 * F.u("batten", i, "tilt") - 1)
+            tilt = math.radians(F.between(*bt["outOfLevelDeg"], "batten", i, "tilt")) * (1 if F.u("batten", i, "sign") < 0.5 else -1)
             pc = self.make(f"board/batten{i}", "batten", ("near", "street"), mode="rigid")
             L = Vector((math.cos(tilt), 0, math.sin(tilt))) * (bx1 - bx0)
             o = Vector((bx0, y_b, zc - w / 2))
@@ -819,8 +825,8 @@ class Corner:
             for lv in ("near", "street"):
                 a0 = -0.02 if wall == "street" else -length
                 a1 = length if wall == "street" else 0.02
-                pts = [Vector((a0, y_face + 0.022, 0.0)), Vector((a1, y_face + 0.022, 0.0)),
-                       Vector((a1, y_face + 0.022, zt)), Vector((a0, y_face + 0.022, zt))]
+                yb = y_face + pl["jointBackMm"] * MM
+                pts = [Vector((a0, yb, 0.0)), Vector((a1, yb, 0.0)), Vector((a1, yb, zt)), Vector((a0, yb, zt))]
                 key = chart(f"plinth/{wall}", (length + 0.25), zt + 0.05)
                 cuv = [(p.x - a0, p.z) for p in pts]
                 pc_m.add(lv, Face(pts, [(p.x, p.z) for p in pts], key, cuv, under=True))
@@ -945,6 +951,12 @@ class Corner:
                         local = Vector((u * cover, 0, 0)) + nrm * (hgt * roll)
                         return at + rot @ local
                     rows = (foot, head)
+                    if ci == 0 and lv == "near":
+                        # with no gutter, each pan's water leaves its foot at the eave: where it lands and how much
+                        # runs in it (the seed's: how the tile lies, claiming no history)
+                        lo = min(prof, key=lambda q: q[1])
+                        drop = pt(lo[0], lo[1], foot)
+                        self.features["drips"].append((drop.x, drop.y, 0.35 + 0.65 * F.u(tid, "flow")))
                     for k in range(len(prof) - 1):
                         (ua, ha), (ub, hb) = prof[k], prof[k + 1]
                         pts = [pt(ua, ha, rows[0]), pt(ub, hb, rows[0]), pt(ub, hb, rows[1]), pt(ua, ha, rows[1])]

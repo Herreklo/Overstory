@@ -25,8 +25,13 @@ Shader "Overstory/Finish"
         _ArrisL ("Worn arris lift, L*", Float) = 4
         _AOStrength ("Page occlusion", Range(0, 1)) = 1
         _LapDark ("Occlusion where a board meets the butt above", Range(0, 1)) = 0.65
-        _LapReach ("How far below the butt it reaches, m", Float) = 0.007
+        _LapCore ("How far below the butt it is darkest, m", Float) = 0.005
+        _LapReach ("How far below the butt it reaches, m", Float) = 0.02
+        _LipL ("A flake's curled lip, lighter by L*", Float) = 6
+        _CrackL ("The gap under its edge, darker by L*", Float) = 25
         _LapScale ("Vertex alpha's metres (corner.json lapReach)", Float) = 0.25
+        _LapPage ("The street page's metres for its lap distance (geo B)", Float) = 0.064
+        _LapStep ("How far a butt stands proud of the board under it, m", Float) = 0.013
         _DirtDull ("Dirt dulls gloss", Float) = 0.1
     }
 
@@ -37,7 +42,7 @@ Shader "Overstory/Finish"
         float4 _Tile_ST;
         float4 _TileScale;
         float _Painted, _Street, _PaintSmooth, _UnderSmooth, _NormalScale, _PaintFlat, _BoardScale;
-        float _DirtL, _WaterL, _CavityL, _ArrisL, _AOStrength, _DirtDull, _LapDark, _LapReach, _LapScale;
+        float _DirtL, _WaterL, _CavityL, _ArrisL, _AOStrength, _DirtDull, _LapDark, _LapCore, _LapReach, _LapScale, _LapPage, _LapStep, _LipL, _CrackL;
     CBUFFER_END
     ENDHLSL
 
@@ -67,6 +72,7 @@ Shader "Overstory/Finish"
             TEXTURE2D(_TileN); SAMPLER(sampler_TileN);
             TEXTURE2D(_Hist); SAMPLER(sampler_Hist);
             TEXTURE2D(_Geo); SAMPLER(sampler_Geo);
+            SamplerState os_point_clamp_lap;
             TEXTURE2D(_StreetN); SAMPLER(sampler_StreetN);
 
             struct Attributes
@@ -113,6 +119,15 @@ Shader "Overstory/Finish"
                 return L > 8.0 ? pow((L + 16.0) / 116.0, 3.0) : L / 903.3;
             }
 
+            // the lap's band (whole for its core, easing out by its reach) summed from the butt to x metres below it
+            float LapInt(float x)
+            {
+                x = max(x, 0.0);
+                float w = max(_LapReach - _LapCore, 1e-5);
+                float u = saturate((x - _LapCore) / w);
+                return min(x, _LapCore) + w * (u - u * u * u + 0.5 * u * u * u * u);
+            }
+
             half4 Frag(Varyings i) : SV_Target
             {
                 float4 tile = SAMPLE_TEXTURE2D(_Tile, sampler_Tile, i.uv.xy);
@@ -131,7 +146,12 @@ Shader "Overstory/Finish"
                 float under = max(lost, saturate(i.color.b));
 
                 float L = lerp(tile.g, tile.r, under) * 100.0;
-                L += (hist.a - 0.5) * 20.0 * _BoardScale;
+                L += (hist.a - 0.5) * 80.0 * _BoardScale;
+                // a lifted flake: its curled lip catches light on the paint's side, the gap under it is dark on the
+                // wood's, each a pixel or two across; gone once the loss becomes the page's soft mark
+                float e = t / w;
+                float edge = _Painted * (1.0 - far);
+                L += edge * (_LipL * saturate(1.0 - abs(e + 1.5) / 1.5) - _CrackL * saturate(1.0 - abs(e - 0.75)));
                 float cav = saturate((0.5 - geo.g) * 2.0);
                 float lift = saturate((geo.g - 0.5) * 2.0);
                 // bare stuff soaks unevenly, by its own breakup; paint sheds water and keeps a stain even
@@ -155,15 +175,27 @@ Shader "Overstory/Finish"
                 s.specular = 0;
                 s.smoothness = saturate(lerp(_PaintSmooth, _UnderSmooth, under) + (tn.b - 0.5) - hist.g * _DirtDull);
                 s.normalTS = nT;
-                // the page is too coarse for the dark line under each lap: the board's own corners carry how far
-                // below the butt above they sit (vertex alpha), exact across its planar face
-                float lapD = i.color.a * _LapScale;
-                float lap = 1.0 - _LapDark * exp(-lapD / _LapReach);
-                s.occlusion = lerp(1.0, geo.r, _AOStrength) * lap;
+                // how far below the butt above: the near boards' own corners carry it (vertex alpha), exact across
+                // a planar face. The street level's wall is a plane, so its page carries the signed distance to the
+                // nearest butt, read at full size (a mip would average it across the butt into a mark of nothing)
             #if defined(_OS_STREET)
-                // the street level's wall is a plane: its lap lines come from the page
-                s.occlusion *= geo.b;
+                float lapB = SAMPLE_TEXTURE2D_LOD(_Geo, os_point_clamp_lap, i.uv.zw, 0).b;
+                float lapD = (lapB - 0.5) * 2.0 * _LapPage;
+                float hasLap = step(lapB, 0.99);
+            #else
+                float lapD = i.color.a * _LapScale;
+                float hasLap = step(i.color.a, 0.999);
             #endif
+                // band and shadow are summed over the pixel's reach down the wall, so a lap keeps its whole darkness
+                // when it is narrower than a pixel
+                float3 nG = normalize(i.normalWS);
+                float3 upF = normalize(float3(0, 1, 0) - nG * nG.y);
+                float up = dot(i.positionWS, upF);
+                float fw = max(length(float2(ddx(up), ddy(up))), 1e-4);
+                float lo = lapD - 0.5 * fw, hi = lapD + 0.5 * fw;
+                // the sky's light is shut out of the lap's mouth: dark for its core, easing out by its reach
+                float lap = 1.0 - hasLap * _LapDark * (LapInt(hi) - LapInt(lo)) / fw;
+                s.occlusion = lerp(1.0, geo.r, _AOStrength) * lap;
                 s.alpha = 1;
 
                 InputData d = (InputData)0;
@@ -180,6 +212,23 @@ Shader "Overstory/Finish"
                 d.shadowMask = half4(1, 1, 1, 1);
 
                 half4 c = UniversalFragmentPBR(d, s);
+                // the butt's own shadow in the key light, exact for a straight edge at any size on screen: the step
+                // throws it down the face as far as the light's rise over its fall onto the wall
+                Light ml = GetMainLight(d.shadowCoord, d.positionWS, d.shadowMask);
+                float ln = dot(ml.direction, nG);
+                float ds = _LapStep * max(dot(ml.direction, upF), 0.0) / max(ln, 1e-3);
+                float shut = hasLap * step(0.0, ln) * saturate((min(hi, ds) - max(lo, 0.0)) / fw);
+                if (shut > 0.0)
+                {
+                    BRDFData brdf;
+                    half alpha = 1;
+                    InitializeBRDFData(s.albedo, s.metallic, s.specular, s.smoothness, alpha, brdf);
+                    half3 direct = LightingPhysicallyBased(brdf, ml, nWS, d.viewDirectionWS);
+                #if defined(_SCREEN_SPACE_OCCLUSION)
+                    direct *= CreateAmbientOcclusionFactor(d, s).directAmbientOcclusion;
+                #endif
+                    c.rgb -= direct * shut * GetMainLightShadowStrength();
+                }
                 c.rgb = MixFog(c.rgb, d.fogCoord);
                 return half4(c.rgb, 1);
             }

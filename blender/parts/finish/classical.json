@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "describes": "House 107's working: how a classical timber house of the 1820s in Stavanger was clad, trimmed, roofed and set on its stones, and how 1986's boarding was nailed over its openings. The corner generator (corner.py) reads it with 107's record (fixtures/lt1-street.json) and the pack's materials; a missing key is an error. Millimetres unless named; a pair is a range the seed draws in.",
-  "provenance": "Carried from the pack's classical working (packs/stavanger-1989/timber.json at 7fecfae, removed with the old house pipeline on 28 October) and docs/research/house-lessons.md (Measures); the bends and chamfers from docs/research/house-asset-craft.md (Recipe: house 107) and the finishing test's brief.",
+  "provenance": "Carried from the pack's classical working (packs/stavanger-1989/timber.json at 7fecfae, removed with the old house pipeline on 28 October) and docs/research/house-lessons.md (Measures); the bends and chamfers from docs/research/house-asset-craft.md (Recipe: house 107) and the finishing test's brief. The boarding's sheet and battens from photo 09 (docs/references/houses/09-pedersgata-81-derelict-1989.jpg), the archive's evidence of how Stavanger boarded empty houses in 1986 to 1989.",
   "storeyMm": 2450,
   "floorMm": 280,
   "floorOverPlinthMm": 120,
@@ -16,10 +16,17 @@
   "corner": { "widthMm": 150, "proudMm": 22, "thickMm": 32 },
   "dripBoard": { "heightMm": 130, "proudMm": 36, "slopeMm": 16 },
   "casing": {
-    "widthMm": 122, "proudMm": 25, "headMm": 210,
-    "capMm": 30, "capProudMm": 120, "capSlopeDeg": 20,
+    "widthMm": 122,
+    "proudMm": 25,
+    "headMm": 210,
+    "capMm": 30,
+    "capProudMm": 120,
+    "capSlopeDeg": 20,
     "bedMouldMm": [30, 22],
-    "sillMm": 50, "sillProudMm": 95, "hornMm": 30
+    "sillMm": 50,
+    "sillProudMm": 95,
+    "hornMm": 30,
+    "capDripMm": [10, 6]
   },
   "eaves": { "overhangMm": 140, "fasciaMm": 150, "fasciaThickMm": 28, "soffitThickMm": 20 },
   "verge": { "overhangMm": 90, "boardMm": 205, "thickMm": 32 },
@@ -30,19 +37,14 @@
     "stoneMm": [420, 1200],
     "cornerStoneMm": [700, 1000],
     "jointMm": [10, 18],
-    "faceBulgeMm": [8, 26],
-    "arrisMm": [6, 12],
+    "faceBulgeMm": [2, 6],
+    "arrisMm": [8, 14],
     "setOutMm": [-5, 7],
     "turnDeg": [-1.5, 1.5],
     "pitchDeg": [-1.5, 1.0],
-    "depthMm": 180
-  },
-  "rainwater": {
-    "material": "zinc",
-    "gutterRadiusMm": 65, "beadMm": 9, "gutterThickMm": 2,
-    "hookEveryMm": 700, "hookMm": [28, 5],
-    "pipeRadiusMm": 42, "offWallMm": 45, "clipEveryMm": 1600, "clipMm": [26, 8],
-    "outletFromEndMm": 260, "shoeMm": 170, "footMm": 160
+    "depthMm": 180,
+    "joint": "the mortar's bed is set back jointBackMm behind the stones' faces, so each joint reads as a dark line at its true width",
+    "jointBackMm": 30
   },
   "boarding": {
     "sheetThickMm": 12,
@@ -50,21 +52,43 @@
     "setBackMm": [2, 6],
     "topGapMm": [0, 30],
     "sideGapMm": [0, 8],
-    "battens": { "count": 2, "widthMm": [70, 100], "thickMm": 22, "pastCasingMm": [120, 320], "outOfLevelDeg": 1.2, "nailsPerEnd": 2 }
+    "battens": { "count": 2, "widthMm": [70, 100], "thickMm": 22, "pastCasingMm": [120, 320], "outOfLevelDeg": [1.0, 2.0], "nailsPerEnd": 2, "stock": "formwork", "sawing": "rough" },
+    "describes": "How an empty house was boarded in the late 1980s, from photo 09: a sheet in each opening inside its casing, set back from the casing's face, and two raw sawn battens nailed across it onto the casing and the cladding, each a degree or two out of level."
   },
   "push": {
-    "describes": "The style's push on true sizes (the street's shape language: deep reveals, thick trims, sills and caps that throw a shadow): factors on the working's sizes.",
-    "trimProud": 1.6, "capProud": 1.25, "capThick": 1.4, "sillProud": 1.3, "sillThick": 1.35, "bargeThick": 1.5
+    "describes": "The style's push on true sizes (the street's shape language: deep reveals, thick trims, sills and caps that throw a shadow): factors on the working's sizes; and the settled corner doubled, since its true 40 mm bends a 3 m wall by under 2 px at the street stop and would read ruler-straight.",
+    "trimProud": 1.6,
+    "capProud": 1.25,
+    "capThick": 1.4,
+    "sillProud": 1.3,
+    "sillThick": 1.35,
+    "bargeThick": 1.5,
+    "settle": 2.0
   },
   "chamferMm": {
     "describes": "Each exposed arris worn round to about 2 px at the street stop (20 m): 15 to 20 mm on the big members, about 6 mm on small ones (house-asset-craft.md, Recipe 2).",
-    "corner": 18, "casing": 15, "cap": 16, "sill": 18, "drip": 15, "fascia": 16, "barge": 18, "soffit": 6, "bedMould": 6, "batten": 6, "sheet": 2
+    "corner": 18,
+    "casing": 15,
+    "cap": 6,
+    "sill": 18,
+    "drip": 15,
+    "fascia": 16,
+    "barge": 18,
+    "soffit": 6,
+    "bedMould": 6,
+    "batten": 6,
+    "sheet": 2,
+    "capTop": 5
   },
   "bends": {
-    "describes": "Old timber moves, and every bend has a cause. The corner the house is seen from settles on its stones and the frame follows it down; the wall plate sags between the gables under the roof, most at the eave and none at the sill; the roof's thrust pushes the wall's head out. Each grows with the frame's age to a most; which corner settles is the seed's, claiming no history.",
-    "settleMmPerCentury": 25, "settleMostMm": 40,
-    "sagMmPerCentury": 62, "sagMostMm": 110,
-    "leanMmPerCentury": 16, "leanMostMm": 25,
-    "frameLengthMm": 7000
+    "describes": "Old timber moves, and every bend has a cause. The corner the house is seen from settles on its stones and the frame follows it down, the sill beam bending over settleReachMm from the corner; the wall plate sags between the gables under the roof, most at the eave and none at the sill; the roof's thrust pushes the wall's head out. Each grows with the frame's age to a most; which corner settles is the seed's, claiming no history. Sizes from house-asset-craft.md (Recipe: house 107): the eaves sag 80 to 120 mm, one corner settles 40 mm.",
+    "settleMmPerCentury": 25,
+    "settleMostMm": 40,
+    "sagMmPerCentury": 62,
+    "sagMostMm": 110,
+    "leanMmPerCentury": 16,
+    "leanMostMm": 25,
+    "frameLengthMm": 7000,
+    "settleReachMm": 1800
   }
 }

@@ -28,7 +28,7 @@ namespace Overstory.EditorTools
         const int Width = 2560, Height = 1440, Msaa = 4, WarmUp = 3;
 
         [Serializable] class Mat { public string name, tile; public int painted; public float paintSmooth, paintFlat, underSmooth; public float[] scanMetres; }
-        [Serializable] class Digest { public Mat[] mats; public float tileMetres, dirtL, waterL, cavityL, lapDark, lapReach, lapScale, groundL, groundSmooth; }
+        [Serializable] class Digest { public Mat[] mats; public float tileMetres, dirtL, waterL, cavityL, lipL, crackL, lapDark, lapCore, lapReach, lapScale, lapPage, lapStep, groundL, groundSmooth; }
 
         struct View { public string name, level; public Vector3 pos, target; public float fov; }
 
@@ -44,11 +44,11 @@ namespace Overstory.EditorTools
         struct Lighting { public string name; public Vector2 azimuth; public float elevation, sun, shadow, sky, equator, ground, exposure; }
 
         // overcast: photo 09's grey day, the sky doing the work and a weak high key for the eave's and sill's shade;
-        // low sun: raking along the street wall from the west, the gable lit full
+        // low sun: raking the street wall at 25° from the east end, so each lap throws its shadow; the gable in shade
         static readonly Lighting[] Lights =
         {
             new Lighting { name = "overcast", azimuth = new Vector2(-0.5f, -1f), elevation = 65, sun = 0.45f, shadow = 0.7f, sky = 0.95f, equator = 0.72f, ground = 0.14f, exposure = 1.6f },
-            new Lighting { name = "lowsun", azimuth = new Vector2(-1f, -0.35f), elevation = 11, sun = 2.6f, shadow = 1f, sky = 0.32f, equator = 0.24f, ground = 0.1f, exposure = -0.6f },
+            new Lighting { name = "lowsun", azimuth = new Vector2(0.906f, -0.423f), elevation = 18, sun = 2.6f, shadow = 1f, sky = 0.32f, equator = 0.24f, ground = 0.1f, exposure = 0.5f },
         };
 
         static Vector3 ToUnity(Vector3 s) => new Vector3(s.x, s.z, s.y);
@@ -96,6 +96,11 @@ namespace Overstory.EditorTools
             sun.type = LightType.Directional;
             sun.shadows = LightShadows.Soft;
             sun.color = Color.white;
+            // the narrowest filter: crisp batten and sill shadows, their edges still anti-aliased; the laps are too
+            // small for the map at a grazing light (they alias), so the shader throws their shadows itself
+            sunGo.AddComponent<UniversalAdditionalLightData>().softShadowQuality = SoftShadowQuality.Low;
+            sun.shadowBias = 1f;
+            sun.shadowNormalBias = 1f;
 
             var volumeGo = new GameObject("Volume");
             var volume = volumeGo.AddComponent<Volume>();
@@ -126,6 +131,9 @@ namespace Overstory.EditorTools
             // clay test keeps only screen-space occlusion, and restores the rest after
             var rd = AssetDatabase.LoadAssetAtPath<ScriptableRendererData>("Assets/Settings/PC_Renderer.asset");
             var was = rd.rendererFeatures.ToDictionary(f => f, f => f.isActive);
+            // one sharp cascade fitted to each view, put back after
+            var urp = (UniversalRenderPipelineAsset)GraphicsSettings.currentRenderPipeline;
+            var urpWas = (urp.shadowDistance, urp.shadowCascadeCount, urp.mainLightShadowmapResolution);
             Debug.Log($"[LT1Finish] pipeline {GraphicsSettings.currentRenderPipeline?.name}, quality {QualitySettings.names[QualitySettings.GetQualityLevel()]}");
             try
             {
@@ -142,6 +150,9 @@ namespace Overstory.EditorTools
                             kv.Value.SetActive(kv.Key == view.level);
                         cam.transform.SetPositionAndRotation(ToUnity(view.pos), Quaternion.LookRotation(ToUnity(view.target - view.pos), Vector3.up));
                         cam.fieldOfView = view.fov;
+                        urp.shadowCascadeCount = 1;
+                        urp.mainLightShadowmapResolution = 4096;
+                        urp.shadowDistance = (view.target - view.pos).magnitude + 3f;
                         foreach (var way in new[] { "A", "B", "C" })
                         {
                             Assign(levels[view.level], mats, way, view.level);
@@ -156,6 +167,7 @@ namespace Overstory.EditorTools
             {
                 foreach (var kv in was)
                     kv.Key.SetActive(kv.Value);
+                (urp.shadowDistance, urp.shadowCascadeCount, urp.mainLightShadowmapResolution) = urpWas;
             }
             Tris(levels);
         }
@@ -237,8 +249,13 @@ namespace Overstory.EditorTools
                 mat.SetFloat("_WaterL", d.waterL);
                 mat.SetFloat("_CavityL", d.cavityL);
                 mat.SetFloat("_LapDark", d.lapDark);
+                mat.SetFloat("_LapCore", d.lapCore);
+                mat.SetFloat("_LipL", d.lipL);
+                mat.SetFloat("_CrackL", d.crackL);
                 mat.SetFloat("_LapReach", d.lapReach);
                 mat.SetFloat("_LapScale", d.lapScale);
+                mat.SetFloat("_LapPage", d.lapPage);
+                mat.SetFloat("_LapStep", d.lapStep);
                 // way B's page carries no board values and no dirt: its own surface is the scan's
                 mat.SetFloat("_BoardScale", way == "B" ? 0 : 1);
                 if (level == "street")
