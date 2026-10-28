@@ -1,5 +1,5 @@
-// The finishing test's one surface (blender/parts/finish): every material of 107's corner, in clay, for all three
-// ways. UV0 reads the material's tileable (way A's made here, ways B and C's from scans), UV1 the corner's page:
+// The finishing test's one surface (blender/parts/finish): every material of 107's corner, in clay, for all its
+// ways (_OS_PAINT: way P, painted). UV0 reads the material's tileable (way A's made here, ways B and C's from scans), UV1 the corner's page:
 // its history (paint lost, dirt, water, each board's value) and its geometry (occlusion, cavity, arris). Lightness is
 // worked in CIE L*, as the marks were made, and only then turned to grey albedo: no hue anywhere.
 Shader "Overstory/Finish"
@@ -47,6 +47,26 @@ Shader "Overstory/Finish"
         _LapPage ("The street page's metres for its lap distance (geo B)", Float) = 0.064
         _LapStep ("How far a butt stands proud of the board under it, m", Float) = 0.013
         _DirtDull ("Dirt dulls gloss", Float) = 0.1
+        [Toggle(_OS_PAINT)] _Paint ("Way P: painted", Float) = 0
+        _Stroke ("Way P's strokes: R the peel's edge, G the stain's, B the lap grime's, A the boards' long strokes", 2D) = "grey" {}
+        _StrokeScale ("UV1 scale to the strokes", Float) = 8
+        _EdgeAmp ("How far a stroke moves a shape's edge, in its field", Float) = 0.5
+        _StrokeFade ("The strokes' mip from which they fade, and by which they are gone", Vector) = (3, 5.5, 0, 0)
+        _BrushL ("The long strokes' reach either side, L*", Float) = 0
+        _BrushFade ("The long strokes' mip from which they fade, and by which they are gone", Vector) = (1.5, 2.8, 0, 0)
+        _StainEdge ("How much of the strokes' break a stain's edge takes", Range(0, 1)) = 1
+        _FlatUp ("How far the light's normal is drawn up, so a face's own small forms are lit as one mass", Float) = 0
+        _RimL ("The broken paint's edge, lighter by L*", Float) = 0
+        _RimW ("How far the rim reaches from the edge, in the field", Float) = 0.04
+        _BareShift ("How much of the page's value shift bare wood takes", Range(0, 1)) = 1
+        _PaintL ("The material's value, L*", Float) = 80
+        _BareL ("Bare wood where paint is lost, L*", Float) = 40
+        _UnderL ("The under layer vertex colour B forces (mortar), L*", Float) = 20
+        _StainDL ("A stain, darker by L*", Float) = 0
+        _StainSmooth ("A stain's smoothness", Range(0, 1)) = 0.1
+        _LapGrimeL ("The lap's grime at its darkest, L*", Float) = 0
+        _LapGrimeReach ("How far below the butt the grime reaches, m", Float) = 0.045
+        _LapGrimeBreak ("How far the strokes move the grime's lower edge, as a share of its reach", Float) = 0.5
     }
 
     HLSLINCLUDE
@@ -60,6 +80,9 @@ Shader "Overstory/Finish"
         float _StainL, _TideW, _StainMottleL, _TideL, _IslandL, _GrainMip, _GrainFade;
         float4 _IslandW;
         float _FlakeScale, _HaloL, _HaloW, _HaloDull, _RunBody;
+        float _Paint, _StrokeScale, _EdgeAmp, _RimL, _RimW, _BareShift, _PaintL, _BareL, _UnderL, _StainDL, _StainSmooth;
+        float _LapGrimeL, _LapGrimeReach, _LapGrimeBreak, _BrushL, _FlatUp, _StainEdge;
+        float4 _StrokeFade, _BrushFade;
     CBUFFER_END
     ENDHLSL
 
@@ -77,6 +100,7 @@ Shader "Overstory/Finish"
             #pragma vertex Vert
             #pragma fragment Frag
             #pragma shader_feature_local _OS_STREET
+            #pragma shader_feature_local _OS_PAINT
             #pragma multi_compile _ _MAIN_LIGHT_SHADOWS _MAIN_LIGHT_SHADOWS_CASCADE
             #pragma multi_compile_fragment _ _SHADOWS_SOFT _SHADOWS_SOFT_LOW _SHADOWS_SOFT_MEDIUM _SHADOWS_SOFT_HIGH
             #pragma multi_compile_fragment _ _SCREEN_SPACE_OCCLUSION
@@ -92,6 +116,7 @@ Shader "Overstory/Finish"
             SamplerState os_point_clamp_lap;
             TEXTURE2D(_StreetN); SAMPLER(sampler_StreetN);
             TEXTURE2D(_Flake); SAMPLER(sampler_Flake);
+            TEXTURE2D(_Stroke); SAMPLER(sampler_Stroke);
 
             struct Attributes
             {
@@ -146,12 +171,69 @@ Shader "Overstory/Finish"
                 return min(x, _LapCore) + w * (u - u * u * u + 0.5 * u * u * u * u);
             }
 
+            // way P's lap grime, (1 - x / r)^2 below the butt, summed from the butt to x metres below it
+            float GrimeInt(float x, float r)
+            {
+                float u = saturate(max(x, 0.0) / r);
+                return r / 3.0 * (1.0 - (1.0 - u) * (1.0 - u) * (1.0 - u));
+            }
+
             half4 Frag(Varyings i) : SV_Target
             {
-                float4 tile = SAMPLE_TEXTURE2D(_Tile, sampler_Tile, i.uv.xy);
-                float4 tn = SAMPLE_TEXTURE2D(_TileN, sampler_TileN, i.uv.xy);
                 float4 hist = SAMPLE_TEXTURE2D(_Hist, sampler_Hist, i.uv.zw);
                 float4 geo = SAMPLE_TEXTURE2D(_Geo, sampler_Geo, i.uv.zw);
+                // how far below the butt above: the near boards' own corners carry it (vertex alpha), exact across
+                // a planar face. The street level's wall is a plane, so its page carries the signed distance to the
+                // nearest butt, read at full size (a mip would average it across the butt into a mark of nothing)
+            #if defined(_OS_STREET)
+                float lapB = SAMPLE_TEXTURE2D_LOD(_Geo, os_point_clamp_lap, i.uv.zw, 0).b;
+                float lapD = (lapB - 0.5) * 2.0 * _LapPage;
+                float hasLap = step(lapB, 0.99);
+            #else
+                float lapD = i.color.a * _LapScale;
+                float hasLap = step(i.color.a, 0.999);
+            #endif
+                // band and shadow are summed over the pixel's reach down the wall, so a lap keeps its whole darkness
+                // when it is narrower than a pixel
+                float3 nG = normalize(i.normalWS);
+                float3 upF = normalize(float3(0, 1, 0) - nG * nG.y);
+                float up = dot(i.positionWS, upF);
+                float fw = max(length(float2(ddx(up), ddy(up))), 1e-4);
+                float lo = lapD - 0.5 * fw, hi = lapD + 0.5 * fw;
+
+            #if defined(_OS_PAINT)
+                // way P, painted: each material one value, shifted only by the page's designed shapes (R the peel's
+                // field and B the stain's, each edge at 0.5; G a value shift, 0.5 + dL*/80; A the lap grime's
+                // strength). Near, the authored strokes move each edge by up to _EdgeAmp of its field, so the edge is
+                // the brush's; with distance they go and each shape keeps its own soft contour
+                float2 suv = i.uv.zw * _StrokeScale;
+                float4 st = SAMPLE_TEXTURE2D(_Stroke, sampler_Stroke, suv);
+                float lodS = CALCULATE_TEXTURE2D_LOD(_Stroke, sampler_Stroke, suv);
+                float nearP = 1.0 - saturate((lodS - _StrokeFade.x) / max(_StrokeFade.y - _StrokeFade.x, 1e-3));
+                float brush = _EdgeAmp * nearP;
+                float tP = hist.r - 0.5 + brush * (st.r - 0.5);
+                float wP = max(fwidth(tP), 1e-3);
+                float peel = _Painted * smoothstep(-wP, wP, tP);
+                // the paint's broken edge catches the light on its own side, near
+                float rim = _Painted * (1.0 - peel) * smoothstep(-wP - _RimW, -wP, tP) * nearP;
+                float tS = hist.b - 0.5 + _StainEdge * brush * (st.g - 0.5);
+                float wS = max(fwidth(tS), 1e-3);
+                float stain = smoothstep(-wS, wS, tS);
+                float L = lerp(lerp(_PaintL, _BareL, peel), _UnderL, saturate(i.color.b));
+                // the foot's dirt and the contact shade are the paint's; silvered bare wood takes only some of them
+                L += (hist.g - 0.5) * 80.0 * lerp(1.0, _BareShift, peel) + _RimL * rim - _StainDL * stain;
+                // the lap's grime: darkest under the butt, easing down the board to a lower edge the strokes break,
+                // summed over the pixel's reach down the wall as the band is
+                float gr = _LapGrimeReach * (1.0 + _LapGrimeBreak * nearP * 2.0 * (st.b - 0.5));
+                L -= hasLap * hist.a * _LapGrimeL * (GrimeInt(hi, gr) - GrimeInt(lo, gr)) / fw;
+                // near, long soft strokes along the boards let the plane breathe; gone well before the street stop
+                L += _BrushL * 2.0 * (st.a - 0.5) * (1.0 - saturate((lodS - _BrushFade.x) / max(_BrushFade.y - _BrushFade.x, 1e-3)));
+                float Y = LToY(clamp(L, 2.0, 98.0));
+                float3 nT = float3(0, 0, 1);
+                float smooth = lerp(_PaintSmooth, _StainSmooth, stain);
+            #else
+                float4 tile = SAMPLE_TEXTURE2D(_Tile, sampler_Tile, i.uv.xy);
+                float4 tn = SAMPLE_TEXTURE2D(_TileN, sampler_TileN, i.uv.xy);
 
                 // paint is lost where the page's share meets the breakup (the flake atlas's, finer, on painted faces
                 // of way A; else the tileable's); the edge anti-aliased to a pixel. Once the breakup's plates are
@@ -209,6 +291,8 @@ Shader "Overstory/Finish"
 
                 float2 nxy = (tn.rg * 2.0 - 1.0) * _NormalScale * lerp(_PaintFlat, 1.0, max(lost, 1.0 - _Painted));
                 float3 nT = float3(nxy, sqrt(saturate(1.0 - dot(nxy, nxy))));
+                float smooth = saturate(lerp(_PaintSmooth, _UnderSmooth, under) + (tn.b - 0.5) - hist.g * _DirtDull - halo * _HaloDull);
+            #endif
             #if defined(_OS_STREET)
                 float3 nP = SAMPLE_TEXTURE2D(_StreetN, sampler_StreetN, i.uv.zw).xyz * 2.0 - 1.0;
                 nT = normalize(float3(nP.xy + nT.xy, nP.z * nT.z));
@@ -216,31 +300,17 @@ Shader "Overstory/Finish"
                 float3 bit = i.tangentWS.w * cross(i.normalWS, i.tangentWS.xyz);
                 float3x3 tbn = float3x3(i.tangentWS.xyz, bit, i.normalWS);
                 float3 nWS = normalize(mul(nT, tbn));
+            #if defined(_OS_PAINT)
+                // a mass painted as one: its small forms (the pantiles' rolls) lit nearly alike
+                nWS = normalize(nWS + _FlatUp * float3(0, 1, 0));
+            #endif
 
                 SurfaceData s = (SurfaceData)0;
                 s.albedo = Y.xxx;
                 s.metallic = 0;
                 s.specular = 0;
-                s.smoothness = saturate(lerp(_PaintSmooth, _UnderSmooth, under) + (tn.b - 0.5) - hist.g * _DirtDull - halo * _HaloDull);
+                s.smoothness = saturate(smooth);
                 s.normalTS = nT;
-                // how far below the butt above: the near boards' own corners carry it (vertex alpha), exact across
-                // a planar face. The street level's wall is a plane, so its page carries the signed distance to the
-                // nearest butt, read at full size (a mip would average it across the butt into a mark of nothing)
-            #if defined(_OS_STREET)
-                float lapB = SAMPLE_TEXTURE2D_LOD(_Geo, os_point_clamp_lap, i.uv.zw, 0).b;
-                float lapD = (lapB - 0.5) * 2.0 * _LapPage;
-                float hasLap = step(lapB, 0.99);
-            #else
-                float lapD = i.color.a * _LapScale;
-                float hasLap = step(i.color.a, 0.999);
-            #endif
-                // band and shadow are summed over the pixel's reach down the wall, so a lap keeps its whole darkness
-                // when it is narrower than a pixel
-                float3 nG = normalize(i.normalWS);
-                float3 upF = normalize(float3(0, 1, 0) - nG * nG.y);
-                float up = dot(i.positionWS, upF);
-                float fw = max(length(float2(ddx(up), ddy(up))), 1e-4);
-                float lo = lapD - 0.5 * fw, hi = lapD + 0.5 * fw;
                 // the sky's light is shut out of the lap's mouth: dark for its core, easing out by its reach
                 float lap = 1.0 - hasLap * _LapDark * (LapInt(hi) - LapInt(lo)) / fw;
                 s.occlusion = lerp(1.0, geo.r, _AOStrength) * lap;

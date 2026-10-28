@@ -44,6 +44,7 @@ GLYPHS = {
     "A": ["01110", "10001", "10001", "11111", "10001", "10001", "10001"],
     "B": ["11110", "10001", "10001", "11110", "10001", "10001", "11110"],
     "C": ["01111", "10000", "10000", "10000", "10000", "10000", "01111"],
+    "P": ["11110", "10001", "10001", "11110", "10000", "10000", "10000"],
     "0": ["01110", "10011", "10101", "10101", "11001", "10001", "01110"],
     "1": ["00100", "01100", "00100", "00100", "00100", "00100", "01110"],
     "9": ["01110", "10001", "10001", "01111", "00001", "00010", "01100"],
@@ -66,43 +67,48 @@ def label(a, text, k=3):
     return a
 
 
-argv = sys.argv[sys.argv.index("--") + 1:]
-out, specs = argv[0], argv[1:]
-rows, row = [], []
-for sp in specs:
-    if sp == "/":
-        rows.append(row)
-        row = []
-        continue
-    path, crop, scale, *lab = sp.split("@")
-    a = read(path)
-    if crop != "-":
-        x, y, w, h = [int(v) for v in crop.split(",")]
-        a = a[y:y + h, x:x + w]
-    a = resize(a, float(scale))
-    row.append(label(a.copy(), lab[0]) if lab else a)
-rows.append(row)
-gap = 8
-H = sum(max(t.shape[0] for t in r) for r in rows) + gap * (len(rows) + 1)
-W = max(sum(t.shape[1] for t in r) + gap * (len(r) + 1) for r in rows)
-img = np.full((H, W, 3), 0.12)
-y = gap
-for r in rows:
-    x = gap
-    for t in r:
-        img[y:y + t.shape[0], x:x + t.shape[1]] = t
-        x += t.shape[1] + gap
-    y += max(t.shape[0] for t in r) + gap
-o = np.ones((H, W, 4), np.float32)
-o[..., :3] = img[::-1]
-im = bpy.data.images.new("m", W, H, alpha=True)
-im.colorspace_settings.name = "Non-Color"
-im.pixels.foreach_set(o.ravel())
-im.filepath_raw = out
-if out.endswith(".jpg"):
-    im.file_format = "JPEG"
-    im.save(quality=95)
-else:
-    im.file_format = "PNG"
-    im.save()
-print(f"[montage] {out} {W}x{H}")
+def main():
+    argv = sys.argv[sys.argv.index("--") + 1:]
+    out, specs = argv[0], argv[1:]
+    rows, row = [], []
+    for sp in specs:
+        if sp == "/":
+            rows.append(row)
+            row = []
+            continue
+        path, crop, scale, *lab = sp.split("@")
+        a = read(path)
+        if crop != "-":
+            x, y, w, h = [int(v) for v in crop.split(",")]
+            a = a[y:y + h, x:x + w]
+        a = resize(a, float(scale))
+        row.append(label(a.copy(), lab[0]) if lab else a)
+    rows.append(row)
+    gap = 8
+    H = sum(max(t.shape[0] for t in r) for r in rows) + gap * (len(rows) + 1)
+    W = max(sum(t.shape[1] for t in r) + gap * (len(r) + 1) for r in rows)
+    img = np.full((H, W, 3), 0.12)
+    y = gap
+    for r in rows:
+        x = gap
+        for t in r:
+            img[y:y + t.shape[0], x:x + t.shape[1]] = t
+            x += t.shape[1] + gap
+        y += max(t.shape[0] for t in r) + gap
+    o = np.ones((H, W, 4), np.float32)
+    o[..., :3] = img[::-1]
+    im = bpy.data.images.new("m", W, H, alpha=True)
+    im.colorspace_settings.name = "Non-Color"
+    im.pixels.foreach_set(o.ravel())
+    im.filepath_raw = out
+    if out.endswith(".jpg"):
+        im.file_format = "JPEG"
+        im.save(quality=95)
+    else:
+        im.file_format = "PNG"
+        im.save()
+    print(f"[montage] {out} {W}x{H}")
+
+
+if __name__ == "__main__":
+    main()

@@ -496,4 +496,5 @@ def main():
           f"dirt {dr[pg.cov].mean():.3f}; water {wt[pg.cov].mean():.3f}; wrote {out}")
 
 
-main()
+if __name__ == "__main__":
+    main()

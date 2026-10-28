@@ -11,8 +11,8 @@ using UnityEngine.Rendering.Universal;
 namespace Overstory.EditorTools
 {
     /// <summary>
-    /// The finishing test (blender/parts/finish): house 107's street corner in 1989, one mesh finished three ways in
-    /// clay (A procedural, B scanned, C both), rendered from four views in two lights:
+    /// The finishing test (blender/parts/finish): house 107's street corner in 1989, one mesh finished several ways in
+    /// clay (A procedural, B scanned, C both, P painted), rendered from four views in two lights:
     ///
     ///     Unity -batchmode -quit -projectPath unity -executeMethod Overstory.EditorTools.LT1Finish.Run -finishRound r01
     ///
@@ -29,6 +29,10 @@ namespace Overstory.EditorTools
 
         [Serializable] class Mat { public string name, tile; public int painted, authored; public float paintSmooth, paintFlat, underSmooth, stainL, tideW, stainMottleL, tideL, flakeScale, islandL, grainMip, grainFade; public float[] islandW; public float[] scanMetres; }
         [Serializable] class Digest { public Mat[] mats; public float tileMetres, dirtL, waterL, cavityL, lipL, crackL, haloL, haloW, haloDull, runBody, lapDark, lapCore, lapReach, lapScale, lapPage, lapStep, groundL, groundSmooth; }
+        // way P's digest (paint.py): each material one value, the strokes and the shapes' edges, and its own light
+        [Serializable] class PMat { public string name; public int painted; public float L, bareL, underL, stainDL, smooth, stainSmooth, brushL, flatUp, stainEdge; }
+        [Serializable] class PLight { public string light; public float exposure, elevation, sun, shadow, sky, equator, ground; public float[] azimuth; }
+        [Serializable] class Paint { public PMat[] mats; public PLight[] lights; public float strokeScale, edgeAmp, rimL, rimW, bareShift, aoStrength, lapDark, lapCore, lapReach, lapGrimeL, lapGrimeReach, lapGrimeBreak, lapPage; public float[] strokeFade, brushFade; }
 
         struct View { public string name, level; public Vector3 pos, target; public float fov; }
 
@@ -67,7 +71,9 @@ namespace Overstory.EditorTools
             foreach (var guid in AssetDatabase.FindAssets("t:Material t:VolumeProfile", new[] { Gen }))
                 AssetDatabase.DeleteAsset(AssetDatabase.GUIDToAssetPath(guid));
             var digest = JsonUtility.FromJson<Digest>(File.ReadAllText(Path.Combine(Gen, "unity.json")));
-            var mats = Materials(digest);
+            string paintPath = Path.Combine(Gen, "paint.json");
+            var paint = File.Exists(paintPath) ? JsonUtility.FromJson<Paint>(File.ReadAllText(paintPath)) : null;
+            var mats = Materials(digest, paint);
             var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
 
             var corner = new GameObject("Corner");
@@ -156,6 +162,10 @@ namespace Overstory.EditorTools
                         urp.shadowDistance = (view.target - view.pos).magnitude + 3f;
                         foreach (var way in ways)
                         {
+                            // way P is lit and exposed by its own value plan, where it names a light
+                            var own = way == "P" ? paint?.lights?.FirstOrDefault(e => e.light == light.name) : null;
+                            Light(sun, own != null ? Own(light, own) : light);
+                            adjust.postExposure.Override(own != null ? own.exposure : light.exposure);
                             Assign(levels[view.level], mats, way, view.level);
                             string file = Path.Combine(outDir, $"{view.name}-{light.name}-{way}.png");
                             Capture(cam, file);
@@ -191,7 +201,7 @@ namespace Overstory.EditorTools
                 string path = AssetDatabase.GUIDToAssetPath(guid);
                 var ti = (TextureImporter)AssetImporter.GetAtPath(path);
                 string n = Path.GetFileNameWithoutExtension(path);
-                bool tile = n.StartsWith("tile-") || n.StartsWith("scan-");
+                bool tile = n.StartsWith("tile-") || n.StartsWith("scan-") || n.StartsWith("paint-");
                 ti.textureType = TextureImporterType.Default;
                 ti.sRGBTexture = false;
                 ti.alphaSource = TextureImporterAlphaSource.FromInput;
@@ -223,7 +233,7 @@ namespace Overstory.EditorTools
         }
 
         /// <summary>One material for each of the corner's materials, way and level.</summary>
-        static Dictionary<string, Material> Materials(Digest d)
+        static Dictionary<string, Material> Materials(Digest d, Paint p)
         {
             var shader = Shader.Find("Overstory/Finish");
             var tex = (Func<string, Texture2D>)(n => AssetDatabase.LoadAssetAtPath<Texture2D>($"{Gen}/{n}.png"));
@@ -284,6 +294,55 @@ namespace Overstory.EditorTools
                 AssetDatabase.CreateAsset(mat, $"{Gen}/mat-{key}.mat");
                 outp[key] = mat;
             }
+            if (p == null)
+                return outp;
+            foreach (var level in new[] { "near", "street" })
+            foreach (var m in p.mats)
+            {
+                var mat = new Material(shader);
+                mat.SetFloat("_Paint", 1);
+                mat.EnableKeyword("_OS_PAINT");
+                mat.SetTexture("_Hist", tex("hist-p"));
+                mat.SetTexture("_Geo", tex("geo"));
+                mat.SetTexture("_StreetN", tex("street-normal"));
+                mat.SetTexture("_Stroke", tex("paint-stroke"));
+                mat.SetFloat("_StrokeScale", p.strokeScale);
+                mat.SetFloat("_EdgeAmp", p.edgeAmp);
+                mat.SetVector("_StrokeFade", new Vector4(p.strokeFade[0], p.strokeFade[1], 0, 0));
+                mat.SetVector("_BrushFade", new Vector4(p.brushFade[0], p.brushFade[1], 0, 0));
+                mat.SetFloat("_BrushL", m.brushL);
+                mat.SetFloat("_FlatUp", m.flatUp);
+                mat.SetFloat("_StainEdge", m.stainEdge);
+                mat.SetFloat("_RimL", p.rimL);
+                mat.SetFloat("_RimW", p.rimW);
+                mat.SetFloat("_BareShift", p.bareShift);
+                mat.SetFloat("_Painted", m.painted);
+                mat.SetFloat("_PaintL", m.L);
+                mat.SetFloat("_BareL", m.bareL);
+                mat.SetFloat("_UnderL", m.underL);
+                mat.SetFloat("_StainDL", m.stainDL);
+                mat.SetFloat("_PaintSmooth", m.smooth);
+                mat.SetFloat("_StainSmooth", m.stainSmooth);
+                mat.SetFloat("_AOStrength", p.aoStrength);
+                mat.SetFloat("_LapDark", p.lapDark);
+                mat.SetFloat("_LapCore", p.lapCore);
+                mat.SetFloat("_LapReach", p.lapReach);
+                mat.SetFloat("_LapGrimeL", p.lapGrimeL);
+                mat.SetFloat("_LapGrimeReach", p.lapGrimeReach);
+                mat.SetFloat("_LapGrimeBreak", p.lapGrimeBreak);
+                // the geometry's own facts are the same for every way
+                mat.SetFloat("_LapScale", d.lapScale);
+                mat.SetFloat("_LapPage", p.lapPage);
+                mat.SetFloat("_LapStep", d.lapStep);
+                if (level == "street")
+                {
+                    mat.SetFloat("_Street", 1);
+                    mat.EnableKeyword("_OS_STREET");
+                }
+                string key = $"P-{level}-{m.name}";
+                AssetDatabase.CreateAsset(mat, $"{Gen}/mat-{key}.mat");
+                outp[key] = mat;
+            }
             return outp;
         }
 
@@ -315,6 +374,13 @@ namespace Overstory.EditorTools
             Physics.SyncTransforms();
             Debug.Log($"[LT1Finish] corner oriented: cladding now at {clad.bounds.center}");
         }
+
+        // way P's own light where its plan gives one whole, else the light with only P's exposure
+        static Lighting Own(Lighting l, PLight p) => p.azimuth == null || p.azimuth.Length != 2 ? l : new Lighting
+        {
+            name = l.name, azimuth = new Vector2(p.azimuth[0], p.azimuth[1]), elevation = p.elevation, sun = p.sun,
+            shadow = p.shadow, sky = p.sky, equator = p.equator, ground = p.ground, exposure = p.exposure,
+        };
 
         static void Light(Light sun, Lighting l)
         {
