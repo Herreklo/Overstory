@@ -4,27 +4,16 @@ What is true today and what is next, in under 500 words. History is in `docs/exp
 
 ## The test (Øystein, 27 October)
 
-Can the town be affected by its people and its environment over the years? Understory tells the inner story (friendships, goals, dreams, personalities). Overstory reflects it, so together they make a living world that can carry different kinds of games. Meanwhile it must look stunning, and stunning can mean many things (`CLAUDE.md`, What it is for).
+Can the town be affected by its people and its environment over the years, and look stunning meanwhile (`CLAUDE.md`, What it is for)?
 
-## Where we are (27 October, evening)
+## Where we are (28 October)
 
-- **Øystein's decision (27 October): build one amazing-looking town, "to see if we are able to".** LT1's town, Harbour Row and the town above it, at one moment, judged from the city camera, built from facts through the generators so it can be shown ten years on next. It runs in its own session; report and stills in `reviews/lt1/town/`.
-- **Step 1, the picture first, failed (r34–r36, 28 October):** light and air can't carry boxes; the houses are what reads as a toy. **Øystein's decision (28 October): one house, to see if we are able to build something good.** Sjøhus 109, made properly and judged in the engine from all four views beside Sohlberg, the Stavanger photos, Dredge and Tiny Glade; the coordinator looks at every render before the next change. Session: "One house to the bar: sjøhus 109". **After it (Øystein, 28 October): "do the same with a little house. do it with great care. look to how games actually do it."** House 107, the fisherman's cottage of 1828, built by the production craft in `docs/research/house-asset-craft.md`.
-- **Clay first, colour last (Øystein, 28 October).** Every kind (houses, ground, rock, trees, water) is made in clay: each material at its own lightness in grey, with real relief and gloss, under the best designed light. Colour goes on everything in one pass, only once a small clay ensemble holds from all four views (two houses, a tree, ground with rock, the quay with water).
-- **The review behind it:** code-built work is strong at architecture from facts, light and systems, and weak at close-range organic form and fine detail. Good-looking work gets its look from shape, light, palette and many small meaningful things, seen from the views it was made for.
-- **The style stays** (`reviews/lt1/art-direction/README.md`, painterly realism in Stålenhag's line, stylised hard); its frame was judged from one camera only, so the town is its real test.
-- **The painted corner:** a hook for elements, a scene (`unity/Assets/Experiments/LT1/Corner/LT1_PaintedCorner.unity`), an app (`unity/Builds/PaintedCorner/`) and a rebuild script (`tools/painted_corner.py`). The app still has half-made elements in it: grass in the sky, a void ground, floating houses. It does not go to Øystein again until it holds from every view.
-- **The paused elements,** each at a pushed point and none judged:
-  - the houses as hero assets (handover: `reviews/lt1/houses/hero/handover.md`);
-  - trees `5074681`;
-  - growth `5041e3e`;
-  - rock and ground `b56d316`.
-
-## Rules learned this week
-
-- Every element is judged from all four views (eye level, the street stop, 12 m, high), never from one camera.
-- Nothing goes to Øystein that the coordinator has not looked at from all four.
-- Make, look, fix, with no admin (`CLAUDE.md`, How work runs).
+- **The town failed, then one house (109) did not reach the bar.** Light and air could not carry box houses (r34–r36), and 109's three rounds read as CAD.
+- **Øystein's decision (28 October): start the building completely from scratch, keeping the learnings.** "You keep on adding too many triangles ... the finishing you can not do." The old house code, the painted corner and the town's code left HEAD; git keeps them. What they taught is in `docs/research/house-lessons.md`; how games build a house is in `docs/research/house-asset-craft.md`.
+- **Now: the finishing test.** One corner of house 107 (1828, boarded and left in 1986), built the games' way (mid-poly, real chamfers, at most 3,000 triangles) and finished three ways: our own procedural marks, CC0 scans pushed into our style, and both. Judged in clay beside `docs/references/houses/09-pedersgata-81-derelict-1989.jpg` from all four views; the coordinator looks at every round. If one way holds, 107 is built that way, alone in its own scene. If none holds after three rounds, stop: a bigger decision for Øystein (style, tools or bases). Session: "Finishing test: one corner of house 107".
+- **Clay first, colour last (Øystein, 28 October).** Every kind is made in clay, each material at its own lightness in grey with real relief and gloss. Colour goes on everything in one pass once a clay ensemble holds from all four views (two houses, a tree, ground with rock, the quay with water).
+- **The style stays** (`reviews/lt1/art-direction/README.md`, painterly realism in Stålenhag's line, stylised hard).
+- **The paused elements,** each at a pushed point and none judged: trees `5074681`, growth `5041e3e`, rock and ground `b56d316`. With the corner gone, rock, ground and growth have no Unity scene until the clay ensemble hosts them.
 
 ## Held until the direction is set
 
