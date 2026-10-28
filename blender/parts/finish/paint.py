@@ -3,10 +3,13 @@
     Blender -b --factory-startup -P blender/parts/finish/paint.py -- --gen <corner.py's out> --cache cache/finish
 
 Writes into <cache>/out:
-  hist-p.png        1,024 square, 8 bits, linear: R the peel's field and B the stain's, each shape's edge at 0.5 and
-                    ramped over its `soft` either side, so a stroke can move the edge; G a value shift, 0.5 + dL*/80
-                    (the foot's gradient, lighter tops, contact shade, the battens' end grain, the nails' heads, a
-                    few tiles); A the lap grime's strength
+  hist-p.png        1,024 square, 8 bits, linear: R the peel's field and B the stain's (the foot's dirt among them),
+                    each shape's edge at 0.5 and ramped over its `soft` either side, so a stroke can move the edge; G
+                    a value shift, 0.5 + dL*/(2 dlRange) (the wall's gradient, the washes, the darks at every
+                    junction, lighter tops, the battens' end grain, the nails' heads, a few tiles); A the lap grime's
+                    strength
+  hist-p2.png       1,024 square: R the long washes, 0 to 1 of the darkest's L* (on the paint and the bare wood
+                    alike: water darkens both), where the brush drags down them near
   paint-stroke.png  the authored strokes, 1 m square, tiling: R, G and B three sets of short flat brush strokes along
                     u, each its own value, which break the peel's, the stain's and the lap grime's edges near; A long
                     soft strokes along the boards, which let a plane breathe near and are gone by the street stop
@@ -46,11 +49,15 @@ def wave(pg, k, cell, t=None):
 
 def board_patch(pg, Q, k, on, a0, a1, butt, top, share):
     """Paint lost on one board from its butt up `share` of its face, between a0 and a1 along: its foot the butt
-    itself, its top edge drawn freehand, its ends ramped so the strokes break them."""
-    W = Q["peel"]["wobble"]
+    itself, its top edge drawn freehand, its ends torn along the grain and drawing in as they rise, ramped so the
+    strokes break them."""
+    W, En = Q["peel"]["wobble"], Q["peel"]["ends"]
     h = (top - butt) * share
     edge = butt + h * (1.0 - W["share"] * 0.5 * (1.0 + wave(pg, k, W["cell"])))
-    sd = np.minimum(np.minimum(pg.along - a0, a1 - pg.along), edge - pg.z)
+    rise = np.clip(pg.z - butt, 0.0, None)
+    e0 = a0 + En["lean"] * rise + En["amp"] * wave(pg, HS.h(k, "e0"), En["cell"], pg.z)
+    e1 = a1 - En["lean"] * rise + En["amp"] * wave(pg, HS.h(k, "e1"), En["cell"], pg.z)
+    sd = np.minimum(np.minimum(pg.along - e0, e1 - pg.along), edge - pg.z)
     return np.where(on & (pg.z >= butt) & (pg.z < top), field(sd, Q["peel"]["soft"]), 0.0)
 
 
@@ -76,6 +83,23 @@ def broad_splash(pg, Q, meta, splash):
     for x, _, flow in meta["features"]["drips"]:
         broad = np.maximum(broad, flow * MK.gauss(pg.along - x, Q["foot"]["splashWidth"]))
     return np.where(pg.street, broad, splash)
+
+
+def foot_top(pg, Q, meta, broad):
+    """The foot's dirt: its top edge, painted freehand, higher under the drips that carry most."""
+    Fo = Q["foot"]
+    k = key(meta, "p-foot")
+    top = meta["heights"]["drip"][1] + Fo["height"] * (1.0 - Fo["splash"] + Fo["splash"] * broad)
+    for i, (amp, cell) in enumerate(Fo["rag"]):
+        top = top + amp * wave(pg, HS.h(k, i), cell)
+    return top
+
+
+def junction(d, base, to, reach):
+    """A junction's dark, as a shift: the value `base` drawn down to `to` at the junction, easing back over `reach`;
+    nothing on its far side, and nothing where the value is darker already."""
+    w = np.where(d >= -0.002, 1.0 - FL.smoothstep(0.0, reach, d), 0.0)
+    return w * np.maximum(base - to, 0.0)
 
 
 def peel(pg, Q, meta, side):
@@ -177,16 +201,18 @@ def boarding(Q, which=None):
     return Bd[which or Bd["use"]]
 
 
-def stains(pg, Q, meta, side, broad):
-    """The stain field, shapes with a found edge: rust under some of the battens' nails, the boarding's damp strip
-    down its leaking side (its one edge on the sheet; its others the sheet's own, under the casing), and the plinth's
-    wet margin."""
+def stains(pg, Q, meta, side, broad, foot):
+    """The stain field, shapes with a found edge: the foot's dirt on the boards, its top ragged; rust under some of
+    the battens' nails; the boarding's damp strip down its leaking side (its one edge on the sheet; its others the
+    sheet's own, under the casing); and the plinth's wet margin."""
     f = meta["features"]
     out = np.zeros(pg.shape)
 
     def add(g):
         nonlocal out
         out = np.maximum(out, g)
+    zf = meta["heights"]["drip"][1]
+    add(np.where(pg.m["cladding"] & pg.vertical & (pg.z >= zf - 0.005), field(foot - pg.z, Q["foot"]["soft"]), 0.0))
     # rust under some of the battens' nails, down the batten and the casing below it
     Ru = Q["rust"]
     k = key(meta, "p-rust")
@@ -209,46 +235,56 @@ def stains(pg, Q, meta, side, broad):
     return out
 
 
-def wall_tops(pg, mask, cell=0.02):
-    """Each wall's top above every point along it (the street wall's eave, the gable's rising verge)."""
-    tops = np.zeros(pg.shape)
+def edges(pg, mask, top=True, cell=0.02):
+    """The top (or the foot) of what `mask` covers above every point along each wall: the street wall's eave, the
+    gable's rising verge, a batten's lower edge."""
+    out = np.zeros(pg.shape)
     for face in (pg.street, ~pg.street):
         m = mask & face & pg.cov
         if not m.any():
             continue
         lo = pg.along[m].min()
         bins = np.clip(((pg.along - lo) / cell).astype(np.int64), 0, None)
-        top = np.full(bins[m].max() + 1, -np.inf)
-        np.maximum.at(top, bins[m], pg.z[m])
-        idx = np.arange(len(top))
-        ok = np.isfinite(top)
-        top = np.interp(idx, idx[ok], top[ok])
-        tops = np.where(face, top[np.clip(bins, 0, len(top) - 1)], tops)
-    return tops
+        e = np.full(bins[m].max() + 1, -np.inf if top else np.inf)
+        (np.maximum if top else np.minimum).at(e, bins[m], pg.z[m])
+        idx = np.arange(len(e))
+        ok = np.isfinite(e)
+        e = np.interp(idx, idx[ok], e[ok])
+        out = np.where(face, e[np.clip(bins, 0, len(e) - 1)], out)
+    return out
 
 
-def values(pg, Q, meta, side, broad, board):
-    """The value shifts, dL*: broad washes first (the whole wall lighter under the eave's contact band and falling to
-    its foot, the foot's dirt, a soft wash widening under the sill, one broad tapering wash from each horn, the
-    boarding's damp), then the small: tops lighter, contact shade, the battens' end grain and the nails' heads, the
-    sheets' join, a few tiles lit."""
+def values(pg, Q, meta, side, broad, board, foot, sn):
+    """The value shifts, dL*, and the washes' strength: broad washes first (the wall's big gradient, its contact band
+    under the eave down to the body and the foot's dirt below it, a soft wash widening under the sill, one long wash
+    from each horn and one from the head's leaking end, the boarding's damp), then the darks at every junction
+    (under the eave, the sill and each batten, the boards onto the drip board, the plinth under it and onto the
+    ground), then the small: tops lighter, contact shade, the battens' end grain and the nails' heads, the sheets'
+    join, a few tiles lit."""
     f, h = meta["features"], meta["heights"]
     dl = np.zeros(pg.shape)
+    streak = np.zeros(pg.shape)
+    clad = pg.m["cladding"] & pg.vertical
     wall = (pg.m["cladding"] | pg.m["trims"]) & pg.vertical
-    # the wall carries the light: lighter under the eave's band, falling to the foot
-    top = wall_tops(pg, pg.m["cladding"] & pg.vertical)
+    stone = pg.m["stone"] & pg.vertical
+    J = Q["junction"]
+    # the wall's body a little lighter toward its top; under the eave a contact band, dark at the eave and fading
+    # down to the body
+    top = edges(pg, clad)
     zf = h["drip"][1]
     t = np.clip((pg.z - zf) / np.maximum(top - zf, 0.1), 0.0, 1.0)
     Wl = Q["wall"]
     dl += np.where(wall, Wl["footL"] + (Wl["topL"] - Wl["footL"]) * FL.smoothstep(0.0, 1.0, t), 0.0)
     E = Q["eave"]
-    dl -= np.where(wall, E["L"] * (1.0 - FL.smoothstep(0.0, E["reach"], top - pg.z)) ** 1.5, 0.0)
-    # the foot's dirt rises higher under the drips that carry most, in one broad swell each
+    d = top - pg.z
+    dl -= np.where(wall & (d >= -0.002), E["L"] * (1.0 - FL.smoothstep(0.0, E["reach"], d)) ** E["power"], 0.0)
+    # the foot's dirt (the boards' share is the stain field's): darker still toward the drip board; on the trims, the
+    # same zone as a value
     Fo = Q["foot"]
-    reach = Fo["reach"] * (1.0 - Fo["splash"] + Fo["splash"] * broad)
-    t = np.clip((pg.z - zf) / reach, 0.0, 1.0)
-    dl -= np.where(wall, Fo["L"] * (1.0 - t) ** Fo["power"], 0.0)
-    dl -= np.where(pg.m["stone"] & pg.vertical, Fo["plinthL"] * (1.0 - np.clip(pg.z / h["plinth"], 0.0, 1.0)), 0.0)
+    t = np.clip((pg.z - zf) / np.maximum(foot - zf, 0.05), 0.0, 1.0)
+    dl -= np.where(clad & (pg.z < foot), Fo["L"] * (1.0 - t) ** Fo["power"], 0.0)
+    dl -= np.where(pg.m["trims"] & pg.vertical, Fo["trimL"] * field(foot - pg.z, Fo["soft"]), 0.0)
+    dl -= np.where(stone, Fo["plinthL"] * (1.0 - np.clip(pg.z / h["plinth"], 0.0, 1.0)), 0.0)
     # under the sill, the water it sheds: a soft wash widening down
     sx0, sx1, z_sill, _ = f["sill"]
     Sw = Q["sillWash"]
@@ -256,23 +292,28 @@ def values(pg, Q, meta, side, broad, board):
     hw = (sx1 - sx0) / 2.0 + Sw["spread"] * below
     across = MK.soft_box(pg.along - (sx0 + sx1) / 2.0, -hw, hw, Sw["soft"])
     fall = (1.0 - np.clip(below / Sw["reach"], 0.0, 1.0)) ** 1.5
-    dl -= np.where(pg.m["cladding"] & pg.vertical & pg.street & (pg.z < z_sill), Sw["L"] * across * fall, 0.0)
-    # from each horn, one broad wash down the boards: widest and darkest at its head, tapering as it fades; its
-    # outer side a found edge, its inner side lost
+    dl -= np.where(clad & pg.street & (pg.z < z_sill), Sw["L"] * across * fall, 0.0)
+    # three long washes, each one continuous: from each horn down the boards and over the drip board's face, and from
+    # the head's leaking end down beside the casing to its horn. Widest and darkest at the head, tapering as each
+    # fades; its outer side a found edge, its inner side lost
     Wa = Q["wash"]
-    for name, (horn, out_dir) in zip(("leak", "dry"), horns(meta, side)):
+    (leak, lo), (dry, do) = horns(meta, side)
+    below_sill = (clad | (pg.m["trims"] & pg.vertical & (pg.z < zf + 0.003))) & pg.street & (pg.z < z_sill)
+    beside = clad & pg.street & (pg.z < h["head"]) & (pg.z > f["casing"][2])
+    for name, horn, out_dir, z0, on in (("leak", leak, lo, z_sill, below_sill), ("dry", dry, do, z_sill, below_sill),
+                                        ("cap", leak, lo, h["head"], beside)):
         S = Wa[name]
         k = key(meta, "p-wash", name)
-        d = np.clip(z_sill - pg.z, 0.0, None)
+        d = np.clip(z0 - pg.z, 0.0, None)
         tt = np.clip(d / S["length"], 0.0, 1.0)
         x = horn - out_dir * Wa["inset"] + Wa["wanderMm"] / 1000.0 * wave(pg, k, 0.15, d)
         w = S["width"] * (1.0 - S["taper"] * tt)
         s = out_dir * (pg.along - x) / w
         across = np.where(s > 0, 1.0 - FL.smoothstep(1.0 - S["found"], 1.0, s), np.exp(-s * s))
-        on = pg.m["cladding"] & pg.vertical & pg.street & (pg.z < z_sill)
-        dl -= np.where(on, S["L"] * across * (1.0 - tt) ** S["power"], 0.0)
-    # the boarding holds water: darkest at its head and down its leaking side, above the lower batten and at the sill;
-    # one soft wash
+        g = np.where(on, across * (1.0 - tt) ** S["power"], 0.0)
+        streak = np.maximum(streak, S["L"] * g)
+    # the boarding holds water: darkest at its head and down its leaking side and at the sill, in one soft wash; a
+    # band of its own above the lower batten
     Bw = board["wash"]
     sheet = pg.m["sheet"]
     ab0, ab1, zb0, zb1 = f["sheets"][:4]
@@ -284,13 +325,41 @@ def values(pg, Q, meta, side, broad, board):
     lowness = np.clip(0.5 - np.sign(slope) * (pg.along - (bx0 + bx1) / 2.0) / max(bx1 - bx0, 1e-3), 0.0, 1.0)
     bat = np.where(pg.z > zl - 0.01, 1.0 - FL.smoothstep(0.0, Bw["batten"] * (1.0 + Bw["lowEnd"] * lowness), pg.z - zl), 0.0)
     sill = 1.0 - FL.smoothstep(0.0, Bw["sill"], pg.z - zb0)
-    wash = 1.0 - (1.0 - head) * (1.0 - lk) * (1.0 - 0.7 * bat) * (1.0 - 0.6 * sill)
-    dl -= np.where(sheet, Bw["L"] * wash, 0.0)
+    wash = 1.0 - (1.0 - head) * (1.0 - lk) * (1.0 - 0.6 * sill)
+    dl -= np.where(sheet, np.maximum(Bw["L"] * wash, Bw["batL"] * bat), 0.0)
+    # the small
     dl += np.where((pg.m["trims"] | pg.m["stone"] | pg.m["batten"]) & pg.up, Q["up"]["L"], 0.0)
     C = Q["contact"]
     occ = 1.0 - pg.ao
     shut = np.clip(1.0 - pg.cav, 0.0, 1.0)
     dl -= C["L"] * FL.smoothstep(C["ao"][0], C["ao"][1], occ) + C["cavL"] * FL.smoothstep(C["cav"][0], C["cav"][1], shut)
+    # the darks at every junction, each drawn down to its own value from what the paint is there
+    mats = dict(Q["materials"], sheet=board["sheet"], batten=board["batten"])
+    base = np.zeros(pg.shape)
+    for name, v in mats.items():
+        base = np.where(pg.m[name], v["L"] - v.get("stainDL", 0.0) * (sn > 0.5), base)
+
+    def down(mask, d, to, reach):
+        nonlocal dl
+        dl -= np.where(mask, junction(d, base + dl, to, reach), 0.0)
+    down(wall, top - pg.z, J["eave"]["to"], J["eave"]["reach"])
+    down(clad & pg.street & (MK.soft_box(pg.along, sx0, sx1, 0.015) > 0.5), z_sill - pg.z, J["sill"]["to"], J["sill"]["reach"])
+    for v in meta["pieces"]:
+        if v["mat"] != "batten":
+            continue
+        b = (pg.piece == v["i"]) & pg.vertical
+        if not (b & pg.cov).any():
+            continue
+        foot_b = edges(pg, b, top=False)
+        a0, a1 = pg.along[b & pg.cov].min(), pg.along[b & pg.cov].max()
+        under = pg.street & (pg.along > a0) & (pg.along < a1)
+        dB = foot_b - pg.z
+        down(wall & ~b & under, dB, J["batten"]["to"], J["batten"]["reach"])
+        down(sheet & under, dB, J["batten"]["sheetTo"], J["batten"]["reach"])
+    down(sheet, zb1 - pg.z, J["head"]["to"], J["head"]["reach"])
+    down(clad, pg.z - zf, J["drip"]["to"], J["drip"]["reach"])
+    down(stone, h["drip"][0] - pg.z, J["plinth"]["to"], J["plinth"]["reach"])
+    down(stone, pg.z, J["ground"]["to"], J["ground"]["reach"])
     # the battens: end grain drinks and darkens; the nails' heads
     Bt = Q["batten"]
     bat = pg.m["batten"]
@@ -315,7 +384,7 @@ def values(pg, Q, meta, side, broad, board):
     u = FL.unit(key(meta, "p-tile"), pg.piece)
     v = FL.unit(key(meta, "p-tile-v"), pg.piece)
     dl += np.where(pg.m["tiles"] & (u < T["share"]), T["L"] * (0.5 + 0.5 * v), 0.0)
-    return dl
+    return dl, streak / max(Wa[n]["L"] for n in ("leak", "dry", "cap"))
 
 
 def grime(pg, Q, meta, side):
@@ -324,16 +393,17 @@ def grime(pg, Q, meta, side):
     L = Q["lap"]
     f, h = meta["features"], meta["heights"]
     sx0, sx1, z_sill, _ = f["sill"]
-    foot = 1.0 - np.clip((pg.z - h["drip"][1]) / Q["foot"]["reach"], 0.0, 1.0)
+    foot = 1.0 - np.clip((pg.z - h["drip"][1]) / Q["foot"]["height"], 0.0, 1.0)
     sill = MK.soft_box(pg.along, sx0 - 0.1, sx1 + 0.1, L["sillSoft"]) * MK.soft_box(pg.z, z_sill - 0.35, z_sill, L["sillSoft"]) * pg.street
     a = L["base"] + L["foot"] * foot + L["sill"] * sill
     return np.where(pg.m["cladding"] & pg.vertical, np.clip(a, 0.0, 1.0), 0.0)
 
 
-def lay(n, px, k, cover, length, width, angle, taper, soft):
+def lay(n, px, k, cover, length, width, angle, taper, soft, dry=0.0):
     """Strokes laid in a painter's order on a tiling square of `n` pixels, `px` metres each, until they cover it
     `cover` times: along u, up to `angle` off it, `length` and `width` ranges in metres, each stroke flat at its own
-    value, the brush loaded at its start and running dry to a narrower end, its edge `soft` pixels."""
+    value, the brush loaded at its start and running dry to a narrower end (losing `dry` of its cover by then), its
+    edge `soft` pixels."""
     cv = np.full((n, n), 0.5)
     area, i = 0.0, 0
     (l0, l1), (w0, w1) = length, width
@@ -353,7 +423,7 @@ def lay(n, px, k, cover, length, width, angle, taper, soft):
         t = -dx * math.sin(ang) + dy * math.cos(ang)
         hw = wd / 2.0 * (1.0 - taper * np.clip((s + ln / 2.0) / ln, 0.0, 1.0))
         d = np.hypot(np.maximum(np.abs(s) - ln / 2.0, 0.0), t) - hw
-        a = np.clip(0.5 - d / (soft * px), 0.0, 1.0)
+        a = np.clip(0.5 - d / (soft * px), 0.0, 1.0) * (1.0 - dry * np.clip((s + ln / 2.0) / ln, 0.0, 1.0))
         ri, ci = Y % n, X % n
         cv[ri, ci] = cv[ri, ci] * (1.0 - a) + u("v") * a
         area += ln * wd
@@ -375,7 +445,7 @@ def strokes(Q, meta):
                               S["angleDeg"], S["taper"], S["softPx"])
         print(f"[paint] strokes {'RGB'[ch]}: {i}")
     out[..., 3], i = lay(n, px, key(meta, "p-brush"), Bh["cover"], mm(Bh["lengthMm"]), mm(Bh["widthMm"]),
-                         Bh["angleDeg"], Bh["taper"], Bh["softPx"])
+                         Bh["angleDeg"], Bh["taper"], Bh["softPx"], Bh["dry"])
     print(f"[paint] brush A: {i}")
     return out
 
@@ -396,13 +466,17 @@ def main():
     board = boarding(Q, which)
 
     broad = broad_splash(pg, Q, meta, MK.drip_splash(pg, P, meta))
+    foot = foot_top(pg, Q, meta, broad)
     pl = peel(pg, Q, meta, side)
-    sn = stains(pg, Q, meta, side, broad)
-    dl = values(pg, Q, meta, side, broad, board)
+    sn = stains(pg, Q, meta, side, broad, foot)
+    dl, streak = values(pg, Q, meta, side, broad, board, foot, sn)
     gr = grime(pg, Q, meta, side)
-    hist = np.stack([pl, 0.5 + np.clip(dl, -40, 40) / 80.0, sn, gr], axis=-1)
+    rng = Q["dlRange"]
+    hist = np.stack([pl, 0.5 + np.clip(dl, -rng, rng) / (2.0 * rng), sn, gr], axis=-1)
     hist = FL.dilate(np.where(pg.cov[..., None], hist, 0), pg.cov, pad + 2)
     FL.write(os.path.join(out, "hist-p.png"), hist)
+    h2 = np.stack([streak, np.zeros(pg.shape), np.zeros(pg.shape)], axis=-1)
+    FL.write(os.path.join(out, "hist-p2.png"), FL.dilate(np.where(pg.cov[..., None], h2, 0), pg.cov, pad + 2))
     FL.write(os.path.join(out, "paint-stroke.png"), strokes(Q, meta))
 
     E, L = Q["edge"], Q["lap"]
@@ -417,8 +491,10 @@ def main():
                  for k, v in mats.items()],
         "lights": [dict(v, light=k) for k, v in Q["light"].items()],
         "strokeScale": meta["page"]["size"] / meta["page"]["pxPerM"] / Q["stroke"]["metres"],
-        "edgeAmp": E["amp"], "strokeFade": E["fadeLod"], "brushFade": Q["brush"]["fadeLod"], "rimL": E["rimL"],
-        "rimW": E["rimW"], "bareShift": E["bareShift"],
+        "edgeAmp": E["amp"], "strokeFade": E["fadeLod"], "brushFade": Q["brush"]["fadeLod"], "brushFar": Q["brush"]["far"],
+        "dragL": Q["drag"]["L"], "dragScale": Q["drag"]["scale"], "dlRange": Q["dlRange"], "rimL": E["rimL"],
+        "rimW": E["rimW"], "rimFar": E["rimFar"], "rimBreak": E["rimBreak"], "bareShift": E["bareShift"],
+        "washL": max(Q["wash"][n]["L"] for n in ("leak", "dry", "cap")),
         "aoStrength": Q["aoStrength"], "lapDark": L["occlusion"], "lapCore": L["occCoreMm"] / 1000.0,
         "lapReach": L["occReachMm"] / 1000.0, "lapGrimeL": L["grimeL"], "lapGrimeReach": L["reach"],
         "lapGrimeBreak": L["break"], "lapPage": sh["lapPageMm"] / 1000.0,
@@ -427,7 +503,8 @@ def main():
     painted = pg.m["cladding"] | pg.m["trims"]
     share = lambda m: float((m & pg.cov).sum()) / max(1, int((painted & pg.cov).sum()))  # noqa: E731
     print(f"[paint] side {side:+.0f}; boarding {which}; peeled {share(painted & (pl > 0.5)):.3f} of the paint; "
-          f"stained {share(sn > 0.5):.3f}; dL {np.percentile(dl[pg.cov], [5, 50, 95]).round(1)}; wrote {out}")
+          f"stained {share(sn > 0.5):.3f}; dL {np.percentile(dl[pg.cov], [1, 5, 50, 95]).round(1)}, "
+          f"beyond {rng}: {float((np.abs(dl[pg.cov]) > rng).mean()):.4f}; wrote {out}")
 
 
 if __name__ == "__main__":

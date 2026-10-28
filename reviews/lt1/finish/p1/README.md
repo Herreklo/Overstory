@@ -4,88 +4,97 @@ House 107's corner in 1989, painted as a painter would paint it. The model, mesh
 
 **How P paints:**
 - Each material is one value.
-- Broad washes carry the light and the water.
-- A few shapes with a hierarchy carry the damage. Their edges are broken by authored strokes up close and soften with distance.
-- Up close, long soft strokes along the boards let each plane breathe.
+- The wall carries a big gradient: a contact band under the eave, a light body, and the foot's dirt with a ragged painted top.
+- Every junction is dark: under the eave, the sill and each batten, the boards onto the drip board, the plinth under it and onto the ground.
+- Three long washes carry the water: from each of the sill's ends, and from the head's leaking end down beside the casing.
+- A few shapes with a hierarchy carry the damage. Their edges are torn along the grain and broken by authored strokes up close, with a clean, lighter lip in pieces; they soften with distance.
+- Up close, broad dry-brush strokes run along the boards, and drags run down the washes. By the street stop only a trace of them is left.
 
 **Sheets:**
 - `look1-*`: pass 1.
-- `look2-street.png`, `look2-eye.jpg`: pass 2.
-- `look2-boarding.png`: the boarding A/B at the street stop.
+- `look2-*`: pass 2. `look2-boarding.png` is the boarding A/B at the street stop.
+- `look3-street.png`, `look3-eye.jpg`: pass 3, the final state, beside Hopper, Stålenhag and 09.
 - `plan.png`, `plan-big.png`: the value plan.
-- `eye.jpg`, `street.png`, `raised.png`, `high.png`: the four views, each beside 09 and 01. In each, the top row is overcast and the bottom row low sun.
+- `eye.jpg`, `street.png`, `raised.png`, `high.png`: the four views of pass 3, each beside 09 and 01. In each, the top row is overcast and the bottom row low sun.
 
 **Build:**
-1. `run/build.sh`, which now ends with `paint.py`.
-2. `run/render.sh p2 eye,street,raised,high P`, under the Unity lock.
-3. `run/sheets.sh p2 P`, with the sheets moved here.
+1. `run/build.sh`, which ends with `paint.py`.
+2. `run/render.sh p3 eye,street,raised,high P`, under the Unity lock.
+3. `run/sheets.sh p3 P`, with the sheets moved here.
 
 For the A/B: `paint.py --boarding a`, then `render.sh p2a street P`.
 
 ## Verdict, bad first
 
-1. **The marks are quiet at the street stop.**
-   - Bare wood is 52 against paint at 69 to 78. At a glance the corner reads as an old white house, boarded, with failing paint at the foot and under the sill.
-   - "Empty for three winters" rests on the boarding and on the one big zone. A cold reader may still find it too clean.
-2. **The roof's rolls still show in low sun.** In overcast the roof is one dark mass with a few lit tiles. In low sun, at 18°, every roll's crest still catches the light, though far less than in look 1.
-3. **The foot is lighter than planned:** paint at the foot is 69, against 64 in the plan.
-4. **The lap shadows break into short dashes in low sun.** This is way A's own known fault, unchanged here.
+1. **The peeled zones read as stains at the street stop, not as lost paint.**
+   - The lighter lip holds only in pieces up close and fades with distance. Without it, bare wood at 50 against foot paint at 62 to 67 reads as damp or dirt.
+   - Up close, the torn ends and the lip read as paint failing along the grain.
+2. **The foot zone still reads a little as a band across the wall,** above all on the gable, where nothing breaks it. Its top is ragged and it darkens toward the drip board, but a cold reader may take it for a tide line.
+3. **The brushwork near is soft blocks along the boards, not a painter's hand.** It has a loaded start and a dry end, at about ±3 to ±5. Beside Stålenhag it is still mechanical: no direction within a stroke, no broken bristle edge.
+4. **The upper wall is one clean plane.** Above the sill, only the eave band and the battens' darks carry it. Beside Hopper, the body has no broad modulation of its own.
+5. **The washes run straight,** with an even found edge from head to tail. At the street they read as water from the sill. Up close they are a little like vertical bands.
+6. **Unchanged from pass 2:**
+   - the roof's rolls still catch the low sun;
+   - the lap shadows break into dashes in low sun (way A's own fault).
 
 **What works:**
-- **The gable and the street wall separate in overcast,** as the plan asks: 69 against 78. This comes from P's own light, described under Decisions.
-- **The wall carries the light:**
-  - lighter under a soft contact band at the eave, falling to the foot;
-  - a wash widening under the sill;
-  - one broad tapering wash from the leaking horn, found on its outer side and lost on its inner side.
-- **The marks have a hierarchy:**
-  - one big zone at the foot on the leaking side, three courses, each board's patch reaching its lap;
-  - one medium on the board under the sill's leaking end;
-  - a few small ones (under the dry horn, under the two drips that carry most, and at the gable's foot);
-  - the corner board's foot, the casing's leaking leg and the ledge tops.
-- **The boarding reads as boarded.**
-- **The plinth's wet margin follows the broad splash,** so the scallops are gone.
-- **Up close,** the board strokes are visible. By the street stop they are gone.
+- **The story reads at the street stop at a glance:**
+  - two long washes run from the sill's ends, and the leaking one feeds the big failed zone at the foot;
+  - the foot is dirty;
+  - every junction is dark;
+  - the eave band closes the top;
+  - the window is boarded.
+- **The values land on the plan:** see Measured.
+- **It holds from raised and high:** the washes and the failed foot still read, and the junctions are crisp.
 
 ## Decisions
 
-- **Boarding: b.**
-  - The sheet is a weathered mid-grey (52). A damp strip runs down its leaking side (32), with one found, wobbly edge; its other edges are the sheet's own, under the casing.
-  - A soft wash darkens the sheet at the head, above the lower batten and at the sill.
-  - The battens are lighter (63), so they cross the sheet clearly.
-  - a, the dark sheet of look 1, reads as a dark barred window.
-- **Exposure: 0.58, for P only.** The sky stays at 71.
-- **P's own overcast:**
-  - a soft sky from the street: azimuth (-0.15, -1), elevation 50, sun 0.51, shadow 0.35;
-  - ambient sky 0.54, equator 0.41, ground 0.08.
-
-  Way A's capture and the low sun are unchanged.
+- **Junction darks pull toward a value.** Each junction draws the paint down to its own value (`junction.*.to`) rather than subtracting a fixed amount. Where the AO contact, a wash or the boarding's strip is already dark, it adds nothing and never goes to black.
+- **The washes have their own page.** `hist-p2` R holds them, and they darken bare wood as fully as paint, since water darkens both. Its strength also places the brush's drags. The washes were invisible in G, where bare wood takes only 30 %, and the big zone lies on their path.
+- **The foot's dirt is a stain field** on the boards, so up close the strokes break its edge. Stains now take only `bareShift` of their value on bare wood, so bare wood stays near 50.
+- **The rim is the paint's own value plus `rimL`,** not an absolute value. It breaks along its length by the stain strokes' value and keeps 40 % far. As an absolute 96 that held at the street, it outlined every patch like a sticker.
+- **G's range is ±80 L\*** (`dlRange`), 0.63 L\* a step, so the junctions fit.
+- **The peel's patch ends tear along the grain:** a wave over height, drawing in by 12 cm a metre as they rise. The big zone is wider: 0.55, 0.45 and 0.28 m half-widths.
+- **Kept from pass 2:**
+  - boarding b;
+  - exposure 0.58 for P only, and P's own overcast;
+  - the hierarchy of marks;
+  - the roof, the lights and the mesh.
 
 ## Measured
 
-Rendered L\* at the street stop, overcast, with low sun in brackets:
+Rendered L\* at the street stop, overcast, with low sun in brackets. The pass-3 targets are the coordinator's.
 
-| Region | Plan | Look 1 | Look 2 |
+| Region | Target | Look 2 | Pass 3 |
 | --- | --- | --- | --- |
-| Wall, middle | 78 | 81 | 78 (88) |
-| Gable | 68 | 79 | 69 (54) |
-| Paint at the foot | 64 | 70 | 69 (80) |
-| Bare wood | about 50 | about 40 | 52 (57) |
-| Sheet | about 50 | 36 | 52 (64) |
-| Sheet's stain | about 30 | 26 | 32 (45) |
-| Battens | above the sheet | 53 | 63 (74) |
-| Plinth | 56 | 51 | 50 (63) |
-| Plinth's wet margin | | 27 | 26 (42) |
-| Roof, median | dark mass | 36 | 30 (31) |
-| Sky | 72 | 71 | 71 (70) |
+| Wall, at the eave | about 30 | | 44 (57) |
+| Wall, 10 cm under the eave | about 60 | | 59 (39) |
+| Wall, 30 cm under the eave | 80 | | 79 (89) |
+| Wall, middle | about 80 | 78 (88) | 80 (89) |
+| Under the sill | 25 to 35 | | 24 (15) |
+| Foot zone, right and left | about 62 | 69 (80) | 62 and 67 (73 and 78) |
+| Bare wood | about 48 | 52 (57) | 50 (61) |
+| Leak wash, 0.3 m under the sill | −10 to −12 | | −10 (79 → 69) |
+| Dry wash, 0.3 m under the sill | −10 to −12 | | −9 (78 → 69) |
+| Sheet | 52 | 52 (64) | 52 (64) |
+| Sheet's strip | 32 | 32 (45) | 32 (44) |
+| Sheet above the lower batten | about −15 | | 34, about −18 (47) |
+| Plinth's wet margin | about 30 | 26 (42) | 25 (41) |
+| Plinth at the ground | about 15 | | 19 (36) |
+| Gable | | 69 (54) | 71 (56) |
+| Roof, median | dark mass | 30 (31) | 30 (32) |
+| Sky | 72 | 71 (70) | 71 (70) |
 
-At eye level in overcast, the sheet is 52 and its strip 34.
+The brush near is about ±3 to ±5 at eye level and about ±1 at the street stop.
 
 ## Budget
 
 - **Triangles:** 2,731 near and 793 street, unchanged.
-- **Textures P reads:**
-  - `hist-p`, 1,024² RGBA;
-  - `paint-stroke`, 1,024² RGBA over 1 m;
+- **Textures P reads, each 1,024²:**
+  - `hist-p`, RGBA;
+  - `hist-p2`, R used, stored RGBA for now, and could be R8;
+  - `paint-stroke`, RGBA over 1 m;
   - the shared geometry and street-normal pages.
+- **Shader:** one more page read and one more stroke read, which shares the page's sampler.
 
 **A still reproduces:** `hist-a.png` and `geo.png` are byte-identical after rebuilding.

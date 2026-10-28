@@ -53,11 +53,19 @@ Shader "Overstory/Finish"
         _EdgeAmp ("How far a stroke moves a shape's edge, in its field", Float) = 0.5
         _StrokeFade ("The strokes' mip from which they fade, and by which they are gone", Vector) = (3, 5.5, 0, 0)
         _BrushL ("The long strokes' reach either side, L*", Float) = 0
-        _BrushFade ("The long strokes' mip from which they fade, and by which they are gone", Vector) = (1.5, 2.8, 0, 0)
+        _BrushFade ("The long strokes' mip from which they fade, and by which they are down to _BrushFar", Vector) = (1.5, 2.8, 0, 0)
+        _BrushFar ("What the long strokes keep far", Range(0, 1)) = 0
+        _Hist2 ("Way P's second page: R the long washes, 0 to 1 of _WashL", 2D) = "black" {}
+        _WashL ("The darkest long wash, L*", Float) = 0
+        _DragL ("The brush's drags down a wash, L* either side", Float) = 0
+        _DragScale ("The drags' size, the long strokes' turned upright and shrunk by", Float) = 1.5
+        _DLRange ("The page's value shift, L* either side of G's half", Float) = 40
         _StainEdge ("How much of the strokes' break a stain's edge takes", Range(0, 1)) = 1
         _FlatUp ("How far the light's normal is drawn up, so a face's own small forms are lit as one mass", Float) = 0
         _RimL ("The broken paint's edge, lighter by L*", Float) = 0
         _RimW ("How far the rim reaches from the edge, in the field", Float) = 0.04
+        _RimFar ("What the rim keeps far", Range(0, 1)) = 0
+        _RimBreak ("Where along its length the rim breaks: the stain strokes' value from, to", Vector) = (0, 0, 0, 0)
         _BareShift ("How much of the page's value shift bare wood takes", Range(0, 1)) = 1
         _PaintL ("The material's value, L*", Float) = 80
         _BareL ("Bare wood where paint is lost, L*", Float) = 40
@@ -81,7 +89,9 @@ Shader "Overstory/Finish"
         float4 _IslandW;
         float _FlakeScale, _HaloL, _HaloW, _HaloDull, _RunBody;
         float _Paint, _StrokeScale, _EdgeAmp, _RimL, _RimW, _BareShift, _PaintL, _BareL, _UnderL, _StainDL, _StainSmooth;
-        float _LapGrimeL, _LapGrimeReach, _LapGrimeBreak, _BrushL, _FlatUp, _StainEdge;
+        float _LapGrimeL, _LapGrimeReach, _LapGrimeBreak, _BrushL, _FlatUp, _StainEdge, _BrushFar, _DragL, _DragScale;
+        float _DLRange, _RimFar, _WashL;
+        float4 _RimBreak;
         float4 _StrokeFade, _BrushFade;
     CBUFFER_END
     ENDHLSL
@@ -112,6 +122,7 @@ Shader "Overstory/Finish"
             TEXTURE2D(_Tile); SAMPLER(sampler_Tile);
             TEXTURE2D(_TileN); SAMPLER(sampler_TileN);
             TEXTURE2D(_Hist); SAMPLER(sampler_Hist);
+            TEXTURE2D(_Hist2);
             TEXTURE2D(_Geo); SAMPLER(sampler_Geo);
             SamplerState os_point_clamp_lap;
             TEXTURE2D(_StreetN); SAMPLER(sampler_StreetN);
@@ -203,7 +214,7 @@ Shader "Overstory/Finish"
 
             #if defined(_OS_PAINT)
                 // way P, painted: each material one value, shifted only by the page's designed shapes (R the peel's
-                // field and B the stain's, each edge at 0.5; G a value shift, 0.5 + dL*/80; A the lap grime's
+                // field and B the stain's, each edge at 0.5; G a value shift, 0.5 + dL*/(2 _DLRange); A the lap grime's
                 // strength). Near, the authored strokes move each edge by up to _EdgeAmp of its field, so the edge is
                 // the brush's; with distance they go and each shape keeps its own soft contour
                 float2 suv = i.uv.zw * _StrokeScale;
@@ -214,20 +225,31 @@ Shader "Overstory/Finish"
                 float tP = hist.r - 0.5 + brush * (st.r - 0.5);
                 float wP = max(fwidth(tP), 1e-3);
                 float peel = _Painted * smoothstep(-wP, wP, tP);
-                // the paint's broken edge catches the light on its own side, near
-                float rim = _Painted * (1.0 - peel) * smoothstep(-wP - _RimW, -wP, tP) * nearP;
+                // the paint's broken edge, its clean lip lighter than the paint around it, in pieces along its length;
+                // some of it holds far
+                float rim = _Painted * (1.0 - peel) * smoothstep(-wP - _RimW, -wP, tP) * lerp(_RimFar, 1.0, nearP)
+                    * smoothstep(_RimBreak.x, _RimBreak.y, st.g);
                 float tS = hist.b - 0.5 + _StainEdge * brush * (st.g - 0.5);
                 float wS = max(fwidth(tS), 1e-3);
                 float stain = smoothstep(-wS, wS, tS);
                 float L = lerp(lerp(_PaintL, _BareL, peel), _UnderL, saturate(i.color.b));
-                // the foot's dirt and the contact shade are the paint's; silvered bare wood takes only some of them
-                L += (hist.g - 0.5) * 80.0 * lerp(1.0, _BareShift, peel) + _RimL * rim - _StainDL * stain;
+                // the washes, the foot's dirt and the junctions' darks are the paint's; silvered bare wood takes only
+                // some of them
+                float shift = (hist.g - 0.5) * 2.0 * _DLRange - _StainDL * stain;
+                L += shift * lerp(1.0, _BareShift, peel);
+                L = lerp(L, _PaintL + shift + _RimL, rim);
+                // the long washes darken the paint and the bare wood alike
+                float wash = SAMPLE_TEXTURE2D(_Hist2, sampler_Hist, i.uv.zw).r;
+                L -= _WashL * wash;
                 // the lap's grime: darkest under the butt, easing down the board to a lower edge the strokes break,
                 // summed over the pixel's reach down the wall as the band is
                 float gr = _LapGrimeReach * (1.0 + _LapGrimeBreak * nearP * 2.0 * (st.b - 0.5));
                 L -= hasLap * hist.a * _LapGrimeL * (GrimeInt(hi, gr) - GrimeInt(lo, gr)) / fw;
-                // near, long soft strokes along the boards let the plane breathe; gone well before the street stop
-                L += _BrushL * 2.0 * (st.a - 0.5) * (1.0 - saturate((lodS - _BrushFade.x) / max(_BrushFade.y - _BrushFade.x, 1e-3)));
+                // near, long soft strokes along the boards let the plane breathe, and down a wash the brush drags;
+                // by the street stop a trace of both
+                float nearB = lerp(_BrushFar, 1.0, 1.0 - saturate((lodS - _BrushFade.x) / max(_BrushFade.y - _BrushFade.x, 1e-3)));
+                float drag = SAMPLE_TEXTURE2D(_Stroke, sampler_Stroke, suv.yx * _DragScale).a;
+                L += (_BrushL * 2.0 * (st.a - 0.5) + _DragL * wash * 2.0 * (drag - 0.5)) * nearB;
                 float Y = LToY(clamp(L, 2.0, 98.0));
                 float3 nT = float3(0, 0, 1);
                 float smooth = lerp(_PaintSmooth, _StainSmooth, stain);

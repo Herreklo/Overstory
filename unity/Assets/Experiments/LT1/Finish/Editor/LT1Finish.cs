@@ -32,7 +32,7 @@ namespace Overstory.EditorTools
         // way P's digest (paint.py): each material one value, the strokes and the shapes' edges, and its own light
         [Serializable] class PMat { public string name; public int painted; public float L, bareL, underL, stainDL, smooth, stainSmooth, brushL, flatUp, stainEdge; }
         [Serializable] class PLight { public string light; public float exposure, elevation, sun, shadow, sky, equator, ground; public float[] azimuth; }
-        [Serializable] class Paint { public PMat[] mats; public PLight[] lights; public float strokeScale, edgeAmp, rimL, rimW, bareShift, aoStrength, lapDark, lapCore, lapReach, lapGrimeL, lapGrimeReach, lapGrimeBreak, lapPage; public float[] strokeFade, brushFade; }
+        [Serializable] class Paint { public PMat[] mats; public PLight[] lights; public float strokeScale, edgeAmp, rimL, rimW, rimFar, bareShift, washL, brushFar, dragL, dragScale, dlRange, aoStrength, lapDark, lapCore, lapReach, lapGrimeL, lapGrimeReach, lapGrimeBreak, lapPage; public float[] strokeFade, brushFade, rimBreak; }
 
         struct View { public string name, level; public Vector3 pos, target; public float fov; }
 
@@ -303,6 +303,7 @@ namespace Overstory.EditorTools
                 mat.SetFloat("_Paint", 1);
                 mat.EnableKeyword("_OS_PAINT");
                 mat.SetTexture("_Hist", tex("hist-p"));
+                mat.SetTexture("_Hist2", tex("hist-p2"));
                 mat.SetTexture("_Geo", tex("geo"));
                 mat.SetTexture("_StreetN", tex("street-normal"));
                 mat.SetTexture("_Stroke", tex("paint-stroke"));
@@ -311,10 +312,17 @@ namespace Overstory.EditorTools
                 mat.SetVector("_StrokeFade", new Vector4(p.strokeFade[0], p.strokeFade[1], 0, 0));
                 mat.SetVector("_BrushFade", new Vector4(p.brushFade[0], p.brushFade[1], 0, 0));
                 mat.SetFloat("_BrushL", m.brushL);
+                mat.SetFloat("_BrushFar", p.brushFar);
+                mat.SetFloat("_DragL", p.dragL);
+                mat.SetFloat("_DragScale", p.dragScale);
+                mat.SetFloat("_DLRange", p.dlRange);
                 mat.SetFloat("_FlatUp", m.flatUp);
                 mat.SetFloat("_StainEdge", m.stainEdge);
                 mat.SetFloat("_RimL", p.rimL);
                 mat.SetFloat("_RimW", p.rimW);
+                mat.SetFloat("_RimFar", p.rimFar);
+                mat.SetVector("_RimBreak", new Vector4(p.rimBreak[0], p.rimBreak[1], 0, 0));
+                mat.SetFloat("_WashL", p.washL);
                 mat.SetFloat("_BareShift", p.bareShift);
                 mat.SetFloat("_Painted", m.painted);
                 mat.SetFloat("_PaintL", m.L);
