@@ -5,7 +5,8 @@ The care rule walks the house's life from the year it was built: a coat on every
 repaint every interval its wealth keeps (longer after a 'neglected' event, none while it stands boarded); a dated
 'repainted' or 'restored' event puts a coat on in its year, a repaint choosing its colours again from its period; new
 windows come painted in their year. A care repaint chooses its colours again from its own period at the rule's
-recolourShare, otherwise keeps them; it shows no year a player can read. Under a scheme of the paint rule (a quarter
+recolourShare, otherwise keeps them; it shows no year a player can read. A dated repaint that names a part's colour
+(the rule's named) takes it, and a building no one lives in (the rule's unlived) is kept as if neglected. Under a scheme of the paint rule (a quarter
 whose rule chose the colour) a coat from the scheme's year keeps a part's colour while the scheme allows it. Pure
 Python: tools/houses.py writes the result into houses.json.
 """
@@ -55,12 +56,15 @@ def coats(facts, paint, seed, date, scheme=None):
     stack = {part: [] for part in PARTS}
     colour = {}
 
-    def coat(year, parts, choose):
+    def coat(year, parts, choose, named=None):
         system = _system(paint, year, rng)
         for part in parts:
             was = colour.get(part)
             if choose or part not in colour:
                 colour[part] = _choose(paint, year, part, rng, colour)
+            # the diary's own colour for the part, if it names one (the seed's draws as without it)
+            if named and part in named:
+                colour[part] = named[part]
             # under a scheme the colour stays one it allows (the seed's draws as without it)
             allowed = scheme.get(part) if scheme and year >= scheme["from"] else None
             if allowed and was in allowed:
@@ -73,8 +77,16 @@ def coats(facts, paint, seed, date, scheme=None):
         base = lo + (hi - lo) * wealth
         return base * (1.0 + care["intervalJitter"] * (2.0 * rng.random() - 1.0)) / max(0.05, 1.0 - neglect)
 
+    def named_of(prm):
+        nm = care.get("named", {})
+        return {part: nm["colours"][prm[key]] for key, parts in nm.get("parts", {}).items() if key in prm
+                for part in parts}
+
     coat(facts["built"], PARTS, True)
-    neglect, active = 0.0, True
+    # a building no one lives in is kept by an absent owner, as if neglected
+    unlived = care.get("unlived", {})
+    base = unlived.get("amount", 0) / 1000.0 if facts.get("type") in unlived.get("types", []) else 0.0
+    neglect, active = base, True
     due = facts["built"] + interval(neglect)
     for e in [e for e in facts["events"] if e["year"] <= date]:
         y, kind, prm = e["year"], e["kind"], e.get("params", {})
@@ -82,13 +94,13 @@ def coats(facts, paint, seed, date, scheme=None):
             coat(due, PARTS, rng.random() < care["recolourShare"])
             due += interval(neglect)
         if kind in ("repainted", "restored"):
-            coat(y, PARTS, kind == "repainted")
+            coat(y, PARTS, kind == "repainted", named_of(prm))
             due = y + interval(neglect)
         elif kind == "windows_replaced":
             stack["window"] = []
             coat(y, ("window",), True)
         elif kind == "neglected":
-            neglect = prm.get("amount", 0) / 1000.0
+            neglect = max(base, prm.get("amount", 0) / 1000.0)
             due = max(due, y + interval(neglect))
         elif kind == "boarded" and prm.get("scope") == "all":
             active = False
