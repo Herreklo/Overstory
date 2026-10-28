@@ -7,7 +7,7 @@
     "sheet": { "paint": { "L": 75, "smooth": 0.16 }, "under": { "L": 75, "smooth": 0.16 }, "tileable": "sheet", "painted": false },
     "batten": { "paint": { "L": 74, "smooth": 0.10 }, "under": { "L": 74, "smooth": 0.10 }, "tileable": "batten", "painted": false },
     "stone": { "paint": { "L": 57, "smooth": 0.20 }, "under": { "L": 50, "smooth": 0.06 }, "tileable": "stone", "painted": false, "underIs": "the plinth's mortar (vertex colour B)" },
-    "tiles": { "paint": { "L": 34, "smooth": 0.24 }, "under": { "L": 34, "smooth": 0.24 }, "tileable": "tile", "painted": false },
+    "tiles": { "paint": { "L": 34, "smooth": 0.12 }, "under": { "L": 34, "smooth": 0.12 }, "tileable": "tile", "painted": false },
     "zinc": { "paint": { "L": 62, "smooth": 0.38 }, "under": { "L": 62, "smooth": 0.38 }, "tileable": "zinc", "painted": false }
   },
   "ground": { "L": 42, "smooth": 0.1 },
@@ -31,13 +31,13 @@
     "trim-sheet": { "figureMm": 12, "wander": 5, "underFigureL": 6, "underStreakL": 3, "paintBrushL": 0.4, "paintCloudL": 0.8, "figureReliefMm": 0.18, "brushReliefMm": 0.03, "plateMm": [28, 10], "plateWeight": 0.5, "flakeMm": [8, 4], "patchMm": [80, 26], "flakeWeight": 0.12, "figureInBreakup": 0.0, "bevelBreakup": 0.15, "heightMm": 1.0 },
     "sheet": { "figureMm": 40, "wander": 8, "figureL": 1.2, "cloudL": 2, "checks": { "perM2": 50, "lengthMm": [20, 90], "widthMm": 1.2, "L": 6, "depthMm": 0.3 }, "figureReliefMm": 0.08, "mottle": { "mm": [14, 10], "weight": 0.5 }, "heightMm": 1.0 },
     "batten": { "figureMm": 12, "wander": 5, "figureL": 4, "streakL": 3, "sawMm": 8, "sawSlant": 0.08, "sawReliefMm": 0.15, "figureReliefMm": 0.25, "knots": { "perM2": 4, "sizeMm": [14, 32], "L": 10, "reliefMm": 0.3 }, "heightMm": 1.5 },
-    "stone": { "undulationMm": 220, "reliefMm": 1.5, "stepEvery": 0.9, "terrace": 0.0, "formL": 2, "mottleMm": 45, "mottleL": 3, "mortarL": 2, "mortarMm": 25, "heightMm": 3.0 },
+    "stone": { "undulationMm": 220, "reliefMm": 0.6, "stepEvery": 0.9, "terrace": 0.0, "formL": 2, "mottleMm": 90, "mottleL": 2, "mortarL": 2, "mortarMm": 25, "heightMm": 3.0 },
     "tile": { "mottleMm": 100, "mottleL": 3, "reliefMm": 0.3, "reliefScaleMm": 30, "heightMm": 1.0 },
     "zinc": { "mottleMm": 50, "mottleL": 3, "streakL": 1, "reliefMm": 0.1, "dentMm": 80, "heightMm": 0.5 }
   },
   "marks": {
     "describes": "Marks read 107's facts: the house's age, its neglect (per mille, the engine's) and the years since it was boarded, and the sample's geometry and features. Lightness shifts are in L*; sizes in metres. Loss groups: `length` and `height` are ranges the seed draws in, `strength` the share of the group's paint lost at its heart.",
-    "boardValueL": { "cladding": 4.0, "trims": 2.0, "sheet": 5.0, "batten": 6.0, "stone": 9.0, "tiles": 7.0, "zinc": 3.0 },
+    "boardValueL": { "cladding": 13.5, "trims": 2.0, "sheet": 5.0, "batten": 6.0, "stone": 9.0, "tiles": 7.0, "zinc": 3.0 },
     "loss": {
       "gain": 1.0,
       "footTop": 0.78,
@@ -49,16 +49,16 @@
       "tops": { "count": 0, "length": [0.1, 0.3], "strength": [0.35, 0.7] },
       "arris": 0.25
     },
-    "dirt": { "foot": 0.9, "footTop": 0.75, "eave": 0.55, "eaveReach": 0.7, "up": 0.45, "cavity": 0.6, "grime": 0.18, "cell": 0.11 },
+    "dirt": { "foot": 0.9, "footTop": 0.75, "eave": 0.55, "eaveReach": 0.7, "up": 0.45, "cavity": 0.6, "grime": 0.18, "cell": 0.11, "butts": 0.2, "buttsMm": 20 },
     "water": {
       "sill": { "runnels": 6, "width": [0.012, 0.035], "length": [0.25, 0.9], "wash": 0.22, "horn": 1.0 },
       "nails": { "headMm": 4.5, "headL": 32, "rustL": 16, "widthMm": [16, 6], "length": [0.05, 0.12], "strength": 0.9 },
       "sheet": {
         "cell": 0.18,
         "octaves": 5,
-        "gain": 0.6,
-        "blot": 0.62,
-        "bottom": 0.35,
+        "gain": 0.5,
+        "blot": 0.3,
+        "bottom": 0.45,
         "wick": 0.25,
         "wickReach": 0.05,
         "wet": [0.5, 0.6],
@@ -68,17 +68,21 @@
         "tideL": 8.0,
         "dry": [0.25, 0.45],
         "bleachL": 5.0,
-        "mottle": 0.55,
+        "mottle": 0.35,
         "mottleCell": 0.05,
         "speckle": [0.7, 0.78],
         "speckleCell": 0.012,
-        "speckleL": 14.0
+        "speckleL": 14.0,
+        "head": 0.45,
+        "headReach": 0.12,
+        "batten": { "above": 1.0, "reach": 0.09, "low": 0.6, "runs": 4, "width": [0.008, 0.02], "length": [0.08, 0.25], "runWet": 0.5 },
+        "nails": { "everyMm": 150, "inMm": 15, "headMm": 3.5, "headL": 24, "rustL": 12, "widthMm": [8, 4], "length": [0.03, 0.09] }
       },
       "eave": { "minFlow": 0.75, "width": [0.015, 0.04], "length": [0.15, 0.5], "strength": 0.35 },
       "splash": { "strength": 0.45, "top": 0.55 },
       "batten": { "lowL": 8.0, "reach": 0.012 }
     },
-    "shade": { "dirtL": 16.0, "waterL": 14.0, "cavityL": 8.0, "lapDark": 0.6, "lapCoreMm": 5, "lapReachMm": 20, "lipL": 6.0, "crackL": 18.0, "lapPageMm": 64 },
+    "shade": { "dirtL": 16.0, "waterL": 14.0, "cavityL": 8.0, "lapDark": 0.6, "lapCoreMm": 6, "lapReachMm": 26, "lipL": 6.0, "crackL": 18.0, "lapPageMm": 64 },
     "splash": { "width": [0.06, 0.14], "gable": 0.25 }
   }
 }

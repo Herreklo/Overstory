@@ -1,6 +1,6 @@
 """House 107's street corner in 1989, the finishing test's sample: about 3 m of the street wall and 1.5 m of the gable
 return, ground to eave, with the plinth, the lap cladding, the corner boards, one boarded window in its casing, the
-eave with its fascia and gutter, the first two courses of pantiles and a downpipe. The first piece of 107's generator:
+eave with its fascia and the first two courses of pantiles. The first piece of 107's generator:
 fitted parts whose inputs are facts (107's record, the working in classical.json, the pack's materials).
 
     Blender -b --factory-startup -P blender/parts/finish/corner.py -- --out cache/finish/gen   (all steps: run/build.sh)
@@ -92,13 +92,16 @@ class Frame:
         self.lean = min(b["leanMostMm"], b["leanMmPerCentury"] * c) * MM
         self.L = b["frameLengthMm"] * MM
         self.reach = b["settleReachMm"] * MM
+        self.bend, self.share = b["settleBendMm"] * MM, b["settleBendShare"]
         self.z_sill, self.z_top = z_sill, z_top
 
     def offset(self, p):
         x, y, z = p
-        # the settled corner's sill beam bends down to it over `reach`, steepest at the corner
-        fx, fy = max(0.0, 1.0 - x / self.reach), max(0.0, 1.0 - y / self.reach)
-        dz = -self.settle * (fx * fy) ** 2
+        # the settled corner: the frame tilts down to it over `reach`, courses, sill and eave together, and its sill
+        # beam bends a little more over the failing stones within `bend` of it
+        tx, ty = max(0.0, 1.0 - x / self.reach), max(0.0, 1.0 - y / self.reach)
+        bx, by = max(0.0, 1.0 - x / self.bend), max(0.0, 1.0 - y / self.bend)
+        dz = -self.settle * ((1.0 - self.share) * tx * ty + self.share * (bx * by) ** 2)
         h = min(1.0, max(0.0, (z - self.z_sill) / (self.z_top - self.z_sill)))
         s = math.sin(math.pi * min(1.0, max(0.0, x / self.L)))
         dz -= self.sag * s * h
@@ -293,7 +296,7 @@ class Corner:
         self.S, self.W, self.F, self.M = spec, W, F, mats
         self.pieces = []
         self.features = {"butts": [], "nails": [], "sill": None, "eave": None, "foot": None, "casing": None,
-                         "joints": [], "cornerBoard": None, "pipe": None, "drips": []}
+                         "joints": [], "cornerBoard": None, "pipe": None, "drips": [], "battens": []}
         cl = W["cladding"]
         self.step = cl["stepMm"] * MM
         self.push = W["push"]
@@ -778,7 +781,9 @@ class Corner:
             tilt = math.radians(F.between(*bt["outOfLevelDeg"], "batten", i, "tilt")) * (1 if F.u("batten", i, "sign") < 0.5 else -1)
             pc = self.make(f"board/batten{i}", "batten", ("near", "street"), mode="rigid")
             L = Vector((math.cos(tilt), 0, math.sin(tilt))) * (bx1 - bx0)
-            o = Vector((bx0, y_b, zc - w / 2))
+            # centred on zc at its middle, where its nails are reckoned from
+            o = Vector((bx0, y_b, zc - w / 2 - math.tan(tilt) * (bx1 - bx0) / 2))
+            self.features["battens"].append((bx0, bx1, zc, math.tan(tilt), w))
             for lv in ("near", "street"):
                 cc = self.ch["batten"] if lv == "near" else 0.0
                 prof = rect_profile(w, th, cc, groups=("bottom", "front", "top", "back"))
@@ -906,10 +911,11 @@ class Corner:
 
     # ---- pantiles: the first two courses over the eave, each tile laid and turned a little by hand
     def tiles(self):
-        tl = self.M["clay-pantile"]["laid"]
+        tl = {**self.M["clay-pantile"]["laid"], **{k: v for k, v in self.W["pantile"].items() if k != "describes"}}
         F = self.F
         cover, course, roll = tl["coverMm"] * MM, tl["courseMm"] * MM, tl["rollMm"] * MM
-        thick, lift = tl["thickMm"] * MM, tl["liftMm"] * MM
+        thick, lift, lap = tl["thickMm"] * MM, tl["liftMm"] * MM, tl["lapMm"] * MM / (tl["coverMm"] * MM)
+        pan, rnd = tl["panAt"], tl["roundness"]
         ev = self.W["eaves"]
         ov = ev["overhangMm"] * MM
         ft = ev["fasciaThickMm"] * MM
@@ -918,47 +924,66 @@ class Corner:
         vg = self.W["verge"]
         x0 = -vg["overhangMm"] * MM - tl["verge"]["pastMm"] * MM
         n = math.ceil((self.lx - x0) / cover)
-        t = math.tan(self.pitch)
         cs, sn = math.cos(self.pitch), math.sin(self.pitch)
         # the batten plane: the fascia's top at the eave, rising inward
         y_foot = -ov - ft - 0.05
         z_foot = self.z_top - st - 0.01 + fh + 0.004
         up = Vector((0, cs, sn))  # up the slope
         nrm = Vector((0, -sn, cs))  # out of the roof
-        # S-profile across one tile (u 0..1 of the cover), height in rolls: pan wide and low, roll narrow and high
-        S_near = [(-0.04, 0.32), (0.10, 0.02), (0.36, 0.0), (0.58, 0.30), (0.76, 1.0), (0.94, 0.78), (1.06, 0.18)]
-        S_street = [(-0.04, 0.30), (0.30, 0.0), (0.76, 1.0), (1.06, 0.18)]
+
+        def wave(u):
+            """One wave across a cover, 0 at the pan's floor (panAt) to 1 at the roll's crown half a cover on; raised
+            to `roundness` the pan widens and flattens and the roll narrows, as the tile is made."""
+            return (0.5 - 0.5 * math.cos(2.0 * math.pi * (u - pan))) ** rnd
+
+        # a near tile runs from 0 to past its cover by the lap, where it lies on the next tile's pan edge; its
+        # samples hold the pan's floor and the roll's crown
+        k = self.S["levels"]["near"]["pantileSamples"]
+        us = [i * (1.0 + lap) / (k - 1) for i in range(k)]
+        for target in (pan, pan + 0.5):
+            j = min(range(1, k - 1), key=lambda i: abs(us[i] - target))
+            us[j] = target
+        near_prof = [(u, wave(u) + (thick / roll) * min(1.0, max(0.0, (u - 0.9) / 0.1))) for u in sorted(us)]
+        # the street level: one wave along each course, sampled at the floor, the flanks and the crown
+        ks = self.S["levels"]["street"]["pantileSamples"]
+        street_u = []
+        u = pan - math.ceil(pan * ks) / ks
+        while u < (self.lx - x0) / cover:
+            street_u.append(max(0.0, u))
+            u += 1.0 / ks
+        street_u.append((self.lx - x0) / cover)
+        street_prof = [(u, wave(u)) for u in street_u]
         length = course + 0.075
         for ci in range(self.S["sample"]["courses"]):
             key = chart(f"roof/c{ci}", self.lx - x0 + 0.1, length + 0.05)
-            base = Vector((0, y_foot, z_foot)) + up * (course * ci) + nrm * (lift * 0.0 + ci * 0.0)
-            for lv, prof in (("near", S_near), ("street", S_street)):
-                if lv == "street":
-                    pc = self.make(f"roof/c{ci}/strip", "tiles", ("street",))
-                for ti in range(n):
-                    tid = f"roof/c{ci}/t{ti}"
+            base = Vector((0, y_foot, z_foot)) + up * (course * ci)
+            for lv in ("near", "street"):
+                tiles_ = range(n) if lv == "near" else (None,)
+                for ti in tiles_:
                     if lv == "near":
+                        tid = f"roof/c{ci}/t{ti}"
                         pc = self.make(tid, "tiles", ("near",))
-                    # each tile turned a little by the hand that laid it (seeded: claims no history)
-                    yaw = math.radians(1.6) * (2 * F.u(tid, "yaw") - 1)
-                    dz = 0.004 * (2 * F.u(tid, "seat") - 1)
-                    xa = x0 + ti * cover
+                        # each tile turned and seated a little by the hand that laid it (seeded: claims no history)
+                        yaw = math.radians(1.6) * (2 * F.u(tid, "yaw") - 1)
+                        dz = 0.004 * (2 * F.u(tid, "seat") - 1)
+                        xa, prof = x0 + ti * cover, near_prof
+                    else:
+                        pc = self.make(f"roof/c{ci}/strip", "tiles", ("street",))
+                        yaw, dz, xa, prof = 0.0, 0.0, x0, street_prof
                     foot = base + Vector((xa, 0, 0)) + nrm * (lift * 0.35 + dz)
                     head = base + Vector((xa, 0, 0)) + up * length - nrm * (lift * 0.15)
                     rot = Matrix.Rotation(yaw, 3, nrm)
 
                     def pt(u, hgt, at):
-                        local = Vector((u * cover, 0, 0)) + nrm * (hgt * roll)
-                        return at + rot @ local
+                        return at + rot @ (Vector((u * cover, 0, 0)) + nrm * (hgt * roll))
                     rows = (foot, head)
                     if ci == 0 and lv == "near":
                         # with no gutter, each pan's water leaves its foot at the eave: where it lands and how much
                         # runs in it (the seed's: how the tile lies, claiming no history)
-                        lo = min(prof, key=lambda q: q[1])
-                        drop = pt(lo[0], lo[1], foot)
+                        drop = pt(pan, 0.0, foot)
                         self.features["drips"].append((drop.x, drop.y, 0.35 + 0.65 * F.u(tid, "flow")))
-                    for k in range(len(prof) - 1):
-                        (ua, ha), (ub, hb) = prof[k], prof[k + 1]
+                    for j in range(len(prof) - 1):
+                        (ua, ha), (ub, hb) = prof[j], prof[j + 1]
                         pts = [pt(ua, ha, rows[0]), pt(ub, hb, rows[0]), pt(ub, hb, rows[1]), pt(ua, ha, rows[1])]
                         cuv = [(p.x - x0, (p - base).dot(up)) for p in pts]
                         pc.add(lv, Face(pts, [(p.x, (p - base).dot(up)) for p in pts], key, cuv))

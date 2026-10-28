@@ -57,6 +57,7 @@ namespace Overstory.EditorTools
         {
             string round = Arg("-finishRound") ?? "r01";
             var only = (Arg("-finishViews") ?? "eye,street,raised,high").Split(',');
+            var ways = (Arg("-finishWays") ?? "A,B,C").Split(',');
             string root = Path.GetFullPath(Path.Combine(Application.dataPath, "..", ".."));
             string outDir = Path.Combine(root, "cache", "finish", "renders", round);
             Directory.CreateDirectory(outDir);
@@ -153,7 +154,7 @@ namespace Overstory.EditorTools
                         urp.shadowCascadeCount = 1;
                         urp.mainLightShadowmapResolution = 4096;
                         urp.shadowDistance = (view.target - view.pos).magnitude + 3f;
-                        foreach (var way in new[] { "A", "B", "C" })
+                        foreach (var way in ways)
                         {
                             Assign(levels[view.level], mats, way, view.level);
                             string file = Path.Combine(outDir, $"{view.name}-{light.name}-{way}.png");

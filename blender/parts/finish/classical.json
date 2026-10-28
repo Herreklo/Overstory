@@ -30,6 +30,14 @@
   },
   "eaves": { "overhangMm": 140, "fasciaMm": 150, "fasciaThickMm": 28, "soffitThickMm": 20 },
   "verge": { "overhangMm": 90, "boardMm": 205, "thickMm": 32 },
+  "pantile": {
+    "describes": "The single-S pantile as laid here, over the pack's clay-pantile (laid): a wide shallow pan rising to a narrower roll, one wave per tile, each tile's roll lapping the next tile's pan edge. Cover width 220 mm, as the Danish normal-format S-tile (Højslev vingetegl, normalformat); the wave 50 mm, shallow, within the 45 to 69 mm of clay pantiles (Wienerberger and Sandtoft Old English Pantile data sheets). Sandnes Teglverk made the town's red tile from 1783 (wooden-town-architecture.md).",
+    "coverMm": 220,
+    "rollMm": 50,
+    "panAt": 0.35,
+    "roundness": 1.5,
+    "lapMm": 18
+  },
   "openings": { "edgeMm": 1150, "wMm": 880, "hMm": 1300, "sillOverFloorMm": 820 },
   "plinth": {
     "material": "fieldstone",
@@ -56,14 +64,14 @@
     "describes": "How an empty house was boarded in the late 1980s, from photo 09: a sheet in each opening inside its casing, set back from the casing's face, and two raw sawn battens nailed across it onto the casing and the cladding, each a degree or two out of level."
   },
   "push": {
-    "describes": "The style's push on true sizes (the street's shape language: deep reveals, thick trims, sills and caps that throw a shadow): factors on the working's sizes; and the settled corner doubled, since its true 40 mm bends a 3 m wall by under 2 px at the street stop and would read ruler-straight.",
+    "describes": "The style's push on true sizes (the street's shape language: deep reveals, thick trims, sills and caps that throw a shadow): factors on the working's sizes. The bends stay true (settle 1).",
     "trimProud": 1.6,
     "capProud": 1.25,
     "capThick": 1.4,
     "sillProud": 1.3,
     "sillThick": 1.35,
     "bargeThick": 1.5,
-    "settle": 2.0
+    "settle": 1.0
   },
   "chamferMm": {
     "describes": "Each exposed arris worn round to about 2 px at the street stop (20 m): 15 to 20 mm on the big members, about 6 mm on small ones (house-asset-craft.md, Recipe 2).",
@@ -81,7 +89,7 @@
     "capTop": 5
   },
   "bends": {
-    "describes": "Old timber moves, and every bend has a cause. The corner the house is seen from settles on its stones and the frame follows it down, the sill beam bending over settleReachMm from the corner; the wall plate sags between the gables under the roof, most at the eave and none at the sill; the roof's thrust pushes the wall's head out. Each grows with the frame's age to a most; which corner settles is the seed's, claiming no history. Sizes from house-asset-craft.md (Recipe: house 107): the eaves sag 80 to 120 mm, one corner settles 40 mm.",
+    "describes": "Old timber moves, and every bend has a cause. The corner the house is seen from settles on its stones and the frame goes down with it: the courses, the sill and the eave tilt to it over settleReachMm, and the sill beam bends a little more over the failing stones within settleBendMm of the corner (settleBendShare of the drop). The wall plate sags between the gables under the roof, most at the eave and none at the sill; the roof's thrust pushes the wall's head out. Each grows with the frame's age to a most; which corner settles is the seed's, claiming no history. Sizes from house-asset-craft.md (Recipe: house 107): the eaves sag 80 to 120 mm, one corner settles 40 mm.",
     "settleMmPerCentury": 25,
     "settleMostMm": 40,
     "sagMmPerCentury": 62,
@@ -89,6 +97,8 @@
     "leanMmPerCentury": 16,
     "leanMostMm": 25,
     "frameLengthMm": 7000,
-    "settleReachMm": 1800
+    "settleReachMm": 3000,
+    "settleBendMm": 800,
+    "settleBendShare": 0.3
   }
 }

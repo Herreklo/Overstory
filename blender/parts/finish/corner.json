@@ -14,13 +14,15 @@
     "near": {
       "level": 0,
       "budgetTris": 3000,
-      "seenWithinM": 8
+      "seenWithinM": 8,
+      "pantileSamples": 8
     },
     "street": {
       "level": 1,
       "budgetTris": 800,
       "seenFromM": 20,
-      "laps": "page normal"
+      "laps": "page normal",
+      "pantileSamples": 4
     }
   },
   "page": {

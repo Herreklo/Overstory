@@ -1,12 +1,15 @@
-# the round's four sheets: rows overcast and low sun; columns A, B, C at 1:1, then the photo at the same metres a pixel
+# the round's four sheets: rows overcast and low sun; columns A, B, C at 1:1 (or the ways given: sheets.sh <round> [ways]),
+# then the photo at the same metres a pixel
 set -e
 cd "$(dirname $0)/../../../.."
-r=$1; R=cache/finish/renders/$r; O=reviews/lt1/finish/$r; mkdir -p $O
+r=$1; W=(${(s:,:)${2:-A,B,C}}); R=cache/finish/renders/$r; O=reviews/lt1/finish/$r; mkdir -p $O
 P9=docs/references/houses/09-pedersgata-81-derelict-1989.jpg; P1=docs/references/houses/01-nedre-strandgate-17-1989.jpg
 T=blender/parts/finish/run/montage.py
 sheet() { # view crop p9crop p9scale p1crop p1scale; the eye sheet as JPEG, the rest PNG
-  /Applications/Blender.app/Contents/MacOS/Blender -b --factory-startup -P $T -- $O/$1.${EXT:-png} $R/$1-overcast-A.png@$2@1@A $R/$1-overcast-B.png@$2@1@B $R/$1-overcast-C.png@$2@1@C $P9@$3@$4@09 / \
-     $R/$1-lowsun-A.png@$2@1@A $R/$1-lowsun-B.png@$2@1@B $R/$1-lowsun-C.png@$2@1@C ${5:+$P1@$5@$6@01} 2>&1 | grep montage
+  local top=() low=() w
+  for w in $W; do top+=($R/$1-overcast-$w.png@$2@1@$w); low+=($R/$1-lowsun-$w.png@$2@1@$w); done
+  /Applications/Blender.app/Contents/MacOS/Blender -b --factory-startup -P $T -- $O/$1.${EXT:-png} $top $P9@$3@$4@09 / \
+     $low ${5:+$P1@$5@$6@01} 2>&1 | grep montage
 }
 EXT=jpg sheet eye 950,60,1150,1300 880,440,480,560 2.4
 sheet street 1110,500,440,440 880,380,560,600 0.47 380,420,420,470 1.12

@@ -232,7 +232,12 @@ def dirt(pg, P, meta, splash):
     up = D["up"] * pg.up * (0.5 + 0.5 * FL.fbm3(pg.p, key(meta, "up-dirt"), 0.06, 2))
     cav = D["cavity"] * np.clip((1.0 - pg.cav) * 1.4, 0, 1)
     grime = D["grime"] * (meta["neglect"] / 1000.0) * FL.fbm3(pg.p, key(meta, "grime"), D["cell"], 3)
-    return np.clip(foot + eave + up + cav + grime, 0, 1)
+    # water running down each board leaves its dirt along the butt it drips from, fading up the face
+    courses = np.asarray(meta["courses"])
+    i = np.searchsorted(courses, z, side="right")
+    above = z - np.where(i > 0, courses[np.clip(i - 1, 0, len(courses) - 1)], -np.inf)
+    butts = np.where(pg.m["cladding"] & pg.vertical, D["butts"] * np.clip(1.0 - above / (D["buttsMm"] / 1000.0), 0, 1) ** 2, 0.0)
+    return np.clip(foot + eave + up + cav + grime + butts, 0, 1)
 
 
 def runnel(pg, k, along0, along1, z_top, n, width, length, strength, mask, ends=()):
@@ -296,10 +301,29 @@ def water(pg, P, meta, dl, splash):
     a0, a1 = pg.per_piece(pg.along, "min"), pg.per_piece(pg.along, "max")
     edge = np.minimum(np.minimum(pg.z - z0, z1 - pg.z), np.minimum(pg.along - a0, a1 - pg.along))
     zb0, zb1 = pg.z[sheet].min(), pg.z[sheet].max()
+    a_sheet = (pg.along[sheet].min(), pg.along[sheet].max())
     t = np.clip((pg.z - zb0) / max(zb1 - zb0, 1e-3), 0, 1)
     blot = FL.fbm3(pg.p, key(meta, "sheet-stain"), Sb["cell"], Sb["octaves"], Sb["gain"])
     reach = Sb["wickReach"] * (0.5 + blot)
     wet = Sb["blot"] * blot + Sb["bottom"] * (1 - t) ** 2 + Sb["wick"] * np.exp(-np.clip(edge, 0, None) / reach)
+    # the head's drip falls behind the sheet's top edge and wicks down from it
+    wet += Sb["head"] * np.exp(-np.clip(zb1 - pg.z, 0, None) / (Sb["headReach"] * (0.5 + blot)))
+    # each batten holds water against the sheet on its top, which wicks up into it, most toward the batten's low
+    # end where the water runs, and the more the lower it sits, since it holds what runs down the sheet above it;
+    # and what spills runs down from its lower edge
+    Bs = Sb["batten"]
+    kb = key(meta, "sheet-batten")
+    for bi, (bx0, bx1, zc, slope, w) in enumerate(f["battens"]):
+        mid = (bx0 + bx1) / 2
+        zt = zc + slope * (pg.along - mid) + w / 2
+        low = np.clip(0.5 - np.sign(slope) * (pg.along - mid) / max(bx1 - bx0, 1e-3), 0, 1)
+        catch = np.clip((zb1 - zc) / max(zb1 - zb0, 1e-3), 0, 1)
+        held = Bs["above"] * catch * ((1 - Bs["low"]) + Bs["low"] * low) * np.exp(-(pg.z - zt) / (Bs["reach"] * (0.5 + blot)))
+        wet += np.where(pg.z >= zt, held, 0.0)
+        for ri in range(Bs["runs"]):
+            a = a_sheet[0] + (a_sheet[1] - a_sheet[0]) * HS.unit(HS.h(kb, bi, ri, "at"))
+            zr = zc + slope * (a - mid) - w / 2
+            wet += runnel(pg, HS.h(kb, bi, ri), a, a, zr, 1, Bs["width"], Bs["length"], Bs["runWet"], sheet)
     # a stain is never one flat grey: darker and lighter within it, by the glue and the veneer's figure; and mould
     # speckles the sheet most where it stays damp
     mott = FL.smoothstep(0.3, 0.7, FL.fbm3(pg.p, key(meta, "sheet-mottle"), Sb["mottleCell"], 3))
@@ -310,6 +334,25 @@ def water(pg, P, meta, dl, splash):
     tide = Sb["tideL"] * np.exp(-((wet - Sb["wet"][0]) / Sb["tide"]) ** 2)
     bleach = Sb["bleachL"] * (1.0 - FL.smoothstep(Sb["dry"][0], Sb["dry"][1], wet))
     dl += np.where(sheet, bleach - stain - tide, 0.0)
+    # the sheets' own nails, round each sheet's edges where 1986 fixed it to the casing: a dark head, a short rust run
+    Nn = Sb["nails"]
+    kn = key(meta, "sheet-nails")
+    inset, every = Nn["inMm"] / 1000.0, Nn["everyMm"] / 1000.0
+    for pid in np.unique(pg.piece[sheet]):
+        m = sheet & (pg.piece == pid)
+        sa0, sa1, sz0, sz1 = pg.along[m].min(), pg.along[m].max(), pg.z[m].min(), pg.z[m].max()
+        spots = [(xa, zz) for xa in (sa0 + inset, sa1 - inset)
+                 for zz in np.linspace(sz0 + inset, sz1 - inset, max(2, int(round((sz1 - sz0) / every)) + 1))]
+        spots += [(xx, sz1 - inset) for xx in np.linspace(sa0 + inset, sa1 - inset, max(2, int(round((sa1 - sa0) / every)) + 1))[1:-1]]
+        for ni, (xn, zn) in enumerate(spots):
+            xn += (HS.unit(HS.h(kn, int(pid), ni, "x")) - 0.5) * 0.01
+            zn += (HS.unit(HS.h(kn, int(pid), ni, "z")) - 0.5) * 0.02
+            ln = Nn["length"][0] + (Nn["length"][1] - Nn["length"][0]) * HS.unit(HS.h(kn, int(pid), ni, "len"))
+            below = np.clip(zn - pg.z, 0, None)
+            head = gauss(np.hypot(pg.along - xn, pg.z - zn), Nn["headMm"] / 1000.0)
+            wn = Nn["widthMm"][0] / 1000.0 + (Nn["widthMm"][1] - Nn["widthMm"][0]) / 1000.0 * np.clip(below / ln, 0, 1)
+            run = gauss(pg.along - xn, wn / 2) * np.exp(-below / ln) * (pg.z <= zn)
+            dl -= np.where(m, np.maximum(Nn["headL"] * head, Nn["rustL"] * run), 0.0)
     # the battens: raw sawn wood, darker where water hangs on their lower arris
     Bt = W["batten"]
     bat = pg.m["batten"]
