@@ -3,10 +3,10 @@
 // drawn many at a time through the growth's own BatchRendererGroup (Code/Scenes/Growth/GrowthDraw.cs), so DOTS
 // instanced, each level crossfaded into the next (LOD_FADE_CROSSFADE), casting no shadows.
 //
-// Lit as the painted surface lights a face (ArtDirection/PaintSurface.shader, from the page's globals): the sky by the
+// Lit as the painted corner's surface (removed) lit a face, from the page's globals: the sky by the
 // normal, calmed toward one value; the lamps' pools, shadowed; each lamp's lit fog. The normal is the clump's dome, so a
 // tuft lights as one mass and both faces of a blade alike; dark at its root, its tip lighter (Ghost of Tsushima, Bad
-// North). It answers _P_Mode as PaintSurface does (1 the distance, 1, the veil, 1; 2 the slot; 3 the street point).
+// North). It answers _P_Mode as that surface did (1 the distance, 1, the veil, 1; 2 the slot; 3 the street point).
 //
 // Per instance (unity_RendererUserValue, the generator's): its rank in the low byte (which stay as the far ones thin), its
 // hue in the next (one clump from the next, broad), its habitat above.
@@ -52,12 +52,12 @@ Shader "Hidden/Overstory/GrowthTuft"
                 float _Hue;
             CBUFFER_END
 
-            // the growth's own (LT1CornerGrowth, from packs/<pack>/growth.json, tufts)
+            // the growth's own (set by the scene's builder, from packs/<pack>/growth.json, tufts)
             float4 _GT_Look;    // x calm (the sky's light toward one value), y the lamps' share, z the veil, w the root's sky
             float4 _GT_Thin;    // x thinning from (m), y the share kept at the far end, z how much the kept ones widen, w the shrink's band (rank)
             float4 _GT_LookB;   // x the tip's lift, y the clump's hue kept past the focus, z the wet share, w a blade's least width (px of a 1440-line frame)
 
-            // the page's (Paint.json's globals, as PaintSurface reads them)
+            // the page's (the painted corner's globals, as its surfaces read them)
             float4 _P_SkyUp, _P_SkySide, _P_SkyDown, _P_SkyKey, _P_SkyKeyDir, _P_Occlusion;
             float4 _P_Wet, _P_Pool, _P_Focus, _P_FocusShape;
             float4 _P_LampPos[8];

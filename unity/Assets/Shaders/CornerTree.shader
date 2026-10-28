@@ -5,8 +5,8 @@
 // own. Matte. The crown loses itself upward into the air.
 //
 // Two lights: the heart's (the street's sky term, sun, lamps and air: StreetLooks.hlsl) and, with CT_PAINTED, the
-// painted corner's (Paint.json's globals, ArtDirection/Paint.hlsl; it answers _P_Mode as PaintSurface does, and the air
-// is PaintAir's). Every value is a material property set from data (LT1CornerTrees.cs).
+// painted corner's (its globals, ArtDirection/Paint.hlsl; the corner that set them, and its air, are removed). Every
+// value is a material property set from data (LT1CornerTrees.cs).
 //
 // Mesh: COLOR r the sky the point sees, g its height in the crown (0 its foot, 1 its top), b its lobe's up (wood: the
 // foliage's shade round it), a its seed.
@@ -125,7 +125,7 @@ Shader "Overstory/CornerTree"
             #include "StreetLooks.hlsl"
             #include "Assets/Experiments/LT1/ArtDirection/Paint.hlsl"
 
-            // the painted corner's globals this reads (Paint.json)
+            // the painted corner's globals this reads under CT_PAINTED
             float4 _P_SkyUp, _P_SkySide, _P_SkyDown;
             float4 _P_LampPos[8];
             float _P_LampCount;
@@ -305,7 +305,7 @@ Shader "Overstory/CornerTree"
             #endif
                 outColor = half4(colour, cover);
             #if defined(CT_PAINTED)
-                // the painted corner's other passes: distance from the eye (PaintAir), the page's class, the position
+                // the painted corner's other passes: distance from the eye (for its air), the page's class, the position
                 if (_P_Mode > 0.5)
                     outColor = _P_Mode < 1.5 ? float4(dist, 1.0, _Veil, 1.0)
                              : _P_Mode < 2.5 ? float4(63.0 * 4.0 / 255.0, 4.0 * 16.0 / 255.0, 0.0, 1.0)

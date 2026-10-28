@@ -13,7 +13,7 @@
 // the stones' own bake): UV4.y the lichen's years / 200, UV5.x the moss. Its values are the setting pack's
 // (packs/<pack>/growth.json, painted), set as globals by the growth's own code. Self-contained: nothing else to include.
 //
-// Called by the painted corner's hook (Experiments/LT1/Corner/CornerGrowth.hlsl) and by the growth's own overlay.
+// Called by the growth's own overlay (Shaders/GrowthOverlay.shader).
 
 float4 _GP_Lichen;        // rgb the crust's albedo over its rock's, w the share a quiet century covers
 float4 _GP_LichenShape;   // x the big colonies' spacing (m), y the small ones', z the lobes' size (m), w how far they bite (of a radius)
@@ -137,7 +137,7 @@ half3 GP_GrowthRatio(float lichen, float moss, float2 q, half detail, float foot
     return r * lerp(1.0h, (half3)_GP_Moss.rgb, (half)c.y);
 }
 
-// The painted corner's growth over a surface's albedo (the hook's signature, CornerGrowth.hlsl).
+// The painted corner's growth over a surface's albedo (the signature its removed surface hook called).
 half3 OS_PaintGrowth(half3 albedo, float2 uv0, float lichen, float moss, float sky, float3 positionWS, half3 normalWS,
                      half detail, float footprint)
 {

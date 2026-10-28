@@ -31,7 +31,7 @@ namespace Overstory.EditorTools
         const string Models = "Assets/Art/Blockout/heart";
         const string Materials = "Assets/Art/Materials";
         const string Palette = "Assets/Art/Palette";
-        const string Rig = "Assets/Experiments/LT1/Corner/Corner_Oct20_1700.asset";
+        const string Rig = "Assets/Experiments/LT1/Heart/Light/Corner_Oct20_1700.asset";
         const string Lights = Dir + "/Light";
 
         const float Lens35 = 37.8f, Lens28 = 46.4f, Lens50 = 27.0f;
@@ -80,7 +80,7 @@ namespace Overstory.EditorTools
             var sky = AssetDatabase.LoadAssetAtPath<Material>(Materials + "/M_Sky.mat");
             var rig = AssetDatabase.LoadAssetAtPath<LightRig>(Rig);
             if (street == null || water == null || sky == null || rig == null)
-                throw new FileNotFoundException("LT1's materials or the corner's rig are missing: run LT1Setup.Scene and LT1Corner.Scene first");
+                throw new FileNotFoundException($"LT1's materials (run LT1Setup.Scene first) or the corner's rig ({Rig}, tracked in git) are missing");
             foreach (var (name, pos, target, fov) in Shots)
                 Asset<CameraShot>($"{Dir}/Views/Heart_{name}.asset", s =>
                 {

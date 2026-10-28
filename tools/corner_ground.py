@@ -1,4 +1,4 @@
-"""The corner's rock and ground for the painted corner ([CornerElement("rock")], Code/Editor/Corner/CornerRock.cs).
+"""The corner's rock and ground, made for the painted corner's rock element (now removed).
 
 The knuckle from its jointing (blender/generators/bedrock.py, fixtures/lt1-corner-ground.json), each vertex with the
 sky it sees (rays against the rock, the land and the houses), its foot and its nearest joint, and the lichen and moss
@@ -32,8 +32,8 @@ import hashing as HS  # noqa: E402
 
 FIX = os.path.join(ROOT, "fixtures", "lt1-corner-ground.json")
 CACHE = os.path.join(ROOT, "cache", "ground")
-DATA = os.path.join(ROOT, "unity", "Assets", "Experiments", "LT1", "Corner", "Elements", "rock")
-# the corner's cameras (Paint.json's views): what stands near them is drawn finest
+DATA = os.path.join(ROOT, "blender", "parts", "ground")
+# the painted corner's cameras (street metres): what stands near them is drawn finest
 EYES = np.array([[49.3, 12.0, 5.6], [49.8, 21.4, 4.7]])
 
 

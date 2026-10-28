@@ -1,4 +1,4 @@
-// The growth laid over the painted corner (LT1CornerGrowth), until the corner's hook draws it in the surfaces
+// The growth laid over a scene's surfaces (the painted corner's, removed), until a hook draws it in the surfaces
 // themselves: the same rock and stone meshes drawn again, after the painted surfaces, through the growth's own
 // BatchRendererGroup (Code/Scenes/Growth/GrowthDraw.cs), multiplying the colour by the albedo's ratio the growth makes
 // (Shaders/GrowthPaint.hlsl). Only in the colour pass (_P_Mode 0): the air's passes are the surfaces' own.

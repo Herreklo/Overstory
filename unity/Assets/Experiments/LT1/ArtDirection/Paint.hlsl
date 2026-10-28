@@ -1,6 +1,6 @@
-// The painted corner's shared terms (Paint.json, LT1ArtPasses.Paint): the designed sky and the lit fog in it, read by
+// The painted corner's shared terms (its passes and Paint.json removed): the designed sky and its lit fog, read by
 // the surfaces (what a wet face mirrors) and by the air (the sky itself, the fog's colour). Every value is a global
-// set from Paint.json; nothing here holds a look value of its own.
+// set by the code that draws with it; nothing here holds a look value of its own.
 #ifndef OS_PAINT_INCLUDED
 #define OS_PAINT_INCLUDED
 

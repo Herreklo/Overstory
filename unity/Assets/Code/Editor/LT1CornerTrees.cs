@@ -15,15 +15,15 @@ namespace Overstory.EditorTools
     /// <summary>
     /// The walked corner's trees (fixtures/lt1-corner.json, trees): the meshes blender/parts/trees/corner.py writes
     /// (cache/trees/corner), placed on their ground at the level their distance from the eye asks for, drawn with
-    /// Shaders/CornerTree.shader from the element's data (Experiments/LT1/Corner/Elements/trees/trees.json). Used by the
-    /// painted corner's element (Corner/CornerTrees.cs) and by the trees' own stage stills in the heart (Still).
+    /// Shaders/CornerTree.shader from their look (Art/Trees/Corner/trees.json, beside its atlas). Used by the
+    /// trees' own stage stills in the heart (Still).
     ///
     ///     -executeMethod Overstory.EditorTools.LT1CornerTrees.Still [-moments 1750-sea-fog,...] [-views street,...]
     ///         [-looks grey,material] [-out reviews/lt1/trees/corner/stage] [-trees birch-yard,...] [-level near]
     /// </summary>
     public static class LT1CornerTrees
     {
-        const string DataAsset = "Assets/Experiments/LT1/Corner/Elements/trees/trees.json";
+        const string DataAsset = "Assets/Art/Trees/Corner/trees.json";
         const string Lights = "Assets/Experiments/LT1/Heart/Light";
 
         [Serializable] public class Level { public string name; public float to; }

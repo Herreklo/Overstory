@@ -1,4 +1,4 @@
-"""The walked corner's growth as the painted corner draws it (Code/Editor/Corner/LT1CornerGrowth.cs): the tufts' meshes
+"""The walked corner's growth, as the painted corner's growth element (now removed) drew it: the tufts' meshes
 (tufts.py), where they stand (growth.place_tufts, from the record and fixtures/lt1-corner-growth.json), the painted
 layer's values as globals (packs/<pack>/growth.json, painted) and the knuckle's stand-in rules (rock), in one file the
 element reads: cache/growth/corner/growth.json, rebuilt, not tracked (its hashes in blender/parts/growth/corner.manifest.json).
@@ -29,11 +29,10 @@ import tufts as TU  # noqa: E402
 OUT = os.path.join(ROOT, "cache", "growth", "corner")
 MESHES = os.path.join(ROOT, "cache", "growth", "tufts")
 STREET = os.path.join(ROOT, "unity", "Assets", "Art", "Buildings", "corner-strong", "street.json")
-HOUSES = os.path.join(ROOT, "cache", "houses", "houses.json")
 FIXTURE = os.path.join(ROOT, "fixtures", "lt1-corner.json")
 WHERE = os.path.join(ROOT, "fixtures", "lt1-corner-growth.json")
 MANIFEST = os.path.join(os.path.dirname(os.path.abspath(__file__)), "corner.manifest.json")
-# the street camera (Paint.json's view "street", street metres): where the drawn budget is measured from
+# the painted corner's street camera (street metres): where the drawn budget is measured from
 STREET_EYE = (49.3, 12.0, 5.6)
 
 
@@ -78,8 +77,8 @@ def make(variants=4):
     T = P["tufts"]
     fixture = json.load(open(FIXTURE))
     street = json.load(open(STREET))
-    houses = json.load(open(HOUSES))
     where = json.load(open(WHERE))
+    houses = where["houses"]  # date, pack and C, D and E's footprints, frozen in the fixture
     date = float(houses["date"])
     seed = fixture["worldSeed"]
     ground = ground_of(street)
@@ -99,7 +98,7 @@ def make(variants=4):
             meshes[(name, v)] = {"H": tuft["H"], "R": tuft["R"], "levels": files}
 
     # where they stand
-    footprints = [[(h["fp"][i], h["fp"][i + 1]) for i in range(0, len(h["fp"]), 2)] for h in houses["houses"]]
+    footprints = [[(c[0], c[1]) for c in fp] for fp in houses["footprints"].values()]
     footprints += [[(c["x"], c["y"]) for c in f["corners"]] for f in street["town"]["foundations"]]
     steps = [[(p["x"], p["y"]) for p in s["points"]] for s in street["town"]["steps"]]
     rows, area = growth.place_tufts(where, ground, footprints, steps, fixture["heath_above"] / 1000.0, seed,

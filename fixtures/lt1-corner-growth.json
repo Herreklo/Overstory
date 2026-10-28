@@ -24,8 +24,18 @@
     "clear": 1.5,
     "steps": 1.0
   },
+  "houses": {
+    "date": 1989.8,
+    "pack": "packs/stavanger-1989",
+    "footprints": {
+      "C": [[41.4, 38.3], [34.2, 38.3], [34.2, 30.9], [41.4, 30.9]],
+      "D": [[53.6, 48.097], [53.6, 40.497], [60.6, 40.497], [60.6, 48.097]],
+      "E": [[50.0, 86.202], [50.0, 93.202], [43.2, 93.202], [43.2, 86.202]]
+    }
+  },
   "notes": {
-    "yard": "D's pad on the knuckle's top (the fine grid's 12.6 m), less D's own footprint (cache/houses/houses.json) and the path. walls: D's walls round it; lip: the pad's edge over the knuckle's face (street m). Willowherb stands along both; the long grass at the lip leans out over it. onGround: the ground heights (m) a tuft may stand on; off them (the lip's fall, the rising ground behind) none.",
+    "houses": "The date the growth is drawn at, its pack and the corner houses C, D and E's footprints (street m, four corners each), frozen on 28 October 2026 from the old house pipeline's cache/houses/houses.json when that pipeline was removed.",
+    "yard": "D's pad on the knuckle's top (the fine grid's 12.6 m), less D's own footprint (houses) and the path. walls: D's walls round it; lip: the pad's edge over the knuckle's face (street m). Willowherb stands along both; the long grass at the lip leans out over it. onGround: the ground heights (m) a tuft may stand on; off them (the lip's fall, the rising ground behind) none.",
     "path": "From the steps' head (fixture steps, 52.5, 38.4) to D's door on its west face (cache/houses/D.bin, the door at y 43.8 to 44.8), its centre line and width (m). walked: the share of its width down the middle still bare, the rest grassing over.",
     "heath": "The ground above heath_above in this box (street m, x0 y0 x1 y1), less every house's footprint and the steps by clear and steps (m)."
   }

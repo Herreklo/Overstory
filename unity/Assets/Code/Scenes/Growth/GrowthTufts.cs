@@ -6,7 +6,7 @@ namespace Overstory.Growth
     /// <summary>
     /// The growth's tufts in a scene: their kinds (meshes by level, material, reach) and instances, saved with the scene,
     /// drawn through the growth's own BatchRendererGroup (GrowthDraw) while enabled, in the editor and in the app alike.
-    /// Filled by the scene's builder (the painted corner's growth element, LT1CornerGrowth) from the generator's
+    /// Filled by the scene's builder (it was the painted corner's growth element, now removed) from the generator's
     /// placements; it draws what it holds and decides nothing.
     /// </summary>
     [ExecuteAlways]
