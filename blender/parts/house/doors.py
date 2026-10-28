@@ -131,3 +131,71 @@ def steps(soup, f, s0, s1, ztop, zground, st, rng):
         widen = over * (1 + 0.5 * k)
         soup.box(f, s0 - widen, s1 + widen, zground - 0.12, zt, 0.0, tread * (k + 1), skip=("back", "bottom"))
     return n
+
+
+def ledged(soup, f, hole, sp, out_w, rng):
+    """A ledged plank door in its hole (s0, s1, z0, z1), as a sea house's loading doors and back door are made: a
+    heavy frame set in the reveal, a leaf (or a pair) of upright planks, their joints V'd, hung on long iron strap
+    hinges over the ledges behind; a pair's meeting closed by a cover strip on the leaf that shuts last. The planks'
+    widths are the seed's within the door's range (hand-sawn stock: texture, no history)."""
+    s0, s1, z0, z1 = hole
+    fr = sp["frameMm"] * MM
+    wf = out_w - 0.004
+    if soup.level >= 2:
+        soup.use(kind="door", scheme="door", seed=rng.random(), lap=0.5)
+        soup.quad(f.at(s0, z0, wf - 0.05), f.at(s1, z0, wf - 0.05), f.at(s1, z1, wf - 0.05), f.at(s0, z1, wf - 0.05),
+                  ta=[(s0, z0), (s1, z0), (s1, z1), (s0, z1)])
+        return
+    depth = 0.14
+    soup.use(kind="sash", scheme="door", seed=rng.random(), lap=0.5)
+    soup.box(f, s0, s1, z1 - fr, z1, wf - depth, wf)
+    soup.box(f, s0, s0 + fr, z0, z1 - fr, wf - depth, wf, grain="z")
+    soup.box(f, s1 - fr, s1, z0, z1 - fr, wf - depth, wf, grain="z")
+    i0, i1, j1 = s0 + fr, s1 - fr, z1 - fr
+    wl = wf - sp["setBackMm"] * MM
+    t = sp["plankThickMm"] * MM
+    v = sp["vMm"] * MM if soup.level == 0 else 0.0
+    p0, p1 = sp["plankMm"][0] * MM, sp["plankMm"][1] * MM
+    leaves = sp["leaves"]
+    sw, st, sl = (x * MM for x in sp["strapMm"])
+    for k in range(leaves):
+        a = i0 + (i1 - i0) * k / leaves + 0.003
+        b = i0 + (i1 - i0) * (k + 1) / leaves - 0.003
+        # the planks across the leaf, the last one cut to what is left
+        edges = [a]
+        while b - edges[-1] > p1:
+            edges.append(edges[-1] + rng.uniform(p0, p1))
+        if len(edges) > 1 and b - edges[-1] < p0 * 0.5:
+            edges[-1] = 0.5 * (edges[-2] + b)
+        edges.append(b)
+        for pa, pb in zip(edges, edges[1:]):
+            soup.use(kind="door", scheme="door", seed=rng.random(), lap=0.5)
+            # its face, and the V at each joint: a narrow bevel down to the plank's side
+            ca = v if pa > a + 1e-4 else 0.0
+            cb = v if pb < b - 1e-4 else 0.0
+            soup.quad(f.at(pa + ca, z0, wl), f.at(pb - cb, z0, wl), f.at(pb - cb, j1, wl), f.at(pa + ca, j1, wl),
+                      ta=[(z0, pa), (z0, pb), (j1, pb), (j1, pa)])
+            if ca > 0:
+                soup.quad(f.at(pa, z0, wl - ca), f.at(pa + ca, z0, wl), f.at(pa + ca, j1, wl), f.at(pa, j1, wl - ca))
+            if cb > 0:
+                soup.quad(f.at(pb - cb, z0, wl), f.at(pb, z0, wl - cb), f.at(pb, j1, wl - cb), f.at(pb - cb, j1, wl))
+        # the leaf's edges and foot, its thickness in the frame's shadow
+        soup.use(kind="door", scheme="door", seed=rng.random(), lap=0.5)
+        soup.quad(f.at(a, z0, wl - t), f.at(b, z0, wl - t), f.at(b, z0, wl), f.at(a, z0, wl))
+        # the strap hinges on the hinge side, one over each ledge behind: from the frame across most of the leaf
+        hinge = a if k == 0 else b
+        sgn = 1.0 if k == 0 else -1.0
+        n_l = sp["ledges"]
+        soup.use(kind="metal", scheme="none", lap=0.5)
+        for m in range(n_l):
+            if 0 < m < n_l - 1 and n_l > 2:
+                continue
+            zc = z0 + 0.22 + (j1 - z0 - 0.44) * m / max(1, n_l - 1)
+            soup.use(seed=rng.random())
+            e0, e1 = sorted((hinge - sgn * 0.03, hinge + sgn * min(sl, (b - a) * 0.8)))
+            soup.box(f, e0, e1, zc - sw / 2, zc + sw / 2, wl, wl + st, skip=("back",) if soup.level == 0 else ("back", "top", "bottom", "left", "right"))
+        if leaves == 2 and k == 1:
+            # the cover strip over the meeting, on the leaf that shuts last
+            soup.use(kind="door", scheme="door", seed=rng.random(), lap=0.5)
+            cw = 0.09
+            soup.box(f, a - cw / 2, a + cw / 2, z0 + 0.01, j1 - 0.01, wl, wl + 0.022, grain="z")

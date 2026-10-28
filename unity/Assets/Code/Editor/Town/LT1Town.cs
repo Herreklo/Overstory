@@ -259,8 +259,11 @@ namespace Overstory.EditorTools.Town
             houses.transform.SetParent(root.transform, false);
             var trims = new MB();
             var panes = new MB();
+            var heroes = Heroes(repo, houses, facts.timber, moment == null ? Mat(0.55f, white) : null, made);
             foreach (var p in town.placements)
             {
+                if (heroes.ids.Contains(p.id))
+                    continue;
                 var (body, roof, foot) = Masses(p, town.ground, facts.Overhang(p));
                 Add(houses, $"house {p.id}", body, Mat(0.55f, tones?.Body(p) ?? white, porosity: 0.15f, smooth: 0.1f, brush: facts.brush,
                                                        laps: facts.Laps(p), contact: 1f), made);
@@ -333,9 +336,13 @@ namespace Overstory.EditorTools.Town
                 stage.paletteSurface = AssetDatabase.LoadAssetAtPath<Texture2D>("Assets/Art/Palette/palette_surface.png");
                 stage.style = AssetDatabase.LoadAssetAtPath<Style>($"{LT1}/Heart/Light/Styles/{Cli.Arg("-style", "Style_game")}.asset");
                 stage.look = "P";
+                // clay: every surface one matte grey, to judge form in the moment's light
+                stage.clay = Cli.Arg("-clay", "0") == "1";
                 cam.clearFlags = CameraClearFlags.Skybox;
                 data.dithering = true;
             }
+            foreach (var h in heroes.drawn)
+                h.mr.sharedMaterial = stage == null ? h.mr.sharedMaterial : stage.clay ? heroes.grey : heroes.mat;
 
             string[] compasses = Cli.Arg("-compass", null)?.Split(',') ?? new string[] { null };
             var style = stage?.style;
@@ -358,7 +365,11 @@ namespace Overstory.EditorTools.Town
                     // is left alone
                     stage.style = facts.StyleFor(style, m0, made);
                 }
-                foreach (var v in Views)
+                // a built house's own views only when named
+                var views = new List<(string name, Vector3 pos, Vector3 target, float fov)>(Views);
+                if (Cli.Arg("-views", null) != null)
+                    views.AddRange(HeroViews);
+                foreach (var v in views)
                 {
                     if (!Cli.Wanted("-views", v.name))
                         continue;
@@ -367,6 +378,12 @@ namespace Overstory.EditorTools.Town
                     cam.fieldOfView = v.fov;
                     cam.nearClipPlane = 0.3f;
                     cam.farClipPlane = 6000f;
+                    foreach (var h in heroes.drawn)
+                    {
+                        int k = heroes.Tier(cam, h.tiers[0].bounds);
+                        h.mf.sharedMesh = h.tiers[k];
+                        Debug.Log($"[LT1Town] {v.name}: {h.tiers[k].name}, {h.tiers[k].vertexCount / 3} triangles");
+                    }
                     if (stage != null)
                     {
                         stage.Apply();
@@ -382,6 +399,90 @@ namespace Overstory.EditorTools.Town
             foreach (var o in made)
                 if (!AssetDatabase.Contains(o))
                     Object.DestroyImmediate(o);
+            LT1Houses.Release();
+        }
+
+        // -- the houses built where the town has them ---------------------------------------------------------------------
+
+        /// <summary>The views of a built house (-heroes): 109 from the quay at eye level, from the street stop along the row
+        /// three metres up, from twelve metres over the quay's edge, and from high and far, near isometric (street frame, m).
+        /// Drawn only when -views names them.</summary>
+        static readonly (string name, Vector3 pos, Vector3 target, float fov)[] HeroViews =
+        {
+            ("h109-eye", new Vector3(96.22f, -18.24f, 1.65f), new Vector3(103.43f, -4.34f, 4.8f), 46.4f),
+            ("h109-stop", new Vector3(80.14f, -9.09f, 3.2f), new Vector3(103.0f, -3.0f, 4.5f), 46.4f),
+            ("h109-12m", new Vector3(107.00f, -18.21f, 12.0f), new Vector3(104.36f, 0.58f, 6.5f), 37.8f),
+            ("h109-high", new Vector3(69.78f, -38.08f, 50.0f), new Vector3(104.73f, 2.55f, 5.0f), 25.0f),
+        };
+
+        /// <summary>The player's screen height in rows (1440p, F3), at which a level's error is judged.</summary>
+        const float PlayerRows = 1440f;
+
+        /// <summary>Houses built where the town has them, drawn in place of their masses.</summary>
+        class Built
+        {
+            public readonly HashSet<int> ids = new HashSet<int>();
+            public readonly List<(MeshFilter mf, MeshRenderer mr, Mesh[] tiers)> drawn = new List<(MeshFilter, MeshRenderer, Mesh[])>();
+            public Material mat, grey;
+            /// <summary>Each level's error (mm), finest first (timber.json, levels).</summary>
+            public float[] errMm;
+
+            /// <summary>The coarsest level whose error is under a pixel at the house's nearest point, at the player's
+            /// screen height.</summary>
+            public int Tier(Camera cam, Bounds b)
+            {
+                float d = Mathf.Sqrt(b.SqrDistance(cam.transform.position));
+                float pixelMm = 2f * d * Mathf.Tan(cam.fieldOfView * 0.5f * Mathf.Deg2Rad) / PlayerRows * 1000f;
+                int k = 0;
+                for (int i = 1; i < errMm.Length; i++)
+                    if (errMm[i] <= pixelMm)
+                        k = i;
+                return k;
+            }
+        }
+
+        /// <summary>The houses named by -heroes (ids, comma-separated), built by tools/houses.py --street into
+        /// -house-mesh, each at its levels (near, street, city), in the house shader at their date; greyLit stands in
+        /// for it where there is no stage (the grey render).</summary>
+        static Built Heroes(string repo, GameObject parent, Dictionary<string, object> timber, Material greyLit, List<Object> made)
+        {
+            var b = new Built();
+            foreach (var s in Cli.Arg("-heroes", "").Split(','))
+                if (int.TryParse(s, out var id))
+                    b.ids.Add(id);
+            if (b.ids.Count == 0)
+                return b;
+            string dir = Path.Combine(repo, Cli.Arg("-house-mesh", "cache/houses"));
+            float date;
+            (b.mat, b.grey, date) = LT1Houses.Town(dir, repo);
+            made.Add(b.mat);
+            made.Add(b.grey);
+            int year = Mathf.FloorToInt(date);
+            parent.AddComponent<Overstory.World.FabricDate>().Set(year, 1 + Mathf.Clamp(Mathf.RoundToInt((date - year) * 12f), 0, 11));
+            var levels = Obj(timber["levels"]);
+            string[] tiers = { "near", "street", "city" };
+            b.errMm = new float[tiers.Length];
+            for (int k = 0; k < tiers.Length; k++)
+                b.errMm[k] = F(Obj(levels[tiers[k]])["errMm"]);
+            foreach (var id in b.ids)
+            {
+                var meshes = new Mesh[tiers.Length];
+                for (int k = 0; k < tiers.Length; k++)
+                {
+                    meshes[k] = LT1R2b.Load(Path.Combine(dir, k == 0 ? $"{id}.bin" : $"{id}.{tiers[k]}.bin"));
+                    meshes[k].name = $"house {id} {tiers[k]}";
+                    made.Add(meshes[k]);
+                }
+                var go = new GameObject($"house {id} (built)");
+                go.transform.SetParent(parent.transform, false);
+                var mf = go.AddComponent<MeshFilter>();
+                mf.sharedMesh = meshes[0];
+                var mr = go.AddComponent<MeshRenderer>();
+                mr.sharedMaterial = greyLit ?? b.mat;
+                mr.shadowCastingMode = ShadowCastingMode.On;
+                b.drawn.Add((mf, mr, meshes));
+            }
+            return b;
         }
 
         // -- the town's colours from the pack (Light) ----------------------------------------------------------------------

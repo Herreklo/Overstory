@@ -112,14 +112,14 @@ class Slope:
         return self.place(self.sgn * (self.ae - d * self.cp + self.sp * h), r, self.z_e + d * self.sp + self.cp * h)
 
 
-def pantiles(soup, s, r0, r1, slope_len, laid, rng, waved):
+def pantiles(soup, s, r0, r1, slope_len, laid, rng, waved, segs=6):
     """Pantiles in courses up one slope: each course its tiles across, each tile an S (a broad flat pan and a narrower
     round roll, its own normals), its roll's edge lying over the next tile's pan (a step of the tile's thickness, the
     tile tilted across by it as laid tiles are), its foot a lip standing proud of the course below and dropped a little
     by the seed (mass-made tiles hung by hand: texture, no history), its ends closed at the verges. The rolls' phase is
     the street's (the painted mark's: along the slope's run, from the street's origin), so the mark and the form
     agree. waved: how many courses from the eave are modelled (all at near; the eave's alone further off, the rest a
-    strip at the rolls' mean)."""
+    strip at the rolls' mean). segs: the pieces across a tile's S (its own normals round the curve between them)."""
     cover, course = laid["coverMm"] * MM, laid["courseMm"] * MM
     amp, lift = laid["rollMm"] * MM / 2.0, laid["liftMm"] * MM
     thick, pan = laid["thickMm"] * MM, laid.get("panShape", 0.22)
@@ -137,11 +137,11 @@ def pantiles(soup, s, r0, r1, slope_len, laid, rng, waved):
     f = lambda t: amp * (math.sin(2.0 * math.pi * t) - pan * math.cos(4.0 * math.pi * t))
     df = lambda t: amp * 2.0 * math.pi * (math.cos(2.0 * math.pi * t) + 2.0 * pan * math.sin(4.0 * math.pi * t))
     lo, hi = sorted((ph(r0), ph(r1)))
-    # samples: six to a tile and the lap twice (the step), each with its tile
+    # samples: segs to a tile and the lap twice (the step), each with its tile
     pts = []
     for j in range(math.floor(lo - tb) - 1, math.ceil(hi - tb) + 1):
-        for q in range(7):
-            t = j + tb + q / 6.0
+        for q in range(segs + 1):
+            t = j + tb + q / float(segs)
             pts.append((t, j, q))
     rs = []
     for t, j, q in pts:
@@ -156,7 +156,7 @@ def pantiles(soup, s, r0, r1, slope_len, laid, rng, waved):
     for rr in (r0, r1):
         t = ph(rr)
         j = math.floor(t - tb)
-        out_.append((rr, t, j, (t - tb - j) * 6.0))
+        out_.append((rr, t, j, (t - tb - j) * float(segs)))
     out_.sort(key=lambda x: (x[0], x[2] if ak > 0 else -x[2]))
     # height of a tile j at phase t: its S, tilted across by the lap; normals from the S
     tilt = lambda t, j: thick * ((t - tb - j) - 0.5)
@@ -207,7 +207,7 @@ def pantiles(soup, s, r0, r1, slope_len, laid, rng, waved):
             # the roll's edge over the next tile's pan: the step, the tile's thickness (the next tile's foot its own
             # drop)
             for r_e, t_e, q in row:
-                if q != 6 or not (r0 + 1e-4 < r_e < r1 - 1e-4) or (j + 1) not in drops:
+                if q != segs or not (r0 + 1e-4 < r_e < r1 - 1e-4) or (j + 1) not in drops:
                     continue
                 h_hi, h_lo = hgt(r_e, t_e, j), hgt(r_e, t_e, j + 1)
                 side = mul(s.R, 1.0 if ak > 0 else -1.0)
@@ -351,12 +351,15 @@ def gutter(soup, place, a_c, z_c, r0, r1, sgn, rw, hooks):
 
 
 def roof(soup, place, span, length, eave, pitch, wk, rng, verge_dir, side_dir, laid=None, push=None, rain=None,
-         sag=0.0, wall_out=0.0, ground_at=None):
+         sag=0.0, wall_out=0.0, ground_at=None, verges=(True, True)):
     """The roof over a span (wall to wall across) and a length (gable to gable). verge_dir(r_sign) and side_dir(a_sign)
     give the street-frame outward directions of the gable ends and the slopes, for winding. laid: the covering's
     record (how it is laid); push: the style's push (timber.json); rain: the rainwater goods; sag: how far the ridge
     has settled between the gables (m); wall_out: the cladding's face out from the wall's plane; ground_at(x, y): the
-    ground's height under a street point, in the roof's z (where a downpipe ends)."""
+    ground's height under a street point, in the roof's z (where a downpipe ends). verges: whether each gable end
+    (r0, r1) has its barge board and verge underside (a hood's roof dies into the wall behind it).
+    A boxed eave (the working's eaves.boxed) closes the overhang level from the fascia's foot back to the wall, and
+    the box's end past each gable, under the barge board's foot."""
     tp = math.tan(math.radians(pitch))
     cp = math.cos(math.radians(pitch))
     half = span / 2
@@ -397,7 +400,7 @@ def roof(soup, place, span, length, eave, pitch, wk, rng, verge_dir, side_dir, l
         slopes[sgn] = s
         if rf["cover"] == "pantile" and laid:
             n_c, top_h, peak = pantiles(soup, s, r0 - past, r1 + past, slope_len, laid, rng,
-                                  waved=10 ** 6 if near else 1)
+                                  waved=10 ** 6 if near else (1 if soup.level == 1 else 0), segs=rf.get("tileSegments", 6))
         elif laid:
             n_c, top_h, peak = slates(soup, s, r0 - past, r1 + past, slope_len, laid, rng, modelled=near)
         else:
@@ -420,6 +423,16 @@ def roof(soup, place, span, length, eave, pitch, wk, rng, verge_dir, side_dir, l
             q = [place(sgn * (a_wall + 0.002), -wall_out, eave - 0.06), place(sgn * (a_wall + 0.002), length + wall_out, eave - 0.06),
                  place(sgn * (a_wall + 0.002), length + wall_out, zb(a_wall)), place(sgn * (a_wall + 0.002), -wall_out, zb(a_wall))]
             oquad(soup, *q, out)
+        elif ev.get("boxed"):
+            # level from the fascia's foot back to the wall (the box's floor), the box's ends past the gables closed
+            z_s = min(ztop - fh, zu(ae) - 0.01)
+            q = [place(sgn * ae, r0, z_s), place(sgn * ae, r1, z_s), place(sgn * a_wall, r1, z_s),
+                 place(sgn * a_wall, r0, z_s)]
+            oquad(soup, *q, down)
+            for rr_, side in ((r0, -1.0), (r1, 1.0)):
+                q = [place(sgn * a_wall, rr_, z_s), place(sgn * ae, rr_, z_s), place(sgn * ae, rr_, zu(ae)),
+                     place(sgn * a_wall, rr_, zu(a_wall))]
+                oquad(soup, *q, verge_dir(side))
         else:
             q = [place(sgn * ae, r0, zu(ae)), place(sgn * ae, r1, zu(ae)), place(sgn * a_wall, r1, zu(a_wall)),
                  place(sgn * a_wall, r0, zu(a_wall))]
@@ -427,6 +440,8 @@ def roof(soup, place, span, length, eave, pitch, wk, rng, verge_dir, side_dir, l
         if fh > 0:
             soup.use(kind="trim", scheme="trim", seed=rng.random(), shelter=0.0)
             c = pu_ch.get("fascia", 0) * MM if near else 0.0
+            if ev.get("boxed"):
+                fh = ztop - min(ztop - fh, zu(ae) - 0.01)
             # its face, a chamfer along its foot, and its foot
             q = [place(sgn * (ae + ft), r0, ztop - fh + c), place(sgn * (ae + ft), r1, ztop - fh + c),
                  place(sgn * (ae + ft), r1, ztop + 0.01), place(sgn * (ae + ft), r0, ztop + 0.01)]
@@ -527,10 +542,13 @@ def roof(soup, place, span, length, eave, pitch, wk, rng, verge_dir, side_dir, l
     above = vg.get("bargeAboveMm", 50) * MM
     soup.use(kind="trim", scheme="trim", lap=0.5, shelter=0.0)
     for rs, r in ((-1.0, r0), (1.0, r1)):
+        if not verges[0 if rs < 0 else 1]:
+            continue
         out = verge_dir(rs)
         for sgn in (-1.0, 1.0):
             soup.use(seed=rng.random())
-            k = 12
+            # the rake is straight (the frame settles between the gables, not at them): one piece up it
+            k = 1 if abs(sag) < 1e-9 or r <= 0.0 or r >= length else 12
             for j in range(k):
                 aa, ab = sgn * ae * (1 - j / k), sgn * ae * (1 - (j + 1) / k)
                 ta_, tb_ = zt(aa) + above, zt(ab) + above

@@ -163,3 +163,56 @@ def plinth(soup, f, s0, s1, z_ground, z_top, pl, face_w, seed):
         soup.use(kind="stone", seed=rng.random(), lap=1.0 if b < 1e-6 else 0.5)
         _splitstone(soup, f, cell, point - 0.03, face_w + rng.uniform(*pl["setOutMm"]) * MM, pl, rng)
     return len(cells)
+
+
+def dressed(soup, f, s0, s1, z_ground, z_top, pl, face_w, seed):
+    """A course of dressed granite under a sea house's sill on the quay, as the quay's own masons cut it: squared
+    blocks in level courses, the top course brought to the sill, each course's joints broken over the one below, the
+    arrises chamfered (near) and the joints pointed nearly flush. Rigid blocks, only placed: none is bent to the
+    ground; the lowest course runs into it. Lengths and heights are the seed's within the working's (timber.json,
+    plinth); a block's face stands a little proud or back of its neighbours' (texture, no history)."""
+    import hashing as HS
+    point = face_w - pl["pointMm"] * MM
+    soup.use(kind="mortar" if soup.level == 0 else "joint", scheme="none", seed=0.0, lap=0.0, shelter=0.0)
+    soup.quad(f.at(s0, z_ground, point), f.at(s1, z_ground, point), f.at(s1, z_top, point), f.at(s0, z_top, point),
+              ta=[(s0, z_ground), (s1, z_ground), (s1, z_top), (s0, z_top)])
+    if soup.level >= 2:
+        soup.use(kind="stone", seed=0.5, lap=0.5)
+        soup.quad(f.at(s0, z_ground, face_w), f.at(s1, z_ground, face_w), f.at(s1, z_top, face_w), f.at(s0, z_top, face_w),
+                  ta=[(s0, z_ground), (s1, z_ground), (s1, z_top), (s0, z_top)])
+        return 0
+    rng = HS.Stream(seed, "granite")
+    j = pl["jointMm"] * MM / 2
+    depth = pl["depthMm"] * MM
+    ch = pl["chamferMm"] * MM if soup.level == 0 else 0.0
+    n = 0
+    zt = z_top
+    course = 0
+    while zt > z_ground + 0.02:
+        h = rng.uniform(*pl["courseMm"]) * MM
+        zb = max(z_ground, zt - h)
+        # the joints of this course, the first block's length its own so no joint stands over one below
+        s = s0
+        first = True
+        while s < s1 - 1e-3:
+            ln = rng.uniform(*pl["stoneMm"]) * MM * (0.5 + 0.25 * (course % 2) if first else 1.0)
+            first = False
+            e = min(s1, s + ln)
+            if s1 - e < pl["stoneMm"][0] * MM * 0.4:
+                e = s1
+            w = face_w + rng.uniform(*pl["setOutMm"]) * MM
+            soup.use(kind="stone", seed=rng.random(), lap=1.0 if zb <= z_ground + 1e-6 else 0.5)
+            a_ = s + (j if s > s0 + 1e-6 else 0.0)
+            b_ = e - (j if e < s1 - 1e-6 else 0.0)
+            skip = ("back", "bottom") + (("top",) if zt < z_top - 1e-6 else ())
+            if ch > 0:
+                soup.bbox(f, a_, b_, zb + (j if zb > z_ground + 1e-6 else 0.0), zt - (j if zt < z_top - 1e-6 else 0.0), w - depth, w, ch,
+                          skip=skip)
+            else:
+                soup.box(f, a_, b_, zb, zt - (j if zt < z_top - 1e-6 else 0.0), w - depth, w,
+                         skip=skip + (("left", "right") if soup.level >= 1 else ()))
+            n += 1
+            s = e
+        zt = zb
+        course += 1
+    return n

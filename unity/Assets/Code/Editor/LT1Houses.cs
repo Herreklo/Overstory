@@ -315,6 +315,23 @@ namespace Overstory.EditorTools
 
         static ComputeBuffer buffer;
 
+        /// <summary>The houses built where the town has them (tools/houses.py --street) for the town's render (LT1Town,
+        /// -heroes): their material, its grey twin and the date they were built at, from dir's houses.json. Release
+        /// frees the houses buffer.</summary>
+        internal static (Material mat, Material grey, float date) Town(string dir, string repo)
+        {
+            var all = JsonUtility.FromJson<Rows>(File.ReadAllText(Path.Combine(dir, "houses.json")));
+            Release();
+            var (mat, grey) = Fill(new List<Row>(all.houses), Path.Combine(repo, all.pack), all.paint);
+            return (mat, grey, all.date);
+        }
+
+        internal static void Release()
+        {
+            buffer?.Release();
+            buffer = null;
+        }
+
         /// <summary>The houses' material (and its grey twin) and the houses buffer, all from the pack's records: each
         /// house's coats and roof (houses.json), each paint's chalk, gloss and peel (materials/paint-*.json), the
         /// roof coverings, the wood, stone, mortar, render and glass (materials/*.json) and the paint's weather

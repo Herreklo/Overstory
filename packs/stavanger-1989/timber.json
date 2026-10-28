@@ -29,11 +29,29 @@
       "roof": { "cover": "slate", "material": "roof-slate", "gaugeMm": 210, "buttMm": 12 },
       "chimney": { "count": 2, "sizeMm": [560, 680], "aboveRidgeMm": 950, "crown": "corbelled" },
       "plinth": { "kind": "split", "material": "fieldstone", "foundationMm": [300, 460], "courseMm": [300, 420], "stoneMm": [500, 1300], "stonePerHeight": [1.6, 3.4], "courseDrawPower": [0.5, 1.2], "snapMm": 70, "bondLeastMm": 160, "shortMm": 260, "topShortChance": 0, "pinLeastMm": 20, "jointMm": [10, 15], "pointMm": 7, "chipMm": [6, 18], "breakMm": [0, 4], "arrisMm": [5, 10], "ridgeMm": [1, 5], "ridgeShare": 0.5, "ridgeSlantDeg": [-20, 20], "setOutMm": [-4, 5], "turnDeg": [-1, 1], "pitchDeg": [-1.2, 0.8], "yawDeg": [-1.2, 1.2] }
+    },
+    "sjohus": {
+      "describes": "A sea house (sjøhus) on the quay: a timber-framed warehouse, its gable to the water, the loading doors stacked in the gable's middle under a hoist hood, small windows either side, lapped weatherboards, clay pantiles on a boxed eave, on a course of dressed granite (wooden-town-architecture.md, sea houses; docs/references/houses/01). The type's working, whatever the era it was built in (workingOfType).",
+      "years": [1780, 1900],
+      "storeyMm": 2600, "floorMm": 280,
+      "cladding": { "kind": "clinker", "exposureMm": [160, 185], "butMm": 46, "stepMm": 24, "grooveMm": 0, "boardLengthMm": [3600, 6000], "jointGapMm": 2, "tiltJitterMm": 2.0 },
+      "corner": { "widthMm": 175, "proudMm": 26 },
+      "dripBoard": { "heightMm": 150, "proudMm": 40, "slopeMm": 18 },
+      "casing": { "widthMm": 105, "proudMm": 24, "headMm": 125, "capMm": 24, "capProudMm": 60, "sillMm": 55, "sillProudMm": 80, "hornMm": 25, "brackets": null },
+      "eaves": { "overhangMm": 320, "fasciaMm": 290, "fasciaThickMm": 32, "rafterTails": false, "boxed": true, "gutter": true },
+      "verge": { "overhangMm": 260, "boardMm": 230, "thickMm": 34 },
+      "openings": { "window": "sjohus-6", "sillMm": 900, "gableEdgeMm": 175, "sideBayMm": [3000, 4500], "sideEdgeMm": 1800, "loading": ["loading-ground", "loading-upper", "loading-loft"], "backDoor": "back-ledged", "loftMm": [620, 820] },
+      "hood": { "widthMm": 2500, "projectMm": 850, "eaveAboveDoorMm": 330, "floorMm": 120, "braceMm": [140, 140], "braceDropMm": 1300, "beamMm": [150, 170], "beamOutMm": 500, "blockMm": [160, 240, 90],
+                "eaves": { "overhangMm": 140, "fasciaMm": 270, "fasciaThickMm": 30, "rafterTails": false, "boxed": true, "gutter": false },
+                "verge": { "overhangMm": 160, "boardMm": 200, "thickMm": 30 } },
+      "roof": { "cover": "pantile", "material": "clay-pantile", "gaugeMm": 300, "buttMm": 40, "tileSegments": 3 },
+      "plinth": { "kind": "dressed", "material": "granite", "courseMm": [380, 460], "stoneMm": [800, 1500], "depthMm": 320, "jointMm": 8, "pointMm": 4, "chamferMm": 14, "setOutMm": [-3, 4], "belowMm": 350 }
     }
   },
   "windows": {
     "empire-6": { "wMm": 880, "hMm": 1300, "frameMm": 72, "sashMm": 46, "barMm": 24, "cols": 2, "rows": 3, "top": 0, "post": true, "glass": "cylinder", "trims": "era", "paint": "window" },
     "tpost-6": { "wMm": 960, "hMm": 1520, "frameMm": 74, "sashMm": 50, "barMm": 26, "cols": 2, "rows": 2, "top": 380, "post": true, "glass": "cylinder", "trims": "era", "paint": "window" },
+    "sjohus-6": { "wMm": 700, "hMm": 980, "frameMm": 62, "sashMm": 42, "barMm": 22, "cols": 2, "rows": 3, "top": 0, "post": true, "glass": "cylinder", "trims": "era", "paint": "window" },
     "husmor": { "wMm": 860, "hMm": 1080, "frameMm": 58, "sashMm": 62, "barMm": 0, "cols": 1, "rows": 1, "top": 0, "post": false, "glass": "float", "trims": "lost", "paint": "window" }
   },
   "windowsByYear": [
@@ -58,8 +76,13 @@
   "rainwater": { "describes": "Zinc half-round gutters on hooks and round downpipes on clips, where the era's eaves carry a gutter: the pipe drops from an outlet near the gutter's end, by a swan neck back to the wall, to a shoe just above the ground; and the sheet metal apron dressed up a chimney's faces where it meets the covering.", "gutterRadiusMm": 65, "beadMm": 9, "hookEveryMm": 700, "hookMm": [28, 5], "pipeRadiusMm": 42, "offWallMm": 45, "clipEveryMm": 1600, "clipMm": [26, 8], "outletFromEndMm": 260, "shoeMm": 170, "footMm": 160, "flashMm": [120, 6, 150] },
   "doors": {
     "paired-square": { "leaves": 2, "wMm": 1150, "hMm": 2050, "thresholdMm": 110, "frameMm": 75, "setBackMm": 70, "leafMm": 45, "stileMm": 115, "railMm": 110, "bottomRailMm": 210, "lockRailMm": 160, "panelRows": 3, "glazedRows": 0, "fieldMm": 16, "raiseMm": 32, "lightMm": 380, "lightCols": 3, "barMm": 24, "handleMm": [32, 120, 55], "handleAtMm": 1000, "step": { "riserMm": [140, 200], "treadMm": 340, "overhangMm": 120 } },
-    "paired-glazed": { "leaves": 2, "wMm": 1200, "hMm": 2150, "thresholdMm": 110, "frameMm": 75, "setBackMm": 70, "leafMm": 45, "stileMm": 115, "railMm": 110, "bottomRailMm": 210, "lockRailMm": 160, "panelRows": 3, "glazedRows": 1, "fieldMm": 16, "raiseMm": 32, "lightMm": 420, "lightCols": 2, "barMm": 24, "handleMm": [32, 120, 55], "handleAtMm": 1000, "step": { "riserMm": [140, 200], "treadMm": 340, "overhangMm": 120 } }
+    "paired-glazed": { "leaves": 2, "wMm": 1200, "hMm": 2150, "thresholdMm": 110, "frameMm": 75, "setBackMm": 70, "leafMm": 45, "stileMm": 115, "railMm": 110, "bottomRailMm": 210, "lockRailMm": 160, "panelRows": 3, "glazedRows": 1, "fieldMm": 16, "raiseMm": 32, "lightMm": 420, "lightCols": 2, "barMm": 24, "handleMm": [32, 120, 55], "handleAtMm": 1000, "step": { "riserMm": [140, 200], "treadMm": 340, "overhangMm": 120 } },
+    "loading-ground": { "leaves": 2, "wMm": 1700, "hMm": 2250, "thresholdMm": 60, "frameMm": 95, "setBackMm": 55, "plankMm": [125, 165], "plankThickMm": 28, "vMm": 7, "ledgeMm": [150, 34], "ledges": 3, "braced": true, "strapMm": [50, 7, 700], "step": { "riserMm": [140, 200], "treadMm": 420, "overhangMm": 90 } },
+    "loading-upper": { "leaves": 2, "wMm": 1300, "hMm": 1850, "thresholdMm": 100, "frameMm": 90, "setBackMm": 45, "plankMm": [125, 165], "plankThickMm": 28, "vMm": 7, "ledgeMm": [140, 32], "ledges": 3, "braced": true, "strapMm": [46, 7, 560], "step": null },
+    "loading-loft": { "leaves": 2, "wMm": 1150, "hMm": 1750, "thresholdMm": 60, "frameMm": 85, "setBackMm": 40, "plankMm": [125, 165], "plankThickMm": 28, "vMm": 7, "ledgeMm": [140, 32], "ledges": 3, "braced": true, "strapMm": [44, 7, 520], "step": null },
+    "back-ledged": { "leaves": 1, "wMm": 1000, "hMm": 2050, "thresholdMm": 60, "frameMm": 85, "setBackMm": 50, "plankMm": [125, 165], "plankThickMm": 28, "vMm": 7, "ledgeMm": [150, 32], "ledges": 3, "braced": true, "strapMm": [46, 7, 620], "step": { "riserMm": [140, 200], "treadMm": 380, "overhangMm": 90 } }
   },
+  "workingOfType": { "warehouse": "sjohus" },
   "lostTrims": { "widthMm": 68, "proudMm": 14, "sillMm": 34, "sillProudMm": 40 },
   "marks": { "dripReachM": 0.9, "dripSideM": 0.12, "endReachM": 0.15 },
   "boarding": { "thickMm": 22, "widthMm": [95, 175], "gapMm": [0, 16], "setBackMm": [2, 6], "topGapMm": [0, 30], "outOfTrueShare": 0.0, "outOfTrueDeg": [0.4, 0.9], "stock": "formwork", "sawing": "rough", "nails": { "fromEndMm": [22, 40], "acrossMm": 30 }, "battens": { "spacingM": 0.7, "widthMm": [70, 100], "thickMm": 22, "outOfLevelDeg": 1.2 } },

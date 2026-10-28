@@ -10,6 +10,11 @@ events, its coats on the date (blender/parts/house/coats.py, by the pack's paint
         [--houses C,D,E] [--out cache/houses] [--date 1989.8] [--pack packs/stavanger-1989] [--no-bake]
         [--tiers near,street,city]
 
+--street 109 builds Harbour Row's houses instead (fixtures/lt1-street.json's records), each where the town has it:
+its plan from the town's placement and its ground from the town's (fixtures/lt1-harbour-town.json, grown by
+blender/tools/grow_harbour.py). A type with its own working (timber.json, workingOfType: a warehouse is a sea house)
+is assembled by blender/parts/house/sjohus.py. Its files are named by its id (109.bin, 109.street.bin).
+
 Blender only for its ray tree (mathutils): nothing is made in a scene.
 """
 
@@ -30,6 +35,7 @@ import numpy as np  # noqa: E402
 import hashing as HS  # noqa: E402
 import coats as CO  # noqa: E402
 import house as HO  # noqa: E402  (blender/parts/house, not the old generator)
+import sjohus as SJ  # noqa: E402
 
 
 def facts_of(record):
@@ -328,6 +334,31 @@ def bake_soup(soup, ground, lip):
     return seen
 
 
+def town_ground(g):
+    """The town's ground (its fixture's grid, mm) at a street point, on the grid's triangles as LT1Town.GroundTri
+    reads it, in metres."""
+    Z, nx, ny = g["z"], g["nx"], g["ny"]
+    x0, y0, step = g["x0"] * 0.001, g["y0"] * 0.001, g["step"] * 0.001
+
+    def ground(x, y):
+        fx, fy = (x - x0) / step, (y - y0) / step
+        i, j = min(max(int(math.floor(fx)), 0), nx - 2), min(max(int(math.floor(fy)), 0), ny - 2)
+        tx, ty = min(max(fx - i, 0.0), 1.0), min(max(fy - j, 0.0), 1.0)
+        a, b, c, d = Z[j * nx + i], Z[j * nx + i + 1], Z[(j + 1) * nx + i], Z[(j + 1) * nx + i + 1]
+        z = a + (b - a) * tx + (c - a) * ty if tx + ty <= 1.0 else d + (c - d) * (1.0 - tx) + (b - d) * (1.0 - ty)
+        return z * 0.001
+    return ground
+
+
+def town_plan(p):
+    """A town placement as the assemblers read a plan: the front's left corner, its width along the front and depth
+    back from it, its turn, and its floor, eave (over the floor) and pitch."""
+    fp = p["footprint"]
+    return dict(name=str(p["id"]), ox=fp[0] * 0.001, oy=fp[1] * 0.001, w=p["w"] * 0.001, d=p["d"] * 0.001,
+                angle=math.degrees(math.atan2(fp[3] - fp[1], fp[2] - fp[0])), base=p["base"] * 0.001,
+                eave=(p["eave"] - p["base"]) * 0.001, pitch=p["pitch"], roof=p["roof"])
+
+
 def roof_of(facts, timber, date):
     """The roof's covering material and the year it was laid: the era's, unless a 'roof_retiled' event since."""
     year = facts["built"]
@@ -347,7 +378,10 @@ def main(argv):
     ap.add_argument("--paint", default="paint.json")
     ap.add_argument("--no-bake", action="store_true")
     ap.add_argument("--tiers", default="near", help="the levels to write (timber.json, levels): near as L.bin, others as L.<tier>.bin")
+    ap.add_argument("--street", default="", help="Harbour Row's houses by id (fixtures/lt1-street.json), placed as the town has them")
     a = ap.parse_args(argv)
+    if a.street:
+        return street(a)
     out = os.path.join(ROOT, a.out)
     os.makedirs(out, exist_ok=True)
     timber = json.load(open(os.path.join(ROOT, a.pack, a.timber)))
@@ -378,6 +412,48 @@ def main(argv):
                          coats=CO.coats(facts, paint, seed, a.date, CO.scheme_of(paint, lanes.get(hid))), roof=roof_of(facts, timber, a.date),
                          fp=[round(c, 3) for xy in plans[letter]["fp"] for c in xy]))
         print(f"[houses] {letter} ({hid}, {facts['era']} {facts['built']}): {report['windows']} windows, roof {report['roof']}")
+        for w, r in report["walls"].items():
+            print(f"[houses]   {w}: {r}")
+    json.dump(dict(date=a.date, pack=a.pack, paint=a.paint, houses=rows), open(os.path.join(out, "houses.json"), "w"), indent=1)
+
+
+def street(a):
+    """Harbour Row's houses, each built where the town has it (see the module's note)."""
+    out = os.path.join(ROOT, a.out)
+    os.makedirs(out, exist_ok=True)
+    timber = json.load(open(os.path.join(ROOT, a.pack, a.timber)))
+    timber["covers"] = {w["roof"]["material"]: json.load(open(os.path.join(ROOT, a.pack, "materials", w["roof"]["material"] + ".json")))
+                        for w in timber["workings"].values()}
+    paint = json.load(open(os.path.join(ROOT, a.pack, a.paint)))
+    fixture = json.load(open(os.path.join(ROOT, "fixtures/lt1-street.json")))
+    town = json.load(open(os.path.join(ROOT, "fixtures/lt1-harbour-town.json")))
+    records = {r["id"]: r for r in fixture["buildings"]}
+    placed = {p["id"]: p for p in town["placements"]}
+    seed = fixture["worldSeed"]
+    ground = town_ground(town["ground"])
+    rows = []
+    for index, hid in enumerate(int(x) for x in a.street.split(",")):
+        rec, p = records[hid], placed[hid]
+        facts = facts_of(rec)
+        facts["type"] = rec["type"]
+        b = town_plan(p)
+        sea = rec["type"] in timber.get("workingOfType", {})
+        build = SJ.build if sea else HO.build
+        working = timber["workingOfType"][rec["type"]] if sea else facts["era"]
+        for tier in a.tiers.split(","):
+            t0 = time.time()
+            soup, report = build(b, facts, timber, ground, a.date, index, seed, lit_share=0.0, tier=tier)
+            t1 = time.time()
+            baked = None if a.no_bake else bake_soup(soup, ground, timber["push"]["lipShade"])
+            soup.write(os.path.join(out, f"{hid}.bin" if tier == "near" else f"{hid}.{tier}.bin"), baked)
+            print(f"[houses] {hid} {tier}: {report['triangles']} triangles, built {t1 - t0:.1f} s, baked {time.time() - t1:.1f} s")
+        rows.append(dict(index=index, name=str(hid), id=hid, era=facts["era"], built=facts["built"],
+                         wealth=facts["wealth"], events=facts["events"],
+                         coats=CO.coats(facts, paint, seed, a.date, CO.scheme_of(paint, p["lane"])),
+                         roof=dict(material=timber["workings"][working]["roof"]["material"],
+                                   year=roof_of(facts, timber, a.date)["year"]),
+                         fp=[round(c * 0.001, 3) for c in p["footprint"]]))
+        print(f"[houses] {hid} ({rec['type']}, {facts['era']} {facts['built']}): {report['windows']} windows, roof {report['roof']}")
         for w, r in report["walls"].items():
             print(f"[houses]   {w}: {r}")
     json.dump(dict(date=a.date, pack=a.pack, paint=a.paint, houses=rows), open(os.path.join(out, "houses.json"), "w"), indent=1)
