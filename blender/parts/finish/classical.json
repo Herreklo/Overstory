@@ -60,8 +60,8 @@
     "setBackMm": [2, 6],
     "topGapMm": [0, 30],
     "sideGapMm": [0, 8],
-    "battens": { "count": 2, "widthMm": [70, 100], "thickMm": 22, "pastCasingMm": [120, 320], "outOfLevelDeg": [1.0, 2.0], "nailsPerEnd": 2, "stock": "formwork", "sawing": "rough" },
-    "describes": "How an empty house was boarded in the late 1980s, from photo 09: a sheet in each opening inside its casing, set back from the casing's face, and two raw sawn battens nailed across it onto the casing and the cladding, each a degree or two out of level."
+    "battens": { "count": 2, "widthMm": [70, 100], "thickMm": 22, "pastCasingMm": [120, 320], "outOfLevelDeg": [2.0, 4.0], "nailsPerEnd": 2, "stock": "formwork", "sawing": "rough", "endCutDeg": [20, 8] },
+    "describes": "How an empty house was boarded in the late 1980s, from photo 09: a sheet in each opening inside its casing, each set back from the casing's face by its own amount, so their join steps; and two raw sawn battens nailed across it onto the casing and the cladding, each out of level by the hand that nailed it (2 to 4 degrees, 09's range, so the two are skewed to each other), their ends sawn off askew."
   },
   "push": {
     "describes": "The style's push on true sizes (the street's shape language: deep reveals, thick trims, sills and caps that throw a shadow): factors on the working's sizes. The bends stay true (settle 1).",

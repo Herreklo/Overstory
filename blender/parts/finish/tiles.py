@@ -8,6 +8,7 @@ Writes into <cache>/out, each 1,024 square over 2 m (corner.json's tileable and 
                       elsewhere it breaks dirt and water up), A height, 0.5 + 0.5 * mm / heightMm
   tile-<name>-n.png   the normal from that height, tangent space, OpenGL (+v up), packed with a smoothness offset
                       (finishlib.pack_normal; none here: way A's gloss is the material's)
+  tile-flake.png      the paint's flake atlas, finer, read by every painted surface (flake(), its own channels)
 u runs along the grain (a board's length, a trim's sweep), v across. Fields are made at twice the size and boxed
 down, so nothing finer than about two texels survives to shimmer. Each tileable's mean lightness is its material's
 (finish.json); the fields only move texels about it. Nothing here claims history: the page carries that.
@@ -212,21 +213,57 @@ def batten(t, spec, mat, out):
     t.save(out, value, value, breakup, height - height.mean(), spec["heightMm"])
 
 
+def blur_wrap(a, sigma):
+    """A Gaussian blur of `sigma` texels over a tile that wraps."""
+    f0, f1 = np.fft.fftfreq(a.shape[0])[:, None], np.fft.fftfreq(a.shape[1])[None, :]
+    return np.real(np.fft.ifft2(np.fft.fft2(a) * np.exp(-2.0 * (np.pi * sigma) ** 2 * (f0 ** 2 + f1 ** 2))))
+
+
+def flake(t, spec, out):
+    """The paint's flake atlas, finer than the board's tileable, read by every painted surface of way A in place of
+    its own breakup: old oil paint checks along the grain and across it into plates at several scales, and a plate
+    lifts whole, its edge torn a little. R the breakup (uniform 0..1: paint is lost where the page's share + R > 1);
+    G the same blurred over `haloMm` and rank-mapped, which the shader meets with the share widened by its halo, so
+    chalked paint rings each loss and nowhere else; B the narrow tracks a run of water keeps to down a board, across
+    the grain. No normal: the atlas only says where."""
+    u0, v0 = t.u, t.v
+    wc, wa = spec["warpCellMm"] * MM, spec["warpMm"] * MM / t.m
+    t.u = (u0 + 2.0 * wa * (t.fbm("warp-u", wc, wc) - 0.5)) % 1.0
+    t.v = (v0 + 2.0 * wa * (t.fbm("warp-v", wc, wc) - 0.5)) % 1.0
+    plates = np.zeros(t.u.shape)
+    for i, (along, across, weight) in enumerate(spec["plates"]):
+        bid, _, _, _, key = t.voronoi(f"plates-{i}", along * MM, across * MM)
+        plates = plates + weight * FL.unit(key, bid, 7)
+    t.u, t.v = u0, v0
+    fine = t.fbm("fine", spec["fineMm"][0] * MM, spec["fineMm"][1] * MM, octaves=2)
+    r = FL.equalise(t.down(plates + spec["fineWeight"] * fine))
+    g = FL.equalise(blur_wrap(r, spec["haloMm"] * MM * t.size / t.m))
+    runs = FL.equalise(t.down(t.fbm("runs", spec["runMm"][0] * MM, spec["runMm"][1] * MM, octaves=2)))
+    b = FL.smoothstep(spec["runCore"][0], spec["runCore"][1], runs)
+    FL.write(os.path.join(out, f"tile-{t.name}.png"), np.stack([r, g, b, np.ones_like(r)], axis=-1))
+    print(f"[tiles] {t.name}: {t.size} over {t.m} m, run cores {b.mean():.2f} of the face")
+
+
 def stone(t, spec, mat, out):
-    """The plinth's fieldstone: a split face that undulates and breaks in soft cleavage steps, mottled by its
-    minerals at a few centimetres; the mortar sandy."""
+    """The plinth's split stone: a face broken along its cleavage into flat facets, each tilted its own way so the
+    sky shades it its own value, the steps where one meets the next worn to soft ramps; over them the rock's
+    crystals, dark grains in a lighter mass a few millimetres across; the mortar sandy."""
+    bid, ox, oy, edge, k = t.voronoi("facets", spec["facetMm"] * MM)
+    tx = spec["tilt"] * (2.0 * FL.unit(k, bid, 2) - 1.0)
+    ty = spec["tilt"] * (2.0 * FL.unit(k, bid, 3) - 1.0)
+    facet = (tx * ox + ty * oy) / MM + spec["stepMm"] * (2.0 * FL.unit(k, bid, 4) - 1.0)
+    # weathered arrises: where one facet meets the next the step is worn to a ramp, so no crack is drawn there
+    facet = blur_wrap(facet, spec["facetSoftMm"] * MM * facet.shape[0] / t.m)
     m = spec["undulationMm"] * MM
-    base = t.signed("face", m, m, octaves=4, gain=0.55)
-    k = 1.0 / spec["stepEvery"]
-    ph = base * k
-    terr = (np.floor(ph) + FL.smoothstep(0.75, 1.0, ph - np.floor(ph))) / k
-    form = (1.0 - spec["terrace"]) * base + spec["terrace"] * terr
-    height = spec["reliefMm"] * form
+    height = facet + spec["undulationReliefMm"] * t.signed("face", m, m, octaves=3, gain=0.5)
+    g = spec["grainMm"] * MM
+    grains = FL.smoothstep(1.0 - spec["grainShare"] - 0.06, 1.0 - spec["grainShare"] + 0.06,
+                           FL.equalise(t.fbm("grain", g, g, octaves=2, gain=0.4)))
     mo = spec["mottleMm"] * MM
-    mottle = t.signed("mottle", mo, mo, octaves=3)
-    value = mat["paint"]["L"] + spec["mottleL"] * 0.5 * mottle + spec["formL"] * 0.5 * base
+    value = (mat["paint"]["L"] + spec["mottleL"] * 0.5 * t.signed("mottle", mo, mo, octaves=3)
+             + spec["facetL"] * (FL.unit(k, bid, 5) - 0.5) - spec["grainL"] * (grains - spec["grainShare"]))
     mortar = mat["under"]["L"] + spec["mortarL"] * t.signed("mortar", spec["mortarMm"] * MM, spec["mortarMm"] * MM)
-    breakup = t.fbm("breakup", 0.08, 0.08) + 0.15 * (base - base.min()) / np.ptp(base)
+    breakup = t.fbm("breakup", 0.08, 0.08) + 0.15 * FL.smoothstep(0.0, 0.01, edge)
     t.save(out, mortar, value, breakup, height - height.mean(), spec["heightMm"])
 
 
@@ -269,11 +306,17 @@ def main():
         ("stone", lambda t: stone(t, T["stone"], M["stone"], out)),
         ("tile", lambda t: clay_tile(t, T["tile"], M["tiles"], out)),
         ("zinc", lambda t: zinc(t, T["zinc"], M["zinc"], out)),
+        ("flake", lambda t: flake(t, T["flake"], out)),
     ]
     for name, job in jobs:
         if only and name not in only:
             continue
-        job(Tile(name, ts["size"] if name == "trim-sheet" else size, ts["metres"] if name == "trim-sheet" else metres))
+        sz, m = size, metres
+        if name == "trim-sheet":
+            sz, m = ts["size"], ts["metres"]
+        elif name == "flake":
+            sz, m = T[name]["size"], T[name]["metres"]
+        job(Tile(name, sz, m))
     print(f"[tiles] wrote {out}")
 
 

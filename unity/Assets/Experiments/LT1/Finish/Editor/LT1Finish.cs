@@ -27,8 +27,8 @@ namespace Overstory.EditorTools
         const string Gen = Dir + "/Generated";
         const int Width = 2560, Height = 1440, Msaa = 4, WarmUp = 3;
 
-        [Serializable] class Mat { public string name, tile; public int painted; public float paintSmooth, paintFlat, underSmooth; public float[] scanMetres; }
-        [Serializable] class Digest { public Mat[] mats; public float tileMetres, dirtL, waterL, cavityL, lipL, crackL, lapDark, lapCore, lapReach, lapScale, lapPage, lapStep, groundL, groundSmooth; }
+        [Serializable] class Mat { public string name, tile; public int painted, authored; public float paintSmooth, paintFlat, underSmooth, stainL, tideW, stainMottleL, tideL, flakeScale, islandL, grainMip, grainFade; public float[] islandW; public float[] scanMetres; }
+        [Serializable] class Digest { public Mat[] mats; public float tileMetres, dirtL, waterL, cavityL, lipL, crackL, haloL, haloW, haloDull, runBody, lapDark, lapCore, lapReach, lapScale, lapPage, lapStep, groundL, groundSmooth; }
 
         struct View { public string name, level; public Vector3 pos, target; public float fov; }
 
@@ -233,7 +233,8 @@ namespace Overstory.EditorTools
             foreach (var m in d.mats)
             {
                 var mat = new Material(shader);
-                bool scan = way != "A";
+                // way A reads its own tileables, but an authored face (a scan) where the material asks for one
+                bool scan = way != "A" || m.authored == 1;
                 string stem = (scan ? "scan-" : "tile-") + m.tile;
                 mat.SetTexture("_Tile", tex(stem));
                 mat.SetTexture("_TileN", tex(stem + "-n"));
@@ -242,10 +243,25 @@ namespace Overstory.EditorTools
                 mat.SetTexture("_Hist", tex(way == "B" ? "hist-b" : "hist-a"));
                 mat.SetTexture("_Geo", tex("geo"));
                 mat.SetTexture("_StreetN", tex("street-normal"));
+                // way A's painted faces flake by the flake atlas; a scan keeps its own breakup
+                mat.SetTexture("_Flake", tex("tile-flake"));
+                mat.SetFloat("_FlakeScale", scan ? 0 : m.flakeScale);
+                mat.SetFloat("_HaloL", d.haloL);
+                mat.SetFloat("_HaloW", d.haloW);
+                mat.SetFloat("_HaloDull", d.haloDull);
+                mat.SetFloat("_RunBody", d.runBody);
                 mat.SetFloat("_Painted", m.painted);
                 mat.SetFloat("_PaintSmooth", m.paintSmooth);
                 mat.SetFloat("_UnderSmooth", m.underSmooth);
                 mat.SetFloat("_PaintFlat", m.paintFlat);
+                mat.SetFloat("_StainL", m.stainL);
+                mat.SetFloat("_TideW", m.tideW);
+                mat.SetFloat("_StainMottleL", m.stainMottleL);
+                mat.SetFloat("_TideL", m.tideL);
+                mat.SetVector("_IslandW", new Vector4(m.islandW[0], m.islandW[1], 0, 0));
+                mat.SetFloat("_IslandL", m.islandL);
+                mat.SetFloat("_GrainMip", m.grainMip);
+                mat.SetFloat("_GrainFade", m.grainFade);
                 mat.SetFloat("_DirtL", d.dirtL);
                 mat.SetFloat("_WaterL", d.waterL);
                 mat.SetFloat("_CavityL", d.cavityL);

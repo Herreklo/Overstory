@@ -165,14 +165,15 @@ def chart(key, w, h):
 
 
 def extrude(piece, level, prof, o, L, P, Q, nseg=1, caps=(False, False), uvmode="strip", strip=None, tile_off=(0, 0),
-            planar=None):
+            planar=None, cut=None):
     """Sweep a 2D profile along a straight line, in the piece's frame.
 
     prof: [(p, q, group, arris)] points in order (an open polyline); each edge (i, i+1) takes the group and arris of
     its first point. o: start; L: the sweep (a vector, its length the piece's length); P, Q: the profile's axes.
     UV0 'strip': u along the sweep, v the arc across its group (for the trim sheet and tileables; `strip` maps a
     group to (v0, width) in the sheet, metres of texture). Charts: each group's (length x nominal width) unless
-    `planar` gives a function local point -> (chartkey, cu, cv, u0, v0) for wall-plane charting."""
+    `planar` gives a function local point -> (chartkey, cu, cv, u0, v0) for wall-plane charting. `cut` (start, end)
+    gives each end's offset along the sweep as a function of the profile point (p, q): an end sawn askew."""
     length = L.length
     d = L.normalized()
     prof = outward(prof, P, Q, d)
@@ -194,7 +195,8 @@ def extrude(piece, level, prof, o, L, P, Q, nseg=1, caps=(False, False), uvmode=
             t0, t1 = k / nseg, (k + 1) / nseg
             pts, uv0, cuv = [], [], []
             for (t, j, s) in ((t0, i, start), (t1, i, start), (t1, i + 1, start + a), (t0, i + 1, start + a)):
-                p = o + d * (t * length) + P * prof[j][0] + Q * prof[j][1]
+                along = t * length + (cut[int(t)](*prof[j][:2]) if cut is not None and t in (0, 1) else 0.0)
+                p = o + d * along + P * prof[j][0] + Q * prof[j][1]
                 pts.append(p)
                 frac = s / total if total > 0 else 0.0
                 if planar is not None:
@@ -202,7 +204,7 @@ def extrude(piece, level, prof, o, L, P, Q, nseg=1, caps=(False, False), uvmode=
                     uv0.append((u0 + tile_off[0], v0 + tile_off[1]))
                     cuv.append((cu, cv))
                 else:
-                    u = t * length
+                    u = along
                     if strip is not None:
                         v0s, ws = strip(g, nominal)
                         uv0.append((u + tile_off[0], v0s + frac * ws))
@@ -217,7 +219,7 @@ def extrude(piece, level, prof, o, L, P, Q, nseg=1, caps=(False, False), uvmode=
         t = end * length
         bounds = cap_bounds(prof)
         ring = list(prof)
-        pts = [o + d * t + P * p[0] + Q * p[1] for p in ring]
+        pts = [o + d * (t + (cut[end](*p[:2]) if cut is not None else 0.0)) + P * p[0] + Q * p[1] for p in ring]
         # the start cap faces back along the sweep, the end cap forward
         if newell(pts).dot(d) * (1 if end else -1) < 0:
             pts, ring = pts[::-1], ring[::-1]
@@ -742,9 +744,8 @@ class Corner:
         x0, x1 = self.x_open0, self.x_open1
         za, zb = self.z_open0, self.z_open1
         t = bd["sheetThickMm"] * MM
-        sb = F.between(*bd["setBackMm"], "board", "setback") * MM
         top_gap = F.between(*bd["topGapMm"], "board", "topgap") * MM
-        y_face = -self.step * 0.5 - self.trim_proud + sb
+        y_set = -self.step * 0.5 - self.trim_proud
         n = bd["sheetsHigh"]
         hs = (zb - za - top_gap)
         split = 0.45 + 0.2 * F.u("board", "split")
@@ -752,6 +753,8 @@ class Corner:
         z = za + 0.002
         for i, h in enumerate(heights):
             g = F.between(*bd["sideGapMm"], "board", "sheet", i, "gap") * MM
+            # each sheet set back by its own amount, so the join between two steps: a lip that throws a line of shadow
+            y_face = y_set + F.between(*bd["setBackMm"], "board", "sheet", i, "setback") * MM
             pc = self.make(f"board/sheet{i}", "sheet", ("near", "street"), mode="rigid")
             sx0, sx1 = x0 + g * 0.5, x1 - g * 0.5
             for lv in ("near", "street"):
@@ -766,7 +769,7 @@ class Corner:
             pc.along = Vector((1, 0, 0))
             pc.extent = (sx0, sx1, z, z + h)
             z += h
-        self.features["sheets"] = (x0, x1, za, zb - top_gap, y_face)
+        self.features["sheets"] = (x0, x1, za, zb - top_gap, y_set + bd["setBackMm"][0] * MM)
         # battens across the casing, past it onto the cladding, out of level by the hand that nailed them
         bt = bd["battens"]
         th = bt["thickMm"] * MM
@@ -784,6 +787,11 @@ class Corner:
             # centred on zc at its middle, where its nails are reckoned from
             o = Vector((bx0, y_b, zc - w / 2 - math.tan(tilt) * (bx1 - bx0) / 2))
             self.features["battens"].append((bx0, bx1, zc, math.tan(tilt), w))
+            # each end sawn off by hand, askew across the face and through the board
+            ec = bt["endCutDeg"]
+            ends = [(math.tan(math.radians(F.between(-ec[0], ec[0], "batten", i, e, "face"))),
+                     math.tan(math.radians(F.between(-ec[1], ec[1], "batten", i, e, "through")))) for e in ("start", "end")]
+            cut = tuple((lambda p, q, a=a, b=b: a * (p - w / 2) + b * (q - th / 2)) for a, b in ends)
             for lv in ("near", "street"):
                 cc = self.ch["batten"] if lv == "near" else 0.0
                 prof = rect_profile(w, th, cc, groups=("bottom", "front", "top", "back"))
@@ -791,7 +799,7 @@ class Corner:
                 NOMINAL[(pc.id, "bottom")] = th
                 NOMINAL[(pc.id, "top")] = th
                 extrude(pc, lv, prof, o, L, Vector((-math.sin(tilt), 0, math.cos(tilt))), Vector((0, -1, 0)),
-                        caps=(True, True), tile_off=(F.u("batten", i, "u") * 7, 0.0))
+                        caps=(True, True), tile_off=(F.u("batten", i, "u") * 7, 0.0), cut=cut)
             pc.anchor = Vector(((bx0 + bx1) / 2, y_b, zc))
             pc.along = Vector((1, 0, 0))
             # nails: two at each casing it crosses

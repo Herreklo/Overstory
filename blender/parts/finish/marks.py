@@ -8,8 +8,9 @@ Writes into <cache>/out, each 1,024 square, 8 bits, linear:
                 cladding), for the street level's laps, A the arris (a chamfer face at near, its place at street)
   hist-b.png    way B's (when scans.py has run): R the scan's own lost share, B its scanned decals' water
   hist-a.png    the history ways A and C read: R where paint is lost (a share, met by the tileable's breakup in the
-                shader), G dirt, B water (streaks), A a value shift, 0.5 + dL*/80: each board's own value, the
-                boarding's stains, the nails' heads and rust
+                shader), and on the boarding's bare sheet its wetness, met the same way by the ply's stain breakup;
+                G dirt, B water (streaks), A a value shift, 0.5 + dL*/80: each board's own value, the nails' heads
+                and rust, the battens' weathering
   street-normal.png  the street level's laps and pillows (bake.py), 8 bits
 
 Every mark is seeded from 107's id and a purpose and reads a fact: the neglect amount scales loss and grime; paint is
@@ -82,11 +83,14 @@ def gauss(d, w):
 
 
 def board_values(pg, P, meta):
-    """Each board, trim, sheet, batten, stone and tile its own value: a piece's seed, claiming no history."""
+    """Each trim, sheet, batten, stone and tile its own value, and each course of boards one, its short lengths
+    with it (a course was cut and painted as one run): a piece's or a course's seed, claiming no history."""
     dl = np.zeros(pg.shape)
+    courses = np.asarray(meta["courses"])
+    course = np.searchsorted(courses, pg.per_piece(pg.z, "min") + 0.02, side="right") * 2 + pg.street.astype(np.int64)
     for i, mat in enumerate(MATS):
         spread = P["marks"]["boardValueL"][mat]
-        u = FL.unit(key(meta, "value", mat), pg.piece)
+        u = FL.unit(key(meta, "value", mat), course if mat == "cladding" else pg.piece)
         dl = np.where(pg.mat == i, (u - 0.5) * spread, dl)
     return dl
 
@@ -166,11 +170,12 @@ def paint_loss(pg, P, meta, dl):
         n = int(F["perM"] * (hi_ - lo_))
         add(groups_on(pg, key(meta, "foot", wall), on, (lo_, hi_), (h["drip"][1], foot_top), n, F["length"],
                       F["height"], F["strength"], snap=courses))
-    # under the sill: its drip wets the course below it
+    # under the sill's ends: its horns drip on the courses below them
     sx0, sx1, z_sill, _ = f["sill"]
     U = L["underSill"]
-    add(groups_on(pg, key(meta, "under-sill"), clad & pg.street, (sx0, sx1), (z_sill - U["reach"], z_sill - 0.04),
-                  U["count"], U["length"], U["height"], U["strength"], snap=courses))
+    for e, span in enumerate(((sx0 - U["outside"], sx0 + U["inside"]), (sx1 - U["inside"], sx1 + U["outside"]))):
+        add(groups_on(pg, key(meta, "under-sill", e), clad & pg.street, span, (z_sill - U["reach"], z_sill - 0.04),
+                      U["count"], U["length"], U["height"], U["strength"], snap=courses))
     # the corner board's foot, on both its faces
     C = L["cornerFoot"]
     corner = trims & pg.vertical & (np.abs(pg.along) < cw + 0.05) & (pg.z < h["top"] - 0.1)
@@ -240,9 +245,11 @@ def dirt(pg, P, meta, splash):
     return np.clip(foot + eave + up + cav + grime + butts, 0, 1)
 
 
-def runnel(pg, k, along0, along1, z_top, n, width, length, strength, mask, ends=()):
+def runnel(pg, k, along0, along1, z_top, n, width, length, strength, mask, ends=(), laps=None):
     """Water leaving an edge at z_top between along0 and along1 runs down in `n` seeded runnels (plus one at each of
-    `ends`), each fading with the distance it has run."""
+    `ends`), each fading with the distance it has run. Down the boards (`laps`: the courses and finish.json's
+    `restartMm`) it leaves each butt and lands a little below it on the board under, so each board's stretch starts
+    there again and thins as it runs to the next butt."""
     out = np.zeros(pg.shape)
     below = np.clip(z_top - pg.z, 0, None)
     starts = [(a, 1.0) for a in ends]
@@ -255,6 +262,11 @@ def runnel(pg, k, along0, along1, z_top, n, width, length, strength, mask, ends=
         wander = (FL.noise2(below / 0.12, np.full(pg.shape, float(i)), HS.h(k, i, "wander")) - 0.5) * w * 1.5
         s = amp * strength * gauss(pg.along - a - wander, w) * np.exp(-below / ln)
         out = np.maximum(out, s)
+    if laps is not None:
+        c, (land, thin) = np.asarray(laps[0]), (m / 1000.0 for m in laps[1])
+        i = np.searchsorted(c, pg.z, side="right")
+        d = np.clip(np.where(i < len(c), c[np.clip(i, 0, len(c) - 1)], np.inf) - pg.z, 0, None)
+        out = out * FL.smoothstep(0.0, land, d) * np.exp(-np.where(np.isfinite(d), d, 0.0) / thin)
     return np.where(mask & (pg.z <= z_top), out, 0.0)
 
 
@@ -267,8 +279,9 @@ def water(pg, P, meta, dl, splash):
     # under the sill: its front drips along its length, its horns most
     sx0, sx1, z_sill, proud = f["sill"]
     S = W["sill"]
-    s = runnel(pg, key(meta, "sill"), sx0 + 0.03, sx1 - 0.03, z_sill, S["runnels"], S["width"], S["length"], 0.8,
-               wall, ends=(sx0 + 0.012, sx1 - 0.012))
+    laps = (meta["courses"], S["restartMm"])
+    s = runnel(pg, key(meta, "sill"), sx0 + 0.03, sx1 - 0.03, z_sill, S["runnels"], S["width"], S["length"], S["strength"],
+               wall, ends=(sx0 + 0.012, sx1 - 0.012), laps=laps)
     wash = S["wash"] * ((pg.along > sx0) & (pg.along < sx1)) * np.exp(-np.clip(z_sill - pg.z, 0, None) / 0.22)
     out = np.maximum(out, np.where(wall & (pg.z <= z_sill), wash, 0) + s)
     # the eave's drip line: wind throws the most-laden pans' water back under the soffit, down the top courses
@@ -277,12 +290,14 @@ def water(pg, P, meta, dl, splash):
     for i, (x, _, flow) in enumerate(f["drips"]):
         if flow < E["minFlow"] or not (0.05 < x < meta["sample"][0] - 0.05):
             continue
-        r = runnel(pg, HS.h(k, i), x - 0.04, x + 0.04, h["top"], 1, E["width"], E["length"], E["strength"] * flow, wall)
+        r = runnel(pg, HS.h(k, i), x - 0.04, x + 0.04, h["top"], 1, E["width"], E["length"], E["strength"] * flow, wall,
+                   laps=laps)
         out = np.maximum(out, r)
     # the splash at the foot wets the plinth, the drip board and the lowest course
     sp = W["splash"]
     out = np.maximum(out, np.where(pg.vertical, sp["strength"] * splash * FL.smoothstep(sp["top"], 0.0, pg.z), 0.0))
-    # the 1986 nails: an iron-black head, and rust run down the grain below it, on the batten and on what lies under
+    # the 1986 nails: an iron-black head in a halo where the iron blackens the wood, and rust run down the grain
+    # below it, on the batten and on what lies under
     N = W["nails"]
     k = key(meta, "nails")
     for i, (xn, zn) in enumerate(f["nails"]):
@@ -292,49 +307,71 @@ def water(pg, P, meta, dl, splash):
         head = gauss(np.hypot(pg.along - xn, pg.z - zn), N["headMm"] / 1000.0)
         w = N["widthMm"][0] / 1000.0 + (N["widthMm"][1] - N["widthMm"][0]) / 1000.0 * np.clip(below / ln, 0, 1)
         run = gauss(pg.along - xn, w / 2) * np.exp(-below / ln) * (pg.z <= zn)
-        dl -= np.where(near, np.maximum(N["headL"] * head, N["rustL"] * run), 0.0)
-    # the boarding's sheets: damp gathers low on the boarding and wicks in at each sheet's cut edges, leaving dark
-    # blotched stains with a tide line at their edge; the middle, dry in the sun, bleaches lighter
+        halo = gauss(np.hypot(pg.along - xn, pg.z - zn), N["haloMm"] / 1000.0)
+        dl -= np.where(near, np.maximum.reduce([N["headL"] * head, N["haloL"] * halo, N["rustL"] * run]), 0.0)
+    return np.clip(out, 0, 1)
+
+
+def boarding(pg, P, meta, dl):
+    """The boarding of 1986: the sheets' wetness, returned for the page's R (the shader meets it with the ply's own
+    breakup, finish.json's stain), and into `dl` the sheets' greying, nails, the veneer lifting at the join, and the
+    battens' weathering. Water soaks into a sheet only from a source, and most where it stands longest: held on each
+    batten's top edge against the sheet, most on the lowest (the sheet above drains to it, and water stands longer the
+    more there is) and toward its low end, wicking up; seeping from behind it, a narrower band below; wicking down
+    from under the head's drip; at the join and the sill. The surround's joint leaks on one side, so that side runs
+    wet down the casing's edge and the other stays nearly dry. Each sheet drinks by its own amount, and the face
+    veneer draws water along its grain, so a front runs out in long low fingers. Three winters grey the whole face
+    unevenly beneath it."""
+    W = P["marks"]["water"]
+    f = meta["features"]
     Sb = W["sheet"]
     sheet = pg.m["sheet"]
     z0, z1 = pg.per_piece(pg.z, "min"), pg.per_piece(pg.z, "max")
     a0, a1 = pg.per_piece(pg.along, "min"), pg.per_piece(pg.along, "max")
-    edge = np.minimum(np.minimum(pg.z - z0, z1 - pg.z), np.minimum(pg.along - a0, a1 - pg.along))
     zb0, zb1 = pg.z[sheet].min(), pg.z[sheet].max()
-    a_sheet = (pg.along[sheet].min(), pg.along[sheet].max())
-    t = np.clip((pg.z - zb0) / max(zb1 - zb0, 1e-3), 0, 1)
-    blot = FL.fbm3(pg.p, key(meta, "sheet-stain"), Sb["cell"], Sb["octaves"], Sb["gain"])
-    reach = Sb["wickReach"] * (0.5 + blot)
-    wet = Sb["blot"] * blot + Sb["bottom"] * (1 - t) ** 2 + Sb["wick"] * np.exp(-np.clip(edge, 0, None) / reach)
-    # the head's drip falls behind the sheet's top edge and wicks down from it
-    wet += Sb["head"] * np.exp(-np.clip(zb1 - pg.z, 0, None) / (Sb["headReach"] * (0.5 + blot)))
-    # each batten holds water against the sheet on its top, which wicks up into it, most toward the batten's low
-    # end where the water runs, and the more the lower it sits, since it holds what runs down the sheet above it;
-    # and what spills runs down from its lower edge
+    ab0, ab1 = pg.along[sheet].min(), pg.along[sheet].max()
+    # the face grain runs along the sheet: the fields that place a front are shorter across it than along it
+    pa = pg.p * np.array([1.0, 1.0, Sb["grainAniso"]])
+    rag = 0.5 + FL.fbm3(pa, key(meta, "sheet-stain"), Sb["cell"], Sb["octaves"], Sb["gain"])
+    E = Sb["edges"]
+    lowest, highest = z0 <= zb0 + 0.01, z1 >= zb1 - 0.01
+    side = 1.0 if HS.unit(key(meta, "surround-leak")) < 0.5 else -1.0
+    across = np.clip(0.5 + side * (pg.along - (ab0 + ab1) / 2) / max(ab1 - ab0, 1e-3), 0, 1)
+    lop = Sb["dry"] + (1.0 - Sb["dry"]) * FL.smoothstep(0.0, 1.0, across)
+
+    def soak(d, src):
+        return src[0] * np.exp(-(np.clip(d, 0, None) / (src[1] * rag)) ** 2)
+    wet = (np.where(lowest, soak(pg.z - z0, E["sill"]), soak(pg.z - z0, E["join"]))
+           + np.where(highest, 0.0, soak(z1 - pg.z, E["join"])))
+    # the head's drip wets only the leaking side: the joint above it is what feeds it
+    head = np.where(highest, soak(z1 - pg.z, E["head"]), 0.0) * FL.smoothstep(E["headSide"][0], E["headSide"][1], across)
     Bs = Sb["batten"]
-    kb = key(meta, "sheet-batten")
-    for bi, (bx0, bx1, zc, slope, w) in enumerate(f["battens"]):
+    for bx0, bx1, zc, slope, w in f["battens"]:
         mid = (bx0 + bx1) / 2
-        zt = zc + slope * (pg.along - mid) + w / 2
+        zl = zc + slope * (pg.along - mid)
         low = np.clip(0.5 - np.sign(slope) * (pg.along - mid) / max(bx1 - bx0, 1e-3), 0, 1)
-        catch = np.clip((zb1 - zc) / max(zb1 - zb0, 1e-3), 0, 1)
-        held = Bs["above"] * catch * ((1 - Bs["low"]) + Bs["low"] * low) * np.exp(-(pg.z - zt) / (Bs["reach"] * (0.5 + blot)))
-        wet += np.where(pg.z >= zt, held, 0.0)
-        for ri in range(Bs["runs"]):
-            a = a_sheet[0] + (a_sheet[1] - a_sheet[0]) * HS.unit(HS.h(kb, bi, ri, "at"))
-            zr = zc + slope * (a - mid) - w / 2
-            wet += runnel(pg, HS.h(kb, bi, ri), a, a, zr, 1, Bs["width"], Bs["length"], Bs["runWet"], sheet)
-    # a stain is never one flat grey: darker and lighter within it, by the glue and the veneer's figure; and mould
-    # speckles the sheet most where it stays damp
-    mott = FL.smoothstep(0.3, 0.7, FL.fbm3(pg.p, key(meta, "sheet-mottle"), Sb["mottleCell"], 3))
-    wetness = FL.smoothstep(Sb["wet"][0], Sb["wet"][1], wet) ** Sb["curve"]
-    stain = Sb["stainL"] * wetness * (1.0 - Sb["mottle"] * mott)
-    spk = FL.smoothstep(Sb["speckle"][0], Sb["speckle"][1], FL.fbm3(pg.p, key(meta, "sheet-speckle"), Sb["speckleCell"], 1))
-    stain = stain + Sb["speckleL"] * spk * (0.3 + 0.7 * FL.smoothstep(Sb["dry"][0], Sb["wet"][1], wet))
-    tide = Sb["tideL"] * np.exp(-((wet - Sb["wet"][0]) / Sb["tide"]) ** 2)
-    bleach = Sb["bleachL"] * (1.0 - FL.smoothstep(Sb["dry"][0], Sb["dry"][1], wet))
-    dl += np.where(sheet, bleach - stain - tide, 0.0)
-    # the sheets' own nails, round each sheet's edges where 1986 fixed it to the casing: a dark head, a short rust run
+        catch = np.clip((zb1 - zc) / max(zb1 - zb0, 1e-3), 0, 1) ** Bs["power"] * ((1 - Bs["low"]) + Bs["low"] * low)
+        wet += np.where(pg.z >= zl + w / 2, Bs["above"] * catch * np.exp(-((pg.z - zl - w / 2) / (Bs["reach"] * rag)) ** 2),
+                        Bs["below"] * catch * np.exp(-((zl - w / 2 - pg.z) / (Bs["belowReach"] * rag)) ** 2))
+    drink = Sb["drink"][0] + (Sb["drink"][1] - Sb["drink"][0]) * FL.unit(key(meta, "sheet-drink"), pg.piece)
+    wet = drink * (lop * wet + head + soak(np.where(side > 0, ab1 - pg.along, pg.along - ab0), E["leak"]))
+    # the ply drinks unevenly (its glue lines and the face veneer's grain), so the front breaks into blotches round each
+    # source, with dry islands inside and outliers beyond: a near step at that contour, whose edge the ply's breakup
+    # frays; deeper toward its source, inside it, where it stands longest
+    Bl = Sb["blotch"]
+    wet = wet + Bl["amp"] * (FL.fbm3(pa, key(meta, "sheet-blotch"), Bl["cell"], Bl["octaves"], Bl["gain"]) - 0.5)
+    Fr = Sb["front"]
+    dl -= np.where(sheet, Sb["deepL"] * FL.smoothstep(Fr[1], Fr[1] + Sb["deepReach"], wet), 0.0)
+    wet = np.where(sheet, FL.smoothstep(Fr[0], Fr[1], wet), 0.0)
+    # three winters grey the bare face unevenly, in broad soft patches under the stains
+    G = Sb["greying"]
+    dl -= np.where(sheet, G["L"] * (2.0 * FL.equalise(FL.fbm3(pg.p, key(meta, "sheet-greying"), G["cell"], G["octaves"]), sheet) - 1.0), 0.0)
+    # the veneer lifts at the join, its torn edge dried pale
+    J = Sb["lift"]
+    dj = np.minimum(np.where(highest, np.inf, z1 - pg.z), np.where(lowest, np.inf, pg.z - z0))
+    dl += np.where(sheet, J["L"] * FL.smoothstep(J["mm"] / 1000.0 * rag, 0.0, dj), 0.0)
+    # the sheets' own nails, round each sheet's edges where 1986 fixed it to the casing: a dark head in a halo where
+    # its iron blackens the wood, and a short rust run
     Nn = Sb["nails"]
     kn = key(meta, "sheet-nails")
     inset, every = Nn["inMm"] / 1000.0, Nn["everyMm"] / 1000.0
@@ -349,16 +386,30 @@ def water(pg, P, meta, dl, splash):
             zn += (HS.unit(HS.h(kn, int(pid), ni, "z")) - 0.5) * 0.02
             ln = Nn["length"][0] + (Nn["length"][1] - Nn["length"][0]) * HS.unit(HS.h(kn, int(pid), ni, "len"))
             below = np.clip(zn - pg.z, 0, None)
-            head = gauss(np.hypot(pg.along - xn, pg.z - zn), Nn["headMm"] / 1000.0)
+            r = np.hypot(pg.along - xn, pg.z - zn)
             wn = Nn["widthMm"][0] / 1000.0 + (Nn["widthMm"][1] - Nn["widthMm"][0]) / 1000.0 * np.clip(below / ln, 0, 1)
             run = gauss(pg.along - xn, wn / 2) * np.exp(-below / ln) * (pg.z <= zn)
-            dl -= np.where(m, np.maximum(Nn["headL"] * head, Nn["rustL"] * run), 0.0)
-    # the battens: raw sawn wood, darker where water hangs on their lower arris
+            dl -= np.where(m, np.maximum.reduce([Nn["headL"] * gauss(r, Nn["headMm"] / 1000.0),
+                                                 Nn["haloL"] * gauss(r, Nn["haloMm"] / 1000.0), Nn["rustL"] * run]), 0.0)
+    # the battens: three winters on rough-sawn formwork boards, greyed; darker along the lower arris where water
+    # hangs, and at the ends, whose end grain drinks
     Bt = W["batten"]
     bat = pg.m["batten"]
-    bz0 = pg.per_piece(pg.z, "min")
-    dl -= np.where(bat, Bt["lowL"] * np.exp(-np.clip(pg.z - bz0, 0, None) / Bt["reach"]), 0.0)
-    return np.clip(out, 0, 1)
+    for bi, (bx0, bx1, zc, slope, w) in enumerate(f["battens"]):
+        zl = pg.z - (zc + slope * (pg.along - (bx0 + bx1) / 2))
+        on = bat & (np.abs(zl) <= w / 2 + 0.03) & (pg.along > bx0 - 0.05) & (pg.along < bx1 + 0.05)
+        ends = np.minimum(np.abs(pg.along - bx0), np.abs(bx1 - pg.along))
+        dl -= np.where(on, Bt["lowL"] * np.exp(-np.clip(zl + w / 2, 0, None) / Bt["reach"])
+                       + Bt["endL"] * np.exp(-ends / (Bt["endReach"] * rag)), 0.0)
+        # its arrises broken unevenly where it was knocked about, worn pale in some stretches and torn dark in
+        # others, and the ends splintered along the grain: split strips lighter where fresh wood shows, darker in
+        # the gaps between
+        kb = key(meta, "batten", bi)
+        chip = FL.smoothstep(Bt["chip"][0], Bt["chip"][1], FL.fbm3(pg.p, HS.h(kb, "chip"), Bt["chipCell"], 3))
+        split = FL.noise2(pg.along / (Bt["splitMm"][0] / 1000.0), zl / (Bt["splitMm"][1] / 1000.0), HS.h(kb, "split"))
+        dl += np.where(on, Bt["splitL"] * (2.0 * split - 1.0) * np.exp(-ends / Bt["splitReach"])
+                       + Bt["chipL"] * pg.arris * (2.0 * chip - 1.0), 0.0)
+    return wet
 
 
 def decal(img, u, v):
@@ -421,6 +472,7 @@ def main():
     splash = drip_splash(pg, P, meta)
     dr = dirt(pg, P, meta, splash)
     wt = water(pg, P, meta, dl, splash)
+    loss = np.where(pg.m["sheet"], boarding(pg, P, meta, dl), loss)
     hist = np.stack([loss, dr, wt, 0.5 + np.clip(dl, -40, 40) / 80.0], axis=-1)
     hist = FL.dilate(np.where(pg.cov[..., None], hist, 0), pg.cov, pad + 2)
     FL.write(os.path.join(out, "hist-a.png"), hist)

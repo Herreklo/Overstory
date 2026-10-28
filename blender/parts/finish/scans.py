@@ -13,7 +13,9 @@ Each scan keeps its own structure and loses its colour: its lightness is remappe
 at `contrast` times its own spread. A painted scan is split into paint and bare wood by colour, each remapped about
 its own layer's lightness and filled in under the other, so the page can move the loss (way C) or leave the scan's
 own (way B). The cladding's tile is fitted to the house's courses (corner.py's meta), one plank face per course.
-Nothing finer than `killMm` survives.
+Nothing finer than `killMm` survives. A material marked `authored` (finish.json) takes its scan in way A too: an
+authored face under way A's page, in place of the tileable tiles.py makes for it. A face that stains (`stainMask`)
+carries the stains' fine breakup in B in place of its own.
 """
 
 import json
@@ -210,8 +212,47 @@ def fill(a, mask, radius):
     return np.where(done, out, a[mask].mean())
 
 
+def checks(shape, C, metres, k):
+    """Weather checks: short splits opened along the grain (u), seeded, wrapping; 0..1 on the tile."""
+    h, w = shape
+    mpx = metres / w
+    yy, xx = np.mgrid[0:h, 0:w].astype(np.float64)
+    out = np.zeros(shape)
+    for i in range(int(round(C["perM2"] * metres * metres))):
+        cu, cv = HS_unit(k, i, "u") * w, HS_unit(k, i, "v") * h
+        ln = (C["lengthMm"][0] + (C["lengthMm"][1] - C["lengthMm"][0]) * HS_unit(k, i, "len")) / 1000.0 / mpx
+        wd = C["widthMm"] * (0.6 + 0.8 * HS_unit(k, i, "w")) / 1000.0 / mpx
+        du = (xx - cu + w / 2) % w - w / 2
+        dv = (yy - cv + h / 2) % h - h / 2
+        out = np.maximum(out, np.exp(-(dv / wd) ** 2) * np.clip(1.0 - (2.0 * du / ln) ** 2, 0.0, 1.0))
+    return out
+
+
+def stain_mask(shape, metres, M, k):
+    """A stain's breakup on an authored face, in its own UVs: the shader meets the page's coarse wetness with it, so
+    a wet front wanders sharp at the face's own scale. Fractal noise from `cellMm` down `octaves`, longer along the
+    grain by `stretch`, with sparse spots the water reaches first; tileable, rank-mapped to a uniform 0..1 so the
+    page's wetness is the share it stains."""
+    h, w = shape
+    u, v = np.meshgrid((np.arange(w) + 0.5) / w, (np.arange(h) + 0.5) / h)
+    cell = M["cellMm"] / 1000.0
+    cells = (max(1, round(metres / (cell * M["stretch"]))), max(1, round(metres / cell)))
+    f = FL.fbm2(u, v, HS.h(k, "front"), cells, M["octaves"], M["gain"])
+    S = M["spots"]
+    for i in range(int(round(S["perM2"] * metres * metres))):
+        r = (S["mm"][0] + (S["mm"][1] - S["mm"][0]) * HS_unit(k, i, "r")) / 1000.0
+        du = ((u - HS_unit(k, i, "u") + 0.5) % 1.0 - 0.5) * metres
+        dv = ((v - HS_unit(k, i, "v") + 0.5) % 1.0 - 0.5) * metres
+        f = f + S["lift"] * np.exp(-(du * du + dv * dv) / (r * r))
+    return FL.equalise(f)
+
+
 def build(name, spec, mat, tile_m, tile_px, ts, courses=None):
     ch = load(spec)
+    if "fillLightest" in spec:
+        # the scan's lightest share is foreign to the face (formwork's concrete splashes): filled in from around
+        keep = ch["L"] < np.percentile(ch["L"], 100.0 * (1.0 - spec["fillLightest"]))
+        ch["L"] = fill(ch["L"], keep, 4)
     src_px = ch["L"].shape[1]
     src_mm = spec["metres"] * 1000.0 / src_px
     info = {}
@@ -265,6 +306,15 @@ def build(name, spec, mat, tile_m, tile_px, ts, courses=None):
         under = remap(ch["L"], everywhere, mat["under"]["L"], spec["contrast"])
         breakup = 1.0 - FL.blur((ch["L"] - ch["L"].mean()) / ch["L"].std(), 6)
         gloss = spec["glossContrast"] * (ch["smooth"] - ch["smooth"].mean())
+    if "stainMask" in spec:
+        breakup = stain_mask(paint.shape, metres if np.isscalar(metres) else metres[0], spec["stainMask"],
+                             HS.h("finish", "scan", name, "stain"))
+    if "checks" in spec:
+        # a face left out in the weather splits along its grain
+        C = spec["checks"]
+        cl = checks(paint.shape, C, metres if np.isscalar(metres) else metres[0], HS.h("finish", "scan", name, "checks"))
+        paint, under, hgt = paint - C["L"] * cl, under - C["L"] * cl, hgt - C["depth"] * cl
+        info["checks"] = round(float((cl > 0.5).mean()), 4)
     return {"under": under, "paint": paint, "breakup": breakup, "height": hgt, "normal": nrm, "gloss": gloss,
             "metres": metres, "info": info}
 
@@ -311,12 +361,21 @@ def main():
              "stone": "stone", "tiles": "tile", "zinc": "zinc"}
     two = lambda m: m if isinstance(m, list) else [m, m]  # noqa: E731
     sh = spec["marks"]["shade"]
+    fl_m = spec["tiles"]["flake"]["metres"]
+    ts_m = ts["metres"]
     digest = {
-        "mats": [{"name": k, "tile": tiles[k], "painted": 1 if v["painted"] else 0, "paintSmooth": v["paint"]["smooth"],
-                  "paintFlat": v["paint"].get("flat", 1.0), "underSmooth": v["under"]["smooth"], "scanMetres": two(side[tiles[k]]["metres"])}
+        "mats": [{"name": k, "tile": tiles[k], "painted": 1 if v["painted"] else 0, "authored": 1 if v.get("authored") else 0,
+                  "paintSmooth": v["paint"]["smooth"],
+                  "paintFlat": v["paint"].get("flat", 1.0), "underSmooth": v["under"]["smooth"], "scanMetres": two(side[tiles[k]]["metres"]),
+                  "stainL": v.get("stain", {}).get("L", 0.0), "tideW": v.get("stain", {}).get("tideW", 0.0),
+                  "stainMottleL": v.get("stain", {}).get("mottleL", 0.0), "tideL": v.get("stain", {}).get("tideL", 0.0),
+                  "islandW": v.get("stain", {}).get("islandW", [2.0, 3.0]), "islandL": v.get("stain", {}).get("islandL", 0.0),
+                  "grainMip": v.get("grainFar", {}).get("mip", 0.0), "grainFade": v.get("grainFar", {}).get("fade", 0.0),
+                  "flakeScale": (ts_m if v["tileable"] == "trim-sheet" else tile_m) / fl_m if v["painted"] else 0.0}
                  for k, v in M.items()],
         "tileMetres": tile_m, "dirtL": sh["dirtL"], "waterL": sh["waterL"], "cavityL": sh["cavityL"],
-        "lipL": sh["lipL"], "crackL": sh["crackL"], "lapDark": sh["lapDark"], "lapCore": sh["lapCoreMm"] / 1000.0, "lapReach": sh["lapReachMm"] / 1000.0, "lapPage": sh["lapPageMm"] / 1000.0, "lapStep": json.load(open(os.path.join(FL.ROOT, "blender", "parts", "finish", "classical.json")))["cladding"]["stepMm"] / 1000.0,
+        "lipL": sh["lipL"], "crackL": sh["crackL"], "haloL": sh["haloL"], "haloW": sh["haloW"], "haloDull": sh["haloDull"],
+        "runBody": sh["runBody"], "lapDark": sh["lapDark"], "lapCore": sh["lapCoreMm"] / 1000.0, "lapReach": sh["lapReachMm"] / 1000.0, "lapPage": sh["lapPageMm"] / 1000.0, "lapStep": json.load(open(os.path.join(FL.ROOT, "blender", "parts", "finish", "classical.json")))["cladding"]["stepMm"] / 1000.0,
         "lapScale": json.load(open(os.path.join(FL.ROOT, "blender", "parts", "finish", "corner.json")))["lapReach"],
         "groundL": spec["ground"]["L"], "groundSmooth": spec["ground"]["smooth"],
     }

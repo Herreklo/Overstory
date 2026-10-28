@@ -12,6 +12,12 @@ Shader "Overstory/Finish"
         _Hist ("History page: R loss share, G dirt, B water, A board value", 2D) = "black" {}
         _Geo ("Geometry page: R occlusion, G cavity/arris, B sky, A arris", 2D) = "white" {}
         _StreetN ("Street level's laps (page normal)", 2D) = "grey" {}
+        _Flake ("Paint's flake atlas: R breakup, G its halo, B a run's cores", 2D) = "grey" {}
+        _FlakeScale ("UV0 scale to the flake atlas (0: the tileable's own breakup)", Float) = 0
+        _HaloL ("The chalked paint round a loss, lighter by L*", Float) = 0
+        _HaloW ("How far the halo reaches past the loss, as a share of the loss", Float) = 0
+        _HaloDull ("The halo's lost gloss", Float) = 0
+        _RunBody ("A run between its cores, as a share of its darkness", Range(0, 1)) = 1
         [Toggle] _Painted ("Painted", Float) = 0
         [Toggle(_OS_STREET)] _Street ("Street level", Float) = 0
         _PaintSmooth ("Paint smoothness", Range(0, 1)) = 0.3
@@ -29,6 +35,14 @@ Shader "Overstory/Finish"
         _LapReach ("How far below the butt it reaches, m", Float) = 0.02
         _LipL ("A flake's curled lip, lighter by L*", Float) = 6
         _CrackL ("The gap under its edge, darker by L*", Float) = 25
+        _StainL ("A stain, darker by L* (bare faces: page R is the wetness)", Float) = 0
+        _TideW ("How far into a stain its dried rim fades, in the breakup's units", Range(0, 1)) = 0
+        _StainMottleL ("The stain mottled by the face's breakup, L*", Float) = 0
+        _TideL ("The tide line where a stain's front dried, darker by L*", Float) = 0
+        _IslandW ("Deep in a stain: page R from, to", Vector) = (2, 3, 0, 0)
+        _IslandL ("What the breakup leaves dry deep in a stain, lighter than the stain by L*", Float) = 0
+        _GrainMip ("The tileable's mip its fine detail eases to with distance", Float) = 0
+        _GrainFade ("How much of the tileable's fine detail is gone once far", Range(0, 1)) = 0
         _LapScale ("Vertex alpha's metres (corner.json lapReach)", Float) = 0.25
         _LapPage ("The street page's metres for its lap distance (geo B)", Float) = 0.064
         _LapStep ("How far a butt stands proud of the board under it, m", Float) = 0.013
@@ -43,6 +57,9 @@ Shader "Overstory/Finish"
         float4 _TileScale;
         float _Painted, _Street, _PaintSmooth, _UnderSmooth, _NormalScale, _PaintFlat, _BoardScale;
         float _DirtL, _WaterL, _CavityL, _ArrisL, _AOStrength, _DirtDull, _LapDark, _LapCore, _LapReach, _LapScale, _LapPage, _LapStep, _LipL, _CrackL;
+        float _StainL, _TideW, _StainMottleL, _TideL, _IslandL, _GrainMip, _GrainFade;
+        float4 _IslandW;
+        float _FlakeScale, _HaloL, _HaloW, _HaloDull, _RunBody;
     CBUFFER_END
     ENDHLSL
 
@@ -74,6 +91,7 @@ Shader "Overstory/Finish"
             TEXTURE2D(_Geo); SAMPLER(sampler_Geo);
             SamplerState os_point_clamp_lap;
             TEXTURE2D(_StreetN); SAMPLER(sampler_StreetN);
+            TEXTURE2D(_Flake); SAMPLER(sampler_Flake);
 
             struct Attributes
             {
@@ -135,13 +153,25 @@ Shader "Overstory/Finish"
                 float4 hist = SAMPLE_TEXTURE2D(_Hist, sampler_Hist, i.uv.zw);
                 float4 geo = SAMPLE_TEXTURE2D(_Geo, sampler_Geo, i.uv.zw);
 
-                // paint is lost where the page's share meets the tileable's breakup; the edge anti-aliased to a pixel.
-                // Once the breakup's plates are under a pixel its mips average to a half and would lose every loss,
-                // so with distance the loss becomes the page's share itself: the same mean, as soft painted marks
-                float t = hist.r + tile.b - 1.0;
-                float w = max(fwidth(t), 1e-3);
-                float lod = CALCULATE_TEXTURE2D_LOD(_Tile, sampler_Tile, i.uv.xy);
+                // paint is lost where the page's share meets the breakup (the flake atlas's, finer, on painted faces
+                // of way A; else the tileable's); the edge anti-aliased to a pixel. Once the breakup's plates are
+                // under a pixel its mips average to a half and would lose every loss, so with distance the loss
+                // becomes the page's share itself: the same mean, as soft painted marks
+                float useF = step(1e-4, _FlakeScale);
+                float2 fuv = i.uv.xy * max(_FlakeScale, 1e-4);
+                float4 fl = SAMPLE_TEXTURE2D(_Flake, sampler_Flake, fuv);
+                float lod = lerp(CALCULATE_TEXTURE2D_LOD(_Tile, sampler_Tile, i.uv.xy),
+                                 CALCULATE_TEXTURE2D_LOD(_Flake, sampler_Flake, fuv) - 0.5, useF);
                 float far = saturate((lod - 1.5) / 2.0);
+                // a bare face's fine grain eases with distance to its own broad mottle, its value, relief and the
+                // breakup a stain's front meets alike, so no thin outlier along the grain rules a line across a
+                // sheet or shimmers once it is under a pixel
+                float gf = _GrainFade * far;
+                float4 tileLo = SAMPLE_TEXTURE2D_LOD(_Tile, sampler_Tile, i.uv.xy, max(_GrainMip, lod));
+                tile.rgb = lerp(tile.rgb, tileLo.rgb, gf);
+                tn.rg = lerp(tn.rg, 0.5, gf);
+                float t = hist.r + lerp(tile.b, fl.r, useF) - 1.0;
+                float w = max(fwidth(t), 1e-3);
                 float lost = _Painted * lerp(smoothstep(-w, w, t), hist.r, far);
                 float under = max(lost, saturate(i.color.b));
 
@@ -152,11 +182,29 @@ Shader "Overstory/Finish"
                 float e = t / w;
                 float edge = _Painted * (1.0 - far);
                 L += edge * (_LipL * saturate(1.0 - abs(e + 1.5) / 1.5) - _CrackL * saturate(1.0 - abs(e - 0.75)));
+                // the paint round a loss has chalked and lost its hold: lighter and dull, in a ring the atlas's
+                // blurred breakup draws past the loss, widened by its halo; none where nothing is lost
+                float tH = hist.r * (1.0 + _HaloW) + fl.g - 1.0;
+                float halo = useF * _Painted * (1.0 - lost) * (1.0 - far) * smoothstep(-1.0, 1.0, tH / max(fwidth(tH), 1e-3));
+                L += _HaloL * halo;
+                // a bare face's stains (the boarding's sheet): the page's coarse wetness meets the face's own fine
+                // breakup as paint loss does, but stays a sharp threshold at every distance, the breakup's mips
+                // easing to its middle so far off the front is the wetness's own contour. Deepest toward its source,
+                // mottled by the breakup, a tide line a pixel inside the front where it dried. Deep inside, the wood
+                // is damp throughout: what the breakup leaves dry there is only a little lighter, with no rim
+                float stain = (1.0 - _Painted) * smoothstep(-w, w, t);
+                float deep = (1.0 - _Painted) * smoothstep(_IslandW.x, _IslandW.y, hist.r);
+                float tide = stain * (1.0 - smoothstep(0.0, _TideW + w, t)) * (1.0 - far) * (1.0 - deep);
+                float sd = max(stain, deep * (1.0 - _IslandL / max(_StainL, 1e-3)));
+                L -= sd * (_StainL + _StainMottleL * (tile.b - 0.5)) + _TideL * tide;
                 float cav = saturate((0.5 - geo.g) * 2.0);
                 float lift = saturate((geo.g - 0.5) * 2.0);
                 // bare stuff soaks unevenly, by its own breakup; paint sheds water and keeps a stain even
                 float soak = lerp(0.35 + 1.3 * tile.b, 1.0, _Painted * (1.0 - lost));
-                L += lift * _ArrisL - hist.g * _DirtL - saturate(hist.b * soak) * _WaterL - cav * _CavityL;
+                // a run keeps to narrow tracks down a painted board, darkest along them; one soft mark once they
+                // are under a pixel
+                float run = lerp(1.0, lerp(_RunBody, 1.0, fl.b), useF * (1.0 - far));
+                L += lift * _ArrisL - hist.g * _DirtL - saturate(hist.b * soak) * _WaterL * run - cav * _CavityL;
                 float Y = LToY(clamp(L, 2.0, 98.0));
 
                 float2 nxy = (tn.rg * 2.0 - 1.0) * _NormalScale * lerp(_PaintFlat, 1.0, max(lost, 1.0 - _Painted));
@@ -173,7 +221,7 @@ Shader "Overstory/Finish"
                 s.albedo = Y.xxx;
                 s.metallic = 0;
                 s.specular = 0;
-                s.smoothness = saturate(lerp(_PaintSmooth, _UnderSmooth, under) + (tn.b - 0.5) - hist.g * _DirtDull);
+                s.smoothness = saturate(lerp(_PaintSmooth, _UnderSmooth, under) + (tn.b - 0.5) - hist.g * _DirtDull - halo * _HaloDull);
                 s.normalTS = nT;
                 // how far below the butt above: the near boards' own corners carry it (vertex alpha), exact across
                 // a planar face. The street level's wall is a plane, so its page carries the signed distance to the
