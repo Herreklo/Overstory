@@ -57,6 +57,7 @@ Shader "Overstory/Finish"
         _BrushFar ("What the long strokes keep far", Range(0, 1)) = 0
         _Hist2 ("Way P's second page: R the long washes, 0 to 1 of _WashL", 2D) = "black" {}
         _WashL ("The darkest long wash, L*", Float) = 0
+        _BareWash ("How much of the long washes bare wood takes", Range(0, 1)) = 1
         _DragL ("The brush's drags down a wash, L* either side", Float) = 0
         _DragScale ("The drags' size, the long strokes' turned upright and shrunk by", Float) = 1.5
         _DLRange ("The page's value shift, L* either side of G's half", Float) = 40
@@ -90,7 +91,7 @@ Shader "Overstory/Finish"
         float _FlakeScale, _HaloL, _HaloW, _HaloDull, _RunBody;
         float _Paint, _StrokeScale, _EdgeAmp, _RimL, _RimW, _BareShift, _PaintL, _BareL, _UnderL, _StainDL, _StainSmooth;
         float _LapGrimeL, _LapGrimeReach, _LapGrimeBreak, _BrushL, _FlatUp, _StainEdge, _BrushFar, _DragL, _DragScale;
-        float _DLRange, _RimFar, _WashL;
+        float _DLRange, _RimFar, _WashL, _BareWash;
         float4 _RimBreak;
         float4 _StrokeFade, _BrushFade;
     CBUFFER_END
@@ -238,9 +239,10 @@ Shader "Overstory/Finish"
                 float shift = (hist.g - 0.5) * 2.0 * _DLRange - _StainDL * stain;
                 L += shift * lerp(1.0, _BareShift, peel);
                 L = lerp(L, _PaintL + shift + _RimL, rim);
-                // the long washes darken the paint and the bare wood alike
+                // the long washes darken the paint, soft and translucent; the bare fibre the paint has lost stays
+                // dry and lighter, a hard mark of its own
                 float wash = SAMPLE_TEXTURE2D(_Hist2, sampler_Hist, i.uv.zw).r;
-                L -= _WashL * wash;
+                L -= _WashL * wash * lerp(1.0, _BareWash, peel);
                 // the lap's grime: darkest under the butt, easing down the board to a lower edge the strokes break,
                 // summed over the pixel's reach down the wall as the band is
                 float gr = _LapGrimeReach * (1.0 + _LapGrimeBreak * nearP * 2.0 * (st.b - 0.5));

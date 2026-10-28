@@ -32,7 +32,7 @@ namespace Overstory.EditorTools
         // way P's digest (paint.py): each material one value, the strokes and the shapes' edges, and its own light
         [Serializable] class PMat { public string name; public int painted; public float L, bareL, underL, stainDL, smooth, stainSmooth, brushL, flatUp, stainEdge; }
         [Serializable] class PLight { public string light; public float exposure, elevation, sun, shadow, sky, equator, ground; public float[] azimuth; }
-        [Serializable] class Paint { public PMat[] mats; public PLight[] lights; public float strokeScale, edgeAmp, rimL, rimW, rimFar, bareShift, washL, brushFar, dragL, dragScale, dlRange, aoStrength, lapDark, lapCore, lapReach, lapGrimeL, lapGrimeReach, lapGrimeBreak, lapPage; public float[] strokeFade, brushFade, rimBreak; }
+        [Serializable] class Paint { public PMat[] mats; public PLight[] lights; public float strokeScale, edgeAmp, rimL, rimW, rimFar, bareShift, washL, bareWash, brushFar, dragL, dragScale, dlRange, aoStrength, lapDark, lapCore, lapReach, lapGrimeL, lapGrimeReach, lapGrimeBreak, lapPage; public float[] strokeFade, brushFade, rimBreak; }
 
         struct View { public string name, level; public Vector3 pos, target; public float fov; }
 
@@ -323,6 +323,7 @@ namespace Overstory.EditorTools
                 mat.SetFloat("_RimFar", p.rimFar);
                 mat.SetVector("_RimBreak", new Vector4(p.rimBreak[0], p.rimBreak[1], 0, 0));
                 mat.SetFloat("_WashL", p.washL);
+                mat.SetFloat("_BareWash", p.bareWash);
                 mat.SetFloat("_BareShift", p.bareShift);
                 mat.SetFloat("_Painted", m.painted);
                 mat.SetFloat("_PaintL", m.L);
