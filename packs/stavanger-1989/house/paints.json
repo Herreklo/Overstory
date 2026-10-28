@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "describes": "The town's house paints and how a coat ages: the era palettes (each paint its own value, chroma and hue, planned in grey first: docs/research/masters-of-colour.md, Designed places), which paint a house wears when no record names one, how often a kept house was repainted before the engine's people start (the pack's past), and the weather that wears a wall by its aspect. Colours are CIE LCh read at the paint's own L* as a fresh coat in neutral light; a coat's age moves them by its material (materials/paint-*.json, chalk).",
+  "provenance": "Authored, 28 October 2026. Values planned in grey (L*) first, then hue and chroma by the rules in masters-of-colour.md (white chosen not tinted; earth paints near C* 30 to 45; accents rare and from facts); ox-red from Stavanger's sea houses (photo 01's neighbours, the research's wooden-town-architecture.md); unverified against paint charts.",
+  "paints": {
+    "wall_white_linseed": { "material": "paint-linseed", "L": 89, "C": 3.0, "h": 88, "describes": "Linseed-oil white, lead and zinc: high, a little warm, yellowing as it ages." },
+    "wall_white": { "material": "paint-alkyd", "L": 92, "C": 1.6, "h": 100, "describes": "The 1980s titanium alkyd white: chalk-fresh, neutral, the brightest thing in the street." },
+    "wall_oxred": { "material": "paint-linseed", "L": 34, "C": 34, "h": 33, "describes": "Ox-red iron oxide in linseed: deep, warm, chalking to a dusty pink-brown with the decades." },
+    "wall_ochre": { "material": "paint-linseed", "L": 66, "C": 38, "h": 78, "describes": "Yellow ochre in linseed." },
+    "wall_greygreen": { "material": "paint-alkyd", "L": 62, "C": 10, "h": 150, "describes": "A grey-green of the 1950s and 60s." },
+    "trim_white_linseed": { "material": "paint-linseed", "L": 90, "C": 2.4, "h": 90, "describes": "The trims' white, as the wall's." },
+    "trim_white": { "material": "paint-alkyd", "L": 93, "C": 1.2, "h": 100, "describes": "The 1980s trim white." }
+  },
+  "defaults": {
+    "describes": "The paint a house wears when no 'repainted' event names one: by its era and kind, the wall's and the trims'. A warehouse's trims stay white on any wall (the sea houses' white casings on ox-red).",
+    "classical": { "wall": "wall_white_linseed", "trim": "trim_white_linseed" },
+    "chalet": { "wall": "wall_white_linseed", "trim": "trim_white_linseed" },
+    "warehouse": { "wall": "wall_white_linseed", "trim": "trim_white_linseed" },
+    "repaint": { "wall_white": "trim_white", "wall_oxred": "trim_white_linseed", "wall_white_linseed": "trim_white_linseed" }
+  },
+  "upkeep": {
+    "describes": "Before the engine's people start (pack.json peopleStart) a kept house was repainted every so many years by its wealth: the poor less often (the cycle at wealth 0 and at 1000, linear); a neglect or a boarding stops it. The last coat before a house is let go is the cycle's last turn before that year, counted from the house's building, so it is the house's own.",
+    "cycleYears": [15, 8],
+    "white": "a coat's colour after the cycle: the default paint, unless a 'repainted' event names one"
+  },
+  "weather": {
+    "describes": "Where the rain comes from: Stavanger's wet winds blow from the south and south-west off the sea (pack frame: x east, y north). A wall's exposure is how squarely it faces them, from `least` on the lee to 1; a gable takes the wind's rain on its whole height.",
+    "fromDeg": 215,
+    "least": 0.35
+  }
+}

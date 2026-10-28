@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "describes": "The street test's houses (blender/parts/street/house.py): which record each is built from, the year it is seen in, the eras' working and the pack's paints, the levels with their budgets (the build fails over a budget's top), and the page every level shares. Positions are the house's own (x along its street front from its left corner, y back from the building line, z up, metres); the scene places each by its plot.",
+  "fixture": "fixtures/lt1-street.json",
+  "year": 1989,
+  "houses": [107, 108, 109],
+  "eras": { "classical": "packs/stavanger-1989/house/classical.json" },
+  "paints": "packs/stavanger-1989/house/paints.json",
+  "materials": "packs/stavanger-1989/materials",
+  "levels": {
+    "near": { "level": 0, "budgetTris": [20000, 25000], "seenWithinM": 10, "tileCourses": 3, "pantileSamples": 8 },
+    "street": { "level": 1, "budgetTris": [6000, 8000], "seenFromM": 20, "laps": "page normal", "pantileSamples": 4 },
+    "bake": { "describes": "Never drawn: the roof's tiles above the near level's own, the source of the planes' baked tile relief and occlusion." }
+  },
+  "page": {
+    "size": 2048,
+    "pxPerM": [64, 128],
+    "padPx": 4,
+    "density": { "roof": 0.5, "ridge": 0.5, "chimney": 0.6, "under": 0.35 },
+    "describes": "One page a house, its charts packed at the most pixels a metre (in steps of 2) that fit between pxPerM; a roof course and the eave's undersides take less (density)."
+  },
+  "lapReach": 0.25
+}

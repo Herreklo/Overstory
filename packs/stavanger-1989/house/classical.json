@@ -1,0 +1,722 @@
+{
+  "schemaVersion": 1,
+  "era": "classical",
+  "describes": "How a classical timber house of 1800 to 1870 in Stavanger was built: its body from its record, clad, trimmed, roofed and set on its stones, and how its parts were made in each period (versions). The street generator (blender/parts/street/house.py) reads it with a house's record (fixtures/lt1-street.json), a kind's overrides (kind-*.json) and the pack's materials; a missing key is an error. Millimetres unless named; a pair is a range the seed draws in.",
+  "provenance": "Carried from the finishing test's working (blender/parts/finish/classical.json at de6e1c0, itself from the pack's classical working at 7fecfae) and docs/research/house-lessons.md (Measures). The body's proportions from photos 04 and 07 (docs/references/houses/): a 1.5-storey house has a knee wall of about a third of a storey under a 40 to 45 degree roof, eave to the street, its windows in bays a little wider than they are tall. The bends and chamfers from docs/research/house-asset-craft.md (Recipe: house 107). The boarding from photo 09. Street test, 28 October: the storey and knee lowered so the eave stands about 0.9 m over the ground floor's window heads, as on photo 04's eave side; the critics read the corner's taller massing as a kiosk. Steps to a door from photo 04.",
+  "faces": "eave",
+  "storeyMm": 2300,
+  "floorMm": 280,
+  "floorOverPlinthMm": 120,
+  "kneeMm": [
+    400,
+    650
+  ],
+  "roofPitchDeg": [
+    40,
+    44
+  ],
+  "depthMm": [
+    5000,
+    5600
+  ],
+  "cladding": {
+    "kind": "single-rebate",
+    "exposureMm": [
+      145,
+      195
+    ],
+    "stepMm": 13,
+    "butChamferMm": 4,
+    "thickMm": 25,
+    "boardLengthMm": [
+      2600,
+      5200
+    ],
+    "segmentMm": 700
+  },
+  "corner": {
+    "widthMm": 150,
+    "proudMm": 22,
+    "thickMm": 32
+  },
+  "dripBoard": {
+    "heightMm": 130,
+    "proudMm": 36,
+    "slopeMm": 16
+  },
+  "casing": {
+    "widthMm": 122,
+    "proudMm": 25,
+    "headMm": 210,
+    "capMm": 30,
+    "capProudMm": 120,
+    "capSlopeDeg": 20,
+    "bedMouldMm": [
+      30,
+      22
+    ],
+    "sillMm": 50,
+    "sillProudMm": 95,
+    "hornMm": 30,
+    "capDripMm": [
+      10,
+      6
+    ],
+    "reveal": "the window or door frame stands back revealMm behind the casing's face",
+    "revealMm": 70
+  },
+  "openings": {
+    "describes": "Where a house's openings fall, from its record: the street front in bays (a door in one of the inner bays when the house has its door to the street), the gables one window to each floor that has one, and the back two. Sizes are the opening inside its casing.",
+    "window": {
+      "wMm": 820,
+      "hMm": 1350,
+      "sillOverFloorMm": 820
+    },
+    "loft": {
+      "wMm": 640,
+      "hMm": 900,
+      "sillOverFloorMm": 420
+    },
+    "door": {
+      "wMm": 920,
+      "hMm": 2060,
+      "overFloorMm": 0,
+      "headWithWindows": true,
+      "describes": "A door's head lines up with the ground floor's window heads (headWithWindows), so one course meets them all; hMm is its height when it has no windows beside it."
+    },
+    "front": {
+      "edgeMm": [
+        700,
+        900
+      ],
+      "bayMm": 1650,
+      "door": true
+    },
+    "gable": {
+      "ground": [
+        0,
+        1
+      ],
+      "loft": [
+        1,
+        2
+      ]
+    },
+    "back": {
+      "windows": 2,
+      "edgeMm": [
+        900,
+        1300
+      ]
+    }
+  },
+  "eaves": {
+    "overhangMm": 140,
+    "fasciaMm": 150,
+    "fasciaThickMm": 28,
+    "soffitThickMm": 20
+  },
+  "verge": {
+    "overhangMm": 90,
+    "boardMm": 205,
+    "thickMm": 32
+  },
+  "pantile": {
+    "describes": "The single-S pantile as laid here, over the pack's clay-pantile (laid): a wide shallow pan rising to a narrower roll, one wave per tile, each tile's roll lapping the next tile's pan edge. Cover width 220 mm, as the Danish normal-format S-tile (Højslev vingetegl, normalformat); the wave 50 mm, shallow, within the 45 to 69 mm of clay pantiles (Wienerberger and Sandtoft Old English Pantile data sheets). Sandnes Teglverk made the town's red tile from 1783 (wooden-town-architecture.md).",
+    "coverMm": 220,
+    "rollMm": 50,
+    "panAt": 0.35,
+    "roundness": 1.5,
+    "lapMm": 18
+  },
+  "ridge": {
+    "describes": "Half-round ridge tiles bedded over the two slopes' top courses, each lapping the next (the pack's clay-pantile ridge).",
+    "seatMm": 10
+  },
+  "rainwater": {
+    "describes": "Zinc half-round gutters on hooks and a downpipe at one end of each eave, fitted to the old houses by the 1890s (the pack's past: no record names it). Kept, they carry the roof's water to the shoe; neglected, a joint opens and drips onto the wall's foot, more the longer the house is let go.",
+    "fittedYear": 1890,
+    "gutterRadiusMm": 62,
+    "gutterThickMm": 4,
+    "beadMm": 10,
+    "hookMm": [
+      28,
+      6
+    ],
+    "hookEveryMm": 900,
+    "pipeRadiusMm": 38,
+    "offWallMm": 30,
+    "outletFromEndMm": 260,
+    "shoeMm": 160,
+    "clipMm": [
+      30,
+      4
+    ],
+    "clipEveryMm": 1600
+  },
+  "chimney": {
+    "describes": "One stack through the ridge, brick under cement render, a little off the middle (the seed's, claiming no history).",
+    "sizeMm": [
+      520,
+      560
+    ],
+    "aboveRidgeMm": [
+      650,
+      850
+    ],
+    "alongShare": [
+      0.42,
+      0.58
+    ],
+    "material": "render"
+  },
+  "plinth": {
+    "material": "fieldstone",
+    "heightMm": [
+      380,
+      480
+    ],
+    "stoneMm": [
+      520,
+      1150
+    ],
+    "cornerStoneMm": [
+      700,
+      950
+    ],
+    "cornerReturnMm": [
+      380,
+      560
+    ],
+    "jointMm": [
+      10,
+      18
+    ],
+    "faceBulgeMm": [
+      3,
+      7
+    ],
+    "arrisMm": [
+      8,
+      14
+    ],
+    "setOutMm": [
+      -5,
+      7
+    ],
+    "depthMm": 180,
+    "jointBackMm": 30
+  },
+  "boarding": {
+    "sheetThickMm": 12,
+    "sheetsHigh": 2,
+    "setBackMm": [
+      2,
+      6
+    ],
+    "topGapMm": [
+      0,
+      30
+    ],
+    "sideGapMm": [
+      0,
+      8
+    ],
+    "battens": {
+      "count": 2,
+      "widthMm": [
+        70,
+        100
+      ],
+      "thickMm": 22,
+      "pastCasingMm": [
+        120,
+        320
+      ],
+      "outOfLevelDeg": [
+        2.0,
+        4.0
+      ],
+      "nailsPerEnd": 2,
+      "endCutDeg": [
+        20,
+        8
+      ]
+    },
+    "door": {
+      "battens": 3,
+      "diagonal": true
+    },
+    "describes": "How an empty house was boarded in the late 1980s, from photo 09: a sheet in each opening inside its casing, each set back by its own amount so their join steps; raw sawn battens nailed across onto the casing and the cladding, each out of level by the hand that nailed it, their ends sawn askew. A door takes three, the middle one on the diagonal, as at 09's door."
+  },
+  "push": {
+    "describes": "The style's push on true sizes (the street's shape language: deep reveals, thick trims, sills and caps that throw a shadow): factors on the working's sizes. The bends stay true.",
+    "trimProud": 1.6,
+    "capProud": 1.25,
+    "capThick": 1.4,
+    "sillProud": 1.3,
+    "sillThick": 1.35,
+    "bargeThick": 1.5,
+    "settle": 1.0
+  },
+  "chamferMm": {
+    "corner": 18,
+    "casing": 15,
+    "cap": 6,
+    "sill": 18,
+    "drip": 15,
+    "fascia": 16,
+    "barge": 18,
+    "soffit": 6,
+    "bedMould": 6,
+    "batten": 6,
+    "sheet": 2,
+    "capTop": 5,
+    "frame": 8,
+    "sash": 6,
+    "door": 8,
+    "chimney": 20
+  },
+  "bends": {
+    "describes": "Old timber moves, and every bend has a cause. One corner settles on its stones and the frame goes down with it over settleReachMm; the wall plates sag between the gables and the ridge with them; the roof's thrust pushes the eave walls' heads out. Each grows with the frame's age to a most; which corner settles is the seed's, claiming no history. Sizes from house-asset-craft.md (Recipe: house 107).",
+    "settleMmPerCentury": 25,
+    "settleMostMm": 40,
+    "sagMmPerCentury": 62,
+    "sagMostMm": 110,
+    "ridgeSagShare": 1.2,
+    "leanMmPerCentury": 16,
+    "leanMostMm": 25,
+    "settleReachMm": 3000,
+    "settleBendMm": 800,
+    "settleBendShare": 0.3
+  },
+  "leanTo": {
+    "describes": "A shed on the back (an 'extended' event, kind lean_to): a mono-pitch roof from under the house's back eave, clad in the weatherboard of its year, on a cast concrete plinth (concrete casts 1940 to 1965, UK1), out of plumb by the hand that built it (rigid: moved and turned).",
+    "depthMm": [
+      1800,
+      2600
+    ],
+    "widthShare": [
+      0.5,
+      0.75
+    ],
+    "eaveMm": 2150,
+    "pitchDeg": [
+      12,
+      18
+    ],
+    "plumbDeg": [
+      1.0,
+      2.0
+    ],
+    "plinthMm": 220,
+    "cladding": {
+      "exposureMm": [
+        110,
+        120
+      ],
+      "stepMm": 11,
+      "butChamferMm": 3
+    },
+    "roof": "felt"
+  },
+  "versions": {
+    "describes": "Each part as a family of versions, each made in its years (`years`, the year the part was made: the house's building, or the event that renewed it), by those who could pay for it (`wealth`), and how often it was chosen (`weight`). The house's seed picks one per family from those its facts allow; every opening of one making shares it.",
+    "casing": [
+      {
+        "id": "bead",
+        "years": [
+          1790,
+          1880
+        ],
+        "weight": 2,
+        "describes": "A flat board with a bead run on its edge at the opening: the plain house's casing.",
+        "profileMm": [
+          [
+            0,
+            0
+          ],
+          [
+            0,
+            21,
+            1
+          ],
+          [
+            4,
+            25
+          ],
+          [
+            98,
+            25
+          ],
+          [
+            101,
+            22
+          ],
+          [
+            105,
+            25
+          ],
+          [
+            112,
+            30
+          ],
+          [
+            118,
+            28,
+            1
+          ],
+          [
+            122,
+            22
+          ],
+          [
+            122,
+            0
+          ]
+        ]
+      },
+      {
+        "id": "fillet",
+        "years": [
+          1810,
+          1870
+        ],
+        "wealth": [
+          150,
+          1000
+        ],
+        "weight": 1,
+        "describes": "An empire casing: a raised fillet along its outer edge falling in an ovolo to the flat, so a line of shadow rings the opening.",
+        "profileMm": [
+          [
+            0,
+            0
+          ],
+          [
+            0,
+            32,
+            1
+          ],
+          [
+            4,
+            36
+          ],
+          [
+            17,
+            36
+          ],
+          [
+            21,
+            33
+          ],
+          [
+            24,
+            29
+          ],
+          [
+            28,
+            26
+          ],
+          [
+            122,
+            26
+          ],
+          [
+            122,
+            21,
+            1
+          ],
+          [
+            122,
+            0
+          ]
+        ]
+      },
+      {
+        "id": "plain",
+        "years": [
+          1890,
+          1990
+        ],
+        "weight": 1,
+        "describes": "A plain planed board with its arrises eased: the later and the cheap casing (a shed's door, a modern window).",
+        "profileMm": [
+          [
+            0,
+            0
+          ],
+          [
+            0,
+            18,
+            1
+          ],
+          [
+            3,
+            21
+          ],
+          [
+            96,
+            21
+          ],
+          [
+            99,
+            18,
+            1
+          ],
+          [
+            100,
+            0
+          ]
+        ]
+      }
+    ],
+    "head": [
+      {
+        "id": "cornice",
+        "years": [
+          1790,
+          1880
+        ],
+        "weight": 2,
+        "describes": "A frieze board under a sloped cap with a bed mould: the classical cornice over every opening (photo 09).",
+        "bedMould": true,
+        "capProudMm": 120
+      },
+      {
+        "id": "cap",
+        "years": [
+          1790,
+          1900
+        ],
+        "wealth": [
+          0,
+          400
+        ],
+        "weight": 1,
+        "describes": "A plain sloped water board, no bed mould, less proud.",
+        "bedMould": false,
+        "capProudMm": 80
+      },
+      {
+        "id": "board",
+        "years": [
+          1890,
+          1990
+        ],
+        "weight": 1,
+        "describes": "A plain head board with a thin sloped cap, no bed mould.",
+        "bedMould": false,
+        "capProudMm": 45
+      }
+    ],
+    "sill": [
+      {
+        "id": "horned",
+        "years": [
+          1790,
+          1950
+        ],
+        "weight": 1,
+        "hornMm": 30,
+        "describes": "A thick sloped sill with horns past the casing."
+      }
+    ],
+    "window": [
+      {
+        "id": "six-pane",
+        "years": [
+          1790,
+          1870
+        ],
+        "weight": 1,
+        "describes": "Two side-hung casements, three panes each, under no transom: the classical window.",
+        "sashes": [
+          {
+            "w": 0.5,
+            "cols": 1,
+            "rows": 3
+          },
+          {
+            "w": 0.5,
+            "cols": 1,
+            "rows": 3
+          }
+        ],
+        "frameMm": [
+          62,
+          70
+        ],
+        "sashMm": [
+          52,
+          46
+        ],
+        "barMm": [
+          22,
+          28
+        ],
+        "topLight": 0
+      },
+      {
+        "id": "husmor",
+        "years": [
+          1955,
+          1975
+        ],
+        "weight": 1,
+        "describes": "The 1960s 'husmor' window: one big fixed pane beside a narrow opening sash, both plain.",
+        "sashes": [
+          {
+            "w": 0.72,
+            "cols": 1,
+            "rows": 1,
+            "fixed": true
+          },
+          {
+            "w": 0.28,
+            "cols": 1,
+            "rows": 1
+          }
+        ],
+        "frameMm": [
+          70,
+          72
+        ],
+        "sashMm": [
+          56,
+          50
+        ],
+        "barMm": [
+          0,
+          0
+        ],
+        "topLight": 0
+      },
+      {
+        "id": "two-pane-casement",
+        "years": [
+          1860,
+          1900
+        ],
+        "weight": 1,
+        "describes": "Two casements, two panes each: the later classical window.",
+        "sashes": [
+          {
+            "w": 0.5,
+            "cols": 1,
+            "rows": 2
+          },
+          {
+            "w": 0.5,
+            "cols": 1,
+            "rows": 2
+          }
+        ],
+        "frameMm": [
+          62,
+          70
+        ],
+        "sashMm": [
+          52,
+          46
+        ],
+        "barMm": [
+          24,
+          28
+        ],
+        "topLight": 0
+      }
+    ],
+    "door": [
+      {
+        "id": "two-panel",
+        "years": [
+          1790,
+          1880
+        ],
+        "weight": 1,
+        "describes": "A pair of tall raised panels under a three-light top light.",
+        "panels": [
+          [
+            0.08,
+            0.4,
+            0.52
+          ],
+          [
+            0.48,
+            0.4,
+            0.52
+          ]
+        ],
+        "topLightMm": 360,
+        "topLightLights": 3
+      }
+    ],
+    "eave": [
+      {
+        "id": "boxed",
+        "years": [
+          1790,
+          1880
+        ],
+        "weight": 1,
+        "describes": "The classical eave: a short soffit closed by a fascia, 140 mm out."
+      }
+    ],
+    "chimney": [
+      {
+        "id": "banded",
+        "years": [
+          1790,
+          1900
+        ],
+        "weight": 2,
+        "describes": "A rendered stack with a projecting band two courses under its top.",
+        "bandMm": [
+          40,
+          30
+        ],
+        "bandDownMm": 150
+      },
+      {
+        "id": "plain",
+        "years": [
+          1790,
+          1950
+        ],
+        "weight": 1,
+        "describes": "A plain rendered stack, its top chamfered.",
+        "bandMm": [
+          0,
+          0
+        ],
+        "bandDownMm": 0
+      }
+    ],
+    "roof": [
+      {
+        "id": "red-pantile",
+        "years": [
+          1790,
+          1950
+        ],
+        "weight": 1,
+        "material": "clay-pantile",
+        "describes": "Single-S red pantiles from Sandnes Teglverk."
+      }
+    ]
+  },
+  "steps": {
+    "describes": "Stone steps up to a door that stands over the ground: split slabs, as many risers as the height needs, each tread deeper by its going.",
+    "riserMm": [
+      165,
+      195
+    ],
+    "goingMm": 300,
+    "pastDoorMm": [
+      180,
+      260
+    ],
+    "thickMm": 70
+  }
+}

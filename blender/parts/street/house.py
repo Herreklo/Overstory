@@ -1,0 +1,1630 @@
+"""A whole house of Harbour Row from its record, the street test's generator: the corner's fitted parts (the finishing
+test, blender/parts/finish/corner.py at de6e1c0) grown to every wall, opening, trim, plinth stone, eave, verge, roof
+course, ridge and chimney a house has, and its extensions. Nothing here belongs to one house: a house is its record
+(the fixture), its era's working (packs/<pack>/house/<era>.json, whose `versions` give each part's family), the pack's
+materials and the street's levels (street.json).
+
+    Blender -b --factory-startup -P blender/parts/street/house.py -- --house 107 --out cache/street/gen/107
+        [--fixture fixtures/lt1-street.json] [--year 1989]
+
+Writes house-near.fbx and house-street.fbx (one object per material), house.blend (both levels and the bake level's
+tiles, for the bakes) and house.json (triangles per level and object, the page's charts, the walls, courses, openings
+and features the paint reads). Fails, writing nothing, when a level is over its budget's top.
+
+The house's own frame: x along the street front from its left corner, y back from the building line, z up, metres.
+Walls run counter-clockwise seen from above: 0 the front (+x, outward -y), 1 the right gable or end, 2 the back, 3 the
+left; an extension's walls follow. Every wall piece is built in its wall's frame (x along, outward -y, up z).
+
+Two levels from one plan, as the corner's: near draws every board with its lap, every arris chamfered and the lowest
+roof courses tile by tile; street draws each wall as planes whose laps come from the page's normal, its trims as boxes,
+its roof as course planes (their tiles' relief baked from the bake level). Both share UV1, the page. Vertex colour: R
+the arris, G the piece's seed, B the under layer forced (mortar), A on a near board how far below the next course's
+butt the corner sits (0..1 over lapReach), 1 elsewhere.
+"""
+
+import json
+import math
+import os
+import re
+import sys
+
+import bpy
+from mathutils import Matrix, Vector
+
+ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
+sys.path.insert(0, os.path.join(ROOT, "blender", "resolver"))
+import hashing as HS  # noqa: E402
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from geom import MM, Charts, Face, Piece, data_profile, extrude, rect_profile, to_object, tris_of  # noqa: E402
+
+Z = Vector((0.0, 0.0, 1.0))
+OUT = Vector((0.0, -1.0, 0.0))
+ALONG = Vector((1.0, 0.0, 0.0))
+
+
+def load(path):
+    with open(path if os.path.isabs(path) else os.path.join(ROOT, path)) as fh:
+        return json.load(fh)
+
+
+def rng(r):
+    return [v * MM for v in r]
+
+
+# ---------------------------------------------------------------- facts
+
+
+class Facts:
+    """A house's record as the generator reads it, in the year it is seen."""
+
+    def __init__(self, fixture, hid, year):
+        street = load(fixture)
+        self.world = street["worldSeed"]
+        rec = next(b for b in street["buildings"] if b["id"] == hid)
+        self.id, self.type, self.plot = rec["id"], rec["type"], rec["plot"]
+        self.year = year
+        self.events = sorted((e for e in rec["events"] if e["year"] <= year), key=lambda e: (e["year"], e["id"]))
+        built = self.first("built")
+        self.built = built["year"]
+        self.era = built["params"]["era"]
+        self.storeys = built["params"]["storeys"] / 1000.0
+        self.wealth = built["params"]["wealth"]
+        self.age = year - self.built
+
+    def all(self, kind):
+        return [e for e in self.events if e["kind"] == kind]
+
+    def first(self, kind):
+        ev = self.all(kind)
+        return ev[0] if ev else None
+
+    def last(self, kind):
+        ev = self.all(kind)
+        return ev[-1] if ev else None
+
+    def windows_made(self, wall_kind):
+        """The year a wall's windows were made: the house's building, or the last event that replaced or restored
+        them there ('street' scope: the front only; 'all': every wall). A restoration to 'original' windows makes them
+        again in the house's own era."""
+        made, era_of = self.built, self.built
+        for e in self.events:
+            p = e["params"]
+            if e["kind"] == "windows_replaced" and (p.get("scope") == "all" or (p.get("scope") == "street" and wall_kind == "front")):
+                made, era_of = e["year"], e["year"]
+            if e["kind"] == "restored" and p.get("windows") == "original":
+                made, era_of = e["year"], self.built
+        return made, era_of
+
+    def boarded(self):
+        """The boarding's event, unless a later one opened the house again."""
+        b = self.last("boarded")
+        if b is None:
+            return None
+        if any(e["year"] > b["year"] and e["kind"] in ("restored", "unboarded", "repainted", "business_opened") for e in self.events):
+            return None
+        return b
+
+    def key(self, *parts):
+        return HS.h(self.world, f"h{self.id}", *parts)
+
+    def u(self, *parts):
+        return HS.unit(self.key(*parts))
+
+    def between(self, lo, hi, *parts):
+        return lo + (hi - lo) * self.u(*parts)
+
+    def pick(self, options, *parts):
+        """One of `options` (each with a `weight`) by the seed."""
+        total = sum(o.get("weight", 1) for o in options)
+        t = self.u(*parts) * total
+        for o in options:
+            t -= o.get("weight", 1)
+            if t <= 0:
+                return o
+        return options[-1]
+
+
+# ---------------------------------------------------------------- the frame's bends
+
+
+class Frame:
+    """Old timber moves (the working's bends), each by its cause, growing with the frame's age: one corner settles on
+    its stones (which one is the seed's), the wall plates sag between the gables and the ridge with them, and the
+    roof's thrust pushes the eave walls' heads out. Points are the house's rest positions."""
+
+    def __init__(self, W, F, w, d, z_sill, z_top, z_ridge):
+        b = W["bends"]
+        c = F.age / 100.0
+        self.settle = min(b["settleMostMm"], b["settleMmPerCentury"] * c) * MM * W["push"]["settle"]
+        self.sag = min(b["sagMostMm"], b["sagMmPerCentury"] * c) * MM
+        self.lean = min(b["leanMostMm"], b["leanMmPerCentury"] * c) * MM
+        self.ridge_share = b.get("ridgeSagShare", 1.0)
+        self.reach = b["settleReachMm"] * MM
+        self.bend, self.share = b["settleBendMm"] * MM, b["settleBendShare"]
+        k = int(F.u("frame", "settle-corner") * 4) % 4
+        self.corner = ((0.0, 0.0), (w, 0.0), (w, d), (0.0, d))[k]
+        self.w, self.d = w, d
+        self.z_sill, self.z_top, self.z_ridge = z_sill, z_top, z_ridge
+
+    def offset(self, p):
+        x, y, z = p
+        cx, cy = self.corner
+        dx, dy_ = abs(x - cx), abs(y - cy)
+        tx, ty = max(0.0, 1.0 - dx / self.reach), max(0.0, 1.0 - dy_ / self.reach)
+        bx, by = max(0.0, 1.0 - dx / self.bend), max(0.0, 1.0 - dy_ / self.bend)
+        dz = -self.settle * ((1.0 - self.share) * tx * ty + self.share * (bx * by) ** 2)
+        s = math.sin(math.pi * min(1.0, max(0.0, x / self.w)))
+        if z <= self.z_top:
+            h = min(1.0, max(0.0, (z - self.z_sill) / (self.z_top - self.z_sill)))
+            hs, hl = h, h * h
+        else:
+            r = min(1.0, (z - self.z_top) / max(self.z_ridge - self.z_top, 1e-3))
+            hs, hl = 1.0 + (self.ridge_share - 1.0) * r, 1.0 - r
+        dz -= self.sag * s * hs
+        side = -1.0 if y < self.d / 2.0 else 1.0
+        inside = 1.0 if -0.5 < y < self.d + 0.5 else 0.0
+        dy = self.lean * s * hl * side * inside
+        return Vector((0.0, dy, dz))
+
+    def __call__(self, p):
+        return p + self.offset(p)
+
+    def rigid(self, anchor, along=None):
+        """A rigid piece's move: the frame's offset at its anchor, and a turn about the anchor that follows the
+        frame's slope along `along`, never a bend."""
+        off = self.offset(anchor)
+        if along is None or along.length < 1e-9:
+            return Matrix.Translation(off)
+        a = along.normalized()
+        slope = (self.offset(anchor + a * 0.25) - self.offset(anchor - a * 0.25)).z / 0.5
+        axis = Z.cross(a)
+        if axis.length < 1e-9:
+            return Matrix.Translation(off)
+        rot = Matrix.Translation(anchor) @ Matrix.Rotation(-math.atan(slope), 4, axis.normalized()) @ Matrix.Translation(-anchor)
+        return Matrix.Translation(off) @ rot
+
+
+# ---------------------------------------------------------------- walls
+
+
+class Wall:
+    """A wall's frame: x along it from `origin`, outward local -y, up z. `kind` 'eave' (its top under the eave) or
+    'gable' (its top the verge's rake); `group` the course table its boards follow."""
+
+    def __init__(self, i, origin, angle, length, kind, group=0, base=0.0):
+        self.i, self.L, self.kind, self.group = i, length, kind, group
+        self.M = Matrix.Translation(Vector((origin[0], origin[1], base))) @ Matrix.Rotation(angle, 4, "Z")
+        self.origin = Vector((origin[0], origin[1], 0.0))
+        self.dir = (self.M.to_3x3() @ ALONG).normalized()
+        self.out = (self.M.to_3x3() @ OUT).normalized()
+
+    def along(self, world):
+        return (world - self.origin).dot(self.dir)
+
+    def info(self):
+        return {"i": self.i, "origin": list(self.origin[:2]), "dir": list(self.dir[:2]), "out": list(self.out[:2]),
+                "length": self.L, "kind": self.kind, "group": self.group}
+
+
+# ---------------------------------------------------------------- the house
+
+
+class House:
+    def __init__(self, S, W, F, mats, paints):
+        self.S, self.W, self.F, self.M, self.P = S, W, F, mats, paints
+        self.pieces, self.charts = [], Charts()
+        self.features = {"openings": [], "joints": [], "butts": [], "drips": [], "pipes": [], "roof": [], "tiles": []}
+        self.push = W["push"]
+        self.ch = {k: v * MM for k, v in W["chamferMm"].items() if k != "describes"}
+        cl = W["cladding"]
+        self.step = cl["stepMm"] * MM
+        # the body
+        self.w = F.plot["w"] * MM
+        self.d = F.between(*rng(W["depthMm"]), "body", "depth")
+        self.pitch = math.radians(F.between(*W["roofPitchDeg"], "body", "pitch"))
+        self.t = math.tan(self.pitch)
+        pl = W["plinth"]
+        self.z_plinth = F.between(*rng(pl["heightMm"]), "plinth", "height")
+        self.z_floor = self.z_plinth + W["floorOverPlinthMm"] * MM
+        dr = W["dripBoard"]
+        self.z_drip0 = self.z_plinth - 0.03
+        self.z_drip1 = self.z_drip0 + dr["heightMm"] * MM
+        self.full = int(math.floor(F.storeys + 1e-6))
+        self.loft = F.storeys - self.full >= 0.5
+        lift = (W["storeyMm"] + W["floorMm"]) * MM
+        self.floors = [self.z_floor + k * lift for k in range(self.full)]
+        self.z_loft = self.z_floor + self.full * lift
+        self.knee = F.between(*rng(W["kneeMm"]), "body", "knee") if self.loft else 0.0
+        self.z_top = self.z_loft + self.knee
+        cs = W["casing"]
+        self.cw = cs["widthMm"] * MM
+        self.trim_proud = cs["proudMm"] * MM * self.push["trimProud"]
+        self.sill_t = cs["sillMm"] * MM * self.push["sillThick"]
+        self.cap_t = cs["capMm"] * MM * self.push["capThick"]
+        self.head_h = cs["headMm"] * MM
+        # the eave and the roof's planes (each eave wall's own frame: y out, the tiles' foot and the ridge)
+        ev, vg = W["eaves"], W["verge"]
+        self.ov = ev["overhangMm"] * MM
+        self.fh, self.ft, self.st = ev["fasciaMm"] * MM, ev["fasciaThickMm"] * MM, ev["soffitThickMm"] * MM
+        self.vov = vg["overhangMm"] * MM
+        self.bt = vg["thickMm"] * MM * self.push["bargeThick"]
+        self.bw = vg["boardMm"] * MM
+        self.y_foot = -self.ov - self.ft - 0.05
+        self.z_foot = self.z_top - self.st - 0.01 + self.fh + 0.004
+        self.z_ridge = self.zp(self.d / 2.0)
+        self.frame = Frame(W, F, self.w, self.d, self.z_floor, self.z_top, self.z_ridge)
+        self.walls = [Wall(0, (0.0, 0.0), 0.0, self.w, "eave"), Wall(1, (self.w, 0.0), math.pi / 2, self.d, "gable"),
+                      Wall(2, (self.w, self.d), math.pi, self.w, "eave"), Wall(3, (0.0, self.d), 3 * math.pi / 2, self.d, "gable")]
+        self.version_of = {}
+        self.courses = {}
+        self.lean_to = None
+
+    # ---- heights of the roof
+    def zp(self, y):
+        """The tiles' plane over a point `y` back from the front wall (symmetric about the ridge)."""
+        yy = min(y, self.d - y)
+        return self.z_foot + (yy - self.y_foot) * self.t
+
+    def z_rake(self, a):
+        """A gable's cladding top at `a` along it: under the verge's soffit."""
+        return self.zp(a) - 0.085
+
+    # ---- versions
+    def version(self, family, made, era_of=None):
+        """The part's version made in `made` (its looks those of `era_of`, a restoration's), by those who could pay;
+        every opening of one making shares it."""
+        era_of = era_of or made
+        vs = self.W["versions"][family]
+        ok = [v for v in vs if v["years"][0] <= era_of <= v["years"][1] and v.get("wealth", [0, 1e9])[0] <= self.F.wealth <= v.get("wealth", [0, 1e9])[1]]
+        if not ok:
+            ok = [min(vs, key=lambda v: min(abs(era_of - v["years"][0]), abs(era_of - v["years"][1])))]
+        v = self.F.pick(ok, "version", family, made)
+        self.version_of[f"{family}@{made}"] = v["id"]
+        return v
+
+    # ---- pieces
+    def make(self, pid, mat, levels=("near", "street"), wall=None, mode="frame", place=None, group=0):
+        pl = place if place is not None else (wall.M if wall is not None else Matrix.Identity(4))
+        pc = Piece(f"h{self.F.id}/{pid}", mat, levels, pl, mode, wall=wall.i if wall is not None else -1, group=group)
+        self.pieces.append(pc)
+        return pc
+
+    def trim(self, pid, wall, o, L, P, Q, w, t, c, nseg=1, groups=("bottom", "front", "top"), caps=(True, True),
+             chamfer_edges=(True, True), mode="frame", mat="trims", levels=("near", "street"), back=False, place=None, cut=None):
+        pc = self.make(pid, mat, levels, wall, mode, place)
+        nominal = {groups[1]: w, groups[0]: t, groups[2]: t}
+        for lv in levels:
+            cc = c if lv == "near" else 0.0
+            prof = rect_profile(w, t, cc, groups=groups + ("back",), chamfer_edges=chamfer_edges, back=back)
+            extrude(pc, lv, prof, o, L, P, Q, self.charts, nseg=nseg, caps=caps, nominal=nominal, cut=cut)
+        return pc
+
+    # ---- the story pole: one course table for the house's walls, its courses meeting every window's sill and head
+    def course_table(self, group, z0, z1, fixed, cl, tag):
+        lo, hi = rng(cl["exposureMm"])
+        mean = 0.5 * (lo + hi)
+        marks = sorted({z for z in fixed if z0 + 0.6 * lo < z < z1 - 0.6 * lo})
+        edges = [z0] + marks + [z1]
+        zs, n_all = [z0], 0
+        for a, b in zip(edges, edges[1:]):
+            n = max(1, round((b - a) / mean))
+            draws = [self.F.between(lo, hi, tag, "course", n_all + k, "exposure") for k in range(n)]
+            k = (b - a) / sum(draws)
+            z = a
+            for e in draws:
+                z += e * k
+                zs.append(z)
+            n_all += n
+        self.courses[group] = zs
+        return zs
+
+    # ---- openings
+    def plan_openings(self):
+        """Where the openings fall, from the record and the working: the front in bays with its door in an inner bay,
+        each gable one window on each floor that has one and its loft's, the back two; a part the extension covers
+        has none. Each opening's parts are versions of its making."""
+        W, F = self.W, self.F
+        op = W["openings"]
+        bd = F.boarded()
+        out = []
+        win, loft, door = op["window"], op["loft"], op["door"]
+
+        def add(wall, kind, a0, z0, ww, hh):
+            made, era_of = F.windows_made("front" if wall.i == 0 else "other")
+            o = {"wall": wall.i, "kind": kind, "a0": a0, "a1": a0 + ww, "z0": z0, "z1": z0 + hh,
+                 "made": made if kind != "door" else F.built, "eraOf": era_of if kind != "door" else F.built,
+                 "boarded": bd is not None and (bd["params"].get("scope") == "all" or wall.i == 0)}
+            out.append(o)
+        # the front: bays across it
+        wall = self.walls[0]
+        edge = F.between(*rng(op["front"]["edgeMm"]), "open", "front", "edge")
+        ww = win["wMm"] * MM
+        span = wall.L - 2 * edge - ww
+        n = 1 + max(0, round(span / (op["front"]["bayMm"] * MM)))
+        xs = [edge + (span * k / (n - 1) if n > 1 else span / 2.0) for k in range(n)]
+        door_at = None
+        if op["front"].get("door") and n >= 3:
+            door_at = 1 + int(F.u("open", "front", "door") * (n - 2)) % (n - 2)
+        for k, x in enumerate(xs):
+            for z in self.floors:
+                if k == door_at and z == self.floors[0]:
+                    dw = door["wMm"] * MM
+                    dz = door["overFloorMm"] * MM
+                    dh = (win["sillOverFloorMm"] + win["hMm"]) * MM - dz if door.get("headWithWindows") else door["hMm"] * MM
+                    add(wall, "door", x + (ww - dw) / 2.0, z + dz, dw, dh)
+                else:
+                    add(wall, "window", x, z + win["sillOverFloorMm"] * MM, ww, win["hMm"] * MM)
+        # the gables: one window on each floor that has one, and the loft's
+        for wall in (self.walls[1], self.walls[3]):
+            c = wall.L / 2.0
+            for fi, z in enumerate(self.floors):
+                lo, hi = op["gable"]["ground"]
+                if lo + round(F.u("open", wall.i, "floor", fi) * (hi - lo)) >= 1:
+                    add(wall, "window", c - ww / 2.0, z + win["sillOverFloorMm"] * MM, ww, win["hMm"] * MM)
+            if self.loft:
+                lo, hi = op["gable"]["loft"]
+                m = lo + round(F.u("open", wall.i, "loft") * (hi - lo))
+                lw = loft["wMm"] * MM
+                gap = 1.8 if m == 2 else 0.0
+                for j in range(m):
+                    cx = c + (j - (m - 1) / 2.0) * gap
+                    add(wall, "loft", cx - lw / 2.0, self.z_loft + loft["sillOverFloorMm"] * MM, lw, loft["hMm"] * MM)
+        # the back
+        wall = self.walls[2]
+        bk = op["back"]
+        e = F.between(*rng(bk["edgeMm"]), "open", "back", "edge")
+        nb = bk["windows"]
+        for k in range(nb):
+            x = e + (wall.L - 2 * e - ww) * (k / (nb - 1) if nb > 1 else 0.5)
+            add(wall, "window", x, self.floors[0] + win["sillOverFloorMm"] * MM, ww, win["hMm"] * MM)
+        self.openings = out
+
+    def covered_by_lean_to(self, o):
+        lt = self.lean_to
+        if lt is None or o["wall"] != 2:
+            return False
+        # clear of its roof's overhang by the opening's casing and horns
+        m = self.cw + 0.05 + 0.15 + 0.1
+        return o["a1"] > lt["a0"] - m and o["a0"] < lt["a1"] + m and o["z0"] < lt["z_hi"] + 0.1
+
+    # ---- cladding
+    def wall_planar(self, wall, z0, z1, a0=-0.3, a1=None):
+        a1 = wall.L + 0.3 if a1 is None else a1
+        key = self.charts(f"wall/w{wall.i}", a1 - a0, z1 - z0)
+
+        def f(p):
+            return key, p.x - a0, p.z - z0
+        return f
+
+    def wall_top(self, wall, a):
+        return self.z_top if wall.kind == "eave" else self.z_rake(a)
+
+    def cladding(self, walls, group, z_start, cl, gaps, rake=None, z_end=None, mode="frame", place_of=None):
+        """Every wall's boards course by course (near) and its planes (street). `gaps(wall, zb, zt)` gives the
+        stretches along the wall a course must leave open (the openings, what an extension covers); `rake(wall)` its
+        top's function along it, or None for a level top at z_end."""
+        zs = self.courses[group]
+        s = cl["stepMm"] * MM
+        c = cl["butChamferMm"] * MM
+        jc = 0.003
+        blo, bhi = rng(cl["boardLengthMm"])
+        for wall in walls:
+            top = rake(wall) if rake else (lambda a, zz=z_end: zz)
+            apex = max(top(a) for a in [wall.L * k / 20.0 for k in range(21)])
+            planar = self.wall_planar(wall, self.z_drip0 - 0.05 if group == 0 else z_start - 0.05, apex + 0.35)
+            place = place_of(wall) if place_of else wall.M
+            for ci in range(len(zs) - 1):
+                zb, zt = zs[ci], zs[ci + 1]
+                if zb >= apex - 0.02:
+                    break
+                if not rake:
+                    zt = min(zt, z_end)
+                    if zb >= z_end - 0.01:
+                        break
+                # the course's reach along the wall at its foot and top: a gable's narrows to the rake
+                ext = lambda z: self.reach(wall, top, z)  # noqa: E731
+                lo_b, hi_b = ext(zb)
+                if hi_b - lo_b < 0.06:
+                    break
+                spans = self.subtract([(lo_b, hi_b)], gaps(wall, zb, zt))
+                # butt joints: boards 2.6 to 5.2 m, staggered by the seed
+                for (a, b) in spans:
+                    if b - a < 0.02:
+                        continue
+                    cuts, x = [], a - self.F.u(wall.i, group, "course", ci, "first") * bhi
+                    k = 0
+                    while True:
+                        x += self.F.between(blo, bhi, wall.i, group, "course", ci, "len", k)
+                        k += 1
+                        if x >= b - 0.25:
+                            break
+                        if x > a + 0.25:
+                            cuts.append(x)
+                    pts = [a] + cuts + [b]
+                    for j in cuts:
+                        self.features["joints"].append((wall.i, j, zb, zt))
+                    for bi in range(len(pts) - 1):
+                        ba, bb = pts[bi], pts[bi + 1]
+                        h = zt - zb
+                        pc = self.make(f"clad/w{wall.i}/c{ci:02d}b{len(self.features['butts'])}", "cladding", ("near",),
+                                       wall, mode, place, group)
+                        prof = [(0.0, 0.0, "front", False), (0.0, s - c, "front", True), (c, s, "front", False),
+                                (h, 0.0, "front", False)]
+                        r0, r1 = (bi == 0 and abs(ba - lo_b) < 1e-6), (bi == len(pts) - 2 and abs(bb - hi_b) < 1e-6)
+                        j0, j1 = bi > 0, bi < len(pts) - 2
+                        ea, eb = ext(zb)
+
+                        def cut0(p, q, ea=ea, r0=r0, j0=j0):
+                            return (ext(zb + p)[0] - ea if r0 else 0.0) + (jc * q / s if j0 else 0.0)
+
+                        def cut1(p, q, eb=eb, r1=r1, j1=j1):
+                            return (ext(zb + p)[1] - eb if r1 else 0.0) - (jc * q / s if j1 else 0.0)
+                        nseg = max(1, round((bb - ba) / 0.5))
+                        extrude(pc, "near", prof, Vector((ba, 0.0, zb)), Vector((bb - ba, 0, 0)), Z, OUT, self.charts,
+                                nseg=nseg, planar=planar, cut=(cut0, cut1), caps=(j0, j1))
+                        if pc.mode == "rigid":
+                            pc.anchor, pc.along = self.lean_to["anchor"], self.lean_to["along"]
+                        self.features["butts"].append((wall.i, ba, bb, zb))
+            # street level: the wall as planes in a grid round its openings, clipped to its top
+            pc = self.make(f"clad/w{wall.i}/plane", "cladding", ("street",), wall, mode, place, group)
+            if pc.mode == "rigid":
+                pc.anchor, pc.along = self.lean_to["anchor"], self.lean_to["along"]
+            z0 = zs[0]
+            xs = {0.0, wall.L}
+            zc = {z0, apex}
+            gl = gaps(wall, None, None)
+            for (a, b, za, zb_) in gl:
+                xs |= {a, b}
+                zc |= {za, zb_}
+            if not rake:
+                zc.add(z_end)
+            xs = sorted(x for x in xs if 0.0 <= x <= wall.L)
+            zc = sorted(z for z in zc if z0 <= z <= apex)
+            ymid = -0.5 * s
+            for i in range(len(xs) - 1):
+                for j in range(len(zc) - 1):
+                    xa, xb, za, zb_ = xs[i], xs[i + 1], zc[j], zc[j + 1]
+                    mx, mz = (xa + xb) / 2.0, (za + zb_) / 2.0
+                    if any(a <= mx <= b and z_a <= mz <= z_b for (a, b, z_a, z_b) in gl):
+                        continue
+                    if not rake and za >= z_end - 1e-6:
+                        continue
+                    nseg = max(1, round((xb - xa) / 0.5))
+                    for k in range(nseg):
+                        a = xa + (xb - xa) * k / nseg
+                        b = xa + (xb - xa) * (k + 1) / nseg
+                        poly = [Vector((a, ymid, za)), Vector((b, ymid, za)), Vector((b, ymid, zb_)), Vector((a, ymid, zb_))]
+                        if rake:
+                            poly = clip_top(poly, top)
+                        if len(poly) >= 3:
+                            cuv = [planar(p)[1:] for p in poly]
+                            pc.add("street", Face(poly, cuv, planar(poly[0])[0], cuv))
+
+    def reach(self, wall, top, z):
+        """How far along a wall a course at height z runs: between where its top (a gable's rake, a lean-to's
+        slope, or level) falls to z on either side of its highest point."""
+        L = wall.L
+        am = max((L * k / 40.0 for k in range(41)), key=top)
+
+        def cross(lo, hi, rising):
+            for _ in range(40):
+                m = 0.5 * (lo + hi)
+                if (top(m) < z) == rising:
+                    lo = m
+                else:
+                    hi = m
+            return 0.5 * (lo + hi)
+        a0 = 0.0 if top(0.0) >= z else cross(0.0, am, True)
+        a1 = L if top(L) >= z else cross(am, L, False)
+        return (a0, a1)
+
+    @staticmethod
+    def subtract(spans, gaps):
+        out = spans
+        for (g0, g1) in gaps:
+            nxt = []
+            for (a, b) in out:
+                if g1 <= a or g0 >= b:
+                    nxt.append((a, b))
+                    continue
+                if g0 > a:
+                    nxt.append((a, g0))
+                if g1 < b:
+                    nxt.append((g1, b))
+            out = nxt
+        return out
+
+    def opening_gaps(self, wall, zb, zt):
+        """The stretches a course leaves open on `wall` (zb, zt the course; None for all of them as boxes)."""
+        boxes = []
+        for o in self.openings:
+            if o["wall"] != wall.i or o.get("covered"):
+                continue
+            z_lo = o["z0"] - (0.0 if o["kind"] == "door" else self.sill_t)
+            z_hi = o["z1"] + self.head_h + self.cap_t
+            if zb is None:
+                boxes.append((o["a0"], o["a1"], max(z_lo, self.courses[0][0]), o["z1"]))
+            elif zt > z_lo + 0.005 and zb < z_hi - 0.005:
+                boxes.append((o["a0"], o["a1"]))
+        lt = self.lean_to
+        if lt is not None and wall.i == 2:
+            if zb is None:
+                boxes.append((lt["a0"], lt["a1"], self.courses[0][0], lt["z_hi"] - 0.02))
+            elif zt < lt["z_hi"] - 0.02:
+                boxes.append((lt["a0"], lt["a1"]))
+        return boxes
+
+    # ---- corner boards and drip boards
+    def corner_boards(self):
+        cb = self.W["corner"]
+        w = cb["widthMm"] * MM
+        proud = cb["proudMm"] * MM * self.push["trimProud"]
+        c = self.ch["corner"]
+        s = self.step
+        z0, z1 = self.z_drip1 - 0.01, self.z_top
+        H = z1 - z0
+        for wall in self.walls:
+            for end in (0, 1):
+                if wall.kind == "eave":
+                    # the eave wall's board covers the gable board's edge, so its outer arris is the house's corner
+                    x = -(s + proud) if end == 0 else wall.L - w
+                    width = w + s + proud
+                    ce = (True, True)
+                else:
+                    x = -s if end == 0 else wall.L - w
+                    width = w + s
+                    ce = (end == 1, end == 0)
+                self.trim(f"corner/w{wall.i}e{end}", wall, Vector((x, -s, z0)), Vector((0, 0, H)), ALONG, OUT, width,
+                          proud, c, nseg=4, groups=("left", "front", "right"), chamfer_edges=ce, caps=(False, False))
+        self.cb = (w, proud)
+
+    def drip_boards(self):
+        dr = self.W["dripBoard"]
+        h = dr["heightMm"] * MM
+        proud = dr["proudMm"] * MM
+        c = self.ch["drip"]
+        for wall in self.walls:
+            a, b = (-(proud + self.step), wall.L + proud + self.step) if wall.kind == "eave" else (0.0, wall.L)
+            spans = [(a, b)]
+            for o in self.openings:
+                if o["wall"] == wall.i and o["kind"] == "door":
+                    spans = self.subtract(spans, [(o["a0"] - self.cw, o["a1"] + self.cw)])
+            for k, (sa, sb) in enumerate(spans):
+                self.trim(f"drip/w{wall.i}s{k}", wall, Vector((sa, -self.step, self.z_drip0)), Vector((sb - sa, 0, 0)),
+                          Z, OUT, h, proud + self.step, c, nseg=max(1, round((sb - sa) / 0.75)),
+                          groups=("bottom", "front", "top"), caps=(wall.kind == "eave" or k > 0, wall.kind == "eave" or k < len(spans) - 1))
+
+    # ---- an opening's surround: moulded casing legs, the head's frieze, cap and bed mould, the horned sill
+    def surround(self, o, k):
+        W = self.W
+        cs = W["casing"]
+        wall = self.walls[o["wall"]] if o["wall"] < len(self.walls) else self.lt_walls[o["wall"] - len(self.walls)]
+        mode = "rigid" if o.get("leanTo") else "frame"
+        place = self.lt_place(wall) if o.get("leanTo") else wall.M
+        made = self.F.built if not o.get("leanTo") else self.lean_to["year"]
+        cv = self.version("casing", made)
+        hv = self.version("head", made)
+        sv = self.version("sill", made)
+        x0, x1, za, zo1 = o["a0"], o["a1"], o["z0"], o["z1"]
+        zb = zo1 + self.head_h
+        p = self.trim_proud
+        y0 = -self.step * 0.5
+        tag = f"open{k}"
+        cw = max(pt[0] for pt in cv["profileMm"]) * MM
+        o["cw"] = cw
+        # the legs: the version's moulding swept up each side, its opening edge toward the opening
+        prof = data_profile(cv["profileMm"], self.push["trimProud"])
+        flat = [(0.0, 0.0, "left", False), (0.0, p, "front", False), (cw, p, "right", False), (cw, 0.0, "right", False)]
+        for side, xo, P in (("l", x0 - cw, ALONG), ("r", x1 + cw, -ALONG)):
+            pc = self.make(f"{tag}/casing/{side}", "trims", ("near", "street"), wall, mode, place)
+            for lv in ("near", "street"):
+                extrude(pc, lv, prof if lv == "near" else flat, Vector((xo, y0, za)), Vector((0, 0, zb - za)), P, OUT,
+                        self.charts, nseg=2, nominal={"front": cw, "left": p, "right": p})
+            self.rigid_lt(pc, o)
+        # the head's frieze between them
+        pc = self.trim(f"{tag}/casing/head", wall, Vector((x0, y0, zo1)), Vector((x1 - x0, 0, 0)), Z, OUT,
+                       zb - zo1, p * 0.8, 0.006, caps=(False, False), mode=mode, place=place)
+        self.rigid_lt(pc, o)
+        # the cap: a water board over the whole surround, sloped to shed water, with a bed mould under it if its
+        # version has one
+        capw = (x1 + cw) - (x0 - cw) + 2 * 0.03
+        cproud = hv["capProudMm"] * MM * self.push["capProud"]
+        self.cap(tag, wall, place, mode, x0 - cw - 0.03, capw, zb, cproud, self.cap_t, math.radians(cs["capSlopeDeg"]), o)
+        if hv.get("bedMould"):
+            bm = cs["bedMouldMm"]
+            pc = self.trim(f"{tag}/casing/bed", wall, Vector((x0 - cw - 0.01, y0 - p, zb - bm[1] * MM)),
+                           Vector((capw - 0.04, 0, 0)), Z, OUT, bm[1] * MM, bm[0] * MM, self.ch["bedMould"],
+                           caps=(True, True), chamfer_edges=(True, False), mode=mode, place=place)
+            self.rigid_lt(pc, o)
+        feat = {"casing": [x0 - cw, x1 + cw, za, zb + self.cap_t], "versions": {"casing": cv["id"], "head": hv["id"], "sill": sv["id"]}}
+        if o["kind"] != "door":
+            horn = sv["hornMm"] * MM
+            sp = cs["sillProudMm"] * MM * self.push["sillProud"]
+            sx0, sx1 = x0 - cw - horn, x1 + cw + horn
+            self.sill(tag, wall, place, mode, sx0, sx1 - sx0, za, sp, self.sill_t, o)
+            feat["sill"] = [sx0, sx1, za - self.sill_t, sp]
+            # the sill's fall along its length, from the frame: water leaves it at its lower end
+            if not o.get("leanTo"):
+                a = wall.M @ Vector((sx0, 0, za))
+                b = wall.M @ Vector((sx1, 0, za))
+                feat["tilt"] = (self.frame.offset(b).z - self.frame.offset(a).z) / (sx1 - sx0)
+            else:
+                feat["tilt"] = 0.0
+        else:
+            # the door's threshold: a hardwood board across the opening from the stones to the floor
+            z_st = self.z_plinth if not o.get("leanTo") else za - 0.05
+            pc = self.trim(f"{tag}/threshold", wall, Vector((x0 - cw, y0 + 0.02, z_st)), Vector((x1 - x0 + 2 * cw, 0, 0)),
+                           Z, OUT, za - z_st, 0.05, 0.006, caps=(True, True), mode=mode, place=place)
+            self.rigid_lt(pc, o)
+            feat["tilt"] = 0.0
+            if not o.get("leanTo") and za > 0.3:
+                self.steps(tag, wall, x0 - cw, x1 + cw, za - 0.012)
+        self.reveal(tag, wall, place, mode, o, y0 - p)
+        o.update(feat)
+
+    def reveal(self, tag, wall, place, mode, o, y_face):
+        """What stands behind an opening's casing: its frame, set back by the working's reveal, and the reveal's four
+        sides; a gap in a boarding shows the frame, never a hole."""
+        x0, x1, za, zb = o["a0"], o["a1"], o["z0"], o["z1"]
+        yb = y_face + self.W["casing"]["revealMm"] * MM
+        pc = self.make(f"{tag}/reveal", "trims", ("near", "street"), wall, mode, place)
+        key = self.charts(f"h{self.F.id}/{tag}/reveal", (x1 - x0) + 2 * (yb - y_face) + 0.02, (zb - za) + 2 * (yb - y_face) + 0.02)
+        r = yb - y_face
+
+        def cu(p):
+            return (p.x - x0 + r + 0.01, p.z - za + r + 0.01)
+        quads = [[Vector((x0, yb, za)), Vector((x1, yb, za)), Vector((x1, yb, zb)), Vector((x0, yb, zb))],
+                 [Vector((x0, y_face, za)), Vector((x0, yb, za)), Vector((x0, yb, zb)), Vector((x0, y_face, zb))],
+                 [Vector((x1, yb, za)), Vector((x1, y_face, za)), Vector((x1, y_face, zb)), Vector((x1, yb, zb))],
+                 [Vector((x0, y_face, zb)), Vector((x0, yb, zb)), Vector((x1, yb, zb)), Vector((x1, y_face, zb))],
+                 [Vector((x0, yb, za)), Vector((x0, y_face, za)), Vector((x1, y_face, za)), Vector((x1, yb, za))]]
+        for lv in ("near", "street"):
+            for q in quads:
+                pc.add(lv, Face(q, [cu(p) for p in q], key, [cu(p) for p in q]))
+        self.rigid_lt(pc, o)
+
+    def steps(self, tag, wall, x0, x1, z_top):
+        """Split stone steps up to a door: as many risers as its height needs, each slab one going deeper than the
+        one above it; rigid, set on the ground."""
+        st = self.W["steps"]
+        F = self.F
+        n = max(1, round(z_top / (0.5 * (st["riserMm"][0] + st["riserMm"][1]) * MM)))
+        go = st["goingMm"] * MM
+        past = F.between(*rng(st["pastDoorMm"]), tag, "steps", "past")
+        y_wall = -self.step - 0.012
+        for k in range(n):
+            ztk = z_top * (k + 1) / n
+            depth = go * (n - k)
+            jog = (F.u(tag, "steps", k, "jog") - 0.5) * 0.04
+            sa, sb = x0 - past + jog, x1 + past + jog
+            pc = self.make(f"{tag}/step{k}", "stone", ("near", "street"), wall, "rigid")
+            for lv in ("near", "street"):
+                prof = rect_profile(ztk, depth, 0.012 if lv == "near" else 0.0, groups=("back", "front", "top", "under"),
+                                    chamfer_edges=(False, True))
+                extrude(pc, lv, prof, Vector((sa, y_wall, 0.0)), Vector((sb - sa, 0, 0)), Z, OUT, self.charts,
+                        caps=(True, True), nominal={"front": ztk, "top": depth})
+            pc.anchor = wall.M @ Vector(((sa + sb) / 2, y_wall, 0.0))
+            pc.along = wall.M.to_3x3() @ ALONG
+
+    def rigid_lt(self, pc, o):
+        if o.get("leanTo"):
+            pc.anchor, pc.along = self.lean_to["anchor"], self.lean_to["along"]
+
+    def cap(self, tag, wall, place, mode, x, length, z, proud, t, slope, o):
+        c = self.ch["cap"]
+        ct = self.ch["capTop"]
+        dw, dh = rng(self.W["casing"]["capDripMm"])
+        pc = self.make(f"{tag}/casing/cap", "trims", ("near", "street"), wall, mode, place)
+        d = proud
+        rise = d * math.tan(slope)
+        for lv in ("near", "street"):
+            if lv == "near":
+                prof = [(0.0, 0.0, "bottom", False), (0.0, d - dw, "bottom", False), (-dh, d - dw, "bottom", False),
+                        (-dh, d - c, "front", True), (-dh + c, d, "front", False),
+                        (t - ct, d, "front", True), (t + rise * ct / d, d - ct, "top", False), (t + rise, 0.0, "top", False)]
+            else:
+                prof = [(0.0, 0.0, "bottom", False), (-dh, d, "front", False), (t, d, "top", False), (t + rise, 0.0, "top", False)]
+            extrude(pc, lv, prof, Vector((x, -self.step * 0.5, z)), Vector((length, 0, 0)), Z, OUT, self.charts, nseg=2,
+                    caps=(True, True), nominal={"bottom": d, "front": t, "top": math.hypot(d, rise)})
+        self.rigid_lt(pc, o)
+
+    def sill(self, tag, wall, place, mode, x, length, ztop, proud, t, o):
+        c = self.ch["sill"]
+        pc = self.make(f"{tag}/casing/sill", "trims", ("near", "street"), wall, mode, place)
+        fall = 0.012
+        for lv in ("near", "street"):
+            if lv == "near":
+                prof = [(-t, 0.0, "bottom", False), (-t, proud - 0.004, "front", True), (-t + 0.004, proud, "front", False),
+                        (-fall - c, proud, "front", True), (-fall, proud - c, "top", False), (0.0, 0.0, "top", False)]
+            else:
+                prof = [(-t, 0.0, "bottom", False), (-t, proud, "front", False), (-fall, proud, "top", False), (0.0, 0.0, "top", False)]
+            extrude(pc, lv, prof, Vector((x, -self.step * 0.5, ztop)), Vector((length, 0, 0)), Z, OUT, self.charts, nseg=2,
+                    caps=(True, True), nominal={"bottom": proud, "front": t, "top": proud})
+        self.rigid_lt(pc, o)
+
+    # ---- the boarding: sheets inside the casing, battens nailed across it; rough, rigid, proud
+    def boarding(self, o, k):
+        bd = self.W["boarding"]
+        F = self.F
+        wall = self.walls[o["wall"]] if o["wall"] < len(self.walls) else self.lt_walls[o["wall"] - len(self.walls)]
+        place = self.lt_place(wall) if o.get("leanTo") else wall.M
+        x0, x1, za, zb = o["a0"], o["a1"], o["z0"], o["z1"]
+        t = bd["sheetThickMm"] * MM
+        tag = f"open{k}"
+        top_gap = F.between(*bd["topGapMm"], tag, "topgap") * MM
+        y_set = -self.step * 0.5 - self.trim_proud
+        door = o["kind"] == "door"
+        n = bd["sheetsHigh"] if (zb - za) > 1.0 else 1
+        hs = zb - za - top_gap
+        split = 0.45 + 0.2 * F.u(tag, "split")
+        heights = [hs * split, hs * (1 - split)] if n == 2 else [hs]
+        z = za + 0.002
+        sheets = []
+        for i, h in enumerate(heights):
+            g = F.between(*bd["sideGapMm"], tag, "sheet", i, "gap") * MM
+            y_face = y_set + F.between(*bd["setBackMm"], tag, "sheet", i, "setback") * MM
+            pc = self.make(f"{tag}/board/sheet{i}", "sheet", ("near", "street"), wall, "rigid", place)
+            sx0, sx1 = x0 + g * 0.5, x1 - g * 0.5
+            for lv in ("near", "street"):
+                cc = self.ch["sheet"] if lv == "near" else 0.0
+                prof = rect_profile(h - 0.003, t, cc, groups=("bottom", "front", "top", "back"))
+                extrude(pc, lv, prof, Vector((sx0, y_face + t, z)), Vector((sx1 - sx0, 0, 0)), Z, OUT, self.charts,
+                        caps=(True, True), nominal={"front": h - 0.003, "bottom": t, "top": t})
+            pc.anchor = place @ Vector(((sx0 + sx1) / 2, y_face, z + h / 2))
+            pc.along = place.to_3x3() @ ALONG
+            sheets.append([sx0, sx1, z, z + h])
+            z += h
+        o["sheets"] = [x0, x1, za, zb - top_gap, y_set + bd["setBackMm"][0] * MM]
+        # battens across the casing, past it onto the cladding, out of level by the hand that nailed them; a door's
+        # middle one on the diagonal
+        bt = bd["battens"]
+        th = bt["thickMm"] * MM
+        y_b = -self.step * 0.5 - self.trim_proud
+        span = zb - za
+        count = bd["door"]["battens"] if door else bt["count"]
+        o["battens"], o["nails"] = [], []
+        for i in range(count):
+            w = F.between(*bt["widthMm"], tag, "batten", i, "width") * MM
+            diag = door and bd["door"].get("diagonal") and i == 1
+            if door:
+                zc = za + span * (0.18 + 0.32 * i) + (F.u(tag, "batten", i, "z") - 0.5) * 0.1
+            else:
+                zc = za + span * (0.28 + 0.46 * i) + (F.u(tag, "batten", i, "z") - 0.5) * 0.12
+            if diag:
+                bx0, bx1 = x0 + 0.02, x1 - 0.02
+                rise = span * 0.42
+                tilt = math.atan2(rise, bx1 - bx0) * (1 if F.u(tag, "diag") < 0.5 else -1)
+                zc = za + span * 0.5
+            else:
+                pl = F.between(*bt["pastCasingMm"], tag, "batten", i, "left") * MM
+                pr = F.between(*bt["pastCasingMm"], tag, "batten", i, "right") * MM
+                bx0, bx1 = x0 - o["cw"] - pl, x1 + o["cw"] + pr
+                tilt = math.radians(F.between(*bt["outOfLevelDeg"], tag, "batten", i, "tilt")) * (1 if F.u(tag, "batten", i, "sign") < 0.5 else -1)
+            length = (bx1 - bx0) / math.cos(tilt)
+            pc = self.make(f"{tag}/board/batten{i}", "batten", ("near", "street"), wall, "rigid", place)
+            L = Vector((math.cos(tilt), 0, math.sin(tilt))) * length
+            o_ = Vector((bx0, y_b - (th if diag else 0.0), zc - w / 2 - math.tan(tilt) * (bx1 - bx0) / 2))
+            o["battens"].append([bx0, bx1, zc, math.tan(tilt), w])
+            ec = bt["endCutDeg"]
+            ends = [(math.tan(math.radians(F.between(-ec[0], ec[0], tag, "batten", i, e, "face"))),
+                     math.tan(math.radians(F.between(-ec[1], ec[1], tag, "batten", i, e, "through")))) for e in ("start", "end")]
+            cut = tuple((lambda p, q, a=a, b=b, w=w: a * (p - w / 2) + b * (q - th / 2)) for a, b in ends)
+            for lv in ("near", "street"):
+                cc = self.ch["batten"] if lv == "near" else 0.0
+                prof = rect_profile(w, th, cc, groups=("bottom", "front", "top", "back"))
+                extrude(pc, lv, prof, o_, L, Vector((-math.sin(tilt), 0, math.cos(tilt))), OUT, self.charts,
+                        caps=(True, True), cut=cut, nominal={"front": w, "bottom": th, "top": th})
+            pc.anchor = place @ Vector(((bx0 + bx1) / 2, y_b, zc))
+            pc.along = place.to_3x3() @ ALONG
+            # nails: two at each casing it crosses (on a diagonal, at its ends on the sheet)
+            xs = ((x0 + 0.06, x1 - 0.06) if diag else (x0 - o["cw"] / 2, x1 + o["cw"] / 2))
+            for side, xc in zip(("l", "r"), xs):
+                for kk in range(bt["nailsPerEnd"]):
+                    zz = zc + (math.tan(tilt) * (xc - (bx0 + bx1) / 2)) + (kk - 0.5) * w * 0.5
+                    o["nails"].append([xc + (F.u(tag, "nail", i, side, kk) - 0.5) * 0.04, zz])
+
+    # ---- the plinth: split fieldstone, rigid, a long corner stone bonding each corner, the runs between
+    def plinth(self):
+        pl = self.W["plinth"]
+        F = self.F
+        zt = self.z_plinth
+        y_face = -self.step - 0.012
+        e = -y_face
+        n = len(self.walls)
+        # each corner's stone runs along one of its two walls (the seed's), its end the other's face
+        corner = []
+        for i in range(n):
+            j = (i + 1) % n
+            along_i = F.u("plinth", "corner", i, "which") < 0.5
+            Lc = F.between(*rng(pl["cornerStoneMm"]), "plinth", "corner", i, "len")
+            Dc = F.between(*rng(pl["cornerReturnMm"]), "plinth", "corner", i, "ret")
+            corner.append((i, j, along_i, Lc, Dc))
+        runs = {i: [0.0, self.walls[i].L] for i in range(n)}
+        jm = lambda *k: F.between(*rng(pl["jointMm"]), "plinth", *k, "joint")  # noqa: E731
+        for (i, j, along_i, Lc, Dc) in corner:
+            wi, wj = self.walls[i], self.walls[j]
+            if along_i:
+                # along wall i's end, its end face on wall j's start
+                self.stone(f"plinth/k{i}", wi, wi.L - Lc, wi.L + e, zt, y_face, end=(1, wj, Dc))
+                runs[i][1] = wi.L - Lc - jm("ci", i)
+                runs[j][0] = Dc - e + jm("cj", i)
+            else:
+                # along wall j's start, its start face on wall i's end
+                self.stone(f"plinth/k{i}", wj, -e, Lc, zt, y_face, end=(0, wi, Dc))
+                runs[j][0] = Lc + jm("cj", i)
+                runs[i][1] = wi.L - (Dc - e) - jm("ci", i)
+        for wall in self.walls:
+            a, b = runs[wall.i]
+            # stones between, their lengths drawn and then fitted so the last meets the corner stone
+            ls, x = [], a
+            while x < b:
+                ls.append(F.between(*rng(pl["stoneMm"]), "plinth", wall.i, len(ls), "len"))
+                x += ls[-1] + 0.014
+            joints = [jm(wall.i, k) for k in range(len(ls))]
+            k = (b - a - sum(joints[:-1])) / sum(ls) if ls else 1.0
+            x = a
+            for si, L in enumerate(ls):
+                L *= k
+                self.stone(f"plinth/w{wall.i}/s{si}", wall, x, x + L, zt, y_face)
+                x += L + joints[si]
+            # the mortar's bed, set back behind the stones' faces
+            pc = self.make(f"plinth/w{wall.i}/mortar", "stone", ("near", "street"), wall)
+            yb = y_face + pl["jointBackMm"] * MM
+            key = self.charts(f"plinth/w{wall.i}", wall.L + 0.6, zt + 0.05)
+            for lv in ("near", "street"):
+                pts = [Vector((0.0, yb, 0.0)), Vector((wall.L, yb, 0.0)), Vector((wall.L, yb, zt)), Vector((0.0, yb, zt))]
+                cuv = [(p.x + 0.3, p.z) for p in pts]
+                pc.add(lv, Face(pts, cuv, key, cuv, under=True))
+
+    def stone(self, sid, wall, a, b, zt, y_face, end=None):
+        """A split stone between a and b along its wall: a pillowed face worn back at its arris, its sides into the
+        joint. A corner stone (`end`: which end, the other wall, its return) shows its end on the other wall as a
+        second face."""
+        pl = self.W["plinth"]
+        F = self.F
+        bulge = F.between(*rng(pl["faceBulgeMm"]), sid, "bulge")
+        arr = F.between(*rng(pl["arrisMm"]), sid, "arris")
+        h = zt - 0.004
+        pc = self.make(sid, "stone", ("near", "street"), wall, "rigid")
+        set_out = F.between(*rng(pl["setOutMm"]), sid, "out")
+        yf = y_face - set_out
+        key = self.charts(f"plinth/w{wall.i}", wall.L + 0.6, zt + 0.05)
+
+        def cu(p):
+            return (p.x + 0.3, p.z)
+        self.pillow(pc, sid, a, b, yf, h, bulge, arr, key, cu, lambda u, v, a=a, b=b: Vector((a + (b - a) * u, yf, v)),
+                    Vector((0, -1, 0)))
+        if end is not None:
+            which, other, D = end
+            x = b if which == 1 else a
+            ko = self.charts(f"plinth/w{other.i}", other.L + 0.6, zt + 0.05)
+            M = wall.M
+
+            def cu2(p, other=other, M=M):
+                return (other.along(M @ p) + 0.3, p.z)
+            # the end face runs from the stone's face back into the wall by D, facing along +x (or -x)
+            sgn = 1.0 if which == 1 else -1.0
+            if which == 1:
+                f = lambda u, v: Vector((x, yf + D * u, v))  # noqa: E731
+            else:
+                f = lambda u, v: Vector((x, yf + D * (1.0 - u), v))  # noqa: E731
+            self.pillow(pc, sid + "e", 0.0, D, yf, h, bulge, arr, ko, cu2, f, Vector((sgn, 0, 0)))
+        pc.anchor = wall.M @ Vector(((a + b) / 2, yf, 0.0))
+        pc.along = wall.M.to_3x3() @ ALONG
+
+    def pillow(self, pc, sid, a, b, yf, h, bulge, arr, key, cu, at, nrm):
+        """A split face over the unit square `at(u, v)` (v in metres up): high in its middle, its border worn back
+        by the arris, then its sides 30 mm back into the joint."""
+        F = self.F
+        for lv in ("near", "street"):
+            ar = arr if lv == "near" else 0.0
+            nx, nz = (3, 2) if lv == "near" else (1, 1)
+            L = b - a
+            uu = lambda i: (ar + (L - 2 * ar) * i / nx) / L  # noqa: E731
+            grid = []
+            for j in range(nz + 1):
+                row = []
+                for i in range(nx + 1):
+                    u, v = i / nx, j / nz
+                    lump = bulge * (math.sin(math.pi * u) * math.sin(math.pi * v)) ** 0.7 * (0.75 + 0.5 * F.u(sid, "lump", i, j))
+                    row.append(at(uu(i), ar + (h - 2 * ar) * v) + nrm * lump)
+                grid.append(row)
+            if lv == "street":
+                c = at(0.5, h / 2) + nrm * bulge * 0.8
+                ring = [at(0.0, 0.004), at(1.0, 0.004), at(1.0, h), at(0.0, h)]
+                for i in range(4):
+                    pts = [ring[i], ring[(i + 1) % 4], c]
+                    if newell_dot(pts, nrm) < 0:
+                        pts = pts[::-1]
+                    pc.add(lv, Face(pts, [cu(p) for p in pts], key, [cu(p) for p in pts]))
+                continue
+            flip = None
+            for j in range(nz):
+                for i in range(nx):
+                    pts = [grid[j][i], grid[j][i + 1], grid[j + 1][i + 1], grid[j + 1][i]]
+                    if flip is None:
+                        flip = newell_dot(pts, nrm) < 0
+                    if flip:
+                        pts = pts[::-1]
+                    pc.add(lv, Face(pts, [cu(p) for p in pts], key, [cu(p) for p in pts]))
+            border = [grid[0][i] for i in range(nx + 1)] + [grid[j][nx] for j in range(1, nz + 1)] + \
+                     [grid[nz][i] for i in range(nx - 1, -1, -1)] + [grid[j][0] for j in range(nz - 1, 0, -1)]
+            uvs = [(i / nx, 0) for i in range(nx + 1)] + [(1, j / nz) for j in range(1, nz + 1)] + \
+                  [(i / nx, 1) for i in range(nx - 1, -1, -1)] + [(0, j / nz) for j in range(nz - 1, 0, -1)]
+            outer = []
+            for (u, v), p in zip(uvs, border):
+                ue = 0.0 if u == 0 else (1.0 if u == 1 else uu(round(u * nx)))
+                ve = 0.004 if v == 0 else (h if v == 1 else ar + (h - 2 * ar) * v)
+                outer.append(at(ue, ve) - nrm * ar * 0.6)
+            m = len(border)
+            back = [p - nrm * 0.03 for p in outer]
+            for i in range(m):
+                for ring_a, ring_b, arris in ((outer, border, True), (back, outer, False)):
+                    pts = [ring_a[i], ring_a[(i + 1) % m], ring_b[(i + 1) % m], ring_b[i]]
+                    if flip:
+                        pts = pts[::-1]
+                    pc.add(lv, Face(pts, [cu(p) for p in pts], key, [cu(p) for p in pts], arris=arris))
+
+    # ---- the eave: soffit, fascia, gutter on hooks and its downpipe
+    def eaves(self):
+        F = self.F
+        rw = self.W.get("rainwater")
+        has_gutter = rw is not None and rw["fittedYear"] <= F.year
+        for wall in self.walls:
+            if wall.kind != "eave":
+                continue
+            xa, xb = -self.vov - self.bt - 0.01, wall.L + self.vov + self.bt + 0.01
+            zt = self.z_top
+            self.trim(f"eave/w{wall.i}/soffit", wall, Vector((xa, 0.0, zt)), Vector((xb - xa, 0, 0)), OUT, Vector((0, 0, -1)),
+                      self.ov, self.st, self.ch["soffit"], nseg=max(2, round((xb - xa) / 1.0)),
+                      groups=("back", "under", "front"), chamfer_edges=(False, True), caps=(True, True))
+            self.trim(f"eave/w{wall.i}/fascia", wall, Vector((xa, -self.ov, zt - self.st - 0.01)), Vector((xb - xa, 0, 0)),
+                      Z, OUT, self.fh, self.ft, self.ch["fascia"], nseg=max(2, round((xb - xa) / 1.0)), caps=(True, True))
+            if has_gutter:
+                r = rw["gutterRadiusMm"] * MM
+                gy = -self.ov - self.ft - r - 0.012
+                gz = zt - self.st - 0.01 + self.fh - 0.035
+                # the outlet at one end (the seed's), its pipe clear of the corner board
+                end = 0 if F.u("pipe", wall.i, "end") < 0.5 else 1
+                self.gutter(wall, xa + 0.01, xb - 0.01, gy, gz, r, rw)
+                x = rw["outletFromEndMm"] * MM
+                x = x if end == 0 else wall.L - x
+                self.downpipe(wall, x, gy, gz, r, rw)
+                # neglected, the gutter's joints open: each drips by how long it has been let go
+                ng = F.last("neglected")
+                if ng:
+                    years = F.year - ng["year"]
+                    for k in range(1 + (years > 5)):
+                        at = xa + (xb - xa) * (0.2 + 0.6 * F.u("gutter", wall.i, "leak", k))
+                        flow = min(1.0, ng["params"]["amount"] / 1000.0 * (0.4 + 0.2 * years))
+                        self.features["drips"].append([wall.i, at, flow, "gutter"])
+                self.features["drips"].append([wall.i, x, 1.0 if F.last("neglected") else 0.5, "shoe"])
+
+    def gutter(self, wall, x0, x1, gy, gz, r, rw):
+        th = rw["gutterThickMm"] * MM
+        pc = self.make(f"eave/w{wall.i}/gutter", "zinc", ("near", "street"), wall)
+        for lv in ("near", "street"):
+            k = 8 if lv == "near" else 4
+            outer = [(r * math.cos(math.pi * i / k), -r * math.sin(math.pi * i / k)) for i in range(k + 1)]
+            prof = [(-p, q, "outside", False) for (p, q) in outer]
+            inner = [(-p * (1 - th / r), q * (1 - th / r), "inside", False) for (p, q) in outer][::-1]
+            bead = rw["beadMm"] * MM
+            prof += [(r + bead * 0.3, bead * 0.6, "outside", False)] + inner
+            extrude(pc, lv, prof, Vector((x0, gy, gz)), Vector((x1 - x0, 0, 0)), OUT, Z, self.charts,
+                    nseg=max(3, round((x1 - x0) / 1.5)), caps=(True, True), nominal={"outside": math.pi * r, "inside": math.pi * r})
+        hw, ht = rng(rw["hookMm"])
+        every = rw["hookEveryMm"] * MM
+        x, i = x0 + 0.12, 0
+        while x < x1 - 0.05:
+            pc = self.make(f"eave/w{wall.i}/hook{i}", "zinc", ("near",), wall)
+            ri, ro = r + th, r + th + ht
+            pts = [(ri * math.cos(math.pi * j / 4), -ri * math.sin(math.pi * j / 4)) for j in range(4, -1, -1)]
+            pts += [(ri, 0.03), (ro, 0.03)]
+            pts += [(ro * math.cos(math.pi * j / 4), -ro * math.sin(math.pi * j / 4)) for j in range(5)]
+            pts.append(pts[0])
+            extrude(pc, "near", [(-p, q, "iron", False) for (p, q) in pts], Vector((x - hw / 2, gy, gz)), Vector((hw, 0, 0)),
+                    OUT, Z, self.charts)
+            x += every
+            i += 1
+
+    def downpipe(self, wall, x, gy, gz, r, rw):
+        """From the outlet a swan neck back to the wall, down to a shoe; rigid zinc, clear of the drip board."""
+        pr = rw["pipeRadiusMm"] * MM
+        dr = self.W["dripBoard"]["proudMm"] * MM
+        y_wall = -self.step - max(rw["offWallMm"] * MM, dr + 0.012) - pr
+        z_out = gz - r - 0.01
+        neck = abs(y_wall - gy)
+        path = [Vector((x, gy, z_out)), Vector((x, gy, z_out - 0.07)), Vector((x, y_wall, z_out - 0.07 - neck)),
+                Vector((x, y_wall, z_out - 0.07 - neck - 0.06))]
+        z_shoe = rw["shoeMm"] * MM
+        path += [Vector((x, y_wall, z_shoe + 0.06)), Vector((x, y_wall - 0.08, z_shoe - 0.02))]
+        self.features["pipes"].append([wall.i, x, y_wall, pr, z_shoe, z_out])
+        anchor = wall.M @ Vector((x, y_wall, 1.5))
+        for i in range(len(path) - 1):
+            a, b = path[i], path[i + 1]
+            pc = self.make(f"pipe/w{wall.i}/s{i}", "zinc", ("near", "street"), wall, "rigid")
+            d = b - a
+            up = Z if abs(d.normalized().z) < 0.9 else OUT
+            P = d.cross(up).normalized()
+            Q = d.cross(P).normalized()
+            a2 = a - d.normalized() * (0.012 if i > 0 else 0.0)
+            b2 = b + d.normalized() * (0.012 if i < len(path) - 2 else 0.0)
+            for lv in ("near", "street"):
+                k = 8 if lv == "near" else 4
+                prof = [(pr * math.cos(2 * math.pi * j / k), pr * math.sin(2 * math.pi * j / k), "round", False) for j in range(k + 1)]
+                extrude(pc, lv, prof, a2, b2 - a2, P, Q, self.charts, nseg=max(1, round((b2 - a2).length / 1.2)),
+                        caps=(False, i == len(path) - 2), nominal={"round": 2 * math.pi * pr})
+            pc.anchor, pc.along = anchor, None
+        cw_, ct_ = rng(rw["clipMm"])
+        z, i = z_shoe + 0.45, 0
+        while z < z_out - 0.07 - neck - 0.1:
+            pc = self.make(f"pipe/w{wall.i}/clip{i}", "zinc", ("near",), wall, "rigid")
+            prof = [((pr + ct_) * math.cos(2 * math.pi * j / 8), (pr + ct_) * math.sin(2 * math.pi * j / 8), "iron", False) for j in range(9)]
+            extrude(pc, "near", prof, Vector((x, y_wall, z)), Vector((0, 0, cw_)), ALONG, Vector((0, 1, 0)), self.charts, caps=(True, True))
+            pc.anchor, pc.along = anchor, None
+            z += rw["clipEveryMm"] * MM
+            i += 1
+
+    # ---- the verges: barge boards up each rake and a soffit under the tiles' overhang
+    def verges(self):
+        t = self.t
+        for wall in self.walls:
+            if wall.kind != "gable":
+                continue
+            L = wall.L
+            a_foot = self.y_foot + 0.05
+            for half in (0, 1):
+                # the rake from its foot (over the eave's fascia) to the apex, in the gable's frame
+                if half == 0:
+                    a0, a1 = -self.ov - self.ft, L / 2.0
+                else:
+                    a0, a1 = L / 2.0, L + self.ov + self.ft
+                p0 = Vector((a0, -self.vov, self.zp_wall(a0) - 0.006))
+                p1 = Vector((a1, -self.vov, self.zp_wall(a1) - 0.006))
+                r = (p1 - p0)
+                rd = r.normalized()
+                P = (Vector((0, 0, -1)) - rd * rd.z).normalized()
+                # plumb cuts at the foot and the apex
+                plumb = lambda p, q, P=P, rd=rd: -P.x * p / rd.x  # noqa: E731
+                self.trim(f"verge/w{wall.i}h{half}/barge", wall, p0, r, P, OUT, self.bw, self.bt, self.ch["barge"],
+                          nseg=max(2, round(r.length / 0.8)), groups=("top", "front", "bottom"),
+                          caps=(True, True), cut=(plumb, plumb))
+                # the soffit under the tiles from the gable's face out to the barge board
+                q0 = Vector((a0, 0.0, self.zp_wall(a0) - 0.07))
+                q1 = Vector((a1, 0.0, self.zp_wall(a1) - 0.07))
+                self.trim(f"verge/w{wall.i}h{half}/soffit", wall, q0, q1 - q0, OUT, Vector((0, 0, -1)), self.vov, 0.02, 0.0,
+                          nseg=max(2, round((q1 - q0).length / 0.8)), groups=("back", "under", "front"), caps=(False, False),
+                          chamfer_edges=(False, False))
+            del a_foot
+
+    def zp_wall(self, a):
+        """The tiles' plane over a gable's point `a` along it (beyond its ends, the eave's overhang)."""
+        return self.z_foot + (min(a, self.d - a) - self.y_foot) * self.t
+
+    # ---- the roof: pantiles course by course on each slope, the ridge, the chimney
+    def roof(self):
+        tl = {**self.M["clay-pantile"]["laid"], **{k: v for k, v in self.W["pantile"].items() if k != "describes"}}
+        F = self.F
+        cover, course, roll = tl["coverMm"] * MM, tl["courseMm"] * MM, tl["rollMm"] * MM
+        thick, lift, lap = tl["thickMm"] * MM, tl["liftMm"] * MM, tl["lapMm"] * MM / (tl["coverMm"] * MM)
+        pan, rnd = tl["panAt"], tl["roundness"]
+        x0 = -self.vov - self.bt - tl["verge"]["pastMm"] * MM
+        x1 = self.w - x0
+        span = x1 - x0
+        n_cov = math.ceil(span / cover)
+        cs, sn = math.cos(self.pitch), math.sin(self.pitch)
+        up, nrm = Vector((0, cs, sn)), Vector((0, -sn, cs))
+        Ls = (self.d / 2.0 - self.y_foot) / cs
+        n_courses = max(1, math.ceil((Ls - 0.06) / course))
+        near_c = self.S["levels"]["near"]["tileCourses"]
+
+        def wave(u):
+            return (0.5 - 0.5 * math.cos(2.0 * math.pi * (u - pan))) ** rnd
+
+        k = self.S["levels"]["near"]["pantileSamples"]
+        us = [i * (1.0 + lap) / (k - 1) for i in range(k)]
+        for target in (pan, pan + 0.5):
+            j = min(range(1, k - 1), key=lambda i: abs(us[i] - target))
+            us[j] = target
+        near_prof = [(u, wave(u) + (thick / roll) * min(1.0, max(0.0, (u - 0.9) / 0.1))) for u in sorted(us)]
+        ks = self.S["levels"]["street"]["pantileSamples"]
+        street_u, u = [], pan - math.ceil(pan * ks) / ks
+        while u < span / cover:
+            street_u.append(max(0.0, u))
+            u += 1.0 / ks
+        street_u.append(span / cover)
+        street_prof = [(u, wave(u)) for u in street_u]
+        verge_prof = [(u, wave(u)) for u in (0.0, pan, pan + 0.5, 1.0 + lap)]
+        for wall in self.walls:
+            if wall.kind != "eave":
+                continue
+            base0 = Vector((0, self.y_foot, self.z_foot))
+            for ci in range(n_courses):
+                length = min(course + 0.075, Ls - course * ci + 0.02)
+                key = self.charts(f"roof/w{wall.i}/c{ci:02d}", span + 0.1, length + 0.06)
+                base = base0 + up * (course * ci)
+                plane = []
+                if ci < near_c:
+                    plane.append(("near", "tiles", True))
+                else:
+                    plane.append(("near", "roof", False))
+                    plane.append(("bake", "tiles", True))
+                plane.append(("street", "tiles" if ci == 0 else "roof", ci == 0))
+                for lv, mat, waves in plane:
+                    if waves and lv != "street":
+                        for ti in range(n_cov):
+                            tid = f"roof/w{wall.i}/c{ci:02d}/t{ti}"
+                            pc = self.make(tid, mat, (lv,), wall)
+                            yaw = math.radians(1.6) * (2 * F.u(tid, "yaw") - 1)
+                            dz = 0.004 * (2 * F.u(tid, "seat") - 1)
+                            self.tile_strip(pc, lv, near_prof, base, x0 + ti * cover, cover, roll, thick, lift, length,
+                                            up, nrm, yaw, dz, key, x0, under=ci == 0)
+                            if ci == 0 and lv == "near":
+                                self.features["tiles"].append([wall.i, x0 + ti * cover + pan * cover])
+                    elif waves:
+                        pc = self.make(f"roof/w{wall.i}/c{ci:02d}/strip", mat, (lv,), wall)
+                        self.tile_strip(pc, lv, street_prof, base, x0, cover, roll, thick, lift, length, up, nrm, 0.0, 0.0,
+                                        key, x0, under=True)
+                    else:
+                        # the verges' tiles real, so the rake draws their rolls against the sky; the plane between
+                        # them from the first tile's roll to the last's, where the tiles stand at its height
+                        prof = near_prof if lv == "near" else verge_prof
+                        for ti in (0, n_cov - 1):
+                            tid = f"roof/w{wall.i}/c{ci:02d}/t{ti}"
+                            vt = self.make(tid if lv == "near" else tid + "/street", "tiles", (lv,), wall)
+                            yaw = math.radians(1.6) * (2 * F.u(tid, "yaw") - 1) if lv == "near" else 0.0
+                            dz = 0.004 * (2 * F.u(tid, "seat") - 1) if lv == "near" else 0.0
+                            self.tile_strip(vt, lv, prof, base, x0 + ti * cover, cover, roll, thick, lift, length,
+                                            up, nrm, yaw, dz, key, x0)
+                        xa, xb = x0 + cover * (pan + 0.5), min(x1, x0 + cover * (n_cov - 0.5 + pan))
+                        pc = self.make(f"roof/w{wall.i}/c{ci:02d}/plane", mat, (lv,), wall)
+                        self.course_plane(pc, lv, base, x0, xa, xb, roll, thick, lift, length, up, nrm, key)
+            self.features["roof"].append({"wall": wall.i, "x0": x0, "foot": [self.y_foot, self.z_foot], "pitch": math.degrees(self.pitch),
+                                          "courses": n_courses, "course": course, "cover": cover})
+        self.ridge(x0, x1)
+
+    def tile_strip(self, pc, lv, prof, base, xa, cover, roll, thick, lift, length, up, nrm, yaw, dz, key, x0, under=False):
+        foot = base + Vector((xa, 0, 0)) + nrm * (lift * 0.35 + dz)
+        head = base + Vector((xa, 0, 0)) + up * length - nrm * (lift * 0.15)
+        rot = Matrix.Rotation(yaw, 3, nrm)
+
+        def pt(u, hgt, at):
+            return at + rot @ (Vector((u * cover, 0, 0)) + nrm * (hgt * roll))
+
+        def cuv(p):
+            return (p.x - x0 + 0.05, max(0.0, (p - base).dot(up)) + 0.03)
+        for j in range(len(prof) - 1):
+            (ua, ha), (ub, hb) = prof[j], prof[j + 1]
+            pts = [pt(ua, ha, foot), pt(ub, hb, foot), pt(ub, hb, head), pt(ua, ha, head)]
+            pc.add(lv, Face(pts, [cuv(p) for p in pts], key, [cuv(p) for p in pts]))
+            dn = -nrm * thick
+            f0, f1 = pts[0], pts[1]
+            fp = [f0 + dn, f1 + dn, f1, f0]
+            pc.add(lv, Face(fp, [cuv(p) for p in fp], key, [cuv(p) for p in fp]))
+            if under:
+                ub_ = [f1 + dn, f0 + dn, f0 + dn + up * 0.10, f1 + dn + up * 0.10]
+                pc.add(lv, Face(ub_, [cuv(p) for p in ub_], key, [cuv(p) for p in ub_]))
+
+    def course_plane(self, pc, lv, base, x0, xa, xb, roll, thick, lift, length, up, nrm, key):
+        """A course drawn as one plane over its tiles' crests (as the tiles stand at its foot and head), the pans
+        below it in the page's normal and occlusion; its foot a step down to the pans, its two ends closed."""
+        foot = base + nrm * (lift * 0.35 + roll)
+        head = base + up * length + nrm * (roll - lift * 0.15)
+        dn = -nrm * (thick + roll)
+        n = max(2, round((xb - xa) / 1.0))
+
+        def cuv(p):
+            return (p.x - x0 + 0.05, max(0.0, (p - base).dot(up)) + 0.03)
+        for k in range(n):
+            a = xa + (xb - xa) * k / n
+            b = xa + (xb - xa) * (k + 1) / n
+            pts = [foot + Vector((a, 0, 0)), foot + Vector((b, 0, 0)), head + Vector((b, 0, 0)), head + Vector((a, 0, 0))]
+            pc.add(lv, Face(pts, [cuv(p) for p in pts], key, [cuv(p) for p in pts]))
+            fp = [pts[0] + dn, pts[1] + dn, pts[1], pts[0]]
+            pc.add(lv, Face(fp, [cuv(p) for p in fp], key, [cuv(p) for p in fp]))
+        for x, flip in ((xa, True), (xb, False)):
+            e = [foot + Vector((x, 0, 0)) + dn, head + Vector((x, 0, 0)) + dn, head + Vector((x, 0, 0)), foot + Vector((x, 0, 0))]
+            if flip:
+                e = e[::-1]
+            pc.add(lv, Face(e, [cuv(p) for p in e], key, [cuv(p) for p in e]))
+
+    def ridge(self, x0, x1):
+        """Half-round ridge tiles along the ridge, each lapping the next; one strip at the street level."""
+        rd = self.M["clay-pantile"]["laid"]["ridge"]
+        r, tl, lp = rd["radiusMm"] * MM, rd["lengthMm"] * MM, rd["lapMm"] * MM
+        zr = self.z_ridge + self.W["ridge"]["seatMm"] * MM - r * 0.35
+        yr = self.d / 2.0
+        span = x1 - x0
+        key = self.charts("ridge/strip", span + 0.1, 2 * math.pi * r * 1.03 + 0.1)
+        place = Matrix.Identity(4)
+
+        def planar(p):
+            # one chart for both levels: along the ridge, and round the roll (its inside below its outside)
+            th = math.atan2(p.z - zr, yr - p.y)
+            inside = math.hypot(p.z - zr, yr - p.y) < r * 0.99 - 0.004
+            return key, p.x - x0 + 0.05, max(0.0, th) * r * 1.02 + 0.03 + (math.pi * r * 1.03 + 0.03 if inside else 0.0)
+
+        def ring(k, rr):
+            return [(rr * math.cos(math.pi * i / k), rr * math.sin(math.pi * i / k)) for i in range(k + 1)]
+        # street: one half-round along the whole ridge
+        pc = self.make("ridge/strip", "tiles", ("street",), None, "frame", place)
+        prof = [(p, q, "round", False) for p, q in ring(6, r)]
+        extrude(pc, "street", prof, Vector((x0, yr, zr)), Vector((span, 0, 0)), Vector((0, -1, 0)), Z, self.charts,
+                nseg=max(2, round(span / 1.0)), caps=(True, True), planar=planar)
+        n = math.ceil(span / (tl - lp))
+        for i in range(n):
+            xa = x0 + i * (tl - lp)
+            L = min(tl, x1 - xa)
+            pc = self.make(f"ridge/t{i}", "tiles", ("near",), None, "frame", place)
+            rr = r * (1.0 + 0.02 * (i % 2))
+            prof = [(p, q, "round", False) for p, q in ring(8, rr)] + [(-rr + 0.016, 0.0, "round", False)] + \
+                   [(p * (1 - 0.016 / rr), q * (1 - 0.016 / rr), "round", False) for p, q in ring(8, rr)][::-1][1:]
+            extrude(pc, "near", [(p, q, g, a) for (p, q, g, a) in ring_prof(prof)], Vector((xa, yr, zr)), Vector((L, 0, 0)),
+                    Vector((0, -1, 0)), Z, self.charts, caps=(True, False), planar=planar)
+        self.chimney(zr + r)
+
+    def chimney(self, z_crest):
+        ch = self.W["chimney"]
+        F = self.F
+        v = self.version("chimney", F.built)
+        a = F.between(*rng(ch["sizeMm"]), "chimney", "size")
+        x = self.w * F.between(*ch["alongShare"], "chimney", "along")
+        y = self.d / 2.0
+        top = self.z_ridge + F.between(*rng(ch["aboveRidgeMm"]), "chimney", "above")
+        bottom = self.zp(y - a / 2.0 - 0.02) - 0.08
+        c = self.ch["chimney"]
+        pc = self.make("chimney/stack", "render", ("near", "street"), None, "rigid", Matrix.Identity(4))
+        band, down = rng(v["bandMm"]), v["bandDownMm"] * MM
+        for lv in ("near", "street"):
+            cc = c if lv == "near" else 0.0
+            # the stack swept up as a square section with its four arrises worn
+            sq = square(a, cc)
+            extrude(pc, lv, sq, Vector((x, y, bottom)), Vector((0, 0, top - bottom)), ALONG, Vector((0, 1, 0)), self.charts,
+                    nseg=2, nominal={"face": 4 * a})
+            if band[0] > 0:
+                bb = a + 2 * band[0]
+                extrude(pc, lv, square(bb, cc * 0.5), Vector((x, y, top - down - band[1])), Vector((0, 0, band[1])), ALONG,
+                        Vector((0, 1, 0)), self.charts, caps=(True, True), nominal={"face": 4 * bb})
+            # its top: a rim round the flue, the flue a dark hole
+            fl = a * 0.45
+            key = self.charts("chimney/top", a + 0.02, a + 0.02)
+            h = a / 2.0
+            o = [Vector((x - h, y - h, top)), Vector((x + h, y - h, top)), Vector((x + h, y + h, top)), Vector((x - h, y + h, top))]
+            i_ = [Vector((x - fl / 2, y - fl / 2, top)), Vector((x + fl / 2, y - fl / 2, top)), Vector((x + fl / 2, y + fl / 2, top)),
+                  Vector((x - fl / 2, y + fl / 2, top))]
+            cu = lambda p: (p.x - x + h + 0.01, p.y - y + h + 0.01)  # noqa: E731
+            for k in range(4):
+                pts = [o[k], o[(k + 1) % 4], i_[(k + 1) % 4], i_[k]]
+                pc.add(lv, Face(pts, [cu(p) for p in pts], key, [cu(p) for p in pts]))
+            dn = Vector((0, 0, -0.2))
+            for k in range(4):
+                pts = [i_[k], i_[(k + 1) % 4], i_[(k + 1) % 4] + dn, i_[k] + dn]
+                pc.add(lv, Face(pts, [cu(p) for p in pts], key, [cu(p) for p in pts], under=True))
+        pc.anchor, pc.along = Vector((x, y, self.z_ridge)), ALONG
+        self.features["chimney"] = [x, y, a, top]
+
+    # ---- the extension: a lean-to on the back, rigid as a whole, out of plumb by the hand that built it
+    def lean_to_plan(self):
+        ev = next((e for e in self.F.all("extended") if e["params"].get("kind") == "lean_to"), None)
+        if ev is None:
+            return
+        F, W = self.F, self.W
+        lt = W["leanTo"]
+        depth = F.between(*rng(lt["depthMm"]), "leanto", "depth")
+        width = self.w * F.between(*lt["widthShare"], "leanto", "width")
+        xl = (self.w - width) * F.u("leanto", "at")
+        xr = xl + width
+        eave = lt["eaveMm"] * MM
+        pitch = math.radians(F.between(*lt["pitchDeg"], "leanto", "pitch"))
+        z_hi = min(eave + depth * math.tan(pitch), self.z_top - 0.3)
+        plumb = math.radians(F.between(*lt["plumbDeg"], "leanto", "plumb"))
+        back = self.walls[2]
+        self.lean_to = {"year": ev["year"], "x": [xl, xr], "depth": depth, "eave": eave, "z_hi": z_hi, "plumb": plumb,
+                        "a0": back.along(Vector((xr, self.d, 0))), "a1": back.along(Vector((xl, self.d, 0))),
+                        "anchor": Vector(((xl + xr) / 2, self.d, 0.0)), "along": ALONG}
+        y1 = self.d + depth
+        n = len(self.walls)
+        self.lt_walls = [Wall(n, (xr, self.d), math.pi / 2, depth, "lean", 1),
+                         Wall(n + 1, (xr, y1), math.pi, width, "lean", 1),
+                         Wall(n + 2, (xl, y1), 3 * math.pi / 2, depth, "lean", 1)]
+        # its door in one of its sides, toward the house
+        side = self.lt_walls[0] if F.u("leanto", "door") < 0.5 else self.lt_walls[2]
+        door = W["openings"]["door"]
+        dw, dh = door["wMm"] * MM * 0.9, min(door["hMm"] * MM, eave - 0.25)
+        a0 = 0.25 if side is self.lt_walls[0] else side.L - 0.25 - dw
+        bd = F.boarded()
+        self.openings.append({"wall": side.i, "kind": "door", "a0": a0, "a1": a0 + dw, "z0": lt["plinthMm"] * MM + 0.02,
+                              "z1": lt["plinthMm"] * MM + 0.02 + dh, "made": ev["year"], "eraOf": ev["year"], "leanTo": True,
+                              "boarded": bd is not None and bd["params"].get("scope") == "all"})
+
+    def lt_place(self, wall):
+        """A lean-to piece's frame: its wall's, turned out of plumb about the foot of the house's back wall."""
+        lt = self.lean_to
+        pivot = Vector((0, self.d, 0))
+        R = Matrix.Translation(pivot) @ Matrix.Rotation(-lt["plumb"], 4, "X") @ Matrix.Translation(-pivot)
+        return R @ wall.M
+
+    def lean_to_build(self):
+        lt = self.lean_to
+        if lt is None:
+            return
+        W = self.W
+        L = W["leanTo"]
+        cl = {**W["cladding"], **L["cladding"]}
+        zp = L["plinthMm"] * MM
+        y1 = self.d + lt["depth"]
+        tp = (lt["z_hi"] - lt["eave"]) / lt["depth"]
+
+        def top(wall):
+            if wall.i == self.lt_walls[1].i:
+                return lambda a: lt["eave"]
+            if wall.i == self.lt_walls[0].i:
+                return lambda a: lt["z_hi"] - tp * a
+            return lambda a: lt["eave"] + tp * a
+        fixed = []
+        for o in self.openings:
+            if o.get("leanTo"):
+                fixed.append(o["z1"] + self.head_h + self.cap_t)
+        self.course_table(1, zp, lt["z_hi"] + 0.05, fixed, cl, "leanto")
+        self.cladding(self.lt_walls, 1, zp, cl, self.opening_gaps_lt, rake=top, mode="rigid", place_of=self.lt_place)
+        # its plinth: a cast band under every wall
+        for wall in self.lt_walls:
+            pc = self.make(f"leanto/plinth/w{wall.i}", "concrete", ("near", "street"), wall, "rigid", self.lt_place(wall))
+            prof = [(0.0, 0.0, "front", False), (0.0, 0.03, "front", False), (zp, 0.03, "top", False), (zp, 0.0, "top", False)]
+            extrude(pc, "near", prof, Vector((-0.03, 0.0, 0.0)), Vector((wall.L + 0.06, 0, 0)), Z, OUT, self.charts, caps=(True, True))
+            extrude(pc, "street", prof, Vector((-0.03, 0.0, 0.0)), Vector((wall.L + 0.06, 0, 0)), Z, OUT, self.charts, caps=(True, True))
+            pc.anchor, pc.along = lt["anchor"], lt["along"]
+        # corner boards at its two outer corners
+        cb = W["corner"]
+        w = cb["widthMm"] * MM * 0.8
+        proud = cb["proudMm"] * MM
+        s = cl["stepMm"] * MM
+        for wall, x in ((self.lt_walls[1], -(s + proud)), (self.lt_walls[1], self.lt_walls[1].L - w)):
+            H = lt["eave"] - zp
+            pc = self.trim(f"leanto/corner/{x:.2f}", wall, Vector((x, -s, zp)), Vector((0, 0, H)), ALONG, OUT, w + s + proud,
+                           proud, self.ch["corner"], nseg=2, groups=("left", "front", "right"), caps=(False, False),
+                           mode="rigid", place=self.lt_place(wall))
+            pc.anchor, pc.along = lt["anchor"], lt["along"]
+        # its roof: boards under felt, a slab from the house's wall out over the eave
+        xl, xr = lt["x"]
+        ov = 0.15
+        o0 = Vector((xl - ov, self.d - 0.02, lt["z_hi"] + 0.03))
+        o1 = Vector((xl - ov, y1 + ov, lt["eave"] + 0.03 - tp * ov))
+        pc = self.make("leanto/roof", "felt", ("near", "street"), None, "rigid",
+                       Matrix.Translation(Vector((0, self.d, 0))) @ Matrix.Rotation(-lt["plumb"], 4, "X") @ Matrix.Translation(Vector((0, -self.d, 0))))
+        L_ = o1 - o0
+        for lv in ("near", "street"):
+            prof = rect_profile(xr - xl + 2 * ov, 0.07, 0.01 if lv == "near" else 0.0, groups=("end", "top", "edge", "under"), back=True)
+            extrude(pc, lv, [(p, -q, g, a) for (p, q, g, a) in prof], o0, L_, ALONG, Vector((0, 0, 1)) + Vector((0, 1, 0)) * 0.0,
+                    self.charts, nseg=2, caps=(True, True), nominal={"top": xr - xl + 2 * ov, "end": 0.07, "edge": 0.07, "under": xr - xl})
+        pc.anchor, pc.along = lt["anchor"], lt["along"]
+
+    def opening_gaps_lt(self, wall, zb, zt):
+        boxes = []
+        for o in self.openings:
+            if o["wall"] != wall.i:
+                continue
+            z_hi = o["z1"] + self.head_h + self.cap_t
+            if zb is None:
+                boxes.append((o["a0"], o["a1"], self.courses[1][0], o["z1"]))
+            elif zt > o["z0"] + 0.005 and zb < z_hi - 0.005:
+                boxes.append((o["a0"], o["a1"]))
+        return boxes
+
+    # ---- the whole
+    def build(self):
+        W = self.W
+        self.plan_openings()
+        self.lean_to_plan()
+        for o in self.openings:
+            o["covered"] = self.covered_by_lean_to(o)
+        self.openings = [o for o in self.openings if not o["covered"]]
+        fixed = []
+        for o in self.openings:
+            if o["kind"] in ("window", "loft") and not o.get("leanTo"):
+                fixed += [o["z0"] - self.sill_t, o["z1"] + self.head_h + self.cap_t]
+        self.course_table(0, self.z_drip1, self.z_ridge + 0.1, fixed, W["cladding"], "house")
+        self.cladding([w for w in self.walls if w.kind == "eave"], 0, self.z_drip1, W["cladding"], self.opening_gaps,
+                      z_end=self.z_top)
+        self.cladding([w for w in self.walls if w.kind == "gable"], 0, self.z_drip1, W["cladding"], self.opening_gaps,
+                      rake=lambda wall: self.z_rake)
+        self.corner_boards()
+        self.drip_boards()
+        for k, o in enumerate(self.openings):
+            self.surround(o, k)
+            if o["boarded"]:
+                self.boarding(o, k)
+        self.plinth()
+        self.eaves()
+        self.verges()
+        self.roof()
+        self.lean_to_build()
+
+
+def square(a, c):
+    """A square section `a` across centred on the sweep, its four arrises chamfered by `c`: one group, 'face'."""
+    h = a / 2.0
+    pts = []
+    for (sx, sy) in ((-1, -1), (1, -1), (1, 1), (-1, 1)):
+        if c > 0:
+            # each corner as two points either side of its chamfer, walking round
+            pts.append((sx * h + (c if sx < 0 and sy < 0 else 0), sy * h))
+        pts.append((sx * h, sy * h))
+    if c > 0:
+        pts = []
+        for (sx, sy), (nx, ny) in (((-1, -1), (1, -1)), ((1, -1), (1, 1)), ((1, 1), (-1, 1)), ((-1, 1), (-1, -1))):
+            ax, ay = sx * h, sy * h
+            bx, by = nx * h, ny * h
+            d = ((bx - ax) / (2 * h), (by - ay) / (2 * h))
+            pts.append((ax + d[0] * c, ay + d[1] * c, "face", False))
+            pts.append((bx - d[0] * c, by - d[1] * c, "face", True))
+        pts.append(pts[0])
+        return pts
+    pts = [(-h, -h, "face", False), (h, -h, "face", False), (h, h, "face", False), (-h, h, "face", False), (-h, -h, "face", False)]
+    return pts
+
+
+def ring_prof(prof):
+    return prof
+
+
+def newell_dot(pts, n):
+    from geom import newell
+    return newell(pts).dot(n)
+
+
+def clip_top(poly, top):
+    """A wall plane's polygon (x along, z up) cut to the part below its top's function, sampled as a polyline."""
+    out = []
+    n = len(poly)
+    f = lambda p: top(p.x) - p.z  # noqa: E731
+    for i in range(n):
+        a, b = poly[i], poly[(i + 1) % n]
+        fa, fb = f(a), f(b)
+        if fa >= 0:
+            out.append(a)
+        if (fa >= 0) != (fb >= 0):
+            lo, hi = (a, b) if fa >= 0 else (b, a)
+            for _ in range(30):
+                m = (lo + hi) / 2
+                if f(m) >= 0:
+                    lo = m
+                else:
+                    hi = m
+            out.append(lo)
+    # the top's own kink (the apex) inside the cut edge
+    res = []
+    for i, p in enumerate(out):
+        res.append(p)
+        q = out[(i + 1) % len(out)] if out else p
+        if abs(f(p)) < 1e-4 and abs(f(q)) < 1e-4 and abs(p.x - q.x) > 1e-4:
+            xs = sorted((p.x, q.x))
+            # the gable's apex lies between them: add it
+            for xm in [xs[0] + (xs[1] - xs[0]) * k / 8 for k in range(1, 8)]:
+                pass
+            mid = None
+            for k in range(1, 40):
+                xm = p.x + (q.x - p.x) * k / 40
+                zl = p.z + (q.z - p.z) * k / 40
+                if top(xm) - zl > 1e-3:
+                    mid = xm
+                    break
+            if mid is not None:
+                # find the top's highest point between p and q
+                best = max((p.x + (q.x - p.x) * k / 200 for k in range(201)), key=lambda xm: top(xm))
+                res.append(Vector((best, p.y, top(best))))
+    return res
+
+
+# ---------------------------------------------------------------- export
+
+
+def main():
+    argv = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else []
+    a = {argv[i].lstrip("-"): argv[i + 1] for i in range(0, len(argv) - 1, 2)}
+    S = load("blender/parts/street/street.json")
+    hid = int(a.get("house", 107))
+    year = int(a.get("year", S["year"]))
+    out = os.path.abspath(a.get("out", os.path.join(ROOT, "cache", "street", "gen", str(hid))))
+    os.makedirs(out, exist_ok=True)
+    F = Facts(a.get("fixture", S["fixture"]), hid, year)
+    W = load(S["eras"][F.era])
+    mats = {m: load(f"{S['materials']}/{m}.json") for m in ("clay-pantile", "fieldstone", "pine")}
+    paints = load(S["paints"])
+    house = House(S, W, F, mats, paints)
+    house.build()
+    for i, pc in enumerate(house.pieces):
+        pc.index = i
+    # densities by part
+    dens = S["page"]["density"]
+    for key in list(house.charts.size):
+        kind = key.split("#")[0].split("/")[1] if key.startswith("h") else key.split("/")[0]
+        if kind in dens:
+            house.charts.scale[key] = dens[kind]
+        if key.endswith("#under"):
+            house.charts.scale[key] = dens["under"]
+    rects, fill, px = house.charts.fit(S["page"])
+
+    bpy.ops.wm.read_factory_settings(use_empty=True)
+    rigid = {}
+    for pc in house.pieces:
+        if pc.mode == "rigid":
+            anchor = pc.anchor if pc.anchor is not None else Vector((0, 0, 0))
+            rigid[pc.id] = house.frame.rigid(anchor, pc.along)
+
+    def place_of(pc):
+        return pc.place
+
+    def deform(pc, w):
+        if pc.mode == "rigid":
+            return rigid[pc.id] @ w
+        return house.frame(w)
+
+    lap_reach = S["lapReach"]
+
+    def colour(pc, f, world):
+        rgb = [1.0 if f.arris else 0.0, F.u(pc.id, "seed"), 1.0 if f.under else 0.0]
+        board = re.search(r"/c(\d+)b\d+$", pc.id) if pc.kind == "clad" else None
+        if board is None:
+            return rgb + [1.0]
+        zs = house.courses[pc.group]
+        z_next = zs[min(int(board.group(1)) + 1, len(zs) - 1)]
+        # the lap's distance in the wall's own frame: its rest height before any turn
+        M = pc.place
+        loc = [M.inverted() @ w for w in world]
+        return [rgb + [min(1.0, max(0.0, z_next - p.z) / lap_reach)] for p in loc]
+
+    counts, objs = {}, {}
+    for lv in ("near", "street", "bake"):
+        by_mat = {}
+        for pc in house.pieces:
+            if lv not in pc.levels:
+                continue
+            for f in pc.faces[lv]:
+                by_mat.setdefault(pc.mat, []).append((pc, f))
+        for mat in sorted(by_mat):
+            o = to_object(f"{lv}_{mat}", by_mat[mat], place_of, deform, rects, S["page"]["size"], colour)
+            objs[(lv, mat)] = o
+            counts.setdefault(lv, {})[mat] = tris_of(o)
+    total = {lv: sum(c.values()) for lv, c in counts.items()}
+    budgets = {lv: S["levels"][lv]["budgetTris"] for lv in ("near", "street")}
+    over = [lv for lv in budgets if total.get(lv, 0) > budgets[lv][1]]
+    print(f"[house] {hid}: triangles {json.dumps(counts)} totals {total}; page {px} px/m, filled {fill:.2f}; "
+          f"versions {json.dumps(house.version_of)}")
+    if over:
+        raise SystemExit(f"[house] over budget: {', '.join(f'{lv} {total[lv]} > {budgets[lv][1]}' for lv in over)}")
+
+    for lv in ("near", "street"):
+        for o in bpy.context.scene.objects:
+            o.select_set(o.name.startswith(lv + "_"))
+        bpy.ops.export_scene.fbx(filepath=os.path.join(out, f"house-{lv}.fbx"), use_selection=True,
+                                 object_types={"MESH"}, mesh_smooth_type="OFF", use_mesh_modifiers=False,
+                                 colors_type="LINEAR", axis_forward="-Z", axis_up="Y", apply_unit_scale=True,
+                                 apply_scale_options="FBX_SCALE_ALL", bake_space_transform=True, add_leaf_bones=False)
+    bpy.ops.wm.save_as_mainfile(filepath=os.path.join(out, "house.blend"))
+    walls = house.walls + (house.lt_walls if house.lean_to else [])
+    meta = {
+        "house": F.id, "world": F.world, "year": F.year, "built": F.built, "age": F.age, "era": F.era, "type": F.type,
+        "wealth": F.wealth, "plot": F.plot, "events": F.events,
+        "size": [house.w, house.d], "pitch": math.degrees(house.pitch),
+        "triangles": counts, "totals": total, "budgets": budgets,
+        "page": dict(S["page"], pxPerM=px), "fill": fill, "charts": {k: list(v) for k, v in rects.items()},
+        "heights": {"plinth": house.z_plinth, "floor": house.z_floor, "floors": house.floors, "loft": house.z_loft,
+                    "drip": [house.z_drip0, house.z_drip1], "top": house.z_top, "ridge": house.z_ridge,
+                    "foot": [house.y_foot, house.z_foot]},
+        "walls": [w.info() for w in walls], "courses": {str(k): v for k, v in house.courses.items()},
+        "openings": house.openings, "leanTo": house.lean_to and {k: (list(v) if hasattr(v, "__iter__") else v) for k, v in house.lean_to.items()},
+        "bends": {"settle": house.frame.settle, "sag": house.frame.sag, "lean": house.frame.lean, "corner": house.frame.corner},
+        "versions": house.version_of, "features": house.features,
+        "pieces": [{"i": pc.index, "id": pc.id, "mat": pc.mat, "kind": pc.kind, "mode": pc.mode, "wall": pc.wall, "group": pc.group}
+                   for pc in house.pieces],
+        "uv": {"uv0": "metres along the grain", "page": "UV1: the page"},
+        "colour": {"r": "arris (a chamfer face)", "g": "piece seed", "b": "under layer forced (mortar, a flue)",
+                   "a": "near boards: distance below the next butt / lapReach"},
+    }
+    with open(os.path.join(out, "house.json"), "w") as fh:
+        json.dump(meta, fh, indent=1, default=lambda v: list(v) if hasattr(v, "__iter__") else str(v))
+    print(f"[house] wrote {out}")
+
+
+main()
