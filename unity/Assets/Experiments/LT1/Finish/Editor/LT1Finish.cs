@@ -29,14 +29,14 @@ namespace Overstory.EditorTools
 
         [Serializable] class Mat { public string name, tile; public int painted, authored; public float paintSmooth, paintFlat, underSmooth, stainL, tideW, stainMottleL, tideL, flakeScale, islandL, grainMip, grainFade; public float[] islandW; public float[] scanMetres; }
         [Serializable] class Digest { public Mat[] mats; public float tileMetres, dirtL, waterL, cavityL, lipL, crackL, haloL, haloW, haloDull, runBody, lapDark, lapCore, lapReach, lapScale, lapPage, lapStep, groundL, groundSmooth; }
-        // way P's digest (paint.py): each material one value, the shapes' edges and the far laps, and its own light
-        [Serializable] class PMat { public string name; public int painted; public float L, bareL, underL, stainDL, smooth, stainSmooth, flatUp, ao, shadowLift; }
+        // way P's digest (paint.py): each material one value, the strokes and the shapes' edges, and its own light
+        [Serializable] class PMat { public string name; public int painted; public float L, bareL, underL, stainDL, smooth, stainSmooth, brushL, flatUp, stainEdge, ao, shadowLift; }
         [Serializable] class PLight { public string light; public float exposure, elevation, sun, shadow, sky, equator, ground; public float[] azimuth; }
         // way Pc, the colour still: P's values with a hue of luminance 1 laid on each, and each light's colour
         [Serializable] class PColMat { public string name; public float[] tint, bareTint, underTint, stainTint; }
         [Serializable] class PColLight { public string light; public float[] sun, sky, equator, ground, background, floor; }
         [Serializable] class PColour { public PColMat[] mats; public PColLight[] lights; public float[] washTint; }
-        [Serializable] class Paint { public PMat[] mats; public PLight[] lights; public PColour colour; public float toneRange, bareShift, washL, bareWash, lipL, lipW, lipFace, dlRange, aoStrength, lapDark, lapCore, lapReach, lapGrimeL, lapGrimeReach, lapPage, lapFarReach; public float[] lapFar; }
+        [Serializable] class Paint { public PMat[] mats; public PLight[] lights; public PColour colour; public float strokeScale, edgeAmp, rimL, rimW, rimFar, bareShift, washL, bareWash, brushFar, dragL, dragScale, dlRange, aoStrength, lapDark, lapCore, lapReach, lapGrimeL, lapGrimeReach, lapGrimeBreak, lapPage; public float[] strokeFade, brushFade, rimBreak, washFade; }
 
         struct View { public string name, level; public Vector3 pos, target; public float fov; }
 
@@ -330,16 +330,25 @@ namespace Overstory.EditorTools
                 mat.SetTexture("_Hist2", tex("hist-p2"));
                 mat.SetTexture("_Geo", tex("geo"));
                 mat.SetTexture("_StreetN", tex("street-normal"));
+                mat.SetTexture("_Stroke", tex("paint-stroke"));
+                mat.SetFloat("_StrokeScale", p.strokeScale);
+                mat.SetFloat("_EdgeAmp", p.edgeAmp);
+                mat.SetVector("_StrokeFade", new Vector4(p.strokeFade[0], p.strokeFade[1], 0, 0));
+                mat.SetVector("_BrushFade", new Vector4(p.brushFade[0], p.brushFade[1], 0, 0));
+                mat.SetFloat("_BrushL", m.brushL);
+                mat.SetFloat("_BrushFar", p.brushFar);
+                mat.SetFloat("_DragL", p.dragL);
+                mat.SetFloat("_DragScale", p.dragScale);
                 mat.SetFloat("_DLRange", p.dlRange);
-                mat.SetFloat("_ToneRange", p.toneRange);
                 mat.SetFloat("_FlatUp", m.flatUp);
-                mat.SetFloat("_PeelLipL", p.lipL);
-                mat.SetFloat("_PeelLipW", p.lipW);
-                mat.SetFloat("_PeelLipFace", p.lipFace);
-                mat.SetVector("_LapFar", new Vector4(p.lapFar[0], p.lapFar[1], 0, 0));
-                mat.SetFloat("_LapFarReach", p.lapFarReach);
+                mat.SetFloat("_StainEdge", m.stainEdge);
+                mat.SetFloat("_RimL", p.rimL);
+                mat.SetFloat("_RimW", p.rimW);
+                mat.SetFloat("_RimFar", p.rimFar);
+                mat.SetVector("_RimBreak", new Vector4(p.rimBreak[0], p.rimBreak[1], 0, 0));
                 mat.SetFloat("_WashL", p.washL);
                 mat.SetFloat("_BareWash", p.bareWash);
+                mat.SetVector("_WashFade", p.washFade != null && p.washFade.Length == 2 ? new Vector4(p.washFade[0], p.washFade[1], 0, 0) : Vector4.zero);
                 mat.SetFloat("_BareShift", p.bareShift);
                 mat.SetFloat("_Painted", m.painted);
                 mat.SetFloat("_PaintL", m.L);
@@ -355,6 +364,7 @@ namespace Overstory.EditorTools
                 mat.SetFloat("_LapReach", p.lapReach);
                 mat.SetFloat("_LapGrimeL", p.lapGrimeL);
                 mat.SetFloat("_LapGrimeReach", p.lapGrimeReach);
+                mat.SetFloat("_LapGrimeBreak", p.lapGrimeBreak);
                 // the geometry's own facts are the same for every way
                 mat.SetFloat("_LapScale", d.lapScale);
                 mat.SetFloat("_LapPage", p.lapPage);

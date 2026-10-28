@@ -181,98 +181,105 @@
     "splash": { "width": [0.06, 0.14], "gable": 0.25 }
   },
   "painted": {
-    "describes": "Way P (paint.py; the shader's _OS_PAINT): the corner painted as a painter would, in a few broad designed value shapes from 107's facts, by the value plan in reviews/lt1/finish/p1. Each material is one value (albedo L*), shifted by three unequal planes (the wall's one gradient, the window dark, the sun's shadow) and by one failed-paint shape that follows the water, its wash and its peel two marks told apart by value and edge (the paint, then the soft wash, then the bare fibre, hard-edged and darkest, its torn edge lipped with paint film that catches the sun). Each course takes its own tone; far, the laps collapse to a few broad strokes. The failed paint's strength follows the house's wear (`wear`: 1 at 107, neglect 600 and boarded 3 years; a guess until a second house is judged). A material's `ao` and `contact` say how much of the geometry's occlusion it keeps, and `shadowLift` (m) how far toward the light it looks for its shadow, so its own small forms cast none: the roof, painted as one mass, keeps little and casts none on itself. Way P has its own overcast, a soft sky from the street that parts the gable from the street wall. Sizes in metres, values in L*.",
+    "describes": "Way P (paint.py; the shader's _OS_PAINT): the corner painted as a painter would, in a few broad designed value shapes from 107's facts, by the value plan in reviews/lt1/finish/p1. Each material is one value (albedo L*), shifted by three unequal planes (the wall's one gradient, the window dark, the sun's shadow) and by one failed-paint shape that follows the water, its wash and its peel two marks, each mark's character at its edge, which one authored stroke texture breaks near and which is lost with distance; near, long soft strokes along the boards let a plane breathe. Way P has its own overcast, a soft sky from the street that parts the gable from the street wall. Sizes in metres, values in L*.",
     "light": {
-      "overcast": { "exposure": 0.58, "azimuth": [-0.15, -1], "elevation": 50, "sun": 0.51, "shadow": 0.35, "sky": 0.54, "equator": 0.41, "ground": 0.08 }
+      "overcast": { "exposure": 0.58, "azimuth": [0.3, -1], "elevation": 45, "sun": 0.85, "shadow": 0.35, "sky": 0.42, "equator": 0.27, "ground": 0.08 }
     },
     "materials": {
-      "cladding": { "L": 85.3, "bareL": 50, "stainDL": 13, "smooth": 0.0, "stainSmooth": 0.0 },
-      "trims": { "L": 89.2, "bareL": 50, "stainDL": 30, "smooth": 0.0, "stainSmooth": 0.0 },
-      "stone": { "L": 58, "underL": 40, "stainDL": 12, "smooth": 0.05, "stainSmooth": 0.2 },
-      "tiles": { "L": 34.0, "smooth": 0.0, "flatUp": 12, "ao": 0.3, "contact": 0.3, "shadowLift": 0.12 },
+      "cladding": { "L": 85.3, "bareL": 52, "stainDL": 7, "smooth": 0, "stainSmooth": 0, "brushL": 6.5 },
+      "trims": { "L": 89.2, "bareL": 52, "stainDL": 30, "smooth": 0, "stainSmooth": 0, "brushL": 6 },
+      "stone": { "L": 51.9, "underL": 50, "stainDL": 19, "smooth": 0.05, "stainSmooth": 0.3, "brushL": 4 },
+      "tiles": { "L": 22.0, "smooth": 0, "flatUp": 3 },
       "zinc": { "L": 62.0, "smooth": 0.3 }
     },
     "colour": {
       "describes": "The colour still (Øystein, 28 October: one in p2, the one exception to clay-first): only hue and chroma, laid on the clay's own L*, so the clay and colour stills share their values. Each colour is [C, h], CIE LCh: a material's at its own clay L* (its paint, bare fibre, under layer and stain at their values; the wash at the paint's less `tongue.washL`), turned to a tint of luminance 1, so its albedo keeps the clay's luminance; a light's as it reads alone on a neutral white at `atL`, its strength the clay's; the plain sky behind (`background`) at its clay L*, the third number, and the ground (`floor`) at `ground.L`. Muted all over; true colour only where people keep things, and 107 is not kept. Shade and ambient take the light's colour, never the object's (VD2).",
       "mats": {
-        "cladding": { "paint": [3.5, 92], "bare": [4, 235], "stain": [5, 78] },
-        "trims": { "paint": [3.5, 92], "bare": [4, 235], "stain": [22, 55] },
+        "cladding": { "paint": [1.2, 90], "bare": [4, 235], "stain": [5, 78] },
+        "trims": { "paint": [1.2, 90], "bare": [4, 235], "stain": [22, 55] },
         "sheet": { "paint": [3, 70], "stain": [3, 65] },
         "batten": { "paint": [3, 235], "stain": [20, 55] },
         "stone": { "paint": [3, 250], "under": [2, 240], "stain": [4, 245] },
-        "tiles": { "paint": [17, 50] },
+        "tiles": { "paint": [11, 48] },
         "zinc": { "paint": [2, 230] }
       },
       "wash": [6, 80],
       "light": {
-        "lowsun": { "atL": 90, "sun": [15, 78], "sky": [18, 255], "equator": [14, 258], "ground": [8, 72], "background": [12, 250, 65.3], "floor": [4, 75] }
+        "lowsun": { "atL": 90, "sun": [22, 86], "sky": [18, 255], "equator": [14, 258], "ground": [8, 72], "background": [12, 250, 65.3], "floor": [4, 75] }
       }
     },
     "boarding": {
-      "describes": "The boarded window: a, the sheet dark as in look 1; b, a weathered mid-grey sheet whose stain is the dark accent, the battens lighter so they cross it (kept after the A/B at the street stop); c, the battens raw-sawn and weathered grey on a dark sheet, so the window is the wall's dark shape. The sheet's damp runs down from its head to a slow tide line (`tide`). `use` is the one kept.",
+      "describes": "The boarded window: a, the sheet dark as in look 1; b, a weathered mid-grey sheet whose stain is the dark accent, the battens lighter so they cross it (kept after the A/B at the street stop); c, raw-sawn grey battens, matte, on a dark flat sheet, so the window is the wall's dark shape (p3: kept over a lighter blotched sheet, whose blotches read as cloud at the street stop). `use` is the one kept.",
       "use": "c",
       "a": {
-        "sheet": { "L": 29.9, "stainDL": 5, "smooth": 0.05, "stainSmooth": 0.12 },
-        "batten": { "L": 47.6, "smooth": 0.03 },
-        "wash": { "L": 8, "batL": 10, "head": 0.3, "leak": 0.35, "batten": 0.16, "sill": 0.1, "lowEnd": 0.6, "tide": { "cell": 0.25, "amp": 0.35 } }
+        "sheet": { "L": 29.9, "stainDL": 5, "smooth": 0.05, "stainSmooth": 0.12, "brushL": 0, "stainEdge": 0.25 },
+        "batten": { "L": 47.6, "smooth": 0.03, "brushL": 0 },
+        "wash": { "L": 8, "batL": 10, "head": 0.3, "leak": 0.35, "batten": 0.16, "sill": 0.1, "lowEnd": 0.6 }
       },
       "b": {
-        "sheet": { "L": 50, "stainDL": 8, "smooth": 0.05, "stainSmooth": 0.12 },
-        "batten": { "L": 64, "smooth": 0.03 },
-        "wash": { "L": 16, "batL": 16, "head": 0.3, "leak": 0.35, "batten": 0.16, "sill": 0.1, "lowEnd": 0.6, "tide": { "cell": 0.25, "amp": 0.35 } }
+        "sheet": { "L": 50, "stainDL": 8, "smooth": 0.05, "stainSmooth": 0.12, "brushL": 0, "stainEdge": 0.25 },
+        "batten": { "L": 64, "smooth": 0.03, "brushL": 0 },
+        "wash": { "L": 16, "batL": 16, "head": 0.3, "leak": 0.35, "batten": 0.16, "sill": 0.1, "lowEnd": 0.6 }
       },
       "c": {
-        "sheet": { "L": 32, "stainDL": 6, "smooth": 0.05, "stainSmooth": 0.12 },
-        "batten": { "L": 50, "smooth": 0.0 },
-        "wash": { "L": 9, "batL": 10, "head": 0.3, "leak": 0.35, "batten": 0.16, "sill": 0.1, "lowEnd": 0.6, "tide": { "cell": 0.25, "amp": 0.35 } }
+        "sheet": { "L": 32, "stainDL": 6, "smooth": 0.05, "stainSmooth": 0.12, "brushL": 0, "stainEdge": 0.25 },
+        "batten": { "L": 50, "smooth": 0, "brushL": 0 },
+        "wash": { "L": 9, "batL": 10, "head": 0.3, "leak": 0.35, "batten": 0.16, "sill": 0.1, "lowEnd": 0.6 }
       }
     },
-    "bareShift": 0.3,
-    "lip": { "describes": "The torn edge's lip: the paint film lifted along it, curling over the bare fibre, `widthMm` wide, the paint's own value lighter by `L`, turned to the light by `face` and lit only by the key light, as strongly as that light is directional; in pieces about `cell` long over `share` of the edge.", "L": 0, "widthMm": 3, "face": 0.35, "cell": 0.07, "share": 0.45 },
-    "wear": { "describes": "How far the paint has failed, from the house's facts: (neglect / `neglect` x (years since neglect + `lead`) / (`years` + `lead`)) ^ `power`, 1 at 107; the tongue's values and sizes scale by it.", "neglect": 600, "years": 3, "lead": 5, "power": 0.5 },
-    "ply": { "describes": "The sheet reads as ply: its face veneer's long wavy figure along each sheet's long side (`figure`, [across, along] cells, its lines wandering by `wave`); `each` oval patches a sheet where the mill cut out knots; its cut edges drinking, darkest along the foot (`edge`); a nail every `spacing` round its edge, `insetMm` in.", "figure": { "L": 5, "cell": [0.015, 0.4], "wave": 0.012 }, "patches": { "each": 2, "inset": 0.12, "size": [0.1, 0.035], "L": 6 }, "edge": { "L": 6, "reach": 0.012, "foot": 1.5, "footReach": 0.03 }, "nails": { "spacing": 0.15, "insetMm": 20, "headMm": 5, "L": 10 } },
+    "stroke": { "size": 1024, "metres": 1.0, "cover": 3.0, "lengthMm": [50, 300], "widthMm": [10, 30], "angleDeg": 4, "taper": 0.4, "softPx": 1.2 },
+    "brush": { "cover": 3.0, "lengthMm": [300, 900], "widthMm": [30, 70], "angleDeg": 0.8, "taper": 0.3, "softPx": 14, "dry": 0.75, "fadeLod": [1.0, 3.4], "far": 0.2 },
+    "drag": { "L": 0, "scale": 1.5 },
+    "edge": { "amp": 0.4, "fadeLod": [2.0, 3.4], "rimL": 0, "rimW": 0.08, "rimFar": 0.4, "rimBreak": [0.3, 0.6], "bareShift": 0.3 },
     "dlRange": 80,
-    "lap": { "grimeL": 18, "reach": 0.06, "base": 0.55, "foot": 0.45, "sill": 0.35, "sillSoft": 0.08, "occlusion": 0.15, "occCoreMm": 2, "occReachMm": 20,
-      "far": { "describes": "Far off, the laps collapse into the wall's plane but for a few kept ones (paint.py lap_keep: on the street wall the butts at the drip, the sill and the head; on the gable, `plain` shares of its height), drawn broader by `reach`: from `mmPerPx[0]` a pixel, gone by `mmPerPx[1]`.", "mmPerPx": [3.5, 6.5], "reach": 0.06, "plain": [0.45] } },
+    "lap": { "grimeL": 18, "reach": 0.06, "break": 0.25, "base": 0.55, "foot": 0.45, "sill": 0.35, "sillSoft": 0.08, "occlusion": 0.15, "occCoreMm": 2, "occReachMm": 20 },
     "aoStrength": 0.7,
-    "wall": { "describes": "The wall's one gradient, `topL` under the eave to `footL` at the drip board (by the house's wear), eased by `power`; each course takes the gradient's value at its middle (`course`) and its own small step (`courseJitter`), kept apart (page 2's A, within `toneRange`) with each butt's own thin line of contact shade (`contact.lapPx`), so far off they go with the laps.", "topL": 8, "footL": -26, "power": 1.15, "course": 1.0, "courseJitter": 1.5, "toneRange": 30 },
+    "wall": { "topL": 8, "footL": -26, "power": 1.15 },
     "eave": { "L": 30, "reach": 0.45, "power": 1.0 },
-    "plinth": { "describes": "Darker toward the ground (`L`), each block its own small step (`blockL`); its top, under the drip board's overhang, takes little sky (`capL`).", "L": 6, "blockL": 4, "capL": 15 },
+    "plinth": { "describes": "Darker toward the ground (`L`); its top, under the drip board's overhang, takes little sky (`capL`).", "L": 12, "capL": 15 },
     "junction": {
       "describes": "The dark where one thing meets another: at the junction the value is drawn down to `to` (L*), easing back over `reach`.",
       "sill": { "to": 21, "reach": 0.15 },
-      "batten": { "to": 42, "sheetTo": 15, "reach": 0.05 },
+      "batten": { "to": 21, "sheetTo": 15, "reach": 0.12, "clad": false },
       "head": { "to": 28, "reach": 0.06 },
       "eave": { "to": 21, "reach": 0.08 },
       "drip": { "to": 41, "reach": 0.06 },
-      "plinth": { "to": 32, "reach": 0.05 },
-      "ground": { "to": 20, "reach": 0.06 }
+      "plinth": { "to": 22, "reach": 0.1 },
+      "ground": { "to": 2, "reach": 0.1 }
     },
     "up": { "L": 0 },
-    "contact": { "L": 14, "ao": [0.3, 0.7], "cavL": 10, "cav": [0.15, 0.45], "lapPx": 2 },
-    "sillWash": { "L": 6, "reach": 0.6, "spread": 0.25, "soft": 0.12 },
+    "contact": { "L": 14, "ao": [0.3, 0.7], "cavL": 10, "cav": [0.15, 0.45] },
+    "sillWash": { "L": 0, "reach": 0.6, "spread": 0.25, "soft": 0.12 },
     "tongue": {
-      "describes": "The one failed-paint shape, following the water: off the sill's ends (the leaking one most) to the plinth, and down beside the casing from the head's leaking end. Its wash is soft and darker than the paint, water and dirt: on each board it spreads toward the drip edge, where the water lingers, and the board below takes it narrower again. Its peel is bare silvered fibre, darker still and hard-edged, keeping only `bareWash` of the wash: a few long thin slivers along the grain (`slivers.sizes`, [length, height], largest first), each creeping up from a board's drip edge, tallest at the run's core and tapering out to ragged ends. The largest goes where the water stays longest (the run's strength, more at a butt joint under it and low down), one to a course. Each board's share of both is its own, so no mark crosses a lap. Sizes and strengths are 107's, scaled by the house's wear.",
-      "washL": 24, "bareWash": 0.1,
-      "slivers": { "soft": 0.03, "sizes": [[0.6, 0.035], [0.22, 0.02], [0.16, 0.016], [0.12, 0.014]], "maxShare": 0.5, "power": 2.0, "asym": 0.3, "offset": 0.25, "jitter": 0.3, "low": 0.5,
-                   "rag": { "amp": 0.008, "cell": 0.05 }, "grain": { "amp": 0.014, "cell": [0.08, 0.025] }, "ends": { "amp": 0.3, "cell": 0.04 },
-                   "joint": { "reach": 0.15, "width": 0.008, "height": 0.25, "foot": 1.0, "bonus": 0.6 } },
+      "describes": "The one failed-paint shape, following the water: off the sill's ends (the leaking one most) to the plinth, and down beside the casing from the head's leaking end. Its wash is soft and darker, water and dirt: on each board it spreads toward the drip edge, where the water lingers, and the board below takes it narrower again. Its peel is hard and darker, bare timber gone grey and holding the wet (the material's `bareL`), that keeps only `bareWash` of the wash: strips along the grain up from each board's drip edge, their tops torn in steps, highest at a butt joint. Each board's share of both is its own, so no mark crosses a lap. A run's `peel` lists [width, height] shares for its faces from the top down, the drip board's last.",
+      "washL": 18, "bareWash": 0.12, "soft": 0.03,
+      "runoff": { "describes": "The water's runs, obeying the wood (p3, the cold critic's change, in place of the soft runs below and `sillWash`): off each of the sill's horns, and off each batten's lower end, where its tilt sends the water, one narrow streak `inset` in from the end, down `boards` laps, `width` [m, first to last lap] times `scale`; over each lap's lowest `dripMm`, where the water hangs, its body is soft, `core` of its half-width dark, a `neck` of its width under the lap above spreading (`spread`, a power) to the whole at the drip edge, its wash darkening from `L`[0] to `L`[1] there and `fade` lighter by its last lap; its edges wobble by `wobble`; over the drip edge's lowest `dripMm` a hard tick, `tick` of its width, the cladding's `stainDL` darker still; each lap turns it by up to `wander`. From the street stop on (the stroke mips `far.lod`) each run is one soft mark of its own: `far.width` times as wide, `far.L` dark, `far.core` of it full. With `tonguePeel` the tongue's peel stays below, and with `tongueWash` its wash. At the last drip edge a hard-edged flake of bare wood (`bareL`), lifted along the grain, `flake` [width m, share of the face], torn as the peel is.", "use": true,
+        "tonguePeel": true, "tongueWash": true, "inset": 0.015, "width": [0.035, 0.05], "core": 0.35, "neck": 0.35, "spread": 1.5, "fade": 0.2, "L": [3, 15], "tick": 1.15, "wobble": { "amp": 0.003, "cell": 0.025 }, "far": { "width": 3.0, "L": 14, "core": 0.3, "lod": [0.6, 1.8] }, "dripMm": 20, "soft": 0.006, "wander": 0.006,
+        "leak": { "boards": 4, "scale": 1.0, "strength": 1.0, "flake": [0.16, 0.45] },
+        "dry": { "boards": 2, "scale": 0.8, "strength": 0.7, "flake": [0.06, 0.35] },
+        "batten": { "boards": 2, "scale": 0.8, "strength": 0.7, "flake": [0.05, 0.35] } },
+      "steps": { "cell": 0.14, "soft": 0.035, "low": 0.5, "skew": 1.3 },
+      "ends": { "amp": 0.012, "cell": 0.03, "lean": 0.15 },
+      "joint": { "reach": 0.15, "width": 0.022, "height": 0.95, "foot": 0.8 },
       "runs": {
-        "leak": { "L": 18, "w0": 0.17, "spread": 0.35, "spreadPower": 1.0, "wMax": 0.46, "asym": 0.3, "take": 0.85, "shape": 1.0, "core": 0.3, "edge": 0.3, "inset": 0.0, "lean": 0.04, "wander": 0.25, "jitter": 0.4, "length": 0 },
-        "dry": { "L": 14, "w0": 0.05, "spread": 0.25, "spreadPower": 1.5, "wMax": 0.14, "asym": 0.3, "take": 0.85, "shape": 1.0, "core": 0.25, "edge": 0.3, "inset": 0.0, "lean": 0.03, "wander": 0.25, "jitter": 0.4, "length": 0.6 },
-        "cap": { "L": 10, "w0": 0.022, "spread": 0.0, "spreadPower": 1.0, "wMax": 0.022, "asym": 0.0, "take": 1.0, "shape": 1.0, "core": 0.2, "edge": 0.6, "inset": 0.012, "lean": 0.0, "wander": 0.1, "jitter": 0.3, "length": 0 }
+        "leak": { "L": 14, "w0": 0.1, "spread": 0.25, "spreadPower": 1.0, "wMax": 0.3, "asym": 0.3, "take": 0.85, "shape": 1.0, "core": 0.6, "edge": 0.55, "inset": 0.0, "lean": 0.04, "wander": 0.9, "jitter": 0.8, "length": 0,
+                  "peel": [[0.8, 0.6], [0.6, 0.45], [0.9, 0.6], [0.7, 0.7], [1.0, 0.75], [0.8, 0.6]] },
+        "dry": { "L": 13, "w0": 0.05, "spread": 0.25, "spreadPower": 1.5, "wMax": 0.14, "asym": 0.3, "take": 0.85, "shape": 1.0, "core": 0.6, "edge": 0.55, "inset": 0.0, "lean": 0.03, "wander": 0.4, "jitter": 0.4, "length": 0.6,
+                 "peel": [[0.45, 0.4]] },
+        "cap": { "L": 10, "w0": 0.022, "spread": 0.0, "spreadPower": 1.0, "wMax": 0.022, "asym": 0.0, "take": 1.0, "shape": 1.0, "core": 0.2, "edge": 0.6, "inset": 0.012, "lean": 0.0, "wander": 0.1, "jitter": 0.3, "length": 0,
+                 "peel": [] }
       }
     },
     "peel": {
-      "soft": 0.03,
+      "soft": 0.05,
       "wobble": { "share": 0.3, "cell": 0.25 },
       "casing": { "reach": 0.18 },
       "tops": { "inset": 0.05 }
     },
     "rust": { "share": 0.6, "length": [0.05, 0.12], "width": 0.008, "headMm": 5, "headL": 30 },
-    "sheet": { "joinL": 10, "joinMm": 6 },
-    "batten": { "describes": "Raw-sawn battens, weathered grey: a faint grain of streaks along them (`grain`, [along, across] cells); their sawn ends lifted by `endL` to the batten's own grey, so no end reads as a dark peg.", "grainL": 4, "grain": [0.35, 0.012], "endL": 14 },
-    "wet": { "describes": "The plinth's foot kept damp by splash, a soft dark (`L`) up to `top`, higher by `splash` under the drips that carry most, its edge `soft` either side: no found line.", "L": 10, "top": 0.1, "splash": 0.12, "splashWidth": 0.35, "soft": 0.1 },
-    "tiles": { "share": 0.0, "L": 7 }
+    "sheet": { "leakWidth": 0.2, "wobble": { "amp": 0.03, "cell": 0.12 }, "joinL": 10, "joinMm": 6 },
+    "batten": { "endL": 0, "endMm": 15 },
+    "wet": { "describes": "Splash keeps the plinth's foot damp, higher under the drips that carry most, its top a wavering found edge.", "top": 0.1, "splash": 0.12, "splashWidth": 0.35, "soft": 0.03, "wobble": { "amp": 0.02, "cell": 0.6 } },
+    "tiles": { "share": 0.12, "L": 7 }
   }
 }

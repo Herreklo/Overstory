@@ -49,18 +49,27 @@ Shader "Overstory/Finish"
         _LapStep ("How far a butt stands proud of the board under it, m", Float) = 0.013
         _DirtDull ("Dirt dulls gloss", Float) = 0.1
         [Toggle(_OS_PAINT)] _Paint ("Way P: painted", Float) = 0
-        _Hist2 ("Way P's second page: R the long washes, 0 to 1 of _WashL; G the laps kept far; B the torn edge's lip in pieces; A each course's tone", 2D) = "black" {}
-        _ToneRange ("Each course's tone, L* either side of A's half", Float) = 10
-        _ShadowLift ("Way P: how far toward the key light a face looks for its shadow, m, so its own small forms cast none", Float) = 0
+        _Stroke ("Way P's strokes: R the peel's edge, G the stain's, B the lap grime's, A the boards' long strokes", 2D) = "grey" {}
+        _StrokeScale ("UV1 scale to the strokes", Float) = 8
+        _EdgeAmp ("How far a stroke moves a shape's edge, in its field", Float) = 0.5
+        _StrokeFade ("The strokes' mip from which they fade, and by which they are gone", Vector) = (3, 5.5, 0, 0)
+        _BrushL ("The long strokes' reach either side, L*", Float) = 0
+        _BrushFade ("The long strokes' mip from which they fade, and by which they are down to _BrushFar", Vector) = (1.5, 2.8, 0, 0)
+        _BrushFar ("What the long strokes keep far", Range(0, 1)) = 0
+        _Hist2 ("Way P's second page: R the long washes, 0 to 1 of _WashL, as they are near; G the same far", 2D) = "black" {}
+        _WashFade ("Way P: the stroke mips over which the washes' near form gives way to their far mark (0, 0: near only)", Vector) = (0, 0, 0, 0)
         _WashL ("The darkest long wash, L*", Float) = 0
         _BareWash ("How much of the long washes bare wood takes", Range(0, 1)) = 1
+        _DragL ("The brush's drags down a wash, L* either side", Float) = 0
+        _DragScale ("The drags' size, the long strokes' turned upright and shrunk by", Float) = 1.5
         _DLRange ("The page's value shift, L* either side of G's half", Float) = 40
+        _StainEdge ("How much of the strokes' break a stain's edge takes", Range(0, 1)) = 1
         _FlatUp ("How far the light's normal is drawn up, so a face's own small forms are lit as one mass", Float) = 0
-        _PeelLipL ("The torn edge's lip of paint film, lighter by L* in the key light only", Float) = 0
-        _PeelLipW ("How far the lip reaches from the edge, in the peel's field", Float) = 0.05
-        _PeelLipFace ("How far the lip is turned to the key light", Float) = 0.35
-        _LapFar ("Way P: metres a pixel, x 1000, from which the laps collapse into the plane, and by which", Vector) = (1000, 1001, 0, 0)
-        _LapFarReach ("Way P: how far below the butt a kept lap reaches once collapsed, m", Float) = 0.02
+        _ShadowLift ("Way P: how far toward the key light a face looks for its shadow, m, so its own small forms cast none", Float) = 0
+        _RimL ("The broken paint's edge, lighter by L*", Float) = 0
+        _RimW ("How far the rim reaches from the edge, in the field", Float) = 0.04
+        _RimFar ("What the rim keeps far", Range(0, 1)) = 0
+        _RimBreak ("Where along its length the rim breaks: the stain strokes' value from, to", Vector) = (0, 0, 0, 0)
         _BareShift ("How much of the page's value shift bare wood takes", Range(0, 1)) = 1
         _PaintL ("The material's value, L*", Float) = 80
         _BareL ("Bare wood where paint is lost, L*", Float) = 40
@@ -69,6 +78,7 @@ Shader "Overstory/Finish"
         _StainSmooth ("A stain's smoothness", Range(0, 1)) = 0.1
         _LapGrimeL ("The lap's grime at its darkest, L*", Float) = 0
         _LapGrimeReach ("How far below the butt the grime reaches, m", Float) = 0.045
+        _LapGrimeBreak ("How far the strokes move the grime's lower edge, as a share of its reach", Float) = 0.5
         _Tint ("Way Pc: the paint's hue, linear, of luminance 1", Vector) = (1, 1, 1, 0)
         _BareTint ("Way Pc: the bare fibre's hue", Vector) = (1, 1, 1, 0)
         _UnderTint ("Way Pc: the under layer's hue", Vector) = (1, 1, 1, 0)
@@ -87,10 +97,12 @@ Shader "Overstory/Finish"
         float _StainL, _TideW, _StainMottleL, _TideL, _IslandL, _GrainMip, _GrainFade;
         float4 _IslandW;
         float _FlakeScale, _HaloL, _HaloW, _HaloDull, _RunBody;
-        float _Paint, _BareShift, _PaintL, _BareL, _UnderL, _StainDL, _StainSmooth;
-        float _LapGrimeL, _LapGrimeReach, _FlatUp;
-        float _DLRange, _ToneRange, _ShadowLift, _WashL, _BareWash, _PeelLipL, _PeelLipW, _PeelLipFace, _LapFarReach;
-        float4 _LapFar;
+        float _Paint, _StrokeScale, _EdgeAmp, _RimL, _RimW, _BareShift, _PaintL, _BareL, _UnderL, _StainDL, _StainSmooth;
+        float _LapGrimeL, _LapGrimeReach, _LapGrimeBreak, _BrushL, _FlatUp, _StainEdge, _BrushFar, _DragL, _DragScale;
+        float _DLRange, _RimFar, _WashL, _BareWash, _ShadowLift;
+        float4 _WashFade;
+        float4 _RimBreak;
+        float4 _StrokeFade, _BrushFade;
         float4 _Tint, _BareTint, _UnderTint, _StainTint, _WashTint;
     CBUFFER_END
     ENDHLSL
@@ -126,6 +138,7 @@ Shader "Overstory/Finish"
             SamplerState os_point_clamp_lap;
             TEXTURE2D(_StreetN); SAMPLER(sampler_StreetN);
             TEXTURE2D(_Flake); SAMPLER(sampler_Flake);
+            TEXTURE2D(_Stroke); SAMPLER(sampler_Stroke);
 
             struct Attributes
             {
@@ -172,10 +185,10 @@ Shader "Overstory/Finish"
             }
 
             // the lap's band (whole for its core, easing out by its reach) summed from the butt to x metres below it
-            float LapInt(float x, float reach)
+            float LapInt(float x)
             {
                 x = max(x, 0.0);
-                float w = max(reach - _LapCore, 1e-5);
+                float w = max(_LapReach - _LapCore, 1e-5);
                 float u = saturate((x - _LapCore) / w);
                 return min(x, _LapCore) + w * (u - u * u * u + 0.5 * u * u * u * u);
             }
@@ -208,23 +221,40 @@ Shader "Overstory/Finish"
                 float3 upF = normalize(float3(0, 1, 0) - nG * nG.y);
                 float up = dot(i.positionWS, upF);
                 float fw = max(length(float2(ddx(up), ddy(up))), 1e-4);
+            #if defined(_OS_STREET) && defined(_OS_PAINT)
+                // way P: the page holds one distance a texel, so on its own a lap could be no finer than a texel and
+                // would step along its length. A butt's distance falls exactly one metre a metre up the wall, so the
+                // texel's value is carried from its centre to this pixel by how far up the wall the pixel lies from
+                // it (the page's own slope up the wall, from the screen's derivatives): each lap a line at every distance
+                float2 uvP = i.uv.zw, ux = ddx(uvP), uy = ddy(uvP);
+                float det = ux.x * uy.y - ux.y * uy.x;
+                if (abs(det) > 1e-12)
+                {
+                    float2 g = float2(uy.y * ddx(up) - ux.y * ddy(up), -uy.x * ddx(up) + ux.x * ddy(up)) / det;
+                    float2 c = (floor(uvP * _Geo_TexelSize.zw) + 0.5) * _Geo_TexelSize.xy;
+                    lapD -= dot(g, uvP - c);
+                }
+            #endif
                 float lo = lapD - 0.5 * fw, hi = lapD + 0.5 * fw;
-                // way P's laps far off: all but a few kept ones collapse into the wall's plane (keep), those drawn
-                // broader (lapR), so the courses never beat against the pixels
-                float keep = 1.0, lapR = _LapReach, flatL = 0.0, peelLip = 0.0;
 
             #if defined(_OS_PAINT)
                 // way P, painted: each material one value, shifted only by the page's designed shapes (R the peel's
                 // field and B the stain's, each edge at 0.5; G a value shift, 0.5 + dL*/(2 _DLRange); A the lap grime's
-                // strength), each edge a pixel's width at every distance
-                float4 h2 = SAMPLE_TEXTURE2D(_Hist2, sampler_Hist, i.uv.zw);
-                float tP = hist.r - 0.5;
+                // strength). Near, the authored strokes move each edge by up to _EdgeAmp of its field, so the edge is
+                // the brush's; with distance they go and each shape keeps its own soft contour
+                float2 suv = i.uv.zw * _StrokeScale;
+                float4 st = SAMPLE_TEXTURE2D(_Stroke, sampler_Stroke, suv);
+                float lodS = CALCULATE_TEXTURE2D_LOD(_Stroke, sampler_Stroke, suv);
+                float nearP = 1.0 - saturate((lodS - _StrokeFade.x) / max(_StrokeFade.y - _StrokeFade.x, 1e-3));
+                float brush = _EdgeAmp * nearP;
+                float tP = hist.r - 0.5 + brush * (st.r - 0.5);
                 float wP = max(fwidth(tP), 1e-3);
                 float peel = _Painted * smoothstep(-wP, wP, tP);
-                // the torn edge's lip: the lifted paint film curling over the bare fibre along the edge, in pieces,
-                // lit only by the key light (below); narrower than a pixel, it keeps only its share of one
-                peelLip = _Painted * (peel - smoothstep(_PeelLipW - wP, _PeelLipW + wP, tP)) * h2.b;
-                float tS = hist.b - 0.5;
+                // the paint's broken edge, its clean lip lighter than the paint around it, in pieces along its length;
+                // some of it holds far
+                float rim = _Painted * (1.0 - peel) * smoothstep(-wP - _RimW, -wP, tP) * lerp(_RimFar, 1.0, nearP)
+                    * smoothstep(_RimBreak.x, _RimBreak.y, st.g);
+                float tS = hist.b - 0.5 + _StainEdge * brush * (st.g - 0.5);
                 float wS = max(fwidth(tS), 1e-3);
                 float stain = smoothstep(-wS, wS, tS);
                 float L = lerp(lerp(_PaintL, _BareL, peel), _UnderL, saturate(i.color.b));
@@ -232,28 +262,28 @@ Shader "Overstory/Finish"
                 // some of them
                 float shift = (hist.g - 0.5) * 2.0 * _DLRange - _StainDL * stain;
                 L += shift * lerp(1.0, _BareShift, peel);
-                float lipY = LToY(clamp(_PaintL + shift + _PeelLipL, 2.0, 98.0));
-                // the long washes darken the paint, soft and translucent; the bare fibre is a dark of its own and
-                // takes little more
-                float wash = h2.r;
+                L = lerp(L, _PaintL + shift + _RimL, rim);
+                // the long washes darken the paint, soft and translucent; the bare fibre the paint has lost stays
+                // dry and lighter, a hard mark of its own
+                // near, the runs as the water leaves them; with distance each becomes one soft mark of its own
+                float2 w2 = SAMPLE_TEXTURE2D(_Hist2, sampler_Hist, i.uv.zw).rg;
+                float farW = _WashFade.y > _WashFade.x ? saturate((lodS - _WashFade.x) / (_WashFade.y - _WashFade.x)) : 0.0;
+                float wash = lerp(w2.r, max(w2.r, w2.g), farW);
                 L -= _WashL * wash * lerp(1.0, _BareWash, peel);
-                float farL = 0.0;
-            #if defined(_OS_STREET)
-                farL = smoothstep(_LapFar.x, _LapFar.y, fw * 1000.0);
-                keep = lerp(1.0, h2.g, farL);
-                lapR = lerp(_LapReach, _LapFarReach, farL);
-                flatL = farL * (1.0 - h2.g);
-            #endif
-                // each course its own tone near; far off it goes with the laps, and the wall is its one gradient
-                L += (h2.a - 0.5) * 2.0 * _ToneRange * (1.0 - farL);
-                // the lap's grime: darkest under the butt, easing down the board, summed over the pixel's reach down
-                // the wall as the band is
-                L -= keep * hasLap * hist.a * _LapGrimeL * (GrimeInt(hi, _LapGrimeReach) - GrimeInt(lo, _LapGrimeReach)) / fw;
+                // the lap's grime: darkest under the butt, easing down the board to a lower edge the strokes break,
+                // summed over the pixel's reach down the wall as the band is
+                float gr = _LapGrimeReach * (1.0 + _LapGrimeBreak * nearP * 2.0 * (st.b - 0.5));
+                L -= hasLap * hist.a * _LapGrimeL * (GrimeInt(hi, gr) - GrimeInt(lo, gr)) / fw;
+                // near, long soft strokes along the boards let the plane breathe, and down a wash the brush drags;
+                // by the street stop a trace of both
+                float nearB = lerp(_BrushFar, 1.0, 1.0 - saturate((lodS - _BrushFade.x) / max(_BrushFade.y - _BrushFade.x, 1e-3)));
+                float drag = SAMPLE_TEXTURE2D(_Stroke, sampler_Stroke, suv.yx * _DragScale).a;
+                L += (_BrushL * 2.0 * (st.a - 0.5) + _DragL * wash * 2.0 * (drag - 0.5)) * nearB;
                 float Y = LToY(clamp(L, 2.0, 98.0));
                 // the colour still: each mark's own hue laid on its value, every tint of luminance 1 so the albedo
                 // keeps the clay's; white in clay
                 float3 tint = lerp(lerp(_Tint.rgb, _BareTint.rgb, peel), _UnderTint.rgb, saturate(i.color.b));
-                tint = lerp(tint, _StainTint.rgb, stain);
+                tint = lerp(lerp(tint, _Tint.rgb, rim), _StainTint.rgb, stain);
                 tint = lerp(tint, _WashTint.rgb, saturate(wash * lerp(1.0, _BareWash, peel)));
                 float3 nT = float3(0, 0, 1);
                 float smooth = lerp(_PaintSmooth, _StainSmooth, stain);
@@ -321,7 +351,6 @@ Shader "Overstory/Finish"
             #endif
             #if defined(_OS_STREET)
                 float3 nP = SAMPLE_TEXTURE2D(_StreetN, sampler_StreetN, i.uv.zw).xyz * 2.0 - 1.0;
-                nP.xy *= 1.0 - flatL;
                 nT = normalize(float3(nP.xy + nT.xy, nP.z * nT.z));
             #endif
                 float3 bit = i.tangentWS.w * cross(i.normalWS, i.tangentWS.xyz);
@@ -343,18 +372,7 @@ Shader "Overstory/Finish"
                 s.smoothness = saturate(smooth);
                 s.normalTS = nT;
                 // the sky's light is shut out of the lap's mouth: dark for its core, easing out by its reach
-                float lap = 1.0 - keep * hasLap * _LapDark * (LapInt(hi, lapR) - LapInt(lo, lapR)) / fw;
-            #if defined(_OS_PAINT) && defined(_OS_STREET)
-                // far off, each butt's thin line of occlusion goes with the laps: the page's occlusion opened up the
-                // wall by two of its pixels, so only its broad shade stays
-                if (flatL > 0.0)
-                {
-                    float2 dv = float2(0.0, _Geo_TexelSize.y);
-                    float o = max(max(SAMPLE_TEXTURE2D(_Geo, sampler_Geo, i.uv.zw + dv).r, SAMPLE_TEXTURE2D(_Geo, sampler_Geo, i.uv.zw - dv).r),
-                                  max(SAMPLE_TEXTURE2D(_Geo, sampler_Geo, i.uv.zw + 2.0 * dv).r, SAMPLE_TEXTURE2D(_Geo, sampler_Geo, i.uv.zw - 2.0 * dv).r));
-                    geo.r = lerp(geo.r, max(geo.r, o), flatL);
-                }
-            #endif
+                float lap = 1.0 - hasLap * _LapDark * (LapInt(hi) - LapInt(lo)) / fw;
                 s.occlusion = lerp(1.0, geo.r, _AOStrength) * lap;
                 s.alpha = 1;
 
@@ -377,7 +395,7 @@ Shader "Overstory/Finish"
                 Light ml = GetMainLight(d.shadowCoord, d.positionWS, d.shadowMask);
                 float ln = dot(ml.direction, nG);
                 float ds = _LapStep * max(dot(ml.direction, upF), 0.0) / max(ln, 1e-3);
-                float shut = keep * hasLap * step(0.0, ln) * saturate((min(hi, ds) - max(lo, 0.0)) / fw);
+                float shut = hasLap * step(0.0, ln) * saturate((min(hi, ds) - max(lo, 0.0)) / fw);
                 if (shut > 0.0)
                 {
                     BRDFData brdf;
@@ -389,13 +407,6 @@ Shader "Overstory/Finish"
                 #endif
                     c.rgb -= direct * shut * GetMainLightShadowStrength();
                 }
-            #if defined(_OS_PAINT)
-                // the lip's film, the paint's value and lighter, in the key light alone, turned a little toward it and
-                // as strong as the light is directional, so it shows where the sun catches it and barely in overcast
-                if (peelLip > 0.0)
-                    c.rgb += peelLip * max(lipY - Y, 0.0) * _Tint.rgb * ml.color * ml.shadowAttenuation
-                        * saturate(dot(ml.direction, nWS) + _PeelLipFace) * GetMainLightShadowStrength();
-            #endif
                 c.rgb = MixFog(c.rgb, d.fogCoord);
                 return half4(c.rgb, 1);
             }
