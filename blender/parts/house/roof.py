@@ -112,14 +112,16 @@ class Slope:
         return self.place(self.sgn * (self.ae - d * self.cp + self.sp * h), r, self.z_e + d * self.sp + self.cp * h)
 
 
-def pantiles(soup, s, r0, r1, slope_len, laid, rng, waved, segs=6):
+def pantiles(soup, s, r0, r1, slope_len, laid, rng, waved, segs=6, fore=None):
     """Pantiles in courses up one slope: each course its tiles across, each tile an S (a broad flat pan and a narrower
     round roll, its own normals), its roll's edge lying over the next tile's pan (a step of the tile's thickness, the
     tile tilted across by it as laid tiles are), its foot a lip standing proud of the course below and dropped a little
     by the seed (mass-made tiles hung by hand: texture, no history), its ends closed at the verges. The rolls' phase is
     the street's (the painted mark's: along the slope's run, from the street's origin), so the mark and the form
     agree. waved: how many courses from the eave are modelled (all at near; the eave's alone further off, the rest a
-    strip at the rolls' mean). segs: the pieces across a tile's S (its own normals round the curve between them)."""
+    strip at the rolls' mean). segs: the pieces across a tile's S (its own normals round the curve between them).
+    fore: (d, r): from the course whose foot is at d up, the courses run on past r0 to r (a part of the gable built out
+    under the roof, a hoist ark); the first of them its eave there, its noses down to the boarding's edge."""
     cover, course = laid["coverMm"] * MM, laid["courseMm"] * MM
     amp, lift = laid["rollMm"] * MM / 2.0, laid["liftMm"] * MM
     thick, pan = laid["thickMm"] * MM, laid.get("panShape", 0.22)
@@ -136,28 +138,29 @@ def pantiles(soup, s, r0, r1, slope_len, laid, rng, waved, segs=6):
     # the painted mark's; and the step where one tile's roll edge laps the next
     f = lambda t: amp * (math.sin(2.0 * math.pi * t) - pan * math.cos(4.0 * math.pi * t))
     df = lambda t: amp * 2.0 * math.pi * (math.cos(2.0 * math.pi * t) + 2.0 * pan * math.sin(4.0 * math.pi * t))
-    lo, hi = sorted((ph(r0), ph(r1)))
-    # samples: segs to a tile and the lap twice (the step), each with its tile
-    pts = []
-    for j in range(math.floor(lo - tb) - 1, math.ceil(hi - tb) + 1):
-        for q in range(segs + 1):
-            t = j + tb + q / float(segs)
-            pts.append((t, j, q))
-    rs = []
-    for t, j, q in pts:
-        r = (t * cover - a0) / ak
-        rs.append((r, t, j, q))
-    rs.sort(key=lambda x: x[0])
-    out_ = []
-    for r, t, j, q in rs:
-        if r0 - 1e-6 <= r <= r1 + 1e-6:
-            out_.append((r, t, j, q))
-    # the ends at the verges, in their tiles
-    for rr in (r0, r1):
-        t = ph(rr)
-        j = math.floor(t - tb)
-        out_.append((rr, t, j, (t - tb - j) * float(segs)))
-    out_.sort(key=lambda x: (x[0], x[2] if ak > 0 else -x[2]))
+
+    def samples(ra, rb, ends):
+        """A course's samples from ra to rb: segs to a tile and the lap twice (the step), each with its tile; and its
+        ends (the verges, and where a course carried forward passes the gable's own verge), in their tiles."""
+        lo, hi = sorted((ph(ra), ph(rb)))
+        row = []
+        for j in range(math.floor(lo - tb) - 1, math.ceil(hi - tb) + 1):
+            for q in range(segs + 1):
+                t = j + tb + q / float(segs)
+                r = (t * cover - a0) / ak
+                if ra - 1e-6 <= r <= rb + 1e-6:
+                    row.append((r, t, j, q))
+        for rr in ends:
+            t = ph(rr)
+            j = math.floor(t - tb)
+            row.append((rr, t, j, (t - tb - j) * float(segs)))
+        row.sort(key=lambda x: (x[0], x[2] if ak > 0 else -x[2]))
+        return row
+    rows = {r0: samples(r0, r1, (r0, r1))}
+    i_f = None
+    if fore:
+        i_f = round(fore[0] / course)
+        rows[fore[1]] = samples(fore[1], r1, (fore[1], r0, r1))
     # height of a tile j at phase t: its S, tilted across by the lap; normals from the S
     tilt = lambda t, j: thick * ((t - tb - j) - 0.5)
     n_c = max(1, math.ceil(slope_len / course - 1e-6))
@@ -165,14 +168,17 @@ def pantiles(soup, s, r0, r1, slope_len, laid, rng, waved, segs=6):
         d0, d1 = i * course, min((i + 1) * course, slope_len)
         wav = i < waved
         foot, head = base + lift, base
+        rc = fore[1] if i_f is not None and i >= i_f else r0
+        out_ = rows[rc]
         soup.use(kind="tile", scheme="none", seed=rng.random(), lap=0.0, shelter=0.0)
         if not wav:
-            p = [s.at(d0, r0, foot), s.at(d0, r1, foot), s.at(d1, r1, head), s.at(d1, r0, head)]
-            nquad(soup, p, None, s.N, ta=[(r0, d0), (r1, d0), (r1, d1), (r0, d1)])
+            p = [s.at(d0, rc, foot), s.at(d0, r1, foot), s.at(d1, r1, head), s.at(d1, rc, head)]
+            nquad(soup, p, None, s.N, ta=[(rc, d0), (r1, d0), (r1, d1), (rc, d1)])
             soup.use(lap=1.0)
-            under = head if i else -0.03
-            p = [s.at(d0, r0, under), s.at(d0, r1, under), s.at(d0, r1, foot), s.at(d0, r0, foot)]
-            nquad(soup, p, None, s.down, ta=[(r0, d0 - 0.04), (r1, d0 - 0.04), (r1, d0), (r0, d0)])
+            for ra, rb in ((rc, r0), (r0, r1)) if i == i_f else ((rc, r1),):
+                under = -0.03 if i == 0 or ra < r0 - 1e-6 else head
+                p = [s.at(d0, ra, under), s.at(d0, rb, under), s.at(d0, rb, foot), s.at(d0, ra, foot)]
+                nquad(soup, p, None, s.down, ta=[(ra, d0 - 0.04), (rb, d0 - 0.04), (rb, d0), (ra, d0)])
             continue
         # each tile's seeded drop at its foot
         drops = {}
@@ -199,15 +205,16 @@ def pantiles(soup, s, r0, r1, slope_len, laid, rng, waved, segs=6):
                 nquad(soup, p, [na, nb, nb, na], s.N, ta=[(ra, d0), (rb, d0), (rb, d1), (ra, d1)])
                 # the tile's nose at the course's foot, down to the course below
                 soup.use(lap=1.0)
-                ua = head + (hgt(ra, ta_, j) if below else 0.0) if i else -0.03
-                ub = head + (hgt(rb, tb_, j) if below else 0.0) if i else -0.03
+                eave_ = i == 0 or (i == i_f and ra < r0 - 1e-6)
+                ua = -0.03 if eave_ else head + (hgt(ra, ta_, j) if below else 0.0)
+                ub = -0.03 if eave_ else head + (hgt(rb, tb_, j) if below else 0.0)
                 p = [s.at(d0, ra, ua - thick * 0.3), s.at(d0, rb, ub - thick * 0.3), s.at(d0, rb, foot - dz + hb),
                      s.at(d0, ra, foot - dz + ha)]
                 nquad(soup, p, None, s.down, ta=[(ra, d0 - 0.04), (rb, d0 - 0.04), (rb, d0), (ra, d0)])
             # the roll's edge over the next tile's pan: the step, the tile's thickness (the next tile's foot its own
             # drop)
             for r_e, t_e, q in row:
-                if q != segs or not (r0 + 1e-4 < r_e < r1 - 1e-4) or (j + 1) not in drops:
+                if q != segs or not (rc + 1e-4 < r_e < r1 - 1e-4) or (j + 1) not in drops:
                     continue
                 h_hi, h_lo = hgt(r_e, t_e, j), hgt(r_e, t_e, j + 1)
                 side = mul(s.R, 1.0 if ak > 0 else -1.0)
@@ -216,7 +223,7 @@ def pantiles(soup, s, r0, r1, slope_len, laid, rng, waved, segs=6):
                      s.at(d0, r_e, foot - dz + h_hi)]
                 nquad(soup, p, None, side)
         # the verges: each course's end closed down to the boarding
-        for rr, sd in ((r0, -1.0), (r1, 1.0)):
+        for rr, sd in ((rc, -1.0), (r1, 1.0)):
             t = ph(rr)
             j = math.floor(t - tb)
             hh = hgt(rr, t, j)
@@ -226,38 +233,49 @@ def pantiles(soup, s, r0, r1, slope_len, laid, rng, waved, segs=6):
     return n_c, base + amp * (1.0 + pan), base + lift + amp * (1.0 + pan) + thick * 0.5
 
 
-def slates(soup, s, r0, r1, slope_len, laid, rng, modelled):
+def slates(soup, s, r0, r1, slope_len, laid, rng, modelled, fore=None):
     """Slates in courses up one slope, each course breaking joint by half a slate. Modelled (near): each slate its own
     plane, its butt standing proud of the course below, its own seeded roll about the slope and drop at its butt
     (mass-made slates hung by hand: texture, no history), the joints between them open on the dark felt. Else the
-    courses' strips."""
+    courses' strips. fore: as for pantiles, the carried-forward courses breaking joint with the rest."""
     W, course = laid["widthMm"] * MM, laid["courseMm"] * MM
     lift, gap = laid["liftMm"] * MM, laid["jointMm"] * MM
     roll, drop = math.radians(laid["rollDeg"]), laid["dropMm"] * MM
     base = 0.5 * W * math.tan(roll) + 0.001
     n_c = max(1, math.ceil(slope_len / course - 1e-6))
+    i_f = round(fore[0] / course) if fore else None
     if modelled:
         soup.use(kind="joint", scheme="none", seed=rng.random(), lap=0.0, shelter=0.0)
         nquad(soup, [s.at(0.0, r0, 0.0005), s.at(0.0, r1, 0.0005), s.at(slope_len, r1, 0.0005),
                      s.at(slope_len, r0, 0.0005)], None, s.N, ta=[(r0, 0.0), (r1, 0.0), (r1, slope_len), (r0, slope_len)])
+        if fore:
+            nquad(soup, [s.at(fore[0], fore[1], 0.0005), s.at(fore[0], r0, 0.0005), s.at(slope_len, r0, 0.0005),
+                         s.at(slope_len, fore[1], 0.0005)], None, s.N,
+                  ta=[(fore[1], fore[0]), (r0, fore[0]), (r0, slope_len), (fore[1], slope_len)])
     for i in range(n_c):
         d0, d1 = i * course, min((i + 1) * course, slope_len)
+        rc = fore[1] if i_f is not None and i >= i_f else r0
         under = base - 0.001 if i else -0.02
         if not modelled:
             soup.use(kind="tile", scheme="none", seed=rng.random(), lap=0.0, shelter=0.0)
-            p = [s.at(d0, r0, base + lift), s.at(d0, r1, base + lift), s.at(d1, r1, base), s.at(d1, r0, base)]
-            nquad(soup, p, None, s.N, ta=[(r0, d0), (r1, d0), (r1, d1), (r0, d1)])
+            p = [s.at(d0, rc, base + lift), s.at(d0, r1, base + lift), s.at(d1, r1, base), s.at(d1, rc, base)]
+            nquad(soup, p, None, s.N, ta=[(rc, d0), (r1, d0), (r1, d1), (rc, d1)])
             soup.use(lap=1.0)
-            p = [s.at(d0, r0, under), s.at(d0, r1, under), s.at(d0, r1, base + lift), s.at(d0, r0, base + lift)]
-            nquad(soup, p, None, s.down, ta=[(r0, d0 - 0.04), (r1, d0 - 0.04), (r1, d0), (r0, d0)])
+            for ra, rb in ((rc, r0), (r0, r1)) if i == i_f else ((rc, r1),):
+                u_ = -0.02 if i == 0 or ra < r0 - 1e-6 else under
+                p = [s.at(d0, ra, u_), s.at(d0, rb, u_), s.at(d0, rb, base + lift), s.at(d0, ra, base + lift)]
+                nquad(soup, p, None, s.down, ta=[(ra, d0 - 0.04), (rb, d0 - 0.04), (rb, d0), (ra, d0)])
             continue
+        # the joints broken from the gable's verge, carried on past it where the course runs forward
         r = r0 - (0.5 * W if i % 2 else 0.0)
+        while r > rc + 1e-6:
+            r -= W
         while r < r1 - 1e-6:
-            ra, rb = max(r, r0), min(r + W, r1)
+            ra, rb = max(r, rc), min(r + W, r1)
             r += W
             if rb - ra < 0.03:
                 continue
-            ra += 0.5 * gap if ra > r0 + 1e-6 else 0.0
+            ra += 0.5 * gap if ra > rc + 1e-6 else 0.0
             rb -= 0.5 * gap if rb < r1 - 1e-6 else 0.0
             t, dz = math.tan(rng.uniform(-roll, roll)), rng.uniform(0.0, drop)
             rc = 0.5 * (ra + rb)
@@ -266,7 +284,8 @@ def slates(soup, s, r0, r1, slope_len, laid, rng, modelled):
             top = [s.at(d0, ra, L(d0, ra)), s.at(d0, rb, L(d0, rb)), s.at(d1, rb, L(d1, rb)), s.at(d1, ra, L(d1, ra))]
             nquad(soup, top, None, s.N, ta=[(ra, d0), (rb, d0), (rb, d1), (ra, d1)])
             soup.use(lap=1.0)
-            nquad(soup, [s.at(d0, ra, under), s.at(d0, rb, under), top[1], top[0]], None, s.down,
+            u_ = -0.02 if i == i_f and ra < r0 - 1e-6 else under
+            nquad(soup, [s.at(d0, ra, u_), s.at(d0, rb, u_), top[1], top[0]], None, s.down,
                   ta=[(ra, d0 - 0.04), (rb, d0 - 0.04), (rb, d0), (ra, d0)])
             nquad(soup, [s.at(d0, ra, 0.0005), s.at(d1, ra, 0.0005), top[3], top[0]], None, mul(s.R, -1.0))
             nquad(soup, [s.at(d0, rb, 0.0005), s.at(d1, rb, 0.0005), top[2], top[1]], None, s.R)
@@ -350,14 +369,29 @@ def gutter(soup, place, a_c, z_c, r0, r1, sgn, rw, hooks):
     return R
 
 
+def course_line(span, wk, laid, pitch, a):
+    """The foot of the course nearest a (m across from the ridge) on a roof over span: where a part of a gable built out
+    under the roof (a hoist ark) has its eave, so the courses over it are the roof's own."""
+    step = laid["courseMm"] * MM * math.cos(math.radians(pitch))
+    ae = span / 2 + wk["eaves"]["overhangMm"] * MM
+    return ae - round((ae - a) / step) * step
+
+
 def roof(soup, place, span, length, eave, pitch, wk, rng, verge_dir, side_dir, laid=None, push=None, rain=None,
-         sag=0.0, wall_out=0.0, ground_at=None, verges=(True, True)):
+         sag=0.0, wall_out=0.0, ground_at=None, verges=(True, True), barge_from=(0.0, 0.0), fore=None, covered=True,
+         soffit=None):
     """The roof over a span (wall to wall across) and a length (gable to gable). verge_dir(r_sign) and side_dir(a_sign)
     give the street-frame outward directions of the gable ends and the slopes, for winding. laid: the covering's
     record (how it is laid); push: the style's push (timber.json); rain: the rainwater goods; sag: how far the ridge
     has settled between the gables (m); wall_out: the cladding's face out from the wall's plane; ground_at(x, y): the
     ground's height under a street point, in the roof's z (where a downpipe ends). verges: whether each gable end
-    (r0, r1) has its barge board and verge underside (a hood's roof dies into the wall behind it).
+    (r0, r1) has its barge board and verge underside. barge_from: for each gable end, how far from the ridge (m
+    across) its barge boards and verge underside begin, where something standing in the gable's middle (a hoist ark)
+    takes them over; 0 runs them to the ridge. fore: a part of the gable at r0's end built out under the roof (a hoist
+    ark), dict(a, r, verge): the covering over |a| <= a (a course's foot, course_line) and the ridge carry on forward
+    to r, where its own verge (its record) stands; its eaves and verge are a roof of their own drawn with covered
+    False, which draws only the eaves, the verges and their trims under a covering another roof carries. soffit: a
+    boxed eave's floor, where something under it sets its height (an ark's tie); else the fascia's foot.
     A boxed eave (the working's eaves.boxed) closes the overhang level from the fascia's foot back to the wall, and
     the box's end past each gable, under the barge board's foot."""
     tp = math.tan(math.radians(pitch))
@@ -394,23 +428,29 @@ def roof(soup, place, span, length, eave, pitch, wk, rng, verge_dir, side_dir, l
     slope_len = ae / cp
     tiles = 0
     top_h = peak = 0.0
-    slopes = {}
+    fz = None
+    if fore:
+        vt_f = fore["verge"]["thickMm"] * MM * push.get("bargeThick", 1.0)
+        fz = ((ae - fore["a"]) / cp, fore["r"] - (vt_f + vg.get("pastMm", 0) * MM if vg["over"] else -0.002))
     for sgn in (-1.0, 1.0):
         s = Slope(place, flat, sgn, ae, zt(ae), pitch)
-        slopes[sgn] = s
-        if rf["cover"] == "pantile" and laid:
+        if not covered:
+            pass
+        elif rf["cover"] == "pantile" and laid:
             n_c, top_h, peak = pantiles(soup, s, r0 - past, r1 + past, slope_len, laid, rng,
-                                  waved=10 ** 6 if near else (1 if soup.level == 1 else 0), segs=rf.get("tileSegments", 6))
+                                        waved=10 ** 6 if near else (1 if soup.level == 1 else 0),
+                                        segs=rf.get("tileSegments", 6), fore=fz)
+            tiles += n_c
         elif laid:
-            n_c, top_h, peak = slates(soup, s, r0 - past, r1 + past, slope_len, laid, rng, modelled=near)
+            n_c, top_h, peak = slates(soup, s, r0 - past, r1 + past, slope_len, laid, rng, modelled=near, fore=fz)
+            tiles += n_c
         else:
             raise ValueError("a roof needs its covering's record (laid)")
-        tiles += n_c
         # the boarding's underside under the eave's overhang, from its edge to the wall (inside, the house hides it;
         # past the gables, the verge's underside below), painted with the trim. Under an open eave the overhang is the
         # boarding alone on the rafters' tails, thin, and a frieze board closes the wall's top between the tails
         ev = wk["eaves"]
-        fh, ft = ev["fasciaMm"] * MM, ev["fasciaThickMm"] * MM
+        fh, ft = ev.get("fasciaMm", 0) * MM, ev["fasciaThickMm"] * MM
         ztop = zt(ae)
         out = side_dir(sgn)
         a_wall = half + wall_out
@@ -424,8 +464,11 @@ def roof(soup, place, span, length, eave, pitch, wk, rng, verge_dir, side_dir, l
                  place(sgn * (a_wall + 0.002), length + wall_out, zb(a_wall)), place(sgn * (a_wall + 0.002), -wall_out, zb(a_wall))]
             oquad(soup, *q, out)
         elif ev.get("boxed"):
-            # level from the fascia's foot back to the wall (the box's floor), the box's ends past the gables closed
-            z_s = min(ztop - fh, zu(ae) - 0.01)
+            # level from the fascia's foot back to the wall (the box's floor; at soffit where something under it sets
+            # it), the box's ends past the gables closed, and its side under each verge's overhang, up to the verge's
+            # underside
+            z_s = soffit if soffit is not None else min(ztop - fh, zu(ae) - 0.01)
+            fh = ztop - z_s
             q = [place(sgn * ae, r0, z_s), place(sgn * ae, r1, z_s), place(sgn * a_wall, r1, z_s),
                  place(sgn * a_wall, r0, z_s)]
             oquad(soup, *q, down)
@@ -433,6 +476,11 @@ def roof(soup, place, span, length, eave, pitch, wk, rng, verge_dir, side_dir, l
                 q = [place(sgn * a_wall, rr_, z_s), place(sgn * ae, rr_, z_s), place(sgn * ae, rr_, zu(ae)),
                      place(sgn * a_wall, rr_, zu(a_wall))]
                 oquad(soup, *q, verge_dir(side))
+                if verges[0 if side < 0 else 1] and zu(a_wall) > z_s + 0.005:
+                    rw_ = -wall_out if side < 0 else length + wall_out
+                    q = [place(sgn * a_wall, rr_, z_s), place(sgn * a_wall, rw_, z_s), place(sgn * a_wall, rw_, zu(a_wall)),
+                         place(sgn * a_wall, rr_, zu(a_wall))]
+                    oquad(soup, *q, side_dir(-sgn))
         else:
             q = [place(sgn * ae, r0, zu(ae)), place(sgn * ae, r1, zu(ae)), place(sgn * a_wall, r1, zu(a_wall)),
                  place(sgn * a_wall, r0, zu(a_wall))]
@@ -440,8 +488,6 @@ def roof(soup, place, span, length, eave, pitch, wk, rng, verge_dir, side_dir, l
         if fh > 0:
             soup.use(kind="trim", scheme="trim", seed=rng.random(), shelter=0.0)
             c = pu_ch.get("fascia", 0) * MM if near else 0.0
-            if ev.get("boxed"):
-                fh = ztop - min(ztop - fh, zu(ae) - 0.01)
             # its face, a chamfer along its foot, and its foot
             q = [place(sgn * (ae + ft), r0, ztop - fh + c), place(sgn * (ae + ft), r1, ztop - fh + c),
                  place(sgn * (ae + ft), r1, ztop + 0.01), place(sgn * (ae + ft), r0, ztop + 0.01)]
@@ -521,18 +567,22 @@ def roof(soup, place, span, length, eave, pitch, wk, rng, verge_dir, side_dir, l
                     tube(soup, place, [(sgn * (half + wall_out), r_p, zc_), (sgn * (a_w - Rp), r_p, zc_)],
                          ct, 4, norm(sub(place(0.0, 0.0, 1.0), place(0.0, 0.0, 0.0))))
 
-    # the ridge: half-round ridge tiles over a pantiled apex, a low capping over slates
-    soup.use(kind="tile", scheme="none", seed=rng.random(), lap=0.5)
+    # the ridge: half-round ridge tiles over a pantiled apex, a low capping over slates; on over a built-out gable
     rd_ = (laid or {}).get("ridge", {})
-    if rf["cover"] == "pantile":
+    r_lo = fz[1] if fz else r0 - past
+    if not covered:
+        pass
+    elif rf["cover"] == "pantile":
+        soup.use(kind="tile", scheme="none", seed=rng.random(), lap=0.5)
         Rr_ = rd_.get("radiusMm", 120) * MM
         z_r = zt(0.0) + top_h - Rr_ * tp * 0.55
         if near:
-            ridge_tiles(soup, place, z_r, r0 - past, r1 + past, rd_, rng)
+            ridge_tiles(soup, place, z_r, r_lo, r1 + past, rd_, rng)
         else:
-            prism(soup, place, ((0.0, z_r), r0 - past, r1 + past), Rr_, 8, half=True)
+            prism(soup, place, ((0.0, z_r), r_lo, r1 + past), Rr_, 8, half=True)
     else:
-        prism(soup, place, ((0.0, zt(0.0) + top_h * 0.5), r0 - past - 0.02, r1 + past + 0.02),
+        soup.use(kind="tile", scheme="none", seed=rng.random(), lap=0.5)
+        prism(soup, place, ((0.0, zt(0.0) + top_h * 0.5), r_lo - 0.02, r1 + past + 0.02),
               rd_.get("radiusMm", 60) * MM, 8, half=True)
 
     # the bargeboards up each rake, standing off the gable wall by the verge's overhang; chamfered on their faces'
@@ -545,12 +595,13 @@ def roof(soup, place, span, length, eave, pitch, wk, rng, verge_dir, side_dir, l
         if not verges[0 if rs < 0 else 1]:
             continue
         out = verge_dir(rs)
+        stop = barge_from[0 if rs < 0 else 1]
         for sgn in (-1.0, 1.0):
             soup.use(seed=rng.random())
             # the rake is straight (the frame settles between the gables, not at them): one piece up it
             k = 1 if abs(sag) < 1e-9 or r <= 0.0 or r >= length else 12
             for j in range(k):
-                aa, ab = sgn * ae * (1 - j / k), sgn * ae * (1 - (j + 1) / k)
+                aa, ab = sgn * (ae - (ae - stop) * j / k), sgn * (ae - (ae - stop) * (j + 1) / k)
                 ta_, tb_ = zt(aa) + above, zt(ab) + above
                 ba, bb = ta_ - vb / cp, tb_ - vb / cp
                 ro = r + rs * vt
@@ -565,10 +616,14 @@ def roof(soup, place, span, length, eave, pitch, wk, rng, verge_dir, side_dir, l
                           add(out, up))
                     oquad(soup, place(aa, ri, ba), place(ab, ri, bb), place(ab, ro, bb + c_), place(aa, ro, ba + c_),
                           add(out, down))
-            # the board's foot, cut plumb at the eave
+            # the board's foot, cut plumb at the eave; its head, where it stops short of the ridge, cut plumb too
             a_ = sgn * ae
             oquad(soup, place(a_, r, zt(a_) + above - vb / cp), place(a_, ro, zt(a_) + above - vb / cp),
                   place(a_, ro, zt(a_) + above), place(a_, r, zt(a_) + above), side_dir(sgn))
+            if stop > 0:
+                a_ = sgn * stop
+                oquad(soup, place(a_, r, zt(a_) + above - vb / cp), place(a_, ro, zt(a_) + above - vb / cp),
+                      place(a_, ro, zt(a_) + above), place(a_, r, zt(a_) + above), side_dir(-sgn))
         # the verge's underside between the board and the wall, from the eave's wall line (the eave's own underside
         # runs on past the gable to the corner) to the ridge; under an open eave the boarding alone, and the gable
         # wall's top closed up to it
@@ -577,8 +632,8 @@ def roof(soup, place, span, length, eave, pitch, wk, rng, verge_dir, side_dir, l
         for sgn in (-1.0, 1.0):
             rin = -wall_out if rs < 0 else length + wall_out
             a_wall = half + wall_out
-            q = [place(sgn * a_wall, r, zv(a_wall)), place(sgn * a_wall, rin, zv(a_wall)), place(0.0, rin, zv(0.0)),
-                 place(0.0, r, zv(0.0))]
+            q = [place(sgn * a_wall, r, zv(a_wall)), place(sgn * a_wall, rin, zv(a_wall)),
+                 place(sgn * stop, rin, zv(stop)), place(sgn * stop, r, zv(stop))]
             oquad(soup, *q, down)
             if open_eave:
                 rw_ = rin + rs * 0.002

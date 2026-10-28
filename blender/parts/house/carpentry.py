@@ -132,7 +132,11 @@ def clad(soup, f, wall, openings, lines, cl, rng, shelter, patches=(), sills=Non
     if soup.level >= 2:
         # the wall as planes: up to the eave, and the gable over it, the openings cut out of them
         top_ = ridge - 0.08 if ridge is not None else lines[-1]
-        lines = [lines[0], eave, top_] if ridge is not None and top_ > eave + 0.1 else [lines[0], lines[-1]]
+        if ridge is not None and top_ > eave + 0.1:
+            # a gable that starts at its eave (an ark's, over its tie) is one plane
+            lines = [lines[0], eave, top_] if eave > lines[0] + 0.01 else [lines[0], top_]
+        else:
+            lines = [lines[0], lines[-1]]
     # the sills water runs off: each casing's foot, over its width
     if sills is None:
         sills = [(o[0], o[1], o[2]) for o in openings]

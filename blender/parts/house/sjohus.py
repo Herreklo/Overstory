@@ -1,15 +1,17 @@
 """A sea house (sjøhus) on the quay, assembled from its facts: its plan (the town's placement: footprint, base, eave,
 pitch, its gable to the water), its type's working (timber.json, workingOfType: the sea house's cladding, trims,
-loading doors, hood, eaves, roof and granite), its storeys, and its dated events up to the date (which windows are in
+loading doors, hoist ark, eaves, roof and granite), its storeys, and its dated events up to the date (which windows are in
 its openings, whether they are boarded). Coats and care are not geometry: they go to the houses buffer
 (tools/houses.py) and the shader reads them against the date, as for every house.
 
 The gable to the quay is set out as the builders set it out (wooden-town-architecture.md, sea houses;
-docs/references/houses/01): the loading doors stacked in its middle, one to a floor, the loft's in the face of a hoist
-hood that stands out from the gable on two raking braces, the hoist's beam through the hood's gable with its block;
-small windows either side, floor over floor. The long walls have a few windows on the upper floor, the back gable a
-door to the yard. Every choice says what drives it: the plan, the working, or the seed, which picks only among what
-the working allows and claims no history.
+docs/references/houses/01, 17 and 19): the loading doors stacked up its middle, one to a floor, and over them the hoist
+ark, the gable's strongest shape: the gable's middle built out from the wall under the roof, which carries on over it
+(its ridge, and its courses from the ark's eave up), on two closed cheeks that taper down to the wall under the loft's
+floor, its eaves boxed and the house's verges dying into them; the loft's door under it, the hoist's beam out through
+its gable with its block; small windows either side, floor over floor. Nothing of it stands above or behind the roof.
+The long walls have a few windows on the upper floor, the back gable a door to the yard. Every choice says what drives
+it: the plan, the working, or the seed, which picks only among what the working allows and claims no history.
 """
 
 import math
@@ -84,7 +86,7 @@ def build(b, facts, timber, ground, date, index, seed, lit_share, tier="near"):
         "back": (H(W, D, 0), V(-1, 0), W),
         "left": (H(0, D, 0), V(0, -1), D),
     }
-    cl, cb, cs, db, op, hd = wk["cladding"], wk["corner"], wk["casing"], wk["dripBoard"], wk["openings"], wk["hood"]
+    cl, cb, cs, db, op, ak = wk["cladding"], wk["corner"], wk["casing"], wk["dripBoard"], wk["openings"], wk["ark"]
     out_w = cl["butMm"] * MM
     cw = cs["widthMm"] * MM
     es = timber["windows"][op["window"]]
@@ -103,26 +105,33 @@ def build(b, facts, timber, ground, date, index, seed, lit_share, tier="near"):
     zdrip = -0.05
 
     # either side of the stacked doors: halfway between the ground door's casing and the corner board, floor over
-    # floor; the loft's pair there too where the rake leaves room, else as near it as the hood and the rake allow
+    # floor; the loft's pair there too where the rake leaves room, else as near it as the ark and the rake allow
     inner = loading[0]["wMm"] * MM / 2 + cw
     outer = W / 2 - op["gableEdgeMm"] * MM
     ds = 0.5 * (inner + outer)
     lw, lh = op["loftMm"][0] * MM, op["loftMm"][1] * MM
-    hw = hd["widthMm"] * MM / 2
+    hw = ak["widthMm"] * MM / 2
     zl0 = loft + sill * 0.6
     zl1 = zl0 + lh
     room_l = C.gable_half(zl1 + cs["headMm"] * MM, eave, ridge_u, W / 2) - 0.35 - lw / 2 - cw
     near_l = hw + out_w + 0.25 + lw / 2 + cw
     ds_l = ds if near_l <= ds <= room_l else (0.5 * (near_l + room_l) if near_l <= room_l else None)
 
-    # the hood: its frame's floor under the loft's floor, its door on the loft's floor, its eave over the door's head
-    hp = hd["projectMm"] * MM
-    zb_h = loft - hd["floorMm"] * MM
+    # the ark: under the house's roof carried forward, its gable on the house's rakes up to the ridge, its eave on the
+    # course line nearest its overhang (so the courses over it are the roof's own); its tie (a drip board) across its
+    # gable's foot, the soffit under it and under its eaves' boxes level with the tie's foot; its cheeks' feet under
+    # the loft's floor; under it the loft's door
+    hp = ak["projectMm"] * MM
+    laid = timber["covers"][wk["roof"]["material"]]["laid"]
+    a_f = R.course_line(W, wk, laid, pitch, hw + ak["eaves"]["overhangMm"] * MM)
+    z_ae = eave + (W / 2 - hw) * tp                   # the rakes' underside at the ark's walls
+    z_t = eave + (W / 2 - hw - out_w) * tp            # and at its cladding's corners, the tie's ends
+    z_s = z_t - (db["heightMm"] + db["slopeMm"]) * MM
+    z_c0 = loft - ak["footMm"] * MM
+    stp = cl["stepMm"] * MM
+    w_in = out_w - stp - 0.01                         # where what closes under the ark ends, in the wall's cladding
     lsp = loading[2]
     zd0 = loft + lsp["thresholdMm"] * MM
-    zd1 = zd0 + lsp["hMm"] * MM
-    z_he = zd1 + hd["eaveAboveDoorMm"] * MM
-    z_hr = z_he + hw * tp
 
     def holes_of(name, L):
         """The wall's openings: (s0, s1, z0, z1, what, spec, upper)."""
@@ -141,6 +150,7 @@ def build(b, facts, timber, ground, date, index, seed, lit_share, tier="near"):
                 sp = loading[min(k, 1)]
                 z0 = floors[k] + sp["thresholdMm"] * MM
                 hs.append((sc - sp["wMm"] * MM / 2, sc + sp["wMm"] * MM / 2, z0, z0 + sp["hMm"] * MM, "door", sp, k > 0))
+            hs.append((sc - lsp["wMm"] * MM / 2, sc + lsp["wMm"] * MM / 2, zd0, zd0 + lsp["hMm"] * MM, "door", lsp, True))
         elif name == "back":
             sp = timber["doors"][op["backDoor"]]
             z0 = sp["thresholdMm"] * MM
@@ -226,14 +236,15 @@ def build(b, facts, timber, ground, date, index, seed, lit_share, tier="near"):
                     gp = f.at(0.5 * (s0 + s1), 0.0, 0.3)
                     DR.steps(soup, f, ol[0], ol[1], zdrip, ground(gp[0], gp[1]) - base, sp["step"], rng)
                 report["doors"] += 1
+        sills = [(o[0], o[1], o[2]) for o in outlines]
         if name == "front":
-            # the cladding stops at the hood's sides and its foot (its own boards close it)
-            outlines.append((L / 2 - hw - out_w, L / 2 + hw + out_w, zb_h + 0.02, z_he))
+            # the cladding stops at the ark's soffit, out to its eaves' fascias (the ark closes over it)
+            outlines.append((L / 2 - a_f, L / 2 + a_f, z_s, ridge_u + 1.0))
         soup.use(year=float(facts["built"]))
         wall = dict(length=L, eave=eave, ridge=ridge_u if gable else None,
                     left=cb["widthMm"] * MM, right=cb["widthMm"] * MM, year=facts["built"],
                     scheme="back" if name == "back" else "body")
-        n = C.clad(soup, f, wall, outlines, lines, dict(cl, marks=timber["marks"]), rng, shelter, patches)
+        n = C.clad(soup, f, wall, outlines, lines, dict(cl, marks=timber["marks"]), rng, shelter, patches, sills)
         ends = gable
         ext = cl["butMm"] * MM + cb["proudMm"] * MM * pu["trimProud"] if ends else 0.0
         ext_db = cl["butMm"] * MM + db["proudMm"] * MM * pu["trimProud"] if ends else 0.0
@@ -245,68 +256,74 @@ def build(b, facts, timber, ground, date, index, seed, lit_share, tier="near"):
                   wk["plinth"], out_w - 0.006, HS.h(seed, hid, name, "plinth"))
         report["walls"][name] = dict(boards=n, courses=len(lines) - 1, openings=len(holes))
 
-    # the hood on the gable to the quay: three clad walls on a boarded floor, carried by two raking braces, under its
-    # own small roof, its door the loft's loading door; the hoist's beam out through its gable, the block hung on it
+    # the hoist ark on the gable to the quay. Its gable stands out from the wall by the ark's projection, clad from
+    # its tie up to the roof's rakes; the tie, a drip board, across its foot; a boarded soffit under it back into the
+    # wall, over the cheeks' tops
     f = Frame(*walls["front"][:2], (0.0, 0.0, 1.0))
     sc = W / 2
-    rh = HS.Stream(seed, hid, "hood")
-    hood_walls = {
-        "face": (Frame(f.at(sc - hw, 0.0, out_w + hp), f.u, (0.0, 0.0, 1.0)), 2 * hw, True),
-        "left": (Frame(f.at(sc - hw, 0.0, out_w), f.n, (0.0, 0.0, 1.0)), hp, False),
-        "right": (Frame(f.at(sc + hw, 0.0, out_w + hp), mul(f.n, -1.0), (0.0, 0.0, 1.0)), hp, False),
-    }
-    zf_h = zb_h + db["heightMm"] * MM
-    for hn, (fh, L, face) in hood_walls.items():
-        holes = []
-        keys = []
-        if face:
-            hole = (L / 2 - lsp["wMm"] * MM / 2, L / 2 + lsp["wMm"] * MM / 2, zd0, zd1)
-            keys.append(zd1 + (cs["headMm"] + cs["capMm"]) * MM)
-        lines = C.story_pole(zf_h, keys, z_hr if face else z_he, cl["exposureMm"])
-        outlines = []
-        if face:
-            soup.use(year=float(facts["built"]))
-            ol = C.casing(soup, fh, *hole, cs, out_w, rh, with_sill=False)
-            outlines.append((ol[0], ol[1], zd0 - 0.07, ol[3]))
-            C.reveal(soup, fh, *hole, 0.0, out_w - 0.004)
-            DR.threshold(soup, fh, ol[0], ol[1], zd0 - 0.07, zd0, out_w, rh)
-            DR.ledged(soup, fh, hole, lsp, out_w, rh)
-            report["doors"] += 1
-        wall = dict(length=L, eave=z_he, ridge=z_hr if face else None, left=cb["widthMm"] * MM if face else 0.0,
-                    right=cb["widthMm"] * MM if face else 0.0, year=facts["built"], scheme="body")
-        shelter = (lambda z: 0.25) if face else (lambda z: 1.0)
-        C.clad(soup, fh, wall, outlines, lines, dict(cl, marks=timber["marks"]), rh, shelter, ())
-        ext = cl["butMm"] * MM + cb["proudMm"] * MM * pu["trimProud"] if face else 0.0
-        if face:
-            C.corner_boards(soup, fh, wall, zf_h, z_he, cb, out_w, ext, ext, rh)
-        C.drip_board(soup, fh, -ext if face else 0.0, L + ext if face else L, zb_h, db, out_w, rh)
-    # its floor's underside, boarded, inside the drip boards
+    rh = HS.Stream(seed, hid, "ark")
+    soup.use(year=float(facts["built"]))
+    fa = Frame(f.at(sc - hw - out_w, 0.0, hp), f.u, (0.0, 0.0, 1.0))
+    wall = dict(length=2 * (hw + out_w), eave=z_t, ridge=ridge_u, left=0.0, right=0.0, year=facts["built"],
+                scheme="body")
+    lines = C.story_pole(z_s + 0.02, [], ridge_u, cl["exposureMm"])
+    C.clad(soup, fa, wall, [], lines, dict(cl, marks=timber["marks"]), rh, lambda z: 0.25, ())
+    C.drip_board(soup, fa, 0.0, 2 * (hw + out_w), z_s, db, out_w, rh)
+    ck = ak["cheekMm"] * MM
     soup.use(kind="trim", scheme="trim", seed=rh.random(), lap=0.5, shelter=1.0)
-    R.oquad(soup, f.at(sc - hw - out_w, zb_h, out_w), f.at(sc + hw + out_w, zb_h, out_w),
-            f.at(sc + hw + out_w, zb_h, out_w + hp + out_w), f.at(sc - hw - out_w, zb_h, out_w + hp + out_w),
-            (0.0, 0.0, -1.0))
-    # the braces, from the hood's front corners down to the gable's face
-    bw, bt = hd["braceMm"][0] * MM, hd["braceMm"][1] * MM
-    soup.use(kind="trim", scheme="trim", lap=0.5, shelter=0.5)
+    R.oquad(soup, f.at(sc - hw - out_w, z_s, w_in), f.at(sc + hw + out_w, z_s, w_in),
+            f.at(sc + hw + out_w, z_s, hp), f.at(sc - hw - out_w, z_s, hp), (0.0, 0.0, -1.0))
+    # the cheeks: closed and boarded, their outer faces under the ark's eaves, each a triangle from the tie down to
+    # the wall under the loft's floor; a broad board down each one's front edge, standing proud of it
+    ew, et = (v * MM for v in ak["edgeBoardMm"])
+    run = math.hypot(hp, z_s - z_c0)
+    d = add(mul(f.n, hp / run), mul(f.v, (z_s - z_c0) / run))           # up the front edge
+    nh = add(mul(f.n, (z_s - z_c0) / run), mul(f.v, -hp / run))         # out from it
+    w_at = lambda z: out_w + hp * min(1.0, (z - z_c0) / (z_s - z_c0))
+    n_c = max(1, round((z_s - z_c0) / (0.5 * (cl["exposureMm"][0] + cl["exposureMm"][1]) * MM)))
     for sg in (-1.0, 1.0):
-        soup.use(seed=rh.random())
-        s_b = sc + sg * (hw - bw / 2)
-        _strut(soup, f.at(s_b, zb_h + 0.02, out_w + hp - bt * 0.6), f.at(s_b, zb_h - hd["braceDropMm"] * MM, out_w - 0.01),
-               f.u, bw, bt)
-    # its roof, from its front gable back into the gable behind it
-    wk_h = dict(eaves=hd["eaves"], verge=hd["verge"], roof=wk["roof"])
-    laid = timber["covers"][wk["roof"]["material"]]["laid"]
-    R.roof(soup, lambda a, r, z: f.at(sc + a, z, out_w + hp - r), 2 * hw, hp, z_he, pitch, wk_h, rh,
+        so = sc + sg * (hw + out_w)
+        for s_, o in ((so, sg), (so - sg * ck, -sg)):
+            out = mul(f.u, o)
+            soup.use(kind="board", scheme="body", seed=rh.random(), lap=0.5, shelter=0.6)
+            if soup.level >= 2:
+                soup.poly([f.at(s_, z_c0, out_w), f.at(s_, z_s, hp + out_w), f.at(s_, z_s, out_w)], out)
+                continue
+            # lapped as the walls are, each course's butt standing proud of the one above, out to the front edge
+            for k in range(n_c):
+                za, zb = z_c0 + (z_s - z_c0) * k / n_c, z_c0 + (z_s - z_c0) * (k + 1) / n_c
+                wa, wb_ = w_at(za), w_at(zb)
+                sb = s_ + o * stp
+                if wa - out_w > 1e-3:
+                    R.oquad(soup, f.at(s_, za, out_w), f.at(sb, za, out_w), f.at(sb, za, wa), f.at(s_, za, wa),
+                            (0.0, 0.0, -1.0))
+                    soup.poly([f.at(sb, za, out_w), f.at(sb, za, wa), f.at(s_, zb, wb_), f.at(s_, zb, out_w)], out)
+                else:
+                    soup.poly([f.at(sb, za, out_w), f.at(s_, zb, wb_), f.at(s_, zb, out_w)], out)
+        soup.use(kind="board", scheme="body", seed=rh.random(), lap=0.5, shelter=0.6)
+        R.oquad(soup, f.at(so, z_c0, out_w), f.at(so - sg * ck, z_c0, out_w), f.at(so - sg * ck, z_s, hp + out_w),
+                f.at(so, z_s, hp + out_w), nh)
+        soup.use(kind="trim", scheme="trim", seed=rh.random(), lap=0.5, shelter=0.3)
+        mid = so - sg * ck / 2
+        lift = mul(nh, et / 2 - 0.008)
+        foot = add(add(f.at(mid, z_c0, out_w), lift), mul(d, -(et / (hp / run) + 0.02)))
+        top = add(add(f.at(mid, z_s, hp + out_w), lift), mul(d, 0.03))
+        _strut(soup, foot, top, f.u, ew, et)
+    # its eaves, boxed down to the tie's foot and run back into the wall, and its verge, under the covering the house's
+    # roof carries on over it
+    wk_a = dict(eaves=dict(ak["eaves"], overhangMm=(a_f - hw) / MM), verge=ak["verge"], roof=wk["roof"])
+    ov_a = ak["verge"]["overhangMm"] * MM
+    R.roof(soup, lambda a, r, z: f.at(sc + a, z, hp - r), 2 * hw, hp - w_in - ov_a, z_ae, pitch, wk_a, rh,
            lambda s: mul(f.n, -s), lambda s: mul(f.u, s), laid=laid, push=pu, rain=None, sag=0.0, wall_out=out_w,
-           ground_at=None, verges=(True, False))
-    # the hoist's beam under the hood's ridge, out through its gable; the block on a short iron
-    bmw, bmh = hd["beamMm"][0] * MM, hd["beamMm"][1] * MM
-    z_bm = z_hr - 0.18
+           verges=(True, False), covered=False, soffit=z_s)
+    # the hoist's beam under its apex, out through its gable; the block on a short iron
+    bmw, bmh = ak["beamMm"][0] * MM, ak["beamMm"][1] * MM
+    z_bm = ridge_u - 0.18
     soup.use(kind="trim", scheme="trim", seed=rh.random(), lap=0.5, shelter=0.0)
-    w_out = out_w + hp + out_w + hd["beamOutMm"] * MM
-    soup.box(f, sc - bmw / 2, sc + bmw / 2, z_bm - bmh, z_bm, out_w + hp - 0.3, w_out,
+    w_out = hp + out_w + ak["beamOutMm"] * MM
+    soup.box(f, sc - bmw / 2, sc + bmw / 2, z_bm - bmh, z_bm, hp - 0.3, w_out,
              skip=("back",) if soup.level < 2 else ("back", "top"))
-    bx, by, bz = (v * MM for v in hd["blockMm"])
+    bx, by, bz = (v * MM for v in ak["blockMm"])
     if soup.level < 2:
         soup.use(kind="metal", scheme="none", seed=rh.random())
         soup.box(f, sc - 0.012, sc + 0.012, z_bm - bmh - 0.22, z_bm - bmh, w_out - 0.11, w_out - 0.086)
@@ -314,7 +331,7 @@ def build(b, facts, timber, ground, date, index, seed, lit_share, tier="near"):
         soup.box(f, sc - bz / 2, sc + bz / 2, z_bm - bmh - 0.22 - by, z_bm - bmh - 0.22, w_out - 0.098 - bx / 2,
                  w_out - 0.098 + bx / 2, skip=())
 
-    # the roof over the span, its ridge from the quay's gable to the back's
+    # the roof over the span, its ridge from the quay's gable to the back's, carried on over the ark
     rr = HS.Stream(seed, hid, "roof")
     sg_ = pu["ridgeSag"]
     ss = HS.Stream(seed, hid, "roof", "sag")
@@ -322,8 +339,10 @@ def build(b, facts, timber, ground, date, index, seed, lit_share, tier="near"):
     sag *= 1.0 + sg_["spread"] * (2.0 * ss.random() - 1.0)
     rf = R.roof(soup, lambda a, r, z: H(a + W / 2, r, z), W, D, eave, pitch, wk, rr, lambda s: V(0, s),
                 lambda s: V(s, 0), laid=laid, push=pu, rain=timber["rainwater"], sag=sag, wall_out=out_w,
-                ground_at=lambda x, y: ground(x, y) - base)
+                ground_at=lambda x, y: ground(x, y) - base,
+                barge_from=(a_f + ak["eaves"]["fasciaThickMm"] * MM, 0.0),
+                fore=dict(a=a_f, r=-(hp + ov_a), verge=ak["verge"]))
     report["roof"] = dict(courses=rf["courses"], ridge=round(rf["ridge_top"], 2), sag_mm=round(sag / MM),
-                          eave=round(eave, 2), hood=dict(eave=round(z_he, 2), ridge=round(z_hr, 2)))
+                          eave=round(eave, 2), ark=dict(overhang=round(a_f - hw, 3), soffit=round(z_s, 2)))
     report["triangles"] = soup.triangles()
     return soup, report

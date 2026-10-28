@@ -336,7 +336,8 @@ namespace Overstory.EditorTools.Town
                 stage.paletteSurface = AssetDatabase.LoadAssetAtPath<Texture2D>("Assets/Art/Palette/palette_surface.png");
                 stage.style = AssetDatabase.LoadAssetAtPath<Style>($"{LT1}/Heart/Light/Styles/{Cli.Arg("-style", "Style_game")}.asset");
                 stage.look = "P";
-                // clay: every surface one matte grey, to judge form in the moment's light
+                // clay: every surface one matte grey, to judge form in the moment's light; value: the materials in
+                // the moment's light kept only as their lightness (each its own value and gloss, no hue)
                 stage.clay = Cli.Arg("-clay", "0") == "1";
                 cam.clearFlags = CameraClearFlags.Skybox;
                 data.dithering = true;
@@ -392,8 +393,9 @@ namespace Overstory.EditorTools.Town
                         Shader.SetGlobalVector("_OS_Contact", facts.contact);
                     }
                     string file = Path.Combine(dir, $"{v.name}-{m}.png");
-                    LT1Render.Still(cam, file, grey: false, msaa: 4);
-                    Debug.Log($"[LT1Town] {file}");
+                    bool value = Cli.Arg("-value", "0") == "1";
+                    LT1Render.Still(cam, file, grey: value, msaa: 4, colour: !value);
+                    Debug.Log($"[LT1Town] {(value ? Path.ChangeExtension(file, null) + "-grey.png" : file)}");
                 }
             }
             foreach (var o in made)

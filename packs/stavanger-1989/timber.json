@@ -31,19 +31,19 @@
       "plinth": { "kind": "split", "material": "fieldstone", "foundationMm": [300, 460], "courseMm": [300, 420], "stoneMm": [500, 1300], "stonePerHeight": [1.6, 3.4], "courseDrawPower": [0.5, 1.2], "snapMm": 70, "bondLeastMm": 160, "shortMm": 260, "topShortChance": 0, "pinLeastMm": 20, "jointMm": [10, 15], "pointMm": 7, "chipMm": [6, 18], "breakMm": [0, 4], "arrisMm": [5, 10], "ridgeMm": [1, 5], "ridgeShare": 0.5, "ridgeSlantDeg": [-20, 20], "setOutMm": [-4, 5], "turnDeg": [-1, 1], "pitchDeg": [-1.2, 0.8], "yawDeg": [-1.2, 1.2] }
     },
     "sjohus": {
-      "describes": "A sea house (sjøhus) on the quay: a timber-framed warehouse, its gable to the water, the loading doors stacked in the gable's middle under a hoist hood, small windows either side, lapped weatherboards, clay pantiles on a boxed eave, on a course of dressed granite (wooden-town-architecture.md, sea houses; docs/references/houses/01). The type's working, whatever the era it was built in (workingOfType).",
+      "describes": "A sea house (sjøhus) on the quay: a timber-framed warehouse, its gable to the water, the loading doors stacked up the gable's middle into the face of a hoist ark (a tall gable of its own, standing out on two closed cheeks, its eave corners on the gable's rakes, its apex over the ridge), small windows either side, lapped weatherboards, clay pantiles on a boxed eave, on a course of dressed granite (wooden-town-architecture.md, sea houses; docs/references/houses/01). The type's working, whatever the era it was built in (workingOfType).",
       "years": [1780, 1900],
       "storeyMm": 2600, "floorMm": 280,
       "cladding": { "kind": "clinker", "exposureMm": [160, 185], "butMm": 46, "stepMm": 24, "grooveMm": 0, "boardLengthMm": [3600, 6000], "jointGapMm": 2, "tiltJitterMm": 2.0 },
-      "corner": { "widthMm": 175, "proudMm": 26 },
-      "dripBoard": { "heightMm": 150, "proudMm": 40, "slopeMm": 18 },
+      "corner": { "widthMm": 220, "proudMm": 34 },
+      "dripBoard": { "heightMm": 210, "proudMm": 48, "slopeMm": 22 },
       "casing": { "widthMm": 105, "proudMm": 24, "headMm": 125, "capMm": 24, "capProudMm": 60, "sillMm": 55, "sillProudMm": 80, "hornMm": 25, "brackets": null },
       "eaves": { "overhangMm": 320, "fasciaMm": 290, "fasciaThickMm": 32, "rafterTails": false, "boxed": true, "gutter": true },
-      "verge": { "overhangMm": 260, "boardMm": 230, "thickMm": 34 },
+      "verge": { "overhangMm": 280, "boardMm": 310, "thickMm": 40 },
       "openings": { "window": "sjohus-6", "sillMm": 900, "gableEdgeMm": 175, "sideBayMm": [3000, 4500], "sideEdgeMm": 1800, "loading": ["loading-ground", "loading-upper", "loading-loft"], "backDoor": "back-ledged", "loftMm": [620, 820] },
-      "hood": { "widthMm": 2500, "projectMm": 850, "eaveAboveDoorMm": 330, "floorMm": 120, "braceMm": [140, 140], "braceDropMm": 1300, "beamMm": [150, 170], "beamOutMm": 500, "blockMm": [160, 240, 90],
-                "eaves": { "overhangMm": 140, "fasciaMm": 270, "fasciaThickMm": 30, "rafterTails": false, "boxed": true, "gutter": false },
-                "verge": { "overhangMm": 160, "boardMm": 200, "thickMm": 30 } },
+      "ark": { "widthMm": 2700, "projectMm": 1000, "footMm": 120, "cheekMm": 120, "edgeBoardMm": [170, 45], "beamMm": [150, 170], "beamOutMm": 500, "blockMm": [160, 240, 90],
+                "eaves": { "overhangMm": 140, "fasciaThickMm": 30, "rafterTails": false, "boxed": true, "gutter": false },
+                "verge": { "overhangMm": 170, "boardMm": 280, "thickMm": 38 } },
       "roof": { "cover": "pantile", "material": "clay-pantile", "gaugeMm": 300, "buttMm": 40, "tileSegments": 3 },
       "plinth": { "kind": "dressed", "material": "granite", "courseMm": [380, 460], "stoneMm": [800, 1500], "depthMm": 320, "jointMm": 8, "pointMm": 4, "chamferMm": 14, "setOutMm": [-3, 4], "belowMm": 350 }
     }

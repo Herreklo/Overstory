@@ -121,7 +121,9 @@ namespace Overstory.EditorTools
 
         /// <param name="msaa">samples per pixel, as the game's PC pipeline renders them (4); 1 for the frames judged
         /// before trees, which stay as they were</param>
-        public static void Still(Camera cam, string file, bool grey = true, bool eighth = false, int msaa = 1)
+        /// <param name="colour">whether the colour still is kept beside the value check (false: the value alone)</param>
+        public static void Still(Camera cam, string file, bool grey = true, bool eighth = false, int msaa = 1,
+                                 bool colour = true)
         {
             var big = new RenderTexture(Width * Super, Height * Super, 24, RenderTextureFormat.ARGB32, RenderTextureReadWrite.sRGB)
                 { antiAliasing = msaa };
@@ -143,7 +145,8 @@ namespace Overstory.EditorTools
                 tex.ReadPixels(new Rect(0, 0, Width, Height), 0, 0);
                 tex.Apply();
                 RenderTexture.active = prev;
-                File.WriteAllBytes(file, tex.EncodeToPNG());
+                if (colour)
+                    File.WriteAllBytes(file, tex.EncodeToPNG());
                 if (eighth)
                     File.WriteAllBytes(Path.ChangeExtension(file, null) + "-eighth.png", Shrink(tex, 8).EncodeToPNG());
                 if (!grey)
