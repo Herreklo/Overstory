@@ -37,7 +37,7 @@ namespace Overstory.EditorTools
         [Serializable] class Lap { public float reach, step; }
         [Serializable] class House { public int house; public float[] size; public Lap lap; }
 
-        struct View { public string name, level; public Vector3 pos, target; public float fov; }
+        struct View { public string name, level; public Vector3 pos, target; public float fov; public bool floor; }
 
         // in the house's frame, from its size: eye level 4 m off its front, the street stop at 20 m, raised to 12 m, high
         static View[] Views(float w, float d) => new[]
@@ -46,6 +46,11 @@ namespace Overstory.EditorTools
             new View { name = "street", level = "street", pos = new Vector3(w / 2 - 9.0f, -19.0f, 1.6f), target = new Vector3(w / 2, 1.0f, 3.0f), fov = 38 },
             new View { name = "raised", level = "street", pos = new Vector3(-7.0f, -12.0f, 12.0f), target = new Vector3(w / 2, d / 2, 2.5f), fov = 42 },
             new View { name = "high", level = "street", pos = new Vector3(-18.0f, -34.0f, 30.0f), target = new Vector3(w / 2, d / 2, 2.0f), fov = 30 },
+            new View { name = "back", level = "near", pos = new Vector3(w + 7.0f, d + 11.0f, 2.2f), target = new Vector3(w / 2, d, 2.6f), fov = 44 },
+            new View { name = "gable", level = "near", pos = new Vector3(-9.0f, d / 2 - 3.0f, 1.8f), target = new Vector3(0, d / 2, 3.0f), fov = 50 },
+            // the floor's own cameras (LT1Finish at p3) on the same corner of the same house, in its own lights
+            new View { name = "p3eye", level = "near", pos = new Vector3(-1.0f, -2.9f, 1.6f), target = new Vector3(0.95f, 0.25f, 1.75f), fov = 42, floor = true },
+            new View { name = "p3street", level = "street", pos = new Vector3(-8.5f, -18.0f, 1.6f), target = new Vector3(0.9f, 0.3f, 1.9f), fov = 42, floor = true },
         };
 
         struct Lighting { public string name; public Vector2 azimuth; public float elevation, sun, shadow, sky, equator, ground, exposure; }
@@ -68,6 +73,9 @@ namespace Overstory.EditorTools
             var only = (Arg("-streetViews") ?? "eye,street,raised,high").Split(',');
             var ways = (Arg("-streetWays") ?? "P,Pc").Split(',');
             var lights = (Arg("-streetLights") ?? "overcast,lowsun").Split(',');
+            // the low sun for one house alone: turned to strike its front this many degrees off square, so the relief
+            // shows (the street's own light is the light step's); the floor's cameras keep the floor's sun
+            float sunOff = float.Parse(Arg("-streetSunOff") ?? "45", System.Globalization.CultureInfo.InvariantCulture);
             string gen = $"{Dir}/Generated/{id}";
             string root = Path.GetFullPath(Path.Combine(Application.dataPath, "..", ".."));
             string outDir = Path.Combine(root, "cache", "street", "renders", round);
@@ -156,7 +164,10 @@ namespace Overstory.EditorTools
                     {
                         var own = paint.lights?.FirstOrDefault(e => e.light == light.name);
                         var col = way == "Pc" ? paint.colour?.lights?.FirstOrDefault(e => e.light == light.name) : null;
-                        Light(sun, own != null ? Own(light, own) : light, col);
+                        var l = own != null ? Own(light, own) : light;
+                        if (!view.floor && l.name == "lowsun")
+                            l.azimuth = new Vector2(Mathf.Sin(sunOff * Mathf.Deg2Rad), -Mathf.Cos(sunOff * Mathf.Deg2Rad));
+                        Light(sun, l, col);
                         cam.backgroundColor = Lin(Back.linear.r, col?.background);
                         gm.SetColor("_BaseColor", Lin(gy, col?.floor));
                         adjust.postExposure.Override(own != null ? own.exposure : light.exposure);

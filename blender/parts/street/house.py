@@ -782,6 +782,17 @@ class House:
         y_b = -self.step * 0.5 - self.trim_proud
         span = zb - za
         count = bd["door"]["battens"] if door else bt["count"]
+        # a batten reaches past the casing only as far as the cladding is free: it stops short of the next opening's
+        # casing (half the gap, so two neighbours' ends never meet) and of the corner board
+        lo, hi = (self.cb[0], wall.L - self.cb[0]) if not o.get("leanTo") else (0.0, wall.L)
+        for q in self.openings:
+            if q is o or q["wall"] != o["wall"] or bool(q.get("leanTo")) != bool(o.get("leanTo")):
+                continue
+            if q["a1"] <= x0:
+                lo = max(lo, (q["a1"] + q.get("cw", self.cw) + x0 - o["cw"]) / 2)
+            elif q["a0"] >= x1:
+                hi = min(hi, (x1 + o["cw"] + q["a0"] - q.get("cw", self.cw)) / 2)
+        room = (max(0.0, x0 - o["cw"] - lo - 0.03), max(0.0, hi - x1 - o["cw"] - 0.03))
         o["battens"], o["nails"] = [], []
         for i in range(count):
             w = F.between(*bt["widthMm"], tag, "batten", i, "width") * MM
@@ -796,8 +807,8 @@ class House:
                 tilt = math.atan2(rise, bx1 - bx0) * (1 if F.u(tag, "diag") < 0.5 else -1)
                 zc = za + span * 0.5
             else:
-                pl = F.between(*bt["pastCasingMm"], tag, "batten", i, "left") * MM
-                pr = F.between(*bt["pastCasingMm"], tag, "batten", i, "right") * MM
+                pl = min(room[0], F.between(*bt["pastCasingMm"], tag, "batten", i, "left") * MM)
+                pr = min(room[1], F.between(*bt["pastCasingMm"], tag, "batten", i, "right") * MM)
                 bx0, bx1 = x0 - o["cw"] - pl, x1 + o["cw"] + pr
                 tilt = math.radians(F.between(*bt["outOfLevelDeg"], tag, "batten", i, "tilt")) * (1 if F.u(tag, "batten", i, "sign") < 0.5 else -1)
             length = (bx1 - bx0) / math.cos(tilt)
@@ -1302,6 +1313,39 @@ class House:
                 pc.add(lv, Face(pts, [cu(p) for p in pts], key, [cu(p) for p in pts], under=True))
         pc.anchor, pc.along = Vector((x, y, self.z_ridge)), ALONG
         self.features["chimney"] = [x, y, a, top]
+        # where the stack meets the tiles a zinc apron dressed round it, its upper edge a hand over the tiles' crests
+        # on every side (rising with the roof to the ridge on the gable sides) and turned in onto the stack
+        fl = self.W["pantile"]
+        up = fl["rollMm"] * MM + 0.12
+        g = 0.015
+        e = a / 2.0 + g
+        pz = self.make("chimney/apron", "zinc", ("near", "street"), None, "rigid", Matrix.Identity(4))
+        crest = lambda yy: min(self.zp(yy) + up, z_crest + 0.06)  # noqa: E731
+        ring_ = [(x - e, y - e), (x + e, y - e), (x + e, y + e), (x - e, y + e)]
+        for lv in ("near", "street"):
+            for k in range(4):
+                (ax, ay), (bx, by) = ring_[k], ring_[(k + 1) % 4]
+                # a side across the ridge (k odd) breaks at the ridge so its edge follows both slopes
+                cut = [(ax, ay)] + ([(ax, y)] if ay != by and (ay - y) * (by - y) < 0 else []) + [(bx, by)]
+                key = self.charts(f"chimney/apron{k}", 2 * e, up + 0.4)
+                for (px, py), (qx, qy) in zip(cut, cut[1:]):
+                    s0, s1 = abs(px - ax) + abs(py - ay), abs(qx - ax) + abs(qy - ay)
+                    pts = [Vector((px, py, bottom)), Vector((qx, qy, bottom)), Vector((qx, qy, crest(qy))), Vector((px, py, crest(py)))]
+                    uv = [(s0, 0.0), (s1, 0.0), (s1, crest(qy) - bottom), (s0, crest(py) - bottom)]
+                    pz.add(lv, Face(pts, uv, key, uv))
+                # the turn-in: a lip from the apron's edge onto the stack
+                key = self.charts(f"chimney/lip{k}", 2 * e, g + 0.01)
+                pts = []
+                for (px, py) in cut:
+                    pts.append(Vector((px, py, crest(py))))
+                inner = [Vector((x + (px - x) * (a / 2) / e, y + (py - y) * (a / 2) / e, crest(py))) for (px, py) in cut]
+                for i in range(len(cut) - 1):
+                    q = [pts[i], pts[i + 1], inner[i + 1], inner[i]]
+                    s0 = abs(cut[i][0] - ax) + abs(cut[i][1] - ay)
+                    s1 = abs(cut[i + 1][0] - ax) + abs(cut[i + 1][1] - ay)
+                    uv = [(s0, 0.0), (s1, 0.0), (s1, g), (s0, g)]
+                    pz.add(lv, Face(q, uv, key, uv))
+        pz.anchor, pz.along = Vector((x, y, self.z_ridge)), ALONG
 
     # ---- the extension: a lean-to on the back, rigid as a whole, out of plumb by the hand that built it
     def lean_to_plan(self):
@@ -1398,6 +1442,26 @@ class House:
             extrude(pc, lv, [(p, -q, g, a) for (p, q, g, a) in prof], o0, L_, ALONG, Vector((0, 0, 1)) + Vector((0, 1, 0)) * 0.0,
                     self.charts, nseg=2, caps=(True, True), nominal={"top": xr - xl + 2 * ov, "end": 0.07, "edge": 0.07, "under": xr - xl})
         pc.anchor, pc.along = lt["anchor"], lt["along"]
+        # the felt dressed over boards nailed round the slab's edges (a fascia at the eave, a barge board each side),
+        # and its turn-up at the house hidden under a cover board on the wall
+        plumb = Matrix.Translation(Vector((0, self.d, 0))) @ Matrix.Rotation(-lt["plumb"], 4, "X") @ Matrix.Translation(Vector((0, -self.d, 0)))
+        bt_, fh_ = 0.022, 0.17
+        pb = self.make("leanto/edges", "trims", ("near", "street"), None, "rigid", plumb)
+        down, outy = Vector((0, 0, -1)), Vector((0, 1, 0))
+        for lv in ("near", "street"):
+            cc = self.ch["fascia"] if lv == "near" else 0.0
+            extrude(pb, lv, rect_profile(fh_, bt_, cc, groups=("bottom", "front", "top", "back")),
+                    Vector((xl - ov - bt_, o1.y, o1.z + 0.012)), Vector((xr - xl + 2 * ov + 2 * bt_, 0, 0)), down, outy,
+                    self.charts, nseg=2, caps=(True, True), nominal={"front": fh_, "bottom": bt_, "top": bt_})
+            for xb, sgn in ((xl - ov - bt_, 1), (xr + ov, 1)):
+                extrude(pb, lv, rect_profile(fh_ - 0.02, bt_, cc, groups=("bottom", "front", "top", "back")),
+                        Vector((xb, o0.y + 0.02, o0.z + 0.012)), Vector((0, L_.y - 0.02, L_.z + tp * 0.02)), down,
+                        Vector((sgn, 0, 0)), self.charts, nseg=2, caps=(True, False),
+                        nominal={"front": fh_ - 0.02, "bottom": bt_, "top": bt_})
+            extrude(pb, lv, rect_profile(0.10, bt_, cc, groups=("bottom", "front", "top", "back")),
+                    Vector((xl - ov, self.d + 0.004, o0.z - 0.015)), Vector((xr - xl + 2 * ov, 0, 0)), Z, outy,
+                    self.charts, nseg=2, caps=(True, True), nominal={"front": 0.10, "bottom": bt_, "top": bt_})
+        pb.anchor, pb.along = lt["anchor"], lt["along"]
 
     def opening_gaps_lt(self, wall, zb, zt):
         boxes = []

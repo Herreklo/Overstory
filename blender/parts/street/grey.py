@@ -120,6 +120,10 @@ views = {
     "eye": ((1.2, -4.6, 1.6), (2.4, 0.0, 2.2), 62),
     "raised": ((-7.0, -12.0, 12.0), (w / 2, d / 2, 2.5), 42),
     "back": ((w + 7.0, d + 11.0, 2.2), (w / 2, d, 2.6), 44),
+    # joints close to: the chimney on the ridge, the lean-to against the back wall
+    "chimney": ((meta["features"]["chimney"][0] - 2.5, -1.5, ridge + 1.2), tuple(meta["features"]["chimney"][:2]) + (ridge,), 40),
+    "leanto": ((meta["leanTo"]["x"][1] + 2.5, d + meta["leanTo"]["depth"] + 3.0, 2.0),
+               (meta["leanTo"]["x"][1] - 0.5, d + 0.3, meta["leanTo"]["z_hi"] - 0.2), 50),
 }
 want = a.get("views", ",".join(views)).split(",")
 tag = a.get("tag", "")

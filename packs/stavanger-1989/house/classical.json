@@ -665,6 +665,20 @@
     ],
     "chimney": [
       {
+        "id": "corbelled",
+        "years": [
+          1790,
+          1900
+        ],
+        "weight": 2,
+        "describes": "A brick stack under render, its top corbelled out by two courses, a short crown above.",
+        "bandMm": [
+          55,
+          140
+        ],
+        "bandDownMm": 70
+      },
+      {
         "id": "banded",
         "years": [
           1790,
@@ -681,11 +695,11 @@
       {
         "id": "plain",
         "years": [
-          1790,
-          1950
+          1900,
+          1990
         ],
         "weight": 1,
-        "describes": "A plain rendered stack, its top chamfered.",
+        "describes": "A plain rendered stack, its top chamfered: a later stack, or one rebuilt, without the old corbelled top.",
         "bandMm": [
           0,
           0
