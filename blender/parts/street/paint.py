@@ -262,6 +262,41 @@ def wall_values(pg, Q, zf, z_plinth, broad):
     return dl, top, low
 
 
+def severity(meta, paints, wall, N):
+    """How far a wall has gone to neglect, 0..1: its wear (paint's age and years let go against the cycle, by its
+    exposure) and the neglect's own amount, eased from `from` to `full` (paint.json neglect)."""
+    amount = sum(e["params"].get("amount", 0) for e in meta["events"] if e["kind"] == "neglected" and e["year"] <= meta["year"])
+    w = wear(meta, paints, wall) + N["amount"] * amount / 1000.0
+    return float(FL.smoothstep(N["from"], N["full"], w))
+
+
+def neglect_values(pg, N, k, s, sills, top, zf):
+    """A neglected wall's broad shapes, what reads from the street stop and beyond: a long soft tongue of grey under
+    each sill, the upper wall grey under the eave's drip, the foot grey from the splash; their edges found, freehand.
+    Each at `s` (severity) of its full strength."""
+    clad = (pg.m["cladding"] | pg.m["trims"]) & pg.vertical
+    dl = np.zeros(pg.shape)
+    if s <= 0.0:
+        return dl
+    Sl = N["sill"]
+    for j, (sx0, sx1, z_sill, _) in enumerate(sills):
+        below = np.clip(z_sill - pg.z, 0.0, None)
+        reach = Sl["reach"] * (1.0 + Sl["wobble"] * wave(pg, HS.h(k, "sill", j), Sl["cell"]))
+        hw = (sx1 - sx0) / 2.0 + Sl["spread"] * below
+        across = MK.soft_box(pg.along - (sx0 + sx1) / 2.0, -hw, hw, Sl["soft"])
+        fall = (1.0 - FL.smoothstep(0.0, 1.0, below / np.maximum(reach, 0.1))) ** Sl["power"]
+        dl -= np.where(clad & (pg.z < z_sill), Sl["L"] * across * fall, 0.0)
+    Ev = N["eave"]
+    d = top - pg.z
+    edge = Ev["reach"] * (1.0 + Ev["wobble"] * wave(pg, HS.h(k, "eave"), Ev["cell"]))
+    dl -= np.where(clad, Ev["L"] * (1.0 - FL.smoothstep(0.0, 1.0, d / np.maximum(edge, 0.1))) ** Ev["power"], 0.0)
+    Ft = N["foot"]
+    h = pg.z - zf
+    edge = Ft["reach"] * (1.0 + Ft["wobble"] * wave(pg, HS.h(k, "foot"), Ft["cell"]))
+    dl -= np.where(clad, Ft["L"] * (1.0 - FL.smoothstep(0.0, 1.0, h / np.maximum(edge, 0.1))) ** Ft["power"], 0.0)
+    return s * dl
+
+
 def opening_values(pg, Q, meta, side, board):
     """The corner's broad washes an opening places: a soft wash widening under its sill; its boarding holding water,
     darkest at its head, down its leaking side and at the sill, in one soft wash, with a band of its own above the lower
@@ -294,7 +329,8 @@ def opening_values(pg, Q, meta, side, board):
     Pb = board.get("blotch")
     if Pb:
         k = key(meta, "p-blotch")
-        n = sum(a * FL.noise2(pg.along / c, pg.z / c, HS.h(k, j)) for j, (c, a) in enumerate(Pb["octaves"])) / sum(a for _, a in Pb["octaves"])
+        st = Pb.get("stretch", 1.0)  # taller than wide: the water hangs from the head and runs down the ply
+        n = sum(a * FL.noise2(pg.along / c, pg.z / (c * st), HS.h(k, j)) for j, (c, a) in enumerate(Pb["octaves"])) / sum(a for _, a in Pb["octaves"])
         lowS = np.clip((zb1 - pg.z) / max(zb1 - zb0, 1e-3), 0.0, 1.0)
         dl -= np.where(sheet, Pb["L"] * FL.smoothstep(Pb["cut"] - Pb["soft"], Pb["cut"] + Pb["soft"], n + Pb["low"] * (lowS - 0.5)), 0.0)
     return dl
@@ -376,6 +412,41 @@ def tile_values(pg, Q, meta, roof):
     return np.where(tiles & (u < T["share"]), T["L"] * (0.5 + 0.5 * v), 0.0)
 
 
+def roof_years(meta):
+    """Years the roof has weathered: since it was built, or since it was last retiled."""
+    since = max([meta["built"]] + [e["year"] for e in meta["events"] if e["kind"] == "roof_retiled" and e["year"] <= meta["year"]])
+    return meta["year"] - since
+
+
+def roof_values(pg, R, meta, roof, wall):
+    """A slope's age in broad shapes, never tile by tile: the eave course darkest, where the water stands longest and
+    the dirt off the slope gathers; moss and lichen down the pans from the ridge, where the water runs, each pan's
+    reach its own; the shaded slope darker all over. All at the roof's age (`fullYears` to full)."""
+    tiles = pg.m["tiles"] | pg.m["roof"]
+    age = float(FL.smoothstep(0.0, R["fullYears"], roof_years(meta)))
+    if age <= 0.0:
+        return np.zeros(pg.shape)
+    k = key(meta, "p-roof", roof["wall"])
+    a = math.radians(roof["pitch"])
+    s = (pg.y - roof["foot"][0]) * math.cos(a) + (pg.z - roof["foot"][1]) * math.sin(a)
+    top = roof["courses"] * roof["course"]
+    E = R["eave"]
+    reach = E["courses"] * roof["course"] * (1.0 + E["wobble"] * wave(pg, HS.h(k, "eave"), E["cell"]))
+    dl = -E["L"] * (1.0 - FL.smoothstep(0.0, 1.0, s / np.maximum(reach, 0.05))) ** E["power"]
+    M = R["moss"]
+    u = (pg.along - roof["x0"]) / roof["cover"]
+    col = np.floor(u).astype(np.int64)
+    pan = u - col - roof["pan"]
+    lane = MK.gauss(pan - np.round(pan), M["width"])
+    lc = top * (M["reach"][0] + (M["reach"][1] - M["reach"][0]) * FL.unit(k, col))
+    lc = lc * (1.0 + M["wobble"] * wave(pg, HS.h(k, "moss"), M["cell"], s))
+    dl -= M["L"] * lane * (1.0 - FL.smoothstep(0.0, 1.0, (top - s) / np.maximum(lc, 0.05))) ** M["power"]
+    south = np.array([0.0, -1.0])
+    sunward = max(0.0, float(np.dot(wall["out"], south)))
+    dl -= R["shadeL"] * (1.0 - sunward)
+    return np.where(tiles, age * dl, 0.0)
+
+
 def grime(pg, Q, low, sills):
     """The lap grime's strength on a wall's boards: everywhere some, more down its gradient and on the courses each
     sill drips on."""
@@ -427,14 +498,17 @@ def main():
     out = os.path.join(cache, "out")
     pg = SM.Page(cache, meta, bake["mats"])
     pad = meta["page"]["padPx"]
-    board = FP.boarding(Q, a.get("boarding"))
+    board = S["boarding"] if "boarding" in S and not a.get("boarding") else FP.boarding(Q, a.get("boarding"))
     cap_t = W["casing"]["capMm"] / 1000.0 * W["push"]["capThick"]
     T = Q["tongue"]
 
     # every material's paint value: the corner's, the boarding's kept variant, and paint.json's for the rest
     extra = {k: v for k, v in S["materials"].items() if k != "describes"}
     mats = dict(Q["materials"], sheet=board["sheet"], batten=board["batten"])
-    mats.update({k: (dict(mats[v]) if isinstance(v, str) else v) for k, v in extra.items()})
+    # a name takes that material's values; {"like": name, ...} takes them with its own over them
+    mats.update({k: (dict(mats[v]) if isinstance(v, str) else
+                     dict(mats[v["like"]], **{f: x for f, x in v.items() if f != "like"}) if "like" in v else v)
+                 for k, v in extra.items()})
 
     pl, sn, dl, gr = (np.zeros(pg.shape) for _ in range(4))
     wash, far = np.zeros(pg.shape), np.zeros(pg.shape)
@@ -500,6 +574,12 @@ def main():
         lows[i] = (zf, top, low)
     for k, o, wall, v, om, side, g, door, mine in ops:
         v.put(dl, opening_values(v, Q, om, side, board), "add")
+    N = S["neglect"]
+    for i, v in views.items():
+        sills = [om["features"]["sill"] for k, o, wall, ov, om, side, g, door, mine in ops if wall["i"] == i and not door]
+        sv = severity(meta, paints, walls[i], N)
+        log.append(f"w{i} severity {sv:.2f}")
+        v.put(dl, neglect_values(v, N, key(meta, "p-neglect", i), sv, sills, lows[i][1], lows[i][0]), "add")
     dl += np.where((pg.m["trims"] | pg.m["stone"] | pg.m["batten"]) & pg.up, Q["up"]["L"], 0.0)
     C = Q["contact"]
     own = np.ones(pg.shape)
@@ -529,7 +609,8 @@ def main():
     for k, o, wall, v, om, side, g, door, mine in ops:
         v.put(dl, opening_small(v, Q, om), "add")
     for i, v in views.items():
-        v.put(dl, tile_values(v, Q, meta, roofs.get(i)), "add")
+        if i in roofs:
+            v.put(dl, roof_values(v, S["roof"], meta, roofs[i], walls[i]), "add")
     loose = SM.View(pg, pg.wall == -1, walls[0])
     loose.put(dl, tile_values(loose, Q, meta, None), "add")
     for i, v in views.items():
@@ -551,8 +632,9 @@ def main():
     cm = Qc["colour"]["mats"]
     cm["cladding"]["paint"] = [wp["C"], wp["h"]]
     cm["trims"]["paint"] = [tp_["C"], tp_["h"]]
+    cm.update(board.get("colour", {}))
     for k, v in extra.items():
-        cm[k] = dict(cm[v]) if isinstance(v, str) else S["colour"].get(k, {})
+        cm[k] = dict(cm[v]) if isinstance(v, str) else dict(cm[v["like"]]) if "like" in v else S["colour"].get(k, {})
     E, L = Q["edge"], Q["lap"]
     sh = P["marks"]["shade"]
     M = P["materials"]
@@ -577,7 +659,7 @@ def main():
     preview(os.path.join(FL.ROOT, "cache", "street", "paint-preview", f"{meta['house']}.png"), pl, dl, wash, rng, T["washL"])
     share = lambda m: float((m & pg.cov).sum()) / max(1, int((painted & pg.cov).sum()))  # noqa: E731
     print(f"[paint] grade by wall {', '.join(f'w{i} {g:.2f}' for i, g in grades.items())}; {'; '.join(log)}")
-    print(f"[paint] boarding {a.get('boarding') or Q['boarding']['use']}; peeled {share(painted & (pl > 0.5)):.3f} of the paint; "
+    print(f"[paint] boarding {a.get('boarding') or ('paint.json' if 'boarding' in S else Q['boarding']['use'])}; peeled {share(painted & (pl > 0.5)):.3f} of the paint; "
           f"stained {share(sn > 0.5):.3f}; dL {np.percentile(dl[pg.cov], [1, 5, 50, 95]).round(1)}, "
           f"beyond {rng}: {float((np.abs(dl[pg.cov]) > rng).mean()):.4f}; wrote {out}")
 

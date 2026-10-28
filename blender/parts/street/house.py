@@ -1157,12 +1157,18 @@ class House:
                 plane = []
                 if ci < near_c:
                     plane.append(("near", "tiles", True))
+                    # never drawn: the near tiles' bake target, so their charts are baked as the planes' are, from
+                    # the tiles' top surface (the tiles' own charts overlap where they lap)
+                    plane.append(("bake", "target", False))
                 else:
                     plane.append(("near", "roof", False))
                     plane.append(("bake", "tiles", True))
                 plane.append(("street", "tiles" if ci == 0 else "roof", ci == 0))
                 for lv, mat, waves in plane:
-                    if waves and lv != "street":
+                    if mat == "target":
+                        pc = self.make(f"roof/w{wall.i}/c{ci:02d}/target", mat, (lv,), wall)
+                        self.course_plane(pc, lv, base, x0, x0, x1, roll, thick, lift, length, up, nrm, key)
+                    elif waves and lv != "street":
                         for ti in range(n_cov):
                             tid = f"roof/w{wall.i}/c{ci:02d}/t{ti}"
                             pc = self.make(tid, mat, (lv,), wall)
@@ -1191,7 +1197,7 @@ class House:
                         pc = self.make(f"roof/w{wall.i}/c{ci:02d}/plane", mat, (lv,), wall)
                         self.course_plane(pc, lv, base, x0, xa, xb, roll, thick, lift, length, up, nrm, key)
             self.features["roof"].append({"wall": wall.i, "x0": x0, "foot": [self.y_foot, self.z_foot], "pitch": math.degrees(self.pitch),
-                                          "courses": n_courses, "course": course, "cover": cover})
+                                          "courses": n_courses, "course": course, "cover": cover, "pan": pan})
         self.ridge(x0, x1)
 
     def tile_strip(self, pc, lv, prof, base, xa, cover, roll, thick, lift, length, up, nrm, yaw, dz, key, x0, under=False):
@@ -1601,12 +1607,20 @@ def main():
         pc.index = i
     # densities by part
     dens = S["page"]["density"]
+    # the walls that face the street take the page's full density, every other face `elsewhere` of it
+    front = {w.i for w in house.walls if w.kind != "lean" and w.out.y < -0.7}
+    on_front = {f"open{k}" for k, o in enumerate(house.openings) if o["wall"] in front}
     for key in list(house.charts.size):
         kind = key.split("#")[0].split("/")[1] if key.startswith("h") else key.split("/")[0]
+        parts = key.split("#")[0].split("/")
+        faces = (parts[0] in ("wall", "plinth") and parts[1] in {f"w{i}" for i in front}) or \
+                (key.startswith("h") and parts[1] in on_front)
+        sc = 1.0 if faces else dens.get("elsewhere", 1.0)
         if kind in dens:
-            house.charts.scale[key] = dens[kind]
+            sc *= dens[kind]
         if key.endswith("#under"):
-            house.charts.scale[key] = dens["under"]
+            sc = dens["under"] * dens.get("elsewhere", 1.0)
+        house.charts.scale[key] = sc
     rects, fill, px = house.charts.fit(S["page"])
 
     bpy.ops.wm.read_factory_settings(use_empty=True)
@@ -1681,7 +1695,7 @@ def main():
         "bends": {"settle": house.frame.settle, "sag": house.frame.sag, "lean": house.frame.lean, "corner": house.frame.corner},
         "versions": house.version_of, "features": house.features,
         "lap": {"reach": S["lapReach"], "step": W["cladding"]["stepMm"] * MM},
-        "planeShadow": S["planeShadow"],
+        "planeShadow": S["planeShadow"], "seenWithinM": S["levels"]["near"]["seenWithinM"],
         "pieces": [{"i": pc.index, "id": pc.id, "mat": pc.mat, "kind": pc.kind, "mode": pc.mode, "wall": pc.wall, "group": pc.group}
                    for pc in house.pieces],
         "uv": {"uv0": "metres along the grain", "page": "UV1: the page"},

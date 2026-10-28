@@ -1,4 +1,6 @@
-# install a house's build into the Street scene and render a round: render.sh <house> <round> [views] [ways] [lights];
+# install a house's build into the Street scene and render a round: render.sh <house> <round> [views] [ways] [lights]
+# [planeShadow] [roofFlatUp]; with STREET_TIMING=<n> set, also a row of n such houses timed offscreen (timing.md); STREET_COMPRESS=1
+# block-compresses the page;
 # run it under tools/unity_lock.py
 set -e
 cd "$(dirname $0)/../../../.."
@@ -8,5 +10,5 @@ cp cache/street/gen/$h/house-near.fbx cache/street/gen/$h/house-street.fbx cache
 cp cache/street/bake/$h/out/*.png cache/street/bake/$h/out/paint.json $F/
 /Applications/Unity/Hub/Editor/6000.6.6f1/Unity.app/Contents/MacOS/Unity -batchmode -quit -projectPath $PWD/unity \
   -executeMethod Overstory.EditorTools.LT1Street.Run -streetHouse $h -streetRound $2 -streetViews ${3:-eye,street} \
-  -streetWays ${4:-P,Pc} -streetLights ${5:-overcast,lowsun} ${6:+-streetPlaneShadow $6} -logFile $L
+  -streetWays ${4:-P,Pc} -streetLights ${5:-overcast,lowsun} ${6:+-streetPlaneShadow $6} ${7:+-streetRoofFlatUp $7} ${STREET_TIMING:+-streetTiming $STREET_TIMING} ${STREET_COMPRESS:+-streetCompress $STREET_COMPRESS} -logFile $L
 grep -n "LT1Street\]\|error CS\|Exception" $L | tail -40

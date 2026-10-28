@@ -46,10 +46,11 @@ def main():
     scene = bpy.context.scene
     FB.setup(scene, 64)
     objs = {o.name: o for o in scene.objects}
-    mats = sorted({n.split("_", 1)[1] for n in objs})
-    FB.MATS[:] = mats
+    mats = sorted({n.split("_", 1)[1] for n in objs if n != "bake_target"})
+    FB.MATS[:] = mats + ["target"]  # the target last, so every material's index is the page's (bake.json mats)
     near = [o for n, o in objs.items() if n.startswith("near_") and n != "near_roof"]
     plane = objs.get("near_roof")
+    target = objs.get("bake_target")
     tiles = [o for n, o in objs.items() if n in ("near_tiles", "bake_tiles")]
     for o in objs.values():
         lay = o.data.uv_layers
@@ -58,11 +59,17 @@ def main():
     # only the near level and the bake level's tiles cast; the near roof's planes stand in front of their tiles
     for n, o in objs.items():
         o.hide_render = n.startswith("street_")
-    if plane is not None:
+    for p in (plane, target):
         # a target, never a caster: rays pass through it to the tiles under it
+        if p is None:
+            continue
+        p.hide_render = False
         for k in ("visible_camera", "visible_diffuse", "visible_glossy", "visible_transmission", "visible_volume_scatter",
                   "visible_shadow"):
-            setattr(plane, k, False)
+            setattr(p, k, False)
+    # every course's chart from the tiles' top surface under it: the planes from the bake level's tiles, the near
+    # tiles' own charts from the near tiles (their charts overlap where they lap, so baking them directly darkens them)
+    transfers = [(p, src) for p, src in ((plane, "bake_tiles"), (target, "near_tiles")) if p is not None]
 
     maps = {
         "ao": (FB.emission(FB.ao_socket(0.6, False)), 64),
@@ -82,9 +89,9 @@ def main():
         FB.select(near, near[0])
         bpy.ops.object.bake(type="EMIT", margin=4, use_clear=False)
         # the planes from the tiles they stand for: the shading at the tiles' surface under each plane's texel
-        if plane is not None:
-            FB.material(plane, img, build)
-            FB.select([objs["bake_tiles"], plane], plane)
+        for p, src in transfers:
+            FB.material(p, img, build)
+            FB.select([objs[src], p], p)
             bpy.ops.object.bake(type="EMIT", margin=4, use_clear=False, use_selected_to_active=True,
                                 cage_extrusion=0.01, max_ray_distance=0.12)
         FB.save(img, os.path.join(cache, f"{name}.exr"))
@@ -98,9 +105,9 @@ def main():
             FB.material(o, img, FB.white_diffuse)
         FB.select(near, near[0])
         bpy.ops.object.bake(type="DIFFUSE", pass_filter={"DIRECT", "INDIRECT"}, margin=4, use_clear=False)
-        if plane is not None:
-            FB.material(plane, img, FB.white_diffuse)
-            FB.select([objs["bake_tiles"], plane], plane)
+        for p, src in transfers:
+            FB.material(p, img, FB.white_diffuse)
+            FB.select([objs[src], p], p)
             bpy.ops.object.bake(type="DIFFUSE", pass_filter={"DIRECT", "INDIRECT"}, margin=4, use_clear=False,
                                 use_selected_to_active=True, cage_extrusion=0.01, max_ray_distance=0.12)
         FB.save(img, os.path.join(cache, "sky.exr"))

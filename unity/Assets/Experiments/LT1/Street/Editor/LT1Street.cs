@@ -35,7 +35,8 @@ namespace Overstory.EditorTools
         [Serializable] class PColour { public PColMat[] mats; public PColLight[] lights; public float[] washTint; }
         [Serializable] class Paint { public PMat[] mats; public PLight[] lights; public PColour colour; public float strokeScale, edgeAmp, rimL, rimW, rimFar, bareShift, washL, bareWash, brushFar, dragL, dragScale, dlRange, aoStrength, lapDark, lapCore, lapReach, lapGrimeL, lapGrimeReach, lapGrimeBreak, lapPage; public float[] strokeFade, brushFade, rimBreak, washFade; }
         [Serializable] class Lap { public float reach, step; }
-        [Serializable] class House { public int house; public float[] size; public Lap lap; public float planeShadow; }
+        [Serializable] class Plot { public float w, d; }
+        [Serializable] class House { public int house; public float[] size; public Lap lap; public float planeShadow, seenWithinM; public Plot plot; }
 
         struct View { public string name, level; public Vector3 pos, target; public float fov; public bool floor; }
 
@@ -89,6 +90,11 @@ namespace Overstory.EditorTools
             // an A/B of the planes' microshadow without touching the house's data
             if (Arg("-streetPlaneShadow") != null)
                 house.planeShadow = float.Parse(Arg("-streetPlaneShadow"), System.Globalization.CultureInfo.InvariantCulture);
+            // and of the planes' flattening, without a new paint
+            if (Arg("-streetRoofFlatUp") != null)
+                foreach (var m in paint.mats)
+                    if (m.name == "roof")
+                        m.flatUp = float.Parse(Arg("-streetRoofFlatUp"), System.Globalization.CultureInfo.InvariantCulture);
             var mats = Materials(gen, paint, house);
             var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
 
@@ -180,6 +186,8 @@ namespace Overstory.EditorTools
                         Debug.Log($"[LT1Street] {file}");
                     }
                 }
+                if (Arg("-streetTiming") != null)
+                    Timing(int.Parse(Arg("-streetTiming")), root_, mats, cam, sun, gm, adjust, house, paint, outDir, sunOff);
             }
             finally
             {
@@ -189,6 +197,133 @@ namespace Overstory.EditorTools
             }
             foreach (var kv in levels)
                 Debug.Log($"[LT1Street] {kv.Key}: {kv.Value.GetComponentsInChildren<MeshFilter>(true).Sum(f => f.sharedMesh.triangles.Length / 3)} triangles in Unity");
+        }
+
+        /// <summary>
+        /// The cost of a street of such houses, offscreen: `n` copies of the house side by side on their plots, each
+        /// drawn at the level its distance from the camera takes (the near level within house.json seenWithinM), in
+        /// way Pc and the low sun, drawn into a 2560 by 1440 target with MSAA 4x back to back, six batches of six after
+        /// one that primes (as LT1LightTime). The copies share one page, so texture memory is counted per house, not
+        /// measured. The editor's own work is in the numbers: an offscreen frame, not the player's.
+        /// </summary>
+        static void Timing(int n, GameObject house0, Dictionary<string, Material> mats, Camera cam, Light sun, Material gm,
+                           ColorAdjustments adjust, House house, Paint paint, string outDir, float sunOff)
+        {
+            const int Batches = 6, PerBatch = 6;
+            float plot = house.plot != null && house.plot.w > 0 ? house.plot.w / 1000f : house.size[0] + 1f;
+            float within = house.seenWithinM > 0 ? house.seenWithinM : 10f;
+            var houses = new List<GameObject> { house0 };
+            for (int k = 1; k < n; k++)
+            {
+                var c = UnityEngine.Object.Instantiate(house0);
+                c.transform.position = house0.transform.position + new Vector3(k * plot, 0, 0);
+                houses.Add(c);
+            }
+            float w = house.size[0], d = house.size[1];
+            var views = new[]
+            {
+                ("street", new Vector3(w / 2 - 9.0f, -19.0f, 1.6f), new Vector3(w / 2, 1.0f, 3.0f), 38f),
+                ("raised", new Vector3(-7.0f, -12.0f, 12.0f), new Vector3(w / 2, d / 2, 2.5f), 42f),
+                ("along", new Vector3(-4.0f, -9.0f, 1.6f), new Vector3(60.0f, 2.0f, 3.0f), 52f),
+            };
+            var urp = (UniversalRenderPipelineAsset)GraphicsSettings.currentRenderPipeline;
+            var lowsun = Lights.First(l => l.name == "lowsun");
+            var own = paint.lights?.FirstOrDefault(e => e.light == "lowsun");
+            var l_ = own != null ? Own(lowsun, own) : lowsun;
+            l_.azimuth = new Vector2(Mathf.Sin(sunOff * Mathf.Deg2Rad), -Mathf.Cos(sunOff * Mathf.Deg2Rad));
+            var col = paint.colour?.lights?.FirstOrDefault(e => e.light == "lowsun");
+            Light(sun, l_, col);
+            adjust.postExposure.Override(own != null ? own.exposure : lowsun.exposure);
+            var rt = new RenderTexture(Width, Height, 24, RenderTextureFormat.ARGB32, RenderTextureReadWrite.sRGB) { antiAliasing = Msaa };
+            rt.Create();
+            var probe = new RenderTexture(1, 1, 0, RenderTextureFormat.ARGB32);
+            probe.Create();
+            var rows = new List<string>();
+            bool async = ShaderUtil.allowAsyncCompilation;
+            ShaderUtil.allowAsyncCompilation = false;
+            try
+            {
+                foreach (var (name, pos, target, fov) in views)
+                {
+                    cam.transform.SetPositionAndRotation(ToUnity(pos), Quaternion.LookRotation(ToUnity(target - pos), Vector3.up));
+                    cam.fieldOfView = fov;
+                    urp.shadowCascadeCount = 1;
+                    urp.mainLightShadowmapResolution = 4096;
+                    urp.shadowDistance = name == "along" ? 80f : (target - pos).magnitude + 8f;
+                    int nearN = 0, tris = 0, subs = 0;
+                    var planes = GeometryUtility.CalculateFrustumPlanes(cam);
+                    foreach (var h in houses)
+                    {
+                        var lv = h.GetComponentsInChildren<Transform>(true).Where(t => t.parent == h.transform).ToList();
+                        var centre = h.transform.position + ToUnity(new Vector3(w / 2, d / 2, 3f));
+                        bool isNear = Vector3.Distance(cam.transform.position, centre) < within;
+                        nearN += isNear ? 1 : 0;
+                        foreach (var t in lv)
+                        {
+                            bool on = t.name.Contains("near") == isNear;
+                            t.gameObject.SetActive(on);
+                            if (!on)
+                                continue;
+                            Assign(t.gameObject, mats, "Pc", isNear ? "near" : "street");
+                            foreach (var r in t.GetComponentsInChildren<MeshRenderer>())
+                                if (GeometryUtility.TestPlanesAABB(planes, r.bounds))
+                                {
+                                    var mf = r.GetComponent<MeshFilter>();
+                                    tris += mf.sharedMesh.triangles.Length / 3;
+                                    subs += mf.sharedMesh.subMeshCount;
+                                }
+                        }
+                    }
+                    cam.targetTexture = rt;
+                    var ms = new List<double>();
+                    for (int b = 0; b <= Batches; b++)
+                    {
+                        var clock = System.Diagnostics.Stopwatch.StartNew();
+                        for (int k = 0; k < PerBatch; k++)
+                            LT1Render.Render(cam, rt);
+                        Graphics.Blit(rt, probe);
+                        AsyncGPUReadback.Request(probe).WaitForCompletion();
+                        if (b > 0)
+                            ms.Add(clock.Elapsed.TotalMilliseconds / PerBatch);
+                    }
+                    cam.targetTexture = null;
+                    ms.Sort();
+                    double median = ms[ms.Count / 2];
+                    rows.Add($"| {name} | {n} | {nearN} | {tris:N0} | {subs} | {median:F1} | {string.Join(" ", ms.Select(x => x.ToString("F1")))} |");
+                    Debug.Log($"[LT1Street] timing {name}: {median:F2} ms, {nearN} near of {n}, {tris} triangles and {subs} draws in view");
+                    Capture(cam, Path.Combine(outDir, $"timing-{name}.png"));
+                }
+            }
+            finally
+            {
+                ShaderUtil.allowAsyncCompilation = async;
+                rt.Release();
+                probe.Release();
+                UnityEngine.Object.DestroyImmediate(rt);
+                UnityEngine.Object.DestroyImmediate(probe);
+            }
+            // what one house holds: its page's textures and its two levels' meshes, as the runtime counts them
+            long texBytes = 0, meshBytes = 0;
+            var texLines = new List<string>();
+            foreach (var t in mats.Values.SelectMany(m => m.GetTexturePropertyNames().Select(m.GetTexture)).Where(t => t != null).Distinct())
+            {
+                long b = UnityEngine.Profiling.Profiler.GetRuntimeMemorySizeLong(t);
+                texBytes += b;
+                texLines.Add($"{t.name} {t.width}x{t.height} {(t is Texture2D t2 ? t2.format.ToString() : "")} {b / 1048576.0:F1} MB");
+            }
+            foreach (var mf in house0.GetComponentsInChildren<MeshFilter>(true))
+                meshBytes += UnityEngine.Profiling.Profiler.GetRuntimeMemorySizeLong(mf.sharedMesh);
+            var md = new System.Text.StringBuilder();
+            md.AppendLine($"Offscreen in the editor, batch mode (LT1Street.Timing; {SystemInfo.graphicsDeviceName}, 2560x1440, MSAA 4x, way Pc, low sun, " +
+                          $"one 4096 shadow cascade, screen-space occlusion; median of {Batches} batches of {PerBatch}). A row of {n} copies of house {house.house} " +
+                          $"on {plot:F1} m plots, near level within {within:F0} m. Not the player's frame.").AppendLine();
+            md.AppendLine("| View | Houses | Near | Triangles in view | Draws in view | ms a frame | Batches |");
+            md.AppendLine("| --- | --- | --- | --- | --- | --- | --- |");
+            foreach (var r in rows)
+                md.AppendLine(r);
+            md.AppendLine().AppendLine($"One house: textures {texBytes / 1048576.0:F1} MB ({string.Join("; ", texLines)}); meshes, both levels, {meshBytes / 1048576.0:F1} MB.");
+            File.WriteAllText(Path.Combine(outDir, "timing.md"), md.ToString());
+            Debug.Log("[LT1Street] timing\n" + md);
         }
 
         static string Arg(string name)
@@ -221,7 +356,8 @@ namespace Overstory.EditorTools
                 ti.wrapMode = tile ? TextureWrapMode.Repeat : TextureWrapMode.Clamp;
                 ti.filterMode = FilterMode.Trilinear;
                 ti.anisoLevel = tile ? 8 : 4;
-                ti.textureCompression = TextureImporterCompression.Uncompressed;
+                // -streetCompress: the page block-compressed (BC7 on the Mac), an A/B of its look against its memory
+                ti.textureCompression = Arg("-streetCompress") == "1" ? TextureImporterCompression.CompressedHQ : TextureImporterCompression.Uncompressed;
                 ti.maxTextureSize = 4096;
                 ti.npotScale = TextureImporterNPOTScale.None;
                 ti.SaveAndReimport();

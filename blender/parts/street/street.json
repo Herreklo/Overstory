@@ -16,8 +16,8 @@
     "size": 2048,
     "pxPerM": [64, 128],
     "padPx": 4,
-    "density": { "roof": 0.5, "ridge": 0.5, "chimney": 0.6, "under": 0.35 },
-    "describes": "One page a house, its charts packed at the most pixels a metre (in steps of 2) that fit between pxPerM; a roof course and the eave's undersides take less (density)."
+    "density": { "roof": 0.5, "ridge": 0.5, "chimney": 0.6, "under": 0.35, "elsewhere": 0.62 },
+    "describes": "One page a house, its charts packed at the most pixels a metre (in steps of 2) that fit between pxPerM; a roof course and the eave's undersides take less (density), and every face but the walls that face the street (their openings and plinth with them) takes `elsewhere` of it."
   },
   "lapReach": 0.25,
   "planeShadow": 0.0,
