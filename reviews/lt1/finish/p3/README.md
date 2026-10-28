@@ -2,7 +2,7 @@
 
 `sheet.png`: P1 | BASE (p2 step 1) | FINAL. Rows are the street stop, 12 m and eye level. Overcast is on the left, low sun on the right. `colour-eye.png`: the colour still beside its clay twin, at eye level and the street stop, in low sun.
 
-p3 is the floor: beside BASE it holds as a whole (the coordinator, 28 October).
+p3 (commit de6e1c0) is the floor: beside BASE it holds as a whole (the coordinator, 28 October).
 
 **Bad first**
 - The tear still falls short of P1's, which Øystein called the more realistic one. P1's hard patches, board by board, read as real failed paint at the street stop and from 12 m. FINAL's are narrow and quiet, and they nearly vanish at 12 m.
