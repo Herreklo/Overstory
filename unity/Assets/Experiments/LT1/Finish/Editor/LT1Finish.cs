@@ -12,7 +12,7 @@ namespace Overstory.EditorTools
 {
     /// <summary>
     /// The finishing test (blender/parts/finish): house 107's street corner in 1989, one mesh finished several ways in
-    /// clay (A procedural, B scanned, C both, P painted), rendered from four views in two lights:
+    /// clay (A procedural, B scanned, C both, P painted; Pc, P's values in colour), rendered from four views in two lights:
     ///
     ///     Unity -batchmode -quit -projectPath unity -executeMethod Overstory.EditorTools.LT1Finish.Run -finishRound r01
     ///
@@ -32,7 +32,11 @@ namespace Overstory.EditorTools
         // way P's digest (paint.py): each material one value, the strokes and the shapes' edges, and its own light
         [Serializable] class PMat { public string name; public int painted; public float L, bareL, underL, stainDL, smooth, stainSmooth, brushL, flatUp, stainEdge; }
         [Serializable] class PLight { public string light; public float exposure, elevation, sun, shadow, sky, equator, ground; public float[] azimuth; }
-        [Serializable] class Paint { public PMat[] mats; public PLight[] lights; public float strokeScale, edgeAmp, rimL, rimW, rimFar, bareShift, washL, bareWash, brushFar, dragL, dragScale, dlRange, aoStrength, lapDark, lapCore, lapReach, lapGrimeL, lapGrimeReach, lapGrimeBreak, lapPage; public float[] strokeFade, brushFade, rimBreak; }
+        // way Pc, the colour still: P's values with a hue of luminance 1 laid on each, and each light's colour
+        [Serializable] class PColMat { public string name; public float[] tint, bareTint, underTint, stainTint; }
+        [Serializable] class PColLight { public string light; public float[] sun, sky, equator, ground, background, floor; }
+        [Serializable] class PColour { public PColMat[] mats; public PColLight[] lights; public float[] washTint; }
+        [Serializable] class Paint { public PMat[] mats; public PLight[] lights; public PColour colour; public float strokeScale, edgeAmp, rimL, rimW, rimFar, bareShift, washL, bareWash, brushFar, dragL, dragScale, dlRange, aoStrength, lapDark, lapCore, lapReach, lapGrimeL, lapGrimeReach, lapGrimeBreak, lapPage; public float[] strokeFade, brushFade, rimBreak; }
 
         struct View { public string name, level; public Vector3 pos, target; public float fov; }
 
@@ -125,7 +129,7 @@ namespace Overstory.EditorTools
             camData.renderPostProcessing = true;
             camData.antialiasing = AntialiasingMode.None;
             cam.clearFlags = CameraClearFlags.SolidColor;
-            cam.backgroundColor = new Color(0.62f, 0.62f, 0.62f);
+            cam.backgroundColor = Back;
             cam.nearClipPlane = 0.1f;
             cam.farClipPlane = 500f;
 
@@ -162,9 +166,13 @@ namespace Overstory.EditorTools
                         urp.shadowDistance = (view.target - view.pos).magnitude + 3f;
                         foreach (var way in ways)
                         {
-                            // way P is lit and exposed by its own value plan, where it names a light
-                            var own = way == "P" ? paint?.lights?.FirstOrDefault(e => e.light == light.name) : null;
-                            Light(sun, own != null ? Own(light, own) : light);
+                            // way P is lit and exposed by its own value plan, where it names a light; way Pc as P,
+                            // in the light's colours where the palette names it
+                            var own = way.StartsWith("P") ? paint?.lights?.FirstOrDefault(e => e.light == light.name) : null;
+                            var col = way == "Pc" ? paint?.colour?.lights?.FirstOrDefault(e => e.light == light.name) : null;
+                            Light(sun, own != null ? Own(light, own) : light, col);
+                            cam.backgroundColor = Lin(Back.linear.r, col?.background);
+                            gm.SetColor("_BaseColor", Lin(gy, col?.floor));
                             adjust.postExposure.Override(own != null ? own.exposure : light.exposure);
                             Assign(levels[view.level], mats, way, view.level);
                             string file = Path.Combine(outDir, $"{view.name}-{light.name}-{way}.png");
@@ -191,6 +199,12 @@ namespace Overstory.EditorTools
         }
 
         static float LToY(float L) => L > 8 ? Mathf.Pow((L + 16) / 116f, 3) : L / 903.3f;
+
+        // the plain sky behind
+        static readonly Color Back = new Color(0.62f, 0.62f, 0.62f);
+
+        // a linear value as a colour, in a tint of luminance 1 where one is given, else grey
+        static Color Lin(float v, float[] t) => t == null || t.Length != 3 ? new Color(v, v, v).gamma : new Color(v * t[0], v * t[1], v * t[2]).gamma;
 
         /// <summary>Import settings: the page and tileables linear and uncompressed, the tileables repeating.</summary>
         static void Import()
@@ -296,11 +310,21 @@ namespace Overstory.EditorTools
             }
             if (p == null)
                 return outp;
+            foreach (var way in new[] { "P", "Pc" })
             foreach (var level in new[] { "near", "street" })
             foreach (var m in p.mats)
             {
                 var mat = new Material(shader);
                 mat.SetFloat("_Paint", 1);
+                var c = way == "Pc" ? p.colour?.mats?.FirstOrDefault(e => e.name == m.name) : null;
+                if (c != null)
+                {
+                    mat.SetVector("_Tint", Tint(c.tint));
+                    mat.SetVector("_BareTint", Tint(c.bareTint));
+                    mat.SetVector("_UnderTint", Tint(c.underTint));
+                    mat.SetVector("_StainTint", Tint(c.stainTint));
+                    mat.SetVector("_WashTint", Tint(p.colour.washTint));
+                }
                 mat.EnableKeyword("_OS_PAINT");
                 mat.SetTexture("_Hist", tex("hist-p"));
                 mat.SetTexture("_Hist2", tex("hist-p2"));
@@ -348,12 +372,14 @@ namespace Overstory.EditorTools
                     mat.SetFloat("_Street", 1);
                     mat.EnableKeyword("_OS_STREET");
                 }
-                string key = $"P-{level}-{m.name}";
+                string key = $"{way}-{level}-{m.name}";
                 AssetDatabase.CreateAsset(mat, $"{Gen}/mat-{key}.mat");
                 outp[key] = mat;
             }
             return outp;
         }
+
+        static Vector4 Tint(float[] t) => t == null || t.Length != 3 ? Vector4.one : new Vector4(t[0], t[1], t[2], 1);
 
         static void Assign(GameObject level, Dictionary<string, Material> mats, string way, string levelName)
         {
@@ -391,7 +417,7 @@ namespace Overstory.EditorTools
             shadow = p.shadow, sky = p.sky, equator = p.equator, ground = p.ground, exposure = p.exposure,
         };
 
-        static void Light(Light sun, Lighting l)
+        static void Light(Light sun, Lighting l, PColLight c = null)
         {
             var a = l.azimuth.normalized;
             float e = l.elevation * Mathf.Deg2Rad;
@@ -399,10 +425,10 @@ namespace Overstory.EditorTools
             sun.transform.rotation = Quaternion.LookRotation(-ToUnity(toSun), Vector3.up);
             sun.intensity = l.sun;
             sun.shadowStrength = l.shadow;
-            var lin = (Func<float, Color>)(v => new Color(v, v, v).gamma);
-            RenderSettings.ambientSkyColor = lin(l.sky);
-            RenderSettings.ambientEquatorColor = lin(l.equator);
-            RenderSettings.ambientGroundColor = lin(l.ground);
+            sun.color = Lin(1, c?.sun);
+            RenderSettings.ambientSkyColor = Lin(l.sky, c?.sky);
+            RenderSettings.ambientEquatorColor = Lin(l.equator, c?.equator);
+            RenderSettings.ambientGroundColor = Lin(l.ground, c?.ground);
             DynamicGI.UpdateEnvironment();
         }
 

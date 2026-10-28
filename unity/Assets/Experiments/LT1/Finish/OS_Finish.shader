@@ -1,7 +1,8 @@
 // The finishing test's one surface (blender/parts/finish): every material of 107's corner, in clay, for all its
 // ways (_OS_PAINT: way P, painted). UV0 reads the material's tileable (way A's made here, ways B and C's from scans), UV1 the corner's page:
 // its history (paint lost, dirt, water, each board's value) and its geometry (occlusion, cavity, arris). Lightness is
-// worked in CIE L*, as the marks were made, and only then turned to grey albedo: no hue anywhere.
+// worked in CIE L*, as the marks were made, and only then turned to grey albedo: no hue anywhere, but way Pc's, which
+// lays a hue of luminance 1 on each of way P's values.
 Shader "Overstory/Finish"
 {
     Properties
@@ -76,6 +77,11 @@ Shader "Overstory/Finish"
         _LapGrimeL ("The lap's grime at its darkest, L*", Float) = 0
         _LapGrimeReach ("How far below the butt the grime reaches, m", Float) = 0.045
         _LapGrimeBreak ("How far the strokes move the grime's lower edge, as a share of its reach", Float) = 0.5
+        _Tint ("Way Pc: the paint's hue, linear, of luminance 1", Vector) = (1, 1, 1, 0)
+        _BareTint ("Way Pc: the bare fibre's hue", Vector) = (1, 1, 1, 0)
+        _UnderTint ("Way Pc: the under layer's hue", Vector) = (1, 1, 1, 0)
+        _StainTint ("Way Pc: a stain's hue", Vector) = (1, 1, 1, 0)
+        _WashTint ("Way Pc: the long washes' hue", Vector) = (1, 1, 1, 0)
     }
 
     HLSLINCLUDE
@@ -94,6 +100,7 @@ Shader "Overstory/Finish"
         float _DLRange, _RimFar, _WashL, _BareWash;
         float4 _RimBreak;
         float4 _StrokeFade, _BrushFade;
+        float4 _Tint, _BareTint, _UnderTint, _StainTint, _WashTint;
     CBUFFER_END
     ENDHLSL
 
@@ -253,6 +260,11 @@ Shader "Overstory/Finish"
                 float drag = SAMPLE_TEXTURE2D(_Stroke, sampler_Stroke, suv.yx * _DragScale).a;
                 L += (_BrushL * 2.0 * (st.a - 0.5) + _DragL * wash * 2.0 * (drag - 0.5)) * nearB;
                 float Y = LToY(clamp(L, 2.0, 98.0));
+                // the colour still: each mark's own hue laid on its value, every tint of luminance 1 so the albedo
+                // keeps the clay's; white in clay
+                float3 tint = lerp(lerp(_Tint.rgb, _BareTint.rgb, peel), _UnderTint.rgb, saturate(i.color.b));
+                tint = lerp(lerp(tint, _Tint.rgb, rim), _StainTint.rgb, stain);
+                tint = lerp(tint, _WashTint.rgb, saturate(wash * lerp(1.0, _BareWash, peel)));
                 float3 nT = float3(0, 0, 1);
                 float smooth = lerp(_PaintSmooth, _StainSmooth, stain);
             #else
@@ -330,7 +342,11 @@ Shader "Overstory/Finish"
             #endif
 
                 SurfaceData s = (SurfaceData)0;
+            #if defined(_OS_PAINT)
+                s.albedo = Y * tint;
+            #else
                 s.albedo = Y.xxx;
+            #endif
                 s.metallic = 0;
                 s.specular = 0;
                 s.smoothness = saturate(smooth);

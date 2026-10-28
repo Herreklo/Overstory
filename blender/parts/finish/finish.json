@@ -192,6 +192,22 @@
       "tiles": { "L": 22.0, "smooth": 0.04, "flatUp": 3 },
       "zinc": { "L": 62.0, "smooth": 0.3 }
     },
+    "colour": {
+      "describes": "The colour still (Øystein, 28 October: one in p2, the one exception to clay-first): only hue and chroma, laid on the clay's own L*, so the clay and colour stills share their values. Each colour is [C, h], CIE LCh: a material's at its own clay L* (its paint, bare fibre, under layer and stain at their values; the wash at the paint's less `tongue.washL`), turned to a tint of luminance 1, so its albedo keeps the clay's luminance; a light's as it reads alone on a neutral white at `atL`, its strength the clay's; the plain sky behind (`background`) at its clay L*, the third number, and the ground (`floor`) at `ground.L`. Muted all over; true colour only where people keep things, and 107 is not kept. Shade and ambient take the light's colour, never the object's (VD2).",
+      "mats": {
+        "cladding": { "paint": [5, 85], "bare": [3, 75], "stain": [7, 70] },
+        "trims": { "paint": [5, 85], "bare": [3, 75], "stain": [22, 55] },
+        "sheet": { "paint": [7, 70], "stain": [6, 65] },
+        "batten": { "paint": [3, 80], "stain": [20, 55] },
+        "stone": { "paint": [3, 250], "under": [2, 240], "stain": [4, 245] },
+        "tiles": { "paint": [14, 48] },
+        "zinc": { "paint": [2, 230] }
+      },
+      "wash": [7, 72],
+      "light": {
+        "lowsun": { "atL": 90, "sun": [18, 75], "sky": [20, 258], "equator": [16, 262], "ground": [10, 70], "background": [12, 250, 65.3], "floor": [4, 75] }
+      }
+    },
     "boarding": {
       "describes": "The boarded window: a, the sheet dark as in look 1; b, a weathered mid-grey sheet whose stain is the dark accent, the battens lighter so they cross it (kept after the A/B at the street stop); c, b's battens on a dark sheet, so the window is the wall's dark shape. `use` is the one kept.",
       "use": "c",

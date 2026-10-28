@@ -1,6 +1,7 @@
 """A look sheet in grey: renders beside references, each scaled to one row height (references turned to their
 luminance, so values compare). Blender -b --factory-startup -P look.py -- out height spec [spec ...]
-spec = path@x,y,w,h@label (x, y from the top-left, '-' for the whole image); rows split on a lone '/'."""
+spec = path@x,y,w,h@label[@colour] (x, y from the top-left, '-' for the whole image; `colour` keeps its colour);
+rows split on a lone '/'."""
 import sys
 
 import numpy as np
@@ -30,7 +31,7 @@ for sp in specs:
     if crop != "-":
         x, y, w, h = [int(v) for v in crop.split(",")]
         a = a[y:y + h, x:x + w]
-    a = resize(grey(a), height / a.shape[0])
+    a = resize(a if "colour" in lab[1:] else grey(a), height / a.shape[0])
     row.append(label(a.copy(), lab[0]) if lab and lab[0] else a)
 rows.append(row)
 gap = 8

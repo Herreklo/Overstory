@@ -12,7 +12,8 @@ Writes into <cache>/out:
   paint-stroke.png  the authored strokes, 1 m square, tiling: R, G and B three sets of short flat brush strokes along
                     u, each its own value, which break the peel's, the stain's and the lap grime's edges near; A long
                     soft strokes along the boards, which let a plane breathe near and are gone by the street stop
-  paint.json        the Unity scene's digest of way P (LT1Finish.cs), with its own overcast
+  paint.json        the Unity scene's digest of way P (LT1Finish.cs), with its own overcast, and the colour still's
+                    tints (way Pc: the same values, hue laid on them)
 
 Three unequal planes carry the light (the wall's one gradient in G, the window dark, the sun's shadow); one failed-paint
 shape carries the water, board by board, its wash soft and darker and its peel hard and lighter. Every shape is placed
@@ -38,6 +39,41 @@ key = MK.key
 def field(sd, soft):
     """A shape's field from its signed distance (inside positive): its edge at 0.5, ramped over `soft` either side."""
     return 0.5 + 0.5 * np.clip(sd / soft, -1.0, 1.0)
+
+
+def tint(L, C, h):
+    """A colour, chroma C at hue h (CIE LCh, degrees) read at L*, as linear sRGB of luminance 1: a hue laid on a value
+    without moving it."""
+    a, b = C * math.cos(math.radians(h)), C * math.sin(math.radians(h))
+    fy = (L + 16.0) / 116.0
+    inv = lambda t: t ** 3 if t ** 3 > 216.0 / 24389.0 else (116.0 * t - 16.0) / 903.3  # noqa: E731
+    X, Y, Z = 0.95047 * inv(fy + a / 500.0), inv(fy), 1.08883 * inv(fy - b / 200.0)
+    rgb = [max(0.0, 3.2404542 * X - 1.5371385 * Y - 0.4985314 * Z),
+           max(0.0, -0.9692660 * X + 1.8760108 * Y + 0.0415560 * Z),
+           max(0.0, 0.0556434 * X - 0.2040259 * Y + 1.0572252 * Z)]
+    y = 0.2126 * rgb[0] + 0.7152 * rgb[1] + 0.0722 * rgb[2]
+    return [round(c / y, 5) for c in rgb]
+
+
+def colours(P, Q, mats):
+    """The colour still's tints (`painted.colour`): each material's paint, bare fibre, under layer and stain at their
+    clay values, the wash at the paint's less the darkest wash, and each light's sun, sky, horizon and ground, the
+    plain sky behind and the ground's albedo. A colour a material does not name is its paint's at that value; with no
+    paint named, white."""
+    C = Q["colour"]
+    out = {"mats": [], "lights": []}
+    for k, v in mats.items():
+        c = C["mats"].get(k, {})
+        L = v["L"]
+        t = lambda part, at: tint(at, *c.get(part, c["paint"])) if "paint" in c or part in c else [1.0, 1.0, 1.0]  # noqa: E731
+        out["mats"].append({"name": k, "tint": t("paint", L), "bareTint": t("bare", v.get("bareL", L)),
+                            "underTint": t("under", v.get("underL", L)), "stainTint": t("stain", L - v.get("stainDL", 0.0))})
+    out["washTint"] = tint(Q["materials"]["cladding"]["L"] - Q["tongue"]["washL"], *C["wash"])
+    for name, c in C["light"].items():
+        out["lights"].append({"light": name, **{k: tint(c["atL"], *c[k]) for k in ("sun", "sky", "equator", "ground")},
+                              "background": tint(c["background"][2], *c["background"][:2]),
+                              "floor": tint(P["ground"]["L"], *c["floor"])})
+    return out
 
 
 def wave(pg, k, cell, t=None):
@@ -469,6 +505,7 @@ def main():
         "aoStrength": Q["aoStrength"], "lapDark": L["occlusion"], "lapCore": L["occCoreMm"] / 1000.0,
         "lapReach": L["occReachMm"] / 1000.0, "lapGrimeL": L["grimeL"], "lapGrimeReach": L["reach"],
         "lapGrimeBreak": L["break"], "lapPage": sh["lapPageMm"] / 1000.0,
+        "colour": colours(P, Q, mats),
     }
     json.dump(digest, open(os.path.join(out, "paint.json"), "w"), indent=1)
     painted = pg.m["cladding"] | pg.m["trims"]
