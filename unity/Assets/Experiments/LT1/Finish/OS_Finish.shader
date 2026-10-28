@@ -21,6 +21,8 @@ Shader "Overstory/Finish"
         _RunBody ("A run between its cores, as a share of its darkness", Range(0, 1)) = 1
         [Toggle] _Painted ("Painted", Float) = 0
         [Toggle(_OS_STREET)] _Street ("Street level", Float) = 0
+        [Toggle(_OS_PLANE)] _Plane ("A plane standing for finer forms (a roof's courses)", Float) = 0
+        _PlaneShadow ("Its baked forms' microshadow against the key light", Range(0, 1)) = 0
         _PaintSmooth ("Paint smoothness", Range(0, 1)) = 0.3
         _UnderSmooth ("Under smoothness", Range(0, 1)) = 0.12
         _NormalScale ("Tile normal strength", Float) = 1
@@ -93,6 +95,7 @@ Shader "Overstory/Finish"
         float4 _Tile_ST;
         float4 _TileScale;
         float _Painted, _Street, _PaintSmooth, _UnderSmooth, _NormalScale, _PaintFlat, _BoardScale;
+        float _Plane, _PlaneShadow;
         float _DirtL, _WaterL, _CavityL, _ArrisL, _AOStrength, _DirtDull, _LapDark, _LapCore, _LapReach, _LapScale, _LapPage, _LapStep, _LipL, _CrackL;
         float _StainL, _TideW, _StainMottleL, _TideL, _IslandL, _GrainMip, _GrainFade;
         float4 _IslandW;
@@ -121,6 +124,7 @@ Shader "Overstory/Finish"
             #pragma vertex Vert
             #pragma fragment Frag
             #pragma shader_feature_local _OS_STREET
+            #pragma shader_feature_local _OS_PLANE
             #pragma shader_feature_local _OS_PAINT
             #pragma multi_compile _ _MAIN_LIGHT_SHADOWS _MAIN_LIGHT_SHADOWS_CASCADE
             #pragma multi_compile_fragment _ _SHADOWS_SOFT _SHADOWS_SOFT_LOW _SHADOWS_SOFT_MEDIUM _SHADOWS_SOFT_HIGH
@@ -356,6 +360,8 @@ Shader "Overstory/Finish"
                 float3 bit = i.tangentWS.w * cross(i.normalWS, i.tangentWS.xyz);
                 float3x3 tbn = float3x3(i.tangentWS.xyz, bit, i.normalWS);
                 float3 nWS = normalize(mul(nT, tbn));
+                // the page's own forms before the paint evens them, for a plane's microshadow
+                float3 nForm = nWS;
             #if defined(_OS_PAINT)
                 // a mass painted as one: its small forms (the pantiles' rolls) lit nearly alike
                 nWS = normalize(nWS + _FlatUp * float3(0, 1, 0));
@@ -407,6 +413,21 @@ Shader "Overstory/Finish"
                 #endif
                     c.rgb -= direct * shut * GetMainLightShadowStrength();
                 }
+            #if defined(_OS_PLANE)
+                // a plane standing for the courses it was baked from has no rolls to cast the shadows the real
+                // courses cast: its baked forms shadow themselves against the key light by their occlusion
+                // (Uncharted 4's microshadow), before the paint evens their light
+                {
+                    Light pl = GetMainLight(d.shadowCoord, d.positionWS, d.shadowMask);
+                    float aoF = geo.r;
+                    float ms = saturate(abs(dot(nForm, pl.direction)) + 2.0 * aoF * aoF - 1.0);
+                    BRDFData brdfP;
+                    half alphaP = 1;
+                    InitializeBRDFData(s.albedo, s.metallic, s.specular, s.smoothness, alphaP, brdfP);
+                    half3 directP = LightingPhysicallyBased(brdfP, pl, nWS, d.viewDirectionWS);
+                    c.rgb -= directP * (1.0 - ms) * _PlaneShadow;
+                }
+            #endif
                 c.rgb = MixFog(c.rgb, d.fogCoord);
                 return half4(c.rgb, 1);
             }

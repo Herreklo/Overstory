@@ -19,5 +19,7 @@
     "density": { "roof": 0.5, "ridge": 0.5, "chimney": 0.6, "under": 0.35 },
     "describes": "One page a house, its charts packed at the most pixels a metre (in steps of 2) that fit between pxPerM; a roof course and the eave's undersides take less (density)."
   },
-  "lapReach": 0.25
+  "lapReach": 0.25,
+  "planeShadow": 0.0,
+  "planeShadowDescribes": "How strongly a roof's course planes shadow their baked rolls against the key light (OS_Finish's _OS_PLANE, Uncharted 4's microshadow): what the real courses get from their own cast shadows."
 }

@@ -1681,6 +1681,7 @@ def main():
         "bends": {"settle": house.frame.settle, "sag": house.frame.sag, "lean": house.frame.lean, "corner": house.frame.corner},
         "versions": house.version_of, "features": house.features,
         "lap": {"reach": S["lapReach"], "step": W["cladding"]["stepMm"] * MM},
+        "planeShadow": S["planeShadow"],
         "pieces": [{"i": pc.index, "id": pc.id, "mat": pc.mat, "kind": pc.kind, "mode": pc.mode, "wall": pc.wall, "group": pc.group}
                    for pc in house.pieces],
         "uv": {"uv0": "metres along the grain", "page": "UV1: the page"},

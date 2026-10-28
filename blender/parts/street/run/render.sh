@@ -8,5 +8,5 @@ cp cache/street/gen/$h/house-near.fbx cache/street/gen/$h/house-street.fbx cache
 cp cache/street/bake/$h/out/*.png cache/street/bake/$h/out/paint.json $F/
 /Applications/Unity/Hub/Editor/6000.6.6f1/Unity.app/Contents/MacOS/Unity -batchmode -quit -projectPath $PWD/unity \
   -executeMethod Overstory.EditorTools.LT1Street.Run -streetHouse $h -streetRound $2 -streetViews ${3:-eye,street} \
-  -streetWays ${4:-P,Pc} -streetLights ${5:-overcast,lowsun} -logFile $L
+  -streetWays ${4:-P,Pc} -streetLights ${5:-overcast,lowsun} ${6:+-streetPlaneShadow $6} -logFile $L
 grep -n "LT1Street\]\|error CS\|Exception" $L | tail -40

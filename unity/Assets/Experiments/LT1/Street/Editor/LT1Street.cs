@@ -35,7 +35,7 @@ namespace Overstory.EditorTools
         [Serializable] class PColour { public PColMat[] mats; public PColLight[] lights; public float[] washTint; }
         [Serializable] class Paint { public PMat[] mats; public PLight[] lights; public PColour colour; public float strokeScale, edgeAmp, rimL, rimW, rimFar, bareShift, washL, bareWash, brushFar, dragL, dragScale, dlRange, aoStrength, lapDark, lapCore, lapReach, lapGrimeL, lapGrimeReach, lapGrimeBreak, lapPage; public float[] strokeFade, brushFade, rimBreak, washFade; }
         [Serializable] class Lap { public float reach, step; }
-        [Serializable] class House { public int house; public float[] size; public Lap lap; }
+        [Serializable] class House { public int house; public float[] size; public Lap lap; public float planeShadow; }
 
         struct View { public string name, level; public Vector3 pos, target; public float fov; public bool floor; }
 
@@ -86,7 +86,10 @@ namespace Overstory.EditorTools
                 AssetDatabase.DeleteAsset(AssetDatabase.GUIDToAssetPath(guid));
             var house = JsonUtility.FromJson<House>(File.ReadAllText(Path.Combine(gen, "house.json")));
             var paint = JsonUtility.FromJson<Paint>(File.ReadAllText(Path.Combine(gen, "paint.json")));
-            var mats = Materials(gen, paint, house.lap);
+            // an A/B of the planes' microshadow without touching the house's data
+            if (Arg("-streetPlaneShadow") != null)
+                house.planeShadow = float.Parse(Arg("-streetPlaneShadow"), System.Globalization.CultureInfo.InvariantCulture);
+            var mats = Materials(gen, paint, house);
             var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
 
             var root_ = new GameObject($"House {id}");
@@ -244,8 +247,9 @@ namespace Overstory.EditorTools
         /// One material for each of the house's materials, way and level. A plane that stands for finer geometry reads
         /// the page's normal at every level: the street level's walls, and the roof's course planes at both.
         /// </summary>
-        static Dictionary<string, Material> Materials(string gen, Paint p, Lap lap)
+        static Dictionary<string, Material> Materials(string gen, Paint p, House house)
         {
+            var lap = house.lap;
             var shader = Shader.Find("Overstory/Finish");
             var tex = (Func<string, Texture2D>)(n => AssetDatabase.LoadAssetAtPath<Texture2D>($"{gen}/{n}.png"));
             var outp = new Dictionary<string, Material>();
@@ -311,6 +315,13 @@ namespace Overstory.EditorTools
                 {
                     mat.SetFloat("_Street", 1);
                     mat.EnableKeyword("_OS_STREET");
+                }
+                // the roof's course planes stand for tiles: their baked rolls shadow themselves as the real courses do
+                if (m.name == "roof")
+                {
+                    mat.SetFloat("_Plane", 1);
+                    mat.SetFloat("_PlaneShadow", house.planeShadow);
+                    mat.EnableKeyword("_OS_PLANE");
                 }
                 string key = $"{way}-{level}-{m.name}";
                 AssetDatabase.CreateAsset(mat, $"{gen}/mat-{key}.mat");

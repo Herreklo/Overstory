@@ -7,12 +7,12 @@ Reads house.json (house.py) and the bakes (bake.py), and writes into <cache>/out
   geo.png, street-normal.png                              as finish/marks.py's (marks.py here)
 and a look at hist-p's R and G and hist-p2's R side by side, into cache/street/paint-preview/<house>.png.
 
-The corner's values (finish.json `painted`, p3) are used as they are; what changes is where they act and how much.
-Each opening's shapes leave its own sill, head and battens on its own wall; the sill leaks at its lower end by the
-frame's tilt, or, level, at the end toward the weather. Wear is graded by the facts (paint.json `wear`): the years since
-the last coat and since the house was let go, the wall's exposure to the wet winds and the sill's fall, so the lee
-walls keep their paint and the street front fails as p3 does. Gutter joints and the downpipe's shoe place their water;
-the roof's tiles take their values tile by tile. No shape claims a dated event (UK4).
+The corner's rules and values (finish.json `painted`, p3) are used as they are, its own functions called where they
+can be; what changes is which wall, which opening and its frame. Each opening's shapes leave its own sill, head and
+battens on its own wall; the sill leaks at its lower end by the frame's tilt, or, level, at the end toward the weather.
+The street front is p3 (the corner is its west end); a wall less exposed to the wet winds, or painted later, takes the
+corner's failed paint scaled down by its wear against the front's (paint.json `wear`), never up. The roof's tiles take
+their values tile by tile. No shape claims a dated event (UK4).
 """
 
 import copy
@@ -74,12 +74,19 @@ def coats(meta, paints, since):
     return meta["year"] - last, (meta["year"] - stop) if stops else 0, cyc
 
 
-def severity(meta, paints, A, wall, tilt=0.0):
-    """How far the paint has failed on a wall (and at an opening, by its sill's fall): 1 is p3."""
+def wear(meta, paints, wall):
+    """How far a wall's paint has gone: (years since its last coat + years let go) / the cycle, times its exposure."""
     since = meta["leanTo"]["year"] if wall["kind"] == "lean" else meta["built"]
     age, neglected, cyc = coats(meta, paints, since)
-    tf = 1.0 + A["tiltGain"] * min(1.0, abs(tilt) / A["tiltFull"])
-    return A["scale"] * (age + neglected) / cyc * exposure(wall, paints) * tf
+    return (age + neglected) / cyc * exposure(wall, paints)
+
+
+def grade(meta, paints, walls):
+    """Each wall's share of the corner's failed paint: the street front's (the wall facing -y) is p3's, 1; another's
+    is its wear against the front's, at most 1, so no wall fails more than the floor."""
+    front = max(walls.values(), key=lambda w: -w["out"][1] if w["kind"] != "lean" else -2.0)
+    w0 = wear(meta, paints, front)
+    return {i: min(1.0, wear(meta, paints, w) / w0) for i, w in walls.items()}
 
 
 def leak_side(o, wall, paints, A):
@@ -116,27 +123,32 @@ def opening_meta(meta, o, k, wall, cap_t):
             "features": f, "heights": {"drip": floor_of(meta, o, wall), "head": cz1 - cap_t}}
 
 
-def graded(Q, s, A, om, door):
-    """The corner's failed paint at severity `s`: its washes and runs' strengths, its peel's heights and the casing's
-    peel reach times s (at most `most`); below 1 the tongue's runs end sooner and the runs cross fewer laps. A door has
-    no sill: only the head's run."""
+def graded(Q, g, om, door):
+    """The corner's failed paint on a wall at share `g` (grade): at 1 the corner's own; below, its washes and runs'
+    strengths, its peel's heights and the casing's peel reach times g, the tongue's runs ending sooner and the runs
+    crossing fewer laps. A door has no sill: only the head's run and its battens' runs."""
+    if g >= 1.0 and not door:
+        return Q
     q = copy.deepcopy(Q)
     T = q["tongue"]
-    g = min(s, A["most"])
     f, h = om["features"], om["heights"]
     spans = {"leak": f["sill"][2] - h["drip"][0], "dry": f["sill"][2] - h["drip"][0], "cap": h["head"] - f["casing"][2]}
     if door:
         T["runs"] = {"cap": T["runs"]["cap"]}
+        for kind in ("leak", "dry"):
+            T["runoff"][kind]["boards"] = 0
+    if g >= 1.0:
+        return q
     for name, R in T["runs"].items():
         R["L"] *= g
-        R["peel"] = [[w, min(0.95, ht * g)] for w, ht in R["peel"]]
-        if g < 1.0:
-            R["length"] = (R["length"] or spans[name]) * g
+        R["peel"] = [[w, ht * g] for w, ht in R["peel"]]
+        R["length"] = (R["length"] or spans[name]) * g
     for kind in ("leak", "dry", "batten"):
         S = T["runoff"][kind]
         S["strength"] *= g
-        S["boards"] = max(1, int(round(S["boards"] * min(g, 1.0))))
-        S["flake"] = [S["flake"][0], min(0.95, S["flake"][1] * g)]
+        if S["boards"]:
+            S["boards"] = max(1, int(round(S["boards"] * g)))
+        S["flake"] = [S["flake"][0], S["flake"][1] * g]
     q["peel"]["casing"]["reach"] *= g
     return q
 
@@ -144,81 +156,29 @@ def graded(Q, s, A, om, door):
 # ---------------------------------------------------------------- the failed paint
 
 
-def runoff(pg, T, meta, srcs):
-    """finish/paint.py's runoff, its sources given: each (its settings, along, z), one narrow streak down its laps,
-    a soft wash from a neck under the lap above to the drip edge, a hard tick there, and at its last drip edge a flake
-    of bare wood; from the street stop one soft mark of its own (`far`). Returns the peel's field, the wash near and
-    far (L*) and the stain's field."""
-    R = T["runoff"]
-    c = meta["courses"]
-    clad = pg.m["cladding"] & pg.vertical & pg.street
-    joints = [(x, b) for face, x, b, _ in meta["features"]["joints"] if face == "street"]
-    peel_, wash, far, stain = np.zeros(pg.shape), np.zeros(pg.shape), np.zeros(pg.shape), np.zeros(pg.shape)
-    drip = R["dripMm"] / 1000.0
-    Fr = R["far"]
-    for si, (S, x0, z0) in enumerate(srcs):
-        k = key(meta, "p-runoff", si)
-        u = lambda *p: 2.0 * HS.unit(HS.h(k, *p)) - 1.0  # noqa: E731
-        faces = [(c[i], min(c[i + 1], z0)) for i in range(len(c) - 2, -1, -1) if c[i] < z0 - 1e-6][:S["boards"]]
-        cx = x0
-        for j, (b, t) in enumerate(faces):
-            cx += R["wander"] * u("c", j)
-            wj = (R["width"][0] + (R["width"][1] - R["width"][0]) * j / max(len(faces) - 1, 1)) * S["scale"] * (1.0 + 0.15 * u("w", j))
-            face = clad & (pg.z >= b) & (pg.z < t)
-            Wb = R["wobble"]
-            off = np.abs(pg.along - cx) + Wb["amp"] * wave(pg, HS.h(k, "e", j), Wb["cell"], pg.z)
-            s = np.clip((t - pg.z) / max(t - b, 1e-3), 0.0, 1.0)
-            half = 0.5 * wj * (R["neck"] + (1.0 - R["neck"]) * s ** R["spread"])
-            core = 1.0 - FL.smoothstep(R["core"] * half, half, off)
-            left = 1.0 - R["fade"] * j / max(len(faces) - 1, 1)
-            wash = np.maximum(wash, np.where(face, S["strength"] * left * (R["L"][0] + (R["L"][1] - R["L"][0]) * s) * core, 0.0))
-            hw = 0.5 * wj * Fr["width"]
-            far = np.maximum(far, np.where(face, S["strength"] * left * Fr["L"] * (1.0 - FL.smoothstep(Fr["core"] * hw, hw, off)), 0.0))
-            tick = np.minimum(0.5 * wj * R["tick"] - off, drip * (1.0 + 0.3 * u("t", j)) - (pg.z - b))
-            stain = np.maximum(stain, np.where(face, field(tick, R["soft"]), 0.0))
-            if j == len(faces) - 1:
-                fw, share = S["flake"]
-                hf = 0.5 * fw * (1.0 + 0.2 * u("fw"))
-                pc = cx + 0.3 * hf * u("fc")
-                js = [x for x, jb in joints if abs(jb - b) < 1e-3 and abs(x - pc) < hf + T["joint"]["reach"]]
-                peel_ = np.maximum(peel_, np.where(face, FP.strip(pg, T, k, pc, hf, b, t, share, js), 0.0))
-    return peel_, wash, far, stain
-
-
-def sources(R, meta, side, door):
-    """Where the water leaves an opening, as the corner's: the sill's horns (the leaking one most), and each batten's
-    lower end, where its tilt sends the water."""
-    f = meta["features"]
-    srcs = []
-    if not door:
-        (leak, lo), (dry, do) = FP.horns(meta, side)
-        z_sill = f["sill"][2]
-        srcs += [(R["leak"], leak - lo * R["inset"], z_sill), (R["dry"], dry - do * R["inset"], z_sill)]
-    for bx0, bx1, zc, slope, w in f["battens"]:
-        x = bx0 if slope > 0 else bx1
-        srcs.append((R["batten"], x + (R["inset"] if slope > 0 else -R["inset"]), zc + slope * (x - (bx0 + bx1) / 2.0) - w / 2.0))
-    return srcs
-
-
 def peel_casing(pg, Q, meta, side):
-    """The corner's peel at the casing's leaking leg, at its foot (on the sill, or a door's threshold)."""
+    """The corner's peel at the casing's leaking leg, at its foot on the sill; the leg's inner edge the sheets', as the
+    corner's, or the opening's."""
     R = Q["peel"]
     f = meta["features"]
     W = R["wobble"]
     cx0, cx1, cz0, _ = f["casing"]
-    ax0, ax1 = f["opening"]
+    ax0, ax1 = (f["sheets"] or f["opening"])[:2]
     leg = (cx0 - 0.01, ax0) if side < 0 else (ax1, cx1 + 0.01)
     on = pg.m["trims"] & pg.vertical & (pg.along > leg[0]) & (pg.along < leg[1]) & (pg.z >= cz0 - 0.005)
     edge = cz0 + R["casing"]["reach"] * (1.0 - W["share"] * 0.5 * (1.0 + wave(pg, key(meta, "p-casing"), W["cell"], pg.z)))
     return np.where(on, field(edge - pg.z, R["soft"]), 0.0)
 
 
-def peel_tops(pg, Q, k):
-    """The corner's ledges' tops, standing wet: bare but at their ends, where what they meet keeps them."""
+def peel_tops(pg, Q, k, length):
+    """The corner's ledges' tops, standing wet: bare but at their ends, where what they meet keeps them; a top that
+    reaches the wall's corner runs on round it, as the corner's ran on at its sample's edges."""
     R = Q["peel"]
     a0p, a1p = pg.per_piece(pg.along, "min"), pg.per_piece(pg.along, "max")
     ins = R["tops"]["inset"] * (1.0 + 0.5 * wave(pg, k, R["wobble"]["cell"]))
-    d = np.minimum(np.minimum(pg.along - a0p - ins, a1p - pg.along - ins), 1.0)
+    d0 = np.where(a0p <= 0.01, np.inf, pg.along - a0p - ins)
+    d1 = np.where(a1p >= length - 0.01, np.inf, a1p - pg.along - ins)
+    d = np.minimum(np.minimum(d0, d1), 1.0)
     return np.where(pg.m["trims"] & pg.up, field(d, R["soft"]), 0.0)
 
 
@@ -416,20 +376,6 @@ def tile_values(pg, Q, meta, roof):
     return np.where(tiles & (u < T["share"]), T["L"] * (0.5 + 0.5 * v), 0.0)
 
 
-def joint_lines(pg, S, meta, wall):
-    """A thin dark at each butt joint of a wall's boards (features.joints), as the junctions are drawn."""
-    J = S["joint"]
-    w = J["mm"] / 1000.0
-    clad = pg.m["cladding"] & pg.vertical
-    dl = np.zeros(pg.shape)
-    for wi, a, zb, zt in meta["features"]["joints"]:
-        if wi != wall["i"]:
-            continue
-        on = clad & (pg.z >= zb) & (pg.z < zt) & (np.abs(pg.along - a) < w)
-        dl -= np.where(on, J["L"] * (1.0 - FL.smoothstep(0.0, w, np.abs(pg.along - a))), 0.0)
-    return dl
-
-
 def grime(pg, Q, low, sills):
     """The lap grime's strength on a wall's boards: everywhere some, more down its gradient and on the courses each
     sill drips on."""
@@ -494,7 +440,7 @@ def main():
     wash, far = np.zeros(pg.shape), np.zeros(pg.shape)
     walls = {w["i"]: w for w in meta["walls"]}
     views = {i: SM.View(pg, pg.wall == i, w) for i, w in walls.items()}
-    wsev = {i: severity(meta, paints, A, w) for i, w in walls.items()}
+    grades = grade(meta, paints, walls)
     roofs = {r["wall"]: r for r in meta["features"]["roof"]}
     log = []
 
@@ -507,18 +453,18 @@ def main():
         v = SM.View(pg, (pg.wall == wall["i"]) & ~np.isin(pg.piece, others), wall)
         om = opening_meta(meta, o, k, wall, cap_t)
         side = leak_side(o, wall, paints, A)
-        s = severity(meta, paints, A, wall, o.get("tilt", 0.0))
+        g = grades[wall["i"]]
         door = "sill" not in o
-        ops.append((k, o, wall, v, om, side, s, door, mine))
-        log.append(f"open{k} w{wall['i']} {o['kind']} {s:.2f}{'+' if side > 0 else '-'}")
+        ops.append((k, o, wall, v, om, side, g, door, mine))
+        log.append(f"open{k} w{wall['i']} {o['kind']} {'+' if side > 0 else '-'}")
 
-    # the failed paint: each opening's runs, its tongue and its casing's peel by its severity; each wall's tops,
-    # its gutter's leaks and its plinth's wet margin
-    for k, o, wall, v, om, side, s, door, mine in ops:
-        q = graded(Q, s, A, om, door)
-        if s >= A["from"]["runoff"]:
-            pt, ws, fr, st = runoff(v, q["tongue"], om, sources(q["tongue"]["runoff"], om, side, door))
-            if s >= A["from"]["tongue"]:
+    # the failed paint, the corner's: each opening's runs, its tongue, its casing's peel and its stains; each wall's
+    # tops and its plinth's wet margin
+    for k, o, wall, v, om, side, g, door, mine in ops:
+        q = graded(Q, g, om, door)
+        if g >= A["from"]["runoff"]:
+            pt, ws, fr, st = FP.runoff(v, q["tongue"], om, side)
+            if g >= A["from"]["tongue"]:
                 tp, tw = FP.tongue(v, q, om, side)
                 pt = np.maximum(pt, tp)
                 ws = np.maximum(ws, tw)
@@ -526,34 +472,18 @@ def main():
             v.put(wash, ws)
             v.put(far, fr)
             v.put(sn, st)
-        if s >= A["from"]["peel"]:
+        if g >= A["from"]["peel"] and not door:
             v.put(pl, peel_casing(v, q, om, side))
         v.put(sn, opening_stains(v, Q, om, side))
     broads = {}
     for i, v in views.items():
         wall = walls[i]
-        vm = {"world": meta["world"], "house": meta["house"], "wall": i, "courses": meta["courses"][str(wall["group"])],
-              "features": {"joints": [("street", a_, zb, zt) for w_, a_, zb, zt in meta["features"]["joints"] if w_ == i]}}
-        if wsev[i] >= A["from"]["peel"]:
-            v.put(pl, peel_tops(v, Q, key(meta, "p-tops", i)))
+        vm = {"world": meta["world"], "house": meta["house"], "wall": i}
+        if grades[i] >= A["from"]["peel"]:
+            v.put(pl, peel_tops(v, Q, key(meta, "p-tops", i), wall["length"]))
         broads[i] = splash(v, Q, P, S, wall, meta)
         plinth = (v.m["stone"] | v.m["concrete"]) & v.vertical
         v.put(sn, wet_margin(v, Q, vm, broads[i], plinth))
-        for di, (_, x, flow, kind) in enumerate(d for d in meta["features"]["drips"] if d[0] == i):
-            if kind == "gutter":
-                G = dict(S["gutter"], strength=S["gutter"]["strength"] * flow)
-                vm_d = dict(vm, house=f"{meta['house']}/w{i}/drip{di}")
-                pt, ws, fr, st = runoff(v, T, vm_d, [(G, x, meta["heights"]["top"])])
-                v.put(pl, pt)
-                v.put(wash, ws)
-                v.put(far, fr)
-                v.put(sn, st)
-            else:
-                Sh = S["shoe"]
-                zf = meta["heights"]["drip"][0]
-                on = (v.m["cladding"] | v.m["trims"]) & v.vertical
-                ws = Sh["L"] * flow * MK.gauss(v.along - x, Sh["width"]) * (1.0 - FL.smoothstep(zf, zf + Sh["top"], v.z))
-                v.put(wash, np.where(on, ws, 0.0))
     painted = pg.m["cladding"] | pg.m["trims"]
     pl = np.where(painted, pl, 0.0)
 
@@ -568,7 +498,7 @@ def main():
         d, top, low = wall_values(v, Q, zf, z_pl, broads[i])
         v.put(dl, d, "add")
         lows[i] = (zf, top, low)
-    for k, o, wall, v, om, side, s, door, mine in ops:
+    for k, o, wall, v, om, side, g, door, mine in ops:
         v.put(dl, opening_values(v, Q, om, side, board), "add")
     dl += np.where((pg.m["trims"] | pg.m["stone"] | pg.m["batten"]) & pg.up, Q["up"]["L"], 0.0)
     C = Q["contact"]
@@ -586,7 +516,7 @@ def main():
     for i, v in views.items():
         wall = (v.m["cladding"] | v.m["trims"]) & v.vertical
         down(v, dl, base, wall, lows[i][1] - v.z, J["eave"])
-    for k, o, wall, v, om, side, s, door, mine in ops:
+    for k, o, wall, v, om, side, g, door, mine in ops:
         opening_junctions(v, Q, om, dl, base, [i for i in mine if meta["pieces"][i]["mat"] == "batten"])
     for i, v in views.items():
         lean = walls[i]["kind"] == "lean"
@@ -596,14 +526,14 @@ def main():
         down(v, dl, base, clad, v.z - zf, J["drip"])
         down(v, dl, base, plinth, (zf if lean else meta["heights"]["drip"][0]) - v.z, J["plinth"])
         down(v, dl, base, plinth, v.z, J["ground"])
-    for k, o, wall, v, om, side, s, door, mine in ops:
+    for k, o, wall, v, om, side, g, door, mine in ops:
         v.put(dl, opening_small(v, Q, om), "add")
     for i, v in views.items():
-        v.put(dl, joint_lines(v, S, meta, walls[i]) + tile_values(v, Q, meta, roofs.get(i)), "add")
+        v.put(dl, tile_values(v, Q, meta, roofs.get(i)), "add")
     loose = SM.View(pg, pg.wall == -1, walls[0])
     loose.put(dl, tile_values(loose, Q, meta, None), "add")
     for i, v in views.items():
-        sills = [om["features"]["sill"] for k, o, wall, ov, om, side, s, door, mine in ops if wall["i"] == i and not door]
+        sills = [om["features"]["sill"] for k, o, wall, ov, om, side, g, door, mine in ops if wall["i"] == i and not door]
         v.put(gr, grime(v, Q, lows[i][2], sills))
 
     rng = Q["dlRange"]
@@ -646,7 +576,7 @@ def main():
     json.dump(digest, open(os.path.join(out, "paint.json"), "w"), indent=1)
     preview(os.path.join(FL.ROOT, "cache", "street", "paint-preview", f"{meta['house']}.png"), pl, dl, wash, rng, T["washL"])
     share = lambda m: float((m & pg.cov).sum()) / max(1, int((painted & pg.cov).sum()))  # noqa: E731
-    print(f"[paint] severity by wall {', '.join(f'w{i} {s:.2f}' for i, s in wsev.items())}; {'; '.join(log)}")
+    print(f"[paint] grade by wall {', '.join(f'w{i} {g:.2f}' for i, g in grades.items())}; {'; '.join(log)}")
     print(f"[paint] boarding {a.get('boarding') or Q['boarding']['use']}; peeled {share(painted & (pl > 0.5)):.3f} of the paint; "
           f"stained {share(sn > 0.5):.3f}; dL {np.percentile(dl[pg.cov], [1, 5, 50, 95]).round(1)}, "
           f"beyond {rng}: {float((np.abs(dl[pg.cov]) > rng).mean()):.4f}; wrote {out}")

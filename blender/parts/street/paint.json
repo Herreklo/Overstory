@@ -1,36 +1,14 @@
 {
   "schemaVersion": 1,
-  "describes": "Way P for a whole house (paint.py): what the corner's p3 (blender/parts/finish/finish.json `painted`, used as it is) needs to grow to every wall and opening. `wear` grades the corner's failed paint by the facts; the rest places what the corner had no fact for. Sizes in metres, values in L*.",
+  "describes": "Way P for a whole house (paint.py): what the corner's p3 (blender/parts/finish/finish.json `painted`, its rules and values used as they are) needs to grow to every wall and opening. `wear` grades the corner's failed paint below the floor by the facts; the rest places what the corner had no fact for. Sizes in metres, values in L*.",
   "wear": {
-    "describes": "An opening's severity is scale x wear x its wall's exposure x its sill's tilt factor; a wall's own marks (its trims' tops) take it without the tilt. Wear is (years since the last coat + years neglected) / the upkeep cycle (packs/stavanger-1989/house/paints.json upkeep: the last coat is the cycle's last turn before the house was let go, counted from its building, or a lean-to's; the neglected years count twice, as nothing is touched up). Exposure is from paints.json weather (1 facing the wet winds, `least` on the lee). The tilt factor is 1 + tiltGain x min(1, |tilt| / tiltFull): a sill that falls sends more water to its lower end. `scale` is the one calibration: 107's street front at 1989 is 1, so it is p3 (last coat 1977.6, let go 1986, cycle 13.6 years at wealth 200: wear 1.059; exposure 0.882). Each kind of mark runs only from its threshold in `from` (the narrow runs first, then the tongue, then the peel at the casing's foot and on the tops), its strengths, peel heights and run lengths times the severity, at most `most`. A sill falling less than `level` a metre is level, and leaks at its end toward the weather.",
-    "scale": 1.07,
-    "tiltFull": 0.01,
-    "tiltGain": 0.25,
+    "describes": "The street front is p3, its share 1. Another wall's share is its wear against the front's, at most 1: wear is (years since the last coat + years neglected) / the upkeep cycle (packs/stavanger-1989/house/paints.json upkeep: the last coat is the cycle's last turn before the house was let go, counted from its building, or a lean-to's) times the wall's exposure (paints.json weather: 1 facing the wet winds, `least` on the lee). Below 1 the corner's strengths, peel heights and run lengths take the share, and each kind of mark runs only from its threshold in `from` (the narrow runs first, then the tongue, then the peel at the casing's foot and on the tops). A sill falling less than `level` a metre is level, and leaks at its end toward the weather.",
     "level": 0.001,
-    "most": 1.1,
     "from": { "runoff": 0.3, "tongue": 0.6, "peel": 0.6 }
-  },
-  "gutter": {
-    "describes": "A leaking gutter joint (house.json features.drips, 'gutter'): its water runs back under the soffit to the wall and down from the eave in one run, as a sill's horn's (finish.json painted.tongue.runoff), its strength times the drip's flow.",
-    "boards": 4,
-    "scale": 1.1,
-    "strength": 0.9,
-    "flake": [0.08, 0.35]
-  },
-  "shoe": {
-    "describes": "The downpipe's shoe ('shoe' drip) throws its water back on the drip board and the lowest boards: a soft wash, `L` times its flow at the shoe, `width` either side, gone `top` above the wall's foot.",
-    "L": 10,
-    "width": 0.22,
-    "top": 0.45
   },
   "splash": {
     "describes": "The foot's wetting where no drip names it: a gable takes its verge's run-off (finish.json marks.splash.gable); the lean-to's low eave has no gutter and drips its whole length (`leanEave`).",
     "leanEave": 0.6
-  },
-  "joint": {
-    "describes": "A butt joint's thin dark on the boards (features.joints), as the junctions': `L` at the joint, gone `mm` either side.",
-    "L": 10,
-    "mm": 8
   },
   "materials": {
     "describes": "Materials the corner has none of, in finish.json painted.materials' fields: the roof's course planes are its tiles (`roof` names the material they take); the lean-to's cast plinth, its felt and the chimney's render are guessed values in grey, not yet judged.",
