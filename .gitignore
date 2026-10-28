@@ -51,3 +51,10 @@ unity/Assets/Experiments/LT1/Playable/Generated/
 unity/Assets/Experiments/LT1/Playable/Generated.meta
 unity/Assets/Art/Buildings/playable/**/*.fbx
 unity/Assets/Art/Buildings/playable/**/*.fbx.meta
+# The finishing test (blender/parts/finish): the corner's FBX, pages, tileables and materials, and its scene, rebuilt
+# by the Blender scripts and LT1Finish; the CC0 scans it reads (logged in docs/research/downloads.md) stay local
+unity/Assets/Experiments/LT1/Finish/Generated/
+unity/Assets/Experiments/LT1/Finish/Generated.meta
+unity/Assets/Experiments/LT1/Finish/Finish.unity
+unity/Assets/Experiments/LT1/Finish/Finish.unity.meta
+blender/parts/finish/scans/

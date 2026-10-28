@@ -1,0 +1,59 @@
+{
+  "schemaVersion": 1,
+  "describes": "The finishing test's sample: house 107's street corner as it stands in 1989, about 3 m of the street wall and 1.5 m of the gable return, ground to eave, with the first two courses of pantiles. Its levels, budgets and texture space.",
+  "house": 107,
+  "fixture": "fixtures/lt1-street.json",
+  "year": 1989,
+  "working": "blender/parts/finish/classical.json",
+  "sample": {
+    "streetMm": 3000,
+    "gableMm": 1500,
+    "courses": 2
+  },
+  "levels": {
+    "near": {
+      "level": 0,
+      "budgetTris": 3000,
+      "seenWithinM": 8
+    },
+    "street": {
+      "level": 1,
+      "budgetTris": 800,
+      "seenFromM": 20,
+      "laps": "page normal"
+    }
+  },
+  "page": {
+    "size": 1024,
+    "pxPerM": 128,
+    "padPx": 4
+  },
+  "lapReach": 0.25,
+  "tileable": {
+    "size": 1024,
+    "metres": 2.0
+  },
+  "trimSheet": {
+    "size": 1024,
+    "metres": 2.0,
+    "describes": "One sheet of painted board strips for every trim: each width once flat (the near level's chamfers are geometry) and once with 45-degree bevels along both edges as wide as the member's chamfer (the street level).",
+    "stripsMm": [
+      32,
+      48,
+      70,
+      124,
+      152,
+      212
+    ],
+    "padMm": 16,
+    "bevelMm": {
+      "describes": "each strip's bevel at the street level: the chamfer of the members that use it",
+      "32": 6,
+      "48": 15,
+      "70": 18,
+      "124": 15,
+      "152": 16,
+      "212": 18
+    }
+  }
+}

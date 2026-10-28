@@ -1,0 +1,330 @@
+// The finishing test's one surface (blender/parts/finish): every material of 107's corner, in clay, for all three
+// ways. UV0 reads the material's tileable (way A's made here, ways B and C's from scans), UV1 the corner's page:
+// its history (paint lost, dirt, water, each board's value) and its geometry (occlusion, cavity, arris). Lightness is
+// worked in CIE L*, as the marks were made, and only then turned to grey albedo: no hue anywhere.
+Shader "Overstory/Finish"
+{
+    Properties
+    {
+        _Tile ("Tileable: R under L*, G surface L*, B breakup, A height", 2D) = "grey" {}
+        _TileN ("Tileable normal xy, B smoothness offset", 2D) = "grey" {}
+        _TileScale ("UV0 scale to the tileable", Vector) = (1, 1, 0, 0)
+        _Hist ("History page: R loss share, G dirt, B water, A board value", 2D) = "black" {}
+        _Geo ("Geometry page: R occlusion, G cavity/arris, B sky, A arris", 2D) = "white" {}
+        _StreetN ("Street level's laps (page normal)", 2D) = "grey" {}
+        [Toggle] _Painted ("Painted", Float) = 0
+        [Toggle(_OS_STREET)] _Street ("Street level", Float) = 0
+        _PaintSmooth ("Paint smoothness", Range(0, 1)) = 0.3
+        _UnderSmooth ("Under smoothness", Range(0, 1)) = 0.12
+        _NormalScale ("Tile normal strength", Float) = 1
+        _PaintFlat ("Tile normal kept under paint", Range(0, 1)) = 0.45
+        _BoardScale ("Board value", Float) = 1
+        _DirtL ("Dirt, L*", Float) = 16
+        _WaterL ("Water, L*", Float) = 14
+        _CavityL ("Cavity, L*", Float) = 8
+        _ArrisL ("Worn arris lift, L*", Float) = 4
+        _AOStrength ("Page occlusion", Range(0, 1)) = 1
+        _LapDark ("Occlusion where a board meets the butt above", Range(0, 1)) = 0.65
+        _LapReach ("How far below the butt it reaches, m", Float) = 0.007
+        _LapScale ("Vertex alpha's metres (corner.json lapReach)", Float) = 0.25
+        _DirtDull ("Dirt dulls gloss", Float) = 0.1
+    }
+
+    HLSLINCLUDE
+    #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
+
+    CBUFFER_START(UnityPerMaterial)
+        float4 _Tile_ST;
+        float4 _TileScale;
+        float _Painted, _Street, _PaintSmooth, _UnderSmooth, _NormalScale, _PaintFlat, _BoardScale;
+        float _DirtL, _WaterL, _CavityL, _ArrisL, _AOStrength, _DirtDull, _LapDark, _LapReach, _LapScale;
+    CBUFFER_END
+    ENDHLSL
+
+    SubShader
+    {
+        Tags { "RenderType" = "Opaque" "RenderPipeline" = "UniversalPipeline" "Queue" = "Geometry" }
+
+        Pass
+        {
+            Name "ForwardLit"
+            Tags { "LightMode" = "UniversalForward" }
+
+            HLSLPROGRAM
+            #pragma target 4.5
+            #pragma vertex Vert
+            #pragma fragment Frag
+            #pragma shader_feature_local _OS_STREET
+            #pragma multi_compile _ _MAIN_LIGHT_SHADOWS _MAIN_LIGHT_SHADOWS_CASCADE
+            #pragma multi_compile_fragment _ _SHADOWS_SOFT _SHADOWS_SOFT_LOW _SHADOWS_SOFT_MEDIUM _SHADOWS_SOFT_HIGH
+            #pragma multi_compile_fragment _ _SCREEN_SPACE_OCCLUSION
+            #pragma multi_compile _ _CLUSTER_LIGHT_LOOP
+            #pragma multi_compile_fog
+            #pragma multi_compile_instancing
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
+
+            TEXTURE2D(_Tile); SAMPLER(sampler_Tile);
+            TEXTURE2D(_TileN); SAMPLER(sampler_TileN);
+            TEXTURE2D(_Hist); SAMPLER(sampler_Hist);
+            TEXTURE2D(_Geo); SAMPLER(sampler_Geo);
+            TEXTURE2D(_StreetN); SAMPLER(sampler_StreetN);
+
+            struct Attributes
+            {
+                float4 positionOS : POSITION;
+                float3 normalOS : NORMAL;
+                float4 tangentOS : TANGENT;
+                float2 uv0 : TEXCOORD0;
+                float2 uv1 : TEXCOORD1;
+                float4 color : COLOR;
+                UNITY_VERTEX_INPUT_INSTANCE_ID
+            };
+
+            struct Varyings
+            {
+                float4 positionCS : SV_POSITION;
+                float3 positionWS : TEXCOORD0;
+                float3 normalWS : TEXCOORD1;
+                float4 tangentWS : TEXCOORD2;
+                float4 uv : TEXCOORD3;
+                float4 color : TEXCOORD4;
+                float fog : TEXCOORD5;
+            };
+
+            Varyings Vert(Attributes v)
+            {
+                Varyings o;
+                UNITY_SETUP_INSTANCE_ID(v);
+                VertexPositionInputs p = GetVertexPositionInputs(v.positionOS.xyz);
+                VertexNormalInputs n = GetVertexNormalInputs(v.normalOS, v.tangentOS);
+                o.positionCS = p.positionCS;
+                o.positionWS = p.positionWS;
+                o.normalWS = n.normalWS;
+                o.tangentWS = float4(n.tangentWS, v.tangentOS.w * GetOddNegativeScale());
+                o.uv = float4(v.uv0 * _TileScale.xy, v.uv1);
+                o.color = v.color;
+                o.fog = ComputeFogFactor(p.positionCS.z);
+                return o;
+            }
+
+            // CIE L* (0..100) to relative luminance
+            float LToY(float L)
+            {
+                return L > 8.0 ? pow((L + 16.0) / 116.0, 3.0) : L / 903.3;
+            }
+
+            half4 Frag(Varyings i) : SV_Target
+            {
+                float4 tile = SAMPLE_TEXTURE2D(_Tile, sampler_Tile, i.uv.xy);
+                float4 tn = SAMPLE_TEXTURE2D(_TileN, sampler_TileN, i.uv.xy);
+                float4 hist = SAMPLE_TEXTURE2D(_Hist, sampler_Hist, i.uv.zw);
+                float4 geo = SAMPLE_TEXTURE2D(_Geo, sampler_Geo, i.uv.zw);
+
+                // paint is lost where the page's share meets the tileable's breakup; the edge anti-aliased to a pixel.
+                // Once the breakup's plates are under a pixel its mips average to a half and would lose every loss,
+                // so with distance the loss becomes the page's share itself: the same mean, as soft painted marks
+                float t = hist.r + tile.b - 1.0;
+                float w = max(fwidth(t), 1e-3);
+                float lod = CALCULATE_TEXTURE2D_LOD(_Tile, sampler_Tile, i.uv.xy);
+                float far = saturate((lod - 1.5) / 2.0);
+                float lost = _Painted * lerp(smoothstep(-w, w, t), hist.r, far);
+                float under = max(lost, saturate(i.color.b));
+
+                float L = lerp(tile.g, tile.r, under) * 100.0;
+                L += (hist.a - 0.5) * 20.0 * _BoardScale;
+                float cav = saturate((0.5 - geo.g) * 2.0);
+                float lift = saturate((geo.g - 0.5) * 2.0);
+                // bare stuff soaks unevenly, by its own breakup; paint sheds water and keeps a stain even
+                float soak = lerp(0.35 + 1.3 * tile.b, 1.0, _Painted * (1.0 - lost));
+                L += lift * _ArrisL - hist.g * _DirtL - saturate(hist.b * soak) * _WaterL - cav * _CavityL;
+                float Y = LToY(clamp(L, 2.0, 98.0));
+
+                float2 nxy = (tn.rg * 2.0 - 1.0) * _NormalScale * lerp(_PaintFlat, 1.0, max(lost, 1.0 - _Painted));
+                float3 nT = float3(nxy, sqrt(saturate(1.0 - dot(nxy, nxy))));
+            #if defined(_OS_STREET)
+                float3 nP = SAMPLE_TEXTURE2D(_StreetN, sampler_StreetN, i.uv.zw).xyz * 2.0 - 1.0;
+                nT = normalize(float3(nP.xy + nT.xy, nP.z * nT.z));
+            #endif
+                float3 bit = i.tangentWS.w * cross(i.normalWS, i.tangentWS.xyz);
+                float3x3 tbn = float3x3(i.tangentWS.xyz, bit, i.normalWS);
+                float3 nWS = normalize(mul(nT, tbn));
+
+                SurfaceData s = (SurfaceData)0;
+                s.albedo = Y.xxx;
+                s.metallic = 0;
+                s.specular = 0;
+                s.smoothness = saturate(lerp(_PaintSmooth, _UnderSmooth, under) + (tn.b - 0.5) - hist.g * _DirtDull);
+                s.normalTS = nT;
+                // the page is too coarse for the dark line under each lap: the board's own corners carry how far
+                // below the butt above they sit (vertex alpha), exact across its planar face
+                float lapD = i.color.a * _LapScale;
+                float lap = 1.0 - _LapDark * exp(-lapD / _LapReach);
+                s.occlusion = lerp(1.0, geo.r, _AOStrength) * lap;
+            #if defined(_OS_STREET)
+                // the street level's wall is a plane: its lap lines come from the page
+                s.occlusion *= geo.b;
+            #endif
+                s.alpha = 1;
+
+                InputData d = (InputData)0;
+                d.positionWS = i.positionWS;
+                d.positionCS = i.positionCS;
+                d.normalWS = nWS;
+                d.viewDirectionWS = GetWorldSpaceNormalizeViewDir(i.positionWS);
+            #if defined(MAIN_LIGHT_CALCULATE_SHADOWS)
+                d.shadowCoord = TransformWorldToShadowCoord(i.positionWS);
+            #endif
+                d.fogCoord = i.fog;
+                d.bakedGI = SampleSH(nWS);
+                d.normalizedScreenSpaceUV = GetNormalizedScreenSpaceUV(i.positionCS);
+                d.shadowMask = half4(1, 1, 1, 1);
+
+                half4 c = UniversalFragmentPBR(d, s);
+                c.rgb = MixFog(c.rgb, d.fogCoord);
+                return half4(c.rgb, 1);
+            }
+            ENDHLSL
+        }
+
+        Pass
+        {
+            Name "ShadowCaster"
+            Tags { "LightMode" = "ShadowCaster" }
+            ZWrite On
+            ZTest LEqual
+            ColorMask 0
+
+            HLSLPROGRAM
+            #pragma target 4.5
+            #pragma vertex Vert
+            #pragma fragment Frag
+            #pragma multi_compile_instancing
+            #pragma multi_compile_vertex _ _CASTING_PUNCTUAL_LIGHT_SHADOW
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Shadows.hlsl"
+
+            float3 _LightDirection;
+            float3 _LightPosition;
+
+            struct Attributes
+            {
+                float4 positionOS : POSITION;
+                float3 normalOS : NORMAL;
+                UNITY_VERTEX_INPUT_INSTANCE_ID
+            };
+
+            float4 Vert(Attributes input) : SV_POSITION
+            {
+                UNITY_SETUP_INSTANCE_ID(input);
+                float3 positionWS = TransformObjectToWorld(input.positionOS.xyz);
+                float3 normalWS = TransformObjectToWorldNormal(input.normalOS);
+            #if _CASTING_PUNCTUAL_LIGHT_SHADOW
+                float3 lightDirectionWS = normalize(_LightPosition - positionWS);
+            #else
+                float3 lightDirectionWS = _LightDirection;
+            #endif
+                float4 positionCS = TransformWorldToHClip(ApplyShadowBias(positionWS, normalWS, lightDirectionWS));
+            #if UNITY_REVERSED_Z
+                positionCS.z = min(positionCS.z, UNITY_NEAR_CLIP_VALUE);
+            #else
+                positionCS.z = max(positionCS.z, UNITY_NEAR_CLIP_VALUE);
+            #endif
+                return positionCS;
+            }
+
+            half4 Frag() : SV_Target { return 0; }
+            ENDHLSL
+        }
+
+        Pass
+        {
+            Name "DepthOnly"
+            Tags { "LightMode" = "DepthOnly" }
+            ZWrite On
+            ColorMask R
+
+            HLSLPROGRAM
+            #pragma target 4.5
+            #pragma vertex Vert
+            #pragma fragment Frag
+            #pragma multi_compile_instancing
+
+            struct Attributes
+            {
+                float4 positionOS : POSITION;
+                UNITY_VERTEX_INPUT_INSTANCE_ID
+            };
+
+            float4 Vert(Attributes input) : SV_POSITION
+            {
+                UNITY_SETUP_INSTANCE_ID(input);
+                return TransformObjectToHClip(input.positionOS.xyz);
+            }
+
+            half Frag(float4 positionCS : SV_POSITION) : SV_Target { return positionCS.z; }
+            ENDHLSL
+        }
+
+        Pass
+        {
+            Name "DepthNormals"
+            Tags { "LightMode" = "DepthNormals" }
+            ZWrite On
+
+            HLSLPROGRAM
+            #pragma target 4.5
+            #pragma vertex Vert
+            #pragma fragment Frag
+            #pragma multi_compile _ _WRITE_SMOOTHNESS
+            #pragma multi_compile_fragment _ _GBUFFER_NORMALS_OCT
+            #include_with_pragmas "Packages/com.unity.render-pipelines.universal/ShaderLibrary/RenderingLayers.hlsl"
+            #pragma multi_compile_instancing
+            #if defined(_GBUFFER_NORMALS_OCT)
+                #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Packing.hlsl"
+            #endif
+
+            struct Attributes
+            {
+                float4 positionOS : POSITION;
+                float3 normalOS : NORMAL;
+                UNITY_VERTEX_INPUT_INSTANCE_ID
+            };
+
+            struct Varyings
+            {
+                float4 positionCS : SV_POSITION;
+                half3 normalWS : TEXCOORD0;
+            };
+
+            Varyings Vert(Attributes input)
+            {
+                Varyings o;
+                UNITY_SETUP_INSTANCE_ID(input);
+                o.positionCS = TransformObjectToHClip(input.positionOS.xyz);
+                o.normalWS = TransformObjectToWorldNormal(input.normalOS);
+                return o;
+            }
+
+            void Frag(Varyings input, out half4 outNormalWS : SV_Target0
+            #ifdef _WRITE_RENDERING_LAYERS
+                , out uint outRenderingLayers : SV_Target1
+            #endif
+            )
+            {
+                half3 n = normalize(input.normalWS);
+            #if defined(_GBUFFER_NORMALS_OCT)
+                float2 oct = PackNormalOctQuadEncode(n);
+                outNormalWS = half4(PackFloat2To888(saturate(oct * 0.5 + 0.5)), 0.0);
+            #else
+                outNormalWS = half4(n, 0.0);
+            #endif
+            #if defined(_WRITE_SMOOTHNESS)
+                outNormalWS.a = 0.2;
+            #endif
+            #ifdef _WRITE_RENDERING_LAYERS
+                outRenderingLayers = EncodeMeshRenderingLayer();
+            #endif
+            }
+            ENDHLSL
+        }
+    }
+}
