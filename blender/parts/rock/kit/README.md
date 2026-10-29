@@ -26,9 +26,25 @@ zonation are (`../README.md`).
 - **The house** is the street's current 107 (kit.json `beside`: `gen`, `paint`), checked by md5 against
   `Street/Generated/107`; when the street rebuilds 107, update both. k01 took a stale pair (page painted before the mesh
   was rebuilt): streaked roof and reveals, no boards.
-- **State (29 Oct):** Look-in 1 sent at k02; waiting for the coordinator. Next is the part's making (see k02), not a patch.
+- **Grey-box and plan:** `tip.py` builds `blockin.py`'s masses with 107 where the customs house stands, in 107's
+  frame (`-- --out cache/rock/kit/gen/tip`); `TIP_GREY=1 render.sh <round> street P` draws them in Unity from the street
+  stop; `tip.py -- --plan <grey still> --to <png>` lays the form plan (kit.json `tip.plan`) over that still.
+- **State (29 Oct):** Look-in 1: pipeline passes, part fails (a painted crate: board strokes along u, flat teal);
+  restart the part after the target. Look-in 2 sent at t01; waiting. Next: the slab block rebuilt as the kit's first
+  part against t01: a handful of leaves and ledges 0.1-0.6 m in the geometry, wavy outlines, plucked back in steps on
+  the lee, ice-planed top, rounds by exposure; cm laminae in the bake at near only; rock's own marks (short, broken,
+  along the foliation's trace) and banded grey-green to graphite with rust, through its own material and data (ask
+  the coordinator with a diff before touching the Finish shader); page 512; eye camera from the part's front, foot in
+  view, 107 at the street's own camera.
 
 ## Rounds
+
+- **t01** (`reviews/lt1/rock/t01/`; top: the grey-box from the street stop, overcast and low sun; bottom: the form plan
+  over each). Bad: the frame sees the lee and the shore, not the whalebacks, which lie behind 107; the plinth under 107
+  is a 2 m grey box where the fixture has dry stone; the plan is zones and lines on the block-in's blocks, not a
+  painting (a paintover cannot paint forms onto boxes, visual-direction VD5). Good: where each wear falls and how big
+  is now on the frame, from the facts: the plucked lee in front (treads 1.6-3.6 m, risers 0.45-0.9 m), the storm-wash
+  along the shore and the skerry, the joints and foliation faces at the sides.
 
 - **k02** (`reviews/lt1/rock/k02/`; rows eye overcast, eye low sun, street overcast, street low sun; columns floor P,
   rock P, floor Pc, rock Pc). Bad: the block reads as made, not grown: four plates of flat faces with rounded rims, a cast

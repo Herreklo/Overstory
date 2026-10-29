@@ -33,6 +33,8 @@ namespace Overstory.EditorTools
 
         [Serializable] class Placed { public string part; public float[] at; }
         [Serializable] class Eye { public float[] from, look; public float fov; }
+        [Serializable] class TipMat { public string name; public float L; public float smooth; }
+        [Serializable] class TipMats { public TipMat[] mats; }
         [Serializable] class Beside { public string house; public Placed[] parts; public Eye eye; }
         [Serializable] class Kit { public Beside beside; }
 
@@ -60,8 +62,9 @@ namespace Overstory.EditorTools
             Directory.CreateDirectory(outDir);
             var levelNames = (string[])Static("Levels");
 
-            foreach (var guid in AssetDatabase.FindAssets("t:Material t:VolumeProfile", new[] { Dir }))
-                AssetDatabase.DeleteAsset(AssetDatabase.GUIDToAssetPath(guid));
+            foreach (var path in AssetDatabase.FindAssets("t:Material t:VolumeProfile", new[] { Dir }).Select(AssetDatabase.GUIDToAssetPath))
+                if (path.EndsWith(".mat") || path.EndsWith(".asset"))  // never a model whose materials are its own
+                    AssetDatabase.DeleteAsset(path);
             var builds = new List<Build>();
             foreach (var name in new[] { B.house }.Concat(B.parts.Select(p => p.part)))
             {
@@ -115,6 +118,38 @@ namespace Overstory.EditorTools
             gm.SetFloat("_Smoothness", (float)St.GetField("GroundSmooth", Any).GetRawConstantValue());
             AssetDatabase.CreateAsset(gm, $"{Dir}/Generated/mat-ground.mat");
             ground.GetComponent<Renderer>().sharedMaterial = gm;
+
+            // -tipGrey 1: the target frame's grey-box (tip.py), the tip's masses around 107 in their greys, the parts and
+            // the street's ground away; the masses come in 107's frame, so they stand as a part stands, at its origin
+            bool grey = Arg("-tipGrey") == "1";
+            if (grey)
+            {
+                string tg = $"{Dir}/Generated/tip";
+                var mi = (ModelImporter)AssetImporter.GetAtPath($"{tg}/tip.fbx");
+                mi.globalScale = 1;
+                mi.importCameras = false;
+                mi.importLights = false;
+                mi.animationType = ModelImporterAnimationType.None;
+                mi.SaveAndReimport();
+                var tip = (GameObject)PrefabUtility.InstantiatePrefab(AssetDatabase.LoadAssetAtPath<GameObject>($"{tg}/tip.fbx"));
+                tip.transform.SetPositionAndRotation(Vector3.zero, h.root.transform.rotation);
+                tip.transform.localScale = h.root.transform.localScale;
+                var greys = new Dictionary<string, Material>();
+                foreach (var m in JsonUtility.FromJson<TipMats>(File.ReadAllText(Path.Combine(root, "unity", tg, "tip.json"))).mats)
+                {
+                    var g = new Material(Shader.Find("Universal Render Pipeline/Lit"));
+                    g.SetColor("_BaseColor", (Color)Call("Lin", (float)Call("LToY", m.L), null));
+                    g.SetFloat("_Smoothness", m.smooth);
+                    AssetDatabase.CreateAsset(g, $"{Dir}/Generated/grey-{m.name}.mat");
+                    greys[m.name] = g;
+                }
+                foreach (var r in tip.GetComponentsInChildren<MeshRenderer>(true))
+                {
+                    r.sharedMaterials = r.sharedMaterials.Select(m => m != null && greys.TryGetValue(m.name, out var g) ? g : m).ToArray();
+                    r.shadowCastingMode = ShadowCastingMode.TwoSided;
+                }
+                ground.SetActive(false);
+            }
 
             var sunGo = new GameObject("Sun");
             var sun = sunGo.AddComponent<Light>();
@@ -177,9 +212,9 @@ namespace Overstory.EditorTools
                             kv.Value.SetActive(kv.Key == view.level);
                         cam.transform.SetPositionAndRotation(ToUnity(view.pos), Quaternion.LookRotation(ToUnity(view.target - view.pos), Vector3.up));
                         cam.fieldOfView = view.fov;
-                        urp.shadowCascadeCount = 1;
+                        urp.shadowCascadeCount = grey ? 4 : 1;
                         urp.mainLightShadowmapResolution = 4096;
-                        urp.shadowDistance = (view.target - view.pos).magnitude + 8f;
+                        urp.shadowDistance = grey ? 250f : (view.target - view.pos).magnitude + 8f;
                         foreach (var way in ways)
                         {
                             // the scene's light is the house's (its paint.json), as the street's
@@ -194,11 +229,11 @@ namespace Overstory.EditorTools
                             adjust.postExposure.Override(own != null ? Get<float>(own, "exposure") : Get<float>(light, "exposure"));
                             foreach (var b in builds)
                                 Call("Assign", b.levels[view.level], b.mats, way, (string)Call("MatLevel", view.level));
-                            foreach (var with in new[] { true, false })
+                            foreach (var with in grey ? new[] { false } : new[] { true, false })
                             {
                                 foreach (var r in rocks)
                                     r.SetActive(with);
-                                string file = Path.Combine(outDir, $"{(with ? "tip" : "floor")}-{view.name}-{ln}-{way}.png");
+                                string file = Path.Combine(outDir, $"{(grey ? "grey" : with ? "tip" : "floor")}-{view.name}-{ln}-{way}.png");
                                 Call("Capture", cam, file);
                                 Debug.Log($"[LT1HolmTip] {file}");
                             }
