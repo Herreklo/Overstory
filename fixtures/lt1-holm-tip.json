@@ -146,7 +146,11 @@
           0.06,
           0.22
         ],
-        "tightM": 0.015
+        "tightM": 0.015,
+        "traceM": [
+          15,
+          70
+        ]
       },
       {
         "name": "J1",
@@ -161,7 +165,11 @@
           0.08,
           0.3
         ],
-        "tightM": 0.02
+        "tightM": 0.02,
+        "traceM": [
+          8,
+          45
+        ]
       },
       {
         "name": "J3",
@@ -176,7 +184,11 @@
           0.06,
           0.2
         ],
-        "tightM": 0.015
+        "tightM": 0.015,
+        "traceM": [
+          12,
+          60
+        ]
       }
     ],
     "cuts": [
@@ -240,6 +252,26 @@
       "thickM": 0.6,
       "most": 3.0,
       "cellM": 10
+    },
+    "opening": {
+      "_": "How far the frost and the sea opened an open joint, by the height of the ground over it as a share of its back's top: fully below fullBelow, shut to a tight seam above shutAbove, smoothly between (the ice planed the crest across its joints; the sea and the frost open them toward the shore). A joint runs only along its trace (traceM, [min, max] of its length, about a seeded middle): past its ends the rock is whole, so the families meet in T's, not a grid.",
+      "fullBelow": 0.4,
+      "shutAbove": 0.85
+    },
+    "backs": {
+      "_": "Each block the showing joints bound was worn by the ice as a whaleback of its own (outcrop.py Back): its crest crestShift of its half-length toward its down-ice end, its back falling under the envelope to its plan's edge by a share of its half-width (rollShare, within rollM metres) with the profile's power, falling only leeShare of that down-ice of its crest, so it keeps a firm lip over its plucked lee (a plucked tread itself rounded only leeRoll of that), so a few big backs, more middle and many small ones each read as one rounded form.",
+      "crestShift": 0.3,
+      "leeShare": 0.3,
+      "leeRoll": 0.2,
+      "rollShare": [
+        0.18,
+        0.32
+      ],
+      "rollM": [
+        0.3,
+        2.2
+      ],
+      "power": 2.0
     }
   },
   "acts": [
@@ -378,7 +410,16 @@
     ]
   },
   "far": {
-    "_": "what stands beyond, from centre_land.py, for the frame's back: the beacon islet, a skerry, the small island, Bridge Island",
+    "_": "what stands beyond, from centre_land.py, for the frame's back: the beacon islet, a skerry, the small island, Bridge Island; and Herring Hill's point with the Bluff, its 20 m face over the Roads, as centre_land.py's heights draw it (site region [x0, y0, x1, y1], on a grid of stepM)",
+    "land": {
+      "region": [
+        180,
+        -360,
+        640,
+        200
+      ],
+      "stepM": 4
+    },
     "islets": [
       {
         "name": "the beacon islet",

@@ -29,24 +29,15 @@ zonation are (`../README.md`).
 - **Grey-box and plan:** `tip.py` builds `blockin.py`'s masses with 107 where the customs house stands, in 107's
   frame (`-- --out cache/rock/kit/gen/tip`); `TIP_GREY=1 render.sh <round> street P` draws them in Unity from the street
   stop; `tip.py -- --plan <grey still> --to <png>` lays the form plan (kit.json `tip.plan`) over that still.
-- **State (29 Oct, end of this session):** the coordinator's verdict on t01: the wear plan passes and the frame
-  fails. Don't build the slab block yet. Next, in grey only, in this order:
-  1. **A frame for the rock's spectacle.** Low, from the water or the skerry, looking back at the tip: the
-     whalebacks, the plucked lee and the storm-wash, with 107 small on top. Put the Bluff's 20 m face behind it if
-     the layout allows (`docs/town-plan.md` section 5); otherwise the tip's own biggest forms carry the frame. Keep
-     the street stop as the second still, to check 107 still holds there. The views live in `LT1HolmTip.cs` (the
-     street stop from `LT1Street.Views`, `eye` from kit.json `beside.eye`); a new view belongs in kit.json as data.
-  2. **Hierarchy in the masses.** Today they are many slabs of about the same size: flat planes, straight edges,
-     the same tilt, a steady rhythm. That reads as paving ("looks like it's been built"). Aim for one or two big
-     whalebacks that dominate, a few middle ones and many small ones, with wavy outlines and backs rounded where
-     the ice planed them. Keep the fixture's footprint and heights (`fixtures/lt1-holm-tip.json` `outcrop`) and
-     change how `blockin.py` and `outcrop.py` (`build`: blocks by the joint families' spacing under the landform's
-     envelope) divide and shape them. If the fixture itself forces equal slabs, tell the coordinator.
-  3. **The plinth.** A grey-box of dry stone that steps down with the rock and sits lower on the high side, in place
-     of the 2 m box (`tip.py`, `stand-plinth`).
-  4. **Judge** at 25% size beside t01 and beside the Jæren and stone study references 53-56, by squinting: two
-     or three values and a few big shapes should read at once. Then Look-in 2 again.
-  Then the slab block for that frame's foreground, against the plan. Treads vary in width (1.6-3.6 m) and risers
+- **Grey-box views:** kit.json `tip.views` holds the target frame's own views in site metres (`water`: low, from
+  the water north-west, at a boat's eye); `tip.py` moves them into 107's frame in `tip.json` with the site's own low
+  sun (`sunOff`), and `LT1HolmTip.cs` adds them beside the street stop. Run:
+  `TIP_GREY=1 render.sh <round> water,street P overcast,lowsun`.
+- **State (29 Oct, t02):** steps 1-4 of the coordinator's list are done in grey (frame, hierarchy, plinth, squint;
+  see t02 below). The masses are now joint-bounded blocks with their own ice-worn backs (`outcrop.py` `Back`), joints
+  open toward the shore and shut on the crest (`opening`), finite traces meeting in T's. Next, unless the coordinator
+  says otherwise: the slab block for the water frame's foreground, the near storm-wash blocks, which read today as
+  cushions, against the plan. Treads vary in width (1.6-3.6 m) and risers
   wander in plan, never parallel rulings: the plan's 0.6 m lines read as decking, k02's board grain again.
   Build it with a handful of leaves and ledges 0.1-0.6 m with wavy outlines, plucked back in steps on the lee, an
   ice-planed top and rounds by exposure. Put the cm laminae in the bake at the near level only. Give the rock its
@@ -55,6 +46,16 @@ zonation are (`../README.md`).
   The eye camera frames it from the front with its foot in view, and 107 stays at the street's own camera.
 
 ## Rounds
+
+- **t02** (`reviews/lt1/rock/t02/`; `sheet.jpg` rows water, street stop, columns overcast, low sun; `squint.jpg` at 25%:
+  t01 street, t02 street, t02 water low sun and overcast over refs 53-56). Bad: the near blocks in the water frame
+  read as cushions or loaves: same-sized, rounded on every side to the waterline, their joints cracks in a crust, no
+  storm-wash steps or lip at the sea; the frame is low and level, all mid-grey, and the harbour office's stand-in box
+  takes the eye from 107 (on the west shoulder it is nearer from every western bearing; the Bluff stands too far round
+  to share the frame without making the tip small). Bad: from the street stop the lee in front of 107 still reads as
+  straight plates, and the skerry as a melted shell. Good: one big ice-planed back carries 107, with middle backs on
+  the flanks and small ones at the shore, and it reads at 25%; the dry-stone plinth takes up the slope (107 0.3-1.5 m
+  over the rock, the office 0.6-2.2) in place of the 2 m box. 277 blocks, 15832 tris.
 
 - **t01** (`reviews/lt1/rock/t01/`; top: the grey-box from the street stop, overcast and low sun; bottom: the form plan
   over each). Bad: the frame sees the lee and the shore, not the whalebacks, which lie behind 107; the plinth under 107

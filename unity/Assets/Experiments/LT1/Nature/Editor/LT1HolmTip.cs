@@ -34,7 +34,8 @@ namespace Overstory.EditorTools
         [Serializable] class Placed { public string part; public float[] at; }
         [Serializable] class Eye { public float[] from, look; public float fov; }
         [Serializable] class TipMat { public string name; public float L; public float smooth; }
-        [Serializable] class TipMats { public TipMat[] mats; }
+        [Serializable] class TipView { public string name, level; public float[] pos, target; public float fov; }
+        [Serializable] class TipMats { public TipMat[] mats; public TipView[] views; public float sunOff; }
         [Serializable] class Beside { public string house; public Placed[] parts; public Eye eye; }
         [Serializable] class Kit { public Beside beside; }
 
@@ -122,6 +123,7 @@ namespace Overstory.EditorTools
             // -tipGrey 1: the target frame's grey-box (tip.py), the tip's masses around 107 in their greys, the parts and
             // the street's ground away; the masses come in 107's frame, so they stand as a part stands, at its origin
             bool grey = Arg("-tipGrey") == "1";
+            TipMats tipRec = null;
             if (grey)
             {
                 string tg = $"{Dir}/Generated/tip";
@@ -135,7 +137,11 @@ namespace Overstory.EditorTools
                 tip.transform.SetPositionAndRotation(Vector3.zero, h.root.transform.rotation);
                 tip.transform.localScale = h.root.transform.localScale;
                 var greys = new Dictionary<string, Material>();
-                foreach (var m in JsonUtility.FromJson<TipMats>(File.ReadAllText(Path.Combine(root, "unity", tg, "tip.json"))).mats)
+                tipRec = JsonUtility.FromJson<TipMats>(File.ReadAllText(Path.Combine(root, "unity", tg, "tip.json")));
+                // the tip's low sun is the site's (tip.py), unless asked for another
+                if (Arg("-tipSunOff") == null)
+                    sunOff = tipRec.sunOff;
+                foreach (var m in tipRec.mats)
                 {
                     var g = new Material(Shader.Find("Universal Render Pipeline/Lit"));
                     g.SetColor("_BaseColor", (Color)Call("Lin", (float)Call("LToY", m.L), null));
@@ -174,7 +180,7 @@ namespace Overstory.EditorTools
             camData.antialiasing = AntialiasingMode.None;
             cam.clearFlags = CameraClearFlags.SolidColor;
             cam.nearClipPlane = 0.1f;
-            cam.farClipPlane = 500f;
+            cam.farClipPlane = grey ? 2000f : 500f;
 
             RenderSettings.ambientMode = AmbientMode.Trilight;
             RenderSettings.fog = false;
@@ -188,6 +194,9 @@ namespace Overstory.EditorTools
                     views.Add(new View { name = "street", level = Get<string>(v, "level"), pos = Get<Vector3>(v, "pos"), target = Get<Vector3>(v, "target"), fov = Get<float>(v, "fov") });
             var eyePos = V(B.parts[0].at) + V(B.eye.from);
             views.Insert(0, new View { name = "eye", level = "near", pos = eyePos, target = eyePos + V(B.eye.look), fov = B.eye.fov });
+            // the target frame's own views of the tip (kit.json tip.views, in 107's frame by tip.py)
+            foreach (var v in tipRec?.views ?? new TipView[0])
+                views.Add(new View { name = v.name, level = v.level, pos = V(v.pos), target = V(v.target), fov = v.fov });
 
             var back = (Color)Static("Back");
             var lightingT = St.GetNestedType("Lighting", BindingFlags.NonPublic);

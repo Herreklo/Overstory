@@ -34,7 +34,7 @@ def zone_mesh(K, mats):
     V, T, Z = [], [], []
     for faces, _ in outcrop.build(rec, "holm-tip", sea):
         for f in faces:
-            kind = f.label.replace("-open", "")
+            kind = f.label.replace("-open", "").replace("-seam", "")
             c = f.V.mean(axis=0)
             nh = f.n[:2] / max(float(np.hypot(*f.n[:2])), 1e-6)
             if kind == "cut":
@@ -149,14 +149,13 @@ def main():
         bpy.data.objects.remove(bpy.data.objects["rock"])
         zone_mesh(K, mats)
 
-    # the stand's box and plinth go; 107's plinth stands in their place, on the stand's footing, to its base
+    # the stand's box and plinth go; 107's plinth stands in their place, laid on the rock to its base
     objs = {o.name: o for o in bpy.data.objects}
-    old = objs[stand["id"] + "-plinth"]
-    lo = min((old.matrix_world @ v.co).z for v in old.data.vertices)
-    plinth = old.data.materials[0]
+    plinth = objs[stand["id"] + "-plinth"].data.materials[0]
     for n in (stand["id"], stand["id"] + "-plinth"):
         bpy.data.objects.remove(objs[n])
-    BI.box("stand-plinth", stand["at"], stand["turn"], [w + 0.2, d + 0.2], lo, stand["base"], mats["made"] if plan else plinth)
+    BI.stone_plinth("stand-plinth", stand["at"], stand["turn"], [w + 0.2, d + 0.2], stand["base"], mats["made"] if plan else plinth,
+                    rock="rock-plan" if plan else "rock")
 
     # into 107's frame: its front-left corner at the origin, its front along x, its ground at the stand's base
     t = math.radians(stand["turn"])
@@ -170,7 +169,14 @@ def main():
         return draw_plan(K, house, plan, hold)
     bpy.ops.export_scene.fbx(filepath=os.path.join(out, "tip.fbx"), use_selection=True, axis_forward="-Z", axis_up="Y",
                              apply_scale_options="FBX_SCALE_ALL", mesh_smooth_type="FACE")
-    json.dump({"mats": BI.MATS, "stand": stand["id"], "corner": list(corner), "turn": stand["turn"]},
+    # the tip's own views and the site's low sun, in 107's frame (the sun as LT1HolmTip's offset: 0 toward 107's front,
+    # 90 along it, x)
+    to107 = lambda p: list(M @ Vector(p))
+    views = [dict(v, name=n, pos=to107(v["pos"]), target=to107(v["target"]))
+             for n, v in K["tip"]["views"].items() if n != "describes"]
+    sun = BI.VIEWS["lights"]["lowsun"]["azimuth"]
+    json.dump({"mats": BI.MATS, "stand": stand["id"], "corner": list(corner), "turn": stand["turn"], "views": views,
+               "sunOff": (180 - stand["turn"] - sun) % 360},
               open(os.path.join(out, "tip.json"), "w"), indent=1)
     print(f"[tip] {len([o for o in bpy.data.objects if o.type == 'MESH'])} masses, 107 at {stand['id']}; wrote {out}")
 

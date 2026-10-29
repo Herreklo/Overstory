@@ -90,6 +90,41 @@ class Landform:
                          (self.smooth(x, y + h) - self.smooth(x, y - h)) / (2 * h)])
 
 
+class Back:
+    """A block's own back, as the ice wore it: over the block's plan (its ranges along the ice, s, and across it, t),
+    its crest `crestShift` of the half-length toward the down-ice end, falling below the envelope by `roll` at the
+    plan's ellipse (a seeded share of its half-width, within rollM) with the profile's `power`; down-ice of the crest
+    it falls only `leeShare` of that by the plan's edge, so the back keeps a firm lip over its plucked lee. The fall
+    is convex, so the envelope less the fall stays concave and its tangent planes bound the block."""
+
+    def __init__(self, rec, ice, s_range, t_range, rng):
+        self.ice = ice
+        hs, ht = (s_range[1] - s_range[0]) / 2, (t_range[1] - t_range[0]) / 2
+        self.cs = (s_range[0] + s_range[1]) / 2 + rec["crestShift"] * hs
+        self.ct = (t_range[0] + t_range[1]) / 2
+        self.rs_up = hs * (1 + rec["crestShift"]) + 1e-3
+        self.rs_down = (hs * (1 - rec["crestShift"]) + 1e-3) / rec["leeShare"] ** (1 / rec["power"])
+        self.rt = ht + 1e-3
+        lo, hi = rec["rollM"]
+        self.roll = float(np.clip(rng.uniform(*rec["rollShare"]) * min(hs, ht), lo, hi))
+        self.power = rec["power"]
+
+    def fall(self, x, y):
+        """How far the back lies under the envelope at (x, y)."""
+        s = x * self.ice[0] + y * self.ice[1] - self.cs
+        t = -x * self.ice[1] + y * self.ice[0] - self.ct
+        rs = np.where(s < 0, self.rs_up, self.rs_down)
+        return self.roll * np.power(np.sqrt((s / rs) ** 2 + (t / self.rt) ** 2), self.power)
+
+    def fall_grad(self, x, y, h=0.2):
+        return np.array([(self.fall(x + h, y) - self.fall(x - h, y)) / (2 * h),
+                         (self.fall(x, y + h) - self.fall(x, y - h)) / (2 * h)])
+
+    def grad_under(self, land):
+        """The block's top's gradient at (x, y): the envelope's less the fall's."""
+        return lambda x, y: land.grad(x, y) - self.fall_grad(x, y)
+
+
 def family_planes(key, fam, lo_hi):
     """A steep family's planes: (normal, offsets, gaps) at seeded spacings over the range of n.p. A joint's opening
     is seeded from the family's `open` record ([share, min, max] of open joints; the rest are tight seams)."""
@@ -149,9 +184,42 @@ def centroid(cell):
     return np.concatenate([f.V for f in cell]).mean(0)
 
 
+def traces(key, fam, n, offs, lo_hi):
+    """Where each of a family's joints runs: [from, to] along its strike, a seeded length between the family's traceM
+    (log-uniform, so a few run long and many short) about a seeded middle; through everything when it has none.
+    Past a trace's ends the rock is whole, so the families meet in T's and the blocks they bound differ in size."""
+    s = np.array([-n[1], n[0], 0.0])
+    s /= max(float(np.linalg.norm(s)), 1e-9)
+    lo, hi = lo_hi(s)
+    if "traceM" not in fam:
+        return s, np.array([[lo - 1.0, hi + 1.0]] * len(offs))
+    rng = HS.Stream(key, "traces", fam["name"])
+    a, b = fam["traceM"]
+    out = []
+    for _ in offs:
+        L = math.exp(rng.uniform(math.log(a), math.log(b)))
+        m = rng.uniform(lo, hi)
+        out.append([m - L / 2, m + L / 2])
+    return s, np.array(out)
+
+
+def opening(rec, land, c):
+    """How far the frost and the sea opened an open joint at c: 1 low on the back, 0 where the ice planed the crest."""
+    o = rec["opening"]
+    b = land.back_at(c[0], c[1])
+    h = float(land.smooth(c[0], c[1])) / max(b.top, 1e-6)
+    u = np.clip((o["shutAbove"] - h) / (o["shutAbove"] - o["fullBelow"]), 0.0, 1.0)
+    return float(u * u * (3 - 2 * u))
+
+
 def build(rec, key, sea):
     """The outcrop's blocks: a list of (faces, info) with each block's id and what made its top; `sea` is the site's
-    sea record (its exposure by side)."""
+    sea record (its exposure by side).
+
+    Every family's planes cut the ground into cells; a joint shows only along its trace, or where the sea and the frost
+    broke the rock up all the way (opening 1, low on the shore). Cells joined across a joint that does not show are one
+    block: one top, one plucking, one sheet stripped, and no bevel or riser between them, so the ice-planed back runs
+    on across its seams and a few big backs stand among middle and small blocks."""
     land = Landform(rec["landform"])
     x0, y0, x1, y1 = rec["region"]
     bed = rec["bed"]
@@ -162,67 +230,160 @@ def build(rec, key, sea):
         return s.min(), s.max()
 
     cells = [H.box((x0, y0, bed), (x1, y1, land.top + 2), BED)]
+    planes = []                                   # (kind, normal, offset, gap, trace, strike)
     for fam in rec["families"]:
         n, offs, gaps = family_planes(key, fam, lo_hi)
-        cells = split(cells, n, offs, gaps, FOLIATION if fam["name"] == "foliation" else JOINT)
+        s, tr = traces(key, fam, n, offs, lo_hi)
+        kind = FOLIATION if fam["name"] == "foliation" else JOINT
+        for d, g, t in zip(offs, gaps, tr):
+            cells = cut(cells, n, d, f"#{len(planes)}")
+            planes.append((kind, n, d, g, t, s))
+    cells = sorted(cells, key=lambda c: tuple(np.round(centroid(c), 3)))
+
+    # which joint faces show, and the blocks the hidden ones join
+    shows = {}
+    up = list(range(len(cells)))
+
+    def find(i):
+        while up[i] != i:
+            up[i] = up[up[i]]
+            i = up[i]
+        return i
+
+    seen = {}
+    for i, cell in enumerate(cells):
+        c = centroid(cell)
+        broken = opening(rec, land, c) >= 0.999
+        for f in cell:
+            if not f.label.startswith("#"):
+                continue
+            j = int(f.label[1:])
+            fc = f.V.mean(0)
+            t0, t1 = planes[j][4]
+            u = float(fc @ planes[j][5])
+            # along its trace a joint shows where it is open, or off the crest; the crest's tight seams the ice planed;
+            # on the lee the ice plucked along every joint
+            plucked = land.plucked(c[0], c[1]) > 0
+            on = broken or plucked or (t0 <= u <= t1 and (planes[j][3] > 0.05 or opening(rec, land, c) >= 0.5))
+            k = (j, tuple(np.round(fc, 2)))
+            if k in seen:
+                i2, on2 = seen[k]
+                on = on or on2
+                shows[(i, j)] = shows[(i2, j)] = on
+                if not on:
+                    up[find(i)] = find(i2)
+            else:
+                seen[k] = (i, on)
+                shows[(i, j)] = on
+    groups = {}
+    for i in range(len(cells)):
+        groups.setdefault(find(i), []).append(i)
+
     lf = rec["landform"]
     step = lf["facetM"]
     P, Z, G = tangent_points(land, key, rec["region"], step)
-    saw = lf["saw"]                          # [min, max] of a block's own stoss rise, as a share of its length down-ice
     coast = rec["coast"]
+    sh = rec["sheets"]
+    ice = land.ice
     blocks = []
-    for i, cell in enumerate(sorted(cells, key=lambda c: tuple(np.round(centroid(c), 3)))):
-        c = centroid(cell)
-        z0 = float(land.smooth(c[0], c[1]))
-        if z0 < rec["dropBelow"]:
-            continue
-        rng = HS.Stream(key, "block", f"{c[0]:.2f}", f"{c[1]:.2f}")
-        # the sea takes whole blocks at the waterline, more where it is more exposed: the shore runs along joints
-        if z0 < coast["belowM"] and rng.uniform(0, 1) < coast["share"] * exposure(sea, land, c):
-            continue
+    for g, members in sorted(groups.items()):
+        GV = np.concatenate([f.V for i in members for f in cells[i]])
+        gc = GV.mean(0)
+        grng = HS.Stream(key, "block", f"{gc[0]:.2f}", f"{gc[1]:.2f}")
+        z0 = float(land.smooth(gc[0], gc[1]))
         # plucked on the lee by whole sheeting plates, never below the lee's floor: the tread is the envelope's own
         # shell lowered by the plates (sheeting runs parallel to the surface), the riser the block's joint face
-        drop = land.plucked(c[0], c[1], rng.uniform(-0.45, 0.45))
+        drop = land.plucked(gc[0], gc[1], grng.uniform(-0.45, 0.45))
         drop = min(drop, max(0.0, z0 - land.lee["floor"])) if drop > 0 else 0.0
-        # sheets stripped from the stoss before the last ice: whole sheeting shells gone over a block, more where the
-        # slow field says so; their edges fall on the block's joints and show as ledges across the worn slab
-        sh = rec["sheets"]
-        n_sheets = int(np.floor(sheet_field(key, c[0], c[1], sh["cellM"]) * sh["most"] + rng.uniform(0, 0.6)))
+        lee = drop > 0
+        # sheets stripped from the stoss before the last ice: whole sheeting shells gone over a block, where the slow
+        # field says so; their edges fall on the blocks' joints and show as long ledges across the worn back
+        # (none on the crest, which the ice planed across its seams: the fixture's top stands)
+        phi = opening(rec, land, gc)
+        n_sheets = int(np.floor(sheet_field(key, gc[0], gc[1], sh["cellM"]) * sh["most"] * phi + 0.3))
         drop += n_sheets * sh["thickM"] if drop == 0 else 0.0
         label = ICE if drop == 0 else PLATE
-        # each block was worn as a small whaleback of its own: its top touches the envelope at its down-ice end and
-        # falls short of it up-ice by a seeded share of its length, so every joint across the ice shows a short riser
-        # facing down-ice (the plucked lip), and the abraded slope climbs to it
-        V = np.concatenate([q.V for q in cell])
-        ice = land.ice
-        sv = V[:, 0] * ice[0] + V[:, 1] * ice[1]
-        s1 = sv.max()
-        k = min(rng.uniform(*saw), lf["sawMaxM"] / max(s1 - sv.min(), 1e-3))
-        lo, hi = V[:, :2].min(0) - step, V[:, :2].max(0) + step
-        near = np.where((P[:, 0] > lo[0]) & (P[:, 0] < hi[0]) & (P[:, 1] > lo[1]) & (P[:, 1] < hi[1]))[0]
-        near = near[np.argsort(np.hypot(P[near, 0] - c[0], P[near, 1] - c[1]))]       # the middle's plane first
-        f, top = cell, None
-        for j in near:
-            (x, y), z, g = P[j], float(Z[j]), G[j]
-            # z <= z_q + g.(p - q) - drop - k (s1 - s(p))
-            nrm = np.array([-(g[0] + k * ice[0]), -(g[1] + k * ice[1]), 1.0])
-            d = z - g[0] * x - g[1] * y - drop - k * s1
-            ln = np.linalg.norm(nrm)
-            f = H.clip(f, nrm / ln, d / ln, label)
-            top = top or (nrm / ln, d / ln)
-            if f is None:
-                break
-        if f is None or H.volume(f) < 1e-3:
-            continue
-        ext = V[:, :2].max(0) - V[:, :2].min(0)
-        f = chamfer(f, top, rec["chamfers"], rng, cap=rec["chamfers"]["capShare"] * float(ext.min()),
-                    worn=1.0 if drop > 0 else rec["chamfers"]["stossShare"])
-        if f is None or H.volume(f) < 1e-3:
-            continue
-        blocks.append((f, {"id": f"blk-{i}", "drop": drop, "top": z0 - drop, "saw": k}))
-    for cut in rec.get("cuts", []):
-        blocks = apply_cut(blocks, cut)
+        # each block was worn as a whaleback of its own: a back over its plan, its crest toward its down-ice end,
+        # rolling down at its edges by a share of its width, where its joints show (rec["backs"])
+        sv = GV[:, 0] * ice[0] + GV[:, 1] * ice[1]
+        tv = -GV[:, 0] * ice[1] + GV[:, 1] * ice[0]
+        back = Back(rec["backs"], ice, (sv.min(), sv.max()), (tv.min(), tv.max()), grng)
+        if lee:                                   # a plucked tread is a sheeting plane, its risers crisp: barely rounded
+            back.roll *= rec["backs"]["leeRoll"]
+        k = 0.0
+        ext = GV[:, :2].max(0) - GV[:, :2].min(0)
+        for i in members:
+            cell = cells[i]
+            c = centroid(cell)
+            if float(land.smooth(c[0], c[1])) < rec["dropBelow"]:
+                continue
+            rng = HS.Stream(key, "block", f"{c[0]:.2f}", f"{c[1]:.2f}")
+            # the sea takes whole blocks at the waterline, more where it is more exposed: the shore runs along joints
+            if float(land.smooth(c[0], c[1])) < coast["belowM"] and rng.uniform(0, 1) < coast["share"] * exposure(sea, land, c):
+                continue
+            # the joints that show part the block from its neighbours by their opening; those that don't are seams
+            f = []
+            for q in cell:
+                if q.label.startswith("#"):
+                    j = int(q.label[1:])
+                    kind, _, _, gap, _, _ = planes[j]
+                    if shows[(i, j)]:
+                        tight = gap <= 0.05
+                        w = gap if tight else max(gap * opening(rec, land, c), 0.0)
+                        lab = kind + ("-open" if w > 0.05 else "")
+                    else:
+                        w, lab = 0.0, kind + "-seam"
+                    f.append((q, w, lab))
+                else:
+                    f.append((q, 0.0, q.label))
+            faces = [H.Face(q.V, q.n, q.d, lab) for q, _, lab in f]
+            for q, w, lab in f:
+                if w > 0:
+                    faces = H.clip(faces, q.n, q.d - w / 2, lab)
+                    if faces is None:
+                        break
+            if faces is None:
+                continue
+            V = np.concatenate([q.V for q in faces])
+            lo, hi = V[:, :2].min(0) - step, V[:, :2].max(0) + step
+            near = np.where((P[:, 0] > lo[0]) & (P[:, 0] < hi[0]) & (P[:, 1] > lo[1]) & (P[:, 1] < hi[1]))[0]
+            near = near[np.argsort(np.hypot(P[near, 0] - c[0], P[near, 1] - c[1]))]       # the middle's plane first
+            top = None
+            for j in near:
+                (x, y) = P[j]
+                z = float(Z[j]) - drop - float(back.fall(x, y))
+                gr = G[j] - back.fall_grad(x, y)
+                # z <= z_q + g.(p - q)
+                nrm = np.array([-gr[0], -gr[1], 1.0])
+                d = z - gr[0] * x - gr[1] * y
+                ln = np.linalg.norm(nrm)
+                faces = H.clip(faces, nrm / ln, d / ln, label)
+                top = top or (nrm / ln, d / ln)
+                if faces is None:
+                    break
+            if faces is None or H.volume(faces) < 1e-3:
+                continue
+            faces = chamfer(faces, top, rec["chamfers"], rng, cap=rec["chamfers"]["capShare"] * float(ext.min()),
+                            worn=1.0 if drop > 0 else rec["chamfers"]["stossShare"])
+            if faces is None or H.volume(faces) < 1e-3:
+                continue
+            blocks.append((faces, {"id": f"blk-{i}", "group": f"grp-{g}", "drop": drop, "top": z0 - drop, "saw": k,
+                                   "grad": back.grad_under(land)}))
+    for cut_ in rec.get("cuts", []):
+        blocks = apply_cut(blocks, cut_)
     return blocks
+
+
+def cut(cells, n, d, label):
+    """Every cell the plane n.p = d crosses cut in two, both sides kept, the new faces labelled."""
+    out = []
+    for cell in cells:
+        s = np.concatenate([f.V for f in cell]) @ n
+        if not (s.min() + 1e-4 < d < s.max() - 1e-4):
+            out.append(cell)
+            continue
+        out += [q for q in (H.clip(cell, n, d, label), H.clip(cell, -n, -d, label)) if q is not None and H.volume(q) > 1e-3]
+    return out
 
 
 def sheet_field(key, x, y, cell):

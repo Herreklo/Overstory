@@ -128,8 +128,8 @@ def grid_mesh(name, x0, x1, y0, y1, step, mats):
 
 
 def rock_mesh(name, mat):
-    """The outcrop's blocks as one mesh: joint, cut and worn faces flat; the ice's worn tops carry the envelope's own
-    normal (the block's tilt included), so the abraded surface shades smooth across its facets and tight joints."""
+    """The outcrop's blocks as one mesh: joint, cut and worn faces flat; the ice's worn tops carry their back's own
+    normal (outcrop.py Back), so the abraded surface shades smooth across its facets and its seams."""
     sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
     import hull as H
     import outcrop
@@ -138,7 +138,7 @@ def rock_mesh(name, mat):
     blocks = outcrop.build(rec, "holm-tip", FIX["sea"])
     V, T, NL = [], [], []
     for faces, info in blocks:
-        k = info["saw"]
+        grad = info.get("grad", land.grad)
         for f in faces:
             b = len(V)
             V.extend(f.V.tolist())
@@ -146,9 +146,9 @@ def rock_mesh(name, mat):
                 T.append((b, b + i, b + i + 1))
             if f.label in (outcrop.ICE, outcrop.PLATE):
                 for x, y, _ in f.V:
-                    g = land.grad(x, y)
-                    n = np.array([-(g[0] + k * land.ice[0]), -(g[1] + k * land.ice[1]), 1.0])
-                    NL.extend([n / np.linalg.norm(n)] * 0 + [n / np.linalg.norm(n)])
+                    g = grad(x, y)
+                    n = np.array([-g[0], -g[1], 1.0])
+                    NL.append(n / np.linalg.norm(n))
             else:
                 NL.extend([f.n] * len(f.V))
     me = bpy.data.meshes.new(name)
@@ -203,6 +203,40 @@ def box(name, at, turn, size, z0, z1, mat, gable=None, roof=None):
         me.polygons.foreach_set("material_index", idx)
     ob = bpy.data.objects.new(name, me)
     bpy.context.scene.collection.objects.link(ob)
+    return ob
+
+
+def stone_plinth(name, at, turn, size, base, mat, step=0.4, bed=0.3, sill=0.12, rock="rock"):
+    """A dry-stone plinth laid on the rock and taking up its slope (act-customs-1862): its top the floor's base, its
+    foot the rock under each point of its edge, bedded `bed` into it; tall where the rock falls away, a sill of
+    `sill` where the rock comes up near the floor. The rock as drawn (the object `rock`) is read by casting down."""
+    from mathutils import Vector
+    from mathutils.bvhtree import BVHTree
+    rock = bpy.data.objects[rock]
+    tree = BVHTree.FromPolygons([v.co.copy() for v in rock.data.vertices], [tuple(p.vertices) for p in rock.data.polygons])
+    r = math.radians(turn)
+    ex, ey = np.array([math.cos(r), math.sin(r)]), np.array([-math.sin(r), math.cos(r)])
+    hx, hy = size[0] / 2, size[1] / 2
+    corners = [np.array(at, float) + sx * hx * ex + sy * hy * ey for sx, sy in ((-1, -1), (1, -1), (1, 1), (-1, 1))]
+    ring = []
+    for a, b in zip(corners, corners[1:] + corners[:1]):
+        n = max(1, int(math.ceil(np.linalg.norm(b - a) / step)))
+        ring += [a + (b - a) * k / n for k in range(n)]
+    v = []
+    for p in ring:
+        hit = tree.ray_cast(Vector((p[0], p[1], base + 10)), Vector((0, 0, -1)))[0]
+        foot = min(hit.z if hit else base - 3.0, base - sill) - bed
+        v += [(p[0], p[1], foot), (p[0], p[1], base)]
+    m = len(ring)
+    f = [(2 * i, 2 * ((i + 1) % m), 2 * ((i + 1) % m) + 1, 2 * i + 1) for i in range(m)]
+    f += [tuple(2 * i + 1 for i in range(m)), tuple(2 * i for i in reversed(range(m)))]
+    me = bpy.data.meshes.new(name)
+    me.from_pydata(v, [], f)
+    me.materials.append(mat)
+    ob = bpy.data.objects.new(name, me)
+    bpy.context.scene.collection.objects.link(ob)
+    h = [base - z - bed for z, _ in zip(v[0::2], v[1::2]) for z in [z[2]]]
+    print(f"[blockin] {name}: {min(h):.2f}-{max(h):.2f} m over the rock")
     return ob
 
 
@@ -266,13 +300,8 @@ def build():
     me.materials.append(water)
     bpy.context.scene.collection.objects.link(bpy.data.objects.new("water", me))
     red, roofm, plinth = material("timber-red", 38), material("roof", 24), material("plinth", 50)
-    import outcrop
-    land = outcrop.Landform(FIX["outcrop"]["landform"])
-    z_of = lambda x, y: max(float(heights(np.array([[x]]), np.array([[y]]))[0][0, 0]),
-                            float(land.smooth(x, y) - land.plucked(x, y)))
     for b in FIX["buildings"]:
-        lo = min(z_of(b["at"][0] + dx, b["at"][1] + dy) for dx in (-4, 0, 4) for dy in (-3, 0, 3))
-        box(b["id"] + "-plinth", b["at"], b["turn"], [b["size"][0] + 0.2, b["size"][1] + 0.2], lo - 0.3, b["base"], plinth)
+        stone_plinth(b["id"] + "-plinth", b["at"], b["turn"], [b["size"][0] + 0.2, b["size"][1] + 0.2], b["base"], plinth)
         box(b["id"], b["at"], b["turn"], b["size"], b["base"], b["base"] + b["eaves"], red, gable=b["base"] + b["ridge"], roof=roofm)
     # the Holm's warehouses behind, as masses only (stand-ins for the frame's back; not judged here)
     sys.path.insert(0, os.path.join(ROOT, "blender", "resolver"))
@@ -296,7 +325,33 @@ def build():
     far = material("far", 46)
     for isl in FIX["far"]["islets"]:
         dome(isl["name"], isl["at"], isl["r"], isl["top"], far)
+    far_land(FIX["far"].get("land"), material("far-land", 44))
     return water
+
+
+def far_land(rec, mat):
+    """The town's land beyond the tip as centre_land.py designs it (the Bluff and Herring Hill behind, the frame's
+    back), on a coarse grid over the record's site region; quads under the sea's bed left out."""
+    if not rec:
+        return None
+    sys.path.insert(0, os.path.join(ROOT, "blender", "blockouts"))
+    import centre_land
+    x0, y0, x1, y1 = rec["region"]
+    step = rec["stepM"]
+    ox, oy = FIX["street_origin"]
+    xs, ys = np.arange(x0, x1 + step, step), np.arange(y0, y1 + step, step)
+    X, Y = np.meshgrid(xs, ys)
+    Z = centre_land.heights(ox - Y, oy + X)                 # street x = ox - y, street y = oy + x
+    ny, nx = X.shape
+    i = np.arange(nx * ny).reshape(ny, nx)
+    q = np.stack([i[:-1, :-1].ravel(), i[:-1, 1:].ravel(), i[1:, 1:].ravel(), i[1:, :-1].ravel()], 1)
+    q = q[Z.ravel()[q].max(1) > -1.0]
+    me = bpy.data.meshes.new("far-land")
+    me.from_pydata(np.stack([X.ravel(), Y.ravel(), Z.ravel()], 1).tolist(), [], q.tolist())
+    me.materials.append(mat)
+    ob = bpy.data.objects.new("far-land", me)
+    bpy.context.scene.collection.objects.link(ob)
+    return ob
 
 
 def rig(light):

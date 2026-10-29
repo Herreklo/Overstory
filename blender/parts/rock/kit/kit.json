@@ -37,6 +37,11 @@
   "tip": {
     "describes": "The tip's grey-box for the target frame (tip.py, LT1HolmTip -tipGrey): blockin.py's masses from fixtures/lt1-holm-tip.json, with 107 standing where `stand` stands, drawn in grey from the street's street stop.",
     "stand": "customs-house",
+    "views": {
+      "describes": "The target frame's own views of the tip, in site metres (x east, y north, z over mean sea level; tip.py moves them into 107's frame for LT1HolmTip): `fov` vertical, `level` the house's level drawn. The low sun is the site's own (blender/parts/rock/views.json lowsun: October, 16:00, from the south-west), not the street's.",
+      "water": { "pos": [-29, 31, 1.2], "target": [4, -2, 7.0], "fov": 49, "level": "street",
+                 "says": "from the water north-west of the tip, close and at a boat's eye: the ice-worn backs rising out of the storm-wash to the one big back, 107 small on it beside the harbour office (on the west shoulder, nearer from every western bearing); the Bluff stands too far round to the left to share the frame without making the tip small, and the plucked lee is the street stop's" }
+    },
     "plan": {
       "describes": "The target's form plan over the grey-box (tip.py --plan): each face of the tip's blocks (outcrop.py, as blockin.py builds them) takes the zone its kind, height and facing put it in, coloured, with lines at their true spacing: the foliation's trace across the ledged faces that cut it (the lee's and the joints'), and the sheeting's steps on the plucked lee; the ice's backs are left plain, smooth. The storm-wash zone reaches `stormTopM` above the sea at full exposure (target_site.py's WEAR), times the side's exposure; a riser faces down-ice within `leeFacing` degrees of the ice's way.",
       "stormTopM": 3.6, "leeFacing": 60, "foliationLineM": [0.35, 0.03], "sheetLineM": [0.6, 0.05], "blend": 0.7,
