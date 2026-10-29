@@ -112,3 +112,14 @@ Cost (`c04-timing.md`, `STREET_TIMING=50 render.sh 107 d15 street P overcast`; e
   - The value of `_Geo_TexelSize` inside the cbuffer: with it inside and the pipeline's batcher off for the run (`STREET_SRPB=0`, e04), 107 matches k01 (no 8 px block moves 0.12 L*).
 - So the shift comes from the batcher's own draw path, in the per-draw data it fills. The likeliest is the ambient SH (`SampleSH`): the overcast and ambient-lit faces move most, and the URP/Lit ground, batched in both runs, doesn't move. The next step is to write `SampleSH(n)` out in both paths and compare. Until then the batcher stays off; the prize is 1.2 ms down the row of 50.
 - g01, the sag halved in the pack (`classical.json` bends: 31 mm a century, at most 55): 107's wall plate now sags 50 mm at mid-span, the ridge 60. In `g01-sag.jpg` (left k01, right g01: the street stop in clay overcast, then eye level in colour under low sun) the eave and the top laps run nearly straight, with a gentle dip, as the references show at that age. Triangles unchanged (near 24,474, street 6,251, city 729).
+
+## m01: the marks are keyed to the house, not the page (29 October)
+
+- Holds: no mark is seeded from the page, its charts or UV position. Every seed is the house, the opening, the run, the board counted down from its source, and the wall's own metres (along, up); the 3D breakup reads the rest position. The bake's charts did not move with the sag.
+- What moved between k01 and g01 is a fact. Window 3's sill was dead level (−0.00002 a metre): the old sag lifted its right end as much as the corner's settlement lowered it. At half the sag the settlement wins, and the sill falls 5 mm a metre toward the corner. Water leaves a sill at its lower end, so window 3's leak flipped from its left horn to its right, and its tongue, its casing's peel and its runs moved with it. Window 2's sill only steepened (−0.003 to −0.005), with the same leak.
+- The control: today's build painted with k01's sill tilts (`out-m01`, nothing else changed) matches k01's peel on the page exactly (0 texels differ). Against g01 it differs only at window 3. In `m01-marks.jpg`, eye level under low sun, the top row is k01, g01 and the control. The bottom row is the differences (k01 against g01, k01 against the control, g01 against the control). The first two show only edges, every line moved a few pixels by the sag. The third shows only window 3's casing and the water below it.
+
+## Polish, later
+
+- Flakes along the grain: at eye level the chips are blobby rectangles of a size. Failing paint flakes along the grain: long flakes at each board's lower edge and at the butts, the lifted edge catching the light, a hairline shadow under it (coordinator, after k01).
+- The leak side is a switch at 1 mm a metre (`paint.json` `level`): a sill near level flips its whole wear on a small change. A near-level sill should pool and leak at both ends, its share easing from one end to the other as it tilts.
