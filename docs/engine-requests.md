@@ -148,6 +148,29 @@ In order of need (ER3), 32 and 33 come first. They are cheap now and costly to r
    - *Meanwhile:* fixtures, `authored`; in the editor, the engine under Node beside Unity, read through the front door.
    - The player would see a decision taken in play reach the street while the dated card is still on screen.
 
+## From the research of 29 October: candidates, not yet backed by tests
+
+Øystein, 29 October: "i guess also think about what should be handled in Understory". Each comes from a note's "Whose facts" section, which gives its reasons: rooms (`docs/research/rooms-and-interiors.md`), the city's ground (`city-ground-and-public-places.md`), sound (`sound-and-music.md`) and weather (`weather-and-seasons.md`). Each is a fact the engine alone can make true. Drawn by us, it would invent a life or a cause. Until it lands, our rules derive what they can (`derived`) and leave the rest absent.
+
+37. **Things that carry a relation** (extends 17): a gift, an heirloom, a friend's photograph, with giver, year and occasion, and what a household puts at its windows (plants, lace, a Christmas star). The player would see a room whose things are real ties, never a stereotype of its owner.
+38. **After a death** (beside 24, extends 9): who inherits the things, whether they clear the house, what they keep; the grave's plot, holder, lease and lapse. The player would see 107's room as its heirs left it, and a tended or cleared grave.
+39. **Works with their actor and extent** (extends 14, 32): a kitchen, a bath or a room restored, and a street dug up, each with year, payer, purpose and extent. The player would see every patch and surface date itself and name who did it.
+40. **Households that split and merge** (extends 15): a divorce, a parent moving in, a lodger. The player would see who sleeps where change with them.
+41. **How each home is heated, and when that changed** (extends 15): stove, panel heaters, oil, a heat pump. The player would see a household's choice and money as smoke, a tank or a pump.
+42. **Habits that hold a spot or leave a mark** (extends 1's habits as timetables): a regular's seat, a seller's pitch kept for years, smoking that yellows a ceiling. The player would see the fishmonger's stall from 1982 to 1993, and its absence after.
+43. **Traffic as people's trips** (extends 1, 11, 16): each trip's mode and vehicle; only through traffic is ours. The player would see the car outside as someone's day.
+44. **Gatherings in public, with who came** (extends 28, 31): a crowd round an incident, the town's days with their route. The player would see a crowd only where something happened.
+45. **Regimes as decisions** (extends 23): a pedestrian trial, parking meters, the stud fee, each with its fate. The player would see what a street allows change by a council choice that can lapse.
+46. **Places' uses and keepers over time** (extends 13, 25): each use with the year it began, and its keeper (parks, church council, harbour). The player would see the market shrink because someone decided it.
+47. **Addresses with history** (extends 15, 25): renaming and renumbering, so the plate and the record agree.
+48. **Outages and strikes,** dated, with extent. The player would see their consequences on the street (criterion 3).
+49. **Heard by ear** (extends 1's way of knowing, 28, 15): beside seen and told, a row heard through a wall or from the stair, so who heard it is a fact that changes later talk.
+50. **A venture's hours and seasons** (extends 5's hours): shifts, a season such as the brisling, a late shift on a big catch. The player would hear the bell, see the feet and the lit windows agree.
+51. **Household animals.** The player would hear the dog that barks at the gate, and notice when it stops.
+52. **Broadcasts as records** (extends 9): the local radio's report of a town event, which can be wrong.
+53. **Weather by date, and as a cause** (extends 18): the month and its storms as a pure function of the date from the pack's climate and the seed, so any date gives the same month without replay; and weather as a cause of acts (a boat kept in, a roof job put off, a man lost in a gale). The player would see town and people live one weather.
+54. **Fires as events,** with place, cause, damage and who was rehoused. The player would see a burned gap that claims its history truly.
+
 ## After the playtests: a bundle for Understory
 
 Decided with Øystein (21 October; ER4): the engine requests that come out of the playtests are gathered and sent to Understory together, once the paper playtests and the greybox's first round are done. Each one is backed by what the tests showed. Øystein carries them over, or asks us to comment on the engine's Overstory-labelled issue. Candidates so far, to confirm by the tests:
