@@ -5,14 +5,18 @@
 The ice made the big form, so it comes first: a whaleback (roche moutonnee), its long back smooth toward where the ice
 came from and falling to the sea. One heightfield hull in the ice's frame (u the way it went, v across it toward the
 sea): over a superellipse plan, longer up-ice and seaward, a round cap falling to straight slabs, with a few long low
-flutes along the ice's way. Then it is cut,
-never smoothed, by exact plane booleans on that clean hull:
+flutes along the ice's way, its crest at the record's back. Then it is cut, never smoothed, by exact plane
+booleans on that clean hull:
+- the back's sheets: the ice planed across the foliation, so each sheet is a few broad planar treads, each rising
+  toward the dip so the next sheet's edge crops out lower as a low riser on the foliation, with leaves plucked from
+  the edges between J1 joints (the sea's round kept under the wet line);
 - the plucked lee: steep steps down-ice, each block gone above its tread on the sheeting (falling gently down-ice) and
   beyond its front, which crosses the whole width on the planes that cross the ice's way, in strips between J1 joints
   that run on through every step: a J2 face on the sea side, the foliation's riser (leaning back toward its dip), a J3
   face to the land side;
   each lower and further until under the sea; and a few leaves plucked out at the risers' feet between minor J1 joints;
-- the main joints across the back (kit.json `cracks`, one a family), narrow straight-sided cracks through the block.
+- the main joints across the back (kit.json `cracks`, one a family), straight-sided cracks through the block, their
+  lips chipped by small wedges falling into them.
 The back's lower edge keeps the hull's own round where the sea washes it; the cut arrises stay crisp. Out: DIR/W.blend
 with `W-high` (and with --bake 1 `W-game` and its page, baked as carve.py bakes) in the block's frame at its place.
 """
@@ -24,6 +28,8 @@ import sys
 import bmesh
 import bpy
 import numpy as np
+from mathutils import Vector
+from mathutils.bvhtree import BVHTree
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.abspath(os.path.join(HERE, "..", "..", "..", ".."))
@@ -109,6 +115,110 @@ def body_mesh(faces, name):
     return me
 
 
+def sheets(W, X, Y, h, n, spacing, wet, lo, hi, rng):
+    """What the ice planed off the back across the foliation: in each sheet (between two of its planes `spacing` apart),
+    everything above a few broad planar treads fitted just under the hull, `alongM` each along the strike. Each tread
+    rises toward the foliation's dip by its own `riseM`, so at a sheet edge the next sheet crops out that much lower, a
+    riser on the foliation leaning back down-ice as the plucked side of a step, growing and dying out along the strike; the hull's own round stays
+    where the sea washes the lower edge (under `wet`, which no tread is fitted to). Along each edge the ice plucked
+    `bites`: a leaf `deepM` thick gone from the higher sheet's edge, `longM` long between two J1 joints, down to the
+    lower sheet's tread, so the edge jogs back and on as it runs."""
+    S, H, B, nf = W["sheets"], W["hull"], W["sheets"]["bites"], n["foliation"]
+    k = max(1, int(round(S["fitM"] / H["cellM"])))
+    P = np.stack([X[::k, ::k].ravel(), Y[::k, ::k].ravel(), h[::k, ::k].ravel()], 1)
+    P = P[P[:, 2] > wet]
+    f = P @ nf
+    st = np.array([-nf[1], nf[0]]) / np.linalg.norm(nf[:2])  # along the strike, level
+    a = P[:, :2] @ st
+    d = [f.min() - rng.uniform(0, spacing[1])]
+    while d[-1] < f.max():
+        d.append(d[-1] + rng.uniform(*spacing))
+    bodies, treads = [], []
+    for d0, d1 in zip(d[:-1], d[1:]):
+        treads.append([])
+        inside = (f >= d0) & (f < d1)
+        Q, A, t = P[inside], a[inside], (d1 - f[inside]) / (d1 - d0)  # t 1 at the sheet's up-dip edge, 0 at its down-dip
+        if len(Q) < S["fewest"]:
+            continue
+        ends = [A.min() - rng.uniform(0, S["alongM"][1])]
+        while ends[-1] < A.max():
+            ends.append(ends[-1] + rng.uniform(*S["alongM"]))
+        for i, (a0, a1) in enumerate(zip(ends[:-1], ends[1:])):
+            sel = (A >= a0) & (A < a1)
+            if sel.sum() < S["fewest"]:
+                continue
+            M = np.c_[Q[sel, :2], np.ones(sel.sum())]
+            target = Q[sel, 2] - rng.uniform(*S["riseM"]) * t[sel]  # each tread its own rise: an edge grows and dies out
+            co = np.linalg.lstsq(M, target, rcond=None)[0]
+            co[2] -= max(0.0, float((M @ co - target).max()))  # all of it under the hull: a cut, never a fill
+            treads[-1].append((a0, a1, co))
+            m = np.array([co[0], co[1], -1.0])
+            o = S["overlapM"] * (1 + 0.3 * i)  # neighbouring bodies overlap a little, never sharing a face
+            bodies.append(HL.body(lo, hi, [(nf, d1 + o, "foliation"), (-nf, -(d0 - o), "foliation"),
+                                           (m / np.linalg.norm(m), -co[2] / np.linalg.norm(m), "tread")]))
+    n1 = n["J1"] if n["J1"][:2] @ st > 0 else -n["J1"]
+    for j, edge in enumerate(d[1:-1]):  # the edge between sheet j (up-dip) and j + 1
+        on = np.abs(f - edge) < S["fitM"]
+        if not on.any() or not treads[j + 1]:
+            continue
+        E, Ea = P[on], a[on]
+        x = Ea.min()
+        while x < Ea.max():
+            x += rng.uniform(*B["gapM"])
+            if rng.random() > B["chance"]:
+                continue
+            pb = E[np.argmin(np.abs(Ea - x))]
+            under = [co for a0, a1, co in treads[j + 1] if a0 <= x < a1] or [treads[j + 1][0][2]]
+            co, ln = under[0], rng.uniform(*B["longM"])
+            m = np.array([co[0], co[1], -1.0])
+            bodies.append(HL.body(lo, hi, [(nf, edge + S["overlapM"] * rng.uniform(4, 5), "foliation"),
+                                           (-nf, -(edge - rng.uniform(*B["deepM"])), "foliation"),
+                                           (n1, n1 @ pb + ln / 2, "J1"), (-n1, -(n1 @ pb - ln / 2), "J1"),
+                                           (m / np.linalg.norm(m), (rng.uniform(*B["dropM"]) - co[2]) / np.linalg.norm(m),
+                                            "tread")]))
+    return [b for b in bodies if b is not None]
+
+
+def lips(W, crest, surf, du, dv, n, walls, lo, hi, rng):
+    """Chips plucked off the main joints' lips: small wedges broken from an edge on a plane falling from the surface,
+    `inM` back from the wall, to the wall `downM` under it, `longM` long between two joints of the crossing family."""
+    L = W["lips"]
+    bodies = []
+    for c in W["cracks"]:
+        nc, ne = n[c["family"]], n[L["endOn"][c["family"]]]
+        tc = np.cross(nc, [0.0, 0.0, 1.0])
+        tc /= np.linalg.norm(tc)
+        ne = ne if ne @ tc > 0 else -ne
+        nh = nc[:2] / np.linalg.norm(nc[:2])
+        p0 = crest + du * c["at"][0] + dv * c["at"][1]
+        d = sum(walls[c["family"]]) / 2
+        w = walls[c["family"]][1] - walls[c["family"]][0]
+        s = -L["reachM"]
+        while s < L["reachM"]:
+            s += rng.uniform(*L["gapM"])
+            side = 1 if rng.random() < 0.5 else -1
+            cin, e, ln = rng.uniform(*L["inM"]), rng.uniform(*L["downM"]), rng.uniform(*L["longM"])
+            D = d + side * w / 2
+            q = p0 + tc[:2] * s
+            for _ in range(3):  # onto the wall at the surface
+                z = surf(q + side * nh * cin / 2)
+                if z is None:
+                    break
+                q = q + nh * (D - nc @ np.array([q[0], q[1], z])) / (nc[:2] @ nh)
+            if z is None or rng.random() > L["chance"]:
+                continue
+            k = e / cin
+            m = side * k * nc - np.array([0.0, 0.0, 1.0])  # above the break plane, on the wall's side of it
+            q3 = np.array([q[0], q[1], z])
+            bodies.append(HL.body(lo, hi, [
+                (m / np.linalg.norm(m), (-(z - e) + side * k * D) / np.linalg.norm(m), "lip"),
+                (-side * nc, -side * (D - side * w * rng.uniform(0.3, 0.6)), "crack"),
+                (side * nc, side * (D + side * 2 * cin), "lip"),
+                (ne, ne @ (q3 + tc * ln / 2), L["endOn"][c["family"]]),
+                (-ne, -(ne @ (q3 - tc * ln / 2)), L["endOn"][c["family"]])]))
+    return [b for b in bodies if b is not None]
+
+
 def cutters(W, crest, z_at, du, dv, n, toward, lo, hi, rng):
     """The bodies the lee and the joints lost, each the intersection of half-spaces on the rock's own planes."""
     L, C = W["lee"], W["cracks"]
@@ -155,7 +265,49 @@ def cutters(W, crest, z_at, du, dv, n, toward, lo, hi, rng):
             x += rng.uniform(*L["spacingM"])
             top = z
             k += 1
-    return [b for b in bodies if b is not None]
+    return [b for b in bodies if b is not None], walls
+
+
+def tidy(ob):
+    """Drop the crumbs a cut left loose (pieces under a hundredth of the largest); the blocks the joints part stay."""
+    bm = bmesh.new()
+    bm.from_mesh(ob.data)
+    bm.faces.ensure_lookup_table()
+    seen, pieces = set(), []
+    for f0 in bm.faces:
+        if f0.index in seen:
+            continue
+        piece, todo = [], [f0]
+        seen.add(f0.index)
+        while todo:
+            f = todo.pop()
+            piece.append(f)
+            for e in f.edges:
+                for g in e.link_faces:
+                    if g.index not in seen:
+                        seen.add(g.index)
+                        todo.append(g)
+        pieces.append(piece)
+    pieces.sort(key=len)
+    crumbs = [f for piece in pieces if len(piece) < len(pieces[-1]) / 100 for f in piece]
+    if crumbs:
+        bmesh.ops.delete(bm, geom=list({v for f in crumbs for v in f.verts}), context="VERTS")
+        bm.to_mesh(ob.data)
+    bm.free()
+
+
+def cut(ob, bodies, solver):
+    """Take the bodies (hull.py's) off the mesh in one exact boolean."""
+    col = bpy.data.collections.new("cuts")
+    for i, b in enumerate(bodies):
+        col.objects.link(bpy.data.objects.new(f"cut{i}", body_mesh(b, f"cut{i}")))
+    m = ob.modifiers.new("cuts", "BOOLEAN")
+    m.operation, m.operand_type, m.collection, m.solver = "DIFFERENCE", "COLLECTION", col, solver
+    carve.applied(ob)
+    tidy(ob)
+    for o in list(col.objects):
+        bpy.data.objects.remove(o)
+    bpy.data.collections.remove(col)
 
 
 def main():
@@ -186,15 +338,16 @@ def main():
 
     lo = np.array([X.min() - 1, Y.min() - 1, H["footM"] - 1])
     hi = np.array([X.max() + 1, Y.max() + 1, H["crestM"] + 1])
-    col = bpy.data.collections.new("cuts")
-    for i, b in enumerate(cutters(W, crest, z_at, du, dv, n, toward, lo, hi, rng)):
-        col.objects.link(bpy.data.objects.new(f"cut{i}", body_mesh(b, f"cut{i}")))
-    m = high.modifiers.new("cuts", "BOOLEAN")
-    m.operation, m.operand_type, m.collection, m.solver = "DIFFERENCE", "COLLECTION", col, W["solver"]
-    carve.applied(high)
-    for o in list(col.objects):
-        bpy.data.objects.remove(o)
-    bpy.data.collections.remove(col)
+    spacing = PT.families(BI.FIX)["foliation"]["spacingM"]
+    cut(high, sheets(W, X, Y, h, n, spacing, wet, lo, hi, rng), W["solver"])
+    tree = BVHTree.FromPolygons([v.co.copy() for v in high.data.vertices], [p.vertices[:] for p in high.data.polygons])
+
+    def surf(p):  # the sheeted back's height at a point of the plan, or None off the rock
+        hit = tree.ray_cast(Vector((p[0], p[1], hi[2])), Vector((0, 0, -1)))[0]
+        return hit.z if hit is not None and hit.z > H["footM"] + 0.05 else None
+
+    bodies, walls = cutters(W, crest, lambda p: surf(p) if surf(p) is not None else z_at(p), du, dv, n, toward, lo, hi, rng)
+    cut(high, bodies + lips(W, crest, surf, du, dv, n, walls, lo, hi, rng), W["solver"])
     high.data.set_sharp_from_angle(angle=np.radians(W["sharpDeg"]))
     for p in high.data.polygons:
         p.use_smooth = True

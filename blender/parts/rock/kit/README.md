@@ -33,19 +33,29 @@ zonation are (`../README.md`).
   the sea, 3 m off the north-west shore); `tip.grey` holds the frame's values and the shore bands; `tip.py` moves them into 107's frame in `tip.json` with the site's own low
   sun (`sunOff`), and `LT1HolmTip.cs` adds them beside the street stop. Run:
   `TIP_GREY=1 render.sh <round> water,street P overcast,lowsun`.
-- **State (29 Oct, t06):** the shore block as the ice made it, `whaleback.py` (kit.json `whaleback`; out
+- **State (29 Oct, t07):** the shore block as the ice made it, `whaleback.py` (kit.json `whaleback`; out
   `cache/rock/kit/gen/carve/W.blend`, `-- --bake 1` adds `W-game` and its 2048 maps; shown by `tip.py -- --lone 1
-  --show W-high|W-game`). One heightfield hull in the ice's frame (a round cap falling to straight slabs over a
-  superellipse plan, shallow flutes along the ice's way), cut by exact plane booleans: the plucked lee in three strips
-  between J1 joints (a J2 face toward the sea, the foliation's riser in the middle, a J3 face toward the land), each
-  strip stepping down on its own on the sheeting, leaves plucked at the riser feet, and one J1 and one J2 crack across
-  the back. Rung 1 (Blender grey, `reviews/lt1/rock/t06/grey.jpg`) passes; in Unity (`sheet.jpg`) the sea view is
-  the first svaberg profile, but the back reads as a smooth bun with pencil-line cracks at eye level, W game smears
-  the lee's steps from above, and the crest (1.5 m) is half the record's back (2.9 m). Next, one at a time: the crest
-  to the record, the game mesh cut from the same planes on a coarse hull, then the back's mid-scale. Turf test C,
-  the toe line and the storm fixes queued.
+  --show W-high|W-game`). One heightfield hull in the ice's frame, its crest at the record's back (2.9 m), cut by
+  exact plane booleans in two passes:
+  - the back's sheets: in each sheet (the fixture's foliation spacing), a few broad planar treads fitted under the
+    hull above the wet line, each rising toward the dip so the next sheet crops out 5-40 cm lower as a riser on the
+    foliation, with leaves plucked from the edges between J1 joints;
+  - the plucked lee in J2, foliation and J3 strips stepping down on their own;
+  - one J1 and one J2 crack, 4-10 cm wide, their lips chipped by small wedges.
+  Crumbs a cut leaves are dropped. t07 W high is the best so far (`reviews/lt1/rock/t07/sheet.jpg`). Still wrong:
+  in raking light the sheet edges run as long regular slats (bites too small to break them), and the land flank keeps
+  the hull's smooth round under the wet line. The game mesh waits: then a coarse hull cut on the same planes. Turf
+  test C, the toe line and the storm fixes queued.
 
 ## Rounds
+
+- **t07** (`reviews/lt1/rock/t07/`; `grey.jpg` Blender grey, one sun, eye, 12 m, sea and the lee over refs 16, 15,
+  48, 51; `sheet.jpg` columns t07 W high, t06 W high, t04b; rows eye, 12 m, sea, each overcast then low sun). The bun
+  is gone: at eye level a sheeted face of broad treads with sheet edges and a chipped crack; from 12 m one mass in
+  facets; from the sea the profile holds at the record's height. Bad: the sheet edges read as long regular slats
+  from the sea and 12 m in low sun; the land flank's lower edge a smooth rind. On the way: planks while every edge ran
+  the full width (x1), a rise per tread barely changed it (x2), bites too small to show (x3), the land flank
+  faceted crumpled into blades (x4, reverted), the crumb cleanup first dropped the blocks the joints part (x4).
 
 - **t06** (`reviews/lt1/rock/t06/`; `grey.jpg` Blender grey, one sun, 12 m, sea and the lee over refs 48, 51, 16;
   `sheet.jpg` columns W high, W game, t04b; rows eye, 12 m, sea, each overcast then low sun; refs 48, 51, 16, 15).
