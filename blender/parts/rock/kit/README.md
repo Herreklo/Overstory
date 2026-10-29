@@ -51,10 +51,22 @@ zonation are (`../README.md`).
   low-poly crystal, not rock (t06-t09 alike). t10 (rung 1, not in Unity) laid `rock_face_01`'s relief on the cut
   faces: the crystal is gone up close, but from 12 m the plates' grid is the patchwork, and the relief is one even
   crinkle. The prototype (`wdetail2.py`, scan windows from `scanras.py` and `scanpatch.py`) is in the coordinator's
-  notes folder, `rock-t10-tools/`, until it holds. t11 (coordinator and Øystein, 29 Oct) tried a kitbash of scanned rock over t09's cut form and failed at rung 1 (Rounds); the prototype `kb.py` is in the coordinator's notes folder, `rock-t11/`. After the method is settled: the land
+  notes folder, `rock-t10-tools/`, until it holds. t11 (scan windows cut to t09's faces) and t12 (a few whole scans, sunk and overlapping over t09 as a core) both failed at rung 1 (Rounds); the method goes to Øystein. Prototypes in the coordinator's notes folder, `rock-t11/` (`kb.py`, `kb3.py`) and `rock-t12/` (`kf.py`, the fit). After the method is settled: the land
   flank; the game mesh as a coarse hull cut on the same planes. Turf test C, the toe line and the storm fixes queued.
 
 ## Rounds
+
+- **t12** (`reviews/lt1/rock/t12/grey.jpg`, Blender grey; rows: neutral, raking, the core blue and every scan's back
+  red, t09; columns eye, 12 m, sea, lee; then ref 16 and t05's coast_rocks_05). Rung 1 only, FAIL. Whole scans, rigid,
+  sunk and overlapping over t09 remeshed and pushed in 0.5 m as a core, nothing clipped: coast_rocks_05 (no layering
+  to read, kept upright and tilted to its place), mountainside in four 5 m regions and rock_face_01 with their
+  layering on our foliation, scale within 15%, placed by a fit (`kf.py`, 37 s) for cover, the silhouette, buried rims,
+  the crest and no repeat. Five pieces: 42% of t09's surface above the sea still bare (the core shows on the back and
+  the land flank), a quarter of the rim points in the air, backs showing at the crest; from the sea one sharp alpine
+  peak, not the whaleback. With the rims weighted fully, the fit sinks the pieces under the sea (80% bare): these
+  scans, a concave 10 m cliff shell and a 4 m low outcrop with its skirt, can't wrap a convex 14 m dome inside its
+  silhouette with their edges buried. Where the scans show, rock up close, but mountainside's crags, not ice-worn
+  phyllite.
 
 - **t11** (`reviews/lt1/rock/t11/grey.jpg`, Blender grey; top: eye, 12 m, sea neutral, then 12 m with the backing blue;
   bottom: eye, 12 m, sea raking, then ref 16). Rung 1 only, FAIL. Kitbash: each planar face of t09's cut form above
@@ -62,8 +74,9 @@ zonation are (`../README.md`).
   turned rigidly onto it (Kabsch: the window's mean normal to the face, the scan's layering to our foliation or, on the
   treads, its strike to the foliation's trace), its tenth percentile on the plane, cut by bisect on its neighbours'
   planes so every rim lies on a joint; faces too big for a scan parted on a minor J1, J2 or J3 joint. 60 pieces. The
-  pieces cover only about a third of the backing: a rigid window 1-2 m across can't follow a planar face, so it
-  sinks under it in long stretches and the cut form's planes still show, with ragged scan islands on them. A first
+  pieces cover only about a third of the backing (measured: 62% of the cut faces bare, 7% with a piece sunk under
+  them): each neighbour's plane, extended, shaved off most of a window's relief, so the cut form's planes still show,
+  with ragged scan islands on them. A first
   try with solidified windows and an exact boolean left only fragments. Not rock beside ref 16.
 
 - **t10** (`reviews/lt1/rock/t10/grey.jpg`, Blender grey; top row eye level: t10 neutral, t10 raking, t09 neutral,
