@@ -1,22 +1,18 @@
-# 108: the chalet (c02), from its record, beside ref 10 and 107
+# 108: the chalet (1901), beside ref 10 and 107
 
-- Holds: it reads as ref 10's house, a sveitser chalet of 1901 with its gable to the street. The plinth is high and rendered, and the belt carries dentils. The loft row is four windows with one more in the peak. The verge is deep, with a moulded barge and purlin ends. The surrounds are bracketed, the side door has steps, and the roof is slate. It is built from a chalet era file and the shared versions; no part is tuned for this house. The windows are 1901's, from the 1985 restoration, and the paint is the 1985 white, so the wear is slight. That is what the facts say.
-- Bad: overcast is flat grey. The deep verge throws a hard-edged band down the gable, because the overcast light is a 65° key light with shadow 0.7 (`LT1Street.cs`, Lighting overcast). The barge's diagonal shadow edge shows a sawtooth: the soft-shadow filter is on Low. The geometry is clean (grey `rake` view). Both go to the street's light step.
-- Bad: the plinth is plain render with a wet foot. Ref 10 has three cellar windows in it. Near has 168 triangles left, so the cellar windows are on the polish list with the beaded cladding.
-- Fixed on the way, for every house:
-  - The verge's barge was sheared. A sign error left it about 15 cm deep vertically; it now has its true width, and an end board closes the eave box under its foot.
-  - The house's shadows now cast two-sided. One-sided, the sun's normal bias opened the joints between faces turned different ways, and lit lines crossed the shadow on the ground. 107 showed them too.
-  - Each roof slope gets its sarking, the boards seen from under the verge.
-  - The bake no longer assumes pantiles.
-  - Slate has its own paint values, at L* 33 with a cool hue. A rendered plinth takes the plinth's wet margin and junctions, without brush strokes.
+- Bad: overcast is flat grey. The deep verge throws a hard-edged band down the gable, because the overcast key is a 65° light with shadow 0.7. The barge's shadow edge shows a sawtooth, because soft shadows are on Low. Both go to the light step.
+- Bad: the plinth is plain render with a wet foot, where ref 10 has three cellar windows.
+- Holds: it reads as ref 10's house. It is a sveitser chalet with its gable to the street, a high rendered plinth, a belt with dentils, the loft row of four with one in the peak, a deep verge with a moulded barge and purlin ends, bracketed surrounds, a side door up its steps, and slate. It is built from the chalet era file and the shared versions, and no part is tuned for it.
+- Holds: the windows are 1901's, from the 1985 restoration. Its coats are 1961 and 1975 (derived), then the recorded 1985 white, so the wear is slight, as the facts say.
+- The page is 4096 at 128 px/m (every house keeps 107's density).
 
-`c02-sheet.jpg`, top row: ref 10, then grey at ref 10's stand, then the street stop overcast in clay and in colour. Bottom row: 107 (the floor) at the street stop overcast, then 108 at the street stop in low sun, from 12 m in low sun, and at eye level overcast. Rendered with `render.sh 108 c02 eye,gable,street,raised P,Pc overcast,lowsun`; the raised still is from c02t.
+Sheet: `c02-sheet.jpg`. Stills: `108-*.png`.
 
-Cost (`c03-timing.md`, `STREET_TIMING=50 render.sh 108 c03 street Pc overcast`):
-- Triangles: near 24,832 (25k), street 7,792 (8k), city 778 (800).
-- A row of 50: 3.8, 4.0 and 4.7 ms (street, raised, along), against 107's 3.6, 4.1 and 4.8 ms.
-- The page: 21.3 MB on the GPU at full, BC7.
-- 107 after the shared changes: near 24,590, street 6,287, city 705.
-- Since e396d6c, 108 wears its record's 1985 `wall_white`, where before it wore the linseed white by default. Its coats, recorded and derived (1961, 1975, then the recorded 1985), leave the coat at 4 years. At the street stop it cannot be told from the committed stills.
-- The page by surface: 108's 465 m² takes a 4096 page at 128 px/m (it was 2048 at 90), as every house now keeps 107's density (109's README, The page by surface). Its row of 50 at the street stop streams 294 MB and runs at 4.0 ms (it was 91 MB and 3.8 ms on the 2048 page); one page is 85.3 MB at full. `c10-timing.md`.
+Cost (`c10-timing.md`):
+- Triangles: near 24,832, street 7,792 (8,800 by frontage), city 778.
+- A row of 50: 4.0, 4.1 and 4.8 ms (street, raised, along); near3 5.0 ms.
+- Page: 85.3 MB at full, 0.33 MB from mip 4 down. A row of 50 streams 294 MB at the street stop.
 
+Polish: cellar windows in the plinth (near has 168 triangles left), beaded cladding.
+
+History: git log of this folder.
