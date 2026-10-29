@@ -2,7 +2,7 @@
 
 01 to 10 are the 1989 harbour fronts, each logged in `docs/research/downloads.md`.
 
-11 to 22 were sent by Øystein in chat on 29 October as inspiration for later: the Eiganes villa and houses not made of wood. No source was given. They are for study only.
+11 to 24 were sent by Øystein in chat on 29 October as inspiration for later: the Eiganes villa and houses not made of wood. No source was given. They are for study only.
 
 | File | What it shows | What to take |
 | --- | --- | --- |
@@ -18,3 +18,5 @@
 | `20-corner-block-1901-tower-and-balconies.webp` | The same block's corner, dated 1901: a tower with a slate spire, iron balconies, red window frames and a corner shop | The corner as an event in the street; iron, slate and brick together |
 | `21-new-brick-flats-curved-gables-2010s.webp` | New flats of the 2010s in pale brick with curved gables, deep window frames in a red-brown metal, pergolas and glass links | What a later year can put in the town: an old shape (the gable) made new, in brick. For the town at 2010 and 2020 |
 | `22-stavanger-svommehall-board-marked-concrete.webp` | Stavanger's swimming hall in board-marked concrete: a deep grid of fins on a cantilevered upper storey over glazed floors, wide steps up to it | Concrete with the boards' grain in it; one big shape and a deep repeated grid; how concrete weathers in streaks |
+| `23-…` (file to come) | Rogaland Teater in winter: the old theatre in white render with round-arched windows and a copper-roofed lantern, a newer white wing beside it, a red brick building with white trim behind bare trees. Dark laid stone walls of the town's own slate, rhododendrons and a frosted path in front | Render on a public building; old and newer wings side by side; the slate walls and winter light of the town itself |
+| `24-…` (file to come) | A CG render of the theatre's planned extension at sunset: the old rendered theatre joined to new volumes in banded stone, a glazed foyer in a concrete frame, a stage tower behind | How a later year adds to an old building without hiding it. For the town at 2020 and after |
