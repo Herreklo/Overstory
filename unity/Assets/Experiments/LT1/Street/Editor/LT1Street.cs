@@ -29,7 +29,10 @@ namespace Overstory.EditorTools
         const int Width = 2560, Height = 1440, Msaa = 4, WarmUp = 3;
 
         [Serializable] class PMat { public string name; public int painted; public float L, bareL, underL, stainDL, smooth, stainSmooth, brushL, flatUp, stainEdge, ao, shadowLift; }
-        [Serializable] class PLight { public string light; public float exposure, elevation, sun, shadow, sky, equator, ground; public float[] azimuth; }
+        [Serializable] class PLight { public string light, drawn; public float exposure, elevation, sun, shadow, sky, equator, ground; public float[] azimuth; }
+        [Serializable] class PLightRows { public PLight overcast, lowsun; }
+        [Serializable] class PLightFile { public PLightRows light; }
+        [Serializable] class PFinishFile { public PLightFile painted; }
         [Serializable] class PColMat { public string name; public float[] tint, bareTint, underTint, stainTint; }
         [Serializable] class PColLight { public string light; public float[] sun, sky, equator, ground, background, floor; }
         [Serializable] class PColour { public PColMat[] mats; public PColLight[] lights; public float[] washTint; }
@@ -62,7 +65,7 @@ namespace Overstory.EditorTools
             new View { name = "p3street", level = "street", pos = new Vector3(-8.5f, -18.0f, 1.6f), target = new Vector3(0.9f, 0.3f, 1.9f), fov = 42, floor = true },
         };
 
-        struct Lighting { public string name; public Vector2 azimuth; public float elevation, sun, shadow, sky, equator, ground, exposure; }
+        struct Lighting { public string name, drawn; public Vector2 azimuth; public float elevation, sun, shadow, sky, equator, ground, exposure; }
 
         // the finishing test's two lights (LT1Finish), where way P's plan names none of its own
         static readonly Lighting[] Lights =
@@ -150,6 +153,21 @@ namespace Overstory.EditorTools
             cam.nearClipPlane = 0.1f;
             cam.farClipPlane = 500f;
 
+            // the sky a light row draws (`drawn`, OS_StageSky), on a sphere round the camera inside its far plane; a light
+            // drawing none keeps the camera's flat background
+            var skyGo = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            skyGo.name = "Sky";
+            UnityEngine.Object.DestroyImmediate(skyGo.GetComponent<Collider>());
+            skyGo.transform.localScale = Vector3.one * 900f;
+            var skyMat = new Material(Shader.Find("Overstory/LT1/StageSky"));
+            AssetDatabase.CreateAsset(skyMat, $"{gen}/mat-sky.mat");
+            var skyR = skyGo.GetComponent<MeshRenderer>();
+            skyR.sharedMaterial = skyMat;
+            skyR.shadowCastingMode = ShadowCastingMode.Off;
+            skyR.receiveShadows = false;
+            skyGo.SetActive(false);
+            var ownLights = SourceLights(root) ?? paint.lights;
+
             RenderSettings.ambientMode = AmbientMode.Trilight;
             RenderSettings.fog = false;
             EditorSceneManager.SaveScene(scene, $"{Dir}/Street.unity");
@@ -190,13 +208,14 @@ namespace Overstory.EditorTools
                     urp.shadowDistance = row ? built.Max(b => FarFrom(b, view.pos)) + 4f : (view.target - view.pos).magnitude + 8f;
                     foreach (var way in ways)
                     {
-                        var own = paint.lights?.FirstOrDefault(e => e.light == light.name);
+                        var own = ownLights?.FirstOrDefault(e => e.light == light.name);
                         var col = way == "Pc" ? paint.colour?.lights?.FirstOrDefault(e => e.light == light.name) : null;
                         var l = own != null ? Own(light, own) : light;
                         if (!view.floor && l.name == "lowsun")
                             l.azimuth = new Vector2(Mathf.Sin(sunOff * Mathf.Deg2Rad), -Mathf.Cos(sunOff * Mathf.Deg2Rad));
                         Light(sun, l, col);
                         cam.backgroundColor = Lin(Back.linear.r, col?.background);
+                        Sky(skyGo, skyMat, cam, l, col);
                         gm.SetColor("_BaseColor", Lin(gy, col?.floor));
                         adjust.postExposure.Override(own != null ? own.exposure : light.exposure);
                         foreach (var b in built)
@@ -206,6 +225,8 @@ namespace Overstory.EditorTools
                         Debug.Log($"[LT1Street] {file}");
                     }
                 }
+                skyGo.SetActive(false);
+                Shader.SetGlobalVector("_OS_StageSky", Vector4.zero);
                 if (Arg("-streetTiming") != null && !row)
                     Timing(int.Parse(Arg("-streetTiming")), root_, mats, cam, sun, gm, adjust, house, paint, outDir, sunOff);
                 SrpBatcher(mats.Values.First().shader);
@@ -951,7 +972,37 @@ namespace Overstory.EditorTools
         {
             name = l.name, azimuth = new Vector2(p.azimuth[0], p.azimuth[1]), elevation = p.elevation, sun = p.sun,
             shadow = p.shadow, sky = p.sky, equator = p.equator, ground = p.ground, exposure = p.exposure,
+            drawn = string.IsNullOrEmpty(p.drawn) ? null : p.drawn,
         };
+
+        /// The street's own lights over the corner's (blender/parts/street/paint.json light over blender/parts/finish/
+        /// finish.json painted.light, a row of the street's taking the place of the corner's, as paint.py merges them),
+        /// read where they are written: the light is the scene's, not a house's, so a re-key needs no new paint (a house's
+        /// paint.json keeps the copy its bake took). Null when the files are not there: the paint's copy is used then.
+        static PLight[] SourceLights(string root)
+        {
+            string finish = Path.Combine(root, "blender", "parts", "finish", "finish.json"), street = Path.Combine(root, "blender", "parts", "street", "paint.json");
+            if (!File.Exists(finish) || !File.Exists(street))
+                return null;
+            var f = JsonUtility.FromJson<PFinishFile>(File.ReadAllText(finish))?.painted?.light;
+            var s = JsonUtility.FromJson<PLightFile>(File.ReadAllText(street))?.light;
+            PLight Row(PLightRows r, string name)
+            {
+                var p = r == null ? null : name == "overcast" ? r.overcast : r.lowsun;
+                return p != null && p.azimuth != null && p.azimuth.Length == 2 ? p : null;
+            }
+            var rows = new List<PLight>();
+            foreach (var name in Lights.Select(x => x.name))
+            {
+                var p = Row(s, name) ?? Row(f, name);
+                if (p != null)
+                {
+                    p.light = name;
+                    rows.Add(p);
+                }
+            }
+            return rows.ToArray();
+        }
 
         static void Light(Light sun, Lighting l, PColLight c = null)
         {
@@ -966,6 +1017,23 @@ namespace Overstory.EditorTools
             RenderSettings.ambientEquatorColor = Lin(l.equator, c?.equator);
             RenderSettings.ambientGroundColor = Lin(l.ground, c?.ground);
             DynamicGI.UpdateEnvironment();
+        }
+
+        /// The sky a light draws (its row's `drawn`): "cie-overcast" is the CIE overcast sky, (1 + 2 sin e) / 3 of its
+        /// zenith, at the radiance of the light it casts: its light on level ground (7/9 of its zenith's) is the
+        /// hemisphere's, and Unity's trilight grades from the equator at the horizon to the sky overhead, so level ground
+        /// takes equator + 2/3 (sky - equator). The panes mirror the same sky (OS_Glass, _OS_StageSky). A light drawing
+        /// none keeps the camera's flat background, and the panes the trilight.
+        static void Sky(GameObject go, Material mat, Camera cam, Lighting l, PColLight c)
+        {
+            bool cie = l.drawn == "cie-overcast";
+            float z = (l.equator + 2f / 3f * (l.sky - l.equator)) * 9f / 7f;
+            var t = c?.sky != null && c.sky.Length == 3 ? new Vector3(c.sky[0], c.sky[1], c.sky[2]) : Vector3.one;
+            var zenith = new Vector4(z * t.x, z * t.y, z * t.z, 1f);
+            go.SetActive(cie);
+            go.transform.position = cam.transform.position;
+            mat.SetVector("_SkyZenith", zenith);
+            Shader.SetGlobalVector("_OS_StageSky", cie ? zenith : Vector4.zero);
         }
 
         static void Capture(Camera cam, string file)

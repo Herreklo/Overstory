@@ -1,61 +1,82 @@
-# The row: 107, 108 and 109 together, the window board inside the glass (r07)
+# The row: 107, 108 and 109 together, the overcast key (r08)
 
-- Bad: 108's own near view at 4.4 m is unchanged from r06, to 0.00 L in both lights, so r06's first bad still stands (`r07-close-glass.jpg`):
-  - the main floor's lower sashes stay at L13–18;
-  - the room's furniture, which r05 showed, is still lost.
+- Bad: the ground misses its rung. At the street stop it is 65.4 (pass 40–46; r07 54.7), so the white front stands only 17 above it. Ref 10 puts it 43 above.
+  - Until the street has its own ground, the stage's ground is a stand-in: a URP Lit plane at L42, an albedo of 0.126. That is an aged dry asphalt (0.10–0.15), and I left it there.
+  - On an open plane under this sky, 40–46 needs an albedo of 0.04–0.05, a fresh or wet asphalt. The road in ref 10 runs between houses that hide much of its sky, and it is likely damp.
+  - A darker value here would be a material picked to meet the number, so the rung waits for the street's own ground.
+  - The clay ground also has a faint blue tint (C 0.7–1.2, where every clay house is C 0), and it is 1.5 L lighter far off than near. It mirrors a little of Unity's default skybox, which Street.unity uses as its reflection source: a sky the stage does not draw. That stray light should go when the street gets its own ground.
+- Bad: the sky's gradient misses its rung. Its sd over the open sky is 1.9 (pass ≥ 3; r07 0.7), running from 86.3 at the horizon to 91.6 at the top of the frame.
+  - That is the CIE sky's own gradient over the band the frame sees, about 0 to 20° (1.7× in radiance), pressed by the tonemapper's shoulder.
+  - More would need a cloud deck, or the bright cloud round the sun, and the sun is behind the camera at the stop.
+  - The sun's quarter of the light (sun 0.3) is not drawn in the sky.
+- Bad: the white gable now sits 6–8 L under the sky, as in the photographs, but its verge trim (about 88–90) is level with the sky. At the street stop and down the walk, only the shaded underside of the verge draws 108's outline against the sky (`r08-walk.jpg`, bottom row).
+- Bad: the frame is lighter, not yet more alive. Everything moved up with the exposure, so faults 2 to 6 in r07's critic still stand. They are measured on the new key below.
 
-  The board lies under any eye below the window's foot. Its top is 45 mm over the opening's foot, under the lowest glass at about 85 mm, and it runs 168 mm into the room, so from below the frame and the sash's rail hide it. That covers the near view and every street stop. I told the coordinator it would show from the street as a lit lip at the glass's foot. That was wrong.
-- Bad: nothing changes at the street stop either, so the dark main floor reads there as it did in r06.
-- Bad: the board takes only the sky through the window, never direct sun, so in low sun it has no sun patch. The room behind it ignores direct sun too.
-- Limits:
-  - 107 is not rebuilt (the rock reads its cache), so it has no board;
-  - a house has one board, from the window making most of its openings share;
-  - the board's depth and paint are estimates, and versions.json says so. No measured board was found, and the town's interior colours are not documented.
-- Holds: from 12 m and from high, each lower pane now has a light foot where it was dark (`r07-board.jpg`). Medians of the changed boxes on 108 alone:
+The pass, on the street-stop clay still (p50 of clean patches):
 
-  | View | Overcast | Low sun |
-  |---|---|---|
-  | 12 m | 56.0–57.5 (r06 29.5–33) | 68.5–69.0 (r06 22–34) |
-  | High | 57.4–59.0 (r06 27–38) | 68.6–69.7 (r06 16–44) |
+| Rung | r07 | r08 | Pass |
+|---|---|---|---|
+| Sky | 71.5 | 89.9 | 87–93 ✓ |
+| Sky sd | 0.7 | 1.9 | ≥ 3 ✗ |
+| 108's front | 73.7 | 82.8 | 80–86 ✓ |
+| Sky over the front | −2.2 | 7.1 | 6–12 ✓ |
+| Ground | 54.7 | 65.4 | 40–46 ✗ |
+| Frame p5 / p50 / p95 | 15.2 / 54.7 / 72.9 | 21.2 / 65.4 / 92.3 | p95 ≥ 90 ✓ |
+| Eye-level panes: 108's near view at 4.4 m, lower sashes, against the wall | 13.2–14.7 against 72.9 | 15.2–17.1 against 82.4 | ≤ 20 ✓ |
+| Low sun | | r07's to 0.00 L in every view, P and Pc, the row and 108 alone | unchanged ✓ |
 
-  - The room around the board is L21–24 in overcast and 14–20 in low sun; the wall is 71.4 and 84.4.
-  - So the board is lighter than the room and darker than the wall it sits in: light on painted wood, not a glow.
-  - Down a column at 12 m it runs from 58.7 near the glass to 54.0 at its nose in overcast, and from 71.6 to 67.1 in low sun.
-- Holds: the board needed a fix at the mark's foot.
-  - Below the board's top only the mark from afar draws (the true glass starts above it), and it drew the opening's foot as the dark room. Under a lit board, that read at 12 m as a dark, stepped gap.
-  - The foot now takes the board's light at the glass, but only where the board shows over at least the foot's height, which happens from 12 m up. Where the board shows less, as for a low window seen from the street, the foot is left as it was.
-  - Before this gate, the fix changed 99 px of the street stop by 38–55 L. With the gate, the street stop matches r06.
-- Holds: the street stop is the same as r06 to 0.00 L, in both lights, in P and Pc. The row's eye view changes in 3 px: a true sliver of board at the foot of one of 109's ground-floor windows, which sits below eye height.
-- Holds: the sheers, the glass, the flash's band, the mark and the threshold are r06's.
-- Holds: no pop. On 108's walk from its eye view to its street stop (`r07-walk.jpg`), all 120 frames match r06's to 0.00 L, so the largest frame step stays 1.03× its neighbours'.
+Report only, for r09's material facts (clay, overcast):
+
+| Rung | r07 | r08 | Target |
+|---|---|---|---|
+| 107's wall: clean boards between the openings, at the stop | 69.6–70.4 | 79.5–79.9 | within 8 of 108's (82.8) ✓ |
+| 107's wall: the grime band under its windows | 43.6 | 54.0 | 29 under 108's ✗ |
+| 109's wall: front, side | 16.6, 14.7 | 24.4, 21.2 | 30–38 ✗ |
+| 109's wall over its roof | 1.4 | 2.7 | ≥ 12 ✗ |
+| Roofs: 108, 107 | 23.5, 24.9 | 34.0, 34.9 | 28–40 ✓ |
+| Roofs: 109 | 15.2 | 21.7 | 28–40 ✗ |
+| Panes at the stop, 108's main floor (whole openings) | 17.5–19.9 | 21.2–24.9 | ≤ 30 ✓ |
+| Panes at the stop, 108's upper floor | 19.9, 27.1 | 25.8, 36.1 | ≤ 30: one ✗ |
+| Panes at 12 m, the row (whole openings, board included) | 27.5–34.9 | 38.2–45.2 | ≤ 30 ✗ |
+| Panes from high | 39.1–41.1 | 49.2–51.6 | ✗ |
+
+- 108's wall is 82.0 at 12 m and from high (r07 72.6), so the windows keep the gap to their wall that they had in r07 and gain none. That is r07's fault 4, unchanged.
+- In colour at the stop, 109's red is 25.3 at chroma 24 (r07 17.9 at 17.4). The sky stays at chroma 0, the ground at 0.7.
+
+Holds:
+- The ladder's order is now the photographs': sky 90, the white front 83, which is 7 under it, the roofs at 34 and the panes at 15–25.
+- At 4.4 m the lower sashes are 15–17 against a wall of 82. That gap of 65–67 (r07 58–60) is closer to Normanns gate 27's 73.
+- Low sun is r07's to 0.00 L, so its ratio holds: 108's lit front 79.5, its shaded gable 40.7.
+- No pop: on 108's walk from its eye view to its street stop, the largest frame step is 1.03× its neighbours'.
+- No re-bake, and 107's cache is untouched.
 
 How it is made:
-- **versions.json.** Each window version has a `board`: reachMm 90 (86 for one-light), noseMm 12 (10), and its paint from paints.json (trim_white_linseed, or trim_white for one-light). It is planed pine laid at the frame's inner foot, level with the frame's clear opening, running reachMm past the frame's inner face, with its front edge rounded over noseMm. What stands on it is a household's, so it is absent unless a fact puts it there.
-- **house.py.** `board_digest` writes house.json `glass.board`: the board's top over the opening's foot (frameMm - coverMm), its nose behind the glass (the frame's depth behind the glass plus reachMm), the nose's radius, and the paint as linear sRGB.
-- **LT1Street.** Sets `_Board` and `_BoardPaint` on the glass. A house.json from before r07 has no board.
-- **OS_Glass, `RoomDay`.**
-  - The board is a plane level with the frame's clear opening, from the glass to its nose, within the opening's width.
-  - It is lit as the room is: the window above it (the window's form factor at the board) times what it sees through that window, plus the room's bounce. So it is lightest at the glass and dims as the window fills less of its sky.
-  - Over its last noseMm the nose turns away from the window.
-  - Where the eye meets the board first, the sheers are hidden.
-- **Builds:** `cache/street/gen/108g` and `109g`. Only `glass.board` differs from 108f and 109f.
+- **The cause, measured first.** Both causes held: the sky was drawn too dark, and the key was low.
+  - In r07 the drawn sky was the camera's flat background at linear 0.343. That is a third of the light the sky cast (level ground took 1.017 from the trilight), and darker than even that sky's CIE horizon (0.41 at the horizon to 1.31 at the zenith).
+  - Before exposure, the white front was about 0.35, as bright as the sky behind it. The exposure of 0.72 put both at L64–74.
+- **The sky.** `OS_StageSky` draws the CIE overcast sky on a sphere round the camera, behind everything.
+  - At elevation e the sky is (1 + 2 sin e) / 3 of its zenith, and below the horizon it keeps the horizon's value.
+  - `LT1Street.Sky` sets the zenith from the light the row casts, so the sky drawn is the sky that lights the street. Unity's trilight grades from the equator at the horizon to the sky overhead, so level ground takes equator + 2/3 (sky − equator). Under a CIE sky, that is 7/9 of the zenith's radiance.
+  - A light row draws the sky when it says `drawn: "cie-overcast"`. Low sun draws none and keeps the flat background.
+- **The glass.** Where the stage draws its sky, OS_Glass mirrors that sky (`_OS_StageSky`): its horizon is a third of the zenith, and the sky rises as (1 + 2 sin e) / 3. The flash's shore takes the same horizon. Where no sky is drawn, the glass keeps the trilight.
+- **The key.** The exposure of `blender/parts/street/paint.json` light.overcast goes from 0.72 to 1.46. It is keyed to put the white front at about L83, 6–12 under the sky and below the tonemapper's steepest shoulder. It is data, not code.
+- **Where the key lives.** The brief put any art push in keys.json's overcast rows. The stage does not read keys.json: that file is the light record's (LightDerive), so changing it would move the town's light record and leave the stage where it was. The stage's own light is the street's paint.json, so the key is there.
+- **No re-bake.** A baked paint carries the light rows from when it was baked (its paint.json `lights`), and 107's cache cannot be rebuilt.
+  - LT1Street now reads the rows from their sources at render time (`SourceLights`): finish.json painted.light, then the street's paint.json light. It falls back on the baked rows.
+  - With r07's data, the new code renders r07 to 0.00 L (control `r08c`).
 
 Sheets:
-- `r07-overcast.jpg` and `r07-lowsun.jpg`: rows eye, street stop, 12 m, high; columns p3 P | r01 P | r06 P | r07 P | r06 Pc | r07 Pc.
-- `r07-close-glass.jpg`: 108's near view at 4.4 m, r05 | r06 | r07, with overcast above and low sun below, then refs 10 (Normanns gate 27) and 04 (Tidegeilen 9).
-- `r07-board.jpg`: 108 alone at 12 m (r06 | r07) and from high (r06 | r07), with overcast above and low sun below, then ref 04's window with its board under the plants. The crops are enlarged 3.3× and 2.25×.
-- `r07-walk.jpg`: 12 frames of 108's walk from its eye view to its street stop. The 5 s clip is `cache/street/renders/r07w/walk-108.mp4`.
-
-Controls: `r06h2` (108f) and `r05h2` (108m) were rendered with r07's shader. r06h2 matches r06h except for 2 px by 2 L in the eye view.
+- `r08-overcast.jpg` and `r08-lowsun.jpg`: rows eye, street stop, 12 m and high; columns p3 P | r01 P | r07 P | r08 P | r07 Pc | r08 Pc.
+- `r08-close-glass.jpg`: 108's near view at 4.4 m, r07 | r08, overcast above and low sun below, then refs 10 (Normanns gate 27) and 04 (Tidegeilen 9).
+- `r08-board.jpg`: 108 alone at 12 m (r07 | r08) and from high (r07 | r08), overcast above and low sun below, then ref 04's window.
+- `r08-walk.jpg`: 12 frames of 108's walk from its eye view to its street stop. Each r07 row sits above the r08 row with the same frames. The 5 s clip is `cache/street/renders/r08w/walk-108.mp4`.
 
 These renders carry r03's toe (`packs/stavanger-1989/light/grade.json`). It is still uncommitted and waits for Øystein's yes.
 
-    STREET_ROW="107:cache/street/gen/107h:cache/street/bake/107z4/out-r02 108:cache/street/gen/108g:cache/street/bake/108u/out-r02 109:cache/street/gen/109g:cache/street/bake/109u/out-r02" python3 tools/unity_lock.py run -- bash blender/parts/street/run/render.sh row r07 eye,street,raised,high P,Pc overcast,lowsun
-    STREET_GEN=cache/street/gen/108g STREET_PAINT=cache/street/bake/108u/out-r02 python3 tools/unity_lock.py run -- bash blender/parts/street/run/render.sh 108 r07h2 eye,street,raised,high P,Pc overcast,lowsun
-    STREET_WALK=120 STREET_GEN=cache/street/gen/108g STREET_PAINT=cache/street/bake/108u/out-r02 python3 tools/unity_lock.py run -- bash blender/parts/street/run/render.sh 108 r07w eye,street Pc overcast
+    STREET_ROW="107:cache/street/gen/107h:cache/street/bake/107z4/out-r02 108:cache/street/gen/108g:cache/street/bake/108u/out-r02 109:cache/street/gen/109g:cache/street/bake/109u/out-r02" python3 tools/unity_lock.py run -- bash blender/parts/street/run/render.sh row r08 eye,street,raised,high P,Pc overcast,lowsun
+    STREET_GEN=cache/street/gen/108g STREET_PAINT=cache/street/bake/108u/out-r02 python3 tools/unity_lock.py run -- bash blender/parts/street/run/render.sh 108 r08h eye,street,raised,high P,Pc overcast,lowsun
+    STREET_WALK=120 STREET_GEN=cache/street/gen/108g STREET_PAINT=cache/street/bake/108u/out-r02 python3 tools/unity_lock.py run -- bash blender/parts/street/run/render.sh 108 r08w eye,street Pc overcast
 
-Cost: no new geometry and no new draws, only a few instructions and one branch in the glass's fragment.
-- Triangles and draws are r06's.
-- A row of 50 of 109 runs street 4.6, raised 4.8, along 5.3 and near3 5.7 ms (`cache/street/renders/t09/timing.md`). t08 ran 4.5, 4.6, 5.3 and 5.5.
-- So r07 is 0 to 0.2 ms slower. Same-evening runs have differed by up to 0.3 ms (t07 against t07c), so the cost is at the edge of what these runs can tell apart.
-- Pages are unchanged.
+Cost:
+- Overcast adds one draw: the sky sphere, Unity's sphere of 768 triangles, with no shadows and no depth write. The glass adds one branch.
+- The timing runs in low sun, which draws no sky, so it cannot see the sphere. I did not run a new timing, and t09 (street 4.6, raised 4.8, along 5.3, near3 5.7 ms) stands.

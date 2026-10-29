@@ -46,6 +46,7 @@ Shader "Overstory/Glass"
         float4 _Kind0, _Kind1, _Kind2, _Kind3;
         float4 _Mark, _Flash, _Board, _BoardPaint;
     CBUFFER_END
+    float4 _OS_StageSky; // the sky the stage draws (LT1Street.Sky): rgb its zenith (linear), w 1 for a CIE overcast, 0 none
     ENDHLSL
 
     SubShader
@@ -139,13 +140,21 @@ Shader "Overstory/Glass"
                 return _Opposite.x * (0.55 + 0.45 * frac(sin(block * 12.9898) * 43758.5453));
             }
 
+            // where the stage draws its sky (_OS_StageSky), the panes mirror that sky, the CIE overcast's (1 + 2 sin e) / 3
+            // of its zenith, and its horizon: what a pane mirrors is what is there
+            half3 Horizon(float3 r)
+            {
+                return _OS_StageSky.w > 0.5 ? (half3)_OS_StageSky.rgb / 3.0h : SampleSH(normalize(float3(r.x, 0.0, r.z) + float3(1e-4, 0.0, 0.0)));
+            }
+
             half3 Reflected(float3 r)
             {
-                half3 sky = SampleSH(float3(0.0, 1.0, 0.0));
-                half3 eq = SampleSH(normalize(float3(r.x, 0.0, r.z) + float3(1e-4, 0.0, 0.0)));
+                half3 eq = Horizon(r);
+                half3 sky = _OS_StageSky.w > 0.5 ? (half3)_OS_StageSky.rgb * (half)((1.0 + 2.0 * saturate(r.y)) / 3.0)
+                                                 : lerp(eq, SampleSH(float3(0.0, 1.0, 0.0)), (half)smoothstep(0.0, 0.6, r.y));
                 half3 ground = SampleSH(float3(0.0, -1.0, 0.0));
                 float rise = Rise(r);
-                half3 above = r.y < rise ? eq * (half)_Opposite.y : lerp(eq, sky, (half)smoothstep(0.0, 0.6, r.y));
+                half3 above = r.y < rise ? eq * (half)_Opposite.y : sky;
                 return r.y >= 0.0 ? above : lerp(eq * (half)_Opposite.z, ground, (half)smoothstep(0.0, 0.25, -r.y));
             }
 
@@ -311,7 +320,7 @@ Shader "Overstory/Glass"
                 {
                     float depth = _Flash.x * saturate(over / _Flash.y);
                     half band = (half)smoothstep(0.0, _Flash.z, depth - (1.0 - i.uv.y / hh));
-                    half3 shore = SampleSH(normalize(float3(rv.x, 0.0, rv.z) + float3(1e-4, 0.0, 0.0))) * (half)_Opposite.y * fr;
+                    half3 shore = Horizon(rv) * (half)_Opposite.y * fr;
                     envS = lerp(shore, min(envS, (half)_Flash.w * shN), band);
                 }
                 half aoD = 1.0h, aoI = 1.0h;
