@@ -38,7 +38,7 @@ namespace Overstory.EditorTools
         [Serializable] class Plot { public float x, w, d; }
         [Serializable] class Page { public int size; public float pxPerM; }
         [Serializable] class GlassKind { public string name, shape; public float tiltDeg; public float[] perM; }
-        [Serializable] class Glass { public float gloss; public float[] walls, ceiling, floor, furniture, curtain, room, curtains, daylight; public GlassKind[] kinds; }
+        [Serializable] class Glass { public float gloss, share; public float[] walls, ceiling, floor, furniture, curtain, room, curtains, daylight; public GlassKind[] kinds; }
         [Serializable] class House { public int house; public float[] size; public Lap lap; public float planeShadow, seenWithinM, cityFromM; public Plot plot; public Page page; public Glass glass; }
 
         struct View { public string name, level; public Vector3 pos, target; public float fov; public bool floor; }
@@ -749,9 +749,10 @@ namespace Overstory.EditorTools
                     // curtains: share, opacity, depthM, valanceShare, foldsPerM
                     mat.SetVector("_Curtain", C(g.curtain, g.curtains[0]));
                     mat.SetVector("_CurtainB", new Vector4(g.curtains[1], g.curtains[2], g.curtains[3], g.curtains[4]));
-                    // daylight: transmit, bounce, curtains (a house.json from before the window's form factor has four)
+                    // daylight: transmit, bounce, curtains (a house.json from before the window's form factor has four), and the
+                    // glass's share of its openings (a house.json from before it has none: the whole hole)
                     if (g.daylight.Length == 3)
-                        mat.SetVector("_GlassDay", new Vector4(g.daylight[0], g.daylight[1], 0, g.daylight[2]));
+                        mat.SetVector("_GlassDay", new Vector4(g.daylight[0], g.daylight[1], g.share > 0 ? g.share : 1, g.daylight[2]));
                     else
                         Debug.LogError($"[LT1Street] {house.house}: house.json glass.daylight predates the window's form factor; rebuild it");
                     // what the panes face, from the street (paint.json light.reflect)

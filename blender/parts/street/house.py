@@ -2532,9 +2532,10 @@ def clip_top(poly, top):
 # ---------------------------------------------------------------- export
 
 
-def glass_digest(G, sheers=True):
+def glass_digest(G, sheers=True, share=1.0):
     """glass.json as the glass shader reads it: colours linear, the kinds in order (a pane's vertex colour R names
-    one by its index). The sheers hang only where a household keeps them (`sheers`): elsewhere their opacity is 0."""
+    one by its index). The sheers hang only where a household keeps them (`sheers`): elsewhere their opacity is 0.
+    `share` is the glass's share of its windows' openings (their glassArea), what of the hole lets daylight in."""
     def lin(h):
         return [((int(h[i:i + 2], 16) / 255.0 + 0.055) / 1.055) ** 2.4 if int(h[i:i + 2], 16) > 10 else int(h[i:i + 2], 16) / 255.0 / 12.92
                 for i in (0, 2, 4)]
@@ -2546,7 +2547,7 @@ def glass_digest(G, sheers=True):
             r["heightM"], r["ambient"], r["lampDropM"], r["lampSwingM"], r["furnitureHeightM"], r["furnitureHalfLengthM"],
             r["cornerReachM"], r["cornerLight"], r["shadeRadiusM"], r["shadeGlow"]],
             "curtains": [c["share"], c["opacity"] if sheers else 0.0, c["depthM"], c["valanceShare"], c["foldsPerM"]],
-            "daylight": [d["transmit"], d["bounce"], d["curtains"]],
+            "daylight": [d["transmit"], d["bounce"], d["curtains"]], "share": round(share, 3),
             "kinds": [{"name": k["name"], "tiltDeg": k["tiltDeg"], "perM": k["perM"], "shape": k["shape"]} for k in kinds]}
 
 
@@ -2682,7 +2683,8 @@ def main():
                    for pc in house.pieces],
         "uv": {"uv0": "metres along the grain", "page": "UV1: the page"},
         # sheers where a household lives and keeps the house: a type the keeper lives in (paints.json livedIn), not boarded
-        "glass": glass_digest(mats["glass"], F.type in paints["upkeep"]["derived"]["livedIn"] and F.boarded() is None),
+        "glass": glass_digest(mats["glass"], F.type in paints["upkeep"]["derived"]["livedIn"] and F.boarded() is None,
+                              (lambda g: sum(g) / len(g) if g else 1.0)([o["glassArea"] for o in house.openings if o["kind"] == "window" and "glassArea" in o])),
         "colour": {"r": "arris (a chamfer face)", "g": "piece seed", "b": "under layer forced (mortar, a flue)",
                    "a": "near boards: distance below the next butt / lapReach"},
     }
