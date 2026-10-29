@@ -2641,7 +2641,10 @@ def main():
             print(f"[tris] {lv}", sorted(by.items(), key=lambda t: -t[1])[:25])
     # near and street by the house's surface (its charts on the page) against the house the budgets were set on; city as is
     area = fill * S["page"]["size"] ** 2 / px ** 2
-    scale = {lv: max(1.0, area / S["budgetSurfaceM2"]["m2"]) if lv != "city" else 1.0 for lv in ("near", "street", "city")}
+    # near by the house's surface, street by its plot's frontage (perFrontageM), each never below the level's own
+    front = F.plot["w"] * MM
+    scale = {"near": max(1.0, area / S["budgetSurfaceM2"]["m2"]), "city": 1.0,
+             "street": max(1.0, S["levels"]["street"]["perFrontageM"] * front / S["levels"]["street"]["budgetTris"][1])}
     budgets = {lv: [min(round(b * scale[lv]), S["levels"][lv].get("ceilingTris", 10 ** 9)) for b in S["levels"][lv]["budgetTris"]]
                for lv in ("near", "street", "city")}
     over = [lv for lv in budgets if total.get(lv, 0) > budgets[lv][1]]

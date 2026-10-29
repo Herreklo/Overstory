@@ -177,3 +177,9 @@ Cost (`w06t`, as w04):
 - Street level 6,229 / 6,337 / 6,433; city 643.
 - Draws, materials and textures as w04.
 - Row of 50: street stop 3.5 ms, raised 4.0, along 4.6.
+
+The record's coats (`c08-care.jpg`, the street stop overcast above and low sun below; left: the stills of 9496a88; middle: the committed code, its last coat 1977; right: the record's, 1976):
+- paint.py no longer runs the pack's cycle past 1959 (`peopleStart`). It reads the record, and `care.py` derives the later coats into it, from one seeded rule.
+- 107 is lived in, and its wealth is 200, so its turn is 13.6 years ±20%. The pack's last coat before 1959 is 1950. The keeper derives 1961 and 1976. The next turn, about 1990, falls after the 1986 boarding and neglect, which stop the care.
+- The old cycle ran to 1986 and gave 1977. One year apart, the middle and right cannot be told apart. The left still differs because of the rounds after 9496a88 (roof bake, age, chips), not because of this change.
+

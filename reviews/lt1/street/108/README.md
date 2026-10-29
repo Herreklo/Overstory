@@ -17,3 +17,5 @@ Cost (`c03-timing.md`, `STREET_TIMING=50 render.sh 108 c03 street Pc overcast`):
 - A row of 50: 3.8, 4.0 and 4.7 ms (street, raised, along), against 107's 3.6, 4.1 and 4.8 ms.
 - The page: 21.3 MB on the GPU at full, BC7.
 - 107 after the shared changes: near 24,590, street 6,287, city 705.
+- Since e396d6c, 108 wears its record's 1985 `wall_white`, where before it wore the linseed white by default. Its coats, recorded and derived (1961, 1975, then the recorded 1985), leave the coat at 4 years. At the street stop it cannot be told from the committed stills.
+

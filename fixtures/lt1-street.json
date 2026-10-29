@@ -510,6 +510,14 @@
           "cause": "upkeep"
         },
         {
+          "id": 14,
+          "year": 1964,
+          "kind": "repainted",
+          "params": {},
+          "cause": "upkeep (derived)",
+          "provenance": "derived"
+        },
+        {
           "id": 5,
           "year": 1968,
           "kind": "windows_replaced",
@@ -517,6 +525,14 @@
             "scope": "upper"
           },
           "cause": "the flat upstairs is let; the landlord fits new windows"
+        },
+        {
+          "id": 15,
+          "year": 1973,
+          "kind": "repainted",
+          "params": {},
+          "cause": "upkeep (derived)",
+          "provenance": "derived"
         },
         {
           "id": 6,
@@ -636,6 +652,14 @@
           "cause": "draughty windows replaced cheaply"
         },
         {
+          "id": 6,
+          "year": 1973,
+          "kind": "repainted",
+          "params": {},
+          "cause": "upkeep (derived)",
+          "provenance": "derived"
+        },
+        {
           "id": 5,
           "year": 1983,
           "kind": "neglected",
@@ -690,6 +714,22 @@
           "cause": "a wash house at the back"
         },
         {
+          "id": 6,
+          "year": 1962,
+          "kind": "repainted",
+          "params": {},
+          "cause": "upkeep (derived)",
+          "provenance": "derived"
+        },
+        {
+          "id": 7,
+          "year": 1971,
+          "kind": "repainted",
+          "params": {},
+          "cause": "upkeep (derived)",
+          "provenance": "derived"
+        },
+        {
           "id": 4,
           "year": 1977,
           "kind": "roof_retiled",
@@ -697,6 +737,14 @@
             "swatch": "roof_slate"
           },
           "cause": "concrete tiles replace the slate"
+        },
+        {
+          "id": 8,
+          "year": 1980,
+          "kind": "repainted",
+          "params": {},
+          "cause": "upkeep (derived)",
+          "provenance": "derived"
         },
         {
           "id": 5,
@@ -736,6 +784,38 @@
           "kind": "repainted",
           "params": {},
           "cause": "upkeep"
+        },
+        {
+          "id": 3,
+          "year": 1960,
+          "kind": "repainted",
+          "params": {},
+          "cause": "upkeep (derived)",
+          "provenance": "derived"
+        },
+        {
+          "id": 4,
+          "year": 1969,
+          "kind": "repainted",
+          "params": {},
+          "cause": "upkeep (derived)",
+          "provenance": "derived"
+        },
+        {
+          "id": 5,
+          "year": 1979,
+          "kind": "repainted",
+          "params": {},
+          "cause": "upkeep (derived)",
+          "provenance": "derived"
+        },
+        {
+          "id": 6,
+          "year": 1987,
+          "kind": "repainted",
+          "params": {},
+          "cause": "upkeep (derived)",
+          "provenance": "derived"
         }
       ],
       "provenance": "authored"
@@ -760,6 +840,30 @@
             "wealth": 500
           },
           "cause": "built after the old house burned"
+        },
+        {
+          "id": 3,
+          "year": 1961,
+          "kind": "repainted",
+          "params": {},
+          "cause": "upkeep (derived)",
+          "provenance": "derived"
+        },
+        {
+          "id": 4,
+          "year": 1972,
+          "kind": "repainted",
+          "params": {},
+          "cause": "upkeep (derived)",
+          "provenance": "derived"
+        },
+        {
+          "id": 5,
+          "year": 1985,
+          "kind": "repainted",
+          "params": {},
+          "cause": "upkeep (derived)",
+          "provenance": "derived"
         },
         {
           "id": 2,
@@ -791,6 +895,14 @@
             "wealth": 400
           },
           "cause": "infill after the old house was cleared for the road plan"
+        },
+        {
+          "id": 2,
+          "year": 1984,
+          "kind": "repainted",
+          "params": {},
+          "cause": "upkeep (derived)",
+          "provenance": "derived"
         }
       ],
       "provenance": "authored"
@@ -827,6 +939,14 @@
           "cause": "a shed"
         },
         {
+          "id": 6,
+          "year": 1961,
+          "kind": "repainted",
+          "params": {},
+          "cause": "upkeep (derived)",
+          "provenance": "derived"
+        },
+        {
           "id": 3,
           "year": 1965,
           "kind": "windows_replaced",
@@ -834,6 +954,14 @@
             "scope": "street"
           },
           "cause": "new windows to the street"
+        },
+        {
+          "id": 7,
+          "year": 1976,
+          "kind": "repainted",
+          "params": {},
+          "cause": "upkeep (derived)",
+          "provenance": "derived"
         },
         {
           "id": 4,
@@ -878,6 +1006,14 @@
           "cause": "a canning foreman builds"
         },
         {
+          "id": 5,
+          "year": 1961,
+          "kind": "repainted",
+          "params": {},
+          "cause": "upkeep (derived)",
+          "provenance": "derived"
+        },
+        {
           "id": 2,
           "year": 1969,
           "kind": "windows_replaced",
@@ -885,6 +1021,14 @@
             "scope": "all"
           },
           "cause": "modern windows"
+        },
+        {
+          "id": 6,
+          "year": 1975,
+          "kind": "repainted",
+          "params": {},
+          "cause": "upkeep (derived)",
+          "provenance": "derived"
         },
         {
           "id": 3,
@@ -939,6 +1083,14 @@
           "cause": "upkeep"
         },
         {
+          "id": 4,
+          "year": 1979,
+          "kind": "repainted",
+          "params": {},
+          "cause": "upkeep (derived)",
+          "provenance": "derived"
+        },
+        {
           "id": 3,
           "year": 1987,
           "kind": "business_opened",
@@ -971,6 +1123,14 @@
             "wealth": 400
           },
           "cause": "a rope maker builds on the quay"
+        },
+        {
+          "id": 4,
+          "year": 1969,
+          "kind": "repainted",
+          "params": {},
+          "cause": "upkeep (derived)",
+          "provenance": "derived"
         },
         {
           "id": 2,
@@ -1022,6 +1182,22 @@
           "kind": "repainted",
           "params": {},
           "cause": "upkeep"
+        },
+        {
+          "id": 3,
+          "year": 1971,
+          "kind": "repainted",
+          "params": {},
+          "cause": "upkeep (derived)",
+          "provenance": "derived"
+        },
+        {
+          "id": 4,
+          "year": 1985,
+          "kind": "repainted",
+          "params": {},
+          "cause": "upkeep (derived)",
+          "provenance": "derived"
         }
       ],
       "provenance": "authored"
@@ -1051,6 +1227,22 @@
             ]
           },
           "cause": "a shipping clerk builds in the new style"
+        },
+        {
+          "id": 2,
+          "year": 1968,
+          "kind": "repainted",
+          "params": {},
+          "cause": "upkeep (derived)",
+          "provenance": "derived"
+        },
+        {
+          "id": 3,
+          "year": 1981,
+          "kind": "repainted",
+          "params": {},
+          "cause": "upkeep (derived)",
+          "provenance": "derived"
         }
       ],
       "provenance": "authored"
@@ -1082,6 +1274,14 @@
           "cause": "a cooper builds"
         },
         {
+          "id": 3,
+          "year": 1969,
+          "kind": "repainted",
+          "params": {},
+          "cause": "upkeep (derived)",
+          "provenance": "derived"
+        },
+        {
           "id": 2,
           "year": 1971,
           "kind": "windows_replaced",
@@ -1089,6 +1289,14 @@
             "scope": "all"
           },
           "cause": "new windows, cheaply"
+        },
+        {
+          "id": 4,
+          "year": 1982,
+          "kind": "repainted",
+          "params": {},
+          "cause": "upkeep (derived)",
+          "provenance": "derived"
         }
       ],
       "provenance": "authored"
@@ -1115,6 +1323,22 @@
             "wealth": 450
           },
           "cause": "a teacher builds after the old house burned"
+        },
+        {
+          "id": 2,
+          "year": 1972,
+          "kind": "repainted",
+          "params": {},
+          "cause": "upkeep (derived)",
+          "provenance": "derived"
+        },
+        {
+          "id": 3,
+          "year": 1981,
+          "kind": "repainted",
+          "params": {},
+          "cause": "upkeep (derived)",
+          "provenance": "derived"
         }
       ],
       "provenance": "authored"
@@ -1142,6 +1366,30 @@
             "roof": "mansard"
           },
           "cause": "the cannery's manager builds"
+        },
+        {
+          "id": 2,
+          "year": 1961,
+          "kind": "repainted",
+          "params": {},
+          "cause": "upkeep (derived)",
+          "provenance": "derived"
+        },
+        {
+          "id": 3,
+          "year": 1972,
+          "kind": "repainted",
+          "params": {},
+          "cause": "upkeep (derived)",
+          "provenance": "derived"
+        },
+        {
+          "id": 4,
+          "year": 1984,
+          "kind": "repainted",
+          "params": {},
+          "cause": "upkeep (derived)",
+          "provenance": "derived"
         }
       ],
       "provenance": "authored"
@@ -1171,6 +1419,22 @@
             ]
           },
           "cause": "a fish merchant builds"
+        },
+        {
+          "id": 2,
+          "year": 1968,
+          "kind": "repainted",
+          "params": {},
+          "cause": "upkeep (derived)",
+          "provenance": "derived"
+        },
+        {
+          "id": 3,
+          "year": 1980,
+          "kind": "repainted",
+          "params": {},
+          "cause": "upkeep (derived)",
+          "provenance": "derived"
         }
       ],
       "provenance": "authored"
@@ -1197,6 +1461,22 @@
             "wealth": 350
           },
           "cause": "a young family builds on a cleared plot"
+        },
+        {
+          "id": 2,
+          "year": 1970,
+          "kind": "repainted",
+          "params": {},
+          "cause": "upkeep (derived)",
+          "provenance": "derived"
+        },
+        {
+          "id": 3,
+          "year": 1981,
+          "kind": "repainted",
+          "params": {},
+          "cause": "upkeep (derived)",
+          "provenance": "derived"
         }
       ],
       "provenance": "authored"
@@ -1223,6 +1503,14 @@
             "wealth": 500
           },
           "cause": "a skipper builds"
+        },
+        {
+          "id": 3,
+          "year": 1970,
+          "kind": "repainted",
+          "params": {},
+          "cause": "upkeep (derived)",
+          "provenance": "derived"
         },
         {
           "id": 2,
@@ -1256,6 +1544,22 @@
             "wealth": 200
           },
           "cause": "a fisherman builds on the hill"
+        },
+        {
+          "id": 2,
+          "year": 1969,
+          "kind": "repainted",
+          "params": {},
+          "cause": "upkeep (derived)",
+          "provenance": "derived"
+        },
+        {
+          "id": 3,
+          "year": 1982,
+          "kind": "repainted",
+          "params": {},
+          "cause": "upkeep (derived)",
+          "provenance": "derived"
         }
       ],
       "provenance": "authored"
@@ -1285,6 +1589,22 @@
             ]
           },
           "cause": "a net maker builds"
+        },
+        {
+          "id": 2,
+          "year": 1967,
+          "kind": "repainted",
+          "params": {},
+          "cause": "upkeep (derived)",
+          "provenance": "derived"
+        },
+        {
+          "id": 3,
+          "year": 1982,
+          "kind": "repainted",
+          "params": {},
+          "cause": "upkeep (derived)",
+          "provenance": "derived"
         }
       ],
       "provenance": "authored"
@@ -1311,6 +1631,22 @@
             "wealth": 300
           },
           "cause": "a boatbuilder builds"
+        },
+        {
+          "id": 2,
+          "year": 1965,
+          "kind": "repainted",
+          "params": {},
+          "cause": "upkeep (derived)",
+          "provenance": "derived"
+        },
+        {
+          "id": 3,
+          "year": 1977,
+          "kind": "repainted",
+          "params": {},
+          "cause": "upkeep (derived)",
+          "provenance": "derived"
         }
       ],
       "provenance": "authored"
@@ -1339,6 +1675,14 @@
           "cause": "a fisherman builds"
         },
         {
+          "id": 3,
+          "year": 1960,
+          "kind": "repainted",
+          "params": {},
+          "cause": "upkeep (derived)",
+          "provenance": "derived"
+        },
+        {
           "id": 2,
           "year": 1965,
           "kind": "windows_replaced",
@@ -1346,6 +1690,22 @@
             "scope": "street"
           },
           "cause": "new windows to the street"
+        },
+        {
+          "id": 4,
+          "year": 1971,
+          "kind": "repainted",
+          "params": {},
+          "cause": "upkeep (derived)",
+          "provenance": "derived"
+        },
+        {
+          "id": 5,
+          "year": 1985,
+          "kind": "repainted",
+          "params": {},
+          "cause": "upkeep (derived)",
+          "provenance": "derived"
         }
       ],
       "provenance": "authored"
@@ -1372,6 +1732,30 @@
             "wealth": 300
           },
           "cause": "a pilot builds"
+        },
+        {
+          "id": 2,
+          "year": 1965,
+          "kind": "repainted",
+          "params": {},
+          "cause": "upkeep (derived)",
+          "provenance": "derived"
+        },
+        {
+          "id": 3,
+          "year": 1977,
+          "kind": "repainted",
+          "params": {},
+          "cause": "upkeep (derived)",
+          "provenance": "derived"
+        },
+        {
+          "id": 4,
+          "year": 1988,
+          "kind": "repainted",
+          "params": {},
+          "cause": "upkeep (derived)",
+          "provenance": "derived"
         }
       ],
       "provenance": "authored"
@@ -1398,6 +1782,30 @@
             "wealth": 350
           },
           "cause": "a shoemaker builds"
+        },
+        {
+          "id": 2,
+          "year": 1963,
+          "kind": "repainted",
+          "params": {},
+          "cause": "upkeep (derived)",
+          "provenance": "derived"
+        },
+        {
+          "id": 3,
+          "year": 1973,
+          "kind": "repainted",
+          "params": {},
+          "cause": "upkeep (derived)",
+          "provenance": "derived"
+        },
+        {
+          "id": 4,
+          "year": 1986,
+          "kind": "repainted",
+          "params": {},
+          "cause": "upkeep (derived)",
+          "provenance": "derived"
         }
       ],
       "provenance": "authored"
@@ -1424,6 +1832,30 @@
             "wealth": 250
           },
           "cause": "a sailmaker builds"
+        },
+        {
+          "id": 2,
+          "year": 1961,
+          "kind": "repainted",
+          "params": {},
+          "cause": "upkeep (derived)",
+          "provenance": "derived"
+        },
+        {
+          "id": 3,
+          "year": 1973,
+          "kind": "repainted",
+          "params": {},
+          "cause": "upkeep (derived)",
+          "provenance": "derived"
+        },
+        {
+          "id": 4,
+          "year": 1987,
+          "kind": "repainted",
+          "params": {},
+          "cause": "upkeep (derived)",
+          "provenance": "derived"
         }
       ],
       "provenance": "authored"

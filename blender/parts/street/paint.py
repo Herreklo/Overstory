@@ -44,6 +44,8 @@ def module(path, name):
 FP = module(os.path.join(FINISH, "paint.py"), "finish_paint")  # the corner's shapes; it loads the corner's marks
 MK = FP.MK
 SM = module(os.path.join(HERE, "marks.py"), "street_marks")
+CA = module(os.path.join(HERE, "care.py"), "street_care")  # the keepers' care: the pack's cycle and its derived coats
+PACK = json.load(open(os.path.join(FL.ROOT, json.load(open(os.path.join(HERE, "street.json")))["pack"])))
 key, field, wave, junction = MK.key, FP.field, FP.wave, FP.junction
 
 
@@ -64,19 +66,17 @@ def exposure(wall, paints):
 
 
 def coats(meta, paints, since):
-    """The paint's age (paints.json upkeep): painted in `since` (the house's building, or the lean-to's), then every
-    cycle (by the house's wealth) until a neglect or a boarding stops it, its last coat the cycle's last turn before
-    that year, or a 'repainted' event's. Returns the years since that coat, the years let go, and the cycle. An age
-    sheet's `coatAge` (paint.py --since) sets the years since the coat outright, none let go."""
-    lo, hi = paints["upkeep"]["cycleYears"]
-    cyc = lo + (hi - lo) * min(max(meta["wealth"] / 1000.0, 0.0), 1.0)
+    """The paint's age (care.py): painted in `since` (the house's building, or the lean-to's), then every cycle (by the
+    house's wealth) until the pack's peopleStart, a neglect or a boarding, whichever comes first; from peopleStart only
+    the record's 'repainted' events (recorded, or derived by care.py). Returns the years since the last coat, the years
+    let go, and the cycle. An age sheet's `coatAge` (paint.py --since) sets the years since the coat outright, none let go."""
+    cyc = CA.cycle(meta["wealth"], paints)
     if "coatAge" in meta:
         return meta["coatAge"], 0, cyc
-    stops = [e["year"] for e in meta["events"] if e["kind"] in ("neglected", "boarded") and e["year"] <= meta["year"]]
-    stop = min(stops) if stops else meta["year"]
-    last = since + max(0, math.floor((stop - since) / cyc - 1e-9)) * cyc
-    last = max([last] + [e["year"] for e in meta["events"] if e["kind"] == "repainted" and e["year"] <= meta["year"]])
-    return meta["year"] - last, (meta["year"] - stop) if stops else 0, cyc
+    stop = CA.stop_year(meta["events"], meta["year"])
+    last = CA.pack_last(since, cyc, min(stop, PACK["peopleStart"])) if since < PACK["peopleStart"] else since
+    last = max([last] + [e["year"] for e in meta["events"] if e["kind"] == "repainted" and since <= e["year"] <= meta["year"]])
+    return meta["year"] - last, (meta["year"] - stop) if stop < meta["year"] else 0, cyc
 
 
 def wear(meta, paints, wall):

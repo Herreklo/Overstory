@@ -21,7 +21,13 @@
   "upkeep": {
     "describes": "Before the engine's people start (pack.json peopleStart) a kept house was repainted every so many years by its wealth: the poor less often (the cycle at wealth 0 and at 1000, linear); a neglect or a boarding stops it. The last coat before a house is let go is the cycle's last turn before that year, counted from the house's building, so it is the house's own.",
     "cycleYears": [15, 8],
-    "white": "a coat's colour after the cycle: the default paint, unless a 'repainted' event names one"
+    "white": "a coat's colour after the cycle: the default paint, unless a 'repainted' event names one",
+    "derived": {
+      "describes": "From peopleStart care is the keeper's (docs/engine-requests.md 13). Until the engine exports keepers, blender/parts/street/care.py derives each building's coats from its record and writes them into the fixture as 'repainted' events with provenance 'derived': each turn the pack's cycle by the house's wealth, longer by absentFactor when the keeper does not live there (a type not in livedIn: a warehouse's firm or landlord), each turn's length seeded within jitter of it; a recorded repaint resets the turn, a neglect or a boarding ends it. absentFactor is our reading, unverified.",
+      "livedIn": ["house"],
+      "absentFactor": 1.5,
+      "jitter": 0.2
+    }
   },
   "weather": {
     "describes": "Where the rain comes from: Stavanger's wet winds blow from the south and south-west off the sea (pack frame: x east, y north). A wall's exposure is how squarely it faces them, from `least` on the lee to 1; a gable takes the wind's rain on its whole height.",
