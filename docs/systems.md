@@ -106,7 +106,7 @@ Every system, material and kind is studied twice before it is built (SY4; `CLAUD
 | People as models | `people.md`, `people-deep-dive.md` | `characters.md` |
 | Behaviour on screen | `people.md` (thin) | `behaviour-on-screen.md` (search budget ran out: its Gaps list sources to close) |
 | Animation and motion | `what-moves.md` (thin) | `animation-and-motion.md` |
-| Street things, vehicles, boats, animals | `between-buildings.md`, `what-moves.md` (thin) | **gap**: before plan step 3 for the lamp and the handrail, which step 3 builds; before plan step 6 for the rest (animals: gulls, cats, dogs, with it) |
+| Street things, vehicles, boats, animals | `between-buildings.md`, `what-moves.md` (thin); boats and vehicles: `boats-and-vehicles.md` | boats and vehicles: `boats-and-vehicles.md` (the harbour and streets 1870 to 2020, the berth moved by wind, tide and wakes, parked and timetabled movers without physics, their cost on the M4 and three first tests; 29 October; the town archive's gaps listed); the rest **gap**: before plan step 3 for the lamp and the handrail, which step 3 builds; before plan step 6 for the rest (animals: gulls, cats, dogs, with it) |
 | Windows, glass, signs, lettering, records | `interface.md` (thin), `wooden-town-architecture.md` | `fronts-windows-and-signs.md` (what is seen through windows, lit windows, signs by era, street records; search budget ran out for some games: its Gaps) |
 | Interiors | `scenes-and-sound.md` (thin) | the view through windows in `fronts-windows-and-signs.md`; rooms: **gap**, before plan step 8 |
 | Weather, seasons and effects | `trees.md` (seasons), `lighting-and-colour.md` (partly) | **gap**, before plan step 9 (with smoke, steam, spray and fire) |
