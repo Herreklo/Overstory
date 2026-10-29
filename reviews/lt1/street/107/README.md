@@ -48,3 +48,8 @@ Cost of one house (`s07-timing.md`, `STREET_TIMING=50 render.sh 107 s07t-c stree
 - A street of 50: 1.07 GB all at full. With mip streaming, counted rather than measured, each house holds the mip its nearest point needs at 128 px/m at 2560×1440, at most 2 mips dropped: 140–148 MB, with 3–4 houses at full and the rest at mip 2. Streaming is off in the project's quality settings (`streamingMipmapsActive: 0`); the import now marks the page as streamable.
 - A kilometre, both sides at 7 m plots (286 houses): 6.1 GB at full, about 0.44 GB streamed, of which 0.38 GB is the floor of mip 2. Allowing 4 mips dropped would bring the floor to about 0.03 GB.
 - Frame time, offscreen in the editor, batch mode (not the player's frame): street stop 3.8 ms, 12 m 4.4, and down a row of 50 houses at street level 10.3 (312k triangles, 547 draws). The row needs the city level.
+
+## s09: the ply at 43 (29 October)
+
+- Holds: the ply is L* 43, with blotches 11 darker (to 32). In `s09-ply-ab.jpg` the columns are s03, the ply at 50 and at 43, at the street stop in colour under low sun (top) and overcast (bottom). At 43 each opening reads as a mid-grey board framed by the white casings in both lights, with its blotches and battens, and not as dark glass. In clay overcast the sheets are 49, with blotches 38, against a wall of 75. In colour under low sun they are 66 against 88.
+- Not done: mip streaming in the project's quality settings and full mips in batch captures. Changing the shared Unity settings was refused by the session's permission check, so the page is marked streamable but streaming is still off.

@@ -10,10 +10,10 @@
   },
   "boarding": {
     "describes": "The boarded windows (ref 09, Pedersgata 81, 1989): weathered ply, mid-grey and clearly below the white wall the casings frame it in, with big water stains hanging from the head, `stretch` times taller than wide, their tide edges sharp; battens raw sawn wood gone pale grey in the weather, near the wall's own value, so they cross the sheet as light bars. In finish.json painted.boarding's fields, with `colour` [C, h] for way Pc. Replaces the corner's kept variant (c) on every house.",
-    "sheet": { "L": 50, "stainDL": 9, "smooth": 0.04, "stainSmooth": 0.1, "brushL": 0, "stainEdge": 0.25 },
+    "sheet": { "L": 43, "stainDL": 9, "smooth": 0.04, "stainSmooth": 0.1, "brushL": 0, "stainEdge": 0.25 },
     "batten": { "L": 75, "smooth": 0, "brushL": 0 },
     "wash": { "L": 7, "batL": 9, "head": 0.35, "leak": 0.35, "batten": 0.16, "sill": 0.1, "lowEnd": 0.6 },
-    "blotch": { "octaves": [[0.3, 1.0], [0.1, 0.35]], "stretch": 3.0, "cut": 0.5, "soft": 0.035, "low": -0.9, "L": 14 },
+    "blotch": { "octaves": [[0.3, 1.0], [0.1, 0.35]], "stretch": 3.0, "cut": 0.5, "soft": 0.035, "low": -0.9, "L": 11 },
     "colour": { "sheet": { "paint": [2.5, 80], "stain": [4, 70] }, "batten": { "paint": [2.5, 78], "stain": [14, 55] } }
   },
   "neglect": {
