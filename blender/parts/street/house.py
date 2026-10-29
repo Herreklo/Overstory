@@ -1715,7 +1715,7 @@ class House:
                     elif waves:
                         pc = self.make(f"roof/w{wall.i}/c{ci:02d}/strip", mat, (lv,), wall)
                         self.tile_strip(pc, lv, street_prof_of(span_c), base, x0c, cover, roll, thick, lift, length, up, nrm, 0.0, 0.0,
-                                        key, x0c, under=True)
+                                        key, x0c, under=self.S["levels"][lv].get("eaveUnder", True))
                     else:
                         # the verges' tiles real, so the rake draws their rolls against the sky; the plane between
                         # them from the first tile's roll to the last's, where the tiles stand at its height
@@ -2009,7 +2009,7 @@ class House:
         foot = base + nrm * (lift * 0.35 + roll)
         head = base + up * length + nrm * (roll - lift * 0.15)
         dn = -nrm * (thick + roll)
-        n = max(2, round((xb - xa) / 1.0))
+        n = max(2, round((xb - xa) / self.S["levels"][lv].get("frameSegmentM", 1.0)))
 
         def cuv(p):
             return (p.x - x0 + 0.05, max(0.0, (p - base).dot(up)) + 0.03)
@@ -2642,7 +2642,8 @@ def main():
     # near and street by the house's surface (its charts on the page) against the house the budgets were set on; city as is
     area = fill * S["page"]["size"] ** 2 / px ** 2
     scale = {lv: max(1.0, area / S["budgetSurfaceM2"]["m2"]) if lv != "city" else 1.0 for lv in ("near", "street", "city")}
-    budgets = {lv: [round(b * scale[lv]) for b in S["levels"][lv]["budgetTris"]] for lv in ("near", "street", "city")}
+    budgets = {lv: [min(round(b * scale[lv]), S["levels"][lv].get("ceilingTris", 10 ** 9)) for b in S["levels"][lv]["budgetTris"]]
+               for lv in ("near", "street", "city")}
     over = [lv for lv in budgets if total.get(lv, 0) > budgets[lv][1]]
     print(f"[house] {hid}: triangles {json.dumps(counts)} totals {total}; page {px} px/m, filled {fill:.2f}; "
           f"versions {json.dumps(house.version_of)}")

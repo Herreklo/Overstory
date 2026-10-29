@@ -250,11 +250,14 @@ namespace Overstory.EditorTools
                 houses.Add(c);
             }
             float w = house.size[0], d = house.size[1];
+            // near3, the worst near view: three houses drawn near at once (a lane or a corner, where three stand
+            // within reach), at eye level 5 m off the middle one of the first three, looking wide across all three
             var views = new[]
             {
-                ("street", new Vector3(w / 2 - 9.0f, -19.0f, 1.6f), new Vector3(w / 2, 1.0f, 3.0f), 38f),
-                ("raised", new Vector3(-7.0f, -12.0f, 12.0f), new Vector3(w / 2, d / 2, 2.5f), 42f),
-                ("along", new Vector3(-4.0f, -9.0f, 1.6f), new Vector3(60.0f, 2.0f, 3.0f), 52f),
+                ("street", new Vector3(w / 2 - 9.0f, -19.0f, 1.6f), new Vector3(w / 2, 1.0f, 3.0f), 38f, 0),
+                ("raised", new Vector3(-7.0f, -12.0f, 12.0f), new Vector3(w / 2, d / 2, 2.5f), 42f, 0),
+                ("along", new Vector3(-4.0f, -9.0f, 1.6f), new Vector3(60.0f, 2.0f, 3.0f), 52f, 0),
+                ("near3", new Vector3(plot + w / 2, -5.0f, 1.6f), new Vector3(plot + w / 2, 2.0f, 4.0f), 75f, 3),
             };
             var urp = (UniversalRenderPipelineAsset)GraphicsSettings.currentRenderPipeline;
             var lowsun = Lights.First(l => l.name == "lowsun");
@@ -290,7 +293,7 @@ namespace Overstory.EditorTools
             ShaderUtil.allowAsyncCompilation = false;
             try
             {
-                foreach (var (name, pos, target, fov) in views)
+                foreach (var (name, pos, target, fov, forceNear) in views)
                 {
                     cam.transform.SetPositionAndRotation(ToUnity(pos), Quaternion.LookRotation(ToUnity(target - pos), Vector3.up));
                     cam.fieldOfView = fov;
@@ -299,12 +302,13 @@ namespace Overstory.EditorTools
                     urp.shadowDistance = name == "along" ? 80f : (target - pos).magnitude + 8f;
                     int nearN = 0, cityN = 0, tris = 0, subs = 0, dropped = 0;
                     var planes = GeometryUtility.CalculateFrustumPlanes(cam);
-                    foreach (var h in houses)
+                    for (int hi = 0; hi < houses.Count; hi++)
                     {
+                        var h = houses[hi];
                         var lv = h.GetComponentsInChildren<Transform>(true).Where(t => t.parent == h.transform).ToList();
                         var centre = h.transform.position + ToUnity(new Vector3(w / 2, d / 2, 3f));
                         float dc = Vector3.Distance(cam.transform.position, centre);
-                        string at = dc < within ? "near" : dc >= cityFrom ? "city" : "street";
+                        string at = hi < forceNear || dc < within ? "near" : dc >= cityFrom ? "city" : "street";
                         nearN += at == "near" ? 1 : 0;
                         cityN += at == "city" ? 1 : 0;
                         // its shadow reaches its height over the sun's rise beyond it

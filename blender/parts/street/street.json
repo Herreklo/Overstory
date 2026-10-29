@@ -9,10 +9,10 @@
   "versions": "packs/stavanger-1989/house/versions.json",
   "paints": "packs/stavanger-1989/house/paints.json",
   "materials": "packs/stavanger-1989/materials",
-  "budgetSurfaceM2": {"describes": "The surface (m², the house's charts on its page) of the house the levels' near and street budgets were set on (107, 7 x 7 m, one storey and a loft). A bigger house takes those budgets scaled by its surface, the same triangles a square metre; never less. The city level's budget is one draw a far house and is not scaled.", "m2": 260},
+  "budgetSurfaceM2": {"describes": "The surface (m², the house's charts on its page) of the house the levels' near and street budgets were set on (107, 7 x 7 m, one storey and a loft). A bigger house takes those budgets scaled by its surface, the same triangles a square metre; never less, and never more than a level's ceilingTris (a guard against a runaway house). The city level's budget is one draw a far house and is not scaled.", "m2": 260},
   "levels": {
-    "near": { "level": 0, "budgetTris": [20000, 25000], "seenWithinM": 10, "tileCourses": 3, "pantileSamples": 8 },
-    "street": { "level": 1, "budgetTris": [6000, 8000], "seenFromM": 20, "laps": "page normal", "pantileSamples": 4 },
+    "near": { "level": 0, "budgetTris": [20000, 25000], "ceilingTris": 80000, "seenWithinM": 10, "tileCourses": 3, "pantileSamples": 8 },
+    "street": { "level": 1, "budgetTris": [6000, 8000], "seenFromM": 20, "laps": "page normal", "pantileSamples": 4, "frameSegmentM": 2.0, "eaveUnder": false },
     "city": { "level": 2, "budgetTris": [500, 800], "seenFromM": 60, "dropGroups": ["top", "left", "right", "cap"], "dropNarrowerM": 0.13, "neverGroups": ["bottom", "back", "inside"], "dropFacingWall": 0.45, "describes": "The street level's pieces, each run of segments one face, without their faces in dropGroups narrower than dropNarrowerM, in neverGroups, or turned to their wall (a normal's share into it over dropFacingWall); a merged face's edge welded to the corners on it; each roof course one plane and its foot's step, each plinth one face; the street level's charts." },
     "bake": { "describes": "Never drawn: the roof's tiles above the near level's own, the source of the planes' baked tile relief and occlusion." }
   },

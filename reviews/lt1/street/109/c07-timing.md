@@ -4,9 +4,10 @@ City level one mesh, one material; far shadows dropped beyond the shadow distanc
 
 | View | Houses | Near | City | Casting none | Triangles in view | Draws in view (counted) | Renderer: draw calls / batches / set-pass / shadow casters | ms a frame | Batches |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| street | 50 | 0 | 44 | 44 | 47,136 | 28 | - / - / - / - | 3.9 | 3.9 3.9 3.9 3.9 4.0 4.1 |
-| raised | 50 | 0 | 45 | 44 | 50,732 | 31 | - / - / - / - | 4.1 | 4.0 4.0 4.0 4.1 4.1 4.1 |
-| along | 50 | 0 | 44 | 38 | 103,616 | 86 | - / - / - / - | 4.7 | 4.5 4.6 4.6 4.7 4.8 4.8 |
+| street | 50 | 0 | 44 | 44 | 37,808 | 28 | - / - / - / - | 3.7 | 3.7 3.7 3.7 3.7 3.7 3.7 |
+| raised | 50 | 0 | 45 | 44 | 41,404 | 31 | - / - / - / - | 3.9 | 3.8 3.8 3.8 3.9 4.0 4.1 |
+| along | 50 | 0 | 44 | 38 | 89,624 | 86 | - / - / - / - | 4.4 | 4.3 4.3 4.4 4.4 4.4 4.4 |
+| near3 | 50 | 3 | 42 | 43 | 169,142 | 28 | - / - / - / - | 4.6 | 4.5 4.6 4.6 4.6 4.6 4.7 |
 
 Textures streamed (GPU, counted, not measured: the mip each house's page would hold at its nearest point for 76 px/m at 2560x1440, at most 4 mips dropped, the quality setting; one shared stroke texture):
 
@@ -15,7 +16,8 @@ Textures streamed (GPU, counted, not measured: the mip each house's page would h
 | street | 91 | 4 / 0 / 0 / 0 / 46 | 1068 |
 | raised | 112 | 5 / 0 / 0 / 0 / 45 | 1068 |
 | along | 131 | 4 / 5 / 8 / 18 / 15 | 1068 |
+| near3 | 91 | 4 / 0 / 0 / 0 / 46 | 1068 |
 
 One house's page on the GPU at full: 21.3 MB, at mip 4 and down 0.08 MB; shared strokes 1.3 MB.
 
-One house, as the editor counts it (a CPU copy beside the GPU's): textures 45.3 MB (hist-p 2048x2048 BC7 10.7 MB; geo 2048x2048 BC7 10.7 MB; street-normal 2048x2048 BC7 10.7 MB; paint-stroke 1024x1024 BC7 2.7 MB; hist-p2 2048x2048 BC7 10.7 MB; mattab-P 7x12 RGBAFloat 0.0 MB; mattab-Pc 7x12 RGBAFloat 0.0 MB); meshes, every level, 10.1 MB.
+One house, as the editor counts it (a CPU copy beside the GPU's): textures 45.3 MB (hist-p 2048x2048 BC7 10.7 MB; geo 2048x2048 BC7 10.7 MB; street-normal 2048x2048 BC7 10.7 MB; paint-stroke 1024x1024 BC7 2.7 MB; hist-p2 2048x2048 BC7 10.7 MB; mattab-P 7x12 RGBAFloat 0.0 MB; mattab-Pc 7x12 RGBAFloat 0.0 MB); meshes, every level, 9.7 MB.

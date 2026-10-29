@@ -11,11 +11,17 @@
   - A `repainted` event's colour is read from `params.wall`, as the records write it. Before, paint.py read `params.paint`, which no record has.
   - A wall's value is now its paint's: the clay's cladding value scaled by the paint's L* against the white it was set for (`paint.json` `clayPaint`). White houses are unchanged.
   - The near and street budgets scale with the house's surface (its charts on the page) against 107's 260 m² (`street.json` `budgetSurfaceM2`), so it is the same triangles a square metre. The city budget stays as it is.
-- 107 and 108 build as committed. The one exception is 107's city plinth row (705 triangles, unchanged).
+- 108 builds as committed. 107 differs only in its city plinth row (705 triangles, unchanged) and the street cuts below.
 
-`c04-sheet.jpg`, top row: ref 01, the ark in grey, then the street stop overcast in clay and in colour. Bottom row: 107 (the floor) at the street stop overcast, then 109 at the street stop in low sun, at eye level in low sun, and from 12 m in low sun. Rendered with `render.sh 109 c04 eye,gable,street,raised P,Pc overcast,lowsun`.
+`c04-sheet.jpg` (built before the street cuts, which do not show), top row: ref 01, the ark in grey, then the street stop overcast in clay and in colour. Bottom row: 107 (the floor) at the street stop overcast, then 109 at the street stop in low sun, at eye level in low sun, and from 12 m in low sun. Rendered with `render.sh 109 c04 eye,gable,street,raised P,Pc overcast,lowsun`.
 
-Cost (`c06-timing.md`, `STREET_TIMING=50 render.sh 109 c06 street Pc overcast`):
-- Triangles: near 53,230 (budget 68,664 at 714 m²), street 11,784 (21,972), city 748 (800).
-- A row of 50: 3.9, 4.1 and 4.7 ms (street, raised, along), against 108's 3.8, 4.2 and 4.8 ms timed in the same minute.
+Street level (`s01-eave-ab.jpg`, the street stop's eave at 2.2x, low sun above and overcast below):
+- At left is 109 as built at e396d6c, 11,784 triangles. In the middle the course planes run on 2 m frame segments and the eave course has no under faces (`street.json` `frameSegmentM`, `eaveUnder`), 9,452: it cannot be told from the left. At right the eave's wave is 3 samples a cover and the frame 3 m, 8,588: the pantile rolls are lost from the eave's line against the sky, and the scallops coarsen. So the middle is kept.
+- 107 with the middle's cuts goes from 6,287 to 5,459 triangles and cannot be told apart at its eave in either light.
+- On one side of a street, the street level per metre of frontage and per m² of surface is 780 and 21.1 for 107, 974 and 15.3 for 108, and 1,050 and 13.2 for 109. A flat 8k would be 889 a metre for 109, and it reads coarser.
+
+Cost (`c07-timing.md`, `STREET_TIMING=50 render.sh 109 c07 street Pc overcast`):
+- Triangles: near 53,230 (budget 68,664 at 714 m², with a ceiling of 80,000 for any house), street 9,452, city 748 (800).
+- A row of 50: 3.7, 3.9 and 4.4 ms (street, raised, along).
+- The worst near view, `near3`, has three houses drawn near at once, at eye level 5 m off the middle one, at a 75° field of view: 4.6 ms with 169,142 triangles in view. 107's is 4.2 ms with 78,973.
 - The page: 21.3 MB on the GPU at full, BC7.
