@@ -2585,7 +2585,7 @@ def main():
         if key.endswith("#under"):
             sc = dens["under"] * dens.get("elsewhere", 1.0)
         house.charts.scale[key] = sc
-    rects, fill, px = house.charts.fit(S["page"])
+    rects, fill, px, size = house.charts.fit(S["page"])
 
     bpy.ops.wm.read_factory_settings(use_empty=True)
     rigid = {}
@@ -2627,7 +2627,7 @@ def main():
             for f in pc.faces[lv]:
                 by_mat.setdefault(pc.mat, []).append((pc, f))
         for mat in sorted(by_mat):
-            o = to_object(f"{lv}_{mat}", by_mat[mat], place_of, deform, rects, S["page"]["size"], colour)
+            o = to_object(f"{lv}_{mat}", by_mat[mat], place_of, deform, rects, size, colour)
             objs[(lv, mat)] = o
             counts.setdefault(lv, {})[mat] = tris_of(o)
     total = {lv: sum(c.values()) for lv, c in counts.items()}
@@ -2640,7 +2640,7 @@ def main():
                     by[k] = by.get(k, 0) + sum(len(f.p) - 2 for f in pc.faces[lv])
             print(f"[tris] {lv}", sorted(by.items(), key=lambda t: -t[1])[:25])
     # near and street by the house's surface (its charts on the page) against the house the budgets were set on; city as is
-    area = fill * S["page"]["size"] ** 2 / px ** 2
+    area = fill * size ** 2 / px ** 2
     # near by the house's surface, street by its plot's frontage (perFrontageM), each never below the level's own
     front = F.plot["w"] * MM
     scale = {"near": max(1.0, area / S["budgetSurfaceM2"]["m2"]), "city": 1.0,
@@ -2667,7 +2667,7 @@ def main():
         "wealth": F.wealth, "plot": F.plot, "events": F.events,
         "size": [house.w, house.d], "pitch": math.degrees(house.pitch),
         "triangles": counts, "totals": total, "budgets": budgets,
-        "page": dict(S["page"], pxPerM=px), "fill": fill, "surfaceM2": round(area, 1), "charts": {k: list(v) for k, v in rects.items()},
+        "page": dict(S["page"], pxPerM=px, size=size), "fill": fill, "surfaceM2": round(area, 1), "charts": {k: list(v) for k, v in rects.items()},
         "heights": {"plinth": house.z_plinth, "floor": house.z_floor, "floors": house.floors, "loft": house.z_loft,
                     "drip": [house.z_drip0, house.z_drip1], "top": house.z_top, "ridge": house.z_ridge,
                     "foot": [house.y_foot, house.z_foot]},

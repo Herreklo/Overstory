@@ -240,11 +240,36 @@ def wet_margin(pg, Q, meta, broad, plinth):
 # ---------------------------------------------------------------- the values
 
 
+def hull(pg, top, mask, cell=0.02):
+    """The wall's top over its notches: the least concave line over `top` along each face, so a gable's verge stands
+    as it is and a notch where something else stands on the wall (109's ark) is bridged from shoulder to shoulder."""
+    out = top.copy()
+    for face in (pg.street, ~pg.street):
+        m = mask & face & pg.cov
+        if not m.any():
+            continue
+        lo = pg.along[m].min()
+        bins = np.clip(((pg.along - lo) / cell).astype(np.int64), 0, None)
+        e = np.full(bins[m].max() + 1, -np.inf)
+        np.maximum.at(e, bins[m], top[m])
+        ok = np.flatnonzero(np.isfinite(e))
+        h = []  # the upper hull's points, left to right
+        for i in ok:
+            while len(h) >= 2 and (h[-1] - h[-2]) * (e[i] - e[h[-2]]) >= (e[h[-1]] - e[h[-2]]) * (i - h[-2]):
+                h.pop()
+            h.append(i)
+        line = np.interp(np.arange(len(e)), h, e[h])
+        out = np.where(face, np.maximum(top, line[np.clip(bins, 0, len(e) - 1)]), out)
+    return out
+
+
 def wall_low(pg, Q, clad, zf):
     """How low on its wall each point is, 0 under the eave (or the verge) to 1 at the boards' foot, eased by the
-    gradient's power; and the wall's top above each point."""
+    gradient's power; and the wall's top above each point. The gradient runs to the wall's top over its notches
+    (hull), so a wall cut short under something standing on it darkens as its neighbours do; the top returned is the
+    cladding's own, where its contact shade sits."""
     top = FP.edges(pg, clad)
-    t = np.clip((pg.z - zf) / np.maximum(top - zf, 0.1), 0.0, 1.0)
+    t = np.clip((pg.z - zf) / np.maximum(hull(pg, top, clad) - zf, 0.1), 0.0, 1.0)
     return (1.0 - t) ** Q["wall"]["power"], top
 
 

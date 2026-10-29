@@ -18,11 +18,12 @@
     "bake": { "describes": "Never drawn: the roof's tiles above the near level's own, the source of the planes' baked tile relief and occlusion." }
   },
   "page": {
-    "size": 2048,
+    "sizes": [2048, 4096],
     "pxPerM": [64, 128],
+    "holdPxPerM": 124,
     "padPx": 4,
     "density": { "roof": 0.5, "ridge": 0.5, "chimney": 0.6, "under": 0.35, "elsewhere": 0.62 },
-    "describes": "One page a house, its charts packed at the most pixels a metre (in steps of 2) that fit between pxPerM; a roof course and the eave's undersides take less (density), and every face but the walls that face the street (their openings and plinth with them) takes `elsewhere` of it."
+    "describes": "One page a house, its charts packed at the most pixels a metre (in steps of 2) that fit between pxPerM, on the smallest of `sizes` that holds them at holdPxPerM or more, so the texels a square metre are the same for every house; the sizes are powers of two, since Unity leaves a page of any other size uncompressed (RGBA32, four times BC7's memory: 109 at 3328, 29 October), so a page's memory follows its surface in steps of four; a roof course and the eave's undersides take less (density), and every face but the walls that face the street (their openings and plinth with them) takes `elsewhere` of it."
   },
   "lapReach": 0.25,
   "planeShadow": 0.0,

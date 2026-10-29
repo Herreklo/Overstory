@@ -49,10 +49,10 @@ class Charts:
         self.scale[key] = density
         return key
 
-    def pack(self, page, px):
-        """Rows, tallest first. Returns key -> (x, y, w, h) in pixels and the share of the page filled, or None
-        if the charts do not fit at `px` pixels a metre."""
-        size, pad = page["size"], page["padPx"]
+    def pack(self, page, px, size):
+        """Rows, tallest first, on a page `size` pixels square. Returns key -> (x, y, w, h) in pixels and the share
+        of the page filled, or None if the charts do not fit at `px` pixels a metre."""
+        pad = page["padPx"]
         items = sorted(self.size.items(), key=lambda kv: (-math.ceil(kv[1][1] * px * self.scale[kv[0]]), kv[0]))
         x = y = row_h = 0
         out = {}
@@ -71,14 +71,18 @@ class Charts:
         return out, (y + row_h) / size
 
     def fit(self, page):
-        """The most pixels a metre (in whole steps) that fits, within the page's bounds."""
-        px = page["pxPerM"][1]
-        while px >= page["pxPerM"][0]:
-            rects, fill = self.pack(page, px)
-            if rects is not None:
-                return rects, fill, px
-            px -= 2
-        raise SystemExit(f"[house] the page is full even at {page['pxPerM'][0]} px a metre")
+        """The smallest of the page's sizes that holds the charts at holdPxPerM or more, at the most pixels a metre
+        (in whole steps) that fit; a house too big for that takes the biggest page at what fits there, down to
+        pxPerM's least. Returns rects, fill, px and the page's size."""
+        for size in page["sizes"]:
+            px = page["pxPerM"][1]
+            floor = page["holdPxPerM"] if size < page["sizes"][-1] else page["pxPerM"][0]
+            while px >= floor:
+                rects, fill = self.pack(page, px, size)
+                if rects is not None:
+                    return rects, fill, px, size
+                px -= 2
+        raise SystemExit(f"[house] the page is full even at {page['sizes'][-1]} px and {page['pxPerM'][0]} px a metre")
 
 
 def newell(pts):
