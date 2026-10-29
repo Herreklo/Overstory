@@ -124,7 +124,13 @@ def build_joints():
             q1.append(q)
             mass.append(m)
     q1.append(qm[-1])
-    return np.array(q1), np.array(mass), qm, slab_joints(-60.0, 60.0, 4.5, 0.4, 1.5, 8)
+    # the sheet joints opened as the ice's load came off: close under the surface, metres apart deeper in
+    rng = np.random.default_rng(8)
+    q, q2 = 40.0, []
+    while q > -60.0:
+        q2.append(q)
+        q -= max(1.2, (1.3 + 0.13 * max(30.0 - q, 0.0)) * math.exp(rng.normal(0.0, 0.3)))
+    return np.array(q1), np.array(mass), qm, np.array(q2[::-1])
 
 
 MASSES = [  # ice-worn knuckles at the rim: x, y, height, stoss slope, lee slope, seed
@@ -153,6 +159,13 @@ CAVES = [(11, 3.2, 7.5, 16.0), (10, 1.7, 3.8, 8.0), (8, 1.2, 2.6, 5.0)]  # crush
 SCAR = (50.0, 13.0, 10.0, 8.0)  # where a slab came down not long ago: x, z, half width, half height
 Q1, MASS, QM, Q2 = build_joints()
 QS = slab_joints(float(Q1[0]) - 5.0, float(Q1[-1]) + 5.0, 1.9, 0.45, 0.8, 33)  # the shelf's ribs: the foliation's beds
+# how the rock wears by where it is: the plucked face crisp; the storm-wash zone, to about 3 m over high water, worn
+# round; the foliation's wave on every face, and how far the sheet joints wander
+WEAR = {"faceRoundM": 0.10, "stormRoundM": 1.0, "stormTopM": 3.6, "waveM": 0.22, "wanderM": 0.9,
+        # potholes the swell grinds into the shelf's crests with the stones it swirls: one at most per cell, by chance
+        "potholeCellM": 4.5, "potholeChance": 0.4, "potholeR": (0.55, 1.1),
+        # a block's edges: as sharp as it is fresh, worn round over the years the sea has had it (share of its thickness)
+        "freshRound": 0.06, "seaRound": 0.45}
 MADE_Z = 2.2
 MADE = [(-172.0, 34.0), (-336.0, 34.0), (-336.0, 236.0), (-262.0, 236.0), (-238.0, 120.0), (-172.0, 66.0)]  # the cannery's ground
 TEETH = [(-30.0, -96.0, 2.2, 7.0), (-48.0, -104.0, 1.4, 4.0), (-8.0, -112.0, 1.6, 5.0), (18.0, -100.0, 1.0, 3.5),
@@ -319,7 +332,7 @@ def mass_sides():
     cum = np.concatenate([np.zeros((n1, 1), np.float32), np.cumsum(step, 1)], 1)  # set-back above each sheet joint
     return dict(back=sl[:, 0], turn=sl[:, 2], lean=sl[:, 3], notch=sl[:, 7], slope=sl[:, 8], qc=qc, hw=hw,
                 bulge=np.array(BULGE, np.float32), curve=np.array(CURVE, np.float32), xc=xc.astype(np.float32),
-                col=col, twist=twist, cum=cum)
+                col=col, twist=twist, cum=cum, shift=rng.uniform(-0.7, 0.7, n1).astype(np.float32))
 
 
 B = None
@@ -329,9 +342,7 @@ def face_sdf(X, Y, Z, yp, k):
     """The face as the slabs between the foliation's joints, each its mass's plane set in or out and stepped back
     above its ledges: the union of a point's slab and the two beside it, their edges rounded over k."""
     q1 = NFOL[0] * X + NFOL[1] * Y + NFOL[2] * Z
-    q2 = NSHEET[0] * X + NSHEET[1] * Y + NSHEET[2] * Z
     i1 = np.clip(np.searchsorted(Q1, q1) - 1, 1, len(Q1) - 3)
-    i2 = np.clip(np.searchsorted(Q2, q2), 0, len(Q2))
     best = np.full(np.broadcast(X, Y, Z).shape, np.inf, np.float32)
     swell = 0.6 * ss(5.0, 1.0, Z) * (Z > -2)  # the swell's reach undercut, then worn round
     for a in (-1, 0, 1):
@@ -341,8 +352,14 @@ def face_sdf(X, Y, Z, yp, k):
         up = 1.5 * np.logaddexp(0.0, (Z - B["notch"][m]) / 1.5)
         u = np.clip((q1 - B["qc"][m]) / B["hw"][m], -1.3, 1.3)
         lean = B["lean"][m] * Z + (B["slope"][m] - B["lean"][m]) * up + B["curve"][m] * up * up + B["bulge"][m] * u * u
+        # the foliation is wavy: each slab's face swells and dips a few tenths over a few metres, its own way
+        wave = WEAR["waveM"] * fbm2((0.6 * X + 0.4 * Y) / 3.5 + 17.3 * j, Z / 3.0, 201)
         plane = (B["back"][m] + B["col"][j] + swell + lean + B["turn"][m] * (X - B["xc"][m])
-                 + B["twist"][j] * (q1 - 0.5 * (lo + hi)))
+                 + B["twist"][j] * (q1 - 0.5 * (lo + hi)) + wave)
+        # the sheet joints wander with the surface and step en echelon from slab to slab, so no ledge runs straight
+        q2 = (NSHEET[0] * X + NSHEET[1] * Y + NSHEET[2] * Z + B["shift"][j]
+              + WEAR["wanderM"] * fbm2((0.6 * X + 0.4 * Y) / 14.0, Z / 9.0, 202))
+        i2 = np.clip(np.searchsorted(Q2, q2), 0, len(Q2))
         # each ledge a clean tread: the slab between two sheet joints is the plane at its own set-back, cut off at
         # the joint above it; the union of a point's band and the two beside it
         face = np.full_like(best, np.inf)
@@ -363,7 +380,7 @@ def land_sdf(X, Y, Z):
     tp = tp[..., None] if X.ndim == 3 else tp
     bare = ss(0.22, 0.4, fbm2(X / 7.0, Y / 7.0, 51))
     dome = (Z - tp - 0.6 * bare) * 0.8
-    k = (0.10 + 0.9 * ss(3.5, 0.5, Z)).astype(np.float32)  # crisp, but round where the swell reaches
+    k = (WEAR["faceRoundM"] + (WEAR["stormRoundM"] - WEAR["faceRoundM"]) * ss(WEAR["stormTopM"], 0.5, Z)).astype(np.float32)
     face = face_sdf(X, Y, Z, yp, k)
     sx, sz, hw, hh = SCAR
     q1 = NFOL[0] * X + NFOL[1] * Y + NFOL[2] * Z
@@ -392,6 +409,22 @@ def land_sdf(X, Y, Z):
     bed = bed * end - 3.6 * (1 - end)
     bed = np.where(sw > 0.5, bed, -3.6)
     rock = smin(rock, (Z - bed) * 0.9, 0.12)
+    # potholes on the crests, each its cell's own, sunk from the crest at its middle so a bowl is whole across ribs
+    cs, (r0, r1) = WEAR["potholeCellM"], WEAR["potholeR"]
+    ix, iy = np.floor(X / cs).astype(np.int64), np.floor(Y / cs).astype(np.int64)
+    h = [((ix * 73856093) ^ (iy * 19349663) ^ (k * 83492791)) % 10007 / 10007.0 for k in range(1, 5)]
+    cx, cy, r = (ix + 0.3 + 0.4 * h[1]) * cs, (iy + 0.3 + 0.4 * h[2]) * cs, r0 + (r1 - r0) * h[3]
+    qc = NFOL[0] * cx + NFOL[1] * cy
+    i_c = np.clip(np.searchsorted(QS, qc) - 1, 0, len(QS) - 2)
+    tc = (qc - QS[i_c]) / (QS[i_c + 1] - QS[i_c])
+    oc = np.maximum(face_line(cx) - cy, 0.0)
+    rng = np.random.default_rng(31)
+    c0, f0, _, rch = (rng.uniform(lo, hi, len(QS))[i_c] for lo, hi in ((0.5, 1.3), (0.04, 0.12), (0.4, 1.0), (0.35, 1.25)))
+    swc = np.interp(cx, *SHELF_W)
+    zc = c0 - f0 * oc + 0.2 * r
+    on = (h[0] < WEAR["potholeChance"]) & (swc > 2.0) & (oc > 1.0) & (oc < rch * swc - 1.0) & (np.abs(tc - 0.5) < 0.3)
+    bowl = np.sqrt((X - cx) ** 2 + (Y - cy) ** 2 + ((Z - zc) * 0.8) ** 2) - r
+    rock = np.where(on, smax(rock, -bowl, 0.15), rock)
     for i, (tx, ty, th, tr) in enumerate(TEETH + [PIP]):  # the skerries, if they reach the grid
         hk = hull(X, Y, tx, ty, th, 0.25, 0.7, 40 + i, 0.6)
         rock = smin(rock, (Z - hk) * 0.85, 0.6)
@@ -819,7 +852,7 @@ def build(out, grey, vox):
     for i in range(9):
         x = sx + rng.uniform(-hw, hw) * 0.9
         y = float(face_line(np.array([x]))[0]) - rng.uniform(1.0, 7.0)
-        falls.append(block_rock(f"fallen{i}", x, y, W.ground_at(x, y), rng.uniform(0.8, 2.4), 100 + i))
+        falls.append(block_rock(f"fallen{i}", x, y, W.ground_at(x, y), rng.uniform(0.8, 2.4), 100 + i, 0.0, 0.6))
     # what the sea and the frost lift off the beds and leave on the shelf: small slabs, lying flat
     loose = []
     for i in range(70):
@@ -828,33 +861,44 @@ def build(out, grey, vox):
         if sw < 3.0:
             continue
         y = float(face_line(np.array([x]))[0]) - rng.uniform(0.8, sw - 0.5)
-        loose.append(block_rock(f"loose{i}", x, y, W.ground_at(x, y), rng.uniform(0.25, 0.8), 200 + i))
+        loose.append(block_rock(f"loose{i}", x, y, W.ground_at(x, y), rng.uniform(0.35, 1.1), 200 + i,
+                                rng.uniform(0.3, 1.0), 0.12))
     return dict(rock=rock, turf=turf, land=land, made=made, skerries=skerries, sea=sea, swell=swell, built=built,
                 details=details, steps=steps, people=people, falls=falls, loose=loose,
                 mountains=mountains(far_range()))
 
 
-def block_rock(name, x, y, z, r, seed):
-    """A block off the face: its joint faces flat and its edges sharp (a hull of the corners of a skewed box)."""
+def block_rock(name, x, y, z, r, seed, worn, tilt):
+    """A slab off the face, a plate of the foliation's stone: its outline the joints that freed it, its broad faces the
+    foliation's, its edges as sharp as it is fresh and rounded by the share `worn` of a long life in the sea."""
     import bmesh
     rng = np.random.default_rng(seed)
-    a, b, c = r, r * rng.uniform(0.5, 0.9), r * rng.uniform(0.35, 0.6)
+    n = int(rng.integers(5, 8))
+    ang = np.sort(np.linspace(0.0, 2 * math.pi, n, endpoint=False) + rng.uniform(-0.3, 0.3, n))
+    long = rng.uniform(1.0, 1.7)
+    rad = r * rng.uniform(0.7, 1.0, n)
+    t = r * rng.uniform(0.22, 0.4)
+    skew = rng.uniform(-0.15, 0.15, 2) * t  # the joints that cut it are not square to the foliation
     pts = []
-    for sx in (-1, 1):
-        for sy in (-1, 1):
-            for sz in (-1, 1):
-                pts.append((sx * a * rng.uniform(0.7, 1.0), sy * b * rng.uniform(0.7, 1.0), sz * c * rng.uniform(0.7, 1.0)))
+    for s_, sh in ((-1, 1.0), (1, rng.uniform(0.8, 0.95))):
+        for a, d in zip(ang, rad):
+            pts.append((long * d * sh * math.cos(a) + s_ * skew[0], d * sh * math.sin(a) + s_ * skew[1], s_ * t / 2))
     bm = bmesh.new()
     vs = [bm.verts.new(p) for p in pts]
     bmesh.ops.convex_hull(bm, input=vs)
-    bmesh.ops.bevel(bm, geom=list(bm.edges), offset=0.04, segments=1, affect="EDGES")
+    bmesh.ops.dissolve_limit(bm, angle_limit=math.radians(2.0), verts=bm.verts, edges=bm.edges)
+    off = t * (WEAR["freshRound"] + (WEAR["seaRound"] - WEAR["freshRound"]) * worn)
+    bmesh.ops.bevel(bm, geom=list(bm.edges), offset=off, segments=1 + int(round(3 * worn)), affect="EDGES",
+                    clamp_overlap=True, profile=0.5)
     me = bpy.data.meshes.new(name)
     bm.to_mesh(me)
     bm.free()
+    for f in me.polygons:
+        f.use_smooth = worn > 0.2
     ob = bpy.data.objects.new(name, me)
     bpy.context.scene.collection.objects.link(ob)
-    ob.location = (x, y, z + c * 0.6)
-    ob.rotation_euler = tuple(rng.uniform(-0.5, 0.5, 2)) + (rng.uniform(0, 6.28),)
+    ob.location = (x, y, z + t * 0.35)
+    ob.rotation_euler = tuple(rng.uniform(-tilt, tilt, 2)) + (rng.uniform(0, 6.28),)
     return ob
 
 
@@ -876,7 +920,7 @@ def camera(cam):
 # -- colour: materials, the passes and the painter's finish ----------------------------------------------------------
 
 CLASS = {"rock": 1, "sea": 2, "turf": 3, "built": 4, "made": 5, "far": 6, "mountains": 7, "steps": 8, "people": 9}
-FOAM = (-280.0, 200.0, -200.0, 110.0, 0.5)  # the foam image's extent (x0, x1, y0, y1) and step (m)
+FOAM = (-280.0, 200.0, -200.0, 110.0, 0.25)  # the foam image's extent (x0, x1, y0, y1) and step (m)
 
 
 def relink(m):
@@ -945,18 +989,30 @@ def sea_material(foam):
     """The floor's sea, and the swell's break: white water on the crests the shelf steepens, torn along them."""
     W.LO, W.HI = (FOAM[0], FOAM[2]), (FOAM[1], FOAM[3])
     m = W.sea_material(foam)
-    g, sock, c = relink(m)
+    g, sock, _ = relink(m)
     P, N, x, y, z, nz = T.geometry(g)
+    # the foam as lace, not a band: a thin line broken along the rock where the wash runs back off it, and the wash's
+    # net of bubbles drawn out along the shore, its strands finer and its holes wider as it spreads seaward
+    near = g.out(next(n for n in m.node_tree.nodes if n.type == "TEX_IMAGE"), "Color")
+    near = g.math("MAXIMUM", near, 0.0)
+    brk = g.noise(g.vec(g.math("MULTIPLY", x, 0.6), g.math("MULTIPLY", y, 1.5), 0.0), 1.0, 3.0, 0.6)
+    ring = g.math("MULTIPLY", g.ss(near, 0.72, 0.9), g.ss(brk, 0.38, 0.5))
+    vor = g.node("ShaderNodeTexVoronoi", {"Vector": g.vec(g.math("MULTIPLY", x, 0.45), g.math("MULTIPLY", y, 1.1), 0.0),
+                                          "Scale": 1.0, "Randomness": 0.9}, feature="DISTANCE_TO_EDGE")
+    strand = g.ss(g.math("SUBTRACT", g.out(vor, "Distance"), g.math("MULTIPLY", near, 0.12)), 0.07, 0.015)
+    lace = g.math("MULTIPLY", strand, g.math("MULTIPLY", g.ss(near, 0.06, 0.4), g.ss(brk, 0.25, 0.55)))
+    foamv = g.math("MAXIMUM", ring, g.math("MULTIPLY", lace, 0.85))
+    c = g.mix(foamv, T.COL["sea"], (0.62, 0.64, 0.62))
     torn = g.ss(g.noise(g.vec(g.math("MULTIPLY", x, 0.3), y, 0.0), 0.8, 3.0, 0.6), 0.35, 0.55)
     crest = g.math("MULTIPLY", g.ss(z, SEA + 0.42, SEA + 0.72), torn)
     g.put(sock, g.mix(crest, c, (0.62, 0.64, 0.62)))
     # a sea, not a lake: the evening breeze's chop over the swell, metres long, so far water breaks the reflections
     bsdf = next(n for n in m.node_tree.nodes if n.type == "BSDF_PRINCIPLED")
-    nrm, rough = (bsdf.inputs[k].links[0].from_socket for k in ("Normal", "Roughness"))
+    nrm = bsdf.inputs["Normal"].links[0].from_socket
     chop = g.noise(g.vec(g.math("MULTIPLY", x, 0.5), y, 0.0), 0.35, 4.0, 0.65)
     b2 = g.node("ShaderNodeBump", {"Strength": 0.6, "Distance": 0.25, "Height": chop, "Normal": nrm})
     g.put(bsdf.inputs["Normal"], g.out(b2, "Normal"))
-    g.put(bsdf.inputs["Roughness"], g.math("ADD", rough, 0.08))
+    g.put(bsdf.inputs["Roughness"], g.mixf(g.math("MAXIMUM", foamv, crest), 0.16, 0.7))
     return m
 
 
