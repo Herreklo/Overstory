@@ -278,11 +278,11 @@
     "chimney": 20
   },
   "bends": {
-    "describes": "Old timber moves, and every bend has a cause. One corner settles on its stones and the frame goes down with it over settleReachMm; the wall plates sag between the gables and the ridge with them; the roof's thrust pushes the eave walls' heads out. Each grows with the frame's age to a most; which corner settles is the seed's, claiming no history. Sizes from house-asset-craft.md (Recipe: house 107).",
+    "describes": "Old timber moves, and every bend has a cause. One corner settles on its stones and the frame goes down with it over settleReachMm; the wall plates sag between the gables and the ridge with them; the roof's thrust pushes the eave walls' heads out. Each grows with the frame's age to a most; which corner settles is the seed's, claiming no history. Sizes from house-asset-craft.md (Recipe: house 107); the sag halved on 29 October, since the references show straight eaves at that age and 100 mm read as a cartoon.",
     "settleMmPerCentury": 25,
     "settleMostMm": 40,
-    "sagMmPerCentury": 62,
-    "sagMostMm": 110,
+    "sagMmPerCentury": 31,
+    "sagMostMm": 55,
     "ridgeSagShare": 1.2,
     "leanMmPerCentury": 16,
     "leanMostMm": 25,
