@@ -1,0 +1,68 @@
+{
+  "schemaVersion": 1,
+  "describes": "The Holm tip's rock kit (part.py): rigid parts, each one or more convex bodies cut by the tip's own planes (its foliation, joints and sheeting, from the fixture) and turned only as the site turns them, so every piece's planes run with the outcrop's. A plane is [dip, dipToward] in degrees (site frame: x east, y north, z up) or a fixture family's name, at `at` metres from the part's centre along its normal; a facet folds its face back by `tilt` degrees beyond a line `fold` metres from the face's centre, along the direction `dir` degrees in the face (0 along its strike, 90 up its dip), so no face is one flat panel. Each face wears by its kind (`wear`, metres of the round on its edges: the larger of the two faces' at an edge, but a face of an `own` kind, freshly plucked or parted along the foliation, keeps its own crisp edge; never more than capShare of the part's least width), as the first lane's WEAR table and the fixture's chamfers. Levels and budgets are the street's (street.json): a square metre of rock may cost what a square metre of house does.",
+  "fixture": "fixtures/lt1-holm-tip.json",
+  "street": "blender/parts/street/street.json",
+  "world": "lt1-holm-tip",
+  "wear": {
+    "seam": [0.04, 0.09],
+    "ice": [0.12, 0.2],
+    "storm": [0.35, 0.6],
+    "plucked": [0.015, 0.03],
+    "parting": [0.02, 0.045],
+    "ground": [0, 0],
+    "own": ["plucked", "parting"],
+    "capShare": 0.18,
+    "reachShare": 0.45
+  },
+  "levels": {
+    "near": { "segments": 4, "profile": 0.5 },
+    "street": { "segments": 1, "profile": 0.5 },
+    "city": { "segments": 0, "folds": false }
+  },
+  "page": { "sizes": [256, 512, 1024, 2048], "pxPerM": [64, 128], "holdPxPerM": 124, "padPx": 4,
+            "describes": "As the street's page: one page a placed piece, charts at the most pixels a metre between pxPerM on the smallest of `sizes` (powers of two, which Unity compresses) that holds them at holdPxPerM; a face that looks down takes `down` of it." ,
+            "down": 0.62 },
+  "materials": {
+    "describes": "The rock in p3's painted finish: p3's stone (finish.json painted.materials.stone: its wet margin, gloss and brush) at the phyllite's value, its weathered skin between the grey-green and the graphite of docs/stone.md, darker than the house's dressed stone; its colour [C, h] the phyllite's grey-green, as the stone's is its blue-grey.",
+    "rock": { "like": "stone", "L": 38 }
+  },
+  "colour": { "rock": { "paint": [4, 165], "under": [3, 160], "stain": [4, 170] } },
+  "beside": {
+    "describes": "A part judged alone beside the house (LT1HolmTip): the street's house as the street draws it (`gen` and `paint`: the build and page its Street scene holds), each part at `at` in the house's frame (x along its front, y back from it, z up), unturned; the street's street stop as it is, and its eye view the street's, standing off the first part as the street's stands off the house's middle, its height, tilt and lens unchanged (`eye`: `from` the first part, looking along `look`).",
+    "house": "107", "gen": "cache/street/gen/107h", "paint": "cache/street/bake/107z4/out-hull",
+    "parts": [ { "part": "slab-block", "at": [-1.4, -1.2, 0] } ],
+    "eye": { "from": [-2.6, -4.4, 1.6], "look": [2.2, 4.7, 0.5], "fov": 52 }
+  },
+  "parts": {
+    "slab-block": {
+      "describes": "A joint-bounded slab block of about 2 m on the tip's top, near the customs house: two foliation faces leaning 68 degrees, two J1 joints across them, the ice-worn sheeting on top, sunk in the turf at its foot; a plucked corner on the ice's lee, where the ice took a wedge out along J3.",
+      "centre": [0, 0, 0.5],
+      "faces": [
+        { "name": "top", "plane": [10, 20], "at": 0.62, "wear": "ice",
+          "facets": [ { "dir": 0, "fold": 0.35, "tilt": 9 }, { "dir": 180, "fold": 0.55, "tilt": 6 }, { "dir": 90, "fold": 0.3, "tilt": 7 } ] },
+        { "name": "fol-a", "plane": "foliation", "at": 0.66, "wear": "seam",
+          "facets": [ { "dir": 0, "fold": 0.2, "tilt": 7 }, { "dir": 90, "fold": 0.25, "tilt": 10 } ] },
+        { "name": "fol-b", "plane": "foliation", "flip": true, "at": 0.62, "wear": "seam",
+          "facets": [ { "dir": 180, "fold": 0.3, "tilt": 6 } ] },
+        { "name": "j1-a", "plane": "J1", "at": 1.12, "wear": "seam",
+          "facets": [ { "dir": 90, "fold": 0.15, "tilt": 12 } ] },
+        { "name": "j1-b", "plane": "J1", "flip": true, "at": 1.05, "wear": "seam",
+          "facets": [ { "dir": 0, "fold": -0.1, "tilt": 5 } ] },
+        { "name": "pluck", "plane": "J3", "flip": true, "at": 0.98, "wear": "plucked", "facets": [] },
+        { "name": "base", "plane": [0, 0], "flip": true, "at": 0.68, "wear": "ground", "facets": [] }
+      ],
+      "plates": {
+        "describes": "The block parted along its foliation into plates (phyllite's thin beds), from fol-b's side to fol-a's, `t` metres thick (they fill the block); each plate's faces stand `shift` metres proud (+) or back (-) of the block's, so its faces step plate by plate where the rock weathers and plucks along its beds: most on the ice's lee (the plucked face, toward the ice's way) and the joints, least on the top, which the ice planed across the beds. A plate's own foliation faces wear as `parting`.",
+        "along": ["fol-b", "fol-a"],
+        "t": [0.3, 0.42, 0.18, 0.38],
+        "shift": [
+          { "top": -0.02, "j1-a": -0.05, "pluck": 0.03 },
+          { "j1-a": 0.03, "pluck": -0.04 },
+          { "top": -0.04, "j1-a": -0.1, "j1-b": -0.02, "pluck": -0.12 },
+          { "top": 0.01, "j1-a": -0.02, "j1-b": 0.01, "pluck": 0.02 }
+        ]
+      }
+    }
+  }
+}
