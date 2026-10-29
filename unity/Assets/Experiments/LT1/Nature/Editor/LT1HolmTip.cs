@@ -33,7 +33,7 @@ namespace Overstory.EditorTools
 
         [Serializable] class Placed { public string part; public float[] at; }
         [Serializable] class Eye { public float[] from, look; public float fov; }
-        [Serializable] class TipMat { public string name; public float L; public float smooth; }
+        [Serializable] class TipMat { public string name; public float L; public float smooth; public string normal, ao; }
         [Serializable] class TipView { public string name, level; public float[] pos, target; public float fov; }
         [Serializable] class TipMats { public TipMat[] mats; public TipView[] views; public float sunOff; }
         [Serializable] class Beside { public string house; public Placed[] parts; public Eye eye; }
@@ -132,6 +132,8 @@ namespace Overstory.EditorTools
                 mi.importCameras = false;
                 mi.importLights = false;
                 mi.animationType = ModelImporterAnimationType.None;
+                mi.importNormals = ModelImporterNormals.Import;
+                mi.importTangents = ModelImporterTangents.CalculateMikk;
                 mi.SaveAndReimport();
                 var tip = (GameObject)PrefabUtility.InstantiatePrefab(AssetDatabase.LoadAssetAtPath<GameObject>($"{tg}/tip.fbx"));
                 tip.transform.SetPositionAndRotation(Vector3.zero, h.root.transform.rotation);
@@ -146,6 +148,24 @@ namespace Overstory.EditorTools
                     var g = new Material(Shader.Find("Universal Render Pipeline/Lit"));
                     g.SetColor("_BaseColor", (Color)Call("Lin", (float)Call("LToY", m.L), null));
                     g.SetFloat("_Smoothness", m.smooth);
+                    // a baked game mesh's page (carve.py): its normal in tangent space on its own UV, and its AO
+                    if (!string.IsNullOrEmpty(m.normal))
+                    {
+                        var ti = (TextureImporter)AssetImporter.GetAtPath($"{tg}/{m.normal}");
+                        ti.textureType = TextureImporterType.NormalMap;
+                        ti.SaveAndReimport();
+                        g.SetTexture("_BumpMap", AssetDatabase.LoadAssetAtPath<Texture2D>($"{tg}/{m.normal}"));
+                        g.EnableKeyword("_NORMALMAP");
+                    }
+                    if (!string.IsNullOrEmpty(m.ao))
+                    {
+                        var ti = (TextureImporter)AssetImporter.GetAtPath($"{tg}/{m.ao}");
+                        ti.sRGBTexture = false;
+                        ti.SaveAndReimport();
+                        g.SetTexture("_OcclusionMap", AssetDatabase.LoadAssetAtPath<Texture2D>($"{tg}/{m.ao}"));
+                        g.SetFloat("_OcclusionStrength", 1f);
+                        g.EnableKeyword("_OCCLUSIONMAP");
+                    }
                     AssetDatabase.CreateAsset(g, $"{Dir}/Generated/grey-{m.name}.mat");
                     greys[m.name] = g;
                 }

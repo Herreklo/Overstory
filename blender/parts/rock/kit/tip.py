@@ -12,6 +12,7 @@ and laid over the grey-box still LT1HolmTip drew from it, 107 and everything els
 import json
 import math
 import os
+import shutil
 import sys
 
 import bpy
@@ -166,9 +167,34 @@ def main():
         s = shore.bearing(rec["face"])
         c = np.array([rec["at"][0] - s.x * rec["depth"] / 2, rec["at"][1] - s.y * rec["depth"] / 2, 1.0])
         e, (wet, storm, _) = BI.shore_levels(K["tip"]["grey"]["bands"], c)
-        for r in shore.row(rec, K, BI.FIX):
-            shore.build("rock" if r is rec else f"rock-{r['id']}", r, K, BI.FIX, (e, wet, storm),
-                        [bpy.data.materials[n] for n in shore.BANDS], K["levels"]["near"]["segments"])
+        show = BI.arg("--show")
+        if show:
+            # --show <arm>-high|<arm>-game: carve.py's block alone, its game mesh wearing its baked normal and AO
+            arm, what = show.split("-")
+            src = os.path.join(ROOT, "cache", "rock", "kit", "gen", "carve")
+            with bpy.data.libraries.load(os.path.join(src, f"{arm}.blend")) as (_, dst):
+                dst.objects = [show]
+            ob = dst.objects[0]
+            bpy.context.scene.collection.objects.link(ob)
+            bpy.context.view_layer.update()  # its world matrix from its location (saved unevaluated)
+            for k, m in enumerate(ob.data.materials):
+                base = m.name.split(".")[0]
+                if base.endswith("-baked"):
+                    BI.MATS.append({"name": m.name, "L": next(x["L"] for x in BI.MATS if x["name"] == base[:-6]),
+                                    "smooth": next(x["smooth"] for x in BI.MATS if x["name"] == base[:-6]),
+                                    "normal": "tip-normal.png", "ao": "tip-ao.png"})
+                else:
+                    ob.data.materials[k] = bpy.data.materials[base]
+            for f in os.listdir(out):
+                if f.endswith(".png"):
+                    os.remove(os.path.join(out, f))
+            if what == "game":
+                for kind in ("normal", "ao"):
+                    shutil.copy(os.path.join(src, f"{arm}-{kind}.png"), os.path.join(out, f"tip-{kind}.png"))
+        else:
+            for r in shore.row(rec, K, BI.FIX):
+                shore.build("rock" if r is rec else f"rock-{r['id']}", r, K, BI.FIX, (e, wet, storm),
+                            [bpy.data.materials[n] for n in shore.BANDS], K["levels"]["near"]["segments"])
 
     # into 107's frame: its front-left corner at the origin, its front along x, its ground at the stand's base
     t = math.radians(stand["turn"])

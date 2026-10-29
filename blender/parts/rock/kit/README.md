@@ -33,16 +33,27 @@ zonation are (`../README.md`).
   the sea, 3 m off the north-west shore); `tip.grey` holds the frame's values and the shore bands; `tip.py` moves them into 107's frame in `tip.json` with the site's own low
   sun (`sunOff`), and `LT1HolmTip.cs` adds them beside the street stop. Run:
   `TIP_GREY=1 render.sh <round> water,street P overcast,lowsun`.
-- **State (29 Oct, t04):** the shore block alone (`tip.py -- --lone 1`, `shore.py`, kit.json `shore`, views
-  `loneeye,lone12,lonesea`) is redrawn as rigid pieces from its causes: the outline on its joints, cut by the foliation
-  into ribs toward the sea and across by J1 (main joints run on through most ribs, jogging; traces bent), each piece
-  an oblique prism sheared down the foliation's dip with a crack round it; tops by place (the ice's surface above the
-  storm top, ledges shared along the shore under it, plucked pockets on the lee); rounds by place in two bevel passes.
-  1250-1770 tris a block at near. Next: bigger pieces (fewer, wider main joints, no extras), so a few big ledges carry
-  the block; then fill the frame once the coordinator agrees. Turf test C, the toe line and the storm fixes queued.
+- **State (29 Oct, t05):** the shore block alone, two arms beside t04b's cell model (`shore.py`), both made by
+  `carve.py` (kit.json `carve`; `-- --arm A|B`, out `cache/rock/kit/gen/carve`) and shown by `tip.py -- --lone 1
+  --show A-high|A-game|B-game`, the grey path wearing the game mesh's baked normal and AO as URP/Lit maps
+  (`LT1HolmTip.cs`; the Finish shader samples a baked normal only under `_OS_STREET`, not at near). A: t04b's pieces
+  fused and carved (chips on the foliation and J1 frame, a wash round under the storm top, cracks re-cut from the
+  pieces' walls, foliation sheets). B: Poly Haven's CC0 `coast_rocks_05` as the form only, bedded flat. Each baked to
+  1223 tris (100 per m² of plan, the cell model's budget) with 2048 normal, AO and curvature maps; the bake keeps the
+  form. Neither passes; t04b stays the best so far. Next: A again from the start, cut and not smoothed (chips and
+  steps as planar breaks on the foliation and joints, no remesh smoothing or displacement on the walls), baked as
+  here; B only from a foliated bedrock scan (`rock_face_01` is downloaded), or dropped. Turf test C, the toe line and
+  the storm fixes queued.
 
 ## Rounds
 
+- **t05** (`reviews/lt1/rock/t05/sheet.jpg`; columns A high, A game, B game, t04b; rows eye, 12 m, sea, each overcast
+  then low sun; refs 15, 48, 51, 16 and 53-56 below). A melted: the wash round and the sheet displacement turned its
+  planes into draped cloth, the sheets running down the walls as drips, the foot a cushion; from 12 m still t04b's
+  tiers, now soft. The bake holds (A game reads as A high; a few dark specks in deep cracks). B is true rock up close
+  but a 1.1 m pitted boulder, not phyllite bedrock, its scan skirt lying on the water as debris. On the way: striped
+  boxes (round 1), a box stack with crumbs (2), melted by a swell on the walls (3); the first sheet missed the rock
+  (the carve blend kept its location unevaluated, so `tip.py` placed it twice its offset).
 - **t04** (`reviews/lt1/rock/t04/sheet.jpg`; rows eye, 12 m, sea; columns t04a overcast, t04b overcast and low sun;
   refs 15, 48, 51, 16 and the study board 53-56 below). t04a (leaves, each its own stair, `lone8`) read as a grid of
   rounded boxes: tiles. t04b (pieces) better: one mass stepping down in ledges along the shore, cracks that wander,

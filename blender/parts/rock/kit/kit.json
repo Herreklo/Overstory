@@ -101,6 +101,24 @@
       }
     }
   },
+  "carve": {
+    "describes": "t04's arm A (carve.py): the shore block made as studios make natural rock, a high body carved from shore.py's pieces at three scales by place (chips off the lee's arrises, the swell's round, the foliation's sheets and their plucked stretches), baked onto a game mesh of the near level's triangles per square metre; arm B the same bake from a downloaded scan's form (`scan`).",
+    "voxelM": 0.012,
+    "fuseM": 0.03,
+    "swell": { "waves": 5, "lambdaM": [0.8, 3.0], "shortM": [0.25, 0.7], "share": 0.03, "upFrom": 0.4 },
+    "chips": { "bend": 0.03, "elsewhere": 0.3, "wash": 0.85, "bite": 0.3, "turn": 12, "fol": [0.3, 0.7], "along": [0.8, 1.6],
+               "classes": [ { "sizeM": [0.25, 0.7], "count": 14 }, { "sizeM": [0.08, 0.25], "count": 30 }, { "sizeM": [0.03, 0.08], "count": 40 } ] },
+    "cracks": { "reachM": 0.12, "widthM": 0.012, "wash": 1.8, "depthM": 0.035, "waves": 5, "wanderM": 0.004, "wanderLambdaM": [0.2, 0.8] },
+    "wash": { "iters": 150, "lam": 0.5, "lee": 0.3, "face": 0.2 },
+    "ice": 0.06, "edge": 0.005,
+    "sheets": { "lamM": [0.004, 0.014], "sheetM": [0.03, 0.14], "fineM": 0.0015, "sheetDepthM": 0.01, "pow": 3.0,
+                "lee": 1.6, "top": 0.25, "wash": 0.6,
+                "warp": { "waves": 6, "lambdaM": [0.3, 2.0], "share": 0.012, "fine": { "waves": 3, "lambdaM": [0.03, 0.08], "ampM": 0.003 } },
+                "deep": { "count": [4, 8], "depthM": [0.02, 0.06], "lengthM": [0.5, 2.0], "wanderM": 0.06, "wanderLambdaM": [0.2, 0.8] } },
+    "game": { "voxelM": 0.03, "trisPerM2": 100, "cutZ": -0.3, "describes": "trisPerM2 a square metre of the block's plan, the cell model's near level (1250 on the lone block)" },
+    "bake": { "size": 2048, "cageM": 0.04, "rayM": 0.1, "aoM": 0.6, "samples": 8, "aoSamples": 64, "curv": [0.42, 0.58] },
+    "scan": { "file": "~/code/overstory-sources/rock-scans-polyhaven/coast_rocks_05/coast_rocks_05_1k.gltf", "source": "Poly Haven coast_rocks_05 (Rob Tuytel, CC0), its form only", "tilt": 0.0 }
+  },
   "parts": {
     "slab-block": {
       "describes": "A joint-bounded block at the tip's north-west waterline, the water frame's foreground (kit.json tip.views water): a low back the ice planed, rising out of the sea toward the land (its top dips 16 degrees toward the sea and runs on under the ground there), rounded over by the swell at its seaward edges and falling away to the west, its most exposed side; its leaves of phyllite stand on edge along the foliation (68 degrees toward 250), flush on its top where the ice planed across them (their traces in the bake), on the ice's lee as steps each packet plucked to its own length along J3, the shorter the further west, so each step bares a leaf's upper face, never its overhang, and at the sea where the two westernmost leaves broke back on fresh J1 faces, the outer the further.",

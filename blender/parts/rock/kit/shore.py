@@ -496,17 +496,20 @@ def row(rec, K, fix):
     return out
 
 
-def build(name, rec, K, fix, levels, mats, segments):
-    """The shore block for a place record `rec`, as an object `name` at its place (module doc)."""
-    S = K["shore"]
+def drawn(rec, K, fix, levels):
+    """The block's pieces from its first draw that holds: (cells, info, draw)."""
     for draw in range(40):
         try:
-            cells, info = form(rec, S, fix, levels, PT.HS.Stream(K["world"], "shore", rec["id"], draw))
-            break
+            cells, info = form(rec, K["shore"], fix, levels, PT.HS.Stream(K["world"], "shore", rec["id"], draw))
+            return cells, info, draw
         except Bad as err:
             print(f"[shore] {rec['id']} draw {draw}: {err}")
-    else:
-        raise RuntimeError(f"[shore] {rec['id']}: no draw holds")
+    raise RuntimeError(f"[shore] {rec['id']}: no draw holds")
+
+
+def build(name, rec, K, fix, levels, mats, segments):
+    """The shore block for a place record `rec`, as an object `name` at its place (module doc)."""
+    cells, info, draw = drawn(rec, K, fix, levels)
     bm, big, small = assemble(cells)
     ob = level_object(name, bm, big, small, segments, mats, info)
     bm.free()

@@ -9,7 +9,8 @@ P=$(python3 -c "import json;print(' '.join(p['part'] for p in json.load(open('bl
 install() { mkdir -p $D/$1; cp $2/house-near.fbx $2/house-street.fbx $2/house-city.fbx $2/house.json $D/$1/; cp $3/*.png $3/paint.json $D/$1/; }
 install $H $(python3 -c "import json;b=json.load(open('blender/parts/rock/kit/kit.json'))['beside'];print(b['gen'],b['paint'])")
 for p in $P; do install $p cache/rock/kit/gen/$p cache/rock/kit/bake/$p/out; done
-[ -n "$TIP_GREY" ] && { mkdir -p $D/tip; cp cache/rock/kit/gen/tip/tip.fbx cache/rock/kit/gen/tip/tip.json $D/tip/; }
+[ -n "$TIP_GREY" ] && { mkdir -p $D/tip; cp cache/rock/kit/gen/tip/tip.fbx cache/rock/kit/gen/tip/tip.json $D/tip/;
+  cp cache/rock/kit/gen/tip/*.png $D/tip/ 2>/dev/null || true; }
 /Applications/Unity/Hub/Editor/6000.6.6f1/Unity.app/Contents/MacOS/Unity -batchmode -quit -projectPath $PWD/unity \
   -executeMethod Overstory.EditorTools.LT1HolmTip.Run -tipRound $1 -tipViews ${2:-eye,street} -tipWays ${3:-P,Pc} \
   -tipLights ${4:-overcast,lowsun} ${TIP_GREY:+-tipGrey $TIP_GREY} -logFile $L
