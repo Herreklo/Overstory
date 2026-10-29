@@ -2,7 +2,7 @@
 
 01 to 10 are the 1989 harbour fronts, each logged in `docs/research/downloads.md`.
 
-11 to 37 were sent by Øystein in chat on 29 October as inspiration for later: the Eiganes villa and houses not made of wood. No source was given. They are for study only.
+11 to 40 were sent by Øystein in chat on 29 October as inspiration for later: the Eiganes villa and houses not made of wood. No source was given. They are for study only.
 
 Some show the town after 1989, not as it stood then, and belong to the later years we build (2000, 2010, 2020): 21 (2010s flats), 24 (the theatre's extension), 32 (the city hall's new facade), and the later work in 12 (the conversion), 15 (the pool) and 30–31 (the new dormers and café). In a 1989 scene they are what the town will become, never what it is.
 
@@ -35,3 +35,6 @@ Some show the town after 1989, not as it stood then, and belong to the later yea
 | `35-domkirken-west-front-under-repair.webp` | The cathedral's west front in summer: rubble walling in grey and green stone, a pointed doorway, a rose in the gable, big limes beside it, barriers and boarding of a repair on the steps | Repair as something seen in the street: fences, boarding and new stone beside old. Limes as old as the town's centre |
 | `36-st-petri-kirke-red-copper-spire.png` | St. Petri church: a red church with a tall green copper spire, round-arched windows and a clock, in a square with people in their best clothes | A public building in a strong colour. Copper on a spire as a mark seen across the town |
 | `37-domkirken-south-side-winter.png` | The cathedral's long south side in winter: rubble walls, a porch, slate roofs, bare trees and a setts square, building fences at the right | The cathedral at street level and in winter light. The square's setts. Works in the street as part of the town |
+| `38-torget-steps-market-cathedral-1960s.webp` | Torget from above in the 1960s: the cathedral's west front among big trees, a new glass bank, wide stepped terraces down to the market square, flower and vegetable stalls, Kielland's statue, a bus and the old wooden town on the hill behind | The square as the town's room: the old church, the new bank and the market in one view. The 1960s as a layer the town added |
+| `39-torget-market-vagen-supply-ships-1970s.webp` | Torget's market in colour, about the 1970s: stalls under striped umbrellas, Kielland's statue, Vågen behind with supply ships and red cranes, a red-roofed shop house with a painted sign | The town of the oil years, close to 1989: the harbour full of supply ships, the market still there. Colour of the period |
+| `40-modernist-block-concrete-sunscreen-grid.png` | A long modernist block with a deep concrete sunscreen grid over every floor, a glazed ground floor, in black and white (place not given) | The deep repeated grid in concrete, as on the swimming hall (22): one big shape, shadow in every cell |
