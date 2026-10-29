@@ -37,7 +37,7 @@ namespace Overstory.EditorTools
         [Serializable] class Lap { public float reach, step; }
         [Serializable] class Plot { public float w, d; }
         [Serializable] class Page { public int size; public float pxPerM; }
-        [Serializable] class House { public int house; public float[] size; public Lap lap; public float planeShadow, seenWithinM; public Plot plot; public Page page; }
+        [Serializable] class House { public int house; public float[] size; public Lap lap; public float planeShadow, seenWithinM, cityFromM; public Plot plot; public Page page; }
 
         struct View { public string name, level; public Vector3 pos, target; public float fov; public bool floor; }
 
@@ -50,6 +50,11 @@ namespace Overstory.EditorTools
             new View { name = "high", level = "street", pos = new Vector3(-18.0f, -34.0f, 30.0f), target = new Vector3(w / 2, d / 2, 2.0f), fov = 30 },
             new View { name = "back", level = "near", pos = new Vector3(w + 7.0f, d + 11.0f, 2.2f), target = new Vector3(w / 2, d, 2.6f), fov = 44 },
             new View { name = "gable", level = "near", pos = new Vector3(-9.0f, d / 2 - 3.0f, 1.8f), target = new Vector3(0, d / 2, 3.0f), fov = 50 },
+            // where the city level takes over (house.json cityFromM) and beyond: down the street at 60 and 120 m, and from
+            // a roof 80 m off
+            new View { name = "far", level = "city", pos = new Vector3(w / 2 - 22.0f, -56.0f, 1.6f), target = new Vector3(w / 2, 1.0f, 3.5f), fov = 38 },
+            new View { name = "farther", level = "city", pos = new Vector3(w / 2 - 44.0f, -112.0f, 1.6f), target = new Vector3(w / 2, 1.0f, 3.5f), fov = 38 },
+            new View { name = "farhigh", level = "city", pos = new Vector3(-40.0f, -64.0f, 26.0f), target = new Vector3(w / 2, d / 2, 3.0f), fov = 38 },
             // the floor's own cameras (LT1Finish at p3) on the same corner of the same house, in its own lights
             new View { name = "p3eye", level = "near", pos = new Vector3(-1.0f, -2.9f, 1.6f), target = new Vector3(0.95f, 0.25f, 1.75f), fov = 42, floor = true },
             new View { name = "p3street", level = "street", pos = new Vector3(-8.5f, -18.0f, 1.6f), target = new Vector3(0.9f, 0.3f, 1.9f), fov = 42, floor = true },
@@ -78,6 +83,8 @@ namespace Overstory.EditorTools
             // the low sun for one house alone: turned to strike its front this many degrees off square, so the relief
             // shows (the street's own light is the light step's); the floor's cameras keep the floor's sun
             float sunOff = float.Parse(Arg("-streetSunOff") ?? "45", System.Globalization.CultureInfo.InvariantCulture);
+            // every view at one level, for an A/B of two levels at the same view
+            string levelAll = Arg("-streetLevel");
             string gen = $"{Dir}/Generated/{id}";
             string root = Path.GetFullPath(Path.Combine(Application.dataPath, "..", ".."));
             string outDir = Path.Combine(root, "cache", "street", "renders", round);
@@ -101,7 +108,7 @@ namespace Overstory.EditorTools
 
             var root_ = new GameObject($"House {id}");
             var levels = new Dictionary<string, GameObject>();
-            foreach (var level in new[] { "near", "street" })
+            foreach (var level in Levels)
             {
                 var prefab = AssetDatabase.LoadAssetAtPath<GameObject>($"{gen}/house-{level}.fbx");
                 var go = (GameObject)PrefabUtility.InstantiatePrefab(prefab);
@@ -161,8 +168,11 @@ namespace Overstory.EditorTools
                 foreach (var f in rd.rendererFeatures)
                     f.SetActive(f.name.Contains("AmbientOcclusion"));
                 foreach (var light in Lights.Where(l => lights.Contains(l.name)))
-                foreach (var view in Views(house.size[0], house.size[1]).Where(v => only.Contains(v.name)))
+                foreach (var view0 in Views(house.size[0], house.size[1]).Where(v => only.Contains(v.name)))
                 {
+                    var view = view0;
+                    if (levelAll != null)
+                        view.level = levelAll;
                     foreach (var kv in levels)
                         kv.Value.SetActive(kv.Key == view.level);
                     cam.transform.SetPositionAndRotation(ToUnity(view.pos), Quaternion.LookRotation(ToUnity(view.target - view.pos), Vector3.up));
@@ -181,7 +191,7 @@ namespace Overstory.EditorTools
                         cam.backgroundColor = Lin(Back.linear.r, col?.background);
                         gm.SetColor("_BaseColor", Lin(gy, col?.floor));
                         adjust.postExposure.Override(own != null ? own.exposure : light.exposure);
-                        Assign(levels[view.level], mats, way, view.level);
+                        Assign(levels[view.level], mats, way, MatLevel(view.level));
                         string file = Path.Combine(outDir, $"{id}-{view.name}-{light.name}-{way}.png");
                         Capture(cam, file);
                         Debug.Log($"[LT1Street] {file}");
@@ -202,7 +212,8 @@ namespace Overstory.EditorTools
 
         /// <summary>
         /// The cost of a street of such houses, offscreen: `n` copies of the house side by side on their plots, each
-        /// drawn at the level its distance from the camera takes (the near level within house.json seenWithinM), in
+        /// drawn at the level its distance from the camera takes (the near level within house.json seenWithinM, the city
+        /// level from cityFromM), in
         /// way Pc and the low sun, drawn into a 2560 by 1440 target with MSAA 4x back to back, six batches of six after
         /// one that primes (as LT1LightTime). The copies share one page, so texture memory is counted per house, not
         /// measured. The editor's own work is in the numbers: an offscreen frame, not the player's.
@@ -213,6 +224,7 @@ namespace Overstory.EditorTools
             const int Batches = 6, PerBatch = 6;
             float plot = house.plot != null && house.plot.w > 0 ? house.plot.w / 1000f : house.size[0] + 1f;
             float within = house.seenWithinM > 0 ? house.seenWithinM : 10f;
+            float cityFrom = house.cityFromM > 0 ? house.cityFromM : float.MaxValue;
             var houses = new List<GameObject> { house0 };
             for (int k = 1; k < n; k++)
             {
@@ -268,21 +280,23 @@ namespace Overstory.EditorTools
                     urp.shadowCascadeCount = 1;
                     urp.mainLightShadowmapResolution = 4096;
                     urp.shadowDistance = name == "along" ? 80f : (target - pos).magnitude + 8f;
-                    int nearN = 0, tris = 0, subs = 0;
+                    int nearN = 0, cityN = 0, tris = 0, subs = 0;
                     var planes = GeometryUtility.CalculateFrustumPlanes(cam);
                     foreach (var h in houses)
                     {
                         var lv = h.GetComponentsInChildren<Transform>(true).Where(t => t.parent == h.transform).ToList();
                         var centre = h.transform.position + ToUnity(new Vector3(w / 2, d / 2, 3f));
-                        bool isNear = Vector3.Distance(cam.transform.position, centre) < within;
-                        nearN += isNear ? 1 : 0;
+                        float dc = Vector3.Distance(cam.transform.position, centre);
+                        string at = dc < within ? "near" : dc >= cityFrom ? "city" : "street";
+                        nearN += at == "near" ? 1 : 0;
+                        cityN += at == "city" ? 1 : 0;
                         foreach (var t in lv)
                         {
-                            bool on = t.name.Contains("near") == isNear;
+                            bool on = t.name.EndsWith("-" + at);
                             t.gameObject.SetActive(on);
                             if (!on)
                                 continue;
-                            Assign(t.gameObject, mats, "Pc", isNear ? "near" : "street");
+                            Assign(t.gameObject, mats, "Pc", MatLevel(at));
                             foreach (var r in t.GetComponentsInChildren<MeshRenderer>())
                                 if (GeometryUtility.TestPlanesAABB(planes, r.bounds))
                                 {
@@ -326,8 +340,8 @@ namespace Overstory.EditorTools
                     cam.targetTexture = null;
                     ms.Sort();
                     double median = ms[ms.Count / 2];
-                    rows.Add($"| {name} | {n} | {nearN} | {tris:N0} | {subs} | {median:F1} | {string.Join(" ", ms.Select(x => x.ToString("F1")))} |");
-                    Debug.Log($"[LT1Street] timing {name}: {median:F2} ms, {nearN} near of {n}, {tris} triangles and {subs} draws in view");
+                    rows.Add($"| {name} | {n} | {nearN} | {cityN} | {tris:N0} | {subs} | {median:F1} | {string.Join(" ", ms.Select(x => x.ToString("F1")))} |");
+                    Debug.Log($"[LT1Street] timing {name}: {median:F2} ms, {nearN} near and {cityN} city of {n}, {tris} triangles and {subs} draws in view");
                     Capture(cam, Path.Combine(outDir, $"timing-{name}.png"));
                 }
             }
@@ -339,7 +353,7 @@ namespace Overstory.EditorTools
                 UnityEngine.Object.DestroyImmediate(rt);
                 UnityEngine.Object.DestroyImmediate(probe);
             }
-            // what one house holds: its page's textures and its two levels' meshes, as the runtime counts them
+            // what one house holds: its page's textures and its levels' meshes, as the runtime counts them
             long texBytes = 0, meshBytes = 0;
             var texLines = new List<string>();
             foreach (var t in mats.Values.SelectMany(m => m.GetTexturePropertyNames().Select(m.GetTexture)).Where(t => t != null).Distinct())
@@ -353,9 +367,9 @@ namespace Overstory.EditorTools
             var md = new System.Text.StringBuilder();
             md.AppendLine($"Offscreen in the editor, batch mode (LT1Street.Timing; {SystemInfo.graphicsDeviceName}, 2560x1440, MSAA 4x, way Pc, low sun, " +
                           $"one 4096 shadow cascade, screen-space occlusion; median of {Batches} batches of {PerBatch}). A row of {n} copies of house {house.house} " +
-                          $"on {plot:F1} m plots, near level within {within:F0} m. Not the player's frame.").AppendLine();
-            md.AppendLine("| View | Houses | Near | Triangles in view | Draws in view | ms a frame | Batches |");
-            md.AppendLine("| --- | --- | --- | --- | --- | --- | --- |");
+                          $"on {plot:F1} m plots, near level within {within:F0} m, city level from {(cityFrom < float.MaxValue ? cityFrom.ToString("F0") + " m" : "nowhere")}. Not the player's frame.").AppendLine();
+            md.AppendLine("| View | Houses | Near | City | Triangles in view | Draws in view | ms a frame | Batches |");
+            md.AppendLine("| --- | --- | --- | --- | --- | --- | --- | --- |");
             foreach (var r in rows)
                 md.AppendLine(r);
             md.AppendLine().AppendLine($"Textures streamed (GPU, counted, not measured: the mip each house's page would hold at its nearest point " +
@@ -366,7 +380,7 @@ namespace Overstory.EditorTools
                 md.AppendLine(r);
             md.AppendLine().AppendLine($"One house's page on the GPU at full: {pageFull / 1048576.0:F1} MB, at mip {maxRed} and down {pageTex.Sum(t => From(t, maxRed)) / 1048576.0:F2} MB; " +
                                        $"shared strokes {shared / 1048576.0:F1} MB.");
-            md.AppendLine().AppendLine($"One house, as the editor counts it (a CPU copy beside the GPU's): textures {texBytes / 1048576.0:F1} MB ({string.Join("; ", texLines)}); meshes, both levels, {meshBytes / 1048576.0:F1} MB.");
+            md.AppendLine().AppendLine($"One house, as the editor counts it (a CPU copy beside the GPU's): textures {texBytes / 1048576.0:F1} MB ({string.Join("; ", texLines)}); meshes, every level, {meshBytes / 1048576.0:F1} MB.");
             File.WriteAllText(Path.Combine(outDir, "timing.md"), md.ToString());
             Debug.Log("[LT1Street] timing\n" + md);
         }
@@ -410,7 +424,7 @@ namespace Overstory.EditorTools
                 ti.npotScale = TextureImporterNPOTScale.None;
                 ti.SaveAndReimport();
             }
-            foreach (var level in new[] { "near", "street" })
+            foreach (var level in Levels)
             {
                 var mi = (ModelImporter)AssetImporter.GetAtPath($"{gen}/house-{level}.fbx");
                 mi.materialImportMode = ModelImporterMaterialImportMode.None;
@@ -513,6 +527,11 @@ namespace Overstory.EditorTools
             }
             return outp;
         }
+
+        static readonly string[] Levels = { "near", "street", "city" };
+
+        // the city level draws with the street level's materials: its faces are the street level's, on the same charts
+        static string MatLevel(string level) => level == "city" ? "street" : level;
 
         static Vector4 Tint(float[] t) => t == null || t.Length != 3 ? Vector4.one : new Vector4(t[0], t[1], t[2], 1);
 

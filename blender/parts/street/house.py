@@ -7,7 +7,7 @@ materials and the street's levels (street.json).
     Blender -b --factory-startup -P blender/parts/street/house.py -- --house 107 --out cache/street/gen/107
         [--fixture fixtures/lt1-street.json] [--year 1989]
 
-Writes house-near.fbx and house-street.fbx (one object per material), house.blend (both levels and the bake level's
+Writes house-near.fbx, house-street.fbx and house-city.fbx (one object per material), house.blend (the levels and the bake level's
 tiles, for the bakes) and house.json (triangles per level and object, the page's charts, the walls, courses, openings
 and features the paint reads). Fails, writing nothing, when a level is over its budget's top.
 
@@ -35,7 +35,7 @@ ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..")
 sys.path.insert(0, os.path.join(ROOT, "blender", "resolver"))
 import hashing as HS  # noqa: E402
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from geom import MM, Charts, Face, Piece, data_profile, extrude, rect_profile, to_object, tris_of  # noqa: E402
+from geom import MM, Charts, Face, Piece, data_profile, extrude, newell, rect_profile, to_object, tris_of  # noqa: E402
 
 Z = Vector((0.0, 0.0, 1.0))
 OUT = Vector((0.0, -1.0, 0.0))
@@ -681,6 +681,10 @@ class House:
         for lv in ("near", "street"):
             for q in quads:
                 pc.add(lv, Face(q, [cu(p) for p in q], key, [cu(p) for p in q]))
+        # from afar the reveal's sides too shallow to see: the frame where it stands behind a boarding (the sheets close
+        # the reveal), else flush with the casing's back, so no side opens a crack
+        q = quads[0] if o["boarded"] else [Vector((p.x, y_face, p.z)) for p in quads[0]]
+        pc.city = [Face(q, [cu(p) for p in quads[0]], key, [cu(p) for p in quads[0]])]
         self.rigid_lt(pc, o)
 
     def steps(self, tag, wall, x0, x1, z_top):
@@ -882,6 +886,7 @@ class House:
             pc = self.make(f"plinth/w{wall.i}/mortar", "stone", ("near", "street"), wall)
             yb = y_face + pl["jointBackMm"] * MM
             key = self.charts(f"plinth/w{wall.i}", wall.L + 0.6, zt + 0.05)
+            self.city_plinth.append((wall, y_face, e, zt, key))
             for lv in ("near", "street"):
                 pts = [Vector((0.0, yb, 0.0)), Vector((wall.L, yb, 0.0)), Vector((wall.L, yb, zt)), Vector((0.0, yb, zt))]
                 cuv = [(p.x + 0.3, p.z) for p in pts]
@@ -1164,6 +1169,7 @@ class House:
                     plane.append(("near", "roof", False))
                     plane.append(("bake", "tiles", True))
                 plane.append(("street", "tiles" if ci == 0 else "roof", ci == 0))
+                self.city_roof.append((wall, ci, base, x0, x1, roll, thick, lift, length, up, nrm, key))
                 for lv, mat, waves in plane:
                     if mat == "target":
                         pc = self.make(f"roof/w{wall.i}/c{ci:02d}/target", mat, (lv,), wall)
@@ -1484,6 +1490,7 @@ class House:
     # ---- the whole
     def build(self):
         W = self.W
+        self.city_roof, self.city_plinth = [], []
         self.plan_openings()
         self.lean_to_plan()
         for o in self.openings:
@@ -1510,6 +1517,43 @@ class House:
         self.roof()
         self.lean_to_build()
 
+    def city(self):
+        """The city level, after the rest so every other piece keeps its index: what the street level draws that a
+        house seen from afar still shows. Each street piece keeps its faces but those whose group the level drops
+        (street.json levels.city) and that are narrower than its width (the sides and tops a few centimetres
+        across) or that only the ground could see (undersides, backs), each run of segments along a straight sweep
+        merged to one face, and none turned to the wall it stands on; each roof course one plane from verge to verge
+        with its foot's step, each wall's plinth one face, a piece's own city faces where it has them (an opening's
+        frame flush). Where a merged face's edge meets another's corner, the
+        corner is welded into the edge, so the frame's bend opens no crack. Every face on its street face's chart, so the page and its bake are the street level's."""
+        C = self.S["levels"]["city"]
+        drop, narrow, never = set(C["dropGroups"]), C["dropNarrowerM"], set(C["neverGroups"])
+        own = {"roof", "plinth"}
+        for pc in list(self.pieces):
+            if "street" not in pc.levels or pc.kind in own:
+                continue
+            fs = getattr(pc, "city", None) or [f for f in merge_runs(pc.faces["street"]) if group_of(f.chart) not in never
+                  and (group_of(f.chart) not in drop or width_of(f) >= narrow)
+                  and not (pc.wall >= 0 and newell(f.p).normalized().y > C["dropFacingWall"])]
+            if fs:
+                pc.levels = tuple(pc.levels) + ("city",)
+                pc.faces["city"] = weld(fs)
+        for (wall, ci, base, x0, x1, roll, thick, lift, length, up, nrm, key) in self.city_roof:
+            pc = self.make(f"roof/w{wall.i}/c{ci:02d}/city", "roof", ("city",), wall)
+            foot = base + nrm * (lift * 0.35 + roll)
+            head = base + up * length + nrm * (roll - lift * 0.15)
+            pts = [foot + Vector((x0, 0, 0)), foot + Vector((x1, 0, 0)), head + Vector((x1, 0, 0)), head + Vector((x0, 0, 0))]
+            # and its foot's step down to the course below, which draws the course's line
+            dn = -nrm * (thick + roll)
+            for q in (pts, [pts[0] + dn, pts[1] + dn, pts[1], pts[0]]):
+                cuv = [(p.x - x0 + 0.05, max(0.0, (p - base).dot(up)) + 0.03) for p in q]
+                pc.add("city", Face(q, cuv, key, cuv))
+        for (wall, y_face, e, zt, key) in self.city_plinth:
+            pc = self.make(f"plinth/w{wall.i}/city", "stone", ("city",), wall)
+            pts = [Vector((-e, y_face, 0.0)), Vector((wall.L + e, y_face, 0.0)), Vector((wall.L + e, y_face, zt)), Vector((-e, y_face, zt))]
+            cuv = [(p.x + 0.3, p.z) for p in pts]
+            pc.add("city", Face(pts, cuv, key, cuv))
+
 
 def square(a, c):
     """A square section `a` across centred on the sweep, its four arrises chamfered by `c`: one group, 'face'."""
@@ -1532,6 +1576,85 @@ def square(a, c):
         return pts
     pts = [(-h, -h, "face", False), (h, -h, "face", False), (h, h, "face", False), (-h, h, "face", False), (-h, -h, "face", False)]
     return pts
+
+
+def group_of(chart):
+    """A face's group from its chart key ('h107/open0/casing/l#front' -> 'front', a cap's 'cap'), '-' for a planar chart."""
+    return chart.split("#")[1].rstrip("0123456789") if "#" in chart else "-"
+
+
+def width_of(f):
+    """A face's narrower extent: a quad's lesser mean of its two pairs of opposite sides, any other face's least side."""
+    e = [(f.p[(k + 1) % len(f.p)] - f.p[k]).length for k in range(len(f.p))]
+    return min((e[0] + e[2]) / 2, (e[1] + e[3]) / 2) if len(e) == 4 else min(e)
+
+
+def weld(faces):
+    """Every corner of a piece's faces that lies inside another face's edge put into that edge (its UVs between the
+    edge's ends), so a bend moves both alike: no T-junction to crack."""
+    pts = [(p, f.uv0[k], f.cuv[k]) for f in faces for k, p in enumerate(f.p)]
+    out = []
+    for f in faces:
+        P, U0, CU = [], [], []
+        n = len(f.p)
+        for k in range(n):
+            a, b = f.p[k], f.p[(k + 1) % n]
+            P.append(a), U0.append(f.uv0[k]), CU.append(f.cuv[k])
+            ab = b - a
+            L2 = ab.length_squared
+            if L2 < 1e-12:
+                continue
+            on = {}
+            for (q, _, _) in pts:
+                t = (q - a).dot(ab) / L2
+                if 1e-4 < t < 1 - 1e-4 and (a + ab * t - q).length < 1e-5:
+                    on[round(t, 6)] = t
+            for t in sorted(on.values()):
+                lerp = lambda x, y: (x[0] + (y[0] - x[0]) * t, x[1] + (y[1] - x[1]) * t)  # noqa: E731
+                P.append(a + ab * t), U0.append(lerp(f.uv0[k], f.uv0[(k + 1) % n])), CU.append(lerp(f.cuv[k], f.cuv[(k + 1) % n]))
+        out.append(Face(P, U0, f.chart, CU, f.arris, f.under) if len(P) > n else f)
+    return out
+
+
+def merge_runs(faces):
+    """Quads on one chart that share a whole edge, their sides running on in line, as one quad, until none do: a
+    sweep's segments, a wall's grid of planes. In the piece's own frame, before any bend, so a run is straight."""
+    def line(a, b, c):
+        u, v = b - a, c - b
+        return u.length > 1e-9 and v.length > 1e-9 and u.normalized().dot(v.normalized()) > 0.9999
+
+    def join(g, f):
+        if len(g.p) != 4 or len(f.p) != 4 or f.chart != g.chart or f.arris != g.arris or f.under != g.under:
+            return None
+        for i in range(4):
+            for j in range(4):
+                if (f.p[j] - g.p[(i + 1) % 4]).length < 1e-6 and (f.p[(j + 1) % 4] - g.p[i]).length < 1e-6:
+                    ga = [(i + 1 + k) % 4 for k in range(4)]  # g from the shared edge's end round to its start
+                    fb = [(j + 2) % 4, (j + 3) % 4]
+                    P = [g.p[k] for k in ga] + [f.p[k] for k in fb]
+                    if not (line(P[5], P[0], P[1]) and line(P[2], P[3], P[4])):
+                        return None
+                    keep = [1, 2, 4, 5]
+                    pick = lambda gl, fl: ([gl[k] for k in ga] + [fl[k] for k in fb])  # noqa: E731
+                    return Face([P[k] for k in keep], [pick(g.uv0, f.uv0)[k] for k in keep], f.chart,
+                                [pick(g.cuv, f.cuv)[k] for k in keep], f.arris, f.under)
+        return None
+    out = list(faces)
+    merged = True
+    while merged:
+        merged = False
+        for a in range(len(out)):
+            for b in range(len(out)):
+                if a != b:
+                    m = join(out[a], out[b])
+                    if m is not None:
+                        out[a] = m
+                        del out[b]
+                        merged = True
+                        break
+            if merged:
+                break
+    return out
 
 
 def ring_prof(prof):
@@ -1603,6 +1726,7 @@ def main():
     paints = load(S["paints"])
     house = House(S, W, F, mats, paints)
     house.build()
+    house.city()
     for i, pc in enumerate(house.pieces):
         pc.index = i
     # densities by part
@@ -1653,7 +1777,7 @@ def main():
         return [rgb + [min(1.0, max(0.0, z_next - p.z) / lap_reach)] for p in loc]
 
     counts, objs = {}, {}
-    for lv in ("near", "street", "bake"):
+    for lv in ("near", "street", "city", "bake"):
         by_mat = {}
         for pc in house.pieces:
             if lv not in pc.levels:
@@ -1665,14 +1789,14 @@ def main():
             objs[(lv, mat)] = o
             counts.setdefault(lv, {})[mat] = tris_of(o)
     total = {lv: sum(c.values()) for lv, c in counts.items()}
-    budgets = {lv: S["levels"][lv]["budgetTris"] for lv in ("near", "street")}
+    budgets = {lv: S["levels"][lv]["budgetTris"] for lv in ("near", "street", "city")}
     over = [lv for lv in budgets if total.get(lv, 0) > budgets[lv][1]]
     print(f"[house] {hid}: triangles {json.dumps(counts)} totals {total}; page {px} px/m, filled {fill:.2f}; "
           f"versions {json.dumps(house.version_of)}")
     if over:
         raise SystemExit(f"[house] over budget: {', '.join(f'{lv} {total[lv]} > {budgets[lv][1]}' for lv in over)}")
 
-    for lv in ("near", "street"):
+    for lv in ("near", "street", "city"):
         for o in bpy.context.scene.objects:
             o.select_set(o.name.startswith(lv + "_"))
         bpy.ops.export_scene.fbx(filepath=os.path.join(out, f"house-{lv}.fbx"), use_selection=True,
@@ -1696,6 +1820,7 @@ def main():
         "versions": house.version_of, "features": house.features,
         "lap": {"reach": S["lapReach"], "step": W["cladding"]["stepMm"] * MM},
         "planeShadow": S["planeShadow"], "seenWithinM": S["levels"]["near"]["seenWithinM"],
+        "cityFromM": S["levels"]["city"]["seenFromM"],
         "pieces": [{"i": pc.index, "id": pc.id, "mat": pc.mat, "kind": pc.kind, "mode": pc.mode, "wall": pc.wall, "group": pc.group}
                    for pc in house.pieces],
         "uv": {"uv0": "metres along the grain", "page": "UV1: the page"},

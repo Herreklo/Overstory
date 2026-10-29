@@ -10,6 +10,7 @@
   "levels": {
     "near": { "level": 0, "budgetTris": [20000, 25000], "seenWithinM": 10, "tileCourses": 3, "pantileSamples": 8 },
     "street": { "level": 1, "budgetTris": [6000, 8000], "seenFromM": 20, "laps": "page normal", "pantileSamples": 4 },
+    "city": { "level": 2, "budgetTris": [500, 800], "seenFromM": 60, "dropGroups": ["top", "left", "right", "cap"], "dropNarrowerM": 0.13, "neverGroups": ["bottom", "back", "inside"], "dropFacingWall": 0.45, "describes": "The street level's pieces, each run of segments one face, without their faces in dropGroups narrower than dropNarrowerM, in neverGroups, or turned to their wall (a normal's share into it over dropFacingWall); a merged face's edge welded to the corners on it; each roof course one plane and its foot's step, each plinth one face; the street level's charts." },
     "bake": { "describes": "Never drawn: the roof's tiles above the near level's own, the source of the planes' baked tile relief and occlusion." }
   },
   "page": {

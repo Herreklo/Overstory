@@ -53,3 +53,28 @@ Cost of one house (`s07-timing.md`, `STREET_TIMING=50 render.sh 107 s07t-c stree
 
 - Holds: the ply is L* 43, with blotches 11 darker (to 32). In `s09-ply-ab.jpg` the columns are s03, the ply at 50 and at 43, at the street stop in colour under low sun (top) and overcast (bottom). At 43 each opening reads as a mid-grey board framed by the white casings in both lights, with its blotches and battens, and not as dark glass. In clay overcast the sheets are 49, with blotches 38, against a wall of 75. In colour under low sun they are 66 against 88.
 - Not done: mip streaming in the project's quality settings and full mips in batch captures. Changing the shared Unity settings was refused by the session's permission check, so the page is marked streamable but streaming is still off.
+
+## c03: streaming on; the city level (29 October)
+
+- Holds: mip streaming is on at the PC quality level, which Øystein approved. The budget is 2048 MB with at most 4 mips dropped. A batch capture now forces full mips (`unity/Assets/Code/Editor/BatchFullMips.cs` sets `Texture.streamingTextureForceLoadAll` in batch mode). Before and after, with streaming off and on, p3 (eye, street, raised, high) and 107 (eye, street, raised, high, back, gable) are pixel-identical in both lights and both ways: `stilldiff.py` reads a max of 0.0 L* on every still. Nothing in the current scenes drops a mip.
+- Holds: the city level (`house.py` `city()`, `street.json` `levels.city`). It has no geometry of its own:
+  - every street piece keeps its faces, but drops the sides and tops narrower than 13 cm, every underside, back and inner face, and every face turned toward its wall;
+  - each run of segments is merged into one face, and corners are welded into the merged edges so the frame's bend opens no crack;
+  - each roof course is one plane with its foot's step, which draws the course lines;
+  - each plinth is one face;
+  - a boarded opening's frame stays at its depth behind the sheets; an unboarded one comes flush with the casing.
+
+  Every face sits on its street face's chart, so the page, its bake and its paint are unchanged and nothing new is baked. House 107 is 729 triangles (budget 500–800), and the level is drawn from 60 m. In `c03-city.jpg`, street level and city level side by side:
+  - top: 60 m in colour under low sun, and the same in clay overcast;
+  - bottom: 120 m in colour under low sun, and 80 m from a roof in clay overcast.
+
+  The boarding, casings, wear, roof course lines and lichen all read the same. Only the eave course's rolled tile edge goes, under a pixel there.
+- Learned: the row of 50 costs the same time with the city level as without it. Looking down the row, 42 houses are city and triangles in view drop from 312k to 80.5k, but the frame is 10.4 ms against 10.3. The time isn't in triangles: it is in about 550 draws (11 materials a house), the shading and the shadow pass. The next lever is draws (one material a far house), not geometry.
+
+Cost of one house (`c03-timing.md`, `STREET_TIMING=50 render.sh 107 c03t street P overcast`):
+- Triangles: near 24,474 (budget 25k), street 6,251 (8k), city 729 (800).
+- Draws and materials: 11 a level. The city level draws with the street level's materials.
+- Textures on the GPU in BC7: 21.3 MB a house at full, 0.08 MB at mip 4 and down; one 1.3 MB stroke texture shared. Meshes, all three levels: 5.1 MB, as the editor counts them.
+- A street of 50: 1.07 GB all at full; streamed (counted, at most 4 mips dropped) 80–97 MB, with 3–4 houses at full.
+- A kilometre, both sides at 7 m plots (286 houses): 6.1 GB at full. Streamed, about 0.1 GB of far houses at mip 4 (0.08 MB each) plus the near ones.
+- Frame time, offscreen in the editor, batch mode (Apple M4, 2560×1440, MSAA 4x, one 4096 cascade, SSAO; not the player's frame): street stop 3.7 ms, 12 m 4.2 ms, down the row of 50 10.4 ms.

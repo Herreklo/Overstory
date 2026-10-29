@@ -58,7 +58,7 @@ def main():
         lay["page"].active_render = True
     # only the near level and the bake level's tiles cast; the near roof's planes stand in front of their tiles
     for n, o in objs.items():
-        o.hide_render = n.startswith("street_")
+        o.hide_render = n.startswith(("street_", "city_"))
     for p in (plane, target):
         # a target, never a caster: rays pass through it to the tiles under it
         if p is None:
