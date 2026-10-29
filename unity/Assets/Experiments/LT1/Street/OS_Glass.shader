@@ -28,6 +28,8 @@ Shader "Overstory/Glass"
         _Kind3 ("Glass kind 3", Vector) = (0, 1, 1, 3)
         _Mark ("From afar (glass.json fromAfar): x the sash's sightline (px) under which the mark shows, y the fade either side (px), z the cross's width (px)", Vector) = (4, 0.6, 1.5, 0)
         _Flash ("The sky's flash (glass.json flash): x its band's most depth (a share of the opening's height, 0 the whole pane's sky), y the rise over the skyline (sin) at which it is reached, z its lower edge's softness, w its cap (a share of the light on the face)", Vector) = (0, 0.08, 0.04, 0.45)
+        _Board ("The window board (house.json glass.board, from the window's making): x its top over the opening's foot (m), y its nose behind the glass (m, 0 none), z the nose's radius (m)", Vector) = (0, 0, 0, 0)
+        _BoardPaint ("The window board's paint: rgb (linear)", Vector) = (0.75, 0.73, 0.68, 0)
         [HideInInspector] _SrcBlend ("", Float) = 1
         [HideInInspector] _DstBlend ("", Float) = 0
         [HideInInspector] _ZWrite ("", Float) = 1
@@ -42,7 +44,7 @@ Shader "Overstory/Glass"
         float4 _RoomWall, _RoomCeiling, _RoomFloor, _RoomShape, _RoomFurniture, _RoomFurniture2;
         float4 _Curtain, _CurtainB, _GlassDay, _Opposite;
         float4 _Kind0, _Kind1, _Kind2, _Kind3;
-        float4 _Mark, _Flash;
+        float4 _Mark, _Flash, _Board, _BoardPaint;
     CBUFFER_END
     ENDHLSL
 
@@ -155,7 +157,8 @@ Shader "Overstory/Glass"
             // against the light on the pane's face: a back wall sees the far shore and the water, the floor just inside
             // the sky), and the room's own bounce, as its glass lets in, its corners less again; all of it only through the glass, the frame,
             // the post and the bars taking the rest of the opening (_GlassDay.z); through the glass in and out. Returned as the share of the light on the pane's face that comes back out through the
-            // glass. Where the furniture stands is the window's seed's, claiming nothing.
+            // glass. Where the furniture stands is the window's seed's, claiming nothing. The window board of the window's
+            // making (_Board) lies at the glass's foot, lit as the room is.
             half3 RoomDay(float3 d, float3 t, float3 n, float2 uv, float hw, float hh, float k, half3 shN)
             {
                 float3 rd = float3(dot(d, t), d.y, max(dot(d, -n), 0.02));
@@ -180,6 +183,31 @@ Shader "Overstory/Glass"
                 float3 wo = float3(-h.x, 0.5 * hh - h.y, -h.z);
                 half3 view = Reflected(normalize(t * wo.x + float3(0.0, wo.y, 0.0) - n * wo.z)) / max(shN, (half3)1e-3);
                 half3 room = albedo * ao * (half)_GlassDay.x * (half)_GlassDay.z * ((half)_GlassDay.x * seen * view + (half)_GlassDay.y * (half)(2.0 * hw * hh));
+                // the window board (_Board): level with the frame's clear opening, from the glass to its nose, so seen only
+                // from above it; lit as the room is, by the window over it (the window from the board's top up) and what
+                // it sees through it, so lightest at the glass and less as the window fills less of its sky; its nose
+                // rounding over toward the room, turning from the window. Under the board's top only the mark from afar
+                // looks (the true glass begins above it), where the opening's foot is the frame and the sash's rail:
+                // painted wood at the glass, taken as the board's light there where the board itself shows over at least
+                // the foot's height (from 12 m and higher), so the foot does not read as a dark gap under it; where the
+                // board shows less (a low window seen from the street) the mark's foot is left as it was
+                float zb = 1e5;
+                half bon = 0.0h;
+                if (_Board.y > 0.0 && rd.y < 0.0)
+                {
+                    float3 hb = ro.y > _Board.x ? ro + rd * ((_Board.x - ro.y) / rd.y) : float3(ro.x, _Board.x, 0.0);
+                    hb.z = max(hb.z, 0.002);
+                    bon = ro.y > _Board.x ? 1.0h : (half)smoothstep(0.5 * _Board.x, _Board.x, _Board.y * -rd.y / rd.z);
+                    if (hb.z < _Board.y && abs(hb.x) < hw && bon > 0.0h)
+                    {
+                        zb = hb.z;
+                        half bseen = (half)WindowSeen(float3(hb.x, 0.0, hb.z), float3(0.0, 1.0, 0.0), hw, hh - _Board.x);
+                        float3 wb = float3(-hb.x, 0.5 * hh - hb.y, -hb.z);
+                        half3 bview = Reflected(normalize(t * wb.x + float3(0.0, wb.y, 0.0) - n * wb.z)) / max(shN, (half3)1e-3);
+                        half turn = (half)(1.0 - saturate((hb.z - _Board.y + _Board.z) / max(_Board.z, 1e-4)));
+                        room = lerp(room, (half3)_BoardPaint.rgb * (half)_GlassDay.x * (half)_GlassDay.z * ((half)_GlassDay.x * bseen * bview * turn + (half)_GlassDay.y * (half)(2.0 * hw * hh)), bon);
+                    }
+                }
                 // the curtains: a sheer cloth gathered in folds, lit from the window
                 float3 pc = ro + rd * (_CurtainB.y / rd.z);
                 float edgeX = hw * (1.0 - _Curtain.a) + 0.004 * sin(pc.y * 3.1 + k * 40.0);
@@ -188,6 +216,8 @@ Shader "Overstory/Glass"
                 float top = smoothstep(hh * (1.0 - _CurtainB.z) - 0.02, hh * (1.0 - _CurtainB.z) + 0.02, pc.y);
                 float fold = sin(pc.x * _CurtainB.w * 6.2832 + 1.7 * sin(pc.x * _CurtainB.w * 2.1));
                 half cloth = (half)(saturate(max(side, top)) * _CurtainB.x * (0.8 + 0.2 * fold));
+                // the sheers hang down to the board, so where the eye meets the board first they are hidden
+                cloth = zb < _CurtainB.y ? cloth * (1.0h - bon) : cloth;
                 half lit = (half)(1.0 + 0.35 * fold * side);
                 // the cloth lit as the room is, by the window it faces from just behind the glass
                 half cseen = (half)WindowSeen(pc, float3(0.0, 0.0, -1.0), hw, hh);

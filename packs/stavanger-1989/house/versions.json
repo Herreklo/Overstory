@@ -334,7 +334,7 @@
         1870
       ],
       "weight": 1,
-      "describes": "Two side-hung casements, three panes each, either side of a post: the empire window (wooden-town-architecture.md; ref 07, 02). Outward-opening, its panes puttied from outside: a bar shows a thin ridge of wood between two slopes of putty. Its joinery as made (mm): frameMm the frame's face and depth, coverMm what the casing laps of its outer edge, lapMm what each sash laps of the frame's rebate and the post; sashMm and barMm the sightlines (stile and rail, bar), the putty or bead inside them; the frame shows frameMm - coverMm - lapMm, the post postMm - 2 lapMm. Checked by the glass's share across the opening against the reference's (house.json glassAcross).",
+      "describes": "Two side-hung casements, three panes each, either side of a post: the empire window (wooden-town-architecture.md; ref 07, 02). Outward-opening, its panes puttied from outside: a bar shows a thin ridge of wood between two slopes of putty. Its joinery as made (mm): frameMm the frame's face and depth, coverMm what the casing laps of its outer edge, lapMm what each sash laps of the frame's rebate and the post; sashMm and barMm the sightlines (stile and rail, bar), the putty or bead inside them; the frame shows frameMm - coverMm - lapMm, the post postMm - 2 lapMm. Checked by the glass's share across the opening against the reference's (house.json glassAcross). Its board (board): the inner window board, planed pine laid at the frame's inner foot, level with the frame's clear opening (frameMm - coverMm over the opening's foot), and running from the sash's back into the room reachMm past the frame's inner face: through the rest of a log wall (about 150 mm of log and a 20 mm panel, the old town's, wooden-town-architecture.md) to about 30 mm proud of the panel; a stud wall's board would be about 30 mm shorter (our estimate; no measured board was found). Its front edge rounded over noseMm. Painted as the window's inside, paints.json `paint` (unverified: the town's interior colours are not documented). What stands on it is a household's, so it is absent unless a fact puts it there.",
       "mullion": true,
       "sashes": [
         {
@@ -374,6 +374,11 @@
       "coverMm": 25,
       "lapMm": 22,
       "postMm": 58,
+      "board": {
+        "reachMm": 90,
+        "noseMm": 12,
+        "paint": "trim_white_linseed"
+      },
       "eras": [
         "classical"
       ]
@@ -385,7 +390,7 @@
         1900
       ],
       "weight": 1,
-      "describes": "Two casements, two panes each, either side of a post: the later classical window, its panes bigger as cylinder glass came in bigger sheets. Its joinery as made (mm): frameMm the frame's face and depth, coverMm what the casing laps of its outer edge, lapMm what each sash laps of the frame's rebate and the post; sashMm and barMm the sightlines (stile and rail, bar), the putty or bead inside them; the frame shows frameMm - coverMm - lapMm, the post postMm - 2 lapMm. Checked by the glass's share across the opening against the reference's (house.json glassAcross).",
+      "describes": "Two casements, two panes each, either side of a post: the later classical window, its panes bigger as cylinder glass came in bigger sheets. Its joinery as made (mm): frameMm the frame's face and depth, coverMm what the casing laps of its outer edge, lapMm what each sash laps of the frame's rebate and the post; sashMm and barMm the sightlines (stile and rail, bar), the putty or bead inside them; the frame shows frameMm - coverMm - lapMm, the post postMm - 2 lapMm. Checked by the glass's share across the opening against the reference's (house.json glassAcross). Its board (board): the inner window board, planed pine laid at the frame's inner foot, level with the frame's clear opening (frameMm - coverMm over the opening's foot), and running from the sash's back into the room reachMm past the frame's inner face: through the rest of a log wall (about 150 mm of log and a 20 mm panel, the old town's, wooden-town-architecture.md) to about 30 mm proud of the panel; a stud wall's board would be about 30 mm shorter (our estimate; no measured board was found). Its front edge rounded over noseMm. Painted as the window's inside, paints.json `paint` (unverified: the town's interior colours are not documented). What stands on it is a household's, so it is absent unless a fact puts it there.",
       "mullion": true,
       "sashes": [
         {
@@ -425,6 +430,11 @@
       "coverMm": 25,
       "lapMm": 22,
       "postMm": 58,
+      "board": {
+        "reachMm": 90,
+        "noseMm": 12,
+        "paint": "trim_white_linseed"
+      },
       "eras": [
         "classical"
       ]
@@ -436,7 +446,7 @@
         1920
       ],
       "weight": 1,
-      "describes": "The sveitser cross-post window (krysspost): a post and a transom, a top light each side over the transom, and under it two casements with a bar across each, six lights (wooden-town-architecture.md; ref 05). Factory joinery from the 1880s (Bjorheim from 1882), set into old openings when older houses were updated. Its joinery as made (mm): frameMm the frame's face and depth, coverMm what the casing laps of its outer edge, lapMm what each sash laps of the frame's rebate and the post; sashMm and barMm the sightlines (stile and rail, bar), the putty or bead inside them; the frame shows frameMm - coverMm - lapMm, the post postMm - 2 lapMm. Checked by the glass's share across the opening against the reference's (house.json glassAcross).",
+      "describes": "The sveitser cross-post window (krysspost): a post and a transom, a top light each side over the transom, and under it two casements with a bar across each, six lights (wooden-town-architecture.md; ref 05). Factory joinery from the 1880s (Bjorheim from 1882), set into old openings when older houses were updated. Its joinery as made (mm): frameMm the frame's face and depth, coverMm what the casing laps of its outer edge, lapMm what each sash laps of the frame's rebate and the post; sashMm and barMm the sightlines (stile and rail, bar), the putty or bead inside them; the frame shows frameMm - coverMm - lapMm, the post postMm - 2 lapMm. Checked by the glass's share across the opening against the reference's (house.json glassAcross). Its board (board): the inner window board, planed pine laid at the frame's inner foot, level with the frame's clear opening (frameMm - coverMm over the opening's foot), and running from the sash's back into the room reachMm past the frame's inner face: through the rest of a log wall (about 150 mm of log and a 20 mm panel, the old town's, wooden-town-architecture.md) to about 30 mm proud of the panel; a stud wall's board would be about 30 mm shorter (our estimate; no measured board was found). Its front edge rounded over noseMm. Painted as the window's inside, paints.json `paint` (unverified: the town's interior colours are not documented). What stands on it is a household's, so it is absent unless a fact puts it there.",
       "mullion": true,
       "transom": {
         "share": 0.3,
@@ -491,6 +501,11 @@
       "coverMm": 25,
       "lapMm": 24,
       "postMm": 56,
+      "board": {
+        "reachMm": 90,
+        "noseMm": 12,
+        "paint": "trim_white_linseed"
+      },
       "eras": [
         "classical",
         "chalet"
@@ -503,7 +518,7 @@
         1975
       ],
       "weight": 1,
-      "describes": "The 1960s window set into an old opening (house-changes.md; ref 10, 04): one plain casement, one big sealed double pane held by flat beads, no post and no bars; the opening kept, so the pane is as tall as the old window. Its joinery as made (mm): frameMm the frame's face and depth, coverMm what the casing laps of its outer edge, lapMm what each sash laps of the frame's rebate and the post; sashMm and barMm the sightlines (stile and rail, bar), the putty or bead inside them; the frame shows frameMm - coverMm - lapMm, the post postMm - 2 lapMm. Checked by the glass's share across the opening against the reference's (house.json glassAcross).",
+      "describes": "The 1960s window set into an old opening (house-changes.md; ref 10, 04): one plain casement, one big sealed double pane held by flat beads, no post and no bars; the opening kept, so the pane is as tall as the old window. Its joinery as made (mm): frameMm the frame's face and depth, coverMm what the casing laps of its outer edge, lapMm what each sash laps of the frame's rebate and the post; sashMm and barMm the sightlines (stile and rail, bar), the putty or bead inside them; the frame shows frameMm - coverMm - lapMm, the post postMm - 2 lapMm. Checked by the glass's share across the opening against the reference's (house.json glassAcross). Its board (board): the inner window board, planed pine laid at the frame's inner foot, level with the frame's clear opening (frameMm - coverMm over the opening's foot), and running from the sash's back into the room reachMm past the frame's inner face: through the rest of a log wall (about 150 mm of log and a 20 mm panel, the old town's, wooden-town-architecture.md) to about 30 mm proud of the panel; a stud wall's board would be about 30 mm shorter (our estimate; no measured board was found). Its front edge rounded over noseMm. Painted as the window's inside, paints.json `paint` (unverified: the town's interior colours are not documented). What stands on it is a household's, so it is absent unless a fact puts it there.",
       "mullion": false,
       "sashes": [
         {
@@ -536,7 +551,12 @@
       "bottomRail": 1.25,
       "coverMm": 25,
       "lapMm": 25,
-      "postMm": 0
+      "postMm": 0,
+      "board": {
+        "reachMm": 86,
+        "noseMm": 10,
+        "paint": "trim_white"
+      }
     }
   ],
   "door": [

@@ -38,7 +38,7 @@ namespace Overstory.EditorTools
         [Serializable] class Plot { public float x, w, d; }
         [Serializable] class Page { public int size; public float pxPerM; }
         [Serializable] class GlassKind { public string name, shape; public float tiltDeg; public float[] perM; }
-        [Serializable] class Glass { public float gloss, share; public float[] walls, ceiling, floor, furniture, curtain, room, curtains, daylight, fromAfar, flash; public GlassKind[] kinds; }
+        [Serializable] class Glass { public float gloss, share; public float[] walls, ceiling, floor, furniture, curtain, room, curtains, daylight, fromAfar, flash, board; public GlassKind[] kinds; }
         [Serializable] class House { public int house; public float[] size; public Lap lap; public float planeShadow, seenWithinM, cityFromM; public Plot plot; public Page page; public Glass glass; }
 
         struct View { public string name, level; public Vector3 pos, target; public float fov; public bool floor; }
@@ -784,6 +784,13 @@ namespace Overstory.EditorTools
                     // the whole pane mirrors the sky)
                     if (g.flash != null && g.flash.Length == 4)
                         mat.SetVector("_Flash", new Vector4(g.flash[0], g.flash[1], g.flash[2], g.flash[3]));
+                    // the window board: its top over the opening's foot, its nose behind the glass, the nose's radius, its
+                    // paint (glass.board, from the window's making; a house.json from before it has none: no board)
+                    if (g.board != null && g.board.Length == 6)
+                    {
+                        mat.SetVector("_Board", new Vector4(g.board[0], g.board[1], g.board[2], 0));
+                        mat.SetVector("_BoardPaint", new Vector4(g.board[3], g.board[4], g.board[5], 0));
+                    }
                     var shapes = new[] { "rings", "waves", "one-way", "flat" };
                     for (int k = 0; k < 4 && k < g.kinds.Length; k++)
                     {

@@ -2548,10 +2548,28 @@ def clip_top(poly, top):
 # ---------------------------------------------------------------- export
 
 
-def glass_digest(G, sheers=True, share=1.0):
+def board_digest(v, paints):
+    """The window board of a window's making (versions.window `board`) as the glass shader reads it, in the pane's frame
+    (metres from the opening's foot and the glass): its top at the frame's clear opening (frameMm - coverMm over the
+    foot), its nose reachMm past the frame's inner face (the frame's depth behind the glass: frameMm[1] - setBackMm -
+    rebateMm), the nose's radius, and its paint (paints.json, CIE LCh) as linear sRGB. None for a making without one."""
+    if not v or "board" not in v:
+        return None
+    b, p = v["board"], paints["paints"][v["board"]["paint"]]
+    fy = (p["L"] + 16.0) / 116.0
+    fx, fz = fy + p["C"] * math.cos(math.radians(p["h"])) / 500.0, fy - p["C"] * math.sin(math.radians(p["h"])) / 200.0
+    X, Y, Z = (w * (f ** 3 if f ** 3 > 0.008856 else (f - 16.0 / 116.0) / 7.787) for w, f in ((0.95047, fx), (1.0, fy), (1.08883, fz)))
+    rgb = (3.2406 * X - 1.5372 * Y - 0.4986 * Z, -0.9689 * X + 1.8758 * Y + 0.0415 * Z, 0.0557 * X - 0.2040 * Y + 1.0570 * Z)
+    return [round((v["frameMm"][0] - v["coverMm"]) * MM, 4), round((v["frameMm"][1] - v["setBackMm"] - v["rebateMm"] + b["reachMm"]) * MM, 4),
+            round(b["noseMm"] * MM, 4)] + [round(max(0.0, c), 4) for c in rgb]
+
+
+def glass_digest(G, sheers=True, share=1.0, board=None):
     """glass.json as the glass shader reads it: colours linear, the kinds in order (a pane's vertex colour R names
     one by its index). The sheers hang only where a household keeps them (`sheers`): elsewhere their opacity is 0.
-    `share` is the glass's share of its windows' openings (their glassArea), what of the hole lets daylight in."""
+    `share` is the glass's share of its windows' openings (their glassArea), what of the hole lets daylight in.
+    `board` is the window board (board_digest) of the making most of the house's windows share; the room is one per
+    house, so a house whose windows differ in making shows that one's board in all of them."""
     def lin(h):
         return [((int(h[i:i + 2], 16) / 255.0 + 0.055) / 1.055) ** 2.4 if int(h[i:i + 2], 16) > 10 else int(h[i:i + 2], 16) / 255.0 / 12.92
                 for i in (0, 2, 4)]
@@ -2566,6 +2584,7 @@ def glass_digest(G, sheers=True, share=1.0):
             "daylight": [d["transmit"], d["bounce"], d["curtains"]], "share": round(share, 3),
             "fromAfar": [G["fromAfar"][k] for k in ("stilePx", "blendPx", "crossPx")],
             "flash": [G["flash"][k] for k in ("depth", "rise", "soft", "cap")],
+            **({"board": board} if board else {}),
             "kinds": [{"name": k["name"], "tiltDeg": k["tiltDeg"], "perM": k["perM"], "shape": k["shape"]} for k in kinds]}
 
 
@@ -2702,7 +2721,9 @@ def main():
         "uv": {"uv0": "metres along the grain", "page": "UV1: the page"},
         # sheers where a household lives and keeps the house: a type the keeper lives in (paints.json livedIn), not boarded
         "glass": glass_digest(mats["glass"], F.type in paints["upkeep"]["derived"]["livedIn"] and F.boarded() is None,
-                              (lambda g: sum(g) / len(g) if g else 1.0)([o["glassArea"] for o in house.openings if o["kind"] == "window" and "glassArea" in o])),
+                              (lambda g: sum(g) / len(g) if g else 1.0)([o["glassArea"] for o in house.openings if o["kind"] == "window" and "glassArea" in o]),
+                              (lambda ids: board_digest(next((v for v in V["window"] if ids and v["id"] == max(sorted(set(ids)), key=ids.count)), None), paints))(
+                                  [o["window"] for o in house.openings if o.get("window")])),
         "colour": {"r": "arris (a chamfer face)", "g": "piece seed", "b": "under layer forced (mortar, a flue)",
                    "a": "near boards: distance below the next butt / lapReach"},
     }
