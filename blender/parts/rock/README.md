@@ -2,20 +2,24 @@
 
 ## Where it stands (29 October)
 
-- **Look-in 1 judged:** the boxed history (keyed fractures and topple) made crates. The big form starts again from ice-rounded masses. The history (plucked steps, a rockfall scar, foot boulders) acts on the mass and may not make it.
-- **Look-in 2: the target frame** (`target_whaleback.py`). A coarse block-out with a painted finish, from the shelf along the face into the low sun:
-  - Whalebacks of a few big planes, turfed.
-  - A sheer face in facets drawn out along the steep foliation, with a cave slot.
-  - Skerries, a shingle pocket, a swell with foam, the shore's zones.
-  - Sheet: `cache/rock/whale/w11/sheet.png`. It holds the target, its grey, the floor (t04) and references 51, 48 and 49.
-- **Floor:** grey c20 (`cache/rock/bluff/c20/`) for the history and the raised view; t04 is the old target.
-
-## Build
-
-    Blender -b --factory-startup -P blender/parts/rock/target_whaleback.py -- --out cache/rock/whale/wNN [--grey 1] [--rebuild 1] [--cam x,y,lx,ly,lz,lens]
-    Blender -b --factory-startup -P blender/parts/rock/sheet.py -- OUT.png COLS IMG...
-
-The land caches in `land.npz`. `--rebuild 1` remakes it after a form change (about 5 s).
+- **Look-in 2 judged:** w11's composition holds, but the faces melted, the site and the light weren't ours, and the paint was a filter.
+- **Look-in 3: the site target** (`target_site.py`). It stands at Herring Hill's point, from the town plan, in the 21 June evening light.
+- **Øystein, 29 October:** rock is rounded or sharp by where it is and what worked on it. It must look nice. Never melted, never tiles.
+- **The face now:**
+  - Slabs along the steep foliation, lognormal in width.
+  - Each slab flush with its neighbour or stepped in or out; more steps where the sea and frost plucked the mass.
+  - Sheet-joint ledges that run a few slabs and end, receding upward.
+  - The ice's rounding on the east masses' backs; the scar as slabs gone above one sheet joint.
+  - The shelf as sea-worn ribs of the foliation running out into the water.
+- **Tried and dropped:**
+  - Look-in 1's fracture network on this face: boxes, fins, a castle skyline.
+  - Voronoi chip facets: crazy paving.
+- **Open:**
+  - The loose blocks read as cubes.
+  - The scar's ledge reads as a ramp from the boat.
+  - The foam and the Steps.
+  - The quay frame.
+- **Renders:** `cache/rock/site/s25/` (look-in 3). The floor is w11 (`cache/rock/whale/w11/`); s13 came before.
 
 ## Next, after the target is approved
 
