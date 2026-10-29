@@ -1,0 +1,539 @@
+{
+  "schemaVersion": 1,
+  "describes": "Each part as a family of versions, each made in its years (`years`, the year the part was made: the house's building, or the event that renewed it), by those who could pay for it (`wealth`), and how often it was chosen (`weight`). The house's seed picks one per family from those its facts allow; every opening of one making shares it. Shared by every era: a version naming `eras` is made only for houses of those eras; one without is any house's, as a later replacement is.",
+  "casing": [
+    {
+      "id": "bead",
+      "years": [
+        1790,
+        1880
+      ],
+      "weight": 2,
+      "describes": "A flat board with a bead run on its edge at the opening: the plain house's casing.",
+      "profileMm": [
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          21,
+          1
+        ],
+        [
+          4,
+          25
+        ],
+        [
+          98,
+          25
+        ],
+        [
+          101,
+          22
+        ],
+        [
+          105,
+          25
+        ],
+        [
+          112,
+          30
+        ],
+        [
+          118,
+          28,
+          1
+        ],
+        [
+          122,
+          22
+        ],
+        [
+          122,
+          0
+        ]
+      ],
+      "eras": [
+        "classical"
+      ]
+    },
+    {
+      "id": "fillet",
+      "years": [
+        1810,
+        1870
+      ],
+      "wealth": [
+        150,
+        1000
+      ],
+      "weight": 1,
+      "describes": "An empire casing: a raised fillet along its outer edge falling in an ovolo to the flat, so a line of shadow rings the opening.",
+      "profileMm": [
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          32,
+          1
+        ],
+        [
+          4,
+          36
+        ],
+        [
+          17,
+          36
+        ],
+        [
+          21,
+          33
+        ],
+        [
+          24,
+          29
+        ],
+        [
+          28,
+          26
+        ],
+        [
+          122,
+          26
+        ],
+        [
+          122,
+          21,
+          1
+        ],
+        [
+          122,
+          0
+        ]
+      ],
+      "eras": [
+        "classical"
+      ]
+    },
+    {
+      "id": "plain",
+      "years": [
+        1890,
+        1990
+      ],
+      "weight": 1,
+      "describes": "A plain planed board with its arrises eased: the later and the cheap casing (a shed's door, a modern window).",
+      "profileMm": [
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          18,
+          1
+        ],
+        [
+          3,
+          21
+        ],
+        [
+          96,
+          21
+        ],
+        [
+          99,
+          18,
+          1
+        ],
+        [
+          100,
+          0
+        ]
+      ]
+    }
+  ],
+  "head": [
+    {
+      "id": "cornice",
+      "years": [
+        1790,
+        1880
+      ],
+      "weight": 2,
+      "describes": "A frieze board under a sloped cap with a bed mould: the classical cornice over every opening (photo 09).",
+      "bedMould": true,
+      "capProudMm": 120,
+      "eras": [
+        "classical"
+      ]
+    },
+    {
+      "id": "cap",
+      "years": [
+        1790,
+        1900
+      ],
+      "wealth": [
+        0,
+        400
+      ],
+      "weight": 1,
+      "describes": "A plain sloped water board, no bed mould, less proud.",
+      "bedMould": false,
+      "capProudMm": 80,
+      "eras": [
+        "classical"
+      ]
+    },
+    {
+      "id": "board",
+      "years": [
+        1890,
+        1990
+      ],
+      "weight": 1,
+      "describes": "A plain head board with a thin sloped cap, no bed mould.",
+      "bedMould": false,
+      "capProudMm": 45
+    }
+  ],
+  "sill": [
+    {
+      "id": "horned",
+      "years": [
+        1790,
+        1950
+      ],
+      "weight": 1,
+      "hornMm": 30,
+      "describes": "A thick sloped sill with horns past the casing.",
+      "eras": [
+        "classical"
+      ]
+    }
+  ],
+  "window": [
+    {
+      "id": "six-pane",
+      "years": [
+        1790,
+        1870
+      ],
+      "weight": 1,
+      "describes": "Two side-hung casements, three panes each, either side of a post: the empire window (wooden-town-architecture.md; ref 07, 02). Outward-opening, its panes puttied from outside: a bar shows a thin ridge of wood between two slopes of putty. Its joinery as made (mm): frameMm the frame's face and depth, coverMm what the casing laps of its outer edge, lapMm what each sash laps of the frame's rebate and the post; sashMm and barMm the sightlines (stile and rail, bar), the putty or bead inside them; the frame shows frameMm - coverMm - lapMm, the post postMm - 2 lapMm. Checked by the glass's share across the opening against the reference's (house.json glassAcross).",
+      "mullion": true,
+      "sashes": [
+        {
+          "w": 0.5,
+          "cols": 1,
+          "rows": 3
+        },
+        {
+          "w": 0.5,
+          "cols": 1,
+          "rows": 3
+        }
+      ],
+      "paneHMm": 400,
+      "frameMm": [
+        72,
+        96
+      ],
+      "sashMm": [
+        45,
+        42
+      ],
+      "barMm": [
+        24,
+        28
+      ],
+      "glazing": {
+        "kind": "putty",
+        "mm": [
+          8,
+          8
+        ]
+      },
+      "rebateMm": 12,
+      "setBackMm": 6,
+      "bottomRail": 1.4,
+      "coverMm": 25,
+      "lapMm": 22,
+      "postMm": 58,
+      "eras": [
+        "classical"
+      ]
+    },
+    {
+      "id": "two-pane-casement",
+      "years": [
+        1860,
+        1900
+      ],
+      "weight": 1,
+      "describes": "Two casements, two panes each, either side of a post: the later classical window, its panes bigger as cylinder glass came in bigger sheets. Its joinery as made (mm): frameMm the frame's face and depth, coverMm what the casing laps of its outer edge, lapMm what each sash laps of the frame's rebate and the post; sashMm and barMm the sightlines (stile and rail, bar), the putty or bead inside them; the frame shows frameMm - coverMm - lapMm, the post postMm - 2 lapMm. Checked by the glass's share across the opening against the reference's (house.json glassAcross).",
+      "mullion": true,
+      "sashes": [
+        {
+          "w": 0.5,
+          "cols": 1,
+          "rows": 2
+        },
+        {
+          "w": 0.5,
+          "cols": 1,
+          "rows": 2
+        }
+      ],
+      "paneHMm": 560,
+      "frameMm": [
+        72,
+        96
+      ],
+      "sashMm": [
+        45,
+        42
+      ],
+      "barMm": [
+        24,
+        28
+      ],
+      "glazing": {
+        "kind": "putty",
+        "mm": [
+          8,
+          8
+        ]
+      },
+      "rebateMm": 12,
+      "setBackMm": 6,
+      "bottomRail": 1.4,
+      "coverMm": 25,
+      "lapMm": 22,
+      "postMm": 58,
+      "eras": [
+        "classical"
+      ]
+    },
+    {
+      "id": "cross",
+      "years": [
+        1875,
+        1920
+      ],
+      "weight": 1,
+      "describes": "The sveitser cross-post window (krysspost): a post and a transom, a top light each side over the transom, and under it two casements with a bar across each, six lights (wooden-town-architecture.md; ref 05). Factory joinery from the 1880s (Bjorheim from 1882), set into old openings when older houses were updated. Its joinery as made (mm): frameMm the frame's face and depth, coverMm what the casing laps of its outer edge, lapMm what each sash laps of the frame's rebate and the post; sashMm and barMm the sightlines (stile and rail, bar), the putty or bead inside them; the frame shows frameMm - coverMm - lapMm, the post postMm - 2 lapMm. Checked by the glass's share across the opening against the reference's (house.json glassAcross).",
+      "mullion": true,
+      "transom": {
+        "share": 0.3,
+        "faceMm": 70
+      },
+      "topLights": [
+        {
+          "w": 0.5,
+          "cols": 1,
+          "rows": 1
+        },
+        {
+          "w": 0.5,
+          "cols": 1,
+          "rows": 1
+        }
+      ],
+      "sashes": [
+        {
+          "w": 0.5,
+          "cols": 1,
+          "rows": 2
+        },
+        {
+          "w": 0.5,
+          "cols": 1,
+          "rows": 2
+        }
+      ],
+      "frameMm": [
+        70,
+        96
+      ],
+      "sashMm": [
+        40,
+        42
+      ],
+      "barMm": [
+        24,
+        28
+      ],
+      "glazing": {
+        "kind": "putty",
+        "mm": [
+          8,
+          8
+        ]
+      },
+      "rebateMm": 12,
+      "setBackMm": 6,
+      "bottomRail": 1.4,
+      "coverMm": 25,
+      "lapMm": 24,
+      "postMm": 56,
+      "eras": [
+        "classical",
+        "chalet"
+      ]
+    },
+    {
+      "id": "one-light",
+      "years": [
+        1955,
+        1975
+      ],
+      "weight": 1,
+      "describes": "The 1960s window set into an old opening (house-changes.md; ref 10, 04): one plain casement, one big sealed double pane held by flat beads, no post and no bars; the opening kept, so the pane is as tall as the old window. Its joinery as made (mm): frameMm the frame's face and depth, coverMm what the casing laps of its outer edge, lapMm what each sash laps of the frame's rebate and the post; sashMm and barMm the sightlines (stile and rail, bar), the putty or bead inside them; the frame shows frameMm - coverMm - lapMm, the post postMm - 2 lapMm. Checked by the glass's share across the opening against the reference's (house.json glassAcross).",
+      "mullion": false,
+      "sashes": [
+        {
+          "w": 1.0,
+          "cols": 1,
+          "rows": 1
+        }
+      ],
+      "frameMm": [
+        70,
+        100
+      ],
+      "sashMm": [
+        48,
+        58
+      ],
+      "barMm": [
+        0,
+        0
+      ],
+      "glazing": {
+        "kind": "bead",
+        "mm": [
+          14,
+          10
+        ]
+      },
+      "rebateMm": 16,
+      "setBackMm": 4,
+      "bottomRail": 1.25,
+      "coverMm": 25,
+      "lapMm": 25,
+      "postMm": 0
+    }
+  ],
+  "door": [
+    {
+      "id": "two-panel",
+      "years": [
+        1790,
+        1880
+      ],
+      "weight": 1,
+      "describes": "A pair of tall raised panels under a three-light top light.",
+      "panels": [
+        [
+          0.08,
+          0.4,
+          0.52
+        ],
+        [
+          0.48,
+          0.4,
+          0.52
+        ]
+      ],
+      "topLightMm": 360,
+      "topLightLights": 3,
+      "eras": [
+        "classical"
+      ]
+    }
+  ],
+  "eave": [
+    {
+      "id": "boxed",
+      "years": [
+        1790,
+        1880
+      ],
+      "weight": 1,
+      "describes": "The classical eave: a short soffit closed by a fascia, 140 mm out.",
+      "eras": [
+        "classical"
+      ]
+    }
+  ],
+  "chimney": [
+    {
+      "id": "corbelled",
+      "years": [
+        1790,
+        1900
+      ],
+      "weight": 2,
+      "describes": "A brick stack under render, its top corbelled out by two courses, a short crown above.",
+      "bandMm": [
+        55,
+        140
+      ],
+      "bandDownMm": 70,
+      "eras": [
+        "classical"
+      ]
+    },
+    {
+      "id": "banded",
+      "years": [
+        1790,
+        1900
+      ],
+      "weight": 2,
+      "describes": "A rendered stack with a projecting band two courses under its top.",
+      "bandMm": [
+        40,
+        30
+      ],
+      "bandDownMm": 150,
+      "eras": [
+        "classical"
+      ]
+    },
+    {
+      "id": "plain",
+      "years": [
+        1900,
+        1990
+      ],
+      "weight": 1,
+      "describes": "A plain rendered stack, its top chamfered: a later stack, or one rebuilt, without the old corbelled top.",
+      "bandMm": [
+        0,
+        0
+      ],
+      "bandDownMm": 0
+    }
+  ],
+  "roof": [
+    {
+      "id": "red-pantile",
+      "years": [
+        1790,
+        1950
+      ],
+      "weight": 1,
+      "material": "clay-pantile",
+      "describes": "Single-S red pantiles from Sandnes Teglverk.",
+      "eras": [
+        "classical"
+      ]
+    }
+  ]
+}

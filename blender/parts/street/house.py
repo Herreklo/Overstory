@@ -210,8 +210,8 @@ class Wall:
 
 
 class House:
-    def __init__(self, S, W, F, mats, paints):
-        self.S, self.W, self.F, self.M, self.P = S, W, F, mats, paints
+    def __init__(self, S, W, V, F, mats, paints):
+        self.S, self.W, self.V, self.F, self.M, self.P = S, W, V, F, mats, paints
         self.pieces, self.charts = [], Charts()
         self.features = {"openings": [], "joints": [], "butts": [], "drips": [], "pipes": [], "roof": [], "tiles": []}
         self.push = W["push"]
@@ -272,9 +272,10 @@ class House:
     # ---- versions
     def version(self, family, made, era_of=None):
         """The part's version made in `made` (its looks those of `era_of`, a restoration's), by those who could pay;
-        every opening of one making shares it."""
+        every opening of one making shares it. The versions are the pack's, shared by every era (house/versions.json):
+        one naming `eras` is made only for a house of those."""
         era_of = era_of or made
-        vs = self.W["versions"][family]
+        vs = [v for v in self.V[family] if self.F.era in v.get("eras", [self.F.era])]
         ok = [v for v in vs if v["years"][0] <= era_of <= v["years"][1] and v.get("wealth", [0, 1e9])[0] <= self.F.wealth <= v.get("wealth", [0, 1e9])[1]]
         if not ok:
             ok = [min(vs, key=lambda v: min(abs(era_of - v["years"][0]), abs(era_of - v["years"][1])))]
@@ -1927,9 +1928,10 @@ def main():
     os.makedirs(out, exist_ok=True)
     F = Facts(a.get("fixture", S["fixture"]), hid, year)
     W = load(S["eras"][F.era])
+    V = load(S["versions"])
     mats = {m: load(f"{S['materials']}/{m}.json") for m in ("clay-pantile", "fieldstone", "pine", "glass")}
     paints = load(S["paints"])
-    house = House(S, W, F, mats, paints)
+    house = House(S, W, V, F, mats, paints)
     house.build()
     house.city()
     for i, pc in enumerate(house.pieces):

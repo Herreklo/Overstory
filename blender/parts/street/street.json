@@ -5,6 +5,7 @@
   "year": 1989,
   "houses": [107, 108, 109],
   "eras": { "classical": "packs/stavanger-1989/house/classical.json" },
+  "versions": "packs/stavanger-1989/house/versions.json",
   "paints": "packs/stavanger-1989/house/paints.json",
   "materials": "packs/stavanger-1989/materials",
   "levels": {
