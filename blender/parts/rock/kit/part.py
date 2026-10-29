@@ -426,4 +426,5 @@ def main():
     print(f"[rock] wrote {out}")
 
 
-main()
+if __name__ == "__main__":
+    main()

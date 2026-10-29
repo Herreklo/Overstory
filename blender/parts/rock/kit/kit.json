@@ -62,6 +62,45 @@
                   "timber-red": [62, 0.85], "roof": [30, 0.85] }
     }
   },
+  "shore": {
+    "describes": "The shore block (shore.py): the tip's rock where the sea works it, a fitted part made from its causes: rigid pieces cut along its joints, each set and rounded by its place, none bent. Its place is a record (`lone`: the block judged alone): the waterline's point `at` (site metres), the sea's bearing `face`, its `width` along the shore and `depth` back to the joint behind it, the ice-planed surface's height at its `back` and its `lip`, that surface's slope at the back `backSlope` and its fall across `across` (metres at a metre off its middle, squared). Its outline stands on the joints that most nearly face each way, turned up to `sideTurn` degrees. The foliation cuts it into ribs `leafM` wide toward the sea (most thin: a draw's power `leafSkew`), and J1 cuts each rib across `treadM` apart: a main joint runs on through a rib `through` of the time, jogging up to `jogM`, a rib takes one more between two mains `extra` of the time, each turned up to `riserTurn` degrees. Pieces under `minCell` m² or `minWidthM` across join their longest neighbour. Each trace longer than `bendM` bends at one or two points by up to `bend` of its length, and each inner corner moves up to `wiggleM` (corners nearer than `mergeM` are one). Each piece is sheared down the foliation's dip, so its sides on the partings are the foliation itself and its others stand near upright, its sea side leaning back `riserLean` degrees (at the lip `lipLean`; a plucked piece's not), with a crack between it and its neighbour `crackM` wide (a parting's `fol`, a joint's `joint`, `wash` times wider under the storm top). Its top: above the storm top, the ice's surface, lower by up to `capDrop` at each crack; under it, a ledge the sea left between two main joints, its seaward edge on the ice's surface at the next main joint (the lip's at the front) less up to `washDrop`, dipping `treadDip` degrees toward the sea, so the ledges run on along the shore across the ribs. Each rib stands `lee.stepM` lower than its stoss neighbour; on the lee's ribs a piece was plucked out `lee.share` of the time (the lee rib first), its floor a fresh face `lee.depthM` under its tread, dipping `lee.dip` toward the lee, never under `floor`. Rounds by place, metres: a top edge over a step under `crackDropM` is a crack, left sharp; `crisp` on the lee and in plucked pockets; `sea` on a seaward edge under the storm top (larger the lower and the more exposed); `ice` on the cap and the stoss side; else `joint`; none above `dropShare` of its step or `reachShare` of its top's inner radius. The rounds at or over `bigM` take the level's segments, the rest one. An outline side stands `rowDropM` over its row neighbour's joint. Each piece's foot stands `buryM` under its lowest neighbour's top (the sea's at the lip), never under `base`.",
+    "leafM": [0.2, 1.3],
+    "leafSkew": 1.8,
+    "treadM": [0.45, 1.5],
+    "through": 0.9,
+    "extra": 0.15,
+    "jogM": 0.12,
+    "riserTurn": 7,
+    "minCell": 0.12,
+    "minWidthM": 0.15,
+    "bendM": 0.45,
+    "bend": 0.07,
+    "wiggleM": 0.03,
+    "mergeM": 0.03,
+    "sideTurn": 3,
+    "lipLean": [28, 40],
+    "riserLean": [6, 22],
+    "crackM": { "fol": [0.006, 0.016], "joint": [0.012, 0.03], "wash": 1.8 },
+    "capDrop": [0, 0.035],
+    "washDrop": [0, 0.04],
+    "treadDip": [2, 9],
+    "lee": { "share": [0.4, 0.1], "depthM": [0.12, 0.45], "dip": [2, 8], "stepM": [0.0, 0.12] },
+    "floor": 0.15,
+    "buryM": 0.3,
+    "crackDropM": 0.035,
+    "rowDropM": 0.4,
+    "rounds": { "sea": [0.12, 0.28], "ice": [0.05, 0.1], "joint": [0.025, 0.06], "crisp": [0.012, 0.025], "bigM": 0.04, "reachShare": 0.45, "dropShare": 0.6 },
+    "base": -1.2,
+    "lone": {
+      "describes": "One shore block in grey (tip.py --lone), on the north-west shore where the water frame's near rock stands, with `row` neighbours a side of the same making across joints `gapM` wide (shore.py row), so its sides read as joints and not as a crate's, its views in site metres as tip.views': at eye level from the next block along the shore, from 12 m up, and from the water as the frame sees it.",
+      "id": "lone", "at": [-19.0, 26.0], "face": 320, "width": 3.4, "depth": 3.6, "back": 2.9, "lip": 0.45, "backSlope": 0.15, "across": 0.05, "row": 1, "gapM": 0.08, "rowVary": [0.35, 0.15],
+      "views": {
+        "loneeye": { "pos": [-15.5, 30.6, 2.6], "target": [-17.8, 24.6, 1.0], "fov": 48, "level": "near" },
+        "lone12": { "pos": [-19.9, 33.2, 12.0], "target": [-17.8, 24.5, 0.8], "fov": 26, "level": "near" },
+        "lonesea": { "pos": [-23.7, 28.4, 0.8], "target": [-17.8, 24.5, 1.0], "fov": 40, "level": "near" }
+      }
+    }
+  },
   "parts": {
     "slab-block": {
       "describes": "A joint-bounded block at the tip's north-west waterline, the water frame's foreground (kit.json tip.views water): a low back the ice planed, rising out of the sea toward the land (its top dips 16 degrees toward the sea and runs on under the ground there), rounded over by the swell at its seaward edges and falling away to the west, its most exposed side; its leaves of phyllite stand on edge along the foliation (68 degrees toward 250), flush on its top where the ice planed across them (their traces in the bake), on the ice's lee as steps each packet plucked to its own length along J3, the shorter the further west, so each step bares a leaf's upper face, never its overhang, and at the sea where the two westernmost leaves broke back on fresh J1 faces, the outer the further.",

@@ -156,6 +156,19 @@ def main():
         bpy.data.objects.remove(objs[n])
     BI.stone_plinth("stand-plinth", stand["at"], stand["turn"], [w + 0.2, d + 0.2], stand["base"], mats["made"] if plan else plinth,
                     rock="rock-plan" if plan else "rock")
+    # --lone: the shore block alone (kit.json shore.lone) in place of the outcrop, at the near level's rounds
+    lone = BI.arg("--lone")
+    if lone:
+        sys.path.insert(0, HERE)
+        import shore
+        rec = K["shore"]["lone"]
+        bpy.data.objects.remove(bpy.data.objects["rock"])
+        s = shore.bearing(rec["face"])
+        c = np.array([rec["at"][0] - s.x * rec["depth"] / 2, rec["at"][1] - s.y * rec["depth"] / 2, 1.0])
+        e, (wet, storm, _) = BI.shore_levels(K["tip"]["grey"]["bands"], c)
+        for r in shore.row(rec, K, BI.FIX):
+            shore.build("rock" if r is rec else f"rock-{r['id']}", r, K, BI.FIX, (e, wet, storm),
+                        [bpy.data.materials[n] for n in shore.BANDS], K["levels"]["near"]["segments"])
 
     # into 107's frame: its front-left corner at the origin, its front along x, its ground at the stand's base
     t = math.radians(stand["turn"])
@@ -173,7 +186,7 @@ def main():
     # 90 along it, x)
     to107 = lambda p: list(M @ Vector(p))
     views = [dict(v, name=n, pos=to107(v["pos"]), target=to107(v["target"]))
-             for n, v in K["tip"]["views"].items() if n != "describes"]
+             for n, v in (K["shore"]["lone"] if lone else K["tip"])["views"].items() if n != "describes"]
     sun = BI.VIEWS["lights"]["lowsun"]["azimuth"]
     json.dump({"mats": BI.MATS, "stand": stand["id"], "corner": list(corner), "turn": stand["turn"], "views": views,
                "sunOff": (180 - stand["turn"] - sun) % 360},

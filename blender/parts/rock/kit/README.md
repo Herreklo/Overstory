@@ -33,20 +33,23 @@ zonation are (`../README.md`).
   the sea, 3 m off the north-west shore); `tip.grey` holds the frame's values and the shore bands; `tip.py` moves them into 107's frame in `tip.json` with the site's own low
   sun (`sunOff`), and `LT1HolmTip.cs` adds them beside the street stop. Run:
   `TIP_GREY=1 render.sh <round> water,street P overcast,lowsun`.
-- **State (29 Oct, t03):** the whole Holm tip is one grey frame of simple masses (the coordinator's scope): the sea,
-  the shore bands by exposure (wet and black band, storm-wash to the storm top, `kit.json` `tip.grey`; the Roads'
-  fetch only, decided from the map and recorded there), turf caps in the lee's sheltered hollows, 107 and its plinth,
-  the office past the frame. The shore blocks now end in a lip at the sea (`outcrop.py` `lip`), their joint sides
-  stand steep (`crossShare`) and their treads step down where the joints opened (`shoreTilt`). The camera is chosen
-  (t03 below). Next, unless the coordinator says otherwise: the slab block for the frame's foreground, which must
-  fill the lower right third the grey masses leave as open water. Its s10 design is in `kit.json` `parts.slab-block`
-  and `part.py` (leaves joined with a LAP overlap); it stood too close to 107 in s01, and its page is 5.3 MB against
-  512 because its charts are each leaf face's bounding rectangle. Treads 1.6-3.6 m, risers wandering in plan, never
-  parallel rulings; leaves and ledges 0.1-0.6 m, plucked back in steps on the lee, an ice-planed top, rounds by
-  exposure; the cm laminae in the bake at the near level only; its own marks and banded colour through its own
-  material and data (ask the coordinator with the diff before touching the Finish shader).
+- **State (29 Oct, t04):** the shore block alone (`tip.py -- --lone 1`, `shore.py`, kit.json `shore`, views
+  `loneeye,lone12,lonesea`) is redrawn as rigid pieces from its causes: the outline on its joints, cut by the foliation
+  into ribs toward the sea and across by J1 (main joints run on through most ribs, jogging; traces bent), each piece
+  an oblique prism sheared down the foliation's dip with a crack round it; tops by place (the ice's surface above the
+  storm top, ledges shared along the shore under it, plucked pockets on the lee); rounds by place in two bevel passes.
+  1250-1770 tris a block at near. Next: bigger pieces (fewer, wider main joints, no extras), so a few big ledges carry
+  the block; then fill the frame once the coordinator agrees. Turf test C, the toe line and the storm fixes queued.
 
 ## Rounds
+
+- **t04** (`reviews/lt1/rock/t04/sheet.jpg`; rows eye, 12 m, sea; columns t04a overcast, t04b overcast and low sun;
+  refs 15, 48, 51, 16 and the study board 53-56 below). t04a (leaves, each its own stair, `lone8`) read as a grid of
+  rounded boxes: tiles. t04b (pieces) better: one mass stepping down in ledges along the shore, cracks that wander,
+  lips rounded at the sea, the lee crisp; from the sea nearest the frame. Bad: every piece 0.5-1 m, so from 12 m it
+  reads as a heap of rounded cubes where the references show big surfaces and few joints; one pillow piece at the
+  far tip; the row's outer sides show long sheared faces. On the way: booleans crumpled (lone5), one body read as
+  courses (lone6), a sweep per corner twisted every wall (lone10).
 
 - **t03** (`reviews/lt1/rock/t03/`; `sheet.jpg` rows water, street stop, columns overcast, low sun; `squint.jpg` at
   25%: t02 water, t03 water overcast and low sun, t03 street stop, over refs 53-56). Bad: the near rock fills a
