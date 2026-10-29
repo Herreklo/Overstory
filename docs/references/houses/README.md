@@ -2,7 +2,7 @@
 
 01 to 10 are the 1989 harbour fronts, each logged in `docs/research/downloads.md`.
 
-11 to 24 were sent by Øystein in chat on 29 October as inspiration for later: the Eiganes villa and houses not made of wood. No source was given. They are for study only.
+11 to 32 were sent by Øystein in chat on 29 October as inspiration for later: the Eiganes villa and houses not made of wood. No source was given. They are for study only.
 
 | File | What it shows | What to take |
 | --- | --- | --- |
@@ -20,3 +20,11 @@
 | `22-stavanger-svommehall-board-marked-concrete.webp` | Stavanger's swimming hall in board-marked concrete: a deep grid of fins on a cantilevered upper storey over glazed floors, wide steps up to it | Concrete with the boards' grain in it; one big shape and a deep repeated grid; how concrete weathers in streaks |
 | `23-…` (file to come) | Rogaland Teater in winter: the old theatre in white render with round-arched windows and a copper-roofed lantern, a newer white wing beside it, a red brick building with white trim behind bare trees. Dark laid stone walls of the town's own slate, rhododendrons and a frosted path in front | Render on a public building; old and newer wings side by side; the slate walls and winter light of the town itself |
 | `24-…` (file to come) | A CG render of the theatre's planned extension at sunset: the old rendered theatre joined to new volumes in banded stone, a glazed foyer in a concrete frame, a stage tower behind | How a later year adds to an old building without hiding it. For the town at 2020 and after |
+| `25-valbergtarnet-stone-watch-tower-copper-roof.png` | Valbergtårnet, the old town's fire watch tower: an octagon in coursed grey stone with a green copper roof and lantern, a round-arched door and a band of arched windows under the eaves | A landmark on a height, one simple shape against the sky; stone laid in courses of many heights; copper gone green |
+| `26-valbergtarnet-low-sun.webp` | The same tower in low sun from below | How the coursed stone warms in low sun while the copper stays cool; the darker, rougher plinth |
+| `27-valandstarnet-1895-rendered-tower.webp` | Vålandstårnet, dated 1895: a white rendered tower and house with pointed windows, corbelled bands, ruled render made to look like stone at the base, a balcony at the top, slab steps up the bank | Render ruled as false stone; a lookout on a hill with its steps and its grass bank |
+| `28-torget-curved-block-1950s.webp` | A rendered public building at the square in the 1950s, curved to the street, with a slate mansard, a long dormer, a carved stone doorway, cars and a kiosk in front (Stavanger byarkiv) | The same building as 29, forty years on: paler, the street full of cars and a kiosk |
+| `29-torget-curved-block-postcard-1910s.webp` | A coloured postcard, "Parti ved Torvet", of what looks like the same building in yellow with a green slate roof, horses and carts in the street | One building across eras: colour and street change while the building stays. The test of the town over the years |
+| `30-rendered-block-pilasters-new-dormers-dusk.webp` | A three-storey rendered block at dusk from above: white walls between pinkish rendered pilasters on a rusticated base, a green slate roof with new metal-clad dormers and skylights, copper vents, lit windows | An old public block reused: new dormers set into an old roof, lit from inside at dusk |
+| `31-rendered-block-pilasters-cafe-sun.webp` | The same block in sun with a café terrace and a lawn in front | Render in two colours; the base as its own material; people use it differently now |
+| `32-radhus-new-glass-facade-cg.webp` | A CG render of a new facade proposed for Stavanger's city hall: dark green glass panels with brass mullions, a tree emblem and a clock, a glazed timber ground floor, steps and rhododendrons beside it, a white wooden house on the hill above | The town at 2020 and after: a new skin on a 1960s–70s building. Old wooden houses stay above it |
