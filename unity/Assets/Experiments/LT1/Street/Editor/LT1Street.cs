@@ -33,9 +33,9 @@ namespace Overstory.EditorTools
         [Serializable] class PColMat { public string name; public float[] tint, bareTint, underTint, stainTint; }
         [Serializable] class PColLight { public string light; public float[] sun, sky, equator, ground, background, floor; }
         [Serializable] class PColour { public PColMat[] mats; public PColLight[] lights; public float[] washTint; }
-        [Serializable] class Paint { public PMat[] mats; public PLight[] lights; public PColour colour; public float strokeScale, edgeAmp, rimL, rimW, rimFar, bareShift, washL, bareWash, brushFar, dragL, dragScale, dlRange, aoStrength, lapDark, lapCore, lapReach, lapGrimeL, lapGrimeReach, lapGrimeBreak, lapPage; public float[] strokeFade, brushFade, rimBreak, washFade; }
+        [Serializable] class Paint { public PMat[] mats; public PLight[] lights; public PColour colour; public float[] reflect; public float strokeScale, edgeAmp, rimL, rimW, rimFar, bareShift, washL, bareWash, brushFar, dragL, dragScale, dlRange, aoStrength, lapDark, lapCore, lapReach, lapGrimeL, lapGrimeReach, lapGrimeBreak, lapPage; public float[] strokeFade, brushFade, rimBreak, washFade; }
         [Serializable] class Lap { public float reach, step; }
-        [Serializable] class Plot { public float w, d; }
+        [Serializable] class Plot { public float x, w, d; }
         [Serializable] class Page { public int size; public float pxPerM; }
         [Serializable] class GlassKind { public string name, shape; public float tiltDeg; public float[] perM; }
         [Serializable] class Glass { public float gloss; public float[] walls, ceiling, floor, furniture, curtain, room, curtains, daylight; public GlassKind[] kinds; }
@@ -87,56 +87,43 @@ namespace Overstory.EditorTools
             float sunOff = float.Parse(Arg("-streetSunOff") ?? "45", System.Globalization.CultureInfo.InvariantCulture);
             // every view at one level, for an A/B of two levels at the same view
             string levelAll = Arg("-streetLevel");
-            string gen = $"{Dir}/Generated/{id}";
+            // a row (-streetHouses 107,108,109): the houses together on their plots, each from its own Generated/<house>,
+            // seen from the row's views, each house at the level its distance takes
+            var ids = (Arg("-streetHouses") ?? id).Split(',');
+            bool row = ids.Length > 1;
+            if (row)
+                id = "row";
             string root = Path.GetFullPath(Path.Combine(Application.dataPath, "..", ".."));
             string outDir = Path.Combine(root, "cache", "street", "renders", round);
             Directory.CreateDirectory(outDir);
 
-            Import(gen);
-            foreach (var guid in AssetDatabase.FindAssets("t:Material t:VolumeProfile", new[] { gen }))
-                AssetDatabase.DeleteAsset(AssetDatabase.GUIDToAssetPath(guid));
-            var house = JsonUtility.FromJson<House>(File.ReadAllText(Path.Combine(gen, "house.json")));
-            var paint = JsonUtility.FromJson<Paint>(File.ReadAllText(Path.Combine(gen, "paint.json")));
-            // an A/B of the planes' microshadow without touching the house's data
-            if (Arg("-streetPlaneShadow") != null)
-                house.planeShadow = float.Parse(Arg("-streetPlaneShadow"), System.Globalization.CultureInfo.InvariantCulture);
-            // and of the planes' flattening, without a new paint
-            if (Arg("-streetRoofFlatUp") != null)
-                foreach (var m in paint.mats)
-                    if (m.name == "roof")
-                        m.flatUp = float.Parse(Arg("-streetRoofFlatUp"), System.Globalization.CultureInfo.InvariantCulture);
-            var mats = Materials(gen, paint, house);
+            var built = ids.Select(Load).ToList();
+            var house = built[0].house;
+            var paint = built[0].paint;
+            var mats = built[0].mats;
+            string gen = $"{Dir}/Generated/{built[0].id}";
             var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
-
-            var root_ = new GameObject($"House {id}");
-            var levels = new Dictionary<string, GameObject>();
-            foreach (var level in Levels)
-            {
-                var prefab = AssetDatabase.LoadAssetAtPath<GameObject>($"{gen}/house-{level}.fbx");
-                var go = (GameObject)PrefabUtility.InstantiatePrefab(prefab);
-                go.transform.SetParent(root_.transform, false);
-                levels[level] = go;
-            }
-            Orient(root_, levels["near"]);
-            // the house's shadows cast two-sided (-streetShadowTwo 0 keeps them one-sided, for an A/B): one-sided, the
-            // sun's normal bias opens the joints between faces turned different ways, and the sun shows through them in
-            // lines on the ground (108, c02)
-            if (Arg("-streetShadowTwo") != "0")
-                foreach (var r in root_.GetComponentsInChildren<MeshRenderer>(true))
-                    r.shadowCastingMode = ShadowCastingMode.TwoSided;
-            // the city level as one draw (-streetCityOne 0 keeps a material a piece, for an A/B)
-            if (Arg("-streetCityOne") != "0")
-                levels["city"] = OneMesh(levels["city"], paint, gen);
+            float x0 = house.plot != null ? house.plot.x : 0f;
+            foreach (var b in built)
+                Place(b, new Vector3(row && b.house.plot != null ? (b.house.plot.x - x0) / 1000f : 0f, 0, 0));
+            var root_ = built[0].root;
+            var levels = built[0].levels;
+            float rowW = row ? built.Max(b => b.root.transform.position.x + b.house.size[0]) : house.size[0];
+            float rowD = built.Max(b => b.house.size[1]);
 
             var ground = GameObject.CreatePrimitive(PrimitiveType.Plane);
             ground.name = "Ground";
-            ground.transform.localScale = new Vector3(8, 1, 8);
-            ground.transform.position = ToUnity(new Vector3(house.size[0] / 2, -10, 0));
+            ground.transform.localScale = row ? new Vector3(16, 1, 16) : new Vector3(8, 1, 8);
+            ground.transform.position = ToUnity(new Vector3(rowW / 2, -10, 0));
             var gm = new Material(Shader.Find("Universal Render Pipeline/Lit"));
             float gy = LToY(GroundL);
             gm.SetFloat("_Smoothness", GroundSmooth);
             AssetDatabase.CreateAsset(gm, $"{gen}/mat-ground.mat");
             ground.GetComponent<Renderer>().sharedMaterial = gm;
+            // the ground's own sky: a house hides the low sky from the street at its foot, so the ground darkens softly
+            // toward each wall, as a wall does under its eave (marks.py geo, R); -streetGroundSky 0 leaves it open, for an A/B
+            if (Arg("-streetGroundSky") != "0")
+                GroundSky(ground, gm, built, gen);
 
             var sunGo = new GameObject("Sun");
             var sun = sunGo.AddComponent<Light>();
@@ -181,18 +168,21 @@ namespace Overstory.EditorTools
                 foreach (var f in rd.rendererFeatures)
                     f.SetActive(f.name.Contains("AmbientOcclusion"));
                 foreach (var light in Lights.Where(l => lights.Contains(l.name)))
-                foreach (var view0 in Views(house.size[0], house.size[1]).Where(v => only.Contains(v.name)))
+                foreach (var view0 in (row ? RowViews(rowW, rowD) : Views(house.size[0], house.size[1])).Where(v => only.Contains(v.name)))
                 {
                     var view = view0;
                     if (levelAll != null)
                         view.level = levelAll;
-                    foreach (var kv in levels)
-                        kv.Value.SetActive(kv.Key == view.level);
+                    // in a row each house takes the level its nearest point's distance takes, as in Timing
+                    var lv = built.ToDictionary(b => b, b => row && levelAll == null ? LevelAt(b, view.pos) : view.level);
+                    foreach (var b in built)
+                    foreach (var kv in b.levels)
+                        kv.Value.SetActive(kv.Key == lv[b]);
                     cam.transform.SetPositionAndRotation(ToUnity(view.pos), Quaternion.LookRotation(ToUnity(view.target - view.pos), Vector3.up));
                     cam.fieldOfView = view.fov;
                     urp.shadowCascadeCount = 1;
                     urp.mainLightShadowmapResolution = 4096;
-                    urp.shadowDistance = (view.target - view.pos).magnitude + 8f;
+                    urp.shadowDistance = row ? built.Max(b => FarFrom(b, view.pos)) + 4f : (view.target - view.pos).magnitude + 8f;
                     foreach (var way in ways)
                     {
                         var own = paint.lights?.FirstOrDefault(e => e.light == light.name);
@@ -204,13 +194,14 @@ namespace Overstory.EditorTools
                         cam.backgroundColor = Lin(Back.linear.r, col?.background);
                         gm.SetColor("_BaseColor", Lin(gy, col?.floor));
                         adjust.postExposure.Override(own != null ? own.exposure : light.exposure);
-                        Assign(levels[view.level], mats, way, MatLevel(view.level));
+                        foreach (var b in built)
+                            Assign(b.levels[lv[b]], b.mats, way, MatLevel(lv[b]));
                         string file = Path.Combine(outDir, $"{id}-{view.name}-{light.name}-{way}.png");
                         Capture(cam, file);
                         Debug.Log($"[LT1Street] {file}");
                     }
                 }
-                if (Arg("-streetTiming") != null)
+                if (Arg("-streetTiming") != null && !row)
                     Timing(int.Parse(Arg("-streetTiming")), root_, mats, cam, sun, gm, adjust, house, paint, outDir, sunOff);
                 SrpBatcher(mats.Values.First().shader);
             }
@@ -220,9 +211,174 @@ namespace Overstory.EditorTools
                     kv.Key.SetActive(kv.Value);
                 (urp.shadowDistance, urp.shadowCascadeCount, urp.mainLightShadowmapResolution, urp.useSRPBatcher) = urpWas;
             }
-            foreach (var kv in levels)
-                Debug.Log($"[LT1Street] {kv.Key}: {kv.Value.GetComponentsInChildren<MeshFilter>(true).Sum(f => f.sharedMesh.triangles.Length / 3)} triangles in Unity");
+            foreach (var b in built)
+            foreach (var kv in b.levels)
+                Debug.Log($"[LT1Street] {(row ? b.id + " " : "")}{kv.Key}: {kv.Value.GetComponentsInChildren<MeshFilter>(true).Sum(f => f.sharedMesh.triangles.Length / 3)} triangles in Unity");
         }
+
+        // a house of the street as Run draws it: its record, its paint and materials, and its three levels on its plot
+        class Built { public string id; public House house; public Paint paint; public Dictionary<string, Material> mats; public GameObject root; public Dictionary<string, GameObject> levels; }
+
+        static Built Load(string id)
+        {
+            string gen = $"{Dir}/Generated/{id}";
+            Import(gen);
+            foreach (var guid in AssetDatabase.FindAssets("t:Material t:VolumeProfile", new[] { gen }))
+                AssetDatabase.DeleteAsset(AssetDatabase.GUIDToAssetPath(guid));
+            var b = new Built { id = id };
+            b.house = JsonUtility.FromJson<House>(File.ReadAllText(Path.Combine(gen, "house.json")));
+            b.paint = JsonUtility.FromJson<Paint>(File.ReadAllText(Path.Combine(gen, "paint.json")));
+            // an A/B of the planes' microshadow without touching the house's data
+            if (Arg("-streetPlaneShadow") != null)
+                b.house.planeShadow = float.Parse(Arg("-streetPlaneShadow"), System.Globalization.CultureInfo.InvariantCulture);
+            // and of the planes' flattening, without a new paint
+            if (Arg("-streetRoofFlatUp") != null)
+                foreach (var m in b.paint.mats)
+                    if (m.name == "roof")
+                        m.flatUp = float.Parse(Arg("-streetRoofFlatUp"), System.Globalization.CultureInfo.InvariantCulture);
+            b.mats = Materials(gen, b.paint, b.house);
+            return b;
+        }
+
+        static void Place(Built b, Vector3 at)
+        {
+            string gen = $"{Dir}/Generated/{b.id}";
+            b.root = new GameObject($"House {b.id}");
+            b.levels = new Dictionary<string, GameObject>();
+            foreach (var level in Levels)
+            {
+                var prefab = AssetDatabase.LoadAssetAtPath<GameObject>($"{gen}/house-{level}.fbx");
+                var go = (GameObject)PrefabUtility.InstantiatePrefab(prefab);
+                go.transform.SetParent(b.root.transform, false);
+                b.levels[level] = go;
+            }
+            Orient(b.root, b.levels["near"]);
+            b.root.transform.position = ToUnity(at);
+            // the house's shadows cast two-sided (-streetShadowTwo 0 keeps them one-sided, for an A/B): one-sided, the
+            // sun's normal bias opens the joints between faces turned different ways, and the sun shows through them in
+            // lines on the ground (108, c02)
+            if (Arg("-streetShadowTwo") != "0")
+                foreach (var r in b.root.GetComponentsInChildren<MeshRenderer>(true))
+                    r.shadowCastingMode = ShadowCastingMode.TwoSided;
+            // the city level as one draw (-streetCityOne 0 keeps a material a piece, for an A/B)
+            if (Arg("-streetCityOne") != "0")
+                b.levels["city"] = OneMesh(b.levels["city"], b.paint, gen);
+        }
+
+        // The ground's sky visibility under the CIE overcast (luminance 1 + 2 sin γ), as an occlusion map (indirect light
+        // only): the near levels rasterised to a height field, each cell's horizon found in 16 directions within 15 m, and
+        // the sky above it weighted by the overcast and the cosine, 1 for open ground.
+        static void GroundSky(GameObject ground, Material gm, List<Built> built, string gen)
+        {
+            const int res = 1024, dirs = 16; const float reach = 15f;
+            float size = 10f * ground.transform.localScale.x, cell = size / res, y0 = ground.transform.position.y;
+            var c = ground.transform.position; float x0 = c.x - size / 2, z0 = c.z - size / 2;
+            var quad = new Mesh { name = "ground" };
+            quad.vertices = new[] { new Vector3(-size / 2, 0, -size / 2), new Vector3(size / 2, 0, -size / 2), new Vector3(-size / 2, 0, size / 2), new Vector3(size / 2, 0, size / 2) };
+            quad.uv = new[] { new Vector2(0, 0), new Vector2(1, 0), new Vector2(0, 1), new Vector2(1, 1) };
+            quad.triangles = new[] { 0, 2, 1, 1, 2, 3 };
+            quad.RecalculateNormals(); quad.RecalculateBounds();
+            ground.GetComponent<MeshFilter>().sharedMesh = quad;
+            ground.transform.localScale = Vector3.one;
+
+            var h = Enumerable.Repeat(y0, res * res).ToArray();
+            int ia = res, ib = 0, ja = res, jb = 0;
+            foreach (var b in built)
+                foreach (var mf in b.levels["near"].GetComponentsInChildren<MeshFilter>(true))
+                {
+                    if (mf.sharedMesh == null) continue;
+                    var w = mf.transform.localToWorldMatrix;
+                    var p = mf.sharedMesh.vertices.Select(v => w.MultiplyPoint3x4(v)).ToArray();
+                    var t = mf.sharedMesh.triangles;
+                    for (int k = 0; k < t.Length; k += 3)
+                    {
+                        Vector3 A = p[t[k]], B = p[t[k + 1]], C = p[t[k + 2]];
+                        float den = (B.z - C.z) * (A.x - C.x) + (C.x - B.x) * (A.z - C.z);
+                        if (Mathf.Abs(den) < 1e-6f) continue;
+                        int i0 = Mathf.Max(0, Mathf.FloorToInt((Mathf.Min(A.x, Mathf.Min(B.x, C.x)) - x0) / cell));
+                        int i1 = Mathf.Min(res - 1, Mathf.CeilToInt((Mathf.Max(A.x, Mathf.Max(B.x, C.x)) - x0) / cell));
+                        int j0 = Mathf.Max(0, Mathf.FloorToInt((Mathf.Min(A.z, Mathf.Min(B.z, C.z)) - z0) / cell));
+                        int j1 = Mathf.Min(res - 1, Mathf.CeilToInt((Mathf.Max(A.z, Mathf.Max(B.z, C.z)) - z0) / cell));
+                        for (int j = j0; j <= j1; j++)
+                            for (int i = i0; i <= i1; i++)
+                            {
+                                float x = x0 + (i + 0.5f) * cell, z = z0 + (j + 0.5f) * cell;
+                                float l1 = ((B.z - C.z) * (x - C.x) + (C.x - B.x) * (z - C.z)) / den;
+                                float l2 = ((C.z - A.z) * (x - C.x) + (A.x - C.x) * (z - C.z)) / den;
+                                if (l1 < -1e-4f || l2 < -1e-4f || l1 + l2 > 1 + 1e-4f) continue;
+                                float y = l1 * A.y + l2 * B.y + (1 - l1 - l2) * C.y;
+                                if (y <= h[j * res + i]) continue;
+                                h[j * res + i] = y;
+                                ia = Mathf.Min(ia, i); ib = Mathf.Max(ib, i); ja = Mathf.Min(ja, j); jb = Mathf.Max(jb, j);
+                            }
+                    }
+                }
+
+            const float sky = 0.5f + 2f / 3f;
+            int n = Mathf.CeilToInt(reach / cell);
+            var px = Enumerable.Repeat(new Color32(255, 255, 255, 255), res * res).ToArray();
+            float least = 1;
+            for (int j = Mathf.Max(0, ja - n); j <= Mathf.Min(res - 1, jb + n); j++)
+                for (int i = Mathf.Max(0, ia - n); i <= Mathf.Min(res - 1, ib + n); i++)
+                {
+                    float seen = 0;
+                    for (int d = 0; d < dirs; d++)
+                    {
+                        float a = (d + 0.5f) * 2 * Mathf.PI / dirs, dx = Mathf.Cos(a), dz = Mathf.Sin(a), tan = 0;
+                        for (int s = 1; s <= n; s++)
+                        {
+                            int ii = i + Mathf.RoundToInt(dx * s), jj = j + Mathf.RoundToInt(dz * s);
+                            if (ii < 0 || jj < 0 || ii >= res || jj >= res) break;
+                            tan = Mathf.Max(tan, (h[jj * res + ii] - y0) / (s * cell));
+                        }
+                        float sn = tan / Mathf.Sqrt(1 + tan * tan);
+                        seen += 1 - (sn * sn / 2 + 2 * sn * sn * sn / 3) / sky;
+                    }
+                    seen /= dirs; least = Mathf.Min(least, seen);
+                    byte v = (byte)Mathf.RoundToInt(255 * seen);
+                    px[j * res + i] = new Color32(v, v, v, 255);
+                }
+            var tex = new Texture2D(res, res, TextureFormat.RGBA32, false, true) { wrapMode = TextureWrapMode.Clamp, filterMode = FilterMode.Bilinear };
+            tex.SetPixels32(px); tex.Apply();
+            AssetDatabase.CreateAsset(tex, $"{gen}/ground-sky.asset");
+            gm.SetTexture("_OcclusionMap", tex);
+            gm.SetFloat("_OcclusionStrength", 1f);
+            gm.EnableKeyword("_OCCLUSIONMAP");
+            Debug.Log($"[LT1Street] ground sky: {cell * 100:F1} cm cells, least {least:F2}");
+        }
+
+        // the house's footprint in the row's frame (x along the street, y back from the building line)
+        static Rect Footprint(Built b) => new Rect(b.root.transform.position.x, 0, b.house.size[0], b.house.size[1]);
+
+        // the level a house takes from a camera: near within house.json seenWithinM of its nearest point, city from cityFromM
+        static string LevelAt(Built b, Vector3 eye)
+        {
+            var f = Footprint(b);
+            float dx = Mathf.Max(f.xMin - eye.x, 0, eye.x - f.xMax), dy = Mathf.Max(f.yMin - eye.y, 0, eye.y - f.yMax);
+            float dist = new Vector3(dx, dy, Mathf.Max(eye.z - 4f, 0)).magnitude;
+            return dist <= (b.house.seenWithinM > 0 ? b.house.seenWithinM : 10f) ? "near"
+                : dist >= (b.house.cityFromM > 0 ? b.house.cityFromM : float.MaxValue) ? "city" : "street";
+        }
+
+        // the farthest corner of a house from a camera, ridge high, so its whole shadow is in the shadowed distance
+        static float FarFrom(Built b, Vector3 eye)
+        {
+            var f = Footprint(b);
+            float dx = Mathf.Max(Mathf.Abs(f.xMin - eye.x), Mathf.Abs(f.xMax - eye.x));
+            float dy = Mathf.Max(Mathf.Abs(f.yMin - eye.y), Mathf.Abs(f.yMax - eye.y));
+            return new Vector3(dx, dy, Mathf.Max(Mathf.Abs(eye.z), 10f)).magnitude;
+        }
+
+        // the row's four views, from its length w and its deepest plot d (x from the first house's left corner): eye level
+        // 7.5 m out, a lane's width, looking down the row from before its first house; the street stop 20 m off its first
+        // house, across the street and down the row; raised to 12 m; and high, near-isometric
+        static View[] RowViews(float w, float d) => new[]
+        {
+            new View { name = "eye", level = "near", pos = new Vector3(-4.5f, -7.5f, 1.6f), target = new Vector3(w * 0.42f, 1.0f, 3.8f), fov = 55 },
+            new View { name = "street", level = "street", pos = new Vector3(-6.0f, -19.0f, 1.6f), target = new Vector3(w * 0.54f, 2.0f, 3.5f), fov = 38 },
+            new View { name = "raised", level = "street", pos = new Vector3(4.0f, -17.0f, 12.0f), target = new Vector3(w * 0.55f, d * 0.3f, 2.5f), fov = 48 },
+            new View { name = "high", level = "street", pos = new Vector3(-12.0f, -38.0f, 34.0f), target = new Vector3(w * 0.5f, d * 0.35f, 2.5f), fov = 28 },
+        };
 
         /// <summary>
         /// The cost of a street of such houses, offscreen: `n` copies of the house side by side on their plots, each
@@ -593,7 +749,14 @@ namespace Overstory.EditorTools
                     // curtains: share, opacity, depthM, valanceShare, foldsPerM
                     mat.SetVector("_Curtain", C(g.curtain, g.curtains[0]));
                     mat.SetVector("_CurtainB", new Vector4(g.curtains[1], g.curtains[2], g.curtains[3], g.curtains[4]));
-                    mat.SetVector("_GlassDay", new Vector4(g.daylight[0], g.daylight[1], g.daylight[2], g.daylight[3]));
+                    // daylight: transmit, bounce, curtains (a house.json from before the window's form factor has four)
+                    if (g.daylight.Length == 3)
+                        mat.SetVector("_GlassDay", new Vector4(g.daylight[0], g.daylight[1], 0, g.daylight[2]));
+                    else
+                        Debug.LogError($"[LT1Street] {house.house}: house.json glass.daylight predates the window's form factor; rebuild it");
+                    // what the panes face, from the street (paint.json light.reflect)
+                    if (p.reflect != null && p.reflect.Length == 4)
+                        mat.SetVector("_Opposite", new Vector4(p.reflect[0], p.reflect[1], p.reflect[2], p.reflect[3]));
                     var shapes = new[] { "rings", "waves", "one-way", "flat" };
                     for (int k = 0; k < 4 && k < g.kinds.Length; k++)
                     {

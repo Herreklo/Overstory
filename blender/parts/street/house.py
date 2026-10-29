@@ -2546,7 +2546,7 @@ def glass_digest(G):
             r["heightM"], r["ambient"], r["lampDropM"], r["lampSwingM"], r["furnitureHeightM"], r["furnitureHalfLengthM"],
             r["cornerReachM"], r["cornerLight"], r["shadeRadiusM"], r["shadeGlow"]],
             "curtains": [c["share"], c["opacity"], c["depthM"], c["valanceShare"], c["foldsPerM"]],
-            "daylight": [d["window"], d["backWall"], d["ceiling"], d["curtains"]],
+            "daylight": [d["transmit"], d["bounce"], d["curtains"]],
             "kinds": [{"name": k["name"], "tiltDeg": k["tiltDeg"], "perM": k["perM"], "shape": k["shape"]} for k in kinds]}
 
 

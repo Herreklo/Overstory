@@ -5,17 +5,26 @@
 # STREET_CITYONE=0 keeps the city level a material a piece (one material and one draw by default); STREET_FARSHADOW=cast
 # lets a timed house too far for its shadow to reach the shadowed distance cast all the same (none by default); STREET_SRPB=0
 # turns the pipeline's SRP Batcher off for the run (an A/B of the batcher's draw path); STREET_SHADOWTWO=0 casts the
-# house's shadows one-sided (two-sided by default);
+# house's shadows one-sided (two-sided by default); STREET_ROW="<house>:<gen dir>:<paint dir> ..." installs each house
+# and draws them together on their plots from the row's views (the <house> argument is then ignored; stills row-*);
+# STREET_GROUNDSKY=0 leaves the ground open to the sky at the houses' feet (an A/B of the ground's own sky);
 # run it under tools/unity_lock.py
 set -e
 cd "$(dirname $0)/../../../.."
-h=$1; F=unity/Assets/Experiments/LT1/Street/Generated/$h; L=cache/street/unity-$2.log
-mkdir -p $F
-G=${STREET_GEN:-cache/street/gen/$h}
-cp $G/house-near.fbx $G/house-street.fbx $G/house-city.fbx $G/house.json $F/
-O=${STREET_PAINT:-cache/street/bake/$h/out}
-cp $O/*.png $O/paint.json $F/
+h=$1; L=cache/street/unity-$2.log
+install() {  # <house> <gen dir> <paint dir>
+  F=unity/Assets/Experiments/LT1/Street/Generated/$1
+  mkdir -p $F
+  cp $2/house-near.fbx $2/house-street.fbx $2/house-city.fbx $2/house.json $F/
+  cp $3/*.png $3/paint.json $F/
+}
+if [ -n "$STREET_ROW" ]; then
+  H=""
+  for e in $STREET_ROW; do IFS=: read k g o <<< "$e"; install $k $g $o; H=${H:+$H,}$k; done
+else
+  install $h ${STREET_GEN:-cache/street/gen/$h} ${STREET_PAINT:-cache/street/bake/$h/out}
+fi
 /Applications/Unity/Hub/Editor/6000.6.6f1/Unity.app/Contents/MacOS/Unity -batchmode -quit -projectPath $PWD/unity \
-  -executeMethod Overstory.EditorTools.LT1Street.Run -streetHouse $h -streetRound $2 -streetViews ${3:-eye,street} \
-  -streetWays ${4:-P,Pc} -streetLights ${5:-overcast,lowsun} ${6:+-streetPlaneShadow $6} ${7:+-streetRoofFlatUp $7} ${STREET_TIMING:+-streetTiming $STREET_TIMING} ${STREET_COMPRESS:+-streetCompress $STREET_COMPRESS} ${STREET_LEVEL:+-streetLevel $STREET_LEVEL} ${STREET_CITYONE:+-streetCityOne $STREET_CITYONE} ${STREET_FARSHADOW:+-streetFarShadow $STREET_FARSHADOW} ${STREET_SRPB:+-streetSrpBatcher $STREET_SRPB} ${STREET_SHADOWTWO:+-streetShadowTwo $STREET_SHADOWTWO} -logFile $L
+  -executeMethod Overstory.EditorTools.LT1Street.Run -streetHouse $h ${H:+-streetHouses $H} -streetRound $2 -streetViews ${3:-eye,street} \
+  -streetWays ${4:-P,Pc} -streetLights ${5:-overcast,lowsun} ${6:+-streetPlaneShadow $6} ${7:+-streetRoofFlatUp $7} ${STREET_TIMING:+-streetTiming $STREET_TIMING} ${STREET_COMPRESS:+-streetCompress $STREET_COMPRESS} ${STREET_LEVEL:+-streetLevel $STREET_LEVEL} ${STREET_CITYONE:+-streetCityOne $STREET_CITYONE} ${STREET_FARSHADOW:+-streetFarShadow $STREET_FARSHADOW} ${STREET_SRPB:+-streetSrpBatcher $STREET_SRPB} ${STREET_SHADOWTWO:+-streetShadowTwo $STREET_SHADOWTWO} ${STREET_GROUNDSKY:+-streetGroundSky $STREET_GROUNDSKY} -logFile $L
 grep -n "LT1Street\]\|error CS\|Exception" $L | tail -40

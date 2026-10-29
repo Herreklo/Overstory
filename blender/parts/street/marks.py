@@ -135,9 +135,14 @@ def lap_line(pg, P, meta):
 
 
 def geo(pg, P, meta):
-    """geo.png as marks.py writes it: R occlusion, G cavity (lighter on a worn arris), B the lap line, A the arris."""
+    """geo.png as marks.py writes it: R occlusion, G cavity (lighter on a worn arris), B the lap line, A the arris.
+    R is the nearer of the 0.6 m occlusion and the sky the face sees (the sky bake, unlimited, over what an open face
+    of its tilt sees: half the sky for a wall), so an eave or a verge shades the wall under it as an overcast sky
+    does, deepest at the eave and easing down, where the sun's shadow would cut a hard band."""
     cav = np.clip((1.0 - pg.cav) * 1.3, 0, 1)
-    g = np.stack([pg.ao, 0.5 + 0.5 * (pg.arris * 0.6 - cav), lap_line(pg, P, meta), pg.arris], axis=-1)
+    sky = np.clip(pg.sky / np.maximum(0.5 * (1.0 + pg.n[..., 2]), 0.05), 0.0, 1.0)
+    occ = np.minimum(pg.ao, sky)
+    g = np.stack([occ, 0.5 + 0.5 * (pg.arris * 0.6 - cav), lap_line(pg, P, meta), pg.arris], axis=-1)
     pad = meta["page"]["padPx"]
     return FL.dilate(np.where(pg.cov[..., None], g, 0), pg.cov, pad + 2)
 

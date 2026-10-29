@@ -162,6 +162,26 @@ def graded(Q, g, om, door):
     return q
 
 
+def uneven(q, U, meta, k):
+    """Each sill fails in its own time (paint.json wear.uneven): opening k's tongue drawn afresh from the corner's,
+    seeded by the opening, so the windows of one wall no longer peel in the same steps. The first lap under the sill
+    takes the most water, so each board below peels less than the one above, and the peel stops a few boards down."""
+    q = copy.deepcopy(q)
+    T = q["tongue"]
+    u = lambda *p: HS.unit(HS.h(key(meta, "p-uneven", k), *p))  # noqa: E731
+    lerp = lambda r, t: r[0] + (r[1] - r[0]) * t  # noqa: E731
+    sev = lerp(U["severity"], u("severity"))
+    fall, boards = lerp(U["fall"], u("fall")), round(lerp(U["boards"], u("boards")))
+    for name, R in T["runs"].items():
+        R["peel"] = [[w, ht * sev] if j == 0 else [0.0, 0.0] if j >= boards or u(name, j, "skip") < U["skip"] else
+                     [w * fall ** j * lerp(U["width"], u(name, j, "w")),
+                      min(U["top"], ht * sev * fall ** j * lerp(U["height"], u(name, j, "h")))]
+                     for j, (w, ht) in enumerate(R["peel"])]
+    for kind in ("leak", "dry"):
+        T["runoff"][kind]["flake"] = [T["runoff"][kind]["flake"][0], T["runoff"][kind]["flake"][1] * sev]
+    return q
+
+
 # ---------------------------------------------------------------- the failed paint
 
 
@@ -614,7 +634,7 @@ def main():
     # the failed paint, the corner's: each opening's runs, its tongue, its casing's peel and its stains; each wall's
     # tops and its plinth's wet margin
     for k, o, wall, v, om, side, g, door, mine in ops:
-        q = graded(Q, g, om, door)
+        q = uneven(graded(Q, g, om, door), S["wear"]["uneven"], meta, k)
         if g >= A["from"]["runoff"]:
             pt, ws, fr, st = FP.runoff(v, q["tongue"], om, side)
             if g >= A["from"]["tongue"]:
@@ -722,6 +742,9 @@ def main():
     cm = Qc["colour"]["mats"]
     cm["cladding"]["paint"] = [wp["C"], wp["h"]]
     cm["trims"]["paint"] = [tp_["C"], tp_["h"]]
+    # a paint that ages to a hue of its own (paints.json `wash`) takes its long washes in it
+    if "wash" in wp:
+        Qc["colour"]["wash"] = wp["wash"]
     cm.update(board.get("colour", {}))
     for k, v in extra.items():
         cm[k] = dict(cm[v]) if isinstance(v, str) else dict(cm[v["like"]]) if "like" in v else S["colour"].get(k, {})
@@ -738,7 +761,8 @@ def main():
                   "stainSmooth": v.get("stainSmooth", v["smooth"]), "brushL": v.get("brushL", 0.0), "flatUp": v.get("flatUp", 0.0),
                   "stainEdge": v.get("stainEdge", 1.0), "ao": v.get("ao", Q["aoStrength"]), "shadowLift": v.get("shadowLift", 0.0)}
                  for k, v in mats.items()],
-        "lights": [dict(v, light=k) for k, v in Q["light"].items()],
+        "lights": [dict(v, light=k) for k, v in dict(Q["light"], **{k: v for k, v in S.get("light", {}).items() if k not in ("describes", "reflect")}).items()],
+        "reflect": S.get("light", {}).get("reflect"),
         "strokeScale": meta["page"]["size"] / meta["page"]["pxPerM"] / Q["stroke"]["metres"],
         "edgeAmp": E["amp"], "strokeFade": E["fadeLod"], "brushFade": Q["brush"]["fadeLod"], "brushFar": Q["brush"]["far"],
         "dragL": Q["drag"]["L"], "dragScale": Q["drag"]["scale"], "dlRange": Q["dlRange"], "rimL": E["rimL"],

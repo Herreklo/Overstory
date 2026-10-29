@@ -18,7 +18,8 @@ Shader "Overstory/Glass"
         _RoomFurniture2 ("The room's furniture: x its half length (m)", Vector) = (0.9, 0, 0, 0)
         _Curtain ("Curtains: rgb (linear), a the share of the window's half width each covers", Vector) = (0.9, 0.84, 0.72, 0.5)
         _CurtainB ("Curtains: x opacity, y depth behind the glass (m), z the valance's share of the height, w folds a metre", Vector) = (0.6, 0.07, 0.16, 11)
-        _GlassDay ("An unlit room by day: x its light at the glass, y at its back wall, z the ceiling's share, w the curtains'", Vector) = (0.35, 0.05, 0.5, 0.55)
+        _GlassDay ("An unlit room by day: x the glass's transmittance, y the room's own bounce (a share of the light on the face), w the curtains' share", Vector) = (0.85, 0.013, 0, 0.55)
+        _Opposite ("What the panes face (paint.json light.reflect): x the far shore's skyline (sin of its rise), y its value against the horizon's sky, z the water's, w the pane's surfaces", Vector) = (0, 1, 0.7, 1)
         _Kind0 ("Glass kind 0: x its waves' tilt (radians), y z waves a metre, least and most, w its shape (0 rings, 1 waves, 2 one way, 3 flat)", Vector) = (0, 1, 1, 3)
         _Kind1 ("Glass kind 1", Vector) = (0, 1, 1, 3)
         _Kind2 ("Glass kind 2", Vector) = (0, 1, 1, 3)
@@ -32,7 +33,7 @@ Shader "Overstory/Glass"
         float4 _Geo_ST;
         float _Gloss;
         float4 _RoomWall, _RoomCeiling, _RoomFloor, _RoomShape, _RoomFurniture, _RoomFurniture2;
-        float4 _Curtain, _CurtainB, _GlassDay;
+        float4 _Curtain, _CurtainB, _GlassDay, _Opposite;
         float4 _Kind0, _Kind1, _Kind2, _Kind3;
     CBUFFER_END
     ENDHLSL
@@ -97,12 +98,26 @@ Shader "Overstory/Glass"
                 return o;
             }
 
+            // How much of a point's sky the window fills, for a surface facing m: the form factor of the window's
+            // rectangle (x within hw of its middle, y from the sill up hh) by Lambert's formula for a polygon.
+            float WindowSeen(float3 p, float3 m, float hw, float hh)
+            {
+                float3 v0 = normalize(float3(-hw, 0.0, 0.0) - p), v1 = normalize(float3(hw, 0.0, 0.0) - p);
+                float3 v2 = normalize(float3(hw, hh, 0.0) - p), v3 = normalize(float3(-hw, hh, 0.0) - p);
+                float s = acos(clamp(dot(v0, v1), -1.0, 1.0)) * dot(normalize(cross(v0, v1) + 1e-6), m)
+                        + acos(clamp(dot(v1, v2), -1.0, 1.0)) * dot(normalize(cross(v1, v2) + 1e-6), m)
+                        + acos(clamp(dot(v2, v3), -1.0, 1.0)) * dot(normalize(cross(v2, v3) + 1e-6), m)
+                        + acos(clamp(dot(v3, v0), -1.0, 1.0)) * dot(normalize(cross(v3, v0) + 1e-6), m);
+                return abs(s) / (2.0 * PI);
+            }
+
             // The room behind the pane by day (interior mapping): the ray from the eye through the glass meets a box
             // room behind the window, its furniture along the back wall, sheer curtains at the window's sides and a
-            // valance over it just behind the glass; lit only by the light that comes in at its window, the most near
-            // the glass and less to the back, the ceiling less than the walls and floor, its corners less again.
-            // Returned as the share of the light on the pane's face that comes back out through the glass. Where the
-            // furniture stands is the window's seed's, claiming nothing.
+            // valance over it just behind the glass; lit only by the light that comes in at its window: each surface
+            // by how much of its sky the window fills (the floor just inside most, the side walls and ceiling by the
+            // glass little, as they see it edge on), and the room's own bounce, its corners less again; through the
+            // glass in and out. Returned as the share of the light on the pane's face that comes back out through the
+            // glass. Where the furniture stands is the window's seed's, claiming nothing.
             half3 RoomDay(float3 d, float3 t, float3 n, float2 uv, float hw, float hh, float k)
             {
                 float3 rd = float3(dot(d, t), d.y, max(dot(d, -n), 0.02));
@@ -114,20 +129,17 @@ Shader "Overstory/Glass"
                 float th = min(min(tb.x, tb.y), tb.z);
                 float3 h = ro + rd * th;
                 half3 albedo = (half3)_RoomWall.rgb;
-                half ceiling = 0.0h;
                 if (th == tb.y)
-                {
                     albedo = rd.y > 0.0 ? (half3)_RoomCeiling.rgb : (half3)_RoomFloor.rgb;
-                    ceiling = rd.y > 0.0 ? 1.0h : 0.0h;
-                }
                 float sx = (frac(k * 5.31) - 0.5) * 2.0 * _RoomCeiling.a;
                 if (th == tb.z && h.y + sill < _RoomFurniture.a && abs(h.x - sx) < _RoomFurniture2.x)
                     albedo = (half3)_RoomFurniture.rgb;
                 float3 e = min(h - lo, hi - h) / _RoomShape.y;
                 float edge = th == tb.z ? min(e.x, e.y) : th == tb.x ? min(e.y, e.z) : min(e.x, e.z);
                 half ao = (half)lerp(_RoomShape.z, 1.0, saturate(edge));
-                half deep = (half)saturate(h.z / max(_RoomWall.a, 0.1));
-                half3 room = albedo * ao * lerp((half)_GlassDay.x, (half)_GlassDay.y, deep) * lerp(1.0h, (half)_GlassDay.z, ceiling);
+                float3 m = th == tb.z ? float3(0.0, 0.0, -1.0) : th == tb.x ? float3(-sign(rd.x), 0.0, 0.0) : float3(0.0, -sign(rd.y), 0.0);
+                half seen = (half)WindowSeen(h, m, hw, hh);
+                half3 room = albedo * ao * (half)_GlassDay.x * ((half)_GlassDay.x * seen + (half)_GlassDay.y);
                 // the curtains: a sheer cloth gathered in folds, lit from the window
                 float3 pc = ro + rd * (_CurtainB.y / rd.z);
                 float edgeX = hw * (1.0 - _Curtain.a) + 0.004 * sin(pc.y * 3.1 + k * 40.0);
@@ -137,7 +149,10 @@ Shader "Overstory/Glass"
                 float fold = sin(pc.x * _CurtainB.w * 6.2832 + 1.7 * sin(pc.x * _CurtainB.w * 2.1));
                 half cloth = (half)(saturate(max(side, top)) * _CurtainB.x * (0.8 + 0.2 * fold));
                 half lit = (half)(1.0 + 0.35 * fold * side);
-                return lerp(room, (half3)_Curtain.rgb * (half)_GlassDay.w * lit, cloth);
+                // the cloth lit as the room is, by the window it faces from just behind the glass
+                half cseen = (half)WindowSeen(pc, float3(0.0, 0.0, -1.0), hw, hh);
+                half3 sheer = (half3)_Curtain.rgb * (half)_GlassDay.w * lit * (half)_GlassDay.x * ((half)_GlassDay.x * cseen + (half)_GlassDay.y);
+                return lerp(room, sheer, cloth);
             }
 
             // The pane's waves, by its kind: crown glass in rings about the disc's centre (off the pane, where its seed
@@ -166,14 +181,20 @@ Shader "Overstory/Glass"
                 return normalize(n + t * tilt.x + up * tilt.y);
             }
 
-            // what the glass reflects: the scene's own ambient (its trilight), the sky over the horizon and the ground
-            // under it, with the horizon's edge kept sharp as a mirror keeps it
+            // what the glass reflects: the scene's own ambient (its trilight) for the sky, brighter up to the zenith; what
+            // the street faces (_Opposite): the far shore's skyline across the harbour, a band of buildings up to x at y of
+            // the horizon's sky, stepped a block at a time (seeded texture, claiming nothing), and under the horizon the
+            // water, mirroring the sky at z, easing into the ground, with every edge kept sharp as a mirror keeps it; with
+            // _Opposite's defaults, the trilight alone
             half3 Reflected(float3 r)
             {
                 half3 sky = SampleSH(float3(0.0, 1.0, 0.0));
                 half3 eq = SampleSH(normalize(float3(r.x, 0.0, r.z) + float3(1e-4, 0.0, 0.0)));
                 half3 ground = SampleSH(float3(0.0, -1.0, 0.0));
-                return r.y >= 0.0 ? lerp(eq, sky, (half)smoothstep(0.0, 0.6, r.y)) : lerp(eq * 0.7h, ground, (half)smoothstep(0.0, 0.25, -r.y));
+                float block = floor(atan2(r.x, r.z) * 40.0);
+                float rise = _Opposite.x * (0.55 + 0.45 * frac(sin(block * 12.9898) * 43758.5453));
+                half3 above = r.y < rise ? eq * (half)_Opposite.y : lerp(eq, sky, (half)smoothstep(0.0, 0.6, r.y));
+                return r.y >= 0.0 ? above : lerp(eq * (half)_Opposite.z, ground, (half)smoothstep(0.0, 0.25, -r.y));
             }
 
             half4 Frag(Varyings i) : SV_Target
@@ -201,7 +222,10 @@ Shader "Overstory/Glass"
                 half3 direct = LightingPhysicallyBased(brdf, ml, (half3)nw, (half3)v);
                 half nv = saturate(dot(nw, v));
                 half3 envD = brdf.diffuse * SampleSH(n);
-                half3 envS = Reflected(reflect(d, nw)) * EnvironmentBRDFSpecular(brdf, Pow4(1.0h - nv));
+                // a pane reflects at both its faces: 2R / (1 + R) for single glazing (_Opposite.w surfaces)
+                half3 fr = EnvironmentBRDFSpecular(brdf, Pow4(1.0h - nv));
+                fr = fr * (half)_Opposite.w / (1.0h + ((half)_Opposite.w - 1.0h) * fr);
+                half3 envS = Reflected(reflect(d, nw)) * fr;
                 half aoD = 1.0h, aoI = 1.0h;
             #if defined(_SCREEN_SPACE_OCCLUSION)
                 AmbientOcclusionFactor so = GetScreenSpaceAmbientOcclusion(GetNormalizedScreenSpaceUV(i.positionCS));
