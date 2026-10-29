@@ -4,6 +4,8 @@
 
 11 to 32 were sent by Øystein in chat on 29 October as inspiration for later: the Eiganes villa and houses not made of wood. No source was given. They are for study only.
 
+Some show the town after 1989, not as it stood then, and belong to the later years we build (2000, 2010, 2020): 21 (2010s flats), 24 (the theatre's extension), 32 (the city hall's new facade), and the later work in 12 (the conversion), 15 (the pool) and 30–31 (the new dormers and café). In a 1989 scene they are what the town will become, never what it is.
+
 | File | What it shows | What to take |
 | --- | --- | --- |
 | `11-brick-gable-cottage-anchors-roses.webp` | A small gable house in hand-made brick, every brick its own shade. Its windows and verges are blue-grey and its door is teal. Flat soldier arches sit over the openings, iron wall anchors are fixed on the face, and roses climb by the door | Brick as many single bricks, not a tiled texture. Arches and anchors are part of how the wall is built. A garden grows against the wall |
