@@ -33,21 +33,33 @@ zonation are (`../README.md`).
   the sea, 3 m off the north-west shore); `tip.grey` holds the frame's values and the shore bands; `tip.py` moves them into 107's frame in `tip.json` with the site's own low
   sun (`sunOff`), and `LT1HolmTip.cs` adds them beside the street stop. Run:
   `TIP_GREY=1 render.sh <round> water,street P overcast,lowsun`.
-- **State (29 Oct, t07):** the shore block as the ice made it, `whaleback.py` (kit.json `whaleback`; out
+- **State (29 Oct, t08):** the shore block as the ice made it, `whaleback.py` (kit.json `whaleback`; out
   `cache/rock/kit/gen/carve/W.blend`, `-- --bake 1` adds `W-game` and its 2048 maps; shown by `tip.py -- --lone 1
   --show W-high|W-game`). One heightfield hull in the ice's frame, its crest at the record's back (2.9 m), cut by
-  exact plane booleans in two passes:
-  - the back's sheets: in each sheet (the fixture's foliation spacing), a few broad planar treads fitted under the
-    hull above the wet line, each rising toward the dip so the next sheet crops out 5-40 cm lower as a riser on the
-    foliation, with leaves plucked from the edges between J1 joints;
-  - the plucked lee in J2, foliation and J3 strips stepping down on their own;
+  exact plane booleans in two passes, every size drawn from a skewed spread (kit.json [mean, shape, least, most], a
+  gamma: a few big, many small):
+  - the back's sheets (thickness's mean the fixture's foliation spacing), parted along the strike by J1 joints at the
+    fixture's spacing; each edge offset across every joint (`jogM`) and ending at one `end` of the time; in each sheet
+    between two joints one planar tread fitted under the hull above the wet line, rising toward the dip by its own
+    `rise`; bites of skewed size plucked from the edges between J1 joints;
+  - the plucked lee in J2, foliation and J3 strips, each step's rise and width skewed and its tread its own dip;
   - one J1 and one J2 crack, 4-10 cm wide, their lips chipped by small wedges.
-  Crumbs a cut leaves are dropped. t07 W high is the best so far (`reviews/lt1/rock/t07/sheet.jpg`). Still wrong:
-  in raking light the sheet edges run as long regular slats (bites too small to break them), and the land flank keeps
-  the hull's smooth round under the wet line. The game mesh waits: then a coarse hull cut on the same planes. Turf
+  Crumbs a cut leaves are dropped. Grey check: Eevee, one neutral sun (az 330, el 35) and one raking (az 255, el 7),
+  the lone views and a lee view 7 m off at bearing 215. Still wrong: the land flank keeps the hull's smooth round
+  under the wet line (faceting it crumpled it, t07 x4). Next: the land flank; then the game mesh as a coarse hull cut
+  on the same planes; small-scale fracture through the bake (a foliated scan, `rock_face_01`, is downloaded). Turf
   test C, the toe line and the storm fixes queued.
 
 ## Rounds
+
+- **t08** (`reviews/lt1/rock/t08/`; `grey.jpg` Blender grey, rows t08 neutral, t08 raking, t07 neutral, columns
+  eye, 12 m, sea, lee, refs 16, 15, 48, 51; `sheet.jpg` columns t08 W high, t07 W high, t04b; rows eye, 12 m, sea,
+  each overcast then low sun). Regularity broken by the rock's causes: skewed sheet thickness, edges stepping over
+  and ending at J1 joints, bites a few near a metre and most 10-30 cm, a lee of skewed steps. Rung 1 passes: no run of
+  even slats, the lee plucked and no longer a cog, the sea profile held. On the way: with skew alone the slats stayed
+  parallel, jogs only notches (y1). In Unity, from 12 m and the sea in low sun, no slats and no cog; but at eye level
+  merged sheets leave one big cut face, less sheeted than t07, and the crest from the sea is a little more peaked.
+  Next for the back: fewer merges and thinner most-sheets near the crest (`end`, `thick` most).
 
 - **t07** (`reviews/lt1/rock/t07/`; `grey.jpg` Blender grey, one sun, eye, 12 m, sea and the lee over refs 16, 15,
   48, 51; `sheet.jpg` columns t07 W high, t06 W high, t04b; rows eye, 12 m, sea, each overcast then low sun). The bun

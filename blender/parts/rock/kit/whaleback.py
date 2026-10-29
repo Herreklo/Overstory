@@ -115,14 +115,21 @@ def body_mesh(faces, name):
     return me
 
 
-def sheets(W, X, Y, h, n, spacing, wet, lo, hi, rng):
-    """What the ice planed off the back across the foliation: in each sheet (between two of its planes `spacing` apart),
-    everything above a few broad planar treads fitted just under the hull, `alongM` each along the strike. Each tread
-    rises toward the foliation's dip by its own `riseM`, so at a sheet edge the next sheet crops out that much lower, a
-    riser on the foliation leaning back down-ice as the plucked side of a step, growing and dying out along the strike; the hull's own round stays
-    where the sea washes the lower edge (under `wet`, which no tread is fitted to). Along each edge the ice plucked
-    `bites`: a leaf `deepM` thick gone from the higher sheet's edge, `longM` long between two J1 joints, down to the
-    lower sheet's tread, so the edge jogs back and on as it runs."""
+def skew(rng, s):
+    """A draw from a skewed spread (kit.json [mean, shape, least, most]): a few big, many small."""
+    mean, k, lo_, hi_ = s
+    return float(np.clip(rng.gamma(k, mean / k), lo_, hi_))
+
+
+def sheets(W, X, Y, h, n, fam, wet, lo, hi, rng):
+    """What the ice planed off the back across the foliation: sheets of skewed thickness (the fixture's spacing their
+    mean), parted along the strike by J1 joints (the fixture's spacing), each sheet edge offset across every J1 joint
+    by up to `jogM` and ending at one `end` of the time. In each sheet between two joints, everything above one planar tread fitted just under the hull is
+    gone; the tread rises toward the dip by its own `rise`, so the next sheet crops out that much lower, a riser on the
+    foliation leaning back down-ice, and the edge steps over at the joints and dies out where the rise is small. The
+    hull's own round stays where the sea washes the lower edge (under `wet`, which no tread is fitted to). Along each
+    edge the ice plucked `bites` of skewed size: a leaf gone from the higher sheet's edge, between two J1 joints, down
+    to the lower sheet's tread."""
     S, H, B, nf = W["sheets"], W["hull"], W["sheets"]["bites"], n["foliation"]
     k = max(1, int(round(S["fitM"] / H["cellM"])))
     P = np.stack([X[::k, ::k].ravel(), Y[::k, ::k].ravel(), h[::k, ::k].ravel()], 1)
@@ -130,36 +137,42 @@ def sheets(W, X, Y, h, n, spacing, wet, lo, hi, rng):
     f = P @ nf
     st = np.array([-nf[1], nf[0]]) / np.linalg.norm(nf[:2])  # along the strike, level
     a = P[:, :2] @ st
-    d = [f.min() - rng.uniform(0, spacing[1])]
+    n1 = n["J1"] if n["J1"][:2] @ st > 0 else -n["J1"]
+    g = P @ n1  # across the J1 joints
+    thick = [sum(fam["foliation"]["spacingM"]) / 2, *S["thick"]]
+    d = [f.min() - skew(rng, thick)]
     while d[-1] < f.max():
-        d.append(d[-1] + rng.uniform(*spacing))
-    bodies, treads = [], []
-    for d0, d1 in zip(d[:-1], d[1:]):
-        treads.append([])
-        inside = (f >= d0) & (f < d1)
-        Q, A, t = P[inside], a[inside], (d1 - f[inside]) / (d1 - d0)  # t 1 at the sheet's up-dip edge, 0 at its down-dip
-        if len(Q) < S["fewest"]:
-            continue
-        ends = [A.min() - rng.uniform(0, S["alongM"][1])]
-        while ends[-1] < A.max():
-            ends.append(ends[-1] + rng.uniform(*S["alongM"]))
-        for i, (a0, a1) in enumerate(zip(ends[:-1], ends[1:])):
-            sel = (A >= a0) & (A < a1)
+        d.append(d[-1] + skew(rng, thick))
+    J = [g.min() - rng.uniform(*fam["J1"]["spacingM"])]
+    while J[-1] < g.max():
+        J.append(J[-1] + rng.uniform(*fam["J1"]["spacingM"]))
+    d = np.array(d)
+    room = np.minimum(np.diff(d, prepend=d[0] - 9), np.diff(d, append=d[-1] + 9))
+    off = rng.uniform(-1, 1, (len(d), len(J))) * np.minimum(S["jogM"], 0.45 * room)[:, None]
+    keep = rng.random((len(d), len(J))) > S["end"]  # where an edge ends at a joint, the two sheets are one beyond it
+    keep[0] = keep[-1] = True
+    ov = lambda: S["overlapM"] * rng.uniform(1, 3)  # noqa: E731  bodies overlap a little, never sharing a face
+    bodies, treads = [], {}
+    for j in range(len(J) - 1):
+        ks = np.flatnonzero(keep[:, j])
+        for i, i1 in zip(ks[:-1], ks[1:]):
+            d0, d1 = d[i] + off[i, j], d[i1] + off[i1, j]
+            sel = (f >= d0) & (f < d1) & (g >= J[j]) & (g < J[j + 1])
             if sel.sum() < S["fewest"]:
                 continue
-            M = np.c_[Q[sel, :2], np.ones(sel.sum())]
-            target = Q[sel, 2] - rng.uniform(*S["riseM"]) * t[sel]  # each tread its own rise: an edge grows and dies out
+            M = np.c_[P[sel, :2], np.ones(sel.sum())]
+            target = P[sel, 2] - skew(rng, S["rise"]) * (d1 - f[sel]) / (d1 - d0)  # under the hull at its up-dip edge
             co = np.linalg.lstsq(M, target, rcond=None)[0]
             co[2] -= max(0.0, float((M @ co - target).max()))  # all of it under the hull: a cut, never a fill
-            treads[-1].append((a0, a1, co))
+            treads[i, j] = co
             m = np.array([co[0], co[1], -1.0])
-            o = S["overlapM"] * (1 + 0.3 * i)  # neighbouring bodies overlap a little, never sharing a face
-            bodies.append(HL.body(lo, hi, [(nf, d1 + o, "foliation"), (-nf, -(d0 - o), "foliation"),
+            bodies.append(HL.body(lo, hi, [(nf, d1 + ov(), "foliation"), (-nf, -(d0 - ov()), "foliation"),
+                                           (n1, J[j + 1] + ov(), "J1"), (-n1, -(J[j] - ov()), "J1"),
                                            (m / np.linalg.norm(m), -co[2] / np.linalg.norm(m), "tread")]))
-    n1 = n["J1"] if n["J1"][:2] @ st > 0 else -n["J1"]
-    for j, edge in enumerate(d[1:-1]):  # the edge between sheet j (up-dip) and j + 1
-        on = np.abs(f - edge) < S["fitM"]
-        if not on.any() or not treads[j + 1]:
+    for (i, j), co in treads.items():  # bites from the edge of sheet i - 1 where sheet i crops out under it
+        edge = d[i] + off[i, j]
+        on = (np.abs(f - edge) < S["fitM"]) & (g >= J[j]) & (g < J[j + 1])
+        if not on.any():
             continue
         E, Ea = P[on], a[on]
         x = Ea.min()
@@ -167,12 +180,9 @@ def sheets(W, X, Y, h, n, spacing, wet, lo, hi, rng):
             x += rng.uniform(*B["gapM"])
             if rng.random() > B["chance"]:
                 continue
-            pb = E[np.argmin(np.abs(Ea - x))]
-            under = [co for a0, a1, co in treads[j + 1] if a0 <= x < a1] or [treads[j + 1][0][2]]
-            co, ln = under[0], rng.uniform(*B["longM"])
+            pb, ln = E[np.argmin(np.abs(Ea - x))], skew(rng, B["long"])
             m = np.array([co[0], co[1], -1.0])
-            bodies.append(HL.body(lo, hi, [(nf, edge + S["overlapM"] * rng.uniform(4, 5), "foliation"),
-                                           (-nf, -(edge - rng.uniform(*B["deepM"])), "foliation"),
+            bodies.append(HL.body(lo, hi, [(nf, edge + 4 * ov(), "foliation"), (-nf, -(edge - skew(rng, B["deep"])), "foliation"),
                                            (n1, n1 @ pb + ln / 2, "J1"), (-n1, -(n1 @ pb - ln / 2), "J1"),
                                            (m / np.linalg.norm(m), (rng.uniform(*B["dropM"]) - co[2]) / np.linalg.norm(m),
                                             "tread")]))
@@ -223,7 +233,7 @@ def cutters(W, crest, z_at, du, dv, n, toward, lo, hi, rng):
     """The bodies the lee and the joints lost, each the intersection of half-spaces on the rock's own planes."""
     L, C = W["lee"], W["cracks"]
     nf, n1 = n["foliation"], n["J1"]
-    nt = np.array(PT.normal(L["treadDip"], toward))
+
     up = lambda p, z: np.array([p[0], p[1], z])  # noqa: E731
     bodies = []
     # the main joints across the back: narrow, straight-sided, through the block
@@ -251,7 +261,8 @@ def cutters(W, crest, z_at, du, dv, n, toward, lo, hi, rng):
         top = z_at(crest + du * x)
         while top > L["underM"] and k < L["most"]:
             p = crest + du * x
-            z = top - rng.uniform(*L["riseM"])
+            z = top - skew(rng, L["rise"])  # a few tall faces (steps merged), many low (split)
+            nt = np.array(PT.normal(rng.uniform(*L["treadDip"]), toward))
             d = HL.through(nm, up(p, top))
             over = (-nt, -HL.through(nt, up(p, z)), "sheeting")
             bodies.append(HL.body(lo, hi, [(sg * nm, sg * d, fam), *strip, over]))
@@ -262,7 +273,7 @@ def cutters(W, crest, z_at, du, dv, n, toward, lo, hi, rng):
                 bodies.append(HL.body(lo, hi, [(-nf, -(d - t), "foliation"), (nf, d + 0.02, "foliation"),
                                                (-nt, -floor, "sheeting"), (n1, a + wj, "J1"),
                                                (-n1, -a, "J1")]))
-            x += rng.uniform(*L["spacingM"])
+            x += skew(rng, L["spacing"])
             top = z
             k += 1
     return [b for b in bodies if b is not None], walls
@@ -338,8 +349,7 @@ def main():
 
     lo = np.array([X.min() - 1, Y.min() - 1, H["footM"] - 1])
     hi = np.array([X.max() + 1, Y.max() + 1, H["crestM"] + 1])
-    spacing = PT.families(BI.FIX)["foliation"]["spacingM"]
-    cut(high, sheets(W, X, Y, h, n, spacing, wet, lo, hi, rng), W["solver"])
+    cut(high, sheets(W, X, Y, h, n, PT.families(BI.FIX), wet, lo, hi, rng), W["solver"])
     tree = BVHTree.FromPolygons([v.co.copy() for v in high.data.vertices], [p.vertices[:] for p in high.data.polygons])
 
     def surf(p):  # the sheeted back's height at a point of the plan, or None off the rock
