@@ -103,3 +103,11 @@ Cost (`c04-timing.md`, `STREET_TIMING=50 render.sh 107 d15 street P overcast`; e
 | (the batcher on, look not yet held) | 127 | 4.2 |
 
 - Per far house: 1 draw, 729 triangles, plus 1 shadow draw while its shadow can reach the shadowed distance. Over the scene's own 2.75 ms, the 49 more houses down the row (42 far, 7 at the street level) cost 2.1–2.6 ms, against 7.8 before. That leaves about 0.03–0.04 ms a far house, near the editor's run-to-run spread of ±0.3 ms.
+
+## c05: the SRP Batcher traced, still off (29 October)
+
+- Ruled out, in about an hour:
+  - Globals and property blocks: none. No `Shader.SetGlobal…` or MaterialPropertyBlock anywhere in the project sets a name in OS_Finish's `UnityPerMaterial`.
+  - Stale per-renderer data: toggling every renderer after each light change leaves the stills unchanged (e03).
+  - The value of `_Geo_TexelSize` inside the cbuffer: with it inside and the pipeline's batcher off for the run (`STREET_SRPB=0`, e04), 107 matches k01 (no 8 px block moves 0.12 L*).
+- So the shift comes from the batcher's own draw path, in the per-draw data it fills. The likeliest is the ambient SH (`SampleSH`): the overcast and ambient-lit faces move most, and the URP/Lit ground, batched in both runs, doesn't move. The next step is to write `SampleSH(n)` out in both paths and compare. Until then the batcher stays off; the prize is 1.2 ms down the row of 50.

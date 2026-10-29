@@ -165,9 +165,11 @@ namespace Overstory.EditorTools
             var rd = AssetDatabase.LoadAssetAtPath<ScriptableRendererData>("Assets/Settings/PC_Renderer.asset");
             var was = rd.rendererFeatures.ToDictionary(f => f, f => f.isActive);
             var urp = (UniversalRenderPipelineAsset)GraphicsSettings.currentRenderPipeline;
-            var urpWas = (urp.shadowDistance, urp.shadowCascadeCount, urp.mainLightShadowmapResolution);
+            var urpWas = (urp.shadowDistance, urp.shadowCascadeCount, urp.mainLightShadowmapResolution, urp.useSRPBatcher);
             try
             {
+                if (Arg("-streetSrpBatcher") == "0")
+                    urp.useSRPBatcher = false;
                 foreach (var f in rd.rendererFeatures)
                     f.SetActive(f.name.Contains("AmbientOcclusion"));
                 foreach (var light in Lights.Where(l => lights.Contains(l.name)))
@@ -208,7 +210,7 @@ namespace Overstory.EditorTools
             {
                 foreach (var kv in was)
                     kv.Key.SetActive(kv.Value);
-                (urp.shadowDistance, urp.shadowCascadeCount, urp.mainLightShadowmapResolution) = urpWas;
+                (urp.shadowDistance, urp.shadowCascadeCount, urp.mainLightShadowmapResolution, urp.useSRPBatcher) = urpWas;
             }
             foreach (var kv in levels)
                 Debug.Log($"[LT1Street] {kv.Key}: {kv.Value.GetComponentsInChildren<MeshFilter>(true).Sum(f => f.sharedMesh.triangles.Length / 3)} triangles in Unity");
