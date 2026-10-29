@@ -141,3 +141,39 @@ Cost (`w04tw`, `STREET_TIMING=50 render.sh 107 w04tw street P overcast`, with 10
 - Triangles, one house: near 24,540 one-light, 24,744 six-pane, 24,888 cross (budget 25k); street 6,229 / 6,337 / 6,433 (8k); city 643 (800).
 - Glass adds one material and one draw at near and street level, and no texture: it reads the page's occlusion. The city level is still one draw.
 - Row of 50: street stop 3.6 ms, raised 4.0, along 4.7 (1989's boarded row: 3.7, 4.1, 4.8). Textures unchanged: 21.3 MB a house at full; 80–97 MB streamed.
+
+## w06: the windows made as the joinery is (29 October)
+
+- The coordinator's judgement on w04: all three read as toy windows, with too much wood.
+- The cause was in how they were made, not their numbers:
+  - the putty and beads sat outside the sash's members, adding 8–14 mm a side;
+  - the frame and post showed their whole face.
+- Now the window is built the way an outward-opening casement is made:
+  - the casing laps the frame's outer edge (`coverMm`), and each sash laps the frame's rebate and the post (`lapMm`), so the frame shows a strip and the post a hairline;
+  - a stile, rail or bar is a sightline with the putty or bead inside it.
+- The joinery as made is in the pack per version (`classical.json`). A check of each is the glass's share across the opening (`house.json` `glassAcross`):
+
+| Window | Frame shows | Post shows | Stile | Bar | Glass across, w04 → w06 | Reference |
+| --- | --- | --- | --- | --- | --- | --- |
+| six-pane (1828) | 25 mm | 14 | 45 | 24 | 0.46 → 0.70 (0.75 of a casement) | ref 07: about 0.76 of a casement |
+| cross (1901) | 21 mm | 8 | 40 | 24 | → 0.74; centre wood 88 mm, 11% | ref 05: about 9% |
+| one-light (1965) | 20 mm | none | 48 with bead | – | 0.69 → 0.83 | ref 10: about 0.8 |
+
+- The joint: the sash now fills its opening, set back 6 mm behind the frame's face. The joint is that step's line of shade.
+  - A 1.5 mm open slot (w05) flickered as dashes from the gable view, finer than a pixel at the near level's far end.
+  - The 3 mm slot of w04 read as a hard black line.
+- The curtains' edge is soft over its last 7 cm instead of a line.
+- `w06-windows.jpg`, each row the reference, w04 (the floor), then w06 in colour overcast, colour low sun and clay overcast:
+  - the cross beside ref 05;
+  - the six-pane beside ref 07;
+  - the one-light beside ref 10.
+- Holds: each window now reads as the reference's does, glass with a thin white frame round it.
+- `w06-age.jpg`: w04's 20-year still, then w06 at 2, 8 and 20 years (rows as before). From the street stop the windows are lighter and read as glazed.
+- Not yet: the sheers' folds read as vertical stripes in the six-pane's narrow panes, where ref 07's sheer is a soft pale veil (polish).
+- Gate for the street's light step: the windows aren't done until they are judged with their reflection, a real overcast sky's ratio to the wall and the street opposite, beside refs 04 and 10 (see w04).
+
+Cost (`w06t`, as w04):
+- Triangles: near 24,420 / 24,600 / 24,696 (one-light, six-pane, cross), 120–190 fewer without the slots.
+- Street level 6,229 / 6,337 / 6,433; city 643.
+- Draws, materials and textures as w04.
+- Row of 50: street stop 3.5 ms, raised 4.0, along 4.6.

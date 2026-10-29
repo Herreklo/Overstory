@@ -131,7 +131,8 @@ Shader "Overstory/Glass"
                 // the curtains: a sheer cloth gathered in folds, lit from the window
                 float3 pc = ro + rd * (_CurtainB.y / rd.z);
                 float edgeX = hw * (1.0 - _Curtain.a) + 0.004 * sin(pc.y * 3.1 + k * 40.0);
-                float side = smoothstep(edgeX - 0.006, edgeX + 0.006, abs(pc.x));
+                // a sheer's gathered edge thins out over its last few centimetres, not a line
+                float side = smoothstep(edgeX - 0.01, edgeX + 0.06, abs(pc.x));
                 float top = smoothstep(hh * (1.0 - _CurtainB.z) - 0.02, hh * (1.0 - _CurtainB.z) + 0.02, pc.y);
                 float fold = sin(pc.x * _CurtainB.w * 6.2832 + 1.7 * sin(pc.x * _CurtainB.w * 2.1));
                 half cloth = (half)(saturate(max(side, top)) * _CurtainB.x * (0.8 + 0.2 * fold));

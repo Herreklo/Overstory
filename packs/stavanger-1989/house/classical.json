@@ -530,7 +530,7 @@
           1870
         ],
         "weight": 1,
-        "describes": "Two side-hung casements, three panes each, either side of a post: the empire window (wooden-town-architecture.md; ref 07, 02). Outward-opening, its panes puttied from outside: a bar shows a thin ridge of wood between two slopes of putty.",
+        "describes": "Two side-hung casements, three panes each, either side of a post: the empire window (wooden-town-architecture.md; ref 07, 02). Outward-opening, its panes puttied from outside: a bar shows a thin ridge of wood between two slopes of putty. Its joinery as made (mm): frameMm the frame's face and depth, coverMm what the casing laps of its outer edge, lapMm what each sash laps of the frame's rebate and the post; sashMm and barMm the sightlines (stile and rail, bar), the putty or bead inside them; the frame shows frameMm - coverMm - lapMm, the post postMm - 2 lapMm. Checked by the glass's share across the opening against the reference's (house.json glassAcross).",
         "mullion": true,
         "sashes": [
           {
@@ -546,12 +546,12 @@
         ],
         "paneHMm": 400,
         "frameMm": [
-          62,
-          70
+          72,
+          96
         ],
         "sashMm": [
-          52,
-          46
+          45,
+          42
         ],
         "barMm": [
           24,
@@ -560,14 +560,16 @@
         "glazing": {
           "kind": "putty",
           "mm": [
-            9,
-            9
+            8,
+            8
           ]
         },
         "rebateMm": 12,
         "setBackMm": 6,
-        "gapMm": 3,
-        "bottomRail": 1.3
+        "bottomRail": 1.4,
+        "coverMm": 25,
+        "lapMm": 22,
+        "postMm": 58
       },
       {
         "id": "two-pane-casement",
@@ -576,7 +578,7 @@
           1900
         ],
         "weight": 1,
-        "describes": "Two casements, two panes each, either side of a post: the later classical window, its panes bigger as cylinder glass came in bigger sheets.",
+        "describes": "Two casements, two panes each, either side of a post: the later classical window, its panes bigger as cylinder glass came in bigger sheets. Its joinery as made (mm): frameMm the frame's face and depth, coverMm what the casing laps of its outer edge, lapMm what each sash laps of the frame's rebate and the post; sashMm and barMm the sightlines (stile and rail, bar), the putty or bead inside them; the frame shows frameMm - coverMm - lapMm, the post postMm - 2 lapMm. Checked by the glass's share across the opening against the reference's (house.json glassAcross).",
         "mullion": true,
         "sashes": [
           {
@@ -592,12 +594,12 @@
         ],
         "paneHMm": 560,
         "frameMm": [
-          62,
-          70
+          72,
+          96
         ],
         "sashMm": [
-          52,
-          46
+          45,
+          42
         ],
         "barMm": [
           24,
@@ -606,14 +608,16 @@
         "glazing": {
           "kind": "putty",
           "mm": [
-            9,
-            9
+            8,
+            8
           ]
         },
         "rebateMm": 12,
         "setBackMm": 6,
-        "gapMm": 3,
-        "bottomRail": 1.3
+        "bottomRail": 1.4,
+        "coverMm": 25,
+        "lapMm": 22,
+        "postMm": 58
       },
       {
         "id": "cross",
@@ -622,7 +626,7 @@
           1920
         ],
         "weight": 1,
-        "describes": "The sveitser cross-post window (krysspost): a post and a transom, a top light each side over the transom, and under it two casements with a bar across each, six lights (wooden-town-architecture.md; ref 05). Factory joinery from the 1880s (Bjorheim from 1882), set into old openings when older houses were updated.",
+        "describes": "The sveitser cross-post window (krysspost): a post and a transom, a top light each side over the transom, and under it two casements with a bar across each, six lights (wooden-town-architecture.md; ref 05). Factory joinery from the 1880s (Bjorheim from 1882), set into old openings when older houses were updated. Its joinery as made (mm): frameMm the frame's face and depth, coverMm what the casing laps of its outer edge, lapMm what each sash laps of the frame's rebate and the post; sashMm and barMm the sightlines (stile and rail, bar), the putty or bead inside them; the frame shows frameMm - coverMm - lapMm, the post postMm - 2 lapMm. Checked by the glass's share across the opening against the reference's (house.json glassAcross).",
         "mullion": true,
         "transom": {
           "share": 0.3,
@@ -653,12 +657,12 @@
           }
         ],
         "frameMm": [
-          66,
-          90
+          70,
+          96
         ],
         "sashMm": [
-          50,
-          44
+          40,
+          42
         ],
         "barMm": [
           24,
@@ -667,14 +671,16 @@
         "glazing": {
           "kind": "putty",
           "mm": [
-            9,
-            9
+            8,
+            8
           ]
         },
         "rebateMm": 12,
         "setBackMm": 6,
-        "gapMm": 3,
-        "bottomRail": 1.3
+        "bottomRail": 1.4,
+        "coverMm": 25,
+        "lapMm": 24,
+        "postMm": 56
       },
       {
         "id": "one-light",
@@ -683,7 +689,7 @@
           1975
         ],
         "weight": 1,
-        "describes": "The 1960s window set into an old opening (house-changes.md; ref 10, 04): one plain casement, one big sealed double pane held by flat beads, no post and no bars; the opening kept, so the pane is as tall as the old window.",
+        "describes": "The 1960s window set into an old opening (house-changes.md; ref 10, 04): one plain casement, one big sealed double pane held by flat beads, no post and no bars; the opening kept, so the pane is as tall as the old window. Its joinery as made (mm): frameMm the frame's face and depth, coverMm what the casing laps of its outer edge, lapMm what each sash laps of the frame's rebate and the post; sashMm and barMm the sightlines (stile and rail, bar), the putty or bead inside them; the frame shows frameMm - coverMm - lapMm, the post postMm - 2 lapMm. Checked by the glass's share across the opening against the reference's (house.json glassAcross).",
         "mullion": false,
         "sashes": [
           {
@@ -693,11 +699,11 @@
           }
         ],
         "frameMm": [
-          56,
+          70,
           100
         ],
         "sashMm": [
-          54,
+          48,
           58
         ],
         "barMm": [
@@ -713,8 +719,10 @@
         },
         "rebateMm": 16,
         "setBackMm": 4,
-        "gapMm": 3,
-        "bottomRail": 1.15
+        "bottomRail": 1.25,
+        "coverMm": 25,
+        "lapMm": 25,
+        "postMm": 0
       }
     ],
     "door": [

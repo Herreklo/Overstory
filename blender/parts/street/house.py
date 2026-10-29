@@ -695,8 +695,9 @@ class House:
     def window(self, tag, wall, place, o, yb, key, cu):
         """The window of the opening's making (versions.window), set in the reveal at its back. Its frame's outer edge
         runs on behind the reveal's sides and the casing, so no crack opens between them; a post and a transom split
-        it; each sash stands in its frame's opening a joint's gap clear of it all round, set back from the frame's
-        face, the gap's floor closing it behind; a fixed light is glazed in the frame itself. Each light's glass lies
+        it; each sash fills its frame's opening, set back from the frame's face by the rebate's shoulder, so the joint
+        between them is that step's line of shade, never an open slot (a slot finer than a pixel at the near level's
+        farthest flickers as dashes); a fixed light is glazed in the frame itself. Each light's glass lies
         in its rebate, the putty sloping down to it from the wood's face (a bead's square edge instead, set in the
         rebate). The street level keeps the frame, sashes and bars, the sashes tight in their openings and the glass
         flush with their faces; the city level keeps the reveal's flush plane. Every wooden face is a trim on the
@@ -708,11 +709,15 @@ class House:
         F = self.F
         v = self.version("window", o["made"], o["eraOf"])
         x0, x1, za, zb = o["a0"], o["a1"], o["z0"], o["z1"]
-        fw = v["frameMm"][0] * MM
+        # what shows of the joinery: the casing laps the frame's outer edge and each sash laps its rebate in the frame
+        # and the post, so the frame shows a strip and the post little or none; a sash's sightline (stile, rail, bar)
+        # holds its putty or bead, so its wood shows that much narrower at near level
+        lap = v["lapMm"] * MM
+        fw = (v["frameMm"][0] - v["coverMm"] - v["lapMm"]) * MM
         sw, bw = v["sashMm"][0] * MM, v["barMm"][0] * MM
         brail = sw * v["bottomRail"]
-        gap, back, reb = v["gapMm"] * MM, v["setBackMm"] * MM, v["rebateMm"] * MM
-        gz, gl = gap * 5.0, v["glazing"]
+        back, reb, gl = v["setBackMm"] * MM, v["rebateMm"] * MM, v["glazing"]
+        pm = gl["mm"][0] * MM
         ext = 0.012
         kinds = self.M["glass"]["kinds"]
         names = [k for k in kinds if k != "describes"]
@@ -758,6 +763,8 @@ class House:
                 for lv in lvs:
                     pc.add(lv, Face(q, [((p.x if along_x else p.z), p.y) for p in q], key, [cu(p) for p in q]))
 
+        panes = []
+
         def glaze(wood, pkey, jobs):
             """Each light's putty or bead and its glass. `jobs`: a level, its lights, the wood's face and whether the
             glass lies in its rebate (else flush with the face, filling the light)."""
@@ -774,6 +781,8 @@ class House:
                         ring(wood, (lv,), L, y, L, yg - bh)
                         ring(wood, (lv,), L, yg - bh, R, yg - bh)
                         ring(wood, (lv,), R, yg - bh, R, yg)
+                    if lv == "near":
+                        panes.append(R)
                     q = [Vector((R[0], yg, R[1])), Vector((R[2], yg, R[1])), Vector((R[2], yg, R[3])), Vector((R[0], yg, R[3]))]
                     g.add(lv, Face(q, [(p.x - cx, p.z - za) for p in q], key, [cu(p) for p in q],
                                    col=[r_room, F.u(tag, "pane", pkey, li)] + size))
@@ -786,7 +795,7 @@ class House:
                   (I[0], za - ext, I[2], I[1]), (I[0], I[3], I[2], zb + ext)):
             front(fr, both, r, yb)
         sashes, tops = v["sashes"], v.get("topLights") or []
-        mw = fw if v.get("mullion") else 0.0
+        mw = max(0.0, v["postMm"] * MM - 2.0 * lap) if v.get("mullion") else 0.0
         n = len(sashes)
         span = I[2] - I[0] - (n - 1) * mw
         cols, x = [], I[0]
@@ -795,7 +804,7 @@ class House:
             x += span * s["w"] + mw
         zt, tf = I[3], 0.0
         if v.get("transom"):
-            tf = v["transom"]["faceMm"] * MM
+            tf = max(0.0, v["transom"]["faceMm"] * MM - 2.0 * lap)
             zt = I[3] - v["transom"]["share"] * (I[3] - I[1] - tf) - tf
             for a, b in cols:
                 front(fr, both, (a, zt, b, zt + tf), yb)
@@ -819,42 +828,26 @@ class House:
                     lights, _ = sash_grid(cell, s, bw, v, cell[3] - cell[1])
                     glaze(fr, f"{hi}.{k}", [("near", lights, yb, True), ("street", lights, yb, False)])
                 continue
-            ring(fr, near, hole, yb, hole, y_s + gz)
-            ring(fr, street, hole, yb, hole, y_s)
-            rects = []
+            ring(fr, both, hole, yb, hole, y_s)
             for k, (cell, s) in enumerate(inside):
-                # a gap all round, half a gap each side where two sashes meet
-                g0 = gap if k == 0 else gap / 2.0
-                g1 = gap if k == len(inside) - 1 else gap / 2.0
-                rn = (cell[0] + g0, cell[1] + gap, cell[2] - g1, cell[3] - gap)
-                rects.append(rn)
                 sp = piece(f"sash{hi}.{k}", "trims")
                 jobs = []
-                for lv, R in (("near", rn), ("street", cell)):
-                    for r in ((R[0], R[1], R[0] + sw, R[3]), (R[2] - sw, R[1], R[2], R[3]),
-                              (R[0] + sw, R[1], R[2] - sw, R[1] + brail), (R[0] + sw, R[3] - sw, R[2] - sw, R[3])):
+                for lv, R, c in (("near", cell, pm), ("street", cell, 0.0)):
+                    a, ar = sw - c, brail - c
+                    for r in ((R[0], R[1], R[0] + a, R[3]), (R[2] - a, R[1], R[2], R[3]),
+                              (R[0] + a, R[1], R[2] - a, R[1] + ar), (R[0] + a, R[3] - a, R[2] - a, R[3])):
                         front(sp, (lv,), r, y_s)
-                    inner = (R[0] + sw, R[1] + brail, R[2] - sw, R[3] - sw)
-                    lights, bars = sash_grid(inner, s, bw, v, cell[3] - cell[1] - sw - brail)
+                    inner = (R[0] + a, R[1] + ar, R[2] - a, R[3] - a)
+                    lights, bars = sash_grid(inner, s, bw - 2.0 * c, v, cell[3] - cell[1] - sw - brail)
                     for r in bars:
                         front(sp, (lv,), r, y_s)
                     jobs.append((lv, lights, y_s, lv == "near"))
-                # its outer edge down to the gap's floor: alone in its opening, sloping the gap's width out to the
-                # opening's edge, so the slot needs no floor
-                ring(sp, near, rn, y_s, hole if len(inside) == 1 else rn, y_s + gz, out=True)
                 glaze(sp, f"{hi}.{k}", jobs)
-            # the gap's floor: the frame's opening behind the sashes, where no sash covers it
-            if len(rects) == 1:
-                continue
-            xs = sorted({hole[0], hole[2]} | {r[0] for r in rects} | {r[2] for r in rects})
-            zs = sorted({hole[1], hole[3]} | {r[1] for r in rects} | {r[3] for r in rects})
-            for i in range(len(xs) - 1):
-                for j in range(len(zs) - 1):
-                    mx, mz = (xs[i] + xs[i + 1]) / 2.0, (zs[j] + zs[j + 1]) / 2.0
-                    if xs[i + 1] - xs[i] < 1e-6 or zs[j + 1] - zs[j] < 1e-6:
-                        continue
-                    if not any(r[0] < mx < r[2] and r[1] < mz < r[3] for r in rects):
-                        front(fr, near, (xs[i], zs[j], xs[i + 1], zs[j + 1]), y_s + gz)
+        # the glass's share of the opening (inside the casing), across its widest row of panes and by area: the
+        # sightlines checked against the references'
+        o["glassAcross"] = round(max(sum(Q[2] - Q[0] for Q in panes if Q[1] <= (R[1] + R[3]) / 2.0 <= Q[3])
+                                     for R in panes) / (x1 - x0), 3)
+        o["glassArea"] = round(sum((R[2] - R[0]) * (R[3] - R[1]) for R in panes) / ((x1 - x0) * (zb - za)), 3)
 
     def steps(self, tag, wall, x0, x1, z_top):
         """Split stone steps up to a door: as many risers as its height needs, each slab one going deeper than the
@@ -1737,7 +1730,8 @@ def sash_grid(inner, s, bw, v, h_nominal):
     nc = s.get("cols", 1)
     nr = s.get("rows", 1)
     if v.get("paneHMm"):
-        nr = max(1, round((h_nominal + bw) / (v["paneHMm"] * MM + bw)))
+        b = v["barMm"][0] * MM
+        nr = max(1, round((h_nominal + b) / (v["paneHMm"] * MM + b)))
     w, h = inner[2] - inner[0], inner[3] - inner[1]
     lw, lh = (w - (nc - 1) * bw) / nc, (h - (nr - 1) * bw) / nr
     lights = [(inner[0] + i * (lw + bw), inner[1] + j * (lh + bw), inner[0] + i * (lw + bw) + lw, inner[1] + j * (lh + bw) + lh)
