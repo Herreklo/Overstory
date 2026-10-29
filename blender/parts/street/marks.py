@@ -39,7 +39,7 @@ class Page:
         self.up = self.n[..., 2] > 0.55
         self.vertical = np.abs(self.n[..., 2]) < 0.5
         self.mats = mats
-        self.m = {k: self.mat == i for i, k in enumerate(mats)}
+        self.m = Masks(self.mat.shape, {k: self.mat == i for i, k in enumerate(mats)})
         self.meta = meta
         self.shape = self.cov.shape
         pieces = meta["pieces"]
@@ -67,6 +67,17 @@ def upright(p, meta):
     return out
 
 
+class Masks(dict):
+    """Each material's texels; a material the house has none of (an unboarded house's sheets) is nowhere."""
+
+    def __init__(self, shape, masks):
+        super().__init__(masks)
+        self.shape = shape
+
+    def __missing__(self, k):
+        return np.zeros(self.shape, bool)
+
+
 class View:
     """The texels of `mask` on one wall as flat arrays, named as the corner's Page names them: along the wall, z up,
     y its distance behind the wall's face (negative proud of it, as the corner's street wall), `street` all of them.
@@ -85,7 +96,7 @@ class View:
         self.shape = self.along.shape
         self.cov = np.ones(self.shape, bool)
         self.street = np.ones(self.shape, bool)
-        self.m = {k: self.mat == i for i, k in enumerate(pg.mats)}
+        self.m = Masks(self.mat.shape, {k: self.mat == i for i, k in enumerate(pg.mats)})
         self.meta = pg.meta
         self.wall = wall
 

@@ -1,11 +1,13 @@
 """Way P's page and strokes for a whole house: finish/paint.py's corner grown to every wall and every opening.
 
     Blender -b --factory-startup -P blender/parts/street/paint.py -- --gen cache/street/gen/107 --cache cache/street/bake/107
+        [--out <dir>] [--since <years>]
 
 Reads house.json (house.py) and the bakes (bake.py), and writes into <cache>/out what way P reads, each the page's size:
   hist-p.png, hist-p2.png, paint-stroke.png, paint.json   as finish/paint.py's: the same channels and digest keys
   geo.png, street-normal.png                              as finish/marks.py's (marks.py here)
-and a look at hist-p's R and G and hist-p2's R side by side, into cache/street/paint-preview/<house>.png.
+and a look at hist-p's R and G and hist-p2's R side by side, into cache/street/paint-preview/<house>.png. --out writes
+elsewhere; --since sets the years since the last coat outright (the age sheet), none let go.
 
 The corner's rules and values (finish.json `painted`, p3) are used as they are, its own functions called where they
 can be; what changes is which wall, which opening and its frame. Each opening's shapes leave its own sill, head and
@@ -64,9 +66,12 @@ def exposure(wall, paints):
 def coats(meta, paints, since):
     """The paint's age (paints.json upkeep): painted in `since` (the house's building, or the lean-to's), then every
     cycle (by the house's wealth) until a neglect or a boarding stops it, its last coat the cycle's last turn before
-    that year, or a 'repainted' event's. Returns the years since that coat, the years let go, and the cycle."""
+    that year, or a 'repainted' event's. Returns the years since that coat, the years let go, and the cycle. An age
+    sheet's `coatAge` (paint.py --since) sets the years since the coat outright, none let go."""
     lo, hi = paints["upkeep"]["cycleYears"]
     cyc = lo + (hi - lo) * min(max(meta["wealth"] / 1000.0, 0.0), 1.0)
+    if "coatAge" in meta:
+        return meta["coatAge"], 0, cyc
     stops = [e["year"] for e in meta["events"] if e["kind"] in ("neglected", "boarded") and e["year"] <= meta["year"]]
     stop = min(stops) if stops else meta["year"]
     last = since + max(0, math.floor((stop - since) / cyc - 1e-9)) * cyc
@@ -81,12 +86,16 @@ def wear(meta, paints, wall):
     return (age + neglected) / cyc * exposure(wall, paints)
 
 
-def grade(meta, paints, walls):
-    """Each wall's share of the corner's failed paint: the street front's (the wall facing -y) is p3's, 1; another's
-    is its wear against the front's, at most 1, so no wall fails more than the floor."""
-    front = max(walls.values(), key=lambda w: -w["out"][1] if w["kind"] != "lean" else -2.0)
-    w0 = wear(meta, paints, front)
-    return {i: min(1.0, wear(meta, paints, w) / w0) for i, w in walls.items()}
+def grade(meta, paints, walls, floor):
+    """Each wall's share of the corner's failed paint: its wear against the floor's (p3 is house 107's street front
+    in 1989, its wear `floor`), at most 1, so no wall fails more than the floor."""
+    return {i: min(1.0, wear(meta, paints, w) / floor) for i, w in walls.items()}
+
+
+def chalk(pg, C, w):
+    """The paint's own age over the whole wall, a wash in L* (greyer and darker, the wash's tint): the binder gone to
+    powder and the dirt held in it, from a wear of `from` to full at `full`."""
+    return np.where((pg.m["cladding"] | pg.m["trims"]) & pg.vertical, C["wash"] * FL.smoothstep(C["from"], C["full"], w), 0.0)
 
 
 def leak_side(o, wall, paints, A):
@@ -447,6 +456,44 @@ def roof_values(pg, R, meta, roof, wall):
     return np.where(tiles, age * dl, 0.0)
 
 
+def roof_marks(pg, R, meta, roof, wall):
+    """A slope's age in the colour as well as the value: its lower share greyer and darker (a wash: the water stands
+    longest there and the dirt off the slope gathers), a streak down the slope under the chimney (its soot and the
+    water off its flashing), and lichen in patches on the top courses, thinning down the slope (the stain: paler,
+    grey-green). At the roof's age, as roof_values. Returns (wash in L*, stain 0..1)."""
+    tiles = pg.m["tiles"] | pg.m["roof"]
+    age = float(FL.smoothstep(0.0, R["fullYears"], roof_years(meta)))
+    wash, sn = np.zeros(pg.shape), np.zeros(pg.shape)
+    if age <= 0.0:
+        return wash, sn
+    k = key(meta, "p-roofmarks", roof["wall"])
+    a = math.radians(roof["pitch"])
+    s = (pg.y - roof["foot"][0]) * math.cos(a) + (pg.z - roof["foot"][1]) * math.sin(a)
+    top = roof["courses"] * roof["course"]
+    Lo = R["lower"]
+    edge = top * Lo["share"] * (1.0 + Lo["wobble"] * wave(pg, HS.h(k, "lower"), Lo["cell"]))
+    wash += Lo["wash"] * (1.0 - FL.smoothstep(edge - top * Lo["soft"], edge + top * Lo["soft"], s))
+    ch = meta["features"].get("chimney")
+    if ch:
+        C = R["chimney"]
+        ca = (np.asarray(ch[:2]) - np.asarray(wall["origin"])) @ np.asarray(wall["dir"])
+        hw = ch[2] / 2.0 + C["spread"] * np.clip(top - s, 0.0, None)
+        across = MK.soft_box(pg.along - ca, -hw, hw, C["soft"])
+        down = 1.0 - (1.0 - C["fade"]) * np.clip((top - s) / top, 0.0, 1.0)
+        wash = np.maximum(wash, C["wash"] * across * down)
+    sn = lichen(pg, R["lichen"], k, (top - s) / top, age)
+    return np.where(tiles, age * wash, 0.0), np.where(tiles, sn, 0.0)
+
+
+def lichen(pg, Lc, k, depth, age):
+    """Lichen's patches, a stain 0..1 whose edge is at 0.5: seeded rosettes over `octaves` ([cell m, weight]), many on
+    the top courses (depth 0 at the ridge, 1 at the eave) and fewer down the slope, more of them the older the roof."""
+    O = Lc["octaves"]
+    n = sum(w * FL.noise2(pg.along / c, pg.z / c, HS.h(k, "lichen", j)) for j, (c, w) in enumerate(O)) / sum(w for _, w in O)
+    thr = Lc["cut"] + Lc["down"] * np.clip(depth, 0.0, 1.0) + (1.0 - age) * 0.5
+    return FL.smoothstep(thr - Lc["soft"], thr + Lc["soft"], n)
+
+
 def grime(pg, Q, low, sills):
     """The lap grime's strength on a wall's boards: everywhere some, more down its gradient and on the courses each
     sill drips on."""
@@ -487,6 +534,8 @@ def main():
     a = MK.args()
     gen, cache = os.path.abspath(a["gen"]), os.path.abspath(a["cache"])
     meta = json.load(open(os.path.join(gen, "house.json")))
+    if a.get("since"):
+        meta["coatAge"] = float(a["since"])
     P = json.load(open(os.path.join(FL.ROOT, "blender", "parts", "finish", "finish.json")))
     S = json.load(open(os.path.join(HERE, "paint.json")))
     St = json.load(open(os.path.join(HERE, "street.json")))
@@ -495,7 +544,8 @@ def main():
     Q = P["painted"]
     A = S["wear"]
     bake = json.load(open(os.path.join(cache, "bake.json")))
-    out = os.path.join(cache, "out")
+    out = os.path.abspath(a["out"]) if a.get("out") else os.path.join(cache, "out")
+    os.makedirs(out, exist_ok=True)
     pg = SM.Page(cache, meta, bake["mats"])
     pad = meta["page"]["padPx"]
     board = S["boarding"] if "boarding" in S and not a.get("boarding") else FP.boarding(Q, a.get("boarding"))
@@ -514,7 +564,7 @@ def main():
     wash, far = np.zeros(pg.shape), np.zeros(pg.shape)
     walls = {w["i"]: w for w in meta["walls"]}
     views = {i: SM.View(pg, pg.wall == i, w) for i, w in walls.items()}
-    grades = grade(meta, paints, walls)
+    grades = grade(meta, paints, walls, A["floor"])
     roofs = {r["wall"]: r for r in meta["features"]["roof"]}
     log = []
 
@@ -556,6 +606,9 @@ def main():
         if grades[i] >= A["from"]["peel"]:
             v.put(pl, peel_tops(v, Q, key(meta, "p-tops", i), wall["length"]))
         broads[i] = splash(v, Q, P, S, wall, meta)
+        ck = chalk(v, A["chalk"], wear(meta, paints, wall))
+        v.put(wash, np.maximum(v.get(wash), ck))
+        v.put(far, np.maximum(v.get(far), ck))
         plinth = (v.m["stone"] | v.m["concrete"]) & v.vertical
         v.put(sn, wet_margin(v, Q, vm, broads[i], plinth))
     painted = pg.m["cladding"] | pg.m["trims"]
@@ -611,8 +664,16 @@ def main():
     for i, v in views.items():
         if i in roofs:
             v.put(dl, roof_values(v, S["roof"], meta, roofs[i], walls[i]), "add")
+            rw, rs = roof_marks(v, S["roof"], meta, roofs[i], walls[i])
+            v.put(wash, np.maximum(v.get(wash), rw))
+            v.put(far, np.maximum(v.get(far), rw))
+            v.put(sn, np.maximum(v.get(sn), rs))
     loose = SM.View(pg, pg.wall == -1, walls[0])
     loose.put(dl, tile_values(loose, Q, meta, None), "add")
+    # the ridge's own tiles take the top courses' lichen
+    age = float(FL.smoothstep(0.0, S["roof"]["fullYears"], roof_years(meta)))
+    ridge = loose.m["tiles"] & (loose.z > meta["heights"]["ridge"] - 0.4)
+    loose.put(sn, np.maximum(loose.get(sn), np.where(ridge, lichen(loose, S["roof"]["lichen"], key(meta, "p-roofmarks", -1), np.zeros(loose.shape), age), 0.0)))
     for i, v in views.items():
         sills = [om["features"]["sill"] for k, o, wall, ov, om, side, g, door, mine in ops if wall["i"] == i and not door]
         v.put(gr, grime(v, Q, lows[i][2], sills))
@@ -635,6 +696,10 @@ def main():
     cm.update(board.get("colour", {}))
     for k, v in extra.items():
         cm[k] = dict(cm[v]) if isinstance(v, str) else dict(cm[v["like"]]) if "like" in v else S["colour"].get(k, {})
+    # paint.json's colours over them (a stain the corner's material has none of)
+    for k, c in S["colour"].items():
+        if isinstance(c, dict):
+            cm[k] = dict(cm.get(k, {}), **c)
     E, L = Q["edge"], Q["lap"]
     sh = P["marks"]["shade"]
     M = P["materials"]
@@ -658,7 +723,8 @@ def main():
     json.dump(digest, open(os.path.join(out, "paint.json"), "w"), indent=1)
     preview(os.path.join(FL.ROOT, "cache", "street", "paint-preview", f"{meta['house']}.png"), pl, dl, wash, rng, T["washL"])
     share = lambda m: float((m & pg.cov).sum()) / max(1, int((painted & pg.cov).sum()))  # noqa: E731
-    print(f"[paint] grade by wall {', '.join(f'w{i} {g:.2f}' for i, g in grades.items())}; {'; '.join(log)}")
+    print(f"[paint] wear by wall {', '.join(f'w{i} {wear(meta, paints, w):.2f}' for i, w in walls.items())}; "
+          f"grade by wall {', '.join(f'w{i} {g:.2f}' for i, g in grades.items())}; {'; '.join(log)}")
     print(f"[paint] boarding {a.get('boarding') or ('paint.json' if 'boarding' in S else Q['boarding']['use'])}; peeled {share(painted & (pl > 0.5)):.3f} of the paint; "
           f"stained {share(sn > 0.5):.3f}; dL {np.percentile(dl[pg.cov], [1, 5, 50, 95]).round(1)}, "
           f"beyond {rng}: {float((np.abs(dl[pg.cov]) > rng).mean()):.4f}; wrote {out}")

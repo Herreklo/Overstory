@@ -2,16 +2,18 @@
   "schemaVersion": 1,
   "describes": "Way P for a whole house (paint.py): what the corner's p3 (blender/parts/finish/finish.json `painted`, its rules and values used as they are) needs to grow to every wall and opening. `wear` grades the corner's failed paint below the floor by the facts; the rest places what the corner had no fact for. Sizes in metres, values in L*.",
   "wear": {
-    "describes": "The street front is p3, its share 1. Another wall's share is its wear against the front's, at most 1: wear is (years since the last coat + years neglected) / the upkeep cycle (packs/stavanger-1989/house/paints.json upkeep: the last coat is the cycle's last turn before the house was let go, counted from its building, or a lean-to's) times the wall's exposure (paints.json weather: 1 facing the wet winds, `least` on the lee). Below 1 the corner's strengths, peel heights and run lengths take the share, and each kind of mark runs only from its threshold in `from` (the narrow runs first, then the tongue, then the peel at the casing's foot and on the tops). A sill falling less than `level` a metre is level, and leaks at its end toward the weather.",
+    "describes": "p3 is house 107's street front in 1989, its wear `floor` (11.4 years since the coat and 3 let go, over a 13.6-year cycle, at exposure 0.88); a wall's share of p3 is its wear against the floor's, at most 1, so a younger coat fails less than p3 and an older one no more. Wear is (years since the last coat + years neglected) / the upkeep cycle (packs/stavanger-1989/house/paints.json upkeep: the last coat is the cycle's last turn before the house was let go, counted from its building, or a lean-to's) times the wall's exposure (paints.json weather: 1 facing the wet winds, `least` on the lee). Below 1 the corner's strengths, peel heights and run lengths take the share, and each kind of mark runs only from its threshold in `from` (the narrow runs first, then the tongue, then the peel at the casing's foot and on the tops). A sill falling less than `level` a metre is level, and leaks at its end toward the weather. `chalk`: the paint's own age over every painted wall, a wash of `wash` L* (greyer and darker) eased in from a wear of `from` to `full`.",
     "level": 0.001,
-    "from": { "runoff": 0.3, "tongue": 0.6, "peel": 0.6 }
+    "from": { "runoff": 0.3, "tongue": 0.6, "peel": 0.6 },
+    "floor": 0.93,
+    "chalk": { "wash": 12, "from": 0.2, "full": 1.3 }
   },
   "boarding": {
-    "describes": "The boarded windows (ref 09, Pedersgata 81, 1989): pale weathered ply, mid-light against the wall, with big water stains hanging from the head, `stretch` times taller than wide, their tide edges sharp; battens raw sawn wood gone pale grey in the weather, near the wall's own value, so they cross the sheet as light bars. In finish.json painted.boarding's fields, with `colour` [C, h] for way Pc. Replaces the corner's kept variant (c) on every house.",
-    "sheet": { "L": 63, "stainDL": 9, "smooth": 0.04, "stainSmooth": 0.1, "brushL": 0, "stainEdge": 0.25 },
+    "describes": "The boarded windows (ref 09, Pedersgata 81, 1989): weathered ply, mid-grey and clearly below the white wall the casings frame it in, with big water stains hanging from the head, `stretch` times taller than wide, their tide edges sharp; battens raw sawn wood gone pale grey in the weather, near the wall's own value, so they cross the sheet as light bars. In finish.json painted.boarding's fields, with `colour` [C, h] for way Pc. Replaces the corner's kept variant (c) on every house.",
+    "sheet": { "L": 50, "stainDL": 9, "smooth": 0.04, "stainSmooth": 0.1, "brushL": 0, "stainEdge": 0.25 },
     "batten": { "L": 75, "smooth": 0, "brushL": 0 },
-    "wash": { "L": 10, "batL": 9, "head": 0.35, "leak": 0.35, "batten": 0.16, "sill": 0.1, "lowEnd": 0.6 },
-    "blotch": { "octaves": [[0.3, 1.0], [0.1, 0.35]], "stretch": 3.0, "cut": 0.5, "soft": 0.035, "low": -0.9, "L": 8 },
+    "wash": { "L": 7, "batL": 9, "head": 0.35, "leak": 0.35, "batten": 0.16, "sill": 0.1, "lowEnd": 0.6 },
+    "blotch": { "octaves": [[0.3, 1.0], [0.1, 0.35]], "stretch": 3.0, "cut": 0.5, "soft": 0.035, "low": -0.9, "L": 14 },
     "colour": { "sheet": { "paint": [2.5, 80], "stain": [4, 70] }, "batten": { "paint": [2.5, 78], "stain": [14, 55] } }
   },
   "neglect": {
@@ -22,19 +24,23 @@
     "foot": { "L": 13, "reach": 0.7, "power": 1.2, "wobble": 0.3, "cell": 0.6 }
   },
   "roof": {
-    "describes": "A slope's age in broad shapes (paint.py roof_values), in place of the corner's tile-by-tile values on the slopes (the ridge keeps them): the eave course darkest, its reach `courses` courses up the slope; moss and lichen down the pans from the ridge, a lane `width` of a tile's cover wide down each pan, each pan's reach from the ridge a share of the slope in `reach`; the slope that faces away from the sun `shadeL` darker. At the roof's age: years since it was built or last retiled, full at `fullYears`. Replaced tiles only where a fact holds a repair.",
+    "describes": "A slope's age in broad shapes (paint.py roof_values), in place of the corner's tile-by-tile values on the slopes (the ridge keeps them): the eave course darkest, its reach `courses` courses up the slope; moss and lichen down the pans from the ridge, a lane `width` of a tile's cover wide down each pan, each pan's reach from the ridge a share of the slope in `reach`; the slope that faces away from the sun `shadeL` darker. At the roof's age: years since it was built or last retiled, full at `fullYears`. Replaced tiles only where a fact holds a repair. In the colour too (roof_marks): the lower `share` of the slope greyer and darker, a wash of `wash` L* with a freehand edge; a streak under the chimney as wide as it, widening `spread` a metre down; lichen (the tiles' stain: paler, grey-green) in small rosettes over `octaves` [cell m, weight] on the top courses and the ridge, thinning `down` toward the eave.",
     "fullYears": 40,
     "eave": { "L": 12, "courses": 1.6, "power": 1.3, "wobble": 0.25, "cell": 0.9 },
     "moss": { "L": 9, "width": 0.22, "reach": [0.25, 0.75], "power": 1.5, "wobble": 0.2, "cell": 0.8 },
-    "shadeL": 6
+    "shadeL": 6,
+    "lower": { "wash": 7, "share": 0.36, "soft": 0.12, "wobble": 0.3, "cell": 1.4 },
+    "chimney": { "wash": 9, "spread": 0.12, "soft": 0.12, "fade": 0.55 },
+    "lichen": { "octaves": [[0.12, 1.0], [0.04, 0.6]], "cut": 0.58, "down": 0.25, "soft": 0.03 }
   },
   "splash": {
     "describes": "The foot's wetting where no drip names it: a gable takes its verge's run-off (finish.json marks.splash.gable); the lean-to's low eave has no gutter and drips its whole length (`leanEave`).",
     "leanEave": 0.6
   },
   "materials": {
-    "describes": "Materials the corner has none of, in finish.json painted.materials' fields: the roof's course planes are its tiles (`roof` takes their values), but lit by their own baked rolls, unflattened (flatUp 0: the s04 A/B, the rolls read as columns down the slope at the street stop and the dashes go); the lean-to's cast plinth, its felt and the chimney's render are guessed values in grey, not yet judged.",
-    "roof": { "like": "tiles", "flatUp": 0 },
+    "describes": "Materials the corner has none of, in finish.json painted.materials' fields: the roof's course planes are its tiles (`roof` takes their values), but lit by their own baked rolls, unflattened (flatUp 0: the s04 A/B, the rolls read as columns down the slope at the street stop and the dashes go); the lean-to's cast plinth, its felt and the chimney's render are guessed values in grey, not yet judged. Lichen on the tiles (their stain) is paler than the tile, `stainDL` below 0.",
+    "roof": { "like": "tiles", "flatUp": 0, "stainDL": -9 },
+    "tiles": { "like": "tiles", "stainDL": -9 },
     "concrete": { "L": 55, "underL": 50, "stainDL": 14, "smooth": 0.04, "stainSmooth": 0.2, "brushL": 3 },
     "felt": { "L": 18, "smooth": 0.05 },
     "render": { "L": 60, "smooth": 0.03, "brushL": 3 }
@@ -43,6 +49,8 @@
     "describes": "Way Pc's hue and chroma [C, h] for the materials above, as finish.json painted.colour.mats; the walls' and trims' paint is the pack's (paints.json: a 'repainted' event's, else the era's default), its L* the clay's.",
     "concrete": { "paint": [3, 80], "stain": [3, 75] },
     "felt": { "paint": [2, 250] },
-    "render": { "paint": [4, 70] }
+    "render": { "paint": [4, 70] },
+    "tiles": { "stain": [5, 100] },
+    "roof": { "stain": [5, 100] }
   }
 }

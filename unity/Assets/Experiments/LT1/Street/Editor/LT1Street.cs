@@ -36,7 +36,8 @@ namespace Overstory.EditorTools
         [Serializable] class Paint { public PMat[] mats; public PLight[] lights; public PColour colour; public float strokeScale, edgeAmp, rimL, rimW, rimFar, bareShift, washL, bareWash, brushFar, dragL, dragScale, dlRange, aoStrength, lapDark, lapCore, lapReach, lapGrimeL, lapGrimeReach, lapGrimeBreak, lapPage; public float[] strokeFade, brushFade, rimBreak, washFade; }
         [Serializable] class Lap { public float reach, step; }
         [Serializable] class Plot { public float w, d; }
-        [Serializable] class House { public int house; public float[] size; public Lap lap; public float planeShadow, seenWithinM; public Plot plot; }
+        [Serializable] class Page { public int size; public float pxPerM; }
+        [Serializable] class House { public int house; public float[] size; public Lap lap; public float planeShadow, seenWithinM; public Plot plot; public Page page; }
 
         struct View { public string name, level; public Vector3 pos, target; public float fov; public bool floor; }
 
@@ -239,6 +240,23 @@ namespace Overstory.EditorTools
             var probe = new RenderTexture(1, 1, 0, RenderTextureFormat.ARGB32);
             probe.Create();
             var rows = new List<string>();
+            var streamed = new List<string>();
+            // a house's own page (every texture but the strokes, which every house shares), bytes from a mip down
+            var pageTex = mats.Values.SelectMany(m => m.GetTexturePropertyNames().Select(m.GetTexture)).OfType<Texture2D>()
+                .Distinct().Where(t => !t.name.StartsWith("paint-")).ToList();
+            var sharedTex = mats.Values.SelectMany(m => m.GetTexturePropertyNames().Select(m.GetTexture)).OfType<Texture2D>()
+                .Distinct().Where(t => t.name.StartsWith("paint-")).ToList();
+            long From(Texture2D t, int mip)
+            {
+                long b = 0;
+                for (int m = mip; m < t.mipmapCount; m++)
+                    b += (long)UnityEngine.Experimental.Rendering.GraphicsFormatUtility.ComputeMipmapSize(
+                        Math.Max(1, t.width >> m), Math.Max(1, t.height >> m), t.graphicsFormat);
+                return b;
+            }
+            long pageFull = pageTex.Sum(t => From(t, 0)), shared = sharedTex.Sum(t => From(t, 0));
+            int maxRed = QualitySettings.streamingMipmapsMaxLevelReduction;
+            float pxPerM = house.page != null && house.page.pxPerM > 0 ? house.page.pxPerM : 128f;
             bool async = ShaderUtil.allowAsyncCompilation;
             ShaderUtil.allowAsyncCompilation = false;
             try
@@ -274,6 +292,25 @@ namespace Overstory.EditorTools
                                 }
                         }
                     }
+                    // the mip the streamer would hold for each house: the finest its page's densest texels (the street
+                    // walls, pxPerM) need at the house's nearest point, as many screen pixels a metre there; a house out
+                    // of view, or as far as it may go, at the most mips the quality settings let it drop
+                    long bytes = 0;
+                    var mips = new int[maxRed + 1];
+                    float pxK = 2f * Mathf.Tan(fov * 0.5f * Mathf.Deg2Rad) / Height;
+                    foreach (var h in houses)
+                    {
+                        var rs = h.GetComponentsInChildren<MeshRenderer>();
+                        var bb = rs[0].bounds;
+                        foreach (var r in rs)
+                            bb.Encapsulate(r.bounds);
+                        float dist = Mathf.Max(0.1f, Mathf.Sqrt(bb.SqrDistance(cam.transform.position)));
+                        int mip = GeometryUtility.TestPlanesAABB(planes, bb)
+                            ? Mathf.Clamp(Mathf.FloorToInt(Mathf.Log(pxPerM * dist * pxK, 2f)), 0, maxRed) : maxRed;
+                        mips[mip]++;
+                        bytes += pageTex.Sum(t => From(t, mip));
+                    }
+                    streamed.Add($"| {name} | {(bytes + shared) / 1048576.0:F0} | {string.Join(" / ", mips)} | {(long)houses.Count * pageFull / 1048576.0 + shared / 1048576.0:F0} |");
                     cam.targetTexture = rt;
                     var ms = new List<double>();
                     for (int b = 0; b <= Batches; b++)
@@ -321,7 +358,15 @@ namespace Overstory.EditorTools
             md.AppendLine("| --- | --- | --- | --- | --- | --- | --- |");
             foreach (var r in rows)
                 md.AppendLine(r);
-            md.AppendLine().AppendLine($"One house: textures {texBytes / 1048576.0:F1} MB ({string.Join("; ", texLines)}); meshes, both levels, {meshBytes / 1048576.0:F1} MB.");
+            md.AppendLine().AppendLine($"Textures streamed (GPU, counted, not measured: the mip each house's page would hold at its nearest point " +
+                                       $"for {pxPerM:F0} px/m at 2560x1440, at most {maxRed} mips dropped, the quality setting; one shared stroke texture):").AppendLine();
+            md.AppendLine($"| View | MB streamed | Houses at mip 0 / 1 / ... / {maxRed} | MB all at full |");
+            md.AppendLine("| --- | --- | --- | --- |");
+            foreach (var r in streamed)
+                md.AppendLine(r);
+            md.AppendLine().AppendLine($"One house's page on the GPU at full: {pageFull / 1048576.0:F1} MB, at mip {maxRed} and down {pageTex.Sum(t => From(t, maxRed)) / 1048576.0:F2} MB; " +
+                                       $"shared strokes {shared / 1048576.0:F1} MB.");
+            md.AppendLine().AppendLine($"One house, as the editor counts it (a CPU copy beside the GPU's): textures {texBytes / 1048576.0:F1} MB ({string.Join("; ", texLines)}); meshes, both levels, {meshBytes / 1048576.0:F1} MB.");
             File.WriteAllText(Path.Combine(outDir, "timing.md"), md.ToString());
             Debug.Log("[LT1Street] timing\n" + md);
         }
@@ -339,7 +384,7 @@ namespace Overstory.EditorTools
 
         static Color Lin(float v, float[] t) => t == null || t.Length != 3 ? new Color(v, v, v).gamma : new Color(v * t[0], v * t[1], v * t[2]).gamma;
 
-        /// <summary>The page linear and uncompressed, the strokes repeating; the levels with their own normals.</summary>
+        /// <summary>The page linear and block-compressed, streamed by mip, the strokes repeating; the levels with their own normals.</summary>
         static void Import(string gen)
         {
             AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
@@ -356,8 +401,11 @@ namespace Overstory.EditorTools
                 ti.wrapMode = tile ? TextureWrapMode.Repeat : TextureWrapMode.Clamp;
                 ti.filterMode = FilterMode.Trilinear;
                 ti.anisoLevel = tile ? 8 : 4;
-                // -streetCompress: the page block-compressed (BC7 on the Mac), an A/B of its look against its memory
-                ti.textureCompression = Arg("-streetCompress") == "1" ? TextureImporterCompression.CompressedHQ : TextureImporterCompression.Uncompressed;
+                // block-compressed (BC7 on the Mac): s07, no still changes by 1.4 L* over 8 px at any view, a quarter of
+                // the memory; -streetCompress 0 keeps the page uncompressed for an A/B
+                ti.textureCompression = Arg("-streetCompress") == "0" ? TextureImporterCompression.Uncompressed : TextureImporterCompression.CompressedHQ;
+                // streamed: a far house holds only the mips its distance needs (in the player; counted in Timing)
+                ti.streamingMipmaps = true;
                 ti.maxTextureSize = 4096;
                 ti.npotScale = TextureImporterNPOTScale.None;
                 ti.SaveAndReimport();
