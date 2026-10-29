@@ -16,6 +16,10 @@
     "blotch": { "octaves": [[0.3, 1.0], [0.1, 0.35]], "stretch": 3.0, "cut": 0.5, "soft": 0.035, "low": -0.9, "L": 11 },
     "colour": { "sheet": { "paint": [2.5, 80], "stain": [4, 70] }, "batten": { "paint": [2.5, 78], "stain": [14, 55] } }
   },
+  "edge": {
+    "describes": "The corner's `edge` with these over it. The neglect, the foot's dirt and the junctions' darks are a film of water and grime over paint and fibre alike, so the bare wood a chip shows takes the share of the page's value shift a multiply gives it, (bareL + 16) / (L + 16) of the cladding (85.3, 52), not the corner's 0.3: where the film greys the paint the chip greys with it and keeps its hard edge (s08's chalk and tongues had brought the two level). The long washes keep the corner's `bareWash`: in a run the fibre stays lighter.",
+    "bareShift": 0.67
+  },
   "neglect": {
     "describes": "What a let-go house reads as from the street stop on, in broad shapes only, never fine marks (paint.py neglect_values): a soft grey tongue under each sill, `reach` long and widening by `spread` a metre down; the upper wall grey under the eave's drip, `reach` down; the foot grey from the splash, `reach` up from the drip board; each L* darker at its source, falling off by `power`, its far edge wobbling by `wobble` of its reach over `cell` metres. All at the wall's severity: its wear (paint.py wear) plus `amount` times a neglect event's amount / 1000, eased from `from` (none) to `full`.",
     "from": 0.45, "full": 1.4, "amount": 0.5,

@@ -700,7 +700,7 @@ def main():
     for k, c in S["colour"].items():
         if isinstance(c, dict):
             cm[k] = dict(cm.get(k, {}), **c)
-    E, L = Q["edge"], Q["lap"]
+    E, L = dict(Q["edge"], **S.get("edge", {})), Q["lap"]
     sh = P["marks"]["shade"]
     M = P["materials"]
     digest = {
