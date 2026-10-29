@@ -742,9 +742,6 @@ def main():
     cm = Qc["colour"]["mats"]
     cm["cladding"]["paint"] = [wp["C"], wp["h"]]
     cm["trims"]["paint"] = [tp_["C"], tp_["h"]]
-    # a paint that ages to a hue of its own (paints.json `wash`) takes its long washes in it
-    if "wash" in wp:
-        Qc["colour"]["wash"] = wp["wash"]
     cm.update(board.get("colour", {}))
     for k, v in extra.items():
         cm[k] = dict(cm[v]) if isinstance(v, str) else dict(cm[v["like"]]) if "like" in v else S["colour"].get(k, {})

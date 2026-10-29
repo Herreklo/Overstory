@@ -5,7 +5,7 @@
 - Holds: in the row's overcast the eave casts no band, and the ground darkens at its foot. Its wear keeps p3's character: the tongues under the sills, the runs, the peel at the foot and the chalk. The peel under each sill now falls off board by board.
 - The rock's caches are untouched: `cache/street/gen/107h` and `bake/107z4/out-hull`. Only house.json's glass key was refreshed, from glass.json.
 
-Sheets: `../row/l06-*.jpg`. Stills: `107-*.png`. Older sheets: git log of this folder.
+Sheets: `../row/r02-*.jpg`. Stills: `107-*.png`. Older sheets: git log of this folder.
 
 Cost:
 - Triangles: near 24,590, street 5,459, city 705.

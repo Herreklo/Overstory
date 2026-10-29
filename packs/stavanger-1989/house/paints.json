@@ -5,7 +5,7 @@
   "paints": {
     "wall_white_linseed": { "material": "paint-linseed", "L": 89, "C": 3.0, "h": 88, "describes": "Linseed-oil white, lead and zinc: high, a little warm, yellowing as it ages." },
     "wall_white": { "material": "paint-alkyd", "L": 92, "C": 1.6, "h": 100, "describes": "The 1980s titanium alkyd white: chalk-fresh, neutral, the brightest thing in the street." },
-    "wall_oxred": { "material": "paint-linseed", "L": 34, "C": 34, "h": 33, "wash": [10, 35], "describes": "Ox-red iron oxide in linseed: deep, warm, chalking to a dusty pink-brown with the decades. `wash`: the hue its long washes take as it ages ([C*, h], in place of the white coat's yellow-grey grime): the oil darkening over the iron oxide, a dull deep red-brown, so the age reads in its value and the low sun's warmth stays the light's." },
+    "wall_oxred": { "material": "paint-linseed", "L": 34, "C": 34, "h": 33, "describes": "Ox-red iron oxide in linseed: deep, warm, chalking to a dusty pink-brown with the decades." },
     "wall_ochre": { "material": "paint-linseed", "L": 66, "C": 38, "h": 78, "describes": "Yellow ochre in linseed." },
     "wall_greygreen": { "material": "paint-alkyd", "L": 62, "C": 10, "h": 150, "describes": "A grey-green of the 1950s and 60s." },
     "trim_white_linseed": { "material": "paint-linseed", "L": 90, "C": 2.4, "h": 90, "describes": "The trims' white, as the wall's." },
