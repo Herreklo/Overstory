@@ -1,0 +1,72 @@
+{
+  "_": "The Holm's rock tip: the judged views (site metres, x east, y north, z up over mean sea level) and the lights. The street stop is 2.8 m over the path or apron with a 30 mm lens (docs/visual-direction.md, VD4).",
+  "views": [
+    {
+      "name": "street",
+      "_": "from the east pub quay, 2.8 m over it, across the bay to the tip: the rock as a mass between the sea and the customs house, the sun from the left (side light on the lee and the flank)",
+      "pos": [
+        42,
+        -33,
+        5.2
+      ],
+      "target": [
+        18,
+        6,
+        4.0
+      ],
+      "lens": 30
+    },
+    {
+      "name": "raised",
+      "pos": [
+        30,
+        -52,
+        26
+      ],
+      "target": [
+        0,
+        0,
+        4
+      ],
+      "lens": 30
+    }
+  ],
+  "lights": {
+    "lowsun": {
+      "_": "October, 16:00: the sun low in the south-west under a lifting cloud",
+      "azimuth": 230,
+      "elevation": 12,
+      "sun": 4.0,
+      "sky": 0.6,
+      "skyL": 72,
+      "angle": 1.0,
+      "exposure": 0.0,
+      "unity": {
+        "sun": 2.6,
+        "shadow": 1.0,
+        "sky": 0.32,
+        "equator": 0.24,
+        "ground": 0.1,
+        "exposure": 0.5
+      }
+    },
+    "overcast": {
+      "_": "drizzle at 13:00: the sky the key light",
+      "azimuth": 200,
+      "elevation": 40,
+      "sun": 0.3,
+      "sky": 1.4,
+      "skyL": 80,
+      "angle": 40.0,
+      "exposure": 0.0,
+      "unity": {
+        "sun": 0.45,
+        "shadow": 0.7,
+        "sky": 0.95,
+        "equator": 0.72,
+        "ground": 0.14,
+        "exposure": 1.6
+      }
+    }
+  }
+}

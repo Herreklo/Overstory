@@ -1,0 +1,478 @@
+{
+  "_": "The Bluff in 1989 (docs/town-plan.md, the centre in detail, 5: 'Herring Hill ends in a 20 m rock face over the Roads'; 'the sea caves under the Bluff, reachable at low tide from the rocks'): the old town hill's point, its north-west face over the Roads, the rocks at its foot. The rock element's target is judged here. The face's crest follows centre_land.py CLIFFS ('the bluff'); the top is centre_land's ground without that cliff term (the term draws its high side seaward at the point, a rim with a trench behind it, so it is left out here); the foot is designed below. Every value is a FIXTURE VALUE until the engine provides it (docs/engine-requests.md). Site metres: x east, y north, z up over mean sea level; the origin is street (-290, 60) (street x = -290 - y, street y = 60 + x). Compass bearings in degrees (0 north, clockwise), dips from the horizontal.",
+  "date": 1989,
+  "street_origin": [
+    -290.0,
+    60.0
+  ],
+  "sea": {
+    "_": "Stavanger's spring range about 0.46 m (docs/research/land-rock-and-water.md, 3). The point faces the Roads, about 3 km of fetch to the north and north-west.",
+    "meanLevel": 0.0,
+    "springRange": 0.46,
+    "level": -0.2,
+    "exposure": {
+      "north": 1.0,
+      "west": 0.85,
+      "east": 0.45,
+      "south": 0.1
+    }
+  },
+  "rock": {
+    "kind": "slate",
+    "kind_why": "the pack's slate is the town's own phyllite (packs/stavanger-1989/materials/slate.json; docs/stone.md)",
+    "families": [
+      {
+        "name": "foliation",
+        "dip": 68,
+        "dipToward": 250,
+        "spacingM": [
+          0.8,
+          2.6
+        ],
+        "open": [
+          0.3,
+          0.04,
+          0.16
+        ]
+      },
+      {
+        "name": "J1",
+        "dip": 84,
+        "dipToward": 135,
+        "spacingM": [
+          1.5,
+          6.0
+        ],
+        "open": [
+          0.25,
+          0.05,
+          0.25
+        ]
+      },
+      {
+        "name": "J3",
+        "dip": 86,
+        "dipToward": 352,
+        "spacingM": [
+          4.0,
+          14.0
+        ],
+        "open": [
+          0.35,
+          0.08,
+          0.35
+        ]
+      },
+      {
+        "name": "L",
+        "dip": 14,
+        "dipToward": 320,
+        "spacingM": [
+          1.0,
+          4.0
+        ],
+        "open": [
+          0.2,
+          0.04,
+          0.14
+        ]
+      }
+    ],
+    "_families": "The rock is built of the cells these joints cut: every face of the Bluff is one of its own joint planes. The foliation's slabs, 0.8 to 2.6 m, lead: they stand as ribs on the face and fins on the foot. J1 strikes with the north-west face, J3 with the tip's north face, L is a low joint dipping gently out of the face (inferred, FIXTURE VALUE) and makes the ledges. 'open': the share of joints the frost and the sea opened, and their width range in metres; the rest are shut, their two faces one.",
+    "openDepthM": 2.5
+  },
+  "face": {
+    "_": "The face's foot stands on centre_land's crest line; its section is designed: a sea-cut lower wall, a ledge, a steeper or gentler upper slope to a rounded turf shoulder, each varying slowly along the face (section, over cellM metres). Each big cell (J1 by J3) is one bay: set back by bigSetbackM, turned by up to turnDeg. A cell stands if its middle lies within the mass by the erosion there. Each layer between two low joints (L) is worn back or left proud by its own amount, varying slowly along the face (layerM, layerAmpM): ledges and overhangs run along the face as strata do (Far Cry 5's cliffs, docs/research/land-rock-and-water.md). Smaller patches (patchM, patchAmpM) and each cell (cellM) add a little; the soft foliation slabs (softShare) are worn back further (softM), ribs up the face; frost bites the crest (crestBiteM over crestCellM along it, within crestDepthM of the top). So the face is a few large joint planes stepped back from each other, never a cut through them and never a checkerboard.",
+    "footZ": 2.0,
+    "section": {
+      "cellM": 34.0,
+      "lowWallM": [
+        4.0,
+        11.0
+      ],
+      "lowLeanDeg": 3.0,
+      "ledgeM": [
+        0.3,
+        3.5
+      ],
+      "upLeanDeg": [
+        12.0,
+        38.0
+      ]
+    },
+    "shoulder": {
+      "_": "the turf rounds over the crest: down by dropM over the last RM metres",
+      "RM": 3.5,
+      "dropM": 1.4
+    },
+    "bigSetbackM": [
+      0.0,
+      2.0
+    ],
+    "turnDeg": 8.0,
+    "erosion": {
+      "layerM": 30.0,
+      "layerAmpM": [
+        -1.6,
+        1.8
+      ],
+      "patchM": [
+        9.0,
+        5.0
+      ],
+      "patchAmpM": [
+        -0.5,
+        0.6
+      ],
+      "cellM": [
+        -0.2,
+        0.2
+      ],
+      "softShare": 0.25,
+      "softM": 1.4,
+      "crestBiteM": [
+        0.0,
+        2.6
+      ],
+      "crestCellM": 9.0,
+      "crestDepthM": 4.0
+    },
+    "bandM": 20.0
+  },
+  "foot": {
+    "_": "The rocks from the face's foot to the sea: the face's own rock, lower, cut by the same joints, falling from footZ at the face to edgeZ at the shoreline and on under the sea at bedSlope.",
+    "edgeZ": -0.6,
+    "bedSlope": 0.22,
+    "bedFloor": -6.0,
+    "ribM": [
+      0.0,
+      0.9
+    ],
+    "_rib": "the sea wears the softer foliation slabs down between the harder ones in the tidal zone (ribM), and each slab's top is turned about its strike by up to finTurnDeg: fins with a saw's profile along the strike, gullies between",
+    "finTurnDeg": 18.0
+  },
+  "wear": {
+    "_": "Every edge between two faces open to the air is worn back by one plane (rigid: a chamfer, never a bend), as Firewatch's chunky planes carry crisp chamfers and Hertervig kept the texture at the edges (docs/research/land-rock-and-water.md, 2). The wear is wider on edges facing up (rain and frost) and in the tide (the sea rounds what it reaches).",
+    "edgeM": [
+      0.05,
+      0.22
+    ],
+    "upFactor": 0.8,
+    "tideFactor": 1.6
+  },
+  "land": {
+    "_": "The land's history in the order it happened (blender/parts/rock/cliff.py): the mass, the ice, the sea, frost and gravity along the joints, the weather, the blocks on the foot. Each step reads what the steps before it left, so a form is where its cause put it.",
+    "wanderM": [-1.6, 1.6],
+    "wanderCellM": 45.0,
+    "gullies": {
+      "_": "Where the top's water went over the edge along a steep joint, frost and water dug a gully down the face, deepest at the crest; between the gullies the face stands as buttresses. Each follows the steep family whose plane runs most nearly across the face there.",
+      "spacingM": [16.0, 38.0],
+      "depthM": [1.5, 5.0],
+      "widthM": [4.0, 10.0],
+      "spreadDeg": 8.0
+    },
+    "ice": {
+      "_": "The ice rounded the hill before the sea and the frost cut into it: the old mass's convex edges take a radius, never more than heightShare of the rock's height over its foot (a low whaleback is smoothed, not made a loaf).",
+      "roundM": 3.0,
+      "heightShare": 0.3,
+      "footRoundM": 0.5
+    },
+    "notch": {
+      "_": "Storm waves cut a notch at the face's foot, deeper where the face is open to the Roads (sea.exposure).",
+      "z": 2.7,
+      "hM": 1.0,
+      "depthM": [0.2, 1.4]
+    },
+    "ribs": {
+      "_": "In the tide and the spray the sea wears the softer foliation slabs down between the harder ones: grooves along the strike, their walls the foliation's own planes, their edges rounded over edgeM by the sea that washes them.",
+      "softShare": 0.45,
+      "depthM": [0.15, 0.7],
+      "edgeM": 0.3,
+      "topZ": 2.2
+    },
+    "fractures": {
+      "_": "Frost and gravity took blocks out along the joints, the big ones first. Each fracture is a finite plane of its family, turned from the family's mean by a small seeded spread (spreadDeg): a rock mass's joint sets keep their orientations. Its block is bounded by it, the two cross families most nearly square to it and the free face; under tabularBelowM a block is a slab of the foliation, as phyllite breaks (thickness from the foliation's spacing), so its grain runs through the face. On the sea's foot only such slabs are taken (the waves pluck them); the face's big blocks start on the face. A fracture took its block only where it faces out of the rock (facing: the least cosine with the face's outward normal), and the smaller a block, the more it needs a free edge: frost works at the corners, so each octave's blocks are taken where the face is convex at their own size (edge.c: the convexity from where it starts to where it is sure, measured over edge.scale times the size) and only by edge.floor of the time on a plane, octave by octave. So the big planes stay whole and the small breaks gather at their edges. depth: how far behind the face the fracture lies, times the size, at most maxDepthM and at least minDepthM, and no side under minSideM: a break smaller than two of the mesh's voxels cannot be drawn as a plane, so it goes to the normal map with the grain finer than the last octave. Gravity keeps what can stand: a block whose roof (its most upward face) has rock above it at the face leaves an overhang, so it falls only if it lies less than overhangM behind the face; and a block that would leave rock thinner than finM between it and the air beside it does not fall alone (the fin goes with it, so neither is cut). Age since a block fell: sinceIce times a seeded share to the power ageShape, so most scars are old and a few are young. octaves: the sizes (rM) and how many times over each covers the face (cover) before the edge rule.",
+      "octaves": [
+        {"rM": [6.0, 12.0], "cover": 1.2, "floor": 1.0},
+        {"rM": [3.0, 6.0], "cover": 1.2, "floor": 0.7},
+        {"rM": [1.5, 3.0], "cover": 0.9, "floor": 0.15},
+        {"rM": [0.75, 1.5], "cover": 1.1, "floor": 0.04}
+      ],
+      "edge": {"scale": 0.5, "c": [0.04, 0.3]},
+      "spreadDeg": 4.0,
+      "tabularBelowM": 3.0,
+      "depth": [0.08, 0.45],
+      "maxDepthM": 4.0,
+      "minDepthM": 0.3,
+      "minSideM": 0.35,
+      "overhangM": 0.6,
+      "finM": 0.9,
+      "sideM": [0.55, 1.25],
+      "facing": 0.35,
+      "shares": {"foliation": 0.3, "J1": 0.35, "J3": 0.2, "L": 0.15},
+      "ageShape": 1.6
+    },
+    "overhang": {
+      "_": "What cannot stand, too. A roof (rock with at least gapM of air under it; a lower gap the rock bears across) stands out from what holds it no farther than share of its own thickness, and never less than minM: phyllite is weak and split along its foliation, so a slab two metres thick holds two metres out, no more. What holds it is rock at the roof's mid height that stands on the bed, or a standing roof stiffK times as thick (a slab on the face over a sea notch leans on the face's roof). Beyond that it broke at the steep joint most nearly square to its reach, in pieces of pieceM each way between the joints with marginM to spare; a piece whose cut would take more than heldShare as much held rock stays. What fell together lies together at the foot. Seen on a grid of stepM by dzM within bandM of the crest, reach measured to capM.",
+      "stepM": 0.5,
+      "dzM": 0.25,
+      "gapM": 0.5,
+      "share": 1.0,
+      "minM": 1.0,
+      "stiffK": 2.0,
+      "bandM": 8.0,
+      "capM": 12.0,
+      "pieceM": 1.5,
+      "marginM": 0.1,
+      "heldShare": 0.25
+    },
+    "topple": {
+      "_": "What cannot stand falls. Where the sea's slots, caves and the frost's breaks leave a column narrower than twice widthM standing more than heightM over the rock round it (the rock's top, opened by a disc of widthM, on a grid of stepM), the column breaks off along a low joint (L) stumpM over that rock, between the steep joints (J1, J3) round it with marginM to spare, and lies at its foot as blocks; a column held by rock beside it within heightM of its top is a buttress, and stands. Phyllite is weak: a needle of it does not stand.",
+      "widthM": 1.0,
+      "heightM": 2.5,
+      "stepM": 0.5,
+      "stumpM": 0.3,
+      "marginM": 0.4
+    },
+    "weather": {
+      "_": "Frost and rain chip a break's edges by a few centimetres over its years (roundM from fresh to the oldest, on a log of years): phyllite above the spray keeps crisp planes. The sea rounds what it reaches, up to seaTopZ and more where the face is open. A fallen block's edges round in the swash by blockRound (a share of its thinnest half) from fresh to blockRoundYears.",
+      "roundM": [0.02, 0.06],
+      "seaRoundM": 0.5,
+      "blockRound": [0.04, 0.16],
+      "blockRoundYears": 160,
+      "seaTopZ": 3.0,
+      "sinceIceYears": 14000
+    },
+    "voxelM": 0.15
+  },
+  "soil": {
+    "_": "The soil drapes the rock: it lies on the rock's top wherever that is gentle enough to hold it (under maxSlopeDeg, seen over bridgeM, since the root mat spans a crack or step narrower than that) and above the spray (bareBelowM, from a sheltered face to one fully open to the Roads), on the cliff's top and on its broad ledges alike. It gathers in hollows and thins on knolls and shoulders: midM, plus curveM2 times the rock top's curvature (smoothed over curveCellM), within drapeM, and thinner on slopes. depthM is the town's soil over the rock on the level, which sets the rock's top under the town. The turf grows on it; its edge stands back from the rock's edge where the wind and the spray strip it, up to edgeBackM[1] on a face fully open to the Roads, and reaches the edge (edgeBackM[0]) where it is sheltered. At the edge the turf's root mat overhangs a raw earth scarp the soil's depth tall (lipM, more where the soil is deep, as the earth under the mat washes and frosts away; the scarp's foot stands back undercutShare of the lip).",
+    "depthM": 0.55,
+    "drapeM": [0.12, 1.1],
+    "midM": 0.45,
+    "curveM2": 2.0,
+    "curveCellM": 3.0,
+    "maxSlopeDeg": 38.0,
+  "bridgeM": 1.2,
+    "bareBelowM": [4.0, 7.0],
+    "edgeBackM": [0.0, 2.2],
+    "edgeCellM": 14.0,
+    "lipM": [0.05, 0.3],
+    "undercutShare": 0.4
+  },
+  "acts": [
+    {
+      "id": "act-rockfall-1987",
+      "kind": "rockfall",
+      "year": 1987,
+      "_": "a winter fall from the north-west face: a fresh, dark scar bounded by joints, its blocks sharp on the rocks below",
+      "at": [
+        12.0,
+        14.0
+      ],
+      "widthM": 9.0,
+      "zM": [
+        9.0,
+        19.0
+      ],
+      "depthM": 2.2,
+      "blocks": 9
+    },
+    {
+      "id": "act-rockfall-1904",
+      "kind": "rockfall",
+      "year": 1904,
+      "_": "an old fall near the tip: its scar weathered back to the face's grey, its blocks rounded by the sea and lichened",
+      "at": [
+        62.0,
+        37.0
+      ],
+      "widthM": 12.0,
+      "zM": [
+        4.0,
+        15.0
+      ],
+      "depthM": 2.8,
+      "blocks": 12
+    },
+    {
+      "id": "cave-west",
+      "kind": "cave",
+      "_": "a sea cave along a foliation joint, its floor in the low tide",
+      "at": [
+        -2.0,
+        4.0
+      ],
+      "widthM": 2.8,
+      "heightM": 5.0,
+      "depthM": 14.0
+    },
+    {
+      "id": "cave-tip",
+      "kind": "cave",
+      "_": "the tip's cave, wider, under the old fall",
+      "at": [
+        44.0,
+        32.0
+      ],
+      "widthM": 3.6,
+      "heightM": 6.5,
+      "depthM": 18.0
+    }
+  ],
+  "boulders": {
+    "_": "Old stones on the foot from falls long gone, worn by the sea. Phyllite splits as it wears, so they are flat slabs and discs, not balls (thickness flat times their length). Storms carry them out of the open water into the coves and the clefts and up to the waterline (zM), so they gather where the shore is sheltered: the share of land within shelterM.",
+    "flat": [0.14, 0.3],
+    "round": 0.6,
+    "zM": [-0.4, 1.4],
+    "shelterM": 12.0,
+    "count": 160,
+    "sizeM": [
+      0.35,
+      1.6
+    ],
+    "seed": "bluff-boulders"
+  },
+  "views": [
+    {
+      "name": "shore",
+      "_": "the street stop: on the low rocks south-west of the face, where the path from the Heights comes down, 2.8 m over them, looking north-east along the whole face to the tip, the Roads on the left",
+      "pos": [
+        -50.0,
+        -10.0
+      ],
+      "eye": 2.8,
+      "target": [
+        25.0,
+        22.0,
+        9.0
+      ],
+      "lens": 30
+    },
+    {
+      "name": "foot",
+      "_": "on the shore rocks near the water at the face's south-west end, 2.8 m over them, looking north-east along the foot to the tip",
+      "pos": [
+        -26.0,
+        8.0
+      ],
+      "eye": 2.8,
+      "target": [
+        55.0,
+        42.0,
+        11.0
+      ],
+      "lens": 30
+    },
+    {
+      "name": "cave",
+      "_": "on the rocks west of the tip at low water, 2.8 m over them, looking east-south-east to the tip's cave under the old fall",
+      "pos": [
+        12.0,
+        38.0
+      ],
+      "eye": 2.8,
+      "target": [
+        50.0,
+        33.0,
+        6.0
+      ],
+      "lens": 30
+    },
+    {
+      "name": "breakwater",
+      "_": "the breakwater's end by its light, across the water to the whole face",
+      "pos": [
+        -165.0,
+        20.0,
+        6.0
+      ],
+      "target": [
+        20.0,
+        22.0,
+        11.0
+      ],
+      "lens": 30
+    },
+    {
+      "name": "raised",
+      "pos": [
+        -120.0,
+        40.0,
+        40.0
+      ],
+      "target": [
+        20.0,
+        10.0,
+        8.0
+      ],
+      "lens": 30
+    }
+  ],
+  "lights": {
+    "lowsun": {
+      "_": "25 September, 18:30: the sun low in the west-south-west",
+      "azimuth": 254,
+      "elevation": 8,
+      "color": [
+        1.0,
+        0.72,
+        0.5
+      ],
+      "energy": 4.0,
+      "sky": 1.0
+    }
+  },
+  "figures": [
+    [
+      -6,
+      18
+    ],
+    [
+      2,
+      24
+    ],
+    [
+      3.2,
+      24.6
+    ],
+    [
+      33,
+      20
+    ]
+  ],
+  "clefts": {
+    "_": "Where the sea found a J3 joint it cut a cleft (a geo): a narrow inlet into the face along the joint, its floor in the tide, its walls the joint's own planes. u is metres along the crest line from its south-west end.",
+    "list": [
+      {
+        "u": 36.0,
+        "widthM": 3.0,
+        "depthM": 9.0
+      },
+      {
+        "u": 82.0,
+        "widthM": 4.5,
+        "depthM": 12.0
+      },
+      {
+        "u": 133.0,
+        "widthM": 2.5,
+        "depthM": 7.0
+      },
+      {
+        "u": 196.0,
+        "widthM": 3.5,
+        "depthM": 8.0
+      }
+    ]
+  },
+  "budget": {
+    "_": "the whole Bluff's rock at the near level (docs/foundations.md, Detail by tier: a frame is about 2 million visible triangles). trisL1 is the joint-cell build's (bluff.py). The land's (cliff.py) is by distance, as the game draws it in chunks: perM2 triangles a square metre of rock within toM of the camera, so a triangle is about the same few pixels wide at every distance; the normal map carries what is finer.",
+    "trisL1": 60000,
+    "tiers": [
+      {"toM": 40.0, "perM2": 30.0},
+      {"toM": 150.0, "perM2": 8.0},
+      {"toM": 100000.0, "perM2": 2.0}
+    ]
+  }
+}

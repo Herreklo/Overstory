@@ -1,0 +1,429 @@
+{
+  "_": "The Holm's rock tip in 1989 (docs/town-plan.md, the centre in detail, 6: 'At the tip, on bare rock, the old customs house and harbour master's office in small red wooden buildings, and a landing for the Penny Ferry'; centre_land.py OUTCROPS, the Holm's rock tip). Nature's first element, rock and land, is judged here. Every value is a FIXTURE VALUE until the engine provides it (docs/engine-requests.md). Local site metres: x east, y north, z up over mean sea level; the origin is the outcrop's centre, street (-246, -246) (street x = -246 - y, street y = -246 + x). Compass bearings in degrees (0 north, clockwise), dips from the horizontal.",
+  "date": 1989,
+  "street_origin": [
+    -246.0,
+    -246.0
+  ],
+  "sea": {
+    "_": "Stavanger's spring range about 0.46 m (docs/research/land-rock-and-water.md, 3); the tip faces the Roads (fetch about 3 km to the north) on its north and west, the Basin's mouth behind the breakwater on its east.",
+    "meanLevel": 0.0,
+    "springRange": 0.46,
+    "exposure": {
+      "north": 1.0,
+      "west": 0.8,
+      "east": 0.35,
+      "south": 0.1
+    }
+  },
+  "rock": {
+    "kind": "slate",
+    "kind_why": "the pack's slate is the town's own phyllite (packs/stavanger-1989/materials/slate.json; docs/stone.md)",
+    "ice": {
+      "_": "The ice's way over the tip: toward the south-south-west (NGU Bulletin 411: southward striae on Jaeren through most of the Weichselian; secondary). Stoss (abraded, smooth) faces the north-north-east, the sea; the lee (plucked, stepped) faces the Holm.",
+      "toward": 205
+    },
+    "foliation": {
+      "strike": 160,
+      "dip": 68,
+      "dipToward": 250,
+      "spacingM": [
+        0.7,
+        1.8
+      ]
+    },
+    "joints": [
+      {
+        "name": "J1",
+        "strike": 45,
+        "dip": 84,
+        "dipToward": 135,
+        "spacingM": [
+          1.6,
+          3.6
+        ]
+      },
+      {
+        "name": "J2",
+        "strike": 135,
+        "dip": 80,
+        "dipToward": 45,
+        "spacingM": [
+          2.0,
+          4.4
+        ]
+      },
+      {
+        "name": "J3",
+        "strike": 82,
+        "dip": 86,
+        "dipToward": 352,
+        "spacingM": [
+          3.0,
+          6.0
+        ]
+      }
+    ],
+    "sheeting": {
+      "_": "unloading joints near the ground's own slope, thin near the top and thicker with depth (the corner's fixture)",
+      "spacingM": [
+        0.45,
+        0.9
+      ],
+      "deepSpacingM": [
+        1.7,
+        2.8
+      ],
+      "deepM": 7.0
+    },
+    "bareSince": "ice"
+  },
+  "outcrop": {
+    "_": "The tip as the plan has it (centre_land.py OUTCROPS: radius 26 north-south and 36 east-west, top 7, falling at its edge over about 10 m; after Tinganes, Torshavn): one broad back of bare rock the ice wore, its lee running on into the Holm Street's end, a skerry off its north-east corner. The steep joint families that bound its blocks at this scale are the open master joints (spacings inferred; the finer joints are seams on the faces). FIXTURE VALUES.",
+    "landform": {
+      "centre": [
+        0,
+        0
+      ],
+      "top": 7.0,
+      "iceToward": 205,
+      "radii": [
+        26,
+        60,
+        34,
+        37
+      ],
+      "power": 2.4,
+      "lee": {
+        "from": 6.0,
+        "plate": 0.8,
+        "run": 3.5,
+        "floor": 5.6
+      },
+      "knobs": [
+        {
+          "_": "a skerry off the north-east corner, parted by a sound",
+          "centre": [
+            40,
+            30
+          ],
+          "top": 2.6,
+          "radii": [
+            9,
+            6,
+            7,
+            8
+          ],
+          "power": 1.6
+        }
+      ],
+      "facetM": 1.6,
+      "saw": [
+        0.03,
+        0.1
+      ],
+      "sawMaxM": 0.8
+    },
+    "region": [
+      -46,
+      -30,
+      52,
+      42
+    ],
+    "bed": -6.0,
+    "dropBelow": -3.0,
+    "families": [
+      {
+        "name": "foliation",
+        "dip": 68,
+        "dipToward": 250,
+        "spacingM": [
+          3.0,
+          8.0
+        ],
+        "open": [
+          0.25,
+          0.06,
+          0.22
+        ],
+        "tightM": 0.015
+      },
+      {
+        "name": "J1",
+        "dip": 84,
+        "dipToward": 135,
+        "spacingM": [
+          4.0,
+          10.0
+        ],
+        "open": [
+          0.35,
+          0.08,
+          0.3
+        ],
+        "tightM": 0.02
+      },
+      {
+        "name": "J3",
+        "dip": 86,
+        "dipToward": 352,
+        "spacingM": [
+          7.0,
+          16.0
+        ],
+        "open": [
+          0.3,
+          0.06,
+          0.2
+        ],
+        "tightM": 0.015
+      }
+    ],
+    "cuts": [
+      {
+        "id": "act-path-1882",
+        "line": [
+          [
+            32,
+            -2
+          ],
+          [
+            22,
+            -4
+          ],
+          [
+            12,
+            -5
+          ]
+        ],
+        "width": 2.4,
+        "floor": [
+          2.0,
+          3.4,
+          5.4
+        ]
+      }
+    ],
+    "_families": "The open master joints that bound the blocks at this scale: the foliation and the two cross joints at wide angles to it (J2 runs within 25 degrees of the foliation's strike and is left to the faces as seams). 'open': the share of joints the frost and the sea opened, and their width range in metres; the rest are tight seams of tightM.",
+    "coast": {
+      "_": "blocks under belowM at the waterline taken by the sea, share times the side's exposure",
+      "belowM": 1.2,
+      "share": 0.6
+    },
+    "chamfers": {
+      "_": "[min width, max width, lean] of the worn top edge by joint kind: a tight seam's narrow bevel, an open joint's round-over into its gully (on the stoss, where the ice wore it flush, stossShare of that); never more than capShare of the block's least width; a blasted face keeps its edge",
+      "joint": [
+        0.04,
+        0.1,
+        1.0
+      ],
+      "foliation": [
+        0.04,
+        0.09,
+        1.0
+      ],
+      "joint-open": [
+        0.5,
+        1.3,
+        0.75
+      ],
+      "foliation-open": [
+        0.4,
+        1.1,
+        0.75
+      ],
+      "capShare": 0.18,
+      "stossShare": 0.4
+    },
+    "sheets": {
+      "_": "sheeting shells stripped from the stoss: thickness, the most stripped over a block, the slow field's cell (m)",
+      "thickM": 0.6,
+      "most": 3.0,
+      "cellM": 10
+    }
+  },
+  "acts": [
+    {
+      "id": "act-customs-1862",
+      "kind": "plinth",
+      "year": 1862,
+      "what": "the customs house's plinth of dry stone laid on the rock, taking up its slope (rebuilt after the Holm's fire of 1860)"
+    },
+    {
+      "id": "act-landing-1882",
+      "kind": "quay",
+      "year": 1882,
+      "what": "the Penny Ferry's landing: a short quay of split stone on the tip's east side, filled behind to an apron",
+      "edge": "dry stone quay wall",
+      "top": 1.9,
+      "line": [
+        [
+          40,
+          -12
+        ],
+        [
+          42,
+          6
+        ]
+      ],
+      "apron": [
+        [
+          40,
+          -12
+        ],
+        [
+          42,
+          6
+        ],
+        [
+          33,
+          8
+        ],
+        [
+          31,
+          -10
+        ]
+      ]
+    },
+    {
+      "id": "act-path-1882",
+      "kind": "cut",
+      "year": 1882,
+      "what": "the path from the landing up to the customs house, blasted into the rock's east flank, hand-drilled",
+      "drill": "hand",
+      "width": 2.4,
+      "line": [
+        [
+          32,
+          -2
+        ],
+        [
+          22,
+          -4
+        ],
+        [
+          12,
+          -5
+        ]
+      ],
+      "floor": [
+        2.0,
+        3.4,
+        5.4
+      ]
+    },
+    {
+      "id": "act-office-1894",
+      "kind": "plinth",
+      "year": 1894,
+      "what": "the harbour master's office's plinth on the rock's west shoulder"
+    }
+  ],
+  "buildings": [
+    {
+      "id": "customs-house",
+      "built": 1862,
+      "what": "the old customs house, one and a half storeys, red-painted timber, white trim",
+      "at": [
+        6,
+        -6
+      ],
+      "turn": 18,
+      "size": [
+        9.0,
+        6.5
+      ],
+      "eaves": 4.2,
+      "ridge": 7.2,
+      "base": 7.2
+    },
+    {
+      "id": "harbour-office",
+      "built": 1894,
+      "what": "the harbour master's office, one storey, red-painted timber",
+      "at": [
+        -18,
+        4
+      ],
+      "turn": -8,
+      "size": [
+        5.4,
+        4.2
+      ],
+      "eaves": 2.8,
+      "ridge": 4.6,
+      "base": 6.0
+    }
+  ],
+  "breakwater": {
+    "_": "from the Holm's north-east corner over the Basin's mouth, a light at its end (centre_land.py BREAKWATER, LIGHT)",
+    "line": [
+      [
+        78,
+        -56
+      ],
+      [
+        60,
+        -40
+      ],
+      [
+        136,
+        66
+      ]
+    ],
+    "crest": 2.6,
+    "light": [
+      136,
+      66
+    ]
+  },
+  "far": {
+    "_": "what stands beyond, from centre_land.py, for the frame's back: the beacon islet, a skerry, the small island, Bridge Island",
+    "islets": [
+      {
+        "name": "the beacon islet",
+        "at": [
+          186,
+          124
+        ],
+        "r": 16,
+        "top": 6
+      },
+      {
+        "name": "a skerry",
+        "at": [
+          356,
+          234
+        ],
+        "r": 12,
+        "top": 4
+      },
+      {
+        "name": "the small island",
+        "at": [
+          -154,
+          374
+        ],
+        "r": 60,
+        "top": 12
+      },
+      {
+        "name": "Bridge Island",
+        "at": [
+          646,
+          454
+        ],
+        "r": 180,
+        "top": 26
+      }
+    ]
+  },
+  "holm": {
+    "_": "the Holm behind the tip, as a stand-in for the frame: Holm Street's end on the spine, the pub quays either side (town-plan.md, 6: two levels about six metres apart)",
+    "from": -28,
+    "street": 6.0,
+    "streetHalfWidth": 16,
+    "quay": 2.4,
+    "slopeM": 6
+  }
+}

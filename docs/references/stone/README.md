@@ -86,6 +86,18 @@ The twenty photographs Øystein approved from `reviews/lt1/port/2b/research-loca
 
 **Not fetched; each needs Øystein's yes.** The rows' "same spot" records: BySt020_0245 and BySt003_103 (row 4), BySt1982_05_0980 (row 5), ubb-bros-00260a (row 11), BySt_2007_01_428_002 and _003 (row 14), and Brosing's ubb-bros-00290 (row 17's then and now). Also the records ranked lower in `research-local.md`.
 
+## Rock at the water (approved 28 October)
+
+Five images Øystein approved for the rock and land, the first nature element: a target for the rock that carries a frame. Commons thumbnails at 1920 px wide.
+
+| File | What it shows | What we take from it | Credit |
+| --- | --- | --- | --- |
+| `48-nielsen-ny-hellesund-svaberg-1885.jpg` | Amaldus Nielsen, *Morgen ved Ny-Hellesund* (Morning at Ny-Hellesund), 1885 (Nasjonalmuseet, NG.M.00326). Bare rounded rock (svaberg) round a still sound on the south coast, a red house tucked in a cleft, early sun | Rock as a few big lit and shaded planes rising out of a mirror; warm light on the tops, cool in the hollows; the house small against the mass | Public domain, [Commons](https://commons.wikimedia.org/wiki/File:Amaldus_Nielsen_-_Morning_in_Ny-Hellesund_-_NG.M.00326_-_National_Museum_of_Art,_Architecture_and_Design.jpg) |
+| `49-tinganes-low-sun-september-2018.jpg` | Tinganes, Tórshavn, from the sea, 30 September 2018, 19:14: the old red-and-black government houses on a low rock tongue, low sun under a grey sky | Our Holm tip's case: wooden houses on a bare rock point, the rock a dark band between the sea and the walls, lit warm at its lip | NAC, CC BY-SA 4.0, [Commons](https://commons.wikimedia.org/wiki/File:11_Tinganes_Torshavn_300918.jpg) |
+| `50-tinganes-overcast-2005.jpg` | Tinganes from the south-west, 2005, overcast: the same tongue nearer, turf roofs, the rock's foot at the water | In flat light the rock reads by its value alone: dark wet foot, grey-green body, turf on top; the houses sit straight on it with no plinth | Christian Bickel, CC BY-SA 2.0 de, [Commons](https://commons.wikimedia.org/wiki/File:Tinganes,_Torshavn_2005_SW.jpg) |
+| `51-hertervig-borgoya-1867.jpg` | Lars Hertervig, *Borgøya*, 1867 (Nasjonalmuseet, NG.M.02890). A sheer island rock off Tysvær north of Stavanger, a heaped sky, a low foreground of pale rounded rock and boulders | Stavanger's own painter on spectacle: one tall dark mass against cloud, and in front the low ice-smoothed rock drawn as pale slabs with dark cracks | Public domain, [Commons](https://commons.wikimedia.org/wiki/File:Lars_Hertervig_-_Island_Borg%C3%B8ya_-_NG.M.02890_-_National_Museum_of_Art,_Architecture_and_Design.jpg) |
+| `52-stavanger-natvigs-minde-2017.jpg` | Natvigs Minde, Stavanger, 2017: old red sea-houses on a low point in the harbour, timber quays round it, a green bank at its end | Stavanger's own case at small scale: a low point built over and edged with quays, the land showing only as a green bank | Olaf Meister, CC BY-SA 4.0, [Commons](https://commons.wikimedia.org/wiki/File:Natvigs_Minde_2017.jpg) |
+
 ## For study only (copyrighted; in `study/`, not in git)
 
 | File | What it shows | What we take from it | Source |
@@ -97,6 +109,10 @@ The twenty photographs Øystein approved from `reviews/lt1/port/2b/research-loca
 | `25-ponyo-harbour-quay.jpg` | *Ponyo*: a small harbour town, boats at a stone quay | A harbour edge simplified: the quay wall as one plain band between the houses and the water | © Studio Ghibli, [ghibli.jp](https://www.ghibli.jp/gallery/ponyo012.jpg) |
 | `26-stalenhag-granite-boulder.jpg` | Simon Stålenhag, *Tales from the Loop*: a big lichen-spotted boulder and stones in a field at dusk | A boulder as a few planes, lichen as soft spots, stones half-sunk in the grass | © Simon Stålenhag, [simonstalenhag.se](https://www.simonstalenhag.se/tftlbig/29.jpg) |
 | `27-stalenhag-mossy-bedrock.jpg` | Stålenhag, *Things from the Flood*: low cracked rock in a wet field in rain, puddles between | Bedrock and stones in rain: dark wet sides, moss and lichen on the tops, water standing in the low places | © Simon Stålenhag, [simonstalenhag.se](https://www.simonstalenhag.se/tftfbig/28.jpg) |
+| `53-seven-sisters-chalk-face-from-the-beach.png` | The Seven Sisters, Sussex, from the shingle at their foot: one sheer white chalk face under a green turf cap, walkers on the beach, the next headlands fading behind | Spectacle from a few big shapes: one face as the lightest value, the cap's edge a crisp line over it, scale from tiny people, headlands receding in haze | Sent by Øystein in chat, 28 October; source not given |
+| `54-jaeren-beach-marram-dunes-summer.webp` | A Jæren beach in summer from the dunes: a long curve of pale sand, marram on the dunes, turquoise sea, flat green land and a spruce windbreak behind | Jæren's palette and the dune edge: grass caps over small sand scarps, the same shape as the turf over the chalk face, at a smaller scale | Sent by Øystein in chat, 28 October; source not given |
+| `55-jaeren-dunes-low-sun.png` | Marram dunes in low sun, a sand path down to the beach, a grey sky over the sea | Low light on grass: gold tops against cool shadow, the path as a pale cut | Sent by Øystein in chat, 28 October; source not given |
+| `56-jaeren-farm-boulder-walls-green.webp` | A Jæren farm from above: timber longhouses with tile roofs, walls of rounded boulders, bright green fields running to the sea | The rounded stones of the moraine, laid in walls and in a byre, lichen-spotted, a different rock from the town's dark slate; the green that makes the grey read | Sent by Øystein in chat, 28 October; source not given |
 
 ## Gaps
 
