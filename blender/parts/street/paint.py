@@ -511,9 +511,9 @@ def grime(pg, Q, low, sills):
 def house_paint(meta, paints):
     """The paint the house wears (paints.json): a 'repainted' event's, else its era's default; its trims' with it."""
     D = paints["defaults"]
-    ev = [e for e in meta["events"] if e["kind"] == "repainted" and e["year"] <= meta["year"] and e["params"].get("paint")]
+    ev = [e for e in meta["events"] if e["kind"] == "repainted" and e["year"] <= meta["year"] and e["params"].get("wall")]
     if ev:
-        wall = ev[-1]["params"]["paint"]
+        wall = ev[-1]["params"]["wall"]
         return paints["paints"][wall], paints["paints"][D["repaint"].get(wall, D[meta["era"]]["trim"])]
     d = D["warehouse"] if meta["type"] == "warehouse" else D[meta["era"]]
     return paints["paints"][d["wall"]], paints["paints"][d["trim"]]
@@ -559,6 +559,10 @@ def main():
     mats.update({k: (dict(mats[v]) if isinstance(v, str) else
                      dict(mats[v["like"]], **{f: x for f, x in v.items() if f != "like"}) if "like" in v else v)
                  for k, v in extra.items()})
+    # the wall's value is its paint's: the clay's, scaled by the house paint's L* against the paint the clay was set for
+    wp, tp_ = house_paint(meta, paints)
+    k = wp["L"] / paints["paints"][S["clayPaint"]["paint"]]["L"]
+    mats["cladding"] = dict(mats["cladding"], L=round(mats["cladding"]["L"] * k, 1))
 
     pl, sn, dl, gr = (np.zeros(pg.shape) for _ in range(4))
     wash, far = np.zeros(pg.shape), np.zeros(pg.shape)
@@ -688,8 +692,8 @@ def main():
     FL.write(os.path.join(out, "street-normal.png"), SM.street_normal(pg, meta))
 
     # the digest, as the corner's; way Pc's paint is the house's own (paints.json), laid on the clay's values
-    wp, tp_ = house_paint(meta, paints)
     Qc = copy.deepcopy(Q)
+    Qc["materials"]["cladding"] = mats["cladding"]
     cm = Qc["colour"]["mats"]
     cm["cladding"]["paint"] = [wp["C"], wp["h"]]
     cm["trims"]["paint"] = [tp_["C"], tp_["h"]]

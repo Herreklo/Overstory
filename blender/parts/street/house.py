@@ -271,6 +271,10 @@ class House:
         self.version_of = {}
         self.courses = {}
         self.lean_to = None
+        self.ark, self.ark_walls = None, []
+
+    def wall_of(self, i):
+        return next(w for w in self.walls + (self.lt_walls if self.lean_to else []) + self.ark_walls if w.i == i)
 
     # ---- heights of the roof
     def zp(self, y):
@@ -346,12 +350,12 @@ class House:
         def add(wall, kind, a0, z0, ww, hh):
             made, era_of = F.windows_made("front" if wall.i == 0 else "other")
             o = {"wall": wall.i, "kind": kind, "a0": a0, "a1": a0 + ww, "z0": z0, "z1": z0 + hh,
-                 "made": made if kind != "door" else F.built, "eraOf": era_of if kind != "door" else F.built,
+                 "made": made if kind not in ("door", "hatch") else F.built, "eraOf": era_of if kind not in ("door", "hatch") else F.built,
                  "boarded": bd is not None and (bd["params"].get("scope") == "all" or wall.i == 0)}
             out.append(o)
         if self.gable_front:
             self.openings = out
-            return self.plan_gable_front(add)
+            return self.plan_loading(add) if "loading" in op else self.plan_gable_front(add)
         # the front: bays across it
         wall = self.walls[0]
         edge = F.between(*rng(op["front"]["edgeMm"]), "open", "front", "edge")
@@ -395,6 +399,36 @@ class House:
             x = e + (wall.L - 2 * e - ww) * (k / (nb - 1) if nb > 1 else 0.5)
             add(wall, "window", x, self.floors[0] + win["sillOverFloorMm"] * MM, ww, win["hMm"] * MM)
         self.openings = out
+
+    def plan_loading(self, add):
+        """A sea house's openings (the working's openings.loading): on the street gable the loading doors one over
+        another up the middle, a pair of leaves on the ground floor and a hatch to each floor above and to the loft;
+        a small window at each side of each floor; on each long side and on the back a few small windows."""
+        W, F = self.W, self.F
+        op, ld = W["openings"], W["openings"]["loading"]
+        win, loft = op["window"], op["loft"]
+        ww, wh = win["wMm"] * MM, win["hMm"] * MM
+        front = self.walls[0]
+        c = front.L / 2.0
+        dw, dh = ld["door"]["wMm"] * MM, ld["door"]["hMm"] * MM
+        hw, hh = ld["hatch"]["wMm"] * MM, ld["hatch"]["hMm"] * MM
+        add(front, "door", c - dw / 2.0, self.floors[0], dw, dh)
+        for z in self.floors[1:] + ([self.z_loft] if self.loft else []):
+            add(front, "hatch", c - hw / 2.0, z + ld["hatch"]["sillOverFloorMm"] * MM, hw, hh)
+        for o in self.openings:
+            o["leaves"] = True  # all so far: the door and the hatches
+        edge = F.between(*rng(ld["sideEdgeMm"]), "open", "loading", "edge")
+        for z in self.floors:
+            for x in (edge, front.L - edge - ww):
+                add(front, "window", x, z + win["sillOverFloorMm"] * MM, ww, wh)
+
+        def row(wall, n, z):
+            for k in range(n):
+                add(wall, "window", wall.L * (k + 1) / (n + 1) - ww / 2.0, z + win["sillOverFloorMm"] * MM, ww, wh)
+        for z in self.floors:
+            row(self.walls[1], ld["longWindows"], z)
+            row(self.walls[3], ld["longWindows"], z)
+        row(self.walls[2], ld["backWindows"], self.floors[-1])
 
     def plan_gable_front(self, add):
         """A gable-fronted house's openings (the working's openings.gableFront): the front's ground floor in bays; its
@@ -503,10 +537,13 @@ class House:
         for wall in walls:
             top = rake(wall) if rake else (lambda a, zz=z_end: zz)
             apex = max(top(a) for a in [wall.L * k / 20.0 for k in range(21)])
-            planar = self.wall_planar(wall, self.z_drip0 - 0.05 if group == 0 else z_start - 0.05, apex + 0.35)
+            planar = self.wall_planar(wall, self.z_drip0 - 0.05 if group == 0 and z_start < self.z_drip1 + 0.01 else z_start - 0.05,
+                                      apex + 0.35)
             place = place_of(wall) if place_of else wall.M
             for ci in range(len(zs) - 1):
                 zb, zt = zs[ci], zs[ci + 1]
+                if zb < z_start - 0.005:
+                    continue  # under a wall that starts above the table's foot (the ark's)
                 if zb >= apex - 0.02:
                     break
                 if not rake:
@@ -561,36 +598,39 @@ class House:
             pc = self.make(f"clad/w{wall.i}/plane", "cladding", ("street",), wall, mode, place, group)
             if pc.mode == "rigid":
                 pc.anchor, pc.along = self.lean_to["anchor"], self.lean_to["along"]
-            z0 = zs[0]
-            xs = {0.0, wall.L}
-            zc = {z0, apex}
-            gl = gaps(wall, None, None)
-            for (a, b, za, zb_) in gl:
-                xs |= {a, b}
-                zc |= {za, zb_}
-            if not rake:
-                zc.add(z_end)
-            xs = sorted(x for x in xs if 0.0 <= x <= wall.L)
-            zc = sorted(z for z in zc if z0 <= z <= apex)
-            ymid = -0.5 * s
-            for i in range(len(xs) - 1):
-                for j in range(len(zc) - 1):
-                    xa, xb, za, zb_ = xs[i], xs[i + 1], zc[j], zc[j + 1]
-                    mx, mz = (xa + xb) / 2.0, (za + zb_) / 2.0
-                    if any(a <= mx <= b and z_a <= mz <= z_b for (a, b, z_a, z_b) in gl):
-                        continue
-                    if not rake and za >= z_end - 1e-6:
-                        continue
-                    nseg = max(1, round((xb - xa) / 0.5))
-                    for k in range(nseg):
-                        a = xa + (xb - xa) * k / nseg
-                        b = xa + (xb - xa) * (k + 1) / nseg
-                        poly = [Vector((a, ymid, za)), Vector((b, ymid, za)), Vector((b, ymid, zb_)), Vector((a, ymid, zb_))]
-                        if rake:
-                            poly = clip_top(poly, top)
-                        if len(poly) >= 3:
-                            cuv = [planar(p)[1:] for p in poly]
-                            pc.add("street", Face(poly, cuv, planar(poly[0])[0], cuv))
+            self.wall_planes(pc, "street", wall, max(zs[0], z_start), apex, top if rake else None, z_end, gaps(wall, None, None),
+                             -0.5 * s, planar)
+
+    def wall_planes(self, pc, lv, wall, z0, apex, top, z_end, gl, y, planar, seg=0.5):
+        """A wall as planes `y` out from its face, in a grid round its openings `gl` (a, b, z0, z1), from z0 to its
+        top: a gable's rake `top(a)`, clipped, or level at z_end; each cell cut every `seg` along the wall."""
+        xs = {0.0, wall.L}
+        zc = {z0, apex}
+        for (a, b, za, zb_) in gl:
+            xs |= {a, b}
+            zc |= {za, zb_}
+        if not top:
+            zc.add(z_end)
+        xs = sorted(x for x in xs if 0.0 <= x <= wall.L)
+        zc = sorted(z for z in zc if z0 <= z <= apex)
+        for i in range(len(xs) - 1):
+            for j in range(len(zc) - 1):
+                xa, xb, za, zb_ = xs[i], xs[i + 1], zc[j], zc[j + 1]
+                mx, mz = (xa + xb) / 2.0, (za + zb_) / 2.0
+                if any(a <= mx <= b and z_a <= mz <= z_b for (a, b, z_a, z_b) in gl):
+                    continue
+                if not top and za >= z_end - 1e-6:
+                    continue
+                nseg = max(1, round((xb - xa) / seg))
+                for k in range(nseg):
+                    a = xa + (xb - xa) * k / nseg
+                    b = xa + (xb - xa) * (k + 1) / nseg
+                    poly = [Vector((a, y, za)), Vector((b, y, za)), Vector((b, y, zb_)), Vector((a, y, zb_))]
+                    if top:
+                        poly = clip_top(poly, top)
+                    if len(poly) >= 3:
+                        cuv = [planar(p)[1:] for p in poly]
+                        pc.add(lv, Face(poly, cuv, planar(poly[0])[0], cuv))
 
     def reach(self, wall, top, z):
         """How far along a wall a course at height z runs: between where its top (a gable's rake, a lean-to's
@@ -638,6 +678,14 @@ class House:
                 boxes.append((o["a0"], o["a1"], max(z_lo, self.courses[0][0]), o["z1"]))
             elif zt > z_lo + 0.005 and zb < z_hi - 0.005:
                 boxes.append((o["a0"], o["a1"]))
+        ark = self.ark
+        if ark is not None and wall.i == 0:
+            # behind the ark: its sides' boards cover the cut
+            a0, a1 = ark["aS"] + 0.03, wall.L - ark["aS"] - 0.03
+            if zb is None:
+                boxes.append((a0, a1, ark["zB"] + 0.03, self.z_ridge + 0.5))
+            elif zt > ark["zB"] + 0.03:
+                boxes.append((a0, a1))
         lt = self.lean_to
         if lt is not None and wall.i == 2:
             if zb is None:
@@ -732,7 +780,7 @@ class House:
     def surround(self, o, k):
         W = self.W
         cs = W["casing"]
-        wall = self.walls[o["wall"]] if o["wall"] < len(self.walls) else self.lt_walls[o["wall"] - len(self.walls)]
+        wall = self.wall_of(o["wall"])
         mode = "rigid" if o.get("leanTo") else "frame"
         place = self.lt_place(wall) if o.get("leanTo") else wall.M
         made = self.F.built if not o.get("leanTo") else self.lean_to["year"]
@@ -819,7 +867,7 @@ class House:
                  [Vector((x0, y_face, zb)), Vector((x0, yb, zb)), Vector((x1, yb, zb)), Vector((x1, y_face, zb))],
                  [Vector((x0, yb, za)), Vector((x0, y_face, za)), Vector((x1, y_face, za)), Vector((x1, yb, za))]]
         # a window open to the street shows its window in the frame's place; a door and a boarded window the plane
-        glazed = not o["boarded"] and o["kind"] != "door"
+        glazed = not o["boarded"] and o["kind"] not in ("door", "hatch")
         for lv in ("near", "street"):
             for q in quads[1:] if glazed else quads:
                 pc.add(lv, Face(q, [cu(p) for p in q], key, [cu(p) for p in q]))
@@ -830,6 +878,47 @@ class House:
         self.rigid_lt(pc, o)
         if glazed:
             self.window(tag, wall, place, o, yb, key, cu)
+        elif o.get("leaves") and not o["boarded"]:
+            self.leaves(tag, wall, place, mode, o, yb)
+
+    def leaves(self, tag, wall, place, mode, o, yb):
+        """A loading door's or hatch's pair of leaves (the working's openings.loading.leaves) in its frame: upright
+        boards with a V at each joint, a gap round each leaf and between the two, and an iron strap hinge across each
+        leaf near its top and its foot, painted over with the leaves."""
+        lv_ = self.W["openings"]["loading"]["leaves"]
+        F = self.F
+        x0, x1, za, zb = o["a0"], o["a1"], o["z0"], o["z1"]
+        t, ch = lv_["thickMm"] * MM, lv_["grooveMm"] * MM
+        g, mid = lv_["gapMm"] * MM, lv_["midGapMm"] * MM
+        bw = F.between(*rng(lv_["boardMm"]), tag, "leaf", "board")
+        hg = lv_["hinge"]
+        hw_, ht = hg["widthMm"] * MM, hg["thickMm"] * MM
+        lw = (x1 - x0 - 2 * g - mid) / 2.0
+        n = max(2, round(lw / bw))
+        h = zb - za - 2 * g
+        for side, la in (("l", x0 + g), ("r", x0 + g + lw + mid)):
+            pc = self.make(f"{tag}/leaf/{side}", "cladding", ("near", "street"), wall, mode, place)
+            for lv in ("near", "street"):
+                prof = [(0.0, 0.0, "side", False), (0.0, t, "front", True)]
+                if lv == "near":
+                    for j in range(1, n):
+                        xj = lw * j / n
+                        prof += [(xj - ch, t, "front", True), (xj, t - ch, "front", False), (xj + ch, t, "front", True)]
+                prof += [(lw, t, "side", True), (lw, 0.0, "side", False)]
+                extrude(pc, lv, prof, Vector((la, yb, za + g)), Vector((0, 0, h)), ALONG, OUT, self.charts,
+                        caps=(True, False), nominal={"front": lw, "side": t})
+            self.rigid_lt(pc, o)
+            # the straps from the leaf's hung edge across it
+            hung = la if side == "l" else la + lw
+            reach = lw * hg["reach"]
+            for j, at in enumerate(hg["at"]):
+                zc = za + g + h * at
+                pc = self.make(f"{tag}/leaf/{side}/hinge{j}", "cladding", ("near",), wall, mode, place)
+                xs = hung if side == "l" else hung - reach
+                extrude(pc, "near", rect_profile(hw_, ht, 0.0, groups=("bottom", "front", "top", "back")),
+                        Vector((xs, yb - t, zc - hw_ / 2)), Vector((reach, 0, 0)), Z, OUT, self.charts, caps=(True, True),
+                        nominal={"front": hw_, "bottom": ht, "top": ht})
+                self.rigid_lt(pc, o)
 
     # ---- the window: its version's frame, sashes, bars, putty or beads and panes, in the frame's place
     def window(self, tag, wall, place, o, yb, key, cu):
@@ -1087,7 +1176,7 @@ class House:
     def boarding(self, o, k):
         bd = self.W["boarding"]
         F = self.F
-        wall = self.walls[o["wall"]] if o["wall"] < len(self.walls) else self.lt_walls[o["wall"] - len(self.walls)]
+        wall = self.wall_of(o["wall"])
         place = self.lt_place(wall) if o.get("leanTo") else wall.M
         x0, x1, za, zb = o["a0"], o["a1"], o["z0"], o["z1"]
         t = bd["sheetThickMm"] * MM
@@ -1452,11 +1541,13 @@ class House:
             L = wall.L
             a_foot = self.y_foot + 0.05
             for half in (0, 1):
-                # the rake from its foot (over the eave's fascia) to the apex, in the gable's frame
+                # the rake from its foot (over the eave's fascia) to the apex, in the gable's frame; on a gable with
+                # the ark, to the ark's side, which stands over it
+                stop = self.ark["aS"] - 0.03 if self.ark and wall.i == 0 else L / 2.0
                 if half == 0:
-                    a0, a1 = -self.ov - self.ft, L / 2.0
+                    a0, a1 = -self.ov - self.ft, stop
                 else:
-                    a0, a1 = L / 2.0, L + self.ov + self.ft
+                    a0, a1 = L - stop, L + self.ov + self.ft
                 p0 = Vector((a0, -self.vov, self.zp_wall(a0) - 0.006 + self.barge_up))
                 p1 = Vector((a1, -self.vov, self.zp_wall(a1) - 0.006 + self.barge_up))
                 r = (p1 - p0)
@@ -1575,14 +1666,26 @@ class House:
             u += 1.0 / ks
         street_u.append(span / cover)
         street_prof = [(u, wave(u)) for u in street_u]
+
+        def street_prof_of(sp):
+            if sp == span:
+                return street_prof
+            us_, u_ = [], pan - math.ceil(pan * ks) / ks
+            while u_ < sp / cover:
+                us_.append(max(0.0, u_))
+                u_ += 1.0 / ks
+            return [(u_, wave(u_)) for u_ in us_ + [sp / cover]]
         verge_prof = [(u, wave(u)) for u in (0.0, pan, pan + 0.5, 1.0 + lap)]
         for wall in self.walls:
             if wall.kind != "eave":
                 continue
             base0 = Vector((0, self.y_foot, self.z_foot))
             for ci in range(n_courses):
+                # the courses over the ark carried out over it at the front (wall 1's start, wall 3's end)
+                x0c, x1c = self.ark_ends(wall, ci, x0, x1)
+                span_c, n_cov_c = x1c - x0c, math.ceil((x1c - x0c) / cover)
                 length = min(course + 0.075, Ls - course * ci + 0.02)
-                key = self.charts(f"roof/w{wall.i}/c{ci:02d}", span + 0.1, length + 0.06)
+                key = self.charts(f"roof/w{wall.i}/c{ci:02d}", span_c + 0.1, length + 0.06)
                 base = base0 + up * (course * ci)
                 plane = []
                 if ci < near_c:
@@ -1594,52 +1697,225 @@ class House:
                     plane.append(("near", "roof", False))
                     plane.append(("bake", "tiles", True))
                 plane.append(("street", "tiles" if ci == 0 else "roof", ci == 0))
-                self.city_roof.append((wall, ci, base, x0, x1, roll, thick, lift, length, up, nrm, key))
+                self.city_roof.append((wall, ci, base, x0c, x1c, roll, thick, lift, length, up, nrm, key))
                 for lv, mat, waves in plane:
                     if mat == "target":
                         pc = self.make(f"roof/w{wall.i}/c{ci:02d}/target", mat, (lv,), wall)
-                        self.course_plane(pc, lv, base, x0, x0, x1, roll, thick, lift, length, up, nrm, key)
+                        self.course_plane(pc, lv, base, x0c, x0c, x1c, roll, thick, lift, length, up, nrm, key)
                     elif waves and lv != "street":
-                        for ti in range(n_cov):
+                        for ti in range(n_cov_c):
                             tid = f"roof/w{wall.i}/c{ci:02d}/t{ti}"
                             pc = self.make(tid, mat, (lv,), wall)
                             yaw = math.radians(1.6) * (2 * F.u(tid, "yaw") - 1)
                             dz = 0.004 * (2 * F.u(tid, "seat") - 1)
-                            self.tile_strip(pc, lv, near_prof, base, x0 + ti * cover, cover, roll, thick, lift, length,
-                                            up, nrm, yaw, dz, key, x0, under=ci == 0)
+                            self.tile_strip(pc, lv, near_prof, base, x0c + ti * cover, cover, roll, thick, lift, length,
+                                            up, nrm, yaw, dz, key, x0c, under=ci == 0)
                             if ci == 0 and lv == "near":
-                                self.features["tiles"].append([wall.i, x0 + ti * cover + pan * cover])
+                                self.features["tiles"].append([wall.i, x0c + ti * cover + pan * cover])
                     elif waves:
                         pc = self.make(f"roof/w{wall.i}/c{ci:02d}/strip", mat, (lv,), wall)
-                        self.tile_strip(pc, lv, street_prof, base, x0, cover, roll, thick, lift, length, up, nrm, 0.0, 0.0,
-                                        key, x0, under=True)
+                        self.tile_strip(pc, lv, street_prof_of(span_c), base, x0c, cover, roll, thick, lift, length, up, nrm, 0.0, 0.0,
+                                        key, x0c, under=True)
                     else:
                         # the verges' tiles real, so the rake draws their rolls against the sky; the plane between
                         # them from the first tile's roll to the last's, where the tiles stand at its height
                         prof = near_prof if lv == "near" else verge_prof
-                        for ti in (0, n_cov - 1):
+                        for ti in (0, n_cov_c - 1):
                             tid = f"roof/w{wall.i}/c{ci:02d}/t{ti}"
                             vt = self.make(tid if lv == "near" else tid + "/street", "tiles", (lv,), wall)
                             yaw = math.radians(1.6) * (2 * F.u(tid, "yaw") - 1) if lv == "near" else 0.0
                             dz = 0.004 * (2 * F.u(tid, "seat") - 1) if lv == "near" else 0.0
-                            self.tile_strip(vt, lv, prof, base, x0 + ti * cover, cover, roll, thick, lift, length,
-                                            up, nrm, yaw, dz, key, x0)
-                        xa, xb = x0 + cover * (pan + 0.5), min(x1, x0 + cover * (n_cov - 0.5 + pan))
+                            self.tile_strip(vt, lv, prof, base, x0c + ti * cover, cover, roll, thick, lift, length,
+                                            up, nrm, yaw, dz, key, x0c)
+                        xa, xb = x0c + cover * (pan + 0.5), min(x1c, x0c + cover * (n_cov_c - 0.5 + pan))
                         pc = self.make(f"roof/w{wall.i}/c{ci:02d}/plane", mat, (lv,), wall)
-                        self.course_plane(pc, lv, base, x0, xa, xb, roll, thick, lift, length, up, nrm, key)
+                        self.course_plane(pc, lv, base, x0c, xa, xb, roll, thick, lift, length, up, nrm, key)
             self.sarking(wall, -self.vov, self.run + self.vov, base0, up, nrm, Ls, 0.03)
+            if self.ark:
+                sE = course * self.ark["course"]
+                xs_ = (-self.vov - self.ark["D"], -self.vov) if wall.i == 1 else (self.run + self.vov, self.run + self.vov + self.ark["D"])
+                self.sarking(wall, *xs_, base0 + up * sE, up, nrm, Ls - sE, 0.03, tag="arksarking")
             self.features["roof"].append({"wall": wall.i, "x0": x0, "foot": [self.y_foot, self.z_foot], "pitch": math.degrees(self.pitch),
                                           "courses": n_courses, "course": course, "cover": cover, "pan": pan})
-        self.ridge(x0, x1)
+        self.ridge(x0 - (self.ark["D"] if self.ark else 0.0), x1)
 
-    def sarking(self, wall, x0, x1, base0, up, nrm, Ls, below):
+    # ---- the hoist's ark
+    def course_cover(self):
+        """The covering's course up the slope and its cover along it."""
+        if self.roofing == "roof-slate":
+            sl = self.M["roof-slate"]["laid"]
+            return sl["courseMm"] * MM, sl["widthMm"] * MM
+        tl = {**self.M["clay-pantile"]["laid"], **{k: v for k, v in self.W["pantile"].items() if k != "describes"}}
+        return tl["courseMm"] * MM, tl["coverMm"] * MM
+
+    def plan_ark(self):
+        """The hoist's ark (the working's openings.hoist) on a sea house's street gable, as at Nedre Strandgate 17 and
+        19 (photo 01): its front leans out from a foot a little proud of the gable, under the loft's hatch, to its
+        plate at the eave, so the rope from the axle hangs clear of the wall, and its gable stands plumb on the
+        plate. Its roof is the roof's upper courses carried out over it, so its eave stands at a course's foot (the
+        one that gives the width nearest the working's) and it reaches out a whole number of tiles' covers; its sides
+        stand the working's eave in under that eave. The hatch moves into its leaning front."""
+        hs = self.W["openings"].get("hoist")
+        if not hs or not self.gable_front:
+            return
+        course, cover = self.course_cover()
+        L, cs = self.walls[0].L, math.cos(self.pitch)
+        ov, want = hs["eaveMm"] * MM, hs["widthMm"] * MM
+        fits = []
+        for c in range(1, 200):
+            aE = self.y_foot + cs * course * c
+            if L - 2 * (aE + ov) < 1.0:
+                break
+            fits.append((abs(L - 2 * (aE + ov) - want), c, aE))
+        _, cE, aE = min(fits)
+        aS = aE + ov
+        D = max(1, round(hs["projectMm"] * MM / cover)) * cover
+        f0 = hs["footMm"] * MM
+        hatch = max((o for o in self.openings if o["kind"] == "hatch"), key=lambda o: o["z0"])
+        zB = hatch["z0"] - self.sill_t - hs["underSillMm"] * MM
+        zF = self.z_rake(aS)
+        below = [o["z1"] + self.head_h + self.cap_t for o in self.openings if o["wall"] == 0 and o is not hatch
+                 and aS < (o["a0"] + o["a1"]) / 2 < L - aS and o["z1"] < hatch["z0"]]
+        if below and zB < max(below) + 0.05:
+            raise SystemExit(f"[house] the ark's foot {zB:.2f} m meets the opening under it ({max(below):.2f} m)")
+        if hatch["z1"] + self.head_h + self.cap_t > zF - 0.1:
+            raise SystemExit(f"[house] the loft's hatch does not fit under the ark's plate ({zF:.2f} m)")
+        wf = L - 2 * aS
+        lean = math.atan2(D - f0, zF - zB)
+        self.ark = {"course": cE, "aE": aE, "aS": aS, "D": D, "f0": f0, "zB": zB, "zF": zF, "zE": self.zp(aE), "wf": wf,
+                    "lean": lean, "bottom": hs["bottomBoardMm"], "plate": hs["plateMm"]}
+        n = 10
+        front = Wall(n + 1, (aS, -f0), 0.0, wf, "gable")
+        # the front leans about its foot: its own z runs up the lean, its heights are the courses' (a lean of a few
+        # degrees stretches them by under 2 per cent)
+        front.M = front.M @ Matrix.Translation(Vector((0, 0, zB))) @ Matrix.Rotation(lean, 4, "X") @ Matrix.Translation(Vector((0, 0, -zB)))
+        front.out = (front.M.to_3x3() @ OUT).normalized()
+        self.ark_walls = [Wall(n, (aS, 0.0), 3 * math.pi / 2, D, "eave"), front,
+                          Wall(n + 2, (L - aS, -D), math.pi / 2, D, "eave"), Wall(n + 3, (aS, -D), 0.0, wf, "gable")]
+        self.ark["frontTop"] = zB + (zF - zB) / math.cos(lean)
+        hatch.update(wall=n + 1, a0=hatch["a0"] - aS, a1=hatch["a1"] - aS)
+
+    def ark_out(self, z):
+        """How far the ark's leaning front stands out of the gable at height z."""
+        ak = self.ark
+        return ak["f0"] + max(0.0, z - ak["zB"]) * math.tan(ak["lean"])
+
+    def ark_gaps(self, wall, zb, zt):
+        """The ark's sides: open beyond the leaning front (each course's boards stop where the front stands at the
+        course's foot; the raking corner board covers the rest)."""
+        ak = self.ark
+        left = wall is self.ark_walls[0]
+
+        def stretch(d):
+            return (d, ak["D"] + 0.2) if left else (-0.2, ak["D"] - d)
+        if zb is not None:
+            return [stretch(self.ark_out(zb))]
+        # the street's planes: the triangle in bands, each cut where the front stands at its foot
+        n, out = 6, []
+        for k in range(n):
+            za, zc = ak["zB"] + (ak["zF"] - ak["zB"]) * k / n, ak["zB"] + (ak["zF"] - ak["zB"]) * (k + 1) / n
+            a, b = stretch(self.ark_out(za))
+            out.append((a, b, za if k else za - 0.5, zc))
+        return out
+
+    def ark_ends(self, wall, ci, x0, x1):
+        """A course's ends along its eave wall: carried out over the ark at the front where the course is the ark's."""
+        if self.ark is None or ci < self.ark["course"]:
+            return x0, x1
+        return (x0 - self.ark["D"], x1) if wall.i == 1 else (x0, x1 + self.ark["D"])
+
+    def ark_clad(self):
+        """The ark's leaning front, its gable and its sides clad as the walls are, on the house's courses."""
+        if self.ark is None:
+            return
+        ak, cl = self.ark, self.W["cladding"]
+        left, front, right, gable = self.ark_walls
+        self.cladding([front], 0, ak["zB"], cl, self.opening_gaps, z_end=ak["frontTop"])
+        self.cladding([gable], 0, ak["zF"], cl, self.opening_gaps, rake=lambda wall: (lambda a: self.z_rake(a + ak["aS"])))
+        self.cladding([left, right], 0, ak["zB"], cl, self.ark_gaps, z_end=ak["zF"])
+
+    def ark_build(self):
+        """The ark's raking corner boards, the bottom board at its foot and the plate's board under its gable, the
+        soffit at its foot, its verge and its eaves."""
+        if self.ark is None:
+            return
+        ak = self.ark
+        left, front, right, gable = self.ark_walls
+        aS, D, f0, zB, zF, wf = ak["aS"], ak["D"], ak["f0"], ak["zB"], ak["zF"], ak["wf"]
+        s = self.step
+        # each side's corner board along the lean, covering the front's board ends as an eave wall's covers a
+        # gable's; its width across, level
+        cb = self.W["corner"]
+        w, proud, c = cb["widthMm"] * MM, cb["proudMm"] * MM * self.push["trimProud"], self.ch["corner"]
+        width = w + s + proud
+        for wall in (left, right):
+            if wall is left:
+                o, L_, P = Vector((f0 + s + proud, -s, zB)), Vector((D - f0, 0, zF - zB)), Vector((-1, 0, 0))
+            else:
+                o, L_, P = Vector((D - f0 - s - proud, -s, zB)), Vector((f0 - D, 0, zF - zB)), Vector((1, 0, 0))
+            self.trim(f"ark/corner/w{wall.i}", wall, o, L_, P, OUT, width, proud, c, nseg=2,
+                      groups=("left", "front", "right"), chamfer_edges=(True, True), caps=(True, True))
+        # the bottom board across the leaning front's foot, its ends past the corner boards; the plate's board under
+        # the plumb gable, over the lean's top boards
+        for tag, wall, z, (bh, bt) in (("bottom", front, zB, ak["bottom"]), ("plate", gable, zF, ak["plate"])):
+            bh, bt = bh * MM, bt * MM
+            a, b = -(width - w) - 0.01, wf + (width - w) + 0.01
+            self.trim(f"ark/{tag}", wall, Vector((a, -s - proud, z - 0.55 * bh)), Vector((b - a, 0, 0)), Z, OUT, bh, bt,
+                      self.ch["drip"], nseg=max(1, round((b - a) / 0.75)), groups=("bottom", "front", "top"), caps=(True, True))
+        # the soffit at its foot, from the gable's face to the front's foot
+        g = self.walls[0]
+        pc = self.make("ark/soffit", "trims", ("near", "street"), g)
+        key = self.charts(f"h{self.F.id}/ark/soffit", wf + 0.06, f0 + 0.06)
+        q = [Vector((aS, 0, zB)), Vector((aS + wf, 0, zB)), Vector((aS + wf, -f0, zB)), Vector((aS, -f0, zB))]
+        uv = [(p.x - aS + 0.03, -p.y + 0.03) for p in q]
+        for lv in ("near", "street"):
+            pc.add(lv, Face(q, uv, key, uv, under=True))
+        # its verge: the barge along its gable's rake from eave to eave, the soffit behind it
+        zpf = lambda a: self.zp(a + aS)  # noqa: E731
+        for half in (0, 1):
+            a0, a1 = ((ak["aE"] - self.ft - aS, wf / 2.0) if half == 0 else (wf / 2.0, wf + aS - ak["aE"] + self.ft))
+            p0 = Vector((a0, -self.vov, zpf(a0) - 0.006 + self.barge_up))
+            p1 = Vector((a1, -self.vov, zpf(a1) - 0.006 + self.barge_up))
+            r = p1 - p0
+            rd = r.normalized()
+            P = (Vector((0, 0, -1)) + rd * rd.z).normalized()
+            plumb = lambda p, q, P=P, rd=rd: -P.x * p / rd.x  # noqa: E731
+            self.trim(f"ark/verge/h{half}/barge", gable, p0, r, P, OUT, self.bw, self.bt, self.ch["barge"],
+                      nseg=max(2, round(r.length / 0.8)), groups=("top", "front", "bottom"), caps=(True, True), cut=(plumb, plumb))
+            q0 = Vector((a0, 0.0, zpf(a0) - 0.07))
+            q1 = Vector((a1, 0.0, zpf(a1) - 0.07))
+            self.trim(f"ark/verge/h{half}/soffit", gable, q0, q1 - q0, OUT, Vector((0, 0, -1)), self.vov, 0.02, 0.0,
+                      nseg=max(2, round((q1 - q0).length / 0.8)), groups=("back", "under", "front"), caps=(False, False),
+                      chamfer_edges=(False, False))
+        # its eaves: a fascia under the course's foot from the front's barge back to the gable's barge, and the soffit
+        # sloping under the rafters from the fascia to the side
+        y_in, y_out = -self.vov - self.bt, -D - self.vov
+        L0 = g.L
+        for wall, a_e, xb in ((left, ak["aE"], aS), (right, L0 - ak["aE"], L0 - aS)):
+            sgn = -1 if wall is left else 1
+            ze = self.zp(ak["aE"])
+            self.trim(f"ark/eave/w{wall.i}/fascia", g, Vector((a_e + sgn * self.ft * 0.5, y_in, ze - self.fh)),
+                      Vector((0, y_out - y_in, 0)), Z, Vector((sgn, 0, 0)), self.fh, self.ft, self.ch["barge"], nseg=1,
+                      groups=("bottom", "front", "top"), caps=(True, True))
+            pc = self.make(f"ark/eave/w{wall.i}/soffit", "trims", ("near", "street"), g)
+            key = self.charts(f"h{self.F.id}/ark/eave/w{wall.i}/soffit", D + 0.1, aS - ak["aE"] + 0.1)
+            za, zb_ = self.zp(a_e) - 0.07, self.zp(xb) - 0.07
+            q = [Vector((a_e, y_in, za)), Vector((a_e, -D, za)), Vector((xb, -D, zb_)), Vector((xb, y_in, zb_))]
+            if wall is right:
+                q = q[::-1]
+            uv = [(-p.y + 0.03, abs(p.x - a_e) + 0.03) for p in q]
+            for lv in ("near", "street"):
+                pc.add(lv, Face(q, uv, key, uv, under=True))
+        self.features["ark"] = {k: v for k, v in ak.items()}
+
+    def sarking(self, wall, x0, x1, base0, up, nrm, Ls, below, tag="sarking"):
         """The roof's boarding under its covering, `below` under the covering's foot plane, verge to verge and eave to
         ridge: seen only from under the verge, and closing the slope to the sun, whose shadow the courses' steps
         alone let through in lines (the shadow's normal bias opens them). On the same segments as the covering, so
         the frame bends them alike; a page of its own at a tenth of the density."""
         Ls_ = Ls + 0.03
-        key = self.charts(f"roof/w{wall.i}/sarking", x1 - x0 + 0.1, Ls_ + 0.06, 0.1)
-        pc = self.make(f"roof/w{wall.i}/sarking", "trims", ("near", "street"), wall)
+        key = self.charts(f"roof/w{wall.i}/{tag}", x1 - x0 + 0.1, Ls_ + 0.06, 0.1)
+        pc = self.make(f"roof/w{wall.i}/{tag}", "trims", ("near", "street"), wall)
         b = base0 - nrm * below
         for lv, seg in (("near", 1.0), ("street", 2.0)):
             nx, ns = max(1, round((x1 - x0) / seg)), max(1, round(Ls_ / seg))
@@ -1794,6 +2070,9 @@ class House:
 
     def chimney(self, z_crest):
         ch = self.W["chimney"]
+        if ch is None:
+            # a house with no hearth (a sea house)
+            return
         F = self.F
         v = self.version("chimney", F.built)
         a = F.between(*rng(ch["sizeMm"]), "chimney", "size")
@@ -2004,10 +2283,13 @@ class House:
         for o in self.openings:
             o["covered"] = self.covered_by_lean_to(o)
         self.openings = [o for o in self.openings if not o["covered"]]
-        fixed = []
+        self.plan_ark()
+        fixed = [self.ark["zB"], self.ark["zF"]] if self.ark else []
         for o in self.openings:
-            if o["kind"] in ("window", "loft") and not o.get("leanTo"):
+            if o["kind"] in ("window", "loft", "hatch") and not o.get("leanTo"):
                 fixed += [o["z0"] - self.sill_t, o["z1"] + self.head_h + self.cap_t]
+            elif o.get("leaves"):
+                fixed += [o["z1"] + self.head_h + self.cap_t]  # a loading door's head, which no window's meets
         if self.z_belt is not None and self.loft:
             fixed += [self.z_belt - W["belt"]["heightMm"] * MM, self.z_belt]
         self.course_table(0, self.z_drip1, self.z_ridge + 0.1, fixed, W["cladding"], "house")
@@ -2015,6 +2297,7 @@ class House:
                       z_end=self.z_top)
         self.cladding([w for w in self.walls if w.kind == "gable"], 0, self.z_drip1, W["cladding"], self.opening_gaps,
                       rake=lambda wall: self.z_rake)
+        self.ark_clad()
         self.corner_boards()
         self.drip_boards()
         self.belt()
@@ -2025,6 +2308,7 @@ class House:
         self.plinth()
         self.eaves()
         self.verges()
+        self.ark_build()
         self.roof()
         self.lean_to_build()
 
@@ -2060,7 +2344,7 @@ class House:
                 cuv = [(p.x - x0 + 0.05, max(0.0, (p - base).dot(up)) + 0.03) for p in q]
                 pc.add("city", Face(q, cuv, key, cuv))
         for (wall, y_face, e, zt, key) in self.city_plinth:
-            pc = self.make(f"plinth/w{wall.i}/city", self.W["plinth"].get("material", "stone"), ("city",), wall)
+            pc = self.make(f"plinth/w{wall.i}/city", "render" if self.W["plinth"]["material"] == "render" else "stone", ("city",), wall)
             pts = [Vector((-e, y_face, 0.0)), Vector((wall.L + e, y_face, 0.0)), Vector((wall.L + e, y_face, zt)), Vector((-e, y_face, zt))]
             cuv = [(p.x + 0.3, p.z) for p in pts]
             pc.add("city", Face(pts, cuv, key, cuv))
@@ -2275,7 +2559,8 @@ def main():
     out = os.path.abspath(a.get("out", os.path.join(ROOT, "cache", "street", "gen", str(hid))))
     os.makedirs(out, exist_ok=True)
     F = Facts(a.get("fixture", S["fixture"]), hid, year)
-    W = load(S["eras"][F.era])
+    # a type with its own file (a sea house) over the era's; its versions stay the era's
+    W = load(S.get("types", {}).get(F.type) or S["eras"][F.era])
     V = load(S["versions"])
     mats = {m: load(f"{S['materials']}/{m}.json") for m in ("clay-pantile", "roof-slate", "fieldstone", "pine", "glass")}
     paints = load(S["paints"])
@@ -2346,11 +2631,22 @@ def main():
             objs[(lv, mat)] = o
             counts.setdefault(lv, {})[mat] = tris_of(o)
     total = {lv: sum(c.values()) for lv, c in counts.items()}
-    budgets = {lv: S["levels"][lv]["budgetTris"] for lv in ("near", "street", "city")}
+    if os.environ.get("STREET_TRIS_BY"):  # STREET_TRIS_BY=1 prints the dearest pieces, by id with the numbers out
+        for lv in ("near", "street"):
+            by = {}
+            for pc in house.pieces:
+                if lv in pc.levels:
+                    k = re.sub(r"\d+", "#", pc.id)
+                    by[k] = by.get(k, 0) + sum(len(f.p) - 2 for f in pc.faces[lv])
+            print(f"[tris] {lv}", sorted(by.items(), key=lambda t: -t[1])[:25])
+    # near and street by the house's surface (its charts on the page) against the house the budgets were set on; city as is
+    area = fill * S["page"]["size"] ** 2 / px ** 2
+    scale = {lv: max(1.0, area / S["budgetSurfaceM2"]["m2"]) if lv != "city" else 1.0 for lv in ("near", "street", "city")}
+    budgets = {lv: [round(b * scale[lv]) for b in S["levels"][lv]["budgetTris"]] for lv in ("near", "street", "city")}
     over = [lv for lv in budgets if total.get(lv, 0) > budgets[lv][1]]
     print(f"[house] {hid}: triangles {json.dumps(counts)} totals {total}; page {px} px/m, filled {fill:.2f}; "
           f"versions {json.dumps(house.version_of)}")
-    if over:
+    if over and not os.environ.get("STREET_OVER"):  # STREET_OVER=1 writes it anyway, for a look still only
         raise SystemExit(f"[house] over budget: {', '.join(f'{lv} {total[lv]} > {budgets[lv][1]}' for lv in over)}")
 
     for lv in ("near", "street", "city"):
@@ -2361,13 +2657,13 @@ def main():
                                  colors_type="LINEAR", axis_forward="-Z", axis_up="Y", apply_unit_scale=True,
                                  apply_scale_options="FBX_SCALE_ALL", bake_space_transform=True, add_leaf_bones=False)
     bpy.ops.wm.save_as_mainfile(filepath=os.path.join(out, "house.blend"))
-    walls = house.walls + (house.lt_walls if house.lean_to else [])
+    walls = house.walls + (house.lt_walls if house.lean_to else []) + house.ark_walls
     meta = {
         "house": F.id, "world": F.world, "year": F.year, "built": F.built, "age": F.age, "era": F.era, "type": F.type,
         "wealth": F.wealth, "plot": F.plot, "events": F.events,
         "size": [house.w, house.d], "pitch": math.degrees(house.pitch),
         "triangles": counts, "totals": total, "budgets": budgets,
-        "page": dict(S["page"], pxPerM=px), "fill": fill, "charts": {k: list(v) for k, v in rects.items()},
+        "page": dict(S["page"], pxPerM=px), "fill": fill, "surfaceM2": round(area, 1), "charts": {k: list(v) for k, v in rects.items()},
         "heights": {"plinth": house.z_plinth, "floor": house.z_floor, "floors": house.floors, "loft": house.z_loft,
                     "drip": [house.z_drip0, house.z_drip1], "top": house.z_top, "ridge": house.z_ridge,
                     "foot": [house.y_foot, house.z_foot]},

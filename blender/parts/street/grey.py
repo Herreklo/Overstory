@@ -121,7 +121,6 @@ views = {
     "raised": ((-7.0, -12.0, 12.0), (w / 2, d / 2, 2.5), 42),
     "back": ((w + 7.0, d + 11.0, 2.2), (w / 2, d, 2.6), 44),
     # joints close to: the chimney on the ridge, the lean-to against the back wall
-    "chimney": ((meta["features"]["chimney"][0] - 2.5, -1.5, ridge + 1.2), tuple(meta["features"]["chimney"][:2]) + (ridge,), 40),
     # ref 10's stand: across the street from a front corner, looking up at the gable
     "ref10": ((-4.5, -15.5, 1.6), (w * 0.5, 2.0, 4.6), 50),
     # ref 10's stand, close on the front left corner's eave
@@ -136,6 +135,14 @@ views = {
 if meta["leanTo"]:
     views["leanto"] = ((meta["leanTo"]["x"][1] + 2.5, d + meta["leanTo"]["depth"] + 3.0, 2.0),
                        (meta["leanTo"]["x"][1] - 0.5, d + 0.3, meta["leanTo"]["z_hi"] - 0.2), 50)
+if meta["features"].get("chimney"):
+    views["chimney"] = ((meta["features"]["chimney"][0] - 2.5, -1.5, ridge + 1.2), tuple(meta["features"]["chimney"][:2]) + (ridge,), 40)
+if meta["features"].get("ark"):
+    ak = meta["features"]["ark"]
+    # the ark from the street below it, and its side from across the gable
+    views["ark"] = ((w / 2 - 3.5, -7.5, 1.6), (w / 2, -0.4, ak["zB"] + 1.6), 52)
+    views["arkroof"] = ((-5.0, -10.0, ridge + 3.5), (w / 2, -0.5, ridge - 1.5), 40)
+    views["arkside"] = ((-3.0, -4.0, ak["zB"] - 0.5), (ak["aS"], -0.4, ak["zB"] + 0.8), 55)
 want = a.get("views", ",".join(views)).split(",")
 tag = a.get("tag", "")
 for name, (pos, at, fov) in views.items():

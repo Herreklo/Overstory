@@ -5,9 +5,11 @@
   "year": 1989,
   "houses": [107, 108, 109],
   "eras": { "classical": "packs/stavanger-1989/house/classical.json", "chalet": "packs/stavanger-1989/house/chalet.json" },
+  "types": { "warehouse": "packs/stavanger-1989/house/seahouse.json" },
   "versions": "packs/stavanger-1989/house/versions.json",
   "paints": "packs/stavanger-1989/house/paints.json",
   "materials": "packs/stavanger-1989/materials",
+  "budgetSurfaceM2": {"describes": "The surface (m², the house's charts on its page) of the house the levels' near and street budgets were set on (107, 7 x 7 m, one storey and a loft). A bigger house takes those budgets scaled by its surface, the same triangles a square metre; never less. The city level's budget is one draw a far house and is not scaled.", "m2": 260},
   "levels": {
     "near": { "level": 0, "budgetTris": [20000, 25000], "seenWithinM": 10, "tileCourses": 3, "pantileSamples": 8 },
     "street": { "level": 1, "budgetTris": [6000, 8000], "seenFromM": 20, "laps": "page normal", "pantileSamples": 4 },

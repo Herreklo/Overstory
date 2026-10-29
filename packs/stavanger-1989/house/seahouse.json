@@ -1,0 +1,353 @@
+{
+  "schemaVersion": 1,
+  "era": "classical",
+  "describes": "A sea house (sjøhus) of the herring years, a warehouse on the quay: timber-framed, its gable to the water and the street, a strict symmetric face of large plain walls in lapped west-country boarding (as at Nedre Strandgate 17 and 19, photo 01), loading doors stacked up the middle under the hoist's ark, small windows at the sides where they were needed, scant eaves, a low dry-stone plinth, curved tile (wooden-town-architecture.md, Sea houses and warehouses; the table's sea house). Over the classical era's values; its versions are the classical era's.",
+  "provenance": "Authored, 29 October 2026, from Sjøhusrekken 1993 as the research summarises it; measures marked (u) there are unverified.",
+  "faces": "gable",
+  "storeyMm": 2600,
+  "floorMm": 300,
+  "floorOverPlinthMm": 100,
+  "kneeMm": [
+    250,
+    400
+  ],
+  "roofPitchDeg": [
+    43,
+    47
+  ],
+  "depthMm": [
+    13600,
+    14000
+  ],
+  "cladding": {
+    "kind": "single-rebate",
+    "exposureMm": [
+      145,
+      195
+    ],
+    "stepMm": 13,
+    "butChamferMm": 4,
+    "thickMm": 25,
+    "boardLengthMm": [
+      2600,
+      5200
+    ],
+    "segmentMm": 700
+  },
+  "corner": {
+    "widthMm": 150,
+    "proudMm": 22,
+    "thickMm": 32
+  },
+  "dripBoard": {
+    "heightMm": 130,
+    "proudMm": 36,
+    "slopeMm": 16
+  },
+  "casing": {
+    "widthMm": 122,
+    "proudMm": 25,
+    "headMm": 210,
+    "capMm": 30,
+    "capProudMm": 120,
+    "capSlopeDeg": 20,
+    "bedMouldMm": [
+      30,
+      22
+    ],
+    "sillMm": 50,
+    "sillProudMm": 95,
+    "hornMm": 30,
+    "capDripMm": [
+      10,
+      6
+    ],
+    "reveal": "the window or door frame stands back revealMm behind the casing's face",
+    "revealMm": 70
+  },
+  "openings": {
+    "describes": "A sea house's openings: on the street gable the loading doors one over another up the middle, a pair of leaves on the ground floor and a hatch to each floor above and the loft, under the hoist's ark; small windows at the sides of each floor; the long sides and the back a few small windows. Sizes are the opening inside its casing.",
+    "window": {
+      "wMm": 600,
+      "hMm": 760,
+      "sillOverFloorMm": 1050
+    },
+    "loft": {
+      "wMm": 560,
+      "hMm": 700,
+      "sillOverFloorMm": 500
+    },
+    "door": {
+      "wMm": 920,
+      "hMm": 2060,
+      "overFloorMm": 0,
+      "headWithWindows": true,
+      "describes": "A door's head lines up with the ground floor's window heads (headWithWindows), so one course meets them all; hMm is its height when it has no windows beside it."
+    },
+    "loading": {
+      "describes": "The loading face: a pair of leaves on the ground floor up the gable's middle, a hatch over it on every floor and the loft, a small window toward each side of each floor; few windows elsewhere, as the houses stood almost wall to wall and were dark inside (Sjøhusrekken 1993; Stavangeren 1/2016): longWindows on each floor of each long side, backWindows on the back's top floor.",
+      "door": {
+        "wMm": 1600,
+        "hMm": 2250
+      },
+      "hatch": {
+        "wMm": 1250,
+        "hMm": 1750,
+        "sillOverFloorMm": 150
+      },
+      "sideEdgeMm": [
+        900,
+        1200
+      ],
+      "sideWindows": 1,
+      "longWindows": 1,
+      "backWindows": 1,
+      "leaves": {
+        "boardMm": [
+          140,
+          180
+        ],
+        "thickMm": 32,
+        "grooveMm": 5,
+        "gapMm": 4,
+        "midGapMm": 6,
+        "hinge": {
+          "widthMm": 45,
+          "thickMm": 6,
+          "reach": 0.7,
+          "at": [
+            0.12,
+            0.88
+          ]
+        },
+        "describes": "Each loading door and hatch a pair of ledged leaves opening out: sawn upright boards V-jointed, the ledges inside, a long strap hinge across each leaf near its top and foot, painted with the leaves (the warehouse doors of the Bryggen and Strandkaien type; measures ours (u))"
+      }
+    },
+    "hoist": {
+      "describes": "The hoist's ark in its gable form, as at Nedre Strandgate 17 and 19 (photo 01): a wedge out of the gable over the loft's hatch, its front leaning out from a foot (footMm proud of the gable) to its plate, so the rope hangs clear of the wall below, its gable plumb on the plate; its roof the upper courses of the roof carried out over it (projectMm at the plate), its eave at a course's foot, its front and sides clad as the walls; a bottom board at its foot and a board under its gable, the face's one ornament (Sjøhusrekken 1993, after Schjelderup 1991). It shelters the winding wheel's axle through the gable. Measures from photo 01 by eye (u).",
+      "widthMm": 3200,
+      "projectMm": 800,
+      "eaveMm": 120,
+      "underSillMm": 250,
+      "bottomBoardMm": [
+        220,
+        30
+      ],
+      "footMm": 150,
+      "plateMm": [
+        160,
+        30
+      ]
+    }
+  },
+  "eaves": {
+    "overhangMm": 100,
+    "fasciaMm": 150,
+    "fasciaThickMm": 28,
+    "soffitThickMm": 20
+  },
+  "verge": {
+    "overhangMm": 60,
+    "boardMm": 180,
+    "thickMm": 30
+  },
+  "pantile": {
+    "describes": "The single-S pantile as laid here, over the pack's clay-pantile (laid): a wide shallow pan rising to a narrower roll, one wave per tile, each tile's roll lapping the next tile's pan edge. Cover width 220 mm, as the Danish normal-format S-tile (Højslev vingetegl, normalformat); the wave 50 mm, shallow, within the 45 to 69 mm of clay pantiles (Wienerberger and Sandtoft Old English Pantile data sheets). Sandnes Teglverk made the town's red tile from 1783 (wooden-town-architecture.md).",
+    "coverMm": 220,
+    "rollMm": 50,
+    "panAt": 0.35,
+    "roundness": 1.5,
+    "lapMm": 18
+  },
+  "ridge": {
+    "describes": "Half-round ridge tiles bedded over the two slopes' top courses, each lapping the next (the pack's clay-pantile ridge).",
+    "seatMm": 10
+  },
+  "rainwater": {
+    "describes": "Zinc half-round gutters on hooks and a downpipe at one end of each eave, fitted to the old houses by the 1890s (the pack's past: no record names it). Kept, they carry the roof's water to the shoe; neglected, a joint opens and drips onto the wall's foot, more the longer the house is let go.",
+    "fittedYear": 1890,
+    "gutterRadiusMm": 62,
+    "gutterThickMm": 4,
+    "beadMm": 10,
+    "hookMm": [
+      28,
+      6
+    ],
+    "hookEveryMm": 900,
+    "pipeRadiusMm": 38,
+    "offWallMm": 30,
+    "outletFromEndMm": 260,
+    "shoeMm": 160,
+    "clipMm": [
+      30,
+      4
+    ],
+    "clipEveryMm": 1600
+  },
+  "chimney": null,
+  "plinth": {
+    "material": "fieldstone",
+    "heightMm": [
+      300,
+      450
+    ],
+    "stoneMm": [
+      900,
+      1600
+    ],
+    "cornerStoneMm": [
+      1000,
+      1300
+    ],
+    "cornerReturnMm": [
+      380,
+      560
+    ],
+    "jointMm": [
+      10,
+      18
+    ],
+    "faceBulgeMm": [
+      3,
+      7
+    ],
+    "arrisMm": [
+      8,
+      14
+    ],
+    "setOutMm": [
+      -5,
+      7
+    ],
+    "depthMm": 180,
+    "jointBackMm": 30,
+    "describes": "Dry stone on the quay, low, in big blocks."
+  },
+  "boarding": {
+    "sheetThickMm": 12,
+    "sheetsHigh": 2,
+    "setBackMm": [
+      2,
+      6
+    ],
+    "topGapMm": [
+      0,
+      30
+    ],
+    "sideGapMm": [
+      0,
+      8
+    ],
+    "battens": {
+      "count": 2,
+      "widthMm": [
+        70,
+        100
+      ],
+      "thickMm": 22,
+      "pastCasingMm": [
+        120,
+        320
+      ],
+      "outOfLevelDeg": [
+        2.0,
+        4.0
+      ],
+      "nailsPerEnd": 2,
+      "endCutDeg": [
+        20,
+        8
+      ]
+    },
+    "door": {
+      "battens": 3,
+      "diagonal": true
+    },
+    "describes": "How an empty house was boarded in the late 1980s, from photo 09: a sheet in each opening inside its casing, each set back by its own amount so their join steps; raw sawn battens nailed across onto the casing and the cladding, each out of level by the hand that nailed it, their ends sawn askew. A door takes three, the middle one on the diagonal, as at 09's door."
+  },
+  "push": {
+    "describes": "The style's push on true sizes (the street's shape language: deep reveals, thick trims, sills and caps that throw a shadow): factors on the working's sizes. The bends stay true.",
+    "trimProud": 1.6,
+    "capProud": 1.25,
+    "capThick": 1.4,
+    "sillProud": 1.3,
+    "sillThick": 1.35,
+    "bargeThick": 1.5,
+    "settle": 1.0
+  },
+  "chamferMm": {
+    "corner": 18,
+    "casing": 15,
+    "cap": 6,
+    "sill": 18,
+    "drip": 15,
+    "fascia": 16,
+    "barge": 18,
+    "soffit": 6,
+    "bedMould": 6,
+    "batten": 6,
+    "sheet": 2,
+    "capTop": 5,
+    "frame": 8,
+    "sash": 6,
+    "door": 8,
+    "chimney": 20
+  },
+  "bends": {
+    "describes": "Old timber moves, and every bend has a cause. One corner settles on its stones and the frame goes down with it over settleReachMm; the wall plates sag between the gables and the ridge with them; the roof's thrust pushes the eave walls' heads out. Each grows with the frame's age to a most; which corner settles is the seed's, claiming no history. Sizes from house-asset-craft.md (Recipe: house 107); the sag halved on 29 October, since the references show straight eaves at that age and 100 mm read as a cartoon.",
+    "settleMmPerCentury": 25,
+    "settleMostMm": 40,
+    "sagMmPerCentury": 31,
+    "sagMostMm": 55,
+    "ridgeSagShare": 1.2,
+    "leanMmPerCentury": 16,
+    "leanMostMm": 25,
+    "settleReachMm": 3000,
+    "settleBendMm": 800,
+    "settleBendShare": 0.3
+  },
+  "leanTo": {
+    "describes": "A shed on the back (an 'extended' event, kind lean_to): a mono-pitch roof from under the house's back eave, clad in the weatherboard of its year, on a cast concrete plinth (concrete casts 1940 to 1965, UK1), out of plumb by the hand that built it (rigid: moved and turned).",
+    "depthMm": [
+      1800,
+      2600
+    ],
+    "widthShare": [
+      0.5,
+      0.75
+    ],
+    "eaveMm": 2150,
+    "pitchDeg": [
+      12,
+      18
+    ],
+    "plumbDeg": [
+      1.0,
+      2.0
+    ],
+    "plinthMm": 220,
+    "cladding": {
+      "exposureMm": [
+        110,
+        120
+      ],
+      "stepMm": 11,
+      "butChamferMm": 3
+    },
+    "roof": "felt"
+  },
+  "steps": {
+    "describes": "Stone steps up to a door that stands over the ground: split slabs, as many risers as the height needs, each tread deeper by its going.",
+    "riserMm": [
+      165,
+      195
+    ],
+    "goingMm": 300,
+    "pastDoorMm": [
+      180,
+      260
+    ],
+    "thickMm": 70
+  },
+  "type": "warehouse"
+}
