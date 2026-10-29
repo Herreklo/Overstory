@@ -84,3 +84,22 @@ Cost of one house (`c03-timing.md`, `STREET_TIMING=50 render.sh 107 c03t street 
 - Holds: bare wood takes 0.67 of the page's value shift, not the corner's 0.3 (`paint.json` `edge.bareShift`, over finish.json's `edge`). The neglect tongues, the foot's dirt and the junctions' darks are a film of water and grime over paint and fibre alike, so the chip darkens as a multiply would: (52 + 16) / (85.3 + 16) of the paint's shift. The long washes keep `bareWash` 0.12, so in a run the fibre stays lighter. Nothing else changed: the pages are byte-identical, and p3 is untouched.
 - Why: the peel shapes never changed. From s06 the neglect, and from s08 the chalk, darkened the paint around them while bare wood took only 0.3 of it, so the two met. On the page, the paint just outside a chip and the bare just inside it now differ by a median of 27 L* (5th percentile 5), against 16 (5th percentile −18, the chip lighter); edges within 10 L* drop from 26% to 8%.
 - In `k01-chips.jpg` the columns are s03, k00 (HEAD) and k01. The top two rows are p3's camera: clay overcast, then colour under low sun. The bottom two are the street stop. `k01-chips-eye.jpg` is the eye view, k00 against k01. At eye level the chips are hard-edged again on the sill tongues and the foot, grey wet fibre under a grey film. From the street stop they hold as a few clean marks: 0.4% of 8 px blocks move by more than 1 L*, against 2.3–3.5% at eye level. The lower wall stays greyer than s03's, as s06 and s08 made it; only the chips are back.
+
+## c04: one draw a far house (29 October)
+
+- Holds: a city-level house is one mesh and one material. `LT1Street.OneMesh` merges its 11 pieces in Unity, and each vertex names its material's row in `uv2.x`. The one material is the street level's, with the `_OS_ONE` keyword in OS_Finish: each face reads its own material's 24 values (L*, bare, under, stain, smoothness, occlusion, shadow lift, brush, flatten, stain edge, the four tints, the plane's shadow) from a 7 × 11 table of the house's own (`mattab-P/Pc`). With the keyword off the shader is unchanged: p3 renders pixel-identical (eye and street stop, both lights, max 0.0). Against a material a piece (d00 against d01: the street stop, 60 m and the roof view at city level, both lights, both ways), no 8 px block moves by 0.6 L* or more, and the only changes are single pixels along edges. `STREET_CITYONE=0` keeps a material a piece for an A/B.
+- Holds: far shadows. A city house already casts only from its city level, which is now one draw. A house too far for its shadow (a ridge's 9 m over the sun's rise) to reach the shadowed distance now casts nothing; in the row's three views that is the same pixels as casting (max 0.0). `STREET_FARSHADOW=cast` keeps them casting.
+- Learned: the SRP Batcher is on in the pipeline but was off for OS_Finish, because `_Geo_TexelSize` sat outside `UnityPerMaterial`. Moved in, the batcher takes the shader, and the row falls a further 1.2 ms (along 5.4 to 4.2, street stop 4.0 to 3.3). But both 107 and p3 change: the whole painted surface shifts by 1 to 3 L*, up to 15 L* over 8 px blocks (10–20% of blocks at eye level, 4–6% at the street stop). The URP/Lit ground doesn't change, and a single capture shows it as much as a sequence does, so it isn't stale state. Until that is traced the batcher stays off, so the accepted look holds.
+- Learned: the renderer's draw counters read nothing in batch mode, so draws are counted from the renderers in view (forward pass only).
+
+Cost (`c04-timing.md`, `STREET_TIMING=50 render.sh 107 d15 street P overcast`; editor, batch mode, offscreen: the editor's own work is in every number, so these over-count the player's frame; a player-build timing waits until Øystein says the Mac is free):
+
+| Row of 50, along | Draws in view | ms a frame |
+| --- | --- | --- |
+| c03, a material a piece | 547 | 10.3–10.6 |
+| one material a far house | 127 | 4.8–5.4 |
+| and far shadows dropped (default) | 127 | 4.8–5.3 |
+| one house alone (the scene's own cost) | 8 | 2.75 |
+| (the batcher on, look not yet held) | 127 | 4.2 |
+
+- Per far house: 1 draw, 729 triangles, plus 1 shadow draw while its shadow can reach the shadowed distance. Over the scene's own 2.75 ms, the 49 more houses down the row (42 far, 7 at the street level) cost 2.1–2.6 ms, against 7.8 before. That leaves about 0.03–0.04 ms a far house, near the editor's run-to-run spread of ±0.3 ms.

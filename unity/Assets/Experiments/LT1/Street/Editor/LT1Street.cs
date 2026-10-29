@@ -116,6 +116,9 @@ namespace Overstory.EditorTools
                 levels[level] = go;
             }
             Orient(root_, levels["near"]);
+            // the city level as one draw (-streetCityOne 0 keeps a material a piece, for an A/B)
+            if (Arg("-streetCityOne") != "0")
+                levels["city"] = OneMesh(levels["city"], paint, gen);
 
             var ground = GameObject.CreatePrimitive(PrimitiveType.Plane);
             ground.name = "Ground";
@@ -199,6 +202,7 @@ namespace Overstory.EditorTools
                 }
                 if (Arg("-streetTiming") != null)
                     Timing(int.Parse(Arg("-streetTiming")), root_, mats, cam, sun, gm, adjust, house, paint, outDir, sunOff);
+                SrpBatcher(mats.Values.First().shader);
             }
             finally
             {
@@ -225,6 +229,9 @@ namespace Overstory.EditorTools
             float plot = house.plot != null && house.plot.w > 0 ? house.plot.w / 1000f : house.size[0] + 1f;
             float within = house.seenWithinM > 0 ? house.seenWithinM : 10f;
             float cityFrom = house.cityFromM > 0 ? house.cityFromM : float.MaxValue;
+            // a house too far for its shadow (about a ridge's 9 m over the sun's rise) to reach the shadowed distance
+            // casts none: d12, the same pixels as casting (-streetFarShadow cast, for an A/B)
+            bool drop = Arg("-streetFarShadow") != "cast";
             var houses = new List<GameObject> { house0 };
             for (int k = 1; k < n; k++)
             {
@@ -280,7 +287,7 @@ namespace Overstory.EditorTools
                     urp.shadowCascadeCount = 1;
                     urp.mainLightShadowmapResolution = 4096;
                     urp.shadowDistance = name == "along" ? 80f : (target - pos).magnitude + 8f;
-                    int nearN = 0, cityN = 0, tris = 0, subs = 0;
+                    int nearN = 0, cityN = 0, tris = 0, subs = 0, dropped = 0;
                     var planes = GeometryUtility.CalculateFrustumPlanes(cam);
                     foreach (var h in houses)
                     {
@@ -290,12 +297,18 @@ namespace Overstory.EditorTools
                         string at = dc < within ? "near" : dc >= cityFrom ? "city" : "street";
                         nearN += at == "near" ? 1 : 0;
                         cityN += at == "city" ? 1 : 0;
+                        // its shadow reaches its height over the sun's rise beyond it
+                        float reach = (house.size.Length > 2 ? house.size[2] : 9f) / Mathf.Tan(Mathf.Max(l_.elevation, 5f) * Mathf.Deg2Rad);
+                        bool cast = !drop || dc - 0.5f * Mathf.Max(w, d) <= urp.shadowDistance + reach;
+                        dropped += cast ? 0 : 1;
                         foreach (var t in lv)
                         {
                             bool on = t.name.EndsWith("-" + at);
                             t.gameObject.SetActive(on);
                             if (!on)
                                 continue;
+                            foreach (var r in t.GetComponentsInChildren<MeshRenderer>())
+                                r.shadowCastingMode = cast ? ShadowCastingMode.On : ShadowCastingMode.Off;
                             Assign(t.gameObject, mats, "Pc", MatLevel(at));
                             foreach (var r in t.GetComponentsInChildren<MeshRenderer>())
                                 if (GeometryUtility.TestPlanesAABB(planes, r.bounds))
@@ -326,6 +339,9 @@ namespace Overstory.EditorTools
                     }
                     streamed.Add($"| {name} | {(bytes + shared) / 1048576.0:F0} | {string.Join(" / ", mips)} | {(long)houses.Count * pageFull / 1048576.0 + shared / 1048576.0:F0} |");
                     cam.targetTexture = rt;
+                    // the renderer's own count of the last frame (its profiler counters; "-" where the editor keeps none)
+                    var rec = new[] { "Draw Calls Count", "Batches Count", "SetPass Calls Count", "Shadow Casters Count" }
+                        .Select(c => Unity.Profiling.ProfilerRecorder.StartNew(Unity.Profiling.ProfilerCategory.Render, c)).ToArray();
                     var ms = new List<double>();
                     for (int b = 0; b <= Batches; b++)
                     {
@@ -337,10 +353,13 @@ namespace Overstory.EditorTools
                         if (b > 0)
                             ms.Add(clock.Elapsed.TotalMilliseconds / PerBatch);
                     }
+                    string stats = string.Join(" / ", rec.Select(r => r.Valid && r.LastValue > 0 ? r.LastValue.ToString() : "-"));
+                    foreach (var r in rec)
+                        r.Dispose();
                     cam.targetTexture = null;
                     ms.Sort();
                     double median = ms[ms.Count / 2];
-                    rows.Add($"| {name} | {n} | {nearN} | {cityN} | {tris:N0} | {subs} | {median:F1} | {string.Join(" ", ms.Select(x => x.ToString("F1")))} |");
+                    rows.Add($"| {name} | {n} | {nearN} | {cityN} | {dropped} | {tris:N0} | {subs} | {stats} | {median:F1} | {string.Join(" ", ms.Select(x => x.ToString("F1")))} |");
                     Debug.Log($"[LT1Street] timing {name}: {median:F2} ms, {nearN} near and {cityN} city of {n}, {tris} triangles and {subs} draws in view");
                     Capture(cam, Path.Combine(outDir, $"timing-{name}.png"));
                 }
@@ -368,8 +387,9 @@ namespace Overstory.EditorTools
             md.AppendLine($"Offscreen in the editor, batch mode (LT1Street.Timing; {SystemInfo.graphicsDeviceName}, 2560x1440, MSAA 4x, way Pc, low sun, " +
                           $"one 4096 shadow cascade, screen-space occlusion; median of {Batches} batches of {PerBatch}). A row of {n} copies of house {house.house} " +
                           $"on {plot:F1} m plots, near level within {within:F0} m, city level from {(cityFrom < float.MaxValue ? cityFrom.ToString("F0") + " m" : "nowhere")}. Not the player's frame.").AppendLine();
-            md.AppendLine("| View | Houses | Near | City | Triangles in view | Draws in view | ms a frame | Batches |");
-            md.AppendLine("| --- | --- | --- | --- | --- | --- | --- | --- |");
+            md.AppendLine($"City level {(Arg("-streetCityOne") == "0" ? "a material a piece" : "one mesh, one material")}; far shadows {(drop ? "dropped beyond the shadow distance and the shadow's reach" : "cast by every house")}.").AppendLine();
+            md.AppendLine("| View | Houses | Near | City | Casting none | Triangles in view | Draws in view (counted) | Renderer: draw calls / batches / set-pass / shadow casters | ms a frame | Batches |");
+            md.AppendLine("| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |");
             foreach (var r in rows)
                 md.AppendLine(r);
             md.AppendLine().AppendLine($"Textures streamed (GPU, counted, not measured: the mip each house's page would hold at its nearest point " +
@@ -405,7 +425,8 @@ namespace Overstory.EditorTools
             foreach (var guid in AssetDatabase.FindAssets("t:Texture2D", new[] { gen }))
             {
                 string path = AssetDatabase.GUIDToAssetPath(guid);
-                var ti = (TextureImporter)AssetImporter.GetAtPath(path);
+                if (!(AssetImporter.GetAtPath(path) is TextureImporter ti))
+                    continue;  // the one material's tables, made here
                 bool tile = Path.GetFileNameWithoutExtension(path).StartsWith("paint-");
                 ti.textureType = TextureImporterType.Default;
                 ti.sRGBTexture = false;
@@ -525,7 +546,102 @@ namespace Overstory.EditorTools
                 AssetDatabase.CreateAsset(mat, $"{gen}/mat-{key}.mat");
                 outp[key] = mat;
             }
+            // a far house's one material: the street level's shared values, and each material's own from a table, a row
+            // a material in paint.json's order, which the merged city mesh's faces name in their uv2.x (OneMesh)
+            foreach (var way in new[] { "P", "Pc" })
+            {
+                var tab = new Texture2D(7, p.mats.Length, TextureFormat.RGBAFloat, false, true) { filterMode = FilterMode.Point, wrapMode = TextureWrapMode.Clamp, name = $"mattab-{way}" };
+                for (int k = 0; k < p.mats.Length; k++)
+                {
+                    var m = p.mats[k];
+                    var c = way == "Pc" ? p.colour?.mats?.FirstOrDefault(e => e.name == m.name) : null;
+                    Color V(float[] t, float w) { var v = Tint(t); return new Color(v.x, v.y, v.z, w); }
+                    tab.SetPixel(0, k, new Color(m.painted, m.L, m.bareL, m.underL));
+                    tab.SetPixel(1, k, new Color(m.stainDL, m.smooth, m.stainSmooth, m.ao));
+                    tab.SetPixel(2, k, new Color(m.shadowLift, m.brushL, m.flatUp, m.stainEdge));
+                    tab.SetPixel(3, k, V(c?.tint, m.name == "roof" ? house.planeShadow : 0f));
+                    tab.SetPixel(4, k, V(c?.bareTint, 0));
+                    tab.SetPixel(5, k, V(c?.underTint, 0));
+                    tab.SetPixel(6, k, V(c?.stainTint, 0));
+                }
+                tab.Apply(false, true);
+                AssetDatabase.CreateAsset(tab, $"{gen}/mattab-{way}.asset");
+                var one = new Material(outp[$"{way}-street-{p.mats[0].name}"]);
+                one.SetFloat("_Plane", 0);
+                one.DisableKeyword("_OS_PLANE");
+                one.SetFloat("_One", 1);
+                one.EnableKeyword("_OS_ONE");
+                one.SetTexture("_MatTab", tab);
+                AssetDatabase.CreateAsset(one, $"{gen}/mat-{way}-street-one.mat");
+                outp[$"{way}-street-one"] = one;
+            }
             return outp;
+        }
+
+        /// <summary>Whether the SRP Batcher draws OS_Finish's materials: on in the pipeline, and the shader compatible.</summary>
+        static void SrpBatcher(Shader shader)
+        {
+            var urp = (UniversalRenderPipelineAsset)GraphicsSettings.currentRenderPipeline;
+            var flags = System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static;
+            var code = typeof(ShaderUtil).GetMethod("GetSRPBatcherCompatibilityCode", flags);
+            var why = typeof(ShaderUtil).GetMethod("GetSRPBatcherCompatibilityIssueReason", flags);
+            string state = "unknown (no editor query)";
+            if (code != null)
+            {
+                int c = Convert.ToInt32(code.Invoke(null, new object[] { shader, 0 }));
+                state = c == 0 ? "compatible" : $"not compatible: {(why != null ? why.Invoke(null, new object[] { shader, 0, c }) : c)}";
+            }
+            Debug.Log($"[LT1Street] SRP Batcher: pipeline {(urp.useSRPBatcher ? "on" : "off")}; {shader.name} {state}");
+        }
+
+        /// <summary>
+        /// The city level as one mesh and one material, one draw a far house: every piece's faces merged, each vertex
+        /// naming its material's row in the one material's table (uv2.x, paint.json's order). The level's own object is
+        /// replaced in place, under the same name, so the levels swap as before.
+        /// </summary>
+        static GameObject OneMesh(GameObject level, Paint p, string gen)
+        {
+            var index = p.mats.Select((m, k) => (m.name, k)).ToDictionary(e => e.name, e => e.k);
+            var parts = new List<CombineInstance>();
+            var rows = new List<float>();
+            var toLevel = level.transform.worldToLocalMatrix;
+            foreach (var r in level.GetComponentsInChildren<MeshRenderer>(true))
+            {
+                string kind = r.gameObject.name.Substring(r.gameObject.name.IndexOf('_') + 1);
+                var mesh = r.GetComponent<MeshFilter>().sharedMesh;
+                if (!index.TryGetValue(kind, out int row) || mesh.colors.Length != mesh.vertexCount)
+                    throw new Exception($"[LT1Street] city {r.gameObject.name}: no material row or no vertex colours");
+                for (int s = 0; s < mesh.subMeshCount; s++)
+                {
+                    var sub = new Mesh { indexFormat = mesh.indexFormat };
+                    sub.SetVertices(mesh.vertices);
+                    sub.SetNormals(mesh.normals);
+                    sub.SetTangents(mesh.tangents);
+                    sub.SetColors(mesh.colors);
+                    sub.SetUVs(0, mesh.uv);
+                    sub.SetUVs(1, mesh.uv2);
+                    sub.SetUVs(2, Enumerable.Repeat(new Vector2(row, 0), mesh.vertexCount).ToList());
+                    sub.SetTriangles(mesh.GetTriangles(s), 0);
+                    parts.Add(new CombineInstance { mesh = sub, transform = toLevel * r.transform.localToWorldMatrix });
+                }
+            }
+            var merged = new Mesh { name = $"{level.name}-one", indexFormat = UnityEngine.Rendering.IndexFormat.UInt32 };
+            merged.CombineMeshes(parts.ToArray(), true, true);
+            merged.Optimize();
+            merged.UploadMeshData(false);
+            AssetDatabase.CreateAsset(merged, $"{gen}/house-city-one.asset");
+            var go = new GameObject(level.name);
+            go.transform.SetParent(level.transform.parent, false);
+            go.transform.localPosition = level.transform.localPosition;
+            go.transform.localRotation = level.transform.localRotation;
+            go.transform.localScale = level.transform.localScale;
+            var one = new GameObject("city_one");
+            one.transform.SetParent(go.transform, false);
+            one.AddComponent<MeshFilter>().sharedMesh = merged;
+            one.AddComponent<MeshRenderer>();
+            UnityEngine.Object.DestroyImmediate(level);
+            Debug.Log($"[LT1Street] city as one: {parts.Count} parts, {merged.vertexCount} vertices, {merged.triangles.Length / 3} triangles, one draw");
+            return go;
         }
 
         static readonly string[] Levels = { "near", "street", "city" };

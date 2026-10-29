@@ -86,6 +86,8 @@ Shader "Overstory/Finish"
         _UnderTint ("Way Pc: the under layer's hue", Vector) = (1, 1, 1, 0)
         _StainTint ("Way Pc: a stain's hue", Vector) = (1, 1, 1, 0)
         _WashTint ("Way Pc: the long washes' hue", Vector) = (1, 1, 1, 0)
+        [Toggle(_OS_ONE)] _One ("One material for a whole far house: each face's material from _MatTab by its uv2.x", Float) = 0
+        [NoScaleOffset] _MatTab ("One material's table: a row a material, 7 texels of its values", 2D) = "black" {}
     }
 
     HLSLINCLUDE
@@ -95,7 +97,7 @@ Shader "Overstory/Finish"
         float4 _Tile_ST;
         float4 _TileScale;
         float _Painted, _Street, _PaintSmooth, _UnderSmooth, _NormalScale, _PaintFlat, _BoardScale;
-        float _Plane, _PlaneShadow;
+        float _Plane, _PlaneShadow, _One;
         float _DirtL, _WaterL, _CavityL, _ArrisL, _AOStrength, _DirtDull, _LapDark, _LapCore, _LapReach, _LapScale, _LapPage, _LapStep, _LipL, _CrackL;
         float _StainL, _TideW, _StainMottleL, _TideL, _IslandL, _GrainMip, _GrainFade;
         float4 _IslandW;
@@ -126,6 +128,7 @@ Shader "Overstory/Finish"
             #pragma shader_feature_local _OS_STREET
             #pragma shader_feature_local _OS_PLANE
             #pragma shader_feature_local _OS_PAINT
+            #pragma shader_feature_local _OS_ONE
             #pragma multi_compile _ _MAIN_LIGHT_SHADOWS _MAIN_LIGHT_SHADOWS_CASCADE
             #pragma multi_compile_fragment _ _SHADOWS_SOFT _SHADOWS_SOFT_LOW _SHADOWS_SOFT_MEDIUM _SHADOWS_SOFT_HIGH
             #pragma multi_compile_fragment _ _SCREEN_SPACE_OCCLUSION
@@ -143,6 +146,7 @@ Shader "Overstory/Finish"
             TEXTURE2D(_StreetN); SAMPLER(sampler_StreetN);
             TEXTURE2D(_Flake); SAMPLER(sampler_Flake);
             TEXTURE2D(_Stroke); SAMPLER(sampler_Stroke);
+            TEXTURE2D(_MatTab);
 
             struct Attributes
             {
@@ -152,6 +156,9 @@ Shader "Overstory/Finish"
                 float2 uv0 : TEXCOORD0;
                 float2 uv1 : TEXCOORD1;
                 float4 color : COLOR;
+            #if defined(_OS_ONE)
+                float2 uv2 : TEXCOORD2;
+            #endif
                 UNITY_VERTEX_INPUT_INSTANCE_ID
             };
 
@@ -164,6 +171,9 @@ Shader "Overstory/Finish"
                 float4 uv : TEXCOORD3;
                 float4 color : TEXCOORD4;
                 float fog : TEXCOORD5;
+            #if defined(_OS_ONE)
+                nointerpolation float mat : TEXCOORD6;
+            #endif
             };
 
             Varyings Vert(Attributes v)
@@ -179,6 +189,9 @@ Shader "Overstory/Finish"
                 o.uv = float4(v.uv0 * _TileScale.xy, v.uv1);
                 o.color = v.color;
                 o.fog = ComputeFogFactor(p.positionCS.z);
+            #if defined(_OS_ONE)
+                o.mat = v.uv2.x;
+            #endif
                 return o;
             }
 
@@ -206,6 +219,32 @@ Shader "Overstory/Finish"
 
             half4 Frag(Varyings i) : SV_Target
             {
+            #if defined(_OS_ONE)
+                // one material for a whole far house, one draw: each face's own material's values from the house's
+                // table, by the row its vertices carry, in place of the material's own properties (the rest are shared)
+                int os_m = (int)(i.mat + 0.5);
+                float4 os_a = LOAD_TEXTURE2D(_MatTab, int2(0, os_m)), os_b = LOAD_TEXTURE2D(_MatTab, int2(1, os_m));
+                float4 os_c = LOAD_TEXTURE2D(_MatTab, int2(2, os_m)), os_Tint = LOAD_TEXTURE2D(_MatTab, int2(3, os_m));
+                float4 os_BareTint = LOAD_TEXTURE2D(_MatTab, int2(4, os_m)), os_UnderTint = LOAD_TEXTURE2D(_MatTab, int2(5, os_m));
+                float4 os_StainTint = LOAD_TEXTURE2D(_MatTab, int2(6, os_m));
+                #define _Painted os_a.x
+                #define _PaintL os_a.y
+                #define _BareL os_a.z
+                #define _UnderL os_a.w
+                #define _StainDL os_b.x
+                #define _PaintSmooth os_b.y
+                #define _StainSmooth os_b.z
+                #define _AOStrength os_b.w
+                #define _ShadowLift os_c.x
+                #define _BrushL os_c.y
+                #define _FlatUp os_c.z
+                #define _StainEdge os_c.w
+                #define _PlaneShadow os_Tint.w
+                #define _Tint os_Tint
+                #define _BareTint os_BareTint
+                #define _UnderTint os_UnderTint
+                #define _StainTint os_StainTint
+            #endif
                 float4 hist = SAMPLE_TEXTURE2D(_Hist, sampler_Hist, i.uv.zw);
                 float4 geo = SAMPLE_TEXTURE2D(_Geo, sampler_Geo, i.uv.zw);
                 // how far below the butt above: the near boards' own corners carry it (vertex alpha), exact across
@@ -413,10 +452,13 @@ Shader "Overstory/Finish"
                 #endif
                     c.rgb -= direct * shut * GetMainLightShadowStrength();
                 }
-            #if defined(_OS_PLANE)
+            #if defined(_OS_PLANE) || defined(_OS_ONE)
                 // a plane standing for the courses it was baked from has no rolls to cast the shadows the real
                 // courses cast: its baked forms shadow themselves against the key light by their occlusion
                 // (Uncharted 4's microshadow), before the paint evens their light
+            #if defined(_OS_ONE)
+                UNITY_BRANCH if (_PlaneShadow > 0.0)
+            #endif
                 {
                     Light pl = GetMainLight(d.shadowCoord, d.positionWS, d.shadowMask);
                     float aoF = geo.r;
