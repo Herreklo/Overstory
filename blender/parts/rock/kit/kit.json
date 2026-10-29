@@ -126,7 +126,7 @@
               "cellM": 0.02, "waves": 4, "lambdaM": [1.5, 4.0], "acrossDeg": 20, "share": 0.017 },
     "cracks": [ { "family": "J1", "at": [0.0, 0.6] }, { "family": "J2", "at": [-1.6, 0.0] } ],
     "crackM": [0.04, 0.10],
-    "sheets": { "thick": [1.6, 0.2, 3.0], "rise": [0.15, 1.3, 0.03, 0.5], "jogM": 0.5, "end": 0.35, "fitM": 0.1, "fewest": 12, "overlapM": 0.003,
+    "sheets": { "thick": [1.6, 0.2, 1.8], "rise": [0.15, 1.3, 0.03, 0.5], "jogM": 0.5, "end": 0.1, "fitM": 0.1, "fewest": 12, "overlapM": 0.003,
                 "bites": { "gapM": [0.4, 1.4], "chance": 0.6, "long": [0.25, 1.4, 0.08, 1.2], "deep": [0.15, 1.5, 0.05, 0.6], "dropM": [0.01, 0.06] } },
     "lips": { "endOn": { "J1": "J2", "J2": "J1" }, "reachM": 7, "gapM": [0.15, 0.6], "chance": 0.6, "inM": [0.02, 0.07],
               "downM": [0.03, 0.09], "longM": [0.06, 0.25] },

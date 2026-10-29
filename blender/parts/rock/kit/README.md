@@ -33,24 +33,40 @@ zonation are (`../README.md`).
   the sea, 3 m off the north-west shore); `tip.grey` holds the frame's values and the shore bands; `tip.py` moves them into 107's frame in `tip.json` with the site's own low
   sun (`sunOff`), and `LT1HolmTip.cs` adds them beside the street stop. Run:
   `TIP_GREY=1 render.sh <round> water,street P overcast,lowsun`.
-- **State (29 Oct, t08):** the shore block as the ice made it, `whaleback.py` (kit.json `whaleback`; out
+- **State (29 Oct, t09):** the shore block as the ice made it, `whaleback.py` (kit.json `whaleback`; out
   `cache/rock/kit/gen/carve/W.blend`, `-- --bake 1` adds `W-game` and its 2048 maps; shown by `tip.py -- --lone 1
   --show W-high|W-game`). One heightfield hull in the ice's frame, its crest at the record's back (2.9 m), cut by
   exact plane booleans in two passes, every size drawn from a skewed spread (kit.json [mean, shape, least, most], a
   gamma: a few big, many small):
   - the back's sheets (thickness's mean the fixture's foliation spacing), parted along the strike by J1 joints at the
-    fixture's spacing; each edge offset across every joint (`jogM`) and ending at one `end` of the time; in each sheet
+    fixture's spacing, none thicker than the fixture's most; each edge offset across every joint (`jogM`) and ending
+    at one `end` of the time (a tenth: where one ends, two sheets share one tread, a big flat face); in each sheet
     between two joints one planar tread fitted under the hull above the wet line, rising toward the dip by its own
     `rise`; bites of skewed size plucked from the edges between J1 joints;
   - the plucked lee in J2, foliation and J3 strips, each step's rise and width skewed and its tread its own dip;
   - one J1 and one J2 crack, 4-10 cm wide, their lips chipped by small wedges.
   Crumbs a cut leaves are dropped. Grey check: Eevee, one neutral sun (az 330, el 35) and one raking (az 255, el 7),
   the lone views and a lee view 7 m off at bearing 215. Still wrong: the land flank keeps the hull's smooth round
-  under the wet line (faceting it crumpled it, t07 x4). Next: the land flank; then the game mesh as a coarse hull cut
-  on the same planes; small-scale fracture through the bake (a foliated scan, `rock_face_01`, is downloaded). Turf
-  test C, the toe line and the storm fixes queued.
+  under the wet line (faceting it crumpled it, t07 x4); every face is an exact plane, so up close it reads as
+  low-poly crystal, not rock (t06-t09 alike). Next, t10 (coordinator, 29 Oct): the mid and small scale from a real
+  foliated bedrock scan (`rock_face_01`, downloaded and logged) carried onto our cut faces, the large form ours. First
+  a short read of how studios lay scan detail over a blocked-out form (Quixel and others' public breakdowns:
+  triplanar or face-projected scan height masked by face orientation, a detail normal against real displacement on
+  the high mesh, keeping the foliation's direction); then one rung-1 still from eye level beside t09 and refs 16 and
+  15, before Unity. The detail rides the faces and never rounds an arris or bends a plane (rocks are rigid; melted is
+  the known failure). After it: the land flank; the game mesh as a coarse hull cut on the same planes. Turf test C,
+  the toe line and the storm fixes queued.
 
 ## Rounds
+
+- **t09** (`reviews/lt1/rock/t09/`; `grey.jpg` Blender grey, rows t09 neutral, t09 raking, t08 neutral, columns
+  eye, 12 m, sea, lee, refs 16, 15, 48, 51; `sheet.jpg` columns t09 W high, t08 W high, t07 W high; rows eye, 12 m,
+  sea, each overcast then low sun). One change: an edge ends at a joint a tenth of the time, not a third, and no
+  sheet is thicker than the fixture's 1.8 m (was 3.0). At eye level the big triangular face is gone and the back reads
+  sheeted, edges and joints crossing; from the sea broken, the crest broader and at 2.76 m nearer the record (t08
+  2.52). From 12 m a loose grid of plates, less broken than t08, no slats. Seeds 7 and 8 agree. One small square pit
+  (a bite) reads as a hole. The trade-off: an ending edge breaks the 12 m read but merges two treads into one face; an
+  edge that dies out between joints instead of merging would answer both.
 
 - **t08** (`reviews/lt1/rock/t08/`; `grey.jpg` Blender grey, rows t08 neutral, t08 raking, t07 neutral, columns
   eye, 12 m, sea, lee, refs 16, 15, 48, 51; `sheet.jpg` columns t08 W high, t07 W high, t04b; rows eye, 12 m, sea,
