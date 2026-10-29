@@ -295,24 +295,25 @@ def wall_low(pg, Q, clad, zf):
 
 def wall_values(pg, Q, zf, z_plinth, broad):
     """The corner's broad washes on one wall: its one gradient, light at its top and darkening steadily to its foot;
-    under the eave a soft contact band; the plinth darker toward the ground, its top under the drip board dark."""
-    dl = np.zeros(pg.shape)
+    under the eave a soft contact band; the plinth darker toward the ground, its top under the drip board dark. Each
+    mark apart, by name, for the deposit it lays (paint.json `deposit`)."""
+    dl = {n: np.zeros(pg.shape) for n in ("wall", "eave", "plinth", "cap", "wet")}
     clad = pg.m["cladding"] & pg.vertical
     wall = (pg.m["cladding"] | pg.m["trims"]) & pg.vertical
     plinth = (pg.m["stone"] | pg.m["concrete"]) & pg.vertical
     low, top = wall_low(pg, Q, clad, zf)
     Wl = Q["wall"]
-    dl += np.where(wall, Wl["topL"] + (Wl["footL"] - Wl["topL"]) * low, 0.0)
+    dl["wall"] += np.where(wall, Wl["topL"] + (Wl["footL"] - Wl["topL"]) * low, 0.0)
     E = Q["eave"]
     d = top - pg.z
-    dl -= np.where(wall & (d >= -0.002), E["L"] * (1.0 - FL.smoothstep(0.0, E["reach"], d)) ** E["power"], 0.0)
+    dl["eave"] -= np.where(wall & (d >= -0.002), E["L"] * (1.0 - FL.smoothstep(0.0, E["reach"], d)) ** E["power"], 0.0)
     Pl = Q["plinth"]
-    dl -= np.where(plinth, Pl["L"] * (1.0 - np.clip(pg.z / z_plinth, 0.0, 1.0)), 0.0)
-    dl -= np.where((pg.m["stone"] | pg.m["concrete"]) & pg.up, Pl.get("capL", 0.0), 0.0)
+    dl["plinth"] -= np.where(plinth, Pl["L"] * (1.0 - np.clip(pg.z / z_plinth, 0.0, 1.0)), 0.0)
+    dl["cap"] -= np.where((pg.m["stone"] | pg.m["concrete"]) & pg.up, Pl.get("capL", 0.0), 0.0)
     Wt = Q["wet"]
     if "L" in Wt:
         wet = 1.0 - FL.smoothstep(-Wt["soft"], Wt["soft"], pg.z - Wt["top"] - Wt["splash"] * broad)
-        dl -= np.where(plinth, Wt["L"] * wet, 0.0)
+        dl["wet"] -= np.where(plinth, Wt["L"] * wet, 0.0)
     return dl, top, low
 
 
@@ -479,14 +480,14 @@ def roof_values(pg, R, meta, roof, wall):
     tiles = pg.m["tiles"] | pg.m["roof"] | pg.m["slate"]
     age = float(FL.smoothstep(0.0, R["fullYears"], roof_years(meta)))
     if age <= 0.0:
-        return np.zeros(pg.shape)
+        return {}
     k = key(meta, "p-roof", roof["wall"])
     a = math.radians(roof["pitch"])
     s = (pg.y - roof["foot"][0]) * math.cos(a) + (pg.z - roof["foot"][1]) * math.sin(a)
     top = roof["courses"] * roof["course"]
     E = R["eave"]
     reach = E["courses"] * roof["course"] * (1.0 + E["wobble"] * wave(pg, HS.h(k, "eave"), E["cell"]))
-    dl = -E["L"] * (1.0 - FL.smoothstep(0.0, 1.0, s / np.maximum(reach, 0.05))) ** E["power"]
+    eave = -E["L"] * (1.0 - FL.smoothstep(0.0, 1.0, s / np.maximum(reach, 0.05))) ** E["power"]
     M = R["moss"]
     u = (pg.along - roof["x0"]) / roof["cover"]
     col = np.floor(u).astype(np.int64)
@@ -494,11 +495,11 @@ def roof_values(pg, R, meta, roof, wall):
     lane = MK.gauss(pan - np.round(pan), M["width"])
     lc = top * (M["reach"][0] + (M["reach"][1] - M["reach"][0]) * FL.unit(k, col))
     lc = lc * (1.0 + M["wobble"] * wave(pg, HS.h(k, "moss"), M["cell"], s))
-    dl -= M["L"] * lane * (1.0 - FL.smoothstep(0.0, 1.0, (top - s) / np.maximum(lc, 0.05))) ** M["power"]
+    moss = -M["L"] * lane * (1.0 - FL.smoothstep(0.0, 1.0, (top - s) / np.maximum(lc, 0.05))) ** M["power"]
     south = np.array([0.0, -1.0])
     sunward = max(0.0, float(np.dot(wall["out"], south)))
-    dl -= R["shadeL"] * (1.0 - sunward)
-    return np.where(tiles, age * dl, 0.0)
+    shade = -R["shadeL"] * (1.0 - sunward) * np.ones(pg.shape)
+    return {n: np.where(tiles, age * d, 0.0) for n, d in (("roofEave", eave), ("moss", moss), ("roofShade", shade))}
 
 
 def roof_marks(pg, R, meta, roof, wall):
@@ -564,6 +565,32 @@ def house_paint(meta, paints):
     return paints["paints"][d["wall"]], paints["paints"][d["trim"]]
 
 
+def Ylum(L):
+    """CIE L* to relative luminance."""
+    L = np.asarray(L, float)
+    return np.where(L > 8.0, ((L + 16.0) / 116.0) ** 3, L / 903.3)
+
+
+def cover(parts, yd, ref):
+    """The page's own marks as cover over any paint, Y' = T Y + D (OS_Finish's _Deposit). Each mark (a part of dL, in
+    the order laid) is a deposit of its own dirt, of luminance yd[name] (0 for light and wet, which scale the surface),
+    laid over the surface beneath as lerp(surface, dirt, share); its share is the one that takes the value it was judged
+    on (ref, L*, the clay's) down by its L*, so on that value the old rule holds exactly. A mark that lightens scales the
+    surface. Also returns, by mark, where its dirt is too light (or dark) to reach its value on the clay."""
+    T, D = np.ones(ref.shape), np.zeros(ref.shape)
+    Lc, astray = ref.astype(float).copy(), {}
+    for name, d in parts.items():
+        y0, y1 = Ylum(np.clip(Lc, 2.0, 98.0)), Ylum(np.clip(Lc + d, 2.0, 98.0))
+        den = y0 - yd[name]
+        c = (y0 - y1) / np.where(np.abs(den) < 1e-4, np.where(den < 0, -1e-4, 1e-4), den)
+        astray[name] = (d < -1e-3) & ((c > 1.0 + 1e-3) | (c < -1e-3))
+        c = np.where(d < 0.0, np.clip(c, 0.0, 1.0), 0.0)
+        r = np.where(d > 0.0, y1 / y0, 1.0)
+        T, D = T * (1.0 - c) * r, (D * (1.0 - c) + c * yd[name]) * r
+        Lc = Lc + d
+    return T, D, astray
+
+
 def preview(path, pl, dl, wash, rng, washL):
     """hist-p's R and G and hist-p2's R side by side, each at half the page, to look at."""
     half = lambda a: a.reshape(a.shape[0] // 2, 2, a.shape[1] // 2, 2).mean(axis=(1, 3))  # noqa: E731
@@ -607,7 +634,17 @@ def main():
     # the wall's value is its paint's: the clay's, scaled by the house paint's L* against the paint the clay was set for
     wp, tp_ = house_paint(meta, paints)
     k = wp["L"] / paints["paints"][S["clayPaint"]["paint"]]["L"]
-    mats["cladding"] = dict(mats["cladding"], L=round(mats["cladding"]["L"] * k, 1))
+    mats["cladding"] = dict(mats["cladding"], L=round(mats["cladding"]["L"] * k, 1), refL=mats["cladding"]["L"])
+    # a roof's value is its material's own, measured (the pack's, `deposit.values`), and its marks keep the L* steps they
+    # were judged with on that value: the clay's was not the roof's, and on it a moss or a lichen could not make its step
+    Dp = S["deposit"]
+    dirt = json.load(open(os.path.join(FL.ROOT, St["materials"], "deposits.json")))["deposits"]
+    for name, src in Dp["values"].items():
+        if name in mats and name != "describes":
+            pm = json.load(open(os.path.join(FL.ROOT, St["materials"], f"{src}.json")))
+            f = float(np.clip(roof_years(meta) / pm["oldYears"], 0.0, 1.0))
+            v = pm["value"]
+            mats[name] = dict(mats[name], L=round(v["newL"] + (v["oldL"] - v["newL"]) * f, 1))
 
     pl, sn, dl, gr = (np.zeros(pg.shape) for _ in range(4))
     wash, far = np.zeros(pg.shape), np.zeros(pg.shape)
@@ -665,6 +702,12 @@ def main():
 
     # the values: broad washes first, each wall's and each opening's; then the contact shade; then the darks at
     # every junction, from what the paint is there; then the small
+    # each mark kept apart too, by name in the order laid, for the deposit it lays (paint.json `deposit`)
+    parts = {}
+    part = lambda n: parts.setdefault(n, np.zeros(pg.shape))  # noqa: E731
+    def lay(v, n, d):
+        v.put(dl, d, "add")
+        v.put(part(n), d, "add")
     lows = {}
     for i, v in views.items():
         wall = walls[i]
@@ -672,28 +715,36 @@ def main():
         zf = meta["courses"]["1"][0] if lean else meta["heights"]["drip"][1]
         z_pl = zf if lean else meta["heights"]["plinth"]
         d, top, low = wall_values(v, Q, zf, z_pl, broads[i])
-        v.put(dl, d, "add")
+        for n, dn in d.items():
+            lay(v, n, dn)
         lows[i] = (zf, top, low)
     for k, o, wall, v, om, side, g, door, mine in ops:
-        v.put(dl, opening_values(v, Q, om, side, board), "add")
+        lay(v, "openings", opening_values(v, Q, om, side, board))
     N = S["neglect"]
     for i, v in views.items():
         sills = [om["features"]["sill"] for k, o, wall, ov, om, side, g, door, mine in ops if wall["i"] == i and not door]
         sv = severity(meta, paints, walls[i], N)
         log.append(f"w{i} severity {sv:.2f}")
-        v.put(dl, neglect_values(v, N, key(meta, "p-neglect", i), sv, sills, lows[i][1], lows[i][0]), "add")
+        lay(v, "neglect", neglect_values(v, N, key(meta, "p-neglect", i), sv, sills, lows[i][1], lows[i][0]))
+    d0 = dl.copy()
     dl += np.where((pg.m["trims"] | pg.m["stone"] | pg.m["batten"]) & pg.up, Q["up"]["L"], 0.0)
+    part("up")[:] += dl - d0
     C = Q["contact"]
     own = np.ones(pg.shape)
     for name, m in mats.items():
         if name in pg.m:
             own = np.where(pg.m[name], m.get("contact", 1.0), own)
+    d0 = dl.copy()
     dl -= own * (C["L"] * FL.smoothstep(C["ao"][0], C["ao"][1], 1.0 - pg.ao)
                  + C["cavL"] * FL.smoothstep(C["cav"][0], C["cav"][1], np.clip(1.0 - pg.cav, 0.0, 1.0)))
-    base = np.zeros(pg.shape)
+    part("contact")[:] += dl - d0
+    # the junctions' darks are drawn on the value the marks were judged on
+    base, ref = np.zeros(pg.shape), np.zeros(pg.shape)
     for name, m in mats.items():
         if name in pg.m:
-            base = np.where(pg.m[name], m["L"] - m.get("stainDL", 0.0) * (sn > 0.5), base)
+            base = np.where(pg.m[name], m.get("refL", m["L"]) - m.get("stainDL", 0.0) * (sn > 0.5), base)
+            ref = np.where(pg.m[name], m.get("refL", m["L"]), ref)
+    d0 = dl.copy()
     J = Q["junction"]
     for i, v in views.items():
         wall = (v.m["cladding"] | v.m["trims"]) & v.vertical
@@ -708,17 +759,19 @@ def main():
         down(v, dl, base, clad, v.z - zf, J["drip"])
         down(v, dl, base, plinth, (zf if lean else meta["heights"]["drip"][0]) - v.z, J["plinth"])
         down(v, dl, base, plinth, v.z, J["ground"])
+    part("junction")[:] += dl - d0
     for k, o, wall, v, om, side, g, door, mine in ops:
-        v.put(dl, opening_small(v, Q, om), "add")
+        lay(v, "small", opening_small(v, Q, om))
     for i, v in views.items():
         if i in roofs:
-            v.put(dl, roof_values(v, S["roof"], meta, roofs[i], walls[i]), "add")
+            for n, dn in roof_values(v, S["roof"], meta, roofs[i], walls[i]).items():
+                lay(v, n, dn)
             rw, rs = roof_marks(v, S["roof"], meta, roofs[i], walls[i])
             v.put(wash, np.maximum(v.get(wash), rw))
             v.put(far, np.maximum(v.get(far), rw))
             v.put(sn, np.maximum(v.get(sn), rs))
     loose = SM.View(pg, pg.wall == -1, walls[0])
-    loose.put(dl, tile_values(loose, Q, meta, None), "add")
+    lay(loose, "tiles", tile_values(loose, Q, meta, None))
     # the ridge's own tiles take the top courses' lichen
     age = float(FL.smoothstep(0.0, S["roof"]["fullYears"], roof_years(meta)))
     ridge = loose.m["tiles"] & (loose.z > meta["heights"]["ridge"] - 0.4)
@@ -730,7 +783,16 @@ def main():
     rng = Q["dlRange"]
     hist = np.stack([pl, 0.5 + np.clip(dl, -rng, rng) / (2.0 * rng), sn, gr], axis=-1)
     FL.write(os.path.join(out, "hist-p.png"), FL.dilate(np.where(pg.cov[..., None], hist, 0), pg.cov, pad + 2))
-    h2 = np.stack([np.clip(wash / T["washL"], 0.0, 1.0), np.clip(far / T["washL"], 0.0, 1.0), np.zeros(pg.shape)], axis=-1)
+    # the page's marks as cover over any paint (OS_Finish's _Deposit): Y = T Y + D, each mark its own deposit
+    assert np.allclose(sum(parts.values()), dl, atol=1e-6), "a mark laid outside its part"
+    yd = {n: Ylum(dirt[Dp["parts"][n]]["L"]) for n in parts}
+    cT, cD, astray = cover(parts, yd, ref)
+    scale = [float(np.ceil(cT[pg.cov].max() * 10) / 10), float(np.ceil(max(cD[pg.cov].max(), 1e-3) * 100) / 100)]
+    log.append(f"cover T {np.percentile(cT[pg.cov], [1, 50, 99]).round(3)} D {np.percentile(cD[pg.cov], [50, 99]).round(3)}, "
+               f"scale {scale}; marks their dirt cannot reach on the clay "
+               f"{', '.join(f'{n} {float((a & pg.cov).mean()):.4f}' for n, a in astray.items() if (a & pg.cov).any()) or 'none'}")
+    h2 = np.stack([np.clip(wash / T["washL"], 0.0, 1.0), np.clip(far / T["washL"], 0.0, 1.0),
+                   np.clip(cT / scale[0], 0.0, 1.0), np.clip(cD / scale[1], 0.0, 1.0)], axis=-1)
     FL.write(os.path.join(out, "hist-p2.png"), FL.dilate(np.where(pg.cov[..., None], h2, 0), pg.cov, pad + 2))
     FL.write(os.path.join(out, "paint-stroke.png"), FP.strokes(Q, meta))
     FL.write(os.path.join(out, "geo.png"), SM.geo(pg, P, meta))
@@ -756,7 +818,8 @@ def main():
         "mats": [{"name": k, "painted": 1 if M.get(k, {}).get("painted") else 0, "L": v["L"], "bareL": v.get("bareL", v["L"]),
                   "underL": v.get("underL", v["L"]), "stainDL": v.get("stainDL", 0.0), "smooth": v["smooth"],
                   "stainSmooth": v.get("stainSmooth", v["smooth"]), "brushL": v.get("brushL", 0.0), "flatUp": v.get("flatUp", 0.0),
-                  "stainEdge": v.get("stainEdge", 1.0), "ao": v.get("ao", Q["aoStrength"]), "shadowLift": v.get("shadowLift", 0.0)}
+                  "stainEdge": v.get("stainEdge", 1.0), "ao": v.get("ao", Q["aoStrength"]), "shadowLift": v.get("shadowLift", 0.0),
+                  "refL": v.get("refL", v["L"]), "stainDirt": float(Ylum(dirt[Dp["stain"].get(k, Dp["stain"]["else"])]["L"]))}
                  for k, v in mats.items()],
         "lights": [dict(v, light=k) for k, v in dict(Q["light"], **{k: v for k, v in S.get("light", {}).items() if k not in ("describes", "reflect")}).items()],
         "reflect": S.get("light", {}).get("reflect"),
@@ -769,7 +832,15 @@ def main():
         "lapReach": L["occReachMm"] / 1000.0, "lapGrimeL": L["grimeL"], "lapGrimeReach": L["reach"],
         "lapGrimeBreak": L["break"], "lapPage": sh["lapPageMm"] / 1000.0,
         "colour": FP.colours(P, Qc, mats),
+        "deposit": 1, "coverScale": scale,
+        "washDirt": float(Ylum(dirt[Dp["wash"]]["L"])), "grimeDirt": float(Ylum(dirt[Dp["lapGrime"]]["L"])),
     }
+    # way Pc: each deposit in its own hue, at its own value
+    hue = lambda n: FP.tint(dirt[n]["L"], dirt[n]["C"], dirt[n]["h"]) if dirt[n]["L"] > 0 else [1.0, 1.0, 1.0]  # noqa: E731
+    col = digest["colour"]
+    col.update(washTint=hue(Dp["wash"]), grimeTint=hue(Dp["lapGrime"]), dirtTint=hue(Dp["page"]))
+    for cmat in col["mats"]:
+        cmat["stainTint"] = hue(Dp["stain"].get(cmat["name"], Dp["stain"]["else"]))
     json.dump(digest, open(os.path.join(out, "paint.json"), "w"), indent=1)
     preview(os.path.join(FL.ROOT, "cache", "street", "paint-preview", f"{meta['house']}.png"), pl, dl, wash, rng, T["washL"])
     share = lambda m: float((m & pg.cov).sum()) / max(1, int((painted & pg.cov).sum()))  # noqa: E731

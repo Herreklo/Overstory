@@ -86,8 +86,16 @@ Shader "Overstory/Finish"
         _UnderTint ("Way Pc: the under layer's hue", Vector) = (1, 1, 1, 0)
         _StainTint ("Way Pc: a stain's hue", Vector) = (1, 1, 1, 0)
         _WashTint ("Way Pc: the long washes' hue", Vector) = (1, 1, 1, 0)
+        _Deposit ("Way P: the marks as deposits, each its own dirt over the paint (a page with cover)", Float) = 0
+        _RefL ("The value the marks were judged on, L* (the clay's)", Float) = 80
+        _StainDirt ("A stain's own dirt, luminance", Float) = 0.1
+        _WashDirt ("The washes' dirt, luminance", Float) = 0.1
+        _GrimeDirt ("The lap grime's dirt, luminance", Float) = 0.1
+        _CoverScale ("The page's cover as written: T and D at full", Vector) = (2, 0.5, 0, 0)
+        _DirtTint ("Way Pc: the page's own deposits' hue", Vector) = (1, 1, 1, 0)
+        _GrimeTint ("Way Pc: the lap grime's hue", Vector) = (1, 1, 1, 0)
         [Toggle(_OS_ONE)] _One ("One material for a whole far house: each face's material from _MatTab by its uv2.x", Float) = 0
-        [NoScaleOffset] _MatTab ("One material's table: a row a material, 7 texels of its values", 2D) = "black" {}
+        [NoScaleOffset] _MatTab ("One material's table: a row a material, 8 texels of its values", 2D) = "black" {}
     }
 
     HLSLINCLUDE
@@ -109,6 +117,8 @@ Shader "Overstory/Finish"
         float4 _RimBreak;
         float4 _StrokeFade, _BrushFade;
         float4 _Tint, _BareTint, _UnderTint, _StainTint, _WashTint;
+        float _Deposit, _RefL, _StainDirt, _WashDirt, _GrimeDirt;
+        float4 _CoverScale, _DirtTint, _GrimeTint;
     CBUFFER_END
     ENDHLSL
 
@@ -201,6 +211,20 @@ Shader "Overstory/Finish"
                 return L > 8.0 ? pow((L + 16.0) / 116.0, 3.0) : L / 903.3;
             }
 
+            float YToL(float Y)
+            {
+                return Y > 0.008856 ? 116.0 * pow(Y, 1.0 / 3.0) - 16.0 : 903.3 * Y;
+            }
+
+            // the share of a dirt of luminance yd that takes a surface of value lr down by dl L* (a dirt lighter than
+            // the surface, dl below 0, takes it up): on the surface a mark was judged on, exactly the old rule
+            float Cover(float lr, float dl, float yd)
+            {
+                float y0 = LToY(clamp(lr, 2.0, 98.0)), y1 = LToY(clamp(lr - dl, 2.0, 98.0));
+                float den = y0 - yd;
+                return saturate((y0 - y1) / (abs(den) < 1e-4 ? (den < 0.0 ? -1e-4 : 1e-4) : den));
+            }
+
             // the lap's band (whole for its core, easing out by its reach) summed from the butt to x metres below it
             float LapInt(float x)
             {
@@ -226,7 +250,7 @@ Shader "Overstory/Finish"
                 float4 os_a = LOAD_TEXTURE2D(_MatTab, int2(0, os_m)), os_b = LOAD_TEXTURE2D(_MatTab, int2(1, os_m));
                 float4 os_c = LOAD_TEXTURE2D(_MatTab, int2(2, os_m)), os_Tint = LOAD_TEXTURE2D(_MatTab, int2(3, os_m));
                 float4 os_BareTint = LOAD_TEXTURE2D(_MatTab, int2(4, os_m)), os_UnderTint = LOAD_TEXTURE2D(_MatTab, int2(5, os_m));
-                float4 os_StainTint = LOAD_TEXTURE2D(_MatTab, int2(6, os_m));
+                float4 os_StainTint = LOAD_TEXTURE2D(_MatTab, int2(6, os_m)), os_d = LOAD_TEXTURE2D(_MatTab, int2(7, os_m));
                 #define _Painted os_a.x
                 #define _PaintL os_a.y
                 #define _BareL os_a.z
@@ -244,6 +268,8 @@ Shader "Overstory/Finish"
                 #define _BareTint os_BareTint
                 #define _UnderTint os_UnderTint
                 #define _StainTint os_StainTint
+                #define _RefL os_d.x
+                #define _StainDirt os_d.y
             #endif
                 float4 hist = SAMPLE_TEXTURE2D(_Hist, sampler_Hist, i.uv.zw);
                 float4 geo = SAMPLE_TEXTURE2D(_Geo, sampler_Geo, i.uv.zw);
@@ -309,25 +335,58 @@ Shader "Overstory/Finish"
                 // the long washes darken the paint, soft and translucent; the bare fibre the paint has lost stays
                 // dry and lighter, a hard mark of its own
                 // near, the runs as the water leaves them; with distance each becomes one soft mark of its own
-                float2 w2 = SAMPLE_TEXTURE2D(_Hist2, sampler_Hist, i.uv.zw).rg;
+                float4 h2 = SAMPLE_TEXTURE2D(_Hist2, sampler_Hist, i.uv.zw);
+                float2 w2 = h2.rg;
                 float farW = _WashFade.y > _WashFade.x ? saturate((lodS - _WashFade.x) / (_WashFade.y - _WashFade.x)) : 0.0;
                 float wash = lerp(w2.r, max(w2.r, w2.g), farW);
                 L -= _WashL * wash * lerp(1.0, _BareWash, peel);
                 // the lap's grime: darkest under the butt, easing down the board to a lower edge the strokes break,
                 // summed over the pixel's reach down the wall as the band is
                 float gr = _LapGrimeReach * (1.0 + _LapGrimeBreak * nearP * 2.0 * (st.b - 0.5));
-                L -= hasLap * hist.a * _LapGrimeL * (GrimeInt(hi, gr) - GrimeInt(lo, gr)) / fw;
+                float grime = hasLap * hist.a * (GrimeInt(hi, gr) - GrimeInt(lo, gr)) / fw;
+                L -= _LapGrimeL * grime;
                 // near, long soft strokes along the boards let the plane breathe, and down a wash the brush drags;
                 // by the street stop a trace of both
                 float nearB = lerp(_BrushFar, 1.0, 1.0 - saturate((lodS - _BrushFade.x) / max(_BrushFade.y - _BrushFade.x, 1e-3)));
                 float drag = SAMPLE_TEXTURE2D(_Stroke, sampler_Stroke, suv.yx * _DragScale).a;
-                L += (_BrushL * 2.0 * (st.a - 0.5) + _DragL * wash * 2.0 * (drag - 0.5)) * nearB;
+                float bd = (_BrushL * 2.0 * (st.a - 0.5) + _DragL * wash * 2.0 * (drag - 0.5)) * nearB;
+                L += bd;
                 float Y = LToY(clamp(L, 2.0, 98.0));
                 // the colour still: each mark's own hue laid on its value, every tint of luminance 1 so the albedo
                 // keeps the clay's; white in clay
                 float3 tint = lerp(lerp(_Tint.rgb, _BareTint.rgb, peel), _UnderTint.rgb, saturate(i.color.b));
                 tint = lerp(lerp(tint, _Tint.rgb, rim), _StainTint.rgb, stain);
                 tint = lerp(tint, _WashTint.rgb, saturate(wash * lerp(1.0, _BareWash, peel)));
+                // a page with cover (_Deposit, street/paint.py): each mark a deposit of its own dirt over this house's
+                // paint, lerp(paint, dirt, its share), not a fixed L* taken off, so a dark paint under the same dirt
+                // darkens little and a dirt lighter than it (splash, lichen) lightens it. A mark's share is the one that
+                // takes the surface it was judged on (_RefL, the clay's) down by its L*, so there the old rule holds
+                // exactly and every white keeps its look. The page's own marks come as cover, Y = T Y + D (hist-p2 B, A,
+                // composed in the bake from each mark's dirt); the stain, the washes and the lap's grime here
+                [branch] if (_Deposit > 0.5)
+                {
+                    float under = saturate(i.color.b);
+                    float bs = lerp(1.0, _BareShift, peel);
+                    float sG = (hist.g - 0.5) * 2.0 * _DLRange;
+                    float Lr = lerp(lerp(_RefL, _BareL, peel), _UnderL * _RefL / max(_PaintL, 1.0), under);
+                    Lr = lerp(Lr + sG * bs, _RefL + sG + _RimL, rim);
+                    float cT = h2.b * _CoverScale.x, cD = h2.a * _CoverScale.y;
+                    // the bare fibre is the same fibre on every house: the page's shift as before
+                    float3 c = (cT * LToY(lerp(_PaintL, _UnderL, under))) * lerp(_Tint.rgb, _UnderTint.rgb, under) + cD * _DirtTint.rgb;
+                    c = lerp(c, LToY(clamp(_BareL + sG * _BareShift, 2.0, 98.0)) * _BareTint.rgb, peel);
+                    c = lerp(c, (cT * LToY(_PaintL + _RimL)) * _Tint.rgb + cD * _DirtTint.rgb, rim);
+                    float dS = _StainDL * stain * lerp(bs, 1.0, rim);
+                    c = lerp(c, _StainDirt * _StainTint.rgb, Cover(Lr, dS, _StainDirt));
+                    Lr -= dS;
+                    float dW = _WashL * wash * lerp(1.0, _BareWash, peel);
+                    c = lerp(c, _WashDirt * _WashTint.rgb, Cover(Lr, dW, _WashDirt));
+                    Lr -= dW;
+                    c = lerp(c, _GrimeDirt * _GrimeTint.rgb, Cover(Lr, _LapGrimeL * grime, _GrimeDirt));
+                    // the brush's breath and drag, the paint's own texture, in L* on what the deposits leave
+                    float y = max(dot(c, float3(0.2126, 0.7152, 0.0722)), 1e-5);
+                    Y = LToY(clamp(YToL(y) + bd, 2.0, 98.0));
+                    tint = c / y;
+                }
                 float3 nT = float3(0, 0, 1);
                 float smooth = lerp(_PaintSmooth, _StainSmooth, stain);
             #else

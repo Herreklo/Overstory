@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "describes": "What each mark on a surface is made of: the dirt a mark lays over a paint, a board or a roof, as lerp(surface, dirt, share) in luminance (blender/parts/street/paint.py cover, OS_Finish _Deposit), each its own visible reflectance as CIE L*, C*, h (D65, the 1931 2° observer). The share is the mark's own (its place, the weather, the years); this is only the dirt's colour, so the same share darkens a white more than a dark paint, and lightens a paint darker than the dirt. Less light (shade) and wet are no deposit: L 0, which scales the surface. Each value is measured where a source measured the deposit; where none did, it is the measured ingredient that defines the deposit's kind, and its source says so.",
+  "deposits": {
+    "runoff": {
+      "L": 44.7, "C": 21, "h": 78,
+      "describes": "Rain's dirt: the dust a wall's runoff carries and leaves where it dries.",
+      "source": "No measured facade runoff deposit was found. Its ingredient by kind, mineral dust (28-66% of urban soiling by weight, Sleiman et al. 2014, https://www.osti.gov/servlets/purl/1163272): the median of nine dry temperate and humid-climate soils, lab spectra integrated with D65 and the 1931 2° observer (ECOSTRESS, JHU: 85P3707, 87P4264, 88P4699, 87P325, 85P4569, 90P128s, 87P707, 87P706 and the haplustalfs; L* 38-48, C* 11-27, h 72-81; https://speclib.jpl.nasa.gov). Dry lab soil is lighter than soil in the field, and none is Norwegian."
+    },
+    "grime": {
+      "L": 12.9, "C": 0, "h": 0,
+      "describes": "The town's smoke where rain does not wash it off: under the laps and the eaves, a neglected wall's band, a roof's eave course.",
+      "source": "No measured urban grime deposit was found. Its black part, measured pure: carbon black, USGS splib05a carbon_black_gds68, Y 0.016, L* 12.9, C* 0.2 (Clark et al. 2003, USGS OFR 03-395, https://pubs.usgs.gov/of/2003/ofr-03-395/datatable.html). A real deposit holds dust (black carbon is 4-12% of urban soiling by weight, Sleiman 2014), so it is lighter, and it warms a white (Granada limestone, b* 5.9 to 10.5 in two years: Urosevic et al. 2012, Science of the Total Environment 414:564), which a neutral soot does not carry."
+    },
+    "rust": {
+      "L": 47.7, "C": 32, "h": 68,
+      "describes": "Iron's run under a nail or a fixing.",
+      "source": "Measured: goethite as a thin film, a water slurry dried on glass, the way a run-off stain forms: USGS splib05a goethite_ws222_coating, Y 0.166, L* 47.7, C* 31.9, h 68 (its backing is not stated). Thick goethite and lepidocrocite powders measure L* 40-45, C* 33-54, h 58-71."
+    },
+    "lichen": {
+      "L": 53.5, "C": 18, "h": 105,
+      "describes": "The grey lichen on a roof's tiles and slates, paler than the roof.",
+      "source": "Measured: foliose Xanthoparmelia, yellow-grey-green, USGS splib05a lichen_xanthoparmelia-1 and -2, Y 0.215, L* 53.5, C* 17.7-19.3, h 102-107 (rock lichens from Colorado, measured bidirectionally under a tungsten lamp). On unglazed roof tiles Pena-Poza et al. 2018 (International Biodeterioration and Biodegradation 126:86) name black Verrucaria nigrescens, orange Calogaya decipiens and grey Pyrenodesmia teicholyta; none of these is measured."
+    },
+    "moss": {
+      "L": 21.6, "C": null, "h": null,
+      "describes": "Moss on a roof's lower courses and down its pans.",
+      "source": "Measured at single wavelengths, not as Y: Ceratodon purpureus and Grimmia, reflectance 0.034 at 550 nm, integrating sphere (Lovelock & Robinson 2002, Plant, Cell and Environment 25:1239, Table 3), taken as Y since moss peaks near there (L* 21.6, an estimate). Wetting barely changes it (Table 7). Its hue is not measured, so in colour the page's dirt takes the grime's."
+    },
+    "shade": {
+      "L": 0, "C": 0, "h": 0,
+      "describes": "Less light, not a deposit: a contact, a junction, an eave's band, a wall's gradient. It scales the surface.",
+      "source": "Not a material."
+    },
+    "wet": {
+      "L": 0, "C": 0, "h": 0,
+      "describes": "Wet, not a deposit: a porous surface darker by a ratio.",
+      "source": "Measured wet against dry, broadband: 0.50 for sand and 0.60 for a dark soil (Ångström 1925, in Lekner & Dorf 1988, Applied Optics 27:1278). Their model puts the ratio nearer 1 on a light surface (0.53 at a dry reflectance of 0.1, 0.72 at 0.6); here a wet mark's ratio is the one its judged L* step makes on the clay, a constant over any paint."
+    }
+  }
+}

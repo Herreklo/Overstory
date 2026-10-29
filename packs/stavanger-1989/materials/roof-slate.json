@@ -5,6 +5,14 @@
   "srgbNew": "3F444C",
   "srgbOld": "565A5E",
   "oldYears": 80,
+  "value": {
+    "describes": "The slate's own lightness, CIE L* of its visible reflectance (D65, the 1931 2° observer), new and old: it goes from one to the other over oldYears, as srgb does. The street's clay and colour take it (blender/parts/street/paint.json deposit.values); the page's moss, lichen and eave grime are marks over it.",
+    "newL": 42.2, "oldL": 48.5,
+    "source": {
+      "newL": "Measured rock, not a roof: grey phyllite, ECOSTRESS Ward85, Y 0.126, L* 42.2, C* 2.8; Norway's roofing slates are phyllites, quartzites and mica schists (https://snl.no/skifertak). Beside it a fresh grey slate, ECOSTRESS Ward92 (Pen Argyl, Pennsylvania), L* 37.0. No source names Stavanger's quarry.",
+      "oldL": "Measured: a weathered slate roofing shingle off a government building, grey, ECOSTRESS 0680UUUSTO, spectrum integrated with D65 and the 1931 2° observer: Y 0.172, L* 48.5, C* 2.7 (https://speclib.jpl.nasa.gov/ecospeclibdata/manmade.roofingmaterial.shingle.solid.all.0680uuusto.jhu.becknic.spectrum.txt); its age and city are not given. Dirt draws a dark surface lighter and greyer (Sleiman et al. 2011)."
+    }
+  },
   "relaidYears": [100, 150],
   "relaidKeeps": 0.8,
   "gloss": 0.3,

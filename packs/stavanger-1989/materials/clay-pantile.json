@@ -5,6 +5,14 @@
   "srgbNew": "A9532F",
   "srgbOld": "6E4134",
   "oldYears": 60,
+  "value": {
+    "describes": "The tile's own lightness, CIE L* of its visible reflectance (D65, the 1931 2° observer), new and old: it goes from one to the other over oldYears, as srgb does. The street's clay and colour take it (blender/parts/street/paint.json deposit.values); the page's moss, lichen and eave grime are marks over it.",
+    "newL": 45, "oldL": 40.6,
+    "source": {
+      "newL": "A band mean, not photopic Y: new red clay tile, visible reflectance 0.15 (Kültür & Türkeri 2012, Building and Environment 48:164, https://doi.org/10.1016/j.buildenv.2011.09.004), about L* 45; beside it a red smooth-faced brick, ECOSTRESS 0097, Y 0.149, L* 45.5 (a proxy for unglazed fired clay).",
+      "oldL": "Measured: a weathered terra cotta roofing tile, ECOSTRESS 0484UUUPOT, spectrum integrated with D65 and the 1931 2° observer: Y 0.116, L* 40.6, C* 9.1, h 66 (https://speclib.jpl.nasa.gov/ecospeclibdata/manmade.roofingmaterial.tile.solid.all.0484uuupot.jhu.becknic.spectrum.txt); its age and city are not given. No old soiled tile roof was found measured: a weathered tile measures greyer, not much darker, than a new one."
+    }
+  },
   "relaidYears": [55, 95],
   "relaidKeeps": 0.5,
   "gloss": 0.18,

@@ -28,15 +28,15 @@ namespace Overstory.EditorTools
         const string Dir = "Assets/Experiments/LT1/Street";
         const int Width = 2560, Height = 1440, Msaa = 4, WarmUp = 3;
 
-        [Serializable] class PMat { public string name; public int painted; public float L, bareL, underL, stainDL, smooth, stainSmooth, brushL, flatUp, stainEdge, ao, shadowLift; }
+        [Serializable] class PMat { public string name; public int painted; public float L, bareL, underL, stainDL, smooth, stainSmooth, brushL, flatUp, stainEdge, ao, shadowLift, refL, stainDirt; }
         [Serializable] class PLight { public string light, drawn; public float exposure, elevation, sun, shadow, sky, equator, ground; public float[] azimuth; }
         [Serializable] class PLightRows { public PLight overcast, lowsun; }
         [Serializable] class PLightFile { public PLightRows light; }
         [Serializable] class PFinishFile { public PLightFile painted; }
         [Serializable] class PColMat { public string name; public float[] tint, bareTint, underTint, stainTint; }
         [Serializable] class PColLight { public string light; public float[] sun, sky, equator, ground, background, floor; }
-        [Serializable] class PColour { public PColMat[] mats; public PColLight[] lights; public float[] washTint; }
-        [Serializable] class Paint { public PMat[] mats; public PLight[] lights; public PColour colour; public float[] reflect; public float strokeScale, edgeAmp, rimL, rimW, rimFar, bareShift, washL, bareWash, brushFar, dragL, dragScale, dlRange, aoStrength, lapDark, lapCore, lapReach, lapGrimeL, lapGrimeReach, lapGrimeBreak, lapPage; public float[] strokeFade, brushFade, rimBreak, washFade; }
+        [Serializable] class PColour { public PColMat[] mats; public PColLight[] lights; public float[] washTint, dirtTint, grimeTint; }
+        [Serializable] class Paint { public PMat[] mats; public PLight[] lights; public PColour colour; public float[] reflect; public float strokeScale, edgeAmp, rimL, rimW, rimFar, bareShift, washL, bareWash, brushFar, dragL, dragScale, dlRange, aoStrength, lapDark, lapCore, lapReach, lapGrimeL, lapGrimeReach, lapGrimeBreak, lapPage, deposit, washDirt, grimeDirt; public float[] strokeFade, brushFade, rimBreak, washFade, coverScale; }
         [Serializable] class Lap { public float reach, step; }
         [Serializable] class Plot { public float x, w, d; }
         [Serializable] class Page { public int size; public float pxPerM; }
@@ -166,6 +166,10 @@ namespace Overstory.EditorTools
             skyR.shadowCastingMode = ShadowCastingMode.Off;
             skyR.receiveShadows = false;
             skyGo.SetActive(false);
+            // what every material mirrors is the stage's own sky (Reflection), never Unity's default skybox
+            var skyCube = new Cubemap(32, TextureFormat.RGBAHalf, true) { name = "stage-sky" };
+            RenderSettings.defaultReflectionMode = DefaultReflectionMode.Custom;
+            RenderSettings.customReflectionTexture = skyCube;
             var ownLights = SourceLights(root) ?? paint.lights;
 
             RenderSettings.ambientMode = AmbientMode.Trilight;
@@ -215,7 +219,7 @@ namespace Overstory.EditorTools
                             l.azimuth = new Vector2(Mathf.Sin(sunOff * Mathf.Deg2Rad), -Mathf.Cos(sunOff * Mathf.Deg2Rad));
                         Light(sun, l, col);
                         cam.backgroundColor = Lin(Back.linear.r, col?.background);
-                        Sky(skyGo, skyMat, cam, l, col);
+                        Sky(skyGo, skyMat, cam, l, col, skyCube);
                         gm.SetColor("_BaseColor", Lin(gy, col?.floor));
                         adjust.postExposure.Override(own != null ? own.exposure : light.exposure);
                         foreach (var b in built)
@@ -699,6 +703,8 @@ namespace Overstory.EditorTools
                     mat.SetVector("_UnderTint", Tint(c.underTint));
                     mat.SetVector("_StainTint", Tint(c.stainTint));
                     mat.SetVector("_WashTint", Tint(p.colour.washTint));
+                    mat.SetVector("_DirtTint", Tint(p.colour.dirtTint));
+                    mat.SetVector("_GrimeTint", Tint(p.colour.grimeTint));
                 }
                 mat.EnableKeyword("_OS_PAINT");
                 mat.SetTexture("_Hist", tex("hist-p"));
@@ -730,6 +736,15 @@ namespace Overstory.EditorTools
                 mat.SetFloat("_BareL", m.bareL);
                 mat.SetFloat("_UnderL", m.underL);
                 mat.SetFloat("_StainDL", m.stainDL);
+                // a page with cover lays its marks as deposits, each over its own dirt (OS_Finish); an older page keeps
+                // the L* taken off
+                mat.SetFloat("_Deposit", p.deposit);
+                mat.SetFloat("_RefL", m.refL > 0 ? m.refL : m.L);
+                mat.SetFloat("_StainDirt", m.stainDirt);
+                mat.SetFloat("_WashDirt", p.washDirt);
+                mat.SetFloat("_GrimeDirt", p.grimeDirt);
+                if (p.coverScale != null && p.coverScale.Length == 2)
+                    mat.SetVector("_CoverScale", new Vector4(p.coverScale[0], p.coverScale[1], 0, 0));
                 mat.SetFloat("_PaintSmooth", m.smooth);
                 mat.SetFloat("_StainSmooth", m.stainSmooth);
                 mat.SetFloat("_AOStrength", m.ao);
@@ -840,7 +855,7 @@ namespace Overstory.EditorTools
             // a material in paint.json's order, which the merged city mesh's faces name in their uv2.x (OneMesh)
             foreach (var way in new[] { "P", "Pc" })
             {
-                var tab = new Texture2D(7, p.mats.Length, TextureFormat.RGBAFloat, false, true) { filterMode = FilterMode.Point, wrapMode = TextureWrapMode.Clamp, name = $"mattab-{way}" };
+                var tab = new Texture2D(8, p.mats.Length, TextureFormat.RGBAFloat, false, true) { filterMode = FilterMode.Point, wrapMode = TextureWrapMode.Clamp, name = $"mattab-{way}" };
                 for (int k = 0; k < p.mats.Length; k++)
                 {
                     var m = p.mats[k];
@@ -853,6 +868,7 @@ namespace Overstory.EditorTools
                     tab.SetPixel(4, k, V(c?.bareTint, 0));
                     tab.SetPixel(5, k, V(c?.underTint, 0));
                     tab.SetPixel(6, k, V(c?.stainTint, 0));
+                    tab.SetPixel(7, k, new Color(m.refL > 0 ? m.refL : m.L, m.stainDirt, 0, 0));
                 }
                 tab.Apply(false, true);
                 AssetDatabase.CreateAsset(tab, $"{gen}/mattab-{way}.asset");
@@ -1024,7 +1040,7 @@ namespace Overstory.EditorTools
         /// hemisphere's, and Unity's trilight grades from the equator at the horizon to the sky overhead, so level ground
         /// takes equator + 2/3 (sky - equator). The panes mirror the same sky (OS_Glass, _OS_StageSky). A light drawing
         /// none keeps the camera's flat background, and the panes the trilight.
-        static void Sky(GameObject go, Material mat, Camera cam, Lighting l, PColLight c)
+        static void Sky(GameObject go, Material mat, Camera cam, Lighting l, PColLight c, Cubemap cube)
         {
             bool cie = l.drawn == "cie-overcast";
             float z = (l.equator + 2f / 3f * (l.sky - l.equator)) * 9f / 7f;
@@ -1034,6 +1050,34 @@ namespace Overstory.EditorTools
             go.transform.position = cam.transform.position;
             mat.SetVector("_SkyZenith", zenith);
             Shader.SetGlobalVector("_OS_StageSky", cie ? zenith : Vector4.zero);
+            Reflection(cube, cie ? (Vector3)zenith : Vector3.zero, l, c);
+        }
+
+        /// The stage's reflection source (RenderSettings' custom reflection), so the ground's sheen and a wet stain mirror
+        /// the stage's own light: above the horizon the sky the camera draws (the CIE overcast from its zenith, or for a
+        /// light drawing none its flat background), below it the trilight's ground. Faces in the cube map convention
+        /// (u right, v down on each face), rough mips by box filter, which this smooth a sky allows.
+        static void Reflection(Cubemap cube, Vector3 zenith, Lighting l, PColLight c)
+        {
+            Vector3 T(float[] t) => t != null && t.Length == 3 ? new Vector3(t[0], t[1], t[2]) : Vector3.one;
+            var back = Back.linear.r * T(c?.background);
+            var ground = l.ground * T(c?.ground);
+            int n = cube.width;
+            var px = new Color[n * n];
+            for (int f = 0; f < 6; f++)
+            {
+                for (int y = 0; y < n; y++)
+                    for (int x = 0; x < n; x++)
+                    {
+                        float u = 2f * (x + 0.5f) / n - 1f, v = 2f * (y + 0.5f) / n - 1f;
+                        var d = (f == 0 ? new Vector3(1, -v, -u) : f == 1 ? new Vector3(-1, -v, u) : f == 2 ? new Vector3(u, 1, v)
+                               : f == 3 ? new Vector3(u, -1, -v) : f == 4 ? new Vector3(u, -v, 1) : new Vector3(-u, -v, -1)).normalized;
+                        var s = d.y < 0f ? ground : zenith != Vector3.zero ? zenith * ((1f + 2f * d.y) / 3f) : back;
+                        px[y * n + x] = new Color(s.x, s.y, s.z, 1f);
+                    }
+                cube.SetPixels(px, (CubemapFace)f);
+            }
+            cube.Apply(true);
         }
 
         static void Capture(Camera cam, string file)
