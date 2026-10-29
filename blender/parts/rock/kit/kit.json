@@ -119,6 +119,18 @@
     "bake": { "size": 2048, "cageM": 0.04, "rayM": 0.1, "aoM": 0.6, "samples": 8, "aoSamples": 64, "curv": [0.42, 0.58] },
     "scan": { "file": "~/code/overstory-sources/rock-scans-polyhaven/coast_rocks_05/coast_rocks_05_1k.gltf", "source": "Poly Haven coast_rocks_05 (Rob Tuytel, CC0), its form only", "tilt": 0.0 }
   },
+  "whaleback": {
+    "describes": "The shore block as the ice left it (whaleback.py), the big form first: one smooth hull in the ice's frame (fixture rock.ice), over a superellipse plan a round cap out to `cap` of the way down, then straight slabs, `crestM` over the datum at `crestAt` (metres down-ice and seaward of the block's middle), reaching the datum `stossM` up-ice, `leeM` down-ice, `seaM` seaward and `landM` landward (the plan's exponent `plan`), under `waves` long flutes along the ice's way (their crests within `acrossDeg` of it) `lambdaM` apart and `share` of that high, its foot at `footM`, on a grid `cellM`. Then cut on the rock's own planes, never smoothed: `cracks`, the main joints across the back, each its family's plane through a point (`at`, metres down-ice and seaward of the crest), `crackM` wide and straight-sided; the lee stepping down-ice from `lee.startM` past the crest, each step's front `spacingM` further, across three strips between J1 joints that run on through every step (the main one, and one `landM` toward the land): a J2 face in the sea strip, the foliation's riser in the middle, a J3 face in the land strip, each strip stepping down on its own from up to `jogM` further or nearer, each step's tread `riseM` under the last on the sheeting dipping `treadDip` degrees down-ice, until under `underM` (at most `most`); at a riser's foot a leaf `leafM` thick plucked out `pluck` of the time, between minor J1 joints `pocketM` apart, `pocketDepthM` under the tread. Edges sharper than `sharpDeg` shade crisp.",
+    "seed": 6,
+    "hull": { "crestM": 1.5, "crestAt": [0.5, -0.6], "stossM": 3.6, "leeM": 4.0, "seaM": 3.2, "landM": 1.8, "plan": 2.3, "cap": 0.5, "footM": -0.8,
+              "cellM": 0.02, "waves": 4, "lambdaM": [1.5, 4.0], "acrossDeg": 20, "share": 0.017 },
+    "cracks": [ { "family": "J1", "at": [0.0, 0.6] }, { "family": "J2", "at": [-1.6, 0.0] } ],
+    "crackM": [0.018, 0.032],
+    "lee": { "startM": 0.3, "spacingM": [0.08, 0.3], "landM": [0.6, 1.1], "jogM": [-0.3, 0.3], "riseM": [0.28, 0.55], "treadDip": 6, "underM": -0.25, "most": 9,
+             "pluck": 0.5, "leafM": [0.12, 0.3], "pocketM": [0.35, 0.8], "pocketDepthM": [0.1, 0.3] },
+    "solver": "MANIFOLD",
+    "sharpDeg": 35
+  },
   "parts": {
     "slab-block": {
       "describes": "A joint-bounded block at the tip's north-west waterline, the water frame's foreground (kit.json tip.views water): a low back the ice planed, rising out of the sea toward the land (its top dips 16 degrees toward the sea and runs on under the ground there), rounded over by the swell at its seaward edges and falling away to the west, its most exposed side; its leaves of phyllite stand on edge along the foliation (68 degrees toward 250), flush on its top where the ice planed across them (their traces in the bake), on the ice's lee as steps each packet plucked to its own length along J3, the shorter the further west, so each step bares a leaf's upper face, never its overhang, and at the sea where the two westernmost leaves broke back on fresh J1 faces, the outer the further.",

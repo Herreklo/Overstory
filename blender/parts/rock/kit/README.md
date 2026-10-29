@@ -33,19 +33,29 @@ zonation are (`../README.md`).
   the sea, 3 m off the north-west shore); `tip.grey` holds the frame's values and the shore bands; `tip.py` moves them into 107's frame in `tip.json` with the site's own low
   sun (`sunOff`), and `LT1HolmTip.cs` adds them beside the street stop. Run:
   `TIP_GREY=1 render.sh <round> water,street P overcast,lowsun`.
-- **State (29 Oct, t05):** the shore block alone, two arms beside t04b's cell model (`shore.py`), both made by
-  `carve.py` (kit.json `carve`; `-- --arm A|B`, out `cache/rock/kit/gen/carve`) and shown by `tip.py -- --lone 1
-  --show A-high|A-game|B-game`, the grey path wearing the game mesh's baked normal and AO as URP/Lit maps
-  (`LT1HolmTip.cs`; the Finish shader samples a baked normal only under `_OS_STREET`, not at near). A: t04b's pieces
-  fused and carved (chips on the foliation and J1 frame, a wash round under the storm top, cracks re-cut from the
-  pieces' walls, foliation sheets). B: Poly Haven's CC0 `coast_rocks_05` as the form only, bedded flat. Each baked to
-  1223 tris (100 per m² of plan, the cell model's budget) with 2048 normal, AO and curvature maps; the bake keeps the
-  form. Neither passes; t04b stays the best so far. Next: A again from the start, cut and not smoothed (chips and
-  steps as planar breaks on the foliation and joints, no remesh smoothing or displacement on the walls), baked as
-  here; B only from a foliated bedrock scan (`rock_face_01` is downloaded), or dropped. Turf test C, the toe line and
-  the storm fixes queued.
+- **State (29 Oct, t06):** the shore block as the ice made it, `whaleback.py` (kit.json `whaleback`; out
+  `cache/rock/kit/gen/carve/W.blend`, `-- --bake 1` adds `W-game` and its 2048 maps; shown by `tip.py -- --lone 1
+  --show W-high|W-game`). One heightfield hull in the ice's frame (a round cap falling to straight slabs over a
+  superellipse plan, shallow flutes along the ice's way), cut by exact plane booleans: the plucked lee in three strips
+  between J1 joints (a J2 face toward the sea, the foliation's riser in the middle, a J3 face toward the land), each
+  strip stepping down on its own on the sheeting, leaves plucked at the riser feet, and one J1 and one J2 crack across
+  the back. Rung 1 (Blender grey, `reviews/lt1/rock/t06/grey.jpg`) passes; in Unity (`sheet.jpg`) the sea view is
+  the first svaberg profile, but the back reads as a smooth bun with pencil-line cracks at eye level, W game smears
+  the lee's steps from above, and the crest (1.5 m) is half the record's back (2.9 m). Next, one at a time: the crest
+  to the record, the game mesh cut from the same planes on a coarse hull, then the back's mid-scale. Turf test C,
+  the toe line and the storm fixes queued.
 
 ## Rounds
+
+- **t06** (`reviews/lt1/rock/t06/`; `grey.jpg` Blender grey, one sun, 12 m, sea and the lee over refs 48, 51, 16;
+  `sheet.jpg` columns W high, W game, t04b; rows eye, 12 m, sea, each overcast then low sun; refs 48, 51, 16, 15).
+  From the sea a long back from the stoss toe to the crest and a steep broken lee, nearer 48 and 51 than t04b's tiers;
+  from 12 m one mass with two straight joints. Bad: at eye level a smooth bun, the 18-32 mm cracks drawn lines; W game
+  (1224 tris) keeps the sea silhouette but flattens the lee's steps into a pale patch from above; half the record's
+  height and without its row, so small beside t04b. On the way: the lee nicked only the crest of a paraboloid (w1),
+  terraces (w2), a sliver between the arms (w3), fins from jogs per step (w4), spikes from cutters coplanar with a
+  crack's walls (w5, fixed by a 3 mm overlap), an oval outline (w6), a staircase while the strips stepped together
+  (w8, w9).
 
 - **t05** (`reviews/lt1/rock/t05/sheet.jpg`; columns A high, A game, B game, t04b; rows eye, 12 m, sea, each overcast
   then low sun; refs 15, 48, 51, 16 and 53-56 below). A melted: the wash round and the sheet displacement turned its
