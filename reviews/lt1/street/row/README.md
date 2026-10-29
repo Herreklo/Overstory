@@ -1,28 +1,30 @@
-# The row: 107, 108 and 109 together, the windows step (r03)
+# The row: 107, 108 and 109 together, the glass as a dark eye (r04)
 
-- Bad: the panes are darker but they are not ref 10's dark eyes. At the street stop in overcast, 108's glass goes from L26.4 (r02) to 16.1 (r03). That is inside ref 10's L6–18, but at its top. At 1:1, 108's white bars and its sheers keep each window light: the sheers are L46 and cover half of each pane.
-- Bad: in low sun, 109's roof is a black mass with no detail in every round (r01 L5.9, r03 5.1).
-- Bad: 108's long side wall at eye level in overcast is L70, against r01's 51. The gable front is L69.2, against 67.4, which is within 2 L. r01's overcast was a directional sun; under a CIE overcast every vertical face sees the same sky, so r02 and r03 are truer. But the turn of 108's corner barely reads, and that is a question for the light key, which is not changed here.
+- Bad: it does not pass. At the street stop in overcast, each of 108's main-floor glazed openings measured whole has:
+  - a median of L35–43 (r03 50–53) and a p90 of 73–74, against the wall's 73;
+  - at the sheet's quarter scale, a median of 40–47 (r03 49–53).
+- What keeps the window grey is its wood, not its glass:
+  - The glass is dark: the bare panes are L16–18.5, and the top lights go from 52 to 15.
+  - A cross window's sashes, post, transom and bars take 39% of the opening (house.json glassArea 0.61) and are as white as the wall. So no glass can bring the p90 to 65 or under, and at the sheet's scale the white blurs into the dark.
+  - Refs 10 and 04 are big single panes of the 1950s and 60s, about 15% frame. 108's windows are the 1901 pattern, remade in 1985.
+- Bad: at the sheet's scale, r04 reads as r03: grey windows with white crosses. The dark eyes show only at 1:1 (`r04-close-glass.jpg`).
+- Bad: the sheer band is L54, against the 35–45 asked. In scene light it is about 0.27 of the white wall, as a white voile lit through the glass is. The tonemapper's shoulder lifts it on screen, as it lifted the pane before the toe.
 - Holds:
-  - the whites stay at L82.8;
-  - 107's clean-to-grime ΔL goes from 35.9 to 39.7;
-  - 109's ox-red goes from L25.3, C 15.7, h 36 to L22.1, C 16.3, h 35: darker and a little richer, not muddy (r01 is L24.5);
-  - the roofs' spread of values widens;
-  - at most 3.2% of any frame falls below L5;
-  - the rock's grey frames barely move (`r03-rock-toe.jpg`, the toe applied offline with the same curve, within 0.2 L of the engine).
+  - everything else is unchanged within 0.1 L: 108's wall is L72.9, and 107 (boarded) and 109 (a warehouse) hang no sheers;
+  - low sun: 108's windows go from L60–63 to 36–46, against the wall's 86.
+- 107's corner is not a bug. Its front boards are lighter than its end wall in every round, measured between window and door and mid end wall: r01 66.6 against 41.6, r03 68.5 against 60.6. The critic's front 44 takes in the four boarded openings and the grime band. The turn shrank from 25 L to 8 L with r02's soft overcast; r01's own key had a 0.85 sun from the street side, shadow 0.35, which held the end wall at 42.
 
-Two changes, each beside r02:
-- r03a, the room. A single-glazed, putty-glazed pane has two faces: 108's cross windows of 1985 and 109's casements of 1850; no sealed pane is seen. The room is now lit by what its window sees, the street's view out, through the glass's share of the opening (108 0.61, 109 0.47). Its bounce follows the BRE internally reflected component (Digest 310) for a shallow front room with dark old furniture. The room alone goes from L19 to 8 at the street stop. The pane is now mostly its reflection: in the light it is 1/31 of the white wall (Fresnel 0.077 × a far shore at 0.25 of the horizon). On screen, though, it showed at 1/19, because the Neutral tonemapper has a shoulder and no toe.
-- r03, the toe. It is one shared grade curve after the tonemapper (`packs/stavanger-1989/light/grade.json`, `LT1Street.Grade`, a 32³ user lookup table): deepest near L20, and none at black or white. **It is not committed: the grade is shared, and it waits for the coordinator's yes.**
+The change is data only: in glass.json, the curtains' share goes from 0.5 to 0.34 and the valance from 0.16 to 0.08. The curtains are drawn back to the sides under a short valance: pale bands along the jambs and the head, with the dark room between. Only 108 hangs them.
 
 Sheets:
-- `r03-overcast.jpg` and `r03-lowsun.jpg`: rows eye, street stop, 12 m, high; columns p3 P | r01 P | r02 P | r03a P | r03 P | r03 Pc.
-- `r03-close-glass.jpg`: r02 | r03a | r03, then refs 10 and 04.
-- `r03-rock-toe.jpg`: t02 grey water, overcast and low sun, before and after the toe.
+- `r04-overcast.jpg` and `r04-lowsun.jpg`: rows eye, street stop, 12 m, high; columns p3 P | r01 P | r02 P | r03 P | r04 P | r04 Pc.
+- `r04-close-glass.jpg`: r03 | r04 at the street stop at 1:1, then refs 10 and 04.
 
-    STREET_ROW="107:cache/street/gen/107h:cache/street/bake/107z4/out-r02 108:cache/street/gen/108u:cache/street/bake/108u/out-r02 109:cache/street/gen/109u:cache/street/bake/109u/out-r02" python3 tools/unity_lock.py run -- bash blender/parts/street/run/render.sh row r03 eye,street,raised,high P,Pc overcast,lowsun
+These renders carry r03's toe (`packs/stavanger-1989/light/grade.json`). It is still uncommitted and waits for Øystein's yes.
 
-Cost:
-- Triangles are unchanged (near/street/city): 107 24,590/5,459/705; 108 24,832/7,792/778; 109 53,230/9,452/748.
-- A row of 50 of 109, with the room and the toe: street 4.5, raised 4.7 and along 5.3 ms (r02 4.3, 4.6 and 4.8); near3 5.2 ms (5.4). Along's batches spread from 4.6 to 5.3 ms. See `cache/street/renders/t06/timing.md`.
-- Pages: 21.3, 85.3 and 85.3 MB, one 4 MB ground sky map, and the toe's 0.26 MB lookup table.
+    STREET_ROW="107:cache/street/gen/107h:cache/street/bake/107z4/out-r02 108:cache/street/gen/108u:cache/street/bake/108u/out-r02 109:cache/street/gen/109u:cache/street/bake/109u/out-r02" python3 tools/unity_lock.py run -- bash blender/parts/street/run/render.sh row r04 eye,street,raised,high P,Pc overcast,lowsun
+
+Cost is unchanged from r03 (data only):
+- Triangles (near/street/city): 107 24,590/5,459/705; 108 24,832/7,792/778; 109 53,230/9,452/748.
+- A row of 50 of 109: street 4.5, raised 4.7, along 5.3 ms; near3 5.2 ms (`cache/street/renders/t06/timing.md`).
+- Pages: 21.3, 85.3 and 85.3 MB, the 4 MB ground sky map, and the toe's 0.26 MB lookup table.
