@@ -83,6 +83,9 @@ def with_facets(f, n, p, chart, kind, plate, facets=True):
     return out
 
 
+LAP = 5e-4  # m: how far an inner plate runs into its neighbour
+
+
 def plates_of(part, fix, K):
     """Each plate's planes, in the part's frame: its origin on the ground under it, its centre at `centre`, so the
     part stands as a house does, its base face sunk where it is below 0. A part without plates is one."""
@@ -103,14 +106,19 @@ def plates_of(part, fix, K):
         for f in part["faces"]:
             n = face_normal(f, fam)
             chart = f"{f['name']}.{k}"
+            # inner plates overlap their neighbours by LAP: the exact union drops plates that only touch on a plane
             if f is lo_f:
                 outer = k == 0
-                planes += with_facets(f, -nf, c + nf * edges[k], chart, f["wear"] if outer else "parting", k, outer)
+                planes += with_facets(f, -nf, c + nf * (edges[k] - (0 if outer else LAP)), chart, f["wear"] if outer else "parting", k, outer)
             elif f is hi_f:
                 outer = k == len(t) - 1
-                planes += with_facets(f, nf, c + nf * edges[k + 1], chart, f["wear"] if outer else "parting", k, outer)
+                planes += with_facets(f, nf, c + nf * (edges[k + 1] + (0 if outer else LAP)), chart, f["wear"] if outer else "parting", k, outer)
             else:
                 planes += with_facets(f, n, c + n * (f["at"] + sh.get(f["name"], 0.0)), chart, f["wear"], k)
+        # a plate's own fresh breaks (`breaks`, one list a plate): faces of its own, cut through the block's
+        for f in (pl.get("breaks", [])[k] if k < len(pl.get("breaks", [])) else []):
+            n = face_normal(f, fam)
+            planes += with_facets(f, n, c + n * f["at"], f"{f['name']}.{k}", f["wear"], k)
         out.append(planes)
     return out
 
@@ -147,7 +155,7 @@ def hull(planes):
 
 
 def union(bodies):
-    """The plates joined into one closed body (an exact boolean union), its coplanar faces merged and any face that
+    """The plates joined into one closed body (an exact boolean union; they overlap by LAP, see plates_of), its coplanar faces merged and any face that
     is not convex cut into triangles."""
     objs = []
     for k, bm in enumerate(bodies):
@@ -187,7 +195,7 @@ def convex_face(f):
                for i in range(len(vs)))
 
 
-SLIVER = 1e-7  # m²: a face of no area
+SLIVER = 1e-4  # m²: a face of no area (1 cm², below any level's sight; the join of overlapping leaves leaves such)
 
 
 def tag_faces(bm, planes):
@@ -240,11 +248,13 @@ def edge_rounds(bm, tags, planes, outline, K, pid):
 
 def reach(e, f):
     """How far the face runs back from the edge before its next corner: a round may take only part of it, so
-    rounds on a stepped body never cross one another."""
+    rounds on a stepped body never cross one another. A corner on the edge's own line (where the join of the
+    plates split it) is no corner across the face."""
     a, b = e.verts[0].co, e.verts[1].co
     d = (b - a).normalized()
-    others = [v.co for v in f.verts if v not in e.verts]
-    return min(((p - a) - d * (p - a).dot(d)).length for p in others) if others else 0.0
+    off = [((v.co - a) - d * (v.co - a).dot(d)).length for v in f.verts if v not in e.verts]
+    off = [x for x in off if x > 2 * LAP]
+    return min(off) if off else 0.0
 
 
 def level_mesh(bm, rounds, segments, profile):

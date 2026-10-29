@@ -127,39 +127,88 @@ def grid_mesh(name, x0, x1, y0, y1, step, mats):
     return ob
 
 
-def rock_mesh(name, mat):
+def split_poly(V, h):
+    """A convex polygon cut by the level z = h: (the part below, the part above), either None if empty."""
+    below, above = [], []
+    for a, b in zip(V, np.roll(V, -1, axis=0)):
+        (below if a[2] < h else above).append(a)
+        if (a[2] - h) * (b[2] - h) < 0:
+            p = a + (b - a) * (h - a[2]) / (b[2] - a[2])
+            below.append(p)
+            above.append(p)
+    return (np.array(below) if len(below) > 2 else None), (np.array(above) if len(above) > 2 else None)
+
+
+def shore_levels(bands, c):
+    """The levels a block's faces are split at, by its side's exposure (kit.json tip.grey bands): the wet and black
+    band's top, the storm top (MHWS + surge + run-up times the exposure), the soil's lowest line over it."""
+    import outcrop
+    land = outcrop.Landform(FIX["outcrop"]["landform"])
+    e = outcrop.exposure(FIX["sea"], land, c)
+    wet = bands["wetTopM"][0] + bands["wetTopM"][1] * e
+    storm = FIX["sea"]["springRange"] / 2 + bands["surgeM"] + bands["runupM"] * e
+    return e, [wet, storm, storm + bands["soilM"]]
+
+
+def rock_mesh(name, mat, bands=None):
     """The outcrop's blocks as one mesh: joint, cut and worn faces flat; the ice's worn tops carry their back's own
-    normal (outcrop.py Back), so the abraded surface shades smooth across its facets and its seams."""
+    normal (outcrop.py Back), so the abraded surface shades smooth across its facets and its seams. With `bands`
+    (kit.json tip.grey), each block's faces are split at its shore levels into the wet band, the storm-wash and the
+    rock, and the gentle tread of a sheltered hollow (a block plucked or stripped soilDropM deep) above the soil line
+    is turf (materials `mat`: rock, wash, wet, turf)."""
     sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
     import hull as H
     import outcrop
     rec = FIX["outcrop"]
     land = outcrop.Landform(rec["landform"])
     blocks = outcrop.build(rec, "holm-tip", FIX["sea"])
-    V, T, NL = [], [], []
+    mats = mat if isinstance(mat, dict) else {"rock": mat}
+    names = list(mats)
+    V, T, NL, M = [], [], [], []
     for faces, info in blocks:
         grad = info.get("grad", land.grad)
+        tops = [f for f in faces if f.label in (outcrop.ICE, outcrop.PLATE)]
+        levels, soil = [], False
+        if bands:
+            c = np.concatenate([f.V for f in faces]).mean(0)
+            e, levels = shore_levels(bands, c)
+            # the tread's mean facing, each face by its area
+            n = sum((np.linalg.norm(np.cross(f.V[1:-1] - f.V[0], f.V[2:] - f.V[0]).sum(0)) / 2 * f.n for f in tops),
+                    np.zeros(3))
+            slope = math.degrees(math.acos(min(1.0, n[2] / max(np.linalg.norm(n), 1e-9)))) if tops else 90.0
+            soil = slope <= bands["soilSlope"] and e <= bands["soilExposure"] and info.get("drop", 0.0) >= bands["soilDropM"]
         for f in faces:
-            b = len(V)
-            V.extend(f.V.tolist())
-            for i in range(1, len(f.V) - 1):
-                T.append((b, b + i, b + i + 1))
-            if f.label in (outcrop.ICE, outcrop.PLATE):
-                for x, y, _ in f.V:
-                    g = grad(x, y)
-                    n = np.array([-g[0], -g[1], 1.0])
-                    NL.append(n / np.linalg.norm(n))
-            else:
-                NL.extend([f.n] * len(f.V))
+            pieces, rest = [], f.V
+            for k, h in enumerate(levels):
+                lo, rest = split_poly(rest, h) if rest is not None else (None, None)
+                pieces.append((lo, ("wet", "wash", "rock")[k]))
+            pieces.append((rest, "turf" if soil and f in tops else "rock"))
+            for P, zone in pieces:
+                if P is None:
+                    continue
+                b = len(V)
+                V.extend(P.tolist())
+                for i in range(1, len(P) - 1):
+                    T.append((b, b + i, b + i + 1))
+                    M.append(names.index(zone if zone in mats else "rock"))
+                if f.label in (outcrop.ICE, outcrop.PLATE):
+                    for x, y, _ in P:
+                        g = grad(x, y)
+                        n = np.array([-g[0], -g[1], 1.0])
+                        NL.append(n / np.linalg.norm(n))
+                else:
+                    NL.extend([f.n] * len(P))
     me = bpy.data.meshes.new(name)
     me.from_pydata(V, [], T)
-    me.materials.append(mat)
+    for n in names:
+        me.materials.append(mats[n])
+    me.polygons.foreach_set("material_index", np.array(M, np.int32))
     me.polygons.foreach_set("use_smooth", np.ones(len(T), bool))
     loop_n = [NL[me.loops[l].vertex_index] for p in me.polygons for l in p.loop_indices]
     me.normals_split_custom_set([tuple(n) for n in loop_n])
     ob = bpy.data.objects.new(name, me)
     bpy.context.scene.collection.objects.link(ob)
-    print(f"[blockin] rock: {len(blocks)} blocks, {len(T)} triangles")
+    print(f"[blockin] rock: {len(blocks)} blocks, {len(T)} triangles; " + ", ".join(f"{n} {M.count(i)}" for i, n in enumerate(names)))
     return ob
 
 
@@ -281,14 +330,22 @@ def dome(name, at, r, top, mat, n=48):
     return ob
 
 
-def build():
+def build(grey=None):
+    """The grey masses; `grey` (kit.json tip.grey) sets the frame's values by name and the rock's shore bands."""
     for ob in list(bpy.data.objects):
         bpy.data.objects.remove(ob)
+    G = (grey or {}).get("values", {})
+
+    def material(name, L, rough=0.85):
+        return globals()["material"](name, *G.get(name, [L, rough]))
+
     rock = material("rock", 52)
     holm = material("holm-ground", 40)
     made = material("made-ground", 46)
     grid_mesh("land", -80, 100, -90, FIX["holm"]["from"], 0.5, [holm, holm])
-    rock_mesh("rock", rock)
+    if grey:
+        rock = {"rock": rock, "wash": material("wash", 46), "wet": material("wet", 32, 0.45), "turf": material("turf", 36, 0.95)}
+    rock_mesh("rock", rock, (grey or {}).get("bands"))
     act = {a["id"]: a for a in FIX["acts"]}
     slab("landing", act["act-landing-1882"]["apron"], act["act-landing-1882"]["top"], -4.0, made)
     p = act["act-path-1882"]

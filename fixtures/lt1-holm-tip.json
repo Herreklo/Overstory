@@ -102,7 +102,7 @@
       },
       "knobs": [
         {
-          "_": "a skerry off the north-east corner, parted by a sound",
+          "_": "a skerry off the north-east corner, parted by a sound: a hard knob, its back flat where the swell washed it and its sides falling steep to the sea along its joints (power 3)",
           "centre": [
             40,
             30
@@ -114,7 +114,7 @@
             7,
             8
           ],
-          "power": 1.6
+          "power": 3.0
         }
       ],
       "facetM": 1.6,
@@ -218,9 +218,11 @@
     ],
     "_families": "The open master joints that bound the blocks at this scale: the foliation and the two cross joints at wide angles to it (J2 runs within 25 degrees of the foliation's strike and is left to the faces as seams). 'open': the share of joints the frost and the sea opened, and their width range in metres; the rest are tight seams of tightM.",
     "coast": {
-      "_": "blocks under belowM at the waterline taken by the sea, share times the side's exposure",
+      "_": "blocks under belowM at the waterline taken by the sea, share times the side's exposure; the rest quarried back along their joint most nearly along the shore to a lip lipM [min, max] over high water (outcrop.py lip), and those whose whole top lies under it taken too, where the side's exposure is at least keepBelow",
       "belowM": 1.2,
-      "share": 0.6
+      "share": 0.6,
+      "lipM": [0.2, 0.6],
+      "keepBelow": 0.3
     },
     "chamfers": {
       "_": "[min width, max width, lean] of the worn top edge by joint kind: a tight seam's narrow bevel, an open joint's round-over into its gully (on the stoss, where the ice wore it flush, stossShare of that); never more than capShare of the block's least width; a blasted face keeps its edge",
@@ -259,10 +261,12 @@
       "shutAbove": 0.85
     },
     "backs": {
-      "_": "Each block the showing joints bound was worn by the ice as a whaleback of its own (outcrop.py Back): its crest crestShift of its half-length toward its down-ice end, its back falling under the envelope to its plan's edge by a share of its half-width (rollShare, within rollM metres) with the profile's power, falling only leeShare of that down-ice of its crest, so it keeps a firm lip over its plucked lee (a plucked tread itself rounded only leeRoll of that), so a few big backs, more middle and many small ones each read as one rounded form.",
+      "_": "Each block the showing joints bound was worn by the ice as a whaleback of its own (outcrop.py Back): its crest crestShift of its half-length toward its down-ice end, its back falling under the envelope to its plan's edge by a share of its half-width (rollShare, within rollM metres) with the profile's power, falling only leeShare of that down-ice of its crest, so it keeps a firm lip over its plucked lee (a plucked tread itself rounded only leeRoll of that), and only crossShare of it across the ice toward its joints, whose faces stand steep; where the frost and the sea opened its joints (opening) its tread keeps only shoreTilt of the ground's slope about its middle, so the shore steps down at its joints with a lip at each; so a few big backs, more middle and many small ones each read as one rounded form.",
       "crestShift": 0.3,
       "leeShare": 0.3,
       "leeRoll": 0.2,
+      "crossShare": 0.3,
+      "shoreTilt": 0.65,
       "rollShare": [
         0.18,
         0.32

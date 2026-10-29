@@ -29,59 +29,71 @@
   },
   "colour": { "rock": { "paint": [4, 165], "under": [3, 160], "stain": [4, 170] } },
   "beside": {
-    "describes": "A part judged alone beside the house (LT1HolmTip): the street's house as the street draws it (`gen` and `paint`: the build and page its Street scene holds), each part at `at` in the house's frame (x along its front, y back from it, z up), unturned; the street's street stop as it is, and its eye view the street's, standing off the first part as the street's stands off the house's middle, its height, tilt and lens unchanged (`eye`: `from` the first part, looking along `look`).",
+    "describes": "A part judged alone beside the house (LT1HolmTip): the street's house as the street draws it (`gen` and `paint`: the build and page its Street scene holds), each part at `at` in the house's frame (x along its front, y back from it, z up), unturned; the street's street stop as it is, and its eye view the street's, standing off the first part as the street's stands off the house's middle, its height and lens unchanged (`eye`: `from` the first part, looking along `look`); the slab block is seen from its sea side as the water frame sees the tip's foreground (bearing 135, tilted down to keep its foot in view), so it stands behind 107's back, 107 beyond it for scale.",
     "house": "107", "gen": "cache/street/gen/107h", "paint": "cache/street/bake/107z4/out-hull",
-    "parts": [ { "part": "slab-block", "at": [-1.4, -1.2, 0] } ],
-    "eye": { "from": [-2.6, -4.4, 1.6], "look": [2.2, 4.7, 0.5], "fov": 52 }
+    "parts": [ { "part": "slab-block", "at": [-6.4, 9.1, 0] } ],
+    "eye": { "from": [-3.4, 3.4, 1.6], "look": [3.67, -3.67, 0.2], "fov": 52 }
   },
   "tip": {
     "describes": "The tip's grey-box for the target frame (tip.py, LT1HolmTip -tipGrey): blockin.py's masses from fixtures/lt1-holm-tip.json, with 107 standing where `stand` stands, drawn in grey from the street's street stop.",
     "stand": "customs-house",
     "views": {
       "describes": "The target frame's own views of the tip, in site metres (x east, y north, z over mean sea level; tip.py moves them into 107's frame for LT1HolmTip): `fov` vertical, `level` the house's level drawn. The low sun is the site's own (blender/parts/rock/views.json lowsun: October, 16:00, from the south-west), not the street's.",
-      "water": { "pos": [-29, 31, 1.2], "target": [4, -2, 7.0], "fov": 49, "level": "street",
-                 "says": "from the water north-west of the tip, close and at a boat's eye: the ice-worn backs rising out of the storm-wash to the one big back, 107 small on it beside the harbour office (on the west shoulder, nearer from every western bearing); the Bluff stands too far round to the left to share the frame without making the tip small, and the plucked lee is the street stop's" }
+      "water": { "pos": [-23.1, 29.6, 0.8], "target": [10.1, 7.2, 1.5], "fov": 42, "level": "street",
+                    "says": "low on the water off the north-west shore (t03, chosen by squint over a view from the north and one from the north point): the shore's blocks step down along it to their lips, the big back rises on the diagonal to 107 on the skyline at the right third, the far shore beyond on the left; the office stands just past the frame's right, the low sun from the right" }
     },
     "plan": {
-      "describes": "The target's form plan over the grey-box (tip.py --plan): each face of the tip's blocks (outcrop.py, as blockin.py builds them) takes the zone its kind, height and facing put it in, coloured, with lines at their true spacing: the foliation's trace across the ledged faces that cut it (the lee's and the joints'), and the sheeting's steps on the plucked lee; the ice's backs are left plain, smooth. The storm-wash zone reaches `stormTopM` above the sea at full exposure (target_site.py's WEAR), times the side's exposure; a riser faces down-ice within `leeFacing` degrees of the ice's way.",
-      "stormTopM": 3.6, "leeFacing": 60, "foliationLineM": [0.35, 0.03], "sheetLineM": [0.6, 0.05], "blend": 0.7,
+      "describes": "The target's form plan over the grey-box (tip.py --plan): each face of the tip's blocks (outcrop.py, as blockin.py builds them) takes the zone its kind, height and facing put it in, coloured, with lines at their true spacing: the foliation's trace across the ledged faces that cut it (the lee's and the joints'), and the sheeting's steps on the plucked lee; the ice's backs are left plain, smooth. The storm-wash zone reaches the storm top of `tip.grey` bands at the side's exposure; a riser faces down-ice within `leeFacing` degrees of the ice's way.",
+      "leeFacing": 60, "foliationLineM": [0.35, 0.03], "sheetLineM": [0.6, 0.05], "blend": 0.7,
       "zones": {
-        "storm": { "rgb": [0.25, 0.55, 1.0], "says": "storm-wash: rounded by the swell, rounds 0.5-1 m, potholes ~1 m; to 3.6 m up on the north" },
+        "storm": { "rgb": [0.25, 0.55, 1.0], "says": "storm-wash: rounded by the swell, rounds 0.5-1 m; to 2.7 m over mean sea level on the north, 1.0 m on the south (tip.grey bands)" },
         "ice": { "rgb": [0.35, 0.85, 0.4], "says": "ice-planed backs: smooth whalebacks; worn edges 0.04-0.1 m, open joints rounded 0.5-1.3 m" },
         "lee": { "rgb": [1.0, 0.42, 0.2], "says": "plucked lee (ice to 205): crisp steps, risers 0.45-0.9 m (lines 0.6 m), treads 1.6-3.6 m" },
         "foliation": { "rgb": [1.0, 0.85, 0.2], "says": "foliation faces (dip 68 toward 250): stacked ledges 0.1-0.6 m thick; laminae in the bake" },
         "joint": { "rgb": [0.75, 0.45, 1.0], "says": "joint faces J1-J3: crisp, 1.6-3.6 m apart; the foliation's trace across them" },
         "made": { "rgb": [0.72, 0.72, 0.72], "says": "made: the 1862 plinth, the 1882 landing and path cut" }
       }
+    },
+    "grey": {
+      "describes": "The grey frame's values and the rock's shore bands (blockin.py build, rock_mesh). Each block's faces are split at level lines by its side's exposure e (outcrop.py exposure): wet rock and the black lichen band up to `wetTopM` [a, b] = a + b e over mean sea level (the sea note's black band: north +1.2, east +0.55, south +0.45 m); the storm-wash up to the storm top, MHWS (the fixture's spring range halved) + `surgeM` + `runupM` e (docs/research/sea-at-the-shore.md, 3: the annual storm's still water and run-up); turf and heath from `soilM` over the storm top, in a hollow: a block plucked or stripped at least `soilDropM` under the ground's envelope, whose tread lies within `soilSlope` degrees of level and whose side's exposure is at most `soilExposure` (the sheltered, landward side); the ice-bare crest, the lee's upper steps and the sea's side left bare. `values`: each material's [L, roughness]; the rock's tops the lightest, the turf a darker mid, the wet band dark and glossy (wet phyllite darkens only 20-30 %: its gloss carries it), the sea darker than the sky near the shore, the office's walls near 107's.",
+      "bands": { "wetTopM": [0.3, 0.9], "surgeM": 0.57, "runupM": 1.9, "soilM": 0.5, "soilSlope": 10, "soilExposure": 0.5, "soilDropM": 0.75,
+                 "fetch": "The Roads only (runupM 1.9 m; 3.3 m would need the fjord's 10 km): the Roads open north between Battery Head, 0.3-0.75 km north-west of the tip, and Bridge Island to the north-east, with Gull Island 0.3-0.5 km north-north-west and the Teeth and the Pip in them (blender/blockouts/centre_land.py ISLANDS and the areas' map; docs/town-plan.md, The land and 2); the fixture's sea gives about 3 km of fetch to the north, and the west face looks across the west cove to Ferry Point 0.3-0.4 km off. Decided 29 October from the map, closing the sea note's open fact." },
+      "values": { "rock": [58, 0.85], "wash": [47, 0.7], "wet": [33, 0.45], "turf": [37, 0.95], "water": [22, 0.7],
+                  "timber-red": [62, 0.85], "roof": [30, 0.85] }
     }
   },
   "parts": {
     "slab-block": {
-      "describes": "A joint-bounded slab block of about 2 m on the tip's top, near the customs house: two foliation faces leaning 68 degrees, two J1 joints across them, the ice-worn sheeting on top, sunk in the turf at its foot; a plucked corner on the ice's lee, where the ice took a wedge out along J3.",
-      "centre": [0, 0, 0.5],
+      "describes": "A joint-bounded block at the tip's north-west waterline, the water frame's foreground (kit.json tip.views water): a low back the ice planed, rising out of the sea toward the land (its top dips 16 degrees toward the sea and runs on under the ground there), rounded over by the swell at its seaward edges and falling away to the west, its most exposed side; its leaves of phyllite stand on edge along the foliation (68 degrees toward 250), flush on its top where the ice planed across them (their traces in the bake), on the ice's lee as steps each packet plucked to its own length along J3, the shorter the further west, so each step bares a leaf's upper face, never its overhang, and at the sea where the two westernmost leaves broke back on fresh J1 faces, the outer the further.",
+      "centre": [0, 0, 0.3],
       "faces": [
-        { "name": "top", "plane": [10, 20], "at": 0.62, "wear": "ice",
-          "facets": [ { "dir": 0, "fold": 0.35, "tilt": 9 }, { "dir": 180, "fold": 0.55, "tilt": 6 }, { "dir": 90, "fold": 0.3, "tilt": 7 } ] },
-        { "name": "fol-a", "plane": "foliation", "at": 0.66, "wear": "seam",
-          "facets": [ { "dir": 0, "fold": 0.2, "tilt": 7 }, { "dir": 90, "fold": 0.25, "tilt": 10 } ] },
-        { "name": "fol-b", "plane": "foliation", "flip": true, "at": 0.62, "wear": "seam",
-          "facets": [ { "dir": 180, "fold": 0.3, "tilt": 6 } ] },
-        { "name": "j1-a", "plane": "J1", "at": 1.12, "wear": "seam",
-          "facets": [ { "dir": 90, "fold": 0.15, "tilt": 12 } ] },
-        { "name": "j1-b", "plane": "J1", "flip": true, "at": 1.05, "wear": "seam",
-          "facets": [ { "dir": 0, "fold": -0.1, "tilt": 5 } ] },
-        { "name": "pluck", "plane": "J3", "flip": true, "at": 0.98, "wear": "plucked", "facets": [] },
-        { "name": "base", "plane": [0, 0], "flip": true, "at": 0.68, "wear": "ground", "facets": [] }
+        { "name": "top", "plane": [16, 320], "at": 0.35, "wear": "ice",
+          "facets": [ { "dir": 90, "fold": 0.8, "tilt": 10 }, { "dir": 270, "fold": 0.9, "tilt": 12 }, { "dir": 0, "fold": 0.35, "tilt": 14 }, { "dir": 0, "fold": 0.85, "tilt": 32 }, { "dir": 180, "fold": 0.8, "tilt": 12 } ] },
+        { "name": "fol-a", "plane": "foliation", "at": 1.1, "wear": "storm",
+          "facets": [ { "dir": 90, "fold": 0.2, "tilt": 10 } ] },
+        { "name": "fol-b", "plane": "foliation", "flip": true, "at": 1.1, "wear": "seam",
+          "facets": [ { "dir": 270, "fold": 0.3, "tilt": 6 } ] },
+        { "name": "sea", "plane": "J1", "flip": true, "at": 1.7, "wear": "storm", "facets": [] },
+        { "name": "north", "plane": "J3", "at": 1.5, "wear": "storm", "facets": [ { "dir": 90, "fold": 0.1, "tilt": 15 } ] },
+        { "name": "back", "plane": "J1", "at": 1.5, "wear": "seam", "facets": [ { "dir": 180, "fold": 0.4, "tilt": 5 } ] },
+        { "name": "pluck", "plane": "J3", "flip": true, "at": 1.4, "wear": "plucked", "facets": [] },
+        { "name": "base", "plane": [0, 0], "flip": true, "at": 0.3, "wear": "ground", "facets": [] }
       ],
       "plates": {
-        "describes": "The block parted along its foliation into plates (phyllite's thin beds), from fol-b's side to fol-a's, `t` metres thick (they fill the block); each plate's faces stand `shift` metres proud (+) or back (-) of the block's, so its faces step plate by plate where the rock weathers and plucks along its beds: most on the ice's lee (the plucked face, toward the ice's way) and the joints, least on the top, which the ice planed across the beds. A plate's own foliation faces wear as `parting`.",
+        "describes": "The block parted along its foliation into leaves (phyllite's thin beds, 0.1-0.6 m), from fol-b's side to fol-a's, `t` metres thick (they fill the block); each leaf's faces stand `shift` metres proud (+) or back (-) of the block's: the swell's ramp (`sea`, `north`) and the ice's top are one envelope across all of them, the leaves only ribbing it by a few centimetres where their beds wore unevenly; on the lee each packet plucked to its own length along J3. A plate's own fresh breaks (`breaks`, a list a plate) cut it on planes of its own, crisp: the swell and the frost broke the westernmost leaves back along J1 and the outer one's top along a plane leaning west, and the easternmost along J3, never as an offset copy of the envelope. A leaf's own foliation faces wear as `parting`.",
         "along": ["fol-b", "fol-a"],
-        "t": [0.3, 0.42, 0.18, 0.38],
+        "t": [0.6, 0.35, 0.55, 0.25, 0.45],
         "shift": [
-          { "top": -0.02, "j1-a": -0.05, "pluck": 0.03 },
-          { "j1-a": 0.03, "pluck": -0.04 },
-          { "top": -0.04, "j1-a": -0.1, "j1-b": -0.02, "pluck": -0.12 },
-          { "top": 0.01, "j1-a": -0.02, "j1-b": 0.01, "pluck": 0.02 }
+          { "back": -0.05 },
+          { "pluck": -0.06 },
+          { "pluck": -0.14, "back": 0.04 },
+          { "pluck": -0.32 },
+          { "pluck": -0.5, "back": -0.12 }
+        ],
+        "breaks": [
+          [], [], [],
+          [ { "name": "break-j1", "plane": "J1", "flip": true, "at": 1.25, "wear": "plucked", "facets": [ { "dir": 90, "fold": 0.0, "tilt": 10 } ] } ],
+          [ { "name": "break-j1", "plane": "J1", "flip": true, "at": 0.85, "wear": "plucked", "facets": [ { "dir": 0, "fold": 0.1, "tilt": 7 } ] } ]
         ]
       }
     }

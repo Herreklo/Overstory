@@ -39,7 +39,7 @@ def zone_mesh(K, mats):
             nh = f.n[:2] / max(float(np.hypot(*f.n[:2])), 1e-6)
             if kind == "cut":
                 z = "made"
-            elif c[2] < Q["stormTopM"] * outcrop.exposure(sea, land, c):
+            elif c[2] < BI.shore_levels(K["tip"]["grey"]["bands"], c)[1][1]:
                 z = "storm"
             elif kind in ("ice",) or kind.endswith("-worn"):
                 z = "ice"
@@ -131,7 +131,7 @@ def main():
     K = json.load(open(os.path.join(HERE, "kit.json")))
     house = json.load(open(os.path.join(ROOT, K["beside"]["gen"], "house.json")))
     w, d = house["size"]
-    BI.build()
+    BI.build(K["tip"]["grey"])
     stand = next(b for b in BI.FIX["buildings"] if b["id"] == K["tip"]["stand"])
     plan = BI.arg("--plan")
     if plan:

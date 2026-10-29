@@ -29,23 +29,34 @@ zonation are (`../README.md`).
 - **Grey-box and plan:** `tip.py` builds `blockin.py`'s masses with 107 where the customs house stands, in 107's
   frame (`-- --out cache/rock/kit/gen/tip`); `TIP_GREY=1 render.sh <round> street P` draws them in Unity from the street
   stop; `tip.py -- --plan <grey still> --to <png>` lays the form plan (kit.json `tip.plan`) over that still.
-- **Grey-box views:** kit.json `tip.views` holds the target frame's own views in site metres (`water`: low, from
-  the water north-west, at a boat's eye); `tip.py` moves them into 107's frame in `tip.json` with the site's own low
+- **Grey-box views:** kit.json `tip.views` holds the target frame's own views in site metres (`water`: 0.8 m over
+  the sea, 3 m off the north-west shore); `tip.grey` holds the frame's values and the shore bands; `tip.py` moves them into 107's frame in `tip.json` with the site's own low
   sun (`sunOff`), and `LT1HolmTip.cs` adds them beside the street stop. Run:
   `TIP_GREY=1 render.sh <round> water,street P overcast,lowsun`.
-- **State (29 Oct, t02):** steps 1-4 of the coordinator's list are done in grey (frame, hierarchy, plinth, squint;
-  see t02 below). The masses are now joint-bounded blocks with their own ice-worn backs (`outcrop.py` `Back`), joints
-  open toward the shore and shut on the crest (`opening`), finite traces meeting in T's. Next, unless the coordinator
-  says otherwise: the slab block for the water frame's foreground, the near storm-wash blocks, which read today as
-  cushions, against the plan. Treads vary in width (1.6-3.6 m) and risers
-  wander in plan, never parallel rulings: the plan's 0.6 m lines read as decking, k02's board grain again.
-  Build it with a handful of leaves and ledges 0.1-0.6 m with wavy outlines, plucked back in steps on the lee, an
-  ice-planed top and rounds by exposure. Put the cm laminae in the bake at the near level only. Give the rock its
-  own marks (short, broken, along the foliation's trace) and banded colour, grey-green to graphite with rust,
-  through its own material and data; ask the coordinator with the diff before touching the Finish shader. Page 512.
-  The eye camera frames it from the front with its foot in view, and 107 stays at the street's own camera.
+- **State (29 Oct, t03):** the whole Holm tip is one grey frame of simple masses (the coordinator's scope): the sea,
+  the shore bands by exposure (wet and black band, storm-wash to the storm top, `kit.json` `tip.grey`; the Roads'
+  fetch only, decided from the map and recorded there), turf caps in the lee's sheltered hollows, 107 and its plinth,
+  the office past the frame. The shore blocks now end in a lip at the sea (`outcrop.py` `lip`), their joint sides
+  stand steep (`crossShare`) and their treads step down where the joints opened (`shoreTilt`). The camera is chosen
+  (t03 below). Next, unless the coordinator says otherwise: the slab block for the frame's foreground, which must
+  fill the lower right third the grey masses leave as open water. Its s10 design is in `kit.json` `parts.slab-block`
+  and `part.py` (leaves joined with a LAP overlap); it stood too close to 107 in s01, and its page is 5.3 MB against
+  512 because its charts are each leaf face's bounding rectangle. Treads 1.6-3.6 m, risers wandering in plan, never
+  parallel rulings; leaves and ledges 0.1-0.6 m, plucked back in steps on the lee, an ice-planed top, rounds by
+  exposure; the cm laminae in the bake at the near level only; its own marks and banded colour through its own
+  material and data (ask the coordinator with the diff before touching the Finish shader).
 
 ## Rounds
+
+- **t03** (`reviews/lt1/rock/t03/`; `sheet.jpg` rows water, street stop, columns overcast, low sun; `squint.jpg` at
+  25%: t02 water, t03 water overcast and low sun, t03 street stop, over refs 53-56). Bad: the near rock fills a
+  quarter of the frame, not a third, and the lower 40% is open sea; the shore blocks read as smooth slabs with sharp
+  prows where a lip plane cuts a tread obliquely; the lee plates from the street stop keep straight edges; the
+  skerry is harder (power 3) but still smooth. Good: three values at 25% (the sea darker than the sky, the wet lips
+  dark, the tops lightest), one subject (107 on the skyline atop the big back, the back rising to it on the
+  diagonal), depth in layers (near blocks, the back, the far shore), every block meets the sea at a lip, and the
+  office is out of the frame. Camera chosen by squint from three low candidates (north, north-west, north point);
+  the north-west one shows the shore's steps in profile. 234 blocks, 17114 tris.
 
 - **t02** (`reviews/lt1/rock/t02/`; `sheet.jpg` rows water, street stop, columns overcast, low sun; `squint.jpg` at 25%:
   t01 street, t02 street, t02 water low sun and overcast over refs 53-56). Bad: the near blocks in the water frame

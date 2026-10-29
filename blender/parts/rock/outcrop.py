@@ -94,8 +94,11 @@ class Back:
     """A block's own back, as the ice wore it: over the block's plan (its ranges along the ice, s, and across it, t),
     its crest `crestShift` of the half-length toward the down-ice end, falling below the envelope by `roll` at the
     plan's ellipse (a seeded share of its half-width, within rollM) with the profile's `power`; down-ice of the crest
-    it falls only `leeShare` of that by the plan's edge, so the back keeps a firm lip over its plucked lee. The fall
-    is convex, so the envelope less the fall stays concave and its tangent planes bound the block."""
+    it falls only `leeShare` of that by the plan's edge, so the back keeps a firm lip over its plucked lee; across the
+    ice, toward its joints, only `crossShare`, so its joint faces stand steep and sharp. Where the frost and the sea
+    opened its joints (`opening`) its tread keeps only `shoreTilt` of the envelope's slope about its middle, so the
+    shore steps down at its joints, a lip at each, never one cushion sliding under. The fall is convex, so the
+    envelope less the fall stays concave and its tangent planes bound the block."""
 
     def __init__(self, rec, ice, s_range, t_range, rng):
         self.ice = ice
@@ -104,10 +107,22 @@ class Back:
         self.ct = (t_range[0] + t_range[1]) / 2
         self.rs_up = hs * (1 + rec["crestShift"]) + 1e-3
         self.rs_down = (hs * (1 - rec["crestShift"]) + 1e-3) / rec["leeShare"] ** (1 / rec["power"])
-        self.rt = ht + 1e-3
+        self.rt = (ht + 1e-3) / rec["crossShare"] ** (1 / rec["power"])
         lo, hi = rec["rollM"]
         self.roll = float(np.clip(rng.uniform(*rec["rollShare"]) * min(hs, ht), lo, hi))
         self.power = rec["power"]
+        self.tilt, self.mid = 1.0, None
+
+    def terrace(self, rec, land, gc, phi):
+        """The tread flattened about the block's middle where its joints opened (phi 1 at the shore)."""
+        self.tilt = 1.0 - (1.0 - rec["shoreTilt"]) * phi
+        self.mid = float(land.smooth(gc[0], gc[1]))
+
+    def envelope(self, z, g):
+        """The envelope's height and gradient at a point, as this block's tread takes them."""
+        if self.mid is None:
+            return z, g
+        return self.mid + self.tilt * (z - self.mid), self.tilt * g
 
     def fall(self, x, y):
         """How far the back lies under the envelope at (x, y)."""
@@ -122,7 +137,7 @@ class Back:
 
     def grad_under(self, land):
         """The block's top's gradient at (x, y): the envelope's less the fall's."""
-        return lambda x, y: land.grad(x, y) - self.fall_grad(x, y)
+        return lambda x, y: self.tilt * land.grad(x, y) - self.fall_grad(x, y)
 
 
 def family_planes(key, fam, lo_hi):
@@ -308,6 +323,7 @@ def build(rec, key, sea):
         sv = GV[:, 0] * ice[0] + GV[:, 1] * ice[1]
         tv = -GV[:, 0] * ice[1] + GV[:, 1] * ice[0]
         back = Back(rec["backs"], ice, (sv.min(), sv.max()), (tv.min(), tv.max()), grng)
+        back.terrace(rec["backs"], land, gc, phi)
         if lee:                                   # a plucked tread is a sheeting plane, its risers crisp: barely rounded
             back.roll *= rec["backs"]["leeRoll"]
         k = 0.0
@@ -321,6 +337,11 @@ def build(rec, key, sea):
             # the sea takes whole blocks at the waterline, more where it is more exposed: the shore runs along joints
             if float(land.smooth(c[0], c[1])) < coast["belowM"] and rng.uniform(0, 1) < coast["share"] * exposure(sea, land, c):
                 continue
+            # on the lee each block was plucked by its own whole plates, so the treads' edges wander along its joints
+            cdrop = drop
+            if lee:
+                cdrop = land.plucked(c[0], c[1], rng.uniform(-0.45, 0.45))
+                cdrop = min(cdrop, max(0.0, float(land.smooth(c[0], c[1])) - land.lee["floor"]))
             # the joints that show part the block from its neighbours by their opening; those that don't are seams
             f = []
             for q in cell:
@@ -344,6 +365,9 @@ def build(rec, key, sea):
                         break
             if faces is None:
                 continue
+            faces = lip(faces, rec, land, sea, back, cdrop, c, rng)
+            if faces is None:
+                continue
             V = np.concatenate([q.V for q in faces])
             lo, hi = V[:, :2].min(0) - step, V[:, :2].max(0) + step
             near = np.where((P[:, 0] > lo[0]) & (P[:, 0] < hi[0]) & (P[:, 1] > lo[1]) & (P[:, 1] < hi[1]))[0]
@@ -351,8 +375,9 @@ def build(rec, key, sea):
             top = None
             for j in near:
                 (x, y) = P[j]
-                z = float(Z[j]) - drop - float(back.fall(x, y))
-                gr = G[j] - back.fall_grad(x, y)
+                ze, ge = back.envelope(float(Z[j]), G[j])
+                z = ze - cdrop - float(back.fall(x, y))
+                gr = ge - back.fall_grad(x, y)
                 # z <= z_q + g.(p - q)
                 nrm = np.array([-gr[0], -gr[1], 1.0])
                 d = z - gr[0] * x - gr[1] * y
@@ -367,11 +392,47 @@ def build(rec, key, sea):
                             worn=1.0 if drop > 0 else rec["chamfers"]["stossShare"])
             if faces is None or H.volume(faces) < 1e-3:
                 continue
-            blocks.append((faces, {"id": f"blk-{i}", "group": f"grp-{g}", "drop": drop, "top": z0 - drop, "saw": k,
+            blocks.append((faces, {"id": f"blk-{i}", "group": f"grp-{g}", "drop": cdrop, "top": z0 - cdrop, "saw": k,
                                    "grad": back.grad_under(land)}))
     for cut_ in rec.get("cuts", []):
         blocks = apply_cut(blocks, cut_)
     return blocks
+
+
+def lip(faces, rec, land, sea, back, drop, c, rng):
+    """At the sea the swell quarried a block back along its own joint most nearly along the shore, so it ends in a
+    lip a seeded height (coast lipM) over high water, a crisp step into the sea, never its back sliding under; a block
+    whose whole top lies under the lip the sea took, on every side but the sheltered (coast keepBelow exposure)."""
+    co = rec["coast"]
+    h = sea["springRange"] / 2 + rng.uniform(*co["lipM"])
+    top = lambda p: back.envelope(float(land.smooth(p[0], p[1])), 0.0)[0] - drop - float(back.fall(p[0], p[1]))
+    V = np.concatenate([q.V for q in faces])[:, :2]
+    zs = [top(p) for p in V]
+    if max(zs) <= h:
+        return None if exposure(sea, land, c) >= co["keepBelow"] else faces
+    if min(zs) >= h:
+        return faces
+    down = -land.grad(c[0], c[1])
+    down = down / max(float(np.linalg.norm(down)), 1e-9)
+    best = None
+    for fam in rec["families"]:
+        n = H.normal(fam["dip"], fam["dipToward"])
+        nh = n[:2] / max(float(np.linalg.norm(n[:2])), 1e-9)
+        a = float(nh @ down)
+        if best is None or abs(a) > abs(best[0]):
+            best = (a, n * np.sign(a), FOLIATION if fam["name"] == "foliation" else JOINT)
+    _, n, label = best
+    # where the top crosses the lip along the plane's way, between the block's landward and seaward extremes
+    u = V @ n[:2]
+    lo, hi = float(u.min()), float(u.max())
+    nh = n[:2] / float(np.linalg.norm(n[:2]))
+    at = lambda s: top(c[:2] + nh * (s - float(c[:2] @ n[:2])) / float(np.linalg.norm(n[:2])))
+    if at(lo) < h:
+        return faces
+    for _ in range(30):
+        m = (lo + hi) / 2
+        lo, hi = (m, hi) if at(m) > h else (lo, m)
+    return H.clip(faces, n, lo + n[2] * h, label)       # through the lip's edge at its height
 
 
 def cut(cells, n, d, label):
