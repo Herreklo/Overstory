@@ -45,7 +45,12 @@ def main():
     size = meta["page"]["size"]
     scene = bpy.context.scene
     FB.setup(scene, 64)
-    objs = {o.name: o for o in scene.objects}
+    # a window's mark from afar (house.py, window) is drawn only far off, in front of the window: never a caster, and
+    # never a material of the page
+    objs = {o.name: o for o in scene.objects if not o.name.endswith("_mark")}
+    for o in scene.objects:
+        if o.name.endswith("_mark"):
+            o.hide_render = True
     mats = sorted({n.split("_", 1)[1] for n in objs if n != "bake_target"})
     FB.MATS[:] = mats + ["target"]  # the target last, so every material's index is the page's (bake.json mats)
     near = [o for n, o in objs.items() if n.startswith("near_") and n != "near_roof"]

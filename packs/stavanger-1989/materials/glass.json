@@ -46,6 +46,12 @@
     "bounce": 0.0113,
     "curtains": 0.55
   },
+  "fromAfar": {
+    "describes": "The window painted from afar (VD: true up close, painted from afar): where its sash's sightline falls under stilePx on screen, across or up it whichever is larger, the opening inside its casing is one dark eye, its glass taken across the sash and the bars, and its post and transom a light cross crossPx wide at their true places, the window's own wood seen through the eye; faded in over blendPx either side of stilePx, never a pop (house.py window, OS_Glass _OS_MARK). At 1440p a 40 mm stile falls under 4 px about 15 m off through an eye view's 52 to 55° lens and about 21 m off through the street stop's 38°: the street stop, 12 m and high take the mark, and so does 108 in the row's eye view, 18 to 24 m off; a house's own eye-level near view, 4.4 m off, keeps the true window. In place of the true sash at every distance, whose white wood took 39% of 108's openings and kept them grey at the street stop (r04: median L35 to 43 beside the wall's 73).",
+    "stilePx": 4.0,
+    "blendPx": 0.6,
+    "crossPx": 1.5
+  },
   "wave": {
     "tiltDeg": 0.6,
     "perM": [

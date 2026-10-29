@@ -3,7 +3,9 @@
 // kind of glass. The pane gives its window's frame: uv0 metres from the window's centre and foot; vertex colour R the
 // glass's kind (its integer part x 4) and the window's seed (the fraction: where the room's furniture stands), G the
 // pane's seed (its waves), B the window's width / 4 m, A its height / 3 m. UV1 reads the house's page for the frame's
-// and reveal's occlusion. Every size and colour is the pack's (glass.json), passed by LT1Street.
+// and reveal's occlusion. Every size and colour is the pack's (glass.json), passed by LT1Street. With _OS_MARK it draws
+// a window's mark from afar instead (house.py, window): the whole opening as one dark eye where the sash falls small
+// on screen, blended over the true window, its post and transom left open as a light cross.
 Shader "Overstory/Glass"
 {
     Properties
@@ -24,6 +26,10 @@ Shader "Overstory/Glass"
         _Kind1 ("Glass kind 1", Vector) = (0, 1, 1, 3)
         _Kind2 ("Glass kind 2", Vector) = (0, 1, 1, 3)
         _Kind3 ("Glass kind 3", Vector) = (0, 1, 1, 3)
+        _Mark ("From afar (glass.json fromAfar): x the sash's sightline (px) under which the mark shows, y the fade either side (px), z the cross's width (px)", Vector) = (4, 0.6, 1.5, 0)
+        [HideInInspector] _SrcBlend ("", Float) = 1
+        [HideInInspector] _DstBlend ("", Float) = 0
+        [HideInInspector] _ZWrite ("", Float) = 1
     }
 
     HLSLINCLUDE
@@ -35,6 +41,7 @@ Shader "Overstory/Glass"
         float4 _RoomWall, _RoomCeiling, _RoomFloor, _RoomShape, _RoomFurniture, _RoomFurniture2;
         float4 _Curtain, _CurtainB, _GlassDay, _Opposite;
         float4 _Kind0, _Kind1, _Kind2, _Kind3;
+        float4 _Mark;
     CBUFFER_END
     ENDHLSL
 
@@ -46,6 +53,8 @@ Shader "Overstory/Glass"
         {
             Name "ForwardLit"
             Tags { "LightMode" = "UniversalForward" }
+            Blend [_SrcBlend] [_DstBlend]
+            ZWrite [_ZWrite]
 
             HLSLPROGRAM
             #pragma target 4.5
@@ -56,6 +65,7 @@ Shader "Overstory/Glass"
             #pragma multi_compile_fragment _ _SCREEN_SPACE_OCCLUSION
             #pragma multi_compile_fog
             #pragma multi_compile_instancing
+            #pragma shader_feature_local_fragment _OS_MARK
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
 
             TEXTURE2D(_Geo); SAMPLER(sampler_Geo);
@@ -67,6 +77,8 @@ Shader "Overstory/Glass"
                 float4 tangentOS : TANGENT;
                 float2 uv0 : TEXCOORD0;
                 float2 uv1 : TEXCOORD1;
+                float2 uv2 : TEXCOORD2;
+                float2 uv3 : TEXCOORD3;
                 float4 color : COLOR;
                 UNITY_VERTEX_INPUT_INSTANCE_ID
             };
@@ -80,6 +92,7 @@ Shader "Overstory/Glass"
                 float4 uv : TEXCOORD3;
                 float4 color : TEXCOORD4;
                 float fog : TEXCOORD5;
+                float4 mark : TEXCOORD6;
             };
 
             Varyings Vert(Attributes v)
@@ -94,6 +107,7 @@ Shader "Overstory/Glass"
                 o.tangentWS = n.tangentWS;
                 o.uv = float4(v.uv0, v.uv1);
                 o.color = v.color;
+                o.mark = float4(v.uv2, v.uv3);
                 o.fog = ComputeFogFactor(p.positionCS.z);
                 return o;
             }
@@ -201,8 +215,28 @@ Shader "Overstory/Glass"
                 return normalize(n + t * tilt.x + up * tilt.y);
             }
 
+            // how much of a pixel `p` wide, `d` from a band's middle, a band `w` either side of it covers
+            float Band(float d, float w, float p)
+            {
+                return saturate((min(d + 0.5 * p, w) - max(d - 0.5 * p, -w)) / p);
+            }
+
             half4 Frag(Varyings i) : SV_Target
             {
+                half a = 1.0h;
+            #if defined(_OS_MARK)
+                // the mark from afar: the window's metres a pixel across it and up it, the sash's sightline (i.mark.z) on
+                // screen by whichever is larger, the mark faded in under _Mark.x px; where it shows, the post (i.mark.x
+                // across) and the transom (i.mark.y up) are left open _Mark.z px wide, never wider than the wood under
+                // them (i.mark.w), so the true window's own wood is the cross
+                float pu = max(length(float2(ddx(i.uv.x), ddy(i.uv.x))), 1e-6);
+                float pv = max(length(float2(ddx(i.uv.y), ddy(i.uv.y))), 1e-6);
+                half on = (half)(1.0 - smoothstep(_Mark.x - _Mark.y, _Mark.x + _Mark.y, i.mark.z / min(pu, pv)));
+                clip(on - 0.002h);
+                float post = i.mark.x > -50.0 ? Band(i.uv.x - i.mark.x, min(0.5 * _Mark.z * pu, 0.5 * i.mark.w), pu) : 0.0;
+                float transom = i.mark.y > -50.0 ? Band(i.uv.y - i.mark.y, min(0.5 * _Mark.z * pv, 0.5 * i.mark.w), pv) : 0.0;
+                a = on * (half)(1.0 - max(post, transom));
+            #endif
                 float4 c = i.color;
                 float k4 = c.r * 4.0;
                 int kind = (int)floor(k4 + 1e-3);
@@ -239,7 +273,7 @@ Shader "Overstory/Glass"
             #endif
                 half3 col = direct * aoD + (envD + envS) * (half)ao * aoI;
                 col = MixFog(col, i.fog);
-                return half4(col, 1);
+                return half4(col, a);
             }
             ENDHLSL
         }

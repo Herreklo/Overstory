@@ -38,7 +38,7 @@ namespace Overstory.EditorTools
         [Serializable] class Plot { public float x, w, d; }
         [Serializable] class Page { public int size; public float pxPerM; }
         [Serializable] class GlassKind { public string name, shape; public float tiltDeg; public float[] perM; }
-        [Serializable] class Glass { public float gloss, share; public float[] walls, ceiling, floor, furniture, curtain, room, curtains, daylight; public GlassKind[] kinds; }
+        [Serializable] class Glass { public float gloss, share; public float[] walls, ceiling, floor, furniture, curtain, room, curtains, daylight, fromAfar; public GlassKind[] kinds; }
         [Serializable] class House { public int house; public float[] size; public Lap lap; public float planeShadow, seenWithinM, cityFromM; public Plot plot; public Page page; public Glass glass; }
 
         struct View { public string name, level; public Vector3 pos, target; public float fov; public bool floor; }
@@ -167,8 +167,13 @@ namespace Overstory.EditorTools
                     urp.useSRPBatcher = false;
                 foreach (var f in rd.rendererFeatures)
                     f.SetActive(f.name.Contains("AmbientOcclusion"));
+                var views = row ? RowViews(rowW, rowD) : Views(house.size[0], house.size[1]);
+                // a walk (-streetWalk n): n frames from the eye view back to the street stop, the windows' mark from afar
+                // and the levels changing on the way (walkNNN, for a clip)
+                if (Arg("-streetWalk") != null)
+                    views = views.Concat(Walk(views, int.Parse(Arg("-streetWalk")))).ToArray();
                 foreach (var light in Lights.Where(l => lights.Contains(l.name)))
-                foreach (var view0 in (row ? RowViews(rowW, rowD) : Views(house.size[0], house.size[1])).Where(v => only.Contains(v.name)))
+                foreach (var view0 in views.Where(v => only.Contains(v.name) || v.name.StartsWith("walk")))
                 {
                     var view = view0;
                     if (levelAll != null)
@@ -260,6 +265,10 @@ namespace Overstory.EditorTools
             if (Arg("-streetShadowTwo") != "0")
                 foreach (var r in b.root.GetComponentsInChildren<MeshRenderer>(true))
                     r.shadowCastingMode = ShadowCastingMode.TwoSided;
+            // a window's mark from afar is drawn over its window, never casting
+            foreach (var r in b.root.GetComponentsInChildren<MeshRenderer>(true))
+                if (IsMark(r))
+                    r.shadowCastingMode = ShadowCastingMode.Off;
             // the city level as one draw (-streetCityOne 0 keeps a material a piece, for an A/B)
             if (Arg("-streetCityOne") != "0")
                 b.levels["city"] = OneMesh(b.levels["city"], b.paint, gen);
@@ -380,6 +389,19 @@ namespace Overstory.EditorTools
             new View { name = "high", level = "street", pos = new Vector3(-12.0f, -38.0f, 34.0f), target = new Vector3(w * 0.5f, d * 0.35f, 2.5f), fov = 28 },
         };
 
+        // eased from the eye view to the street stop: position, aim and lens together
+        static IEnumerable<View> Walk(View[] views, int n)
+        {
+            var a = views.First(v => v.name == "eye");
+            var b = views.First(v => v.name == "street");
+            for (int k = 0; k < n; k++)
+            {
+                float t = Mathf.SmoothStep(0f, 1f, n > 1 ? k / (float)(n - 1) : 1f);
+                yield return new View { name = $"walk{k:D3}", level = b.level, pos = Vector3.Lerp(a.pos, b.pos, t),
+                    target = Vector3.Lerp(a.target, b.target, t), fov = Mathf.Lerp(a.fov, b.fov, t) };
+            }
+        }
+
         /// <summary>
         /// The cost of a street of such houses, offscreen: `n` copies of the house side by side on their plots, each
         /// drawn at the level its distance from the camera takes (the near level within house.json seenWithinM, the city
@@ -478,7 +500,7 @@ namespace Overstory.EditorTools
                             if (!on)
                                 continue;
                             foreach (var r in t.GetComponentsInChildren<MeshRenderer>())
-                                r.shadowCastingMode = !cast ? ShadowCastingMode.Off : Arg("-streetShadowTwo") != "0" ? ShadowCastingMode.TwoSided : ShadowCastingMode.On;
+                                r.shadowCastingMode = !cast || IsMark(r) ? ShadowCastingMode.Off : Arg("-streetShadowTwo") != "0" ? ShadowCastingMode.TwoSided : ShadowCastingMode.On;
                             Assign(t.gameObject, mats, "Pc", MatLevel(at));
                             foreach (var r in t.GetComponentsInChildren<MeshRenderer>())
                                 if (GeometryUtility.TestPlanesAABB(planes, r.bounds))
@@ -767,6 +789,19 @@ namespace Overstory.EditorTools
                     string key = $"{way}-{level}-glass";
                     AssetDatabase.CreateAsset(mat, $"{gen}/mat-{key}.mat");
                     outp[key] = mat;
+                    // the window's mark from afar (glass.json fromAfar): the same glass, blended over its true window
+                    if (g.fromAfar == null || g.fromAfar.Length != 3)
+                        continue;
+                    var mark = new Material(mat);
+                    mark.EnableKeyword("_OS_MARK");
+                    mark.SetVector("_Mark", new Vector4(g.fromAfar[0], g.fromAfar[1], g.fromAfar[2], 0));
+                    mark.SetFloat("_SrcBlend", (float)BlendMode.SrcAlpha);
+                    mark.SetFloat("_DstBlend", (float)BlendMode.OneMinusSrcAlpha);
+                    mark.SetFloat("_ZWrite", 0);
+                    mark.SetOverrideTag("RenderType", "Transparent");
+                    mark.renderQueue = (int)RenderQueue.Transparent;
+                    AssetDatabase.CreateAsset(mark, $"{gen}/mat-{way}-{level}-mark.mat");
+                    outp[$"{way}-{level}-mark"] = mark;
                 }
             }
             // a far house's one material: the street level's shared values, and each material's own from a table, a row
@@ -873,6 +908,8 @@ namespace Overstory.EditorTools
         static string MatLevel(string level) => level == "city" ? "street" : level;
 
         static Vector4 Tint(float[] t) => t == null || t.Length != 3 ? Vector4.one : new Vector4(t[0], t[1], t[2], 1);
+
+        static bool IsMark(MeshRenderer r) => r.gameObject.name.EndsWith("_mark");
 
         static void Assign(GameObject level, Dictionary<string, Material> mats, string way, string levelName)
         {

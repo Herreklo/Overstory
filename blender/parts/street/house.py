@@ -1072,6 +1072,22 @@ class House:
                         front(sp, (lv,), r, y_s)
                     jobs.append((lv, lights, y_s, lv == "near"))
                 glaze(sp, f"{hi}.{k}", jobs)
+        # painted from afar: the whole opening's one plane just in front of the frame, drawn by the glass shader only
+        # where the sash falls small on screen (glass.json fromAfar): its glass across the sash and bars, its post and
+        # transom a light cross where they are. Its second and third UVs carry them in the window's metres: the post's
+        # middle across (from the window's centre) and the transom's up (from its foot), -99 for none; the sash's
+        # sightline; and the narrowest of the wood each crosses, so the cross never shows wider than the wood under it
+        if n > 2:
+            raise SystemExit(f"[house] {tag}: a window of {n} sashes; the mark from afar draws one post")
+        post = ((cols[0][1] + cols[1][0]) / 2.0 - cx, mw / 2.0 + sw) if n == 2 else (-99.0, 1.0)
+        trans = (zt + tf / 2.0 - za, tf / 2.0 + min(sw, brail)) if v.get("transom") else (-99.0, 1.0)
+        mk = piece("mark", "mark")
+        ym = yb - 0.002
+        q = [Vector((x0, ym, za)), Vector((x1, ym, za)), Vector((x1, ym, zb)), Vector((x0, ym, zb))]
+        for lv in both:
+            mk.add(lv, Face(q, [(p.x - cx, p.z - za) for p in q], key, [cu(p) for p in q],
+                            col=[r_room, F.u(tag, "mark")] + size,
+                            mark=(post[0], trans[0], sw, 2.0 * min(post[1], trans[1]))))
         # the glass's share of the opening (inside the casing), across its widest row of panes and by area: the
         # sightlines checked against the references'
         o["glassAcross"] = round(max(sum(Q[2] - Q[0] for Q in panes if Q[1] <= (R[1] + R[3]) / 2.0 <= Q[3])
@@ -2548,6 +2564,7 @@ def glass_digest(G, sheers=True, share=1.0):
             r["cornerReachM"], r["cornerLight"], r["shadeRadiusM"], r["shadeGlow"]],
             "curtains": [c["share"], c["opacity"] if sheers else 0.0, c["depthM"], c["valanceShare"], c["foldsPerM"]],
             "daylight": [d["transmit"], d["bounce"], d["curtains"]], "share": round(share, 3),
+            "fromAfar": [G["fromAfar"][k] for k in ("stilePx", "blendPx", "crossPx")],
             "kinds": [{"name": k["name"], "tiltDeg": k["tiltDeg"], "perM": k["perM"], "shape": k["shape"]} for k in kinds]}
 
 

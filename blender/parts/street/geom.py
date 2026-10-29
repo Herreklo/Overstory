@@ -14,11 +14,12 @@ MM = 0.001
 
 
 class Face:
-    __slots__ = ("p", "uv0", "chart", "cuv", "arris", "under", "col")
+    __slots__ = ("p", "uv0", "chart", "cuv", "arris", "under", "col", "mark")
 
-    def __init__(self, p, uv0, chart, cuv, arris=False, under=False, col=None):
+    def __init__(self, p, uv0, chart, cuv, arris=False, under=False, col=None, mark=None):
         self.p, self.uv0, self.chart, self.cuv, self.arris, self.under = p, uv0, chart, cuv, arris, under
         self.col = col  # a face's own vertex colour (a pane's glass), in place of the piece's
+        self.mark = mark  # a window's mark from afar: four numbers its two further UV layers carry (house.py, window)
 
 
 class Piece:
@@ -230,6 +231,10 @@ def to_object(name, faces, place_of, deform, rects, page_size, colour_of):
     l1 = mesh.uv_layers.new(name="page")
     l0.data.foreach_set("uv", [c for uv in uv0 for c in uv])
     l1.data.foreach_set("uv", [c for uv in uv1 for c in uv])
+    if any(f.mark for _, f in faces):
+        marks = [f.mark or (0.0, 0.0, 0.0, 0.0) for _, f in faces for _ in f.p]
+        for k, nm in enumerate(("mark0", "mark1")):
+            mesh.uv_layers.new(name=nm).data.foreach_set("uv", [c for m in marks for c in m[2 * k:2 * k + 2]])
     ca = mesh.color_attributes.new("Col", "FLOAT_COLOR", "CORNER")
     flat = []
     for poly, c in zip(mesh.polygons, cols):
