@@ -2,7 +2,7 @@
 
 01 to 10 are the 1989 harbour fronts, each logged in `docs/research/downloads.md`.
 
-11 to 16 were sent by Øystein in chat on 29 October as inspiration for later: the Eiganes villa and houses not made of wood. No source was given. They are for study only.
+11 to 22 were sent by Øystein in chat on 29 October as inspiration for later: the Eiganes villa and houses not made of wood. No source was given. They are for study only.
 
 | File | What it shows | What to take |
 | --- | --- | --- |
@@ -12,3 +12,9 @@
 | `14-villa-white-blue-tile-hip-garden-aerial.webp` | A white villa from above: a blue glazed-tile hip roof, a front gable with an oculus over a porch and balcony, beech hedges and a big lawn, among others of its kind | The villa as one plot in a garden district: hedges, trees, lawn and a drive |
 | `15-villa-rendered-hip-terraced-garden.png` | A white rendered villa on a hill with green shutters, a dark hip roof and a terraced garden; a pool and a flagpole | A rendered villa. The pool is a later owner's work, an event in its record |
 | `16-jugend-villa-render-quoins-cartouches.webp` | A Jugend villa in white render: grey quoins, carved cartouches over the windows, a curved gable with an oculus, a fish-scale slate roof and capped chimneys | Render with ornament in relief, quoins and a shaped gable: Jugend, around 1905 |
+| `17-villa-rendered-red-tile-hip-eyebrow-dormer.webp` | A cream rendered villa in a garden district: a red-brown glazed tile hip roof with an eyebrow dormer, a curved bay with many-paned windows, a Japanese maple, hedges and a garden lamp; white boarded villas beside it | A rendered villa among boarded ones; the roof as the big shape, its dormer swelling out of the tiles; the garden as a designed thing |
+| `18-villa-white-boarded-bellcast-hip-chimneys.webp` | A white boarded villa with a steep bell-cast hip roof, two tall rendered chimneys, a balcony over a bay and a carved door surround, among beech hedges, gravel and beech woods | The steep roof and flared eaves; tall chimneys as silhouette; the beech of the Heights |
+| `19-corner-block-yellow-brick-red-bands-1901.webp` | A town block in yellow brick with red brick bands and arches over each window, shops in a rendered ground floor, a shaped gable and slate roofs | Polychrome brick: the bands and arches drawn in a second brick; the shop floor as its own layer, changed many times |
+| `20-corner-block-1901-tower-and-balconies.webp` | The same block's corner, dated 1901: a tower with a slate spire, iron balconies, red window frames and a corner shop | The corner as an event in the street; iron, slate and brick together |
+| `21-new-brick-flats-curved-gables-2010s.webp` | New flats of the 2010s in pale brick with curved gables, deep window frames in a red-brown metal, pergolas and glass links | What a later year can put in the town: an old shape (the gable) made new, in brick. For the town at 2010 and 2020 |
+| `22-stavanger-svommehall-board-marked-concrete.webp` | Stavanger's swimming hall in board-marked concrete: a deep grid of fins on a cantilevered upper storey over glazed floors, wide steps up to it | Concrete with the boards' grain in it; one big shape and a deep repeated grid; how concrete weathers in streaks |
