@@ -2,7 +2,7 @@
 
 01 to 10 are the 1989 harbour fronts, each logged in `docs/research/downloads.md`.
 
-11 to 32 were sent by Øystein in chat on 29 October as inspiration for later: the Eiganes villa and houses not made of wood. No source was given. They are for study only.
+11 to 37 were sent by Øystein in chat on 29 October as inspiration for later: the Eiganes villa and houses not made of wood. No source was given. They are for study only.
 
 Some show the town after 1989, not as it stood then, and belong to the later years we build (2000, 2010, 2020): 21 (2010s flats), 24 (the theatre's extension), 32 (the city hall's new facade), and the later work in 12 (the conversion), 15 (the pool) and 30–31 (the new dormers and café). In a 1989 scene they are what the town will become, never what it is.
 
@@ -30,3 +30,8 @@ Some show the town after 1989, not as it stood then, and belong to the later yea
 | `30-rendered-block-pilasters-new-dormers-dusk.webp` | A three-storey rendered block at dusk from above: white walls between pinkish rendered pilasters on a rusticated base, a green slate roof with new metal-clad dormers and skylights, copper vents, lit windows | An old public block reused: new dormers set into an old roof, lit from inside at dusk |
 | `31-rendered-block-pilasters-cafe-sun.webp` | The same block in sun with a café terrace and a lawn in front | Render in two colours; the base as its own material; people use it differently now |
 | `32-radhus-new-glass-facade-cg.webp` | A CG render of a new facade proposed for Stavanger's city hall: dark green glass panels with brass mullions, a tree emblem and a clock, a glazed timber ground floor, steps and rhododendrons beside it, a white wooden house on the hill above | The town at 2020 and after: a new skin on a 1960s–70s building. Old wooden houses stay above it |
+| `33-domkirken-east-front-twin-towers.png` | The cathedral's east front: a Gothic gable with a great traceried window and a rose, statues in niches, two square towers with pyramid roofs | The town's oldest building as one strong symmetric shape. Carved stone set in rough walling |
+| `34-domkirken-east-front-copper-spires.webp` | The same front from above, with green copper spires and a grey slate nave roof, paths and white benches round it | Stones of many colours and sizes, patched over centuries: a building whose history reads at a glance. Copper streaked green |
+| `35-domkirken-west-front-under-repair.webp` | The cathedral's west front in summer: rubble walling in grey and green stone, a pointed doorway, a rose in the gable, big limes beside it, barriers and boarding of a repair on the steps | Repair as something seen in the street: fences, boarding and new stone beside old. Limes as old as the town's centre |
+| `36-st-petri-kirke-red-copper-spire.png` | St. Petri church: a red church with a tall green copper spire, round-arched windows and a clock, in a square with people in their best clothes | A public building in a strong colour. Copper on a spire as a mark seen across the town |
+| `37-domkirken-south-side-winter.png` | The cathedral's long south side in winter: rubble walls, a porch, slate roofs, bare trees and a setts square, building fences at the right | The cathedral at street level and in winter light. The square's setts. Works in the street as part of the town |
