@@ -2,7 +2,7 @@
 
 01 to 10 are the 1989 harbour fronts, each logged in `docs/research/downloads.md`.
 
-11 to 40 were sent by Øystein in chat on 29 October as inspiration for later: the Eiganes villa and houses not made of wood. No source was given. They are for study only.
+11 to 43 were sent by Øystein in chat on 29 October as inspiration for later: the Eiganes villa and houses not made of wood. No source was given. They are for study only.
 
 Some show the town after 1989, not as it stood then, and belong to the later years we build (2000, 2010, 2020): 21 (2010s flats), 24 (the theatre's extension), 32 (the city hall's new facade), and the later work in 12 (the conversion), 15 (the pool) and 30–31 (the new dormers and café). In a 1989 scene they are what the town will become, never what it is.
 
@@ -38,3 +38,6 @@ Some show the town after 1989, not as it stood then, and belong to the later yea
 | `38-torget-steps-market-cathedral-1960s.webp` | Torget from above in the 1960s: the cathedral's west front among big trees, a new glass bank, wide stepped terraces down to the market square, flower and vegetable stalls, Kielland's statue, a bus and the old wooden town on the hill behind | The square as the town's room: the old church, the new bank and the market in one view. The 1960s as a layer the town added |
 | `39-torget-market-vagen-supply-ships-1970s.webp` | Torget's market in colour, about the 1970s: stalls under striped umbrellas, Kielland's statue, Vågen behind with supply ships and red cranes, a red-roofed shop house with a painted sign | The town of the oil years, close to 1989: the harbour full of supply ships, the market still there. Colour of the period |
 | `40-modernist-block-concrete-sunscreen-grid.png` | A long modernist block with a deep concrete sunscreen grid over every floor, a glazed ground floor, in black and white (place not given) | The deep repeated grid in concrete, as on the swimming hall (22): one big shape, shadow in every cell |
+| `41-postwar-row-house-white-brick-black-gable.webp` | A post-war estate house in overcast light: a whitewashed brick ground floor, a black-stained boarded upper storey and gable, an orange pantile roof, a big lawn, neighbours of the same type | A planned type: few, crisp shapes in three values (white, black, orange). Built well before 1989 |
+| `42-postwar-estate-rows-orange-tile-aerial.webp` | The estate from above: rows of the same house in a grid, gardens and hedges between, scaffolding on one, the town and fields beyond | Many of one type, each made its own by its garden, its trees and its owners' changes. The sameness test seen in a real place |
+| `43-postwar-row-house-later-glazed-extension.png` | One of the houses in low sun, with a flat-roofed glazed room added at the side, a rendered planter and a terrace; scaffolding on a neighbour along the row | A later owner's addition on a planned type. Repairs going on in the row |
