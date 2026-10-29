@@ -4,7 +4,7 @@
   "fixture": "fixtures/lt1-street.json",
   "year": 1989,
   "houses": [107, 108, 109],
-  "eras": { "classical": "packs/stavanger-1989/house/classical.json" },
+  "eras": { "classical": "packs/stavanger-1989/house/classical.json", "chalet": "packs/stavanger-1989/house/chalet.json" },
   "versions": "packs/stavanger-1989/house/versions.json",
   "paints": "packs/stavanger-1989/house/paints.json",
   "materials": "packs/stavanger-1989/materials",

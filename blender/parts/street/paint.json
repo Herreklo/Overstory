@@ -47,13 +47,15 @@
     "tiles": { "like": "tiles", "stainDL": -9 },
     "concrete": { "L": 55, "underL": 50, "stainDL": 14, "smooth": 0.04, "stainSmooth": 0.2, "brushL": 3 },
     "felt": { "L": 18, "smooth": 0.05 },
-    "render": { "L": 60, "smooth": 0.03, "brushL": 3 }
+    "render": { "L": 60, "smooth": 0.03, "brushL": 0 },
+    "slate": { "like": "tiles", "L": 33, "smooth": 0.2, "flatUp": 0, "stainDL": -10 }
   },
   "colour": {
     "describes": "Way Pc's hue and chroma [C, h] for the materials above, as finish.json painted.colour.mats; the walls' and trims' paint is the pack's (paints.json: a 'repainted' event's, else the era's default), its L* the clay's.",
     "concrete": { "paint": [3, 80], "stain": [3, 75] },
     "felt": { "paint": [2, 250] },
     "render": { "paint": [4, 70] },
+    "slate": { "paint": [5, 262], "stain": [5, 100] },
     "tiles": { "stain": [5, 100] },
     "roof": { "stain": [5, 100] }
   }

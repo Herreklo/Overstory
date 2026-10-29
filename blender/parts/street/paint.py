@@ -407,7 +407,7 @@ def tile_values(pg, Q, meta, roof):
     eave by `course` up its slope from the foot (features.roof), so a plane that stands for many tiles lights its own
     few. Off any slope (the ridge), by piece, as the corner's."""
     T = Q["tiles"]
-    tiles = pg.m["tiles"] | pg.m["roof"]
+    tiles = pg.m["tiles"] | pg.m["roof"] | pg.m["slate"]
     if roof is None:
         cell = (pg.piece, 0, 0)
     else:
@@ -431,7 +431,7 @@ def roof_values(pg, R, meta, roof, wall):
     """A slope's age in broad shapes, never tile by tile: the eave course darkest, where the water stands longest and
     the dirt off the slope gathers; moss and lichen down the pans from the ridge, where the water runs, each pan's
     reach its own; the shaded slope darker all over. All at the roof's age (`fullYears` to full)."""
-    tiles = pg.m["tiles"] | pg.m["roof"]
+    tiles = pg.m["tiles"] | pg.m["roof"] | pg.m["slate"]
     age = float(FL.smoothstep(0.0, R["fullYears"], roof_years(meta)))
     if age <= 0.0:
         return np.zeros(pg.shape)
@@ -461,7 +461,7 @@ def roof_marks(pg, R, meta, roof, wall):
     longest there and the dirt off the slope gathers), a streak down the slope under the chimney (its soot and the
     water off its flashing), and lichen in patches on the top courses, thinning down the slope (the stain: paler,
     grey-green). At the roof's age, as roof_values. Returns (wash in L*, stain 0..1)."""
-    tiles = pg.m["tiles"] | pg.m["roof"]
+    tiles = pg.m["tiles"] | pg.m["roof"] | pg.m["slate"]
     age = float(FL.smoothstep(0.0, R["fullYears"], roof_years(meta)))
     wash, sn = np.zeros(pg.shape), np.zeros(pg.shape)
     if age <= 0.0:
@@ -609,7 +609,7 @@ def main():
         ck = chalk(v, A["chalk"], wear(meta, paints, wall))
         v.put(wash, np.maximum(v.get(wash), ck))
         v.put(far, np.maximum(v.get(far), ck))
-        plinth = (v.m["stone"] | v.m["concrete"]) & v.vertical
+        plinth = (v.m["stone"] | v.m["concrete"] | (v.m["render"] & (v.z < meta["heights"]["plinth"] + 0.1))) & v.vertical
         v.put(sn, wet_margin(v, Q, vm, broads[i], plinth))
     painted = pg.m["cladding"] | pg.m["trims"]
     pl = np.where(painted, pl, 0.0)
@@ -655,7 +655,7 @@ def main():
         lean = walls[i]["kind"] == "lean"
         zf = lows[i][0]
         clad = v.m["cladding"] & v.vertical
-        plinth = (v.m["stone"] | v.m["concrete"]) & v.vertical
+        plinth = (v.m["stone"] | v.m["concrete"] | (v.m["render"] & (v.z < meta["heights"]["plinth"] + 0.1))) & v.vertical
         down(v, dl, base, clad, v.z - zf, J["drip"])
         down(v, dl, base, plinth, (zf if lean else meta["heights"]["drip"][0]) - v.z, J["plinth"])
         down(v, dl, base, plinth, v.z, J["ground"])

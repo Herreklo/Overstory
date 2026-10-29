@@ -132,7 +132,7 @@ class Frame:
     its stones (which one is the seed's), the wall plates sag between the gables and the ridge with them, and the
     roof's thrust pushes the eave walls' heads out. Points are the house's rest positions."""
 
-    def __init__(self, W, F, w, d, z_sill, z_top, z_ridge):
+    def __init__(self, W, F, w, d, z_sill, z_top, z_ridge, ridge_x=True):
         b = W["bends"]
         c = F.age / 100.0
         self.settle = min(b["settleMostMm"], b["settleMmPerCentury"] * c) * MM * W["push"]["settle"]
@@ -143,7 +143,7 @@ class Frame:
         self.bend, self.share = b["settleBendMm"] * MM, b["settleBendShare"]
         k = int(F.u("frame", "settle-corner") * 4) % 4
         self.corner = ((0.0, 0.0), (w, 0.0), (w, d), (0.0, d))[k]
-        self.w, self.d = w, d
+        self.w, self.d, self.ridge_x = w, d, ridge_x
         self.z_sill, self.z_top, self.z_ridge = z_sill, z_top, z_ridge
 
     def offset(self, p):
@@ -153,7 +153,9 @@ class Frame:
         tx, ty = max(0.0, 1.0 - dx / self.reach), max(0.0, 1.0 - dy_ / self.reach)
         bx, by = max(0.0, 1.0 - dx / self.bend), max(0.0, 1.0 - dy_ / self.bend)
         dz = -self.settle * ((1.0 - self.share) * tx * ty + self.share * (bx * by) ** 2)
-        s = math.sin(math.pi * min(1.0, max(0.0, x / self.w)))
+        # along the ridge (u, the eaves' run) and across it (v, the gables' span)
+        u, v, run, span = (x, y, self.w, self.d) if self.ridge_x else (y, x, self.d, self.w)
+        s = math.sin(math.pi * min(1.0, max(0.0, u / run)))
         if z <= self.z_top:
             h = min(1.0, max(0.0, (z - self.z_sill) / (self.z_top - self.z_sill)))
             hs, hl = h, h * h
@@ -161,10 +163,10 @@ class Frame:
             r = min(1.0, (z - self.z_top) / max(self.z_ridge - self.z_top, 1e-3))
             hs, hl = 1.0 + (self.ridge_share - 1.0) * r, 1.0 - r
         dz -= self.sag * s * hs
-        side = -1.0 if y < self.d / 2.0 else 1.0
-        inside = 1.0 if -0.5 < y < self.d + 0.5 else 0.0
-        dy = self.lean * s * hl * side * inside
-        return Vector((0.0, dy, dz))
+        side = -1.0 if v < span / 2.0 else 1.0
+        inside = 1.0 if -0.5 < v < span + 0.5 else 0.0
+        dv = self.lean * s * hl * side * inside
+        return Vector((0.0, dv, dz)) if self.ridge_x else Vector((dv, 0.0, dz))
 
     def __call__(self, p):
         return p + self.offset(p)
@@ -218,9 +220,15 @@ class House:
         self.ch = {k: v * MM for k, v in W["chamferMm"].items() if k != "describes"}
         cl = W["cladding"]
         self.step = cl["stepMm"] * MM
-        # the body
+        # the body: w along the street, d back from it; the working's `faces` says whether an eave or a gable
+        # fronts the street, so the roof spans d (its eaves along the street) or w (its gables to it)
         self.w = F.plot["w"] * MM
         self.d = F.between(*rng(W["depthMm"]), "body", "depth")
+        self.gable_front = W["faces"] == "gable"
+        self.run, self.span = (self.d, self.w) if self.gable_front else (self.w, self.d)
+        # the roof's own frame: x along the ridge, y across it
+        self.body = Matrix.Translation(Vector((self.w, 0.0, 0.0))) @ Matrix.Rotation(math.pi / 2, 4, "Z") if self.gable_front \
+            else Matrix.Identity(4)
         self.pitch = math.radians(F.between(*W["roofPitchDeg"], "body", "pitch"))
         self.t = math.tan(self.pitch)
         pl = W["plinth"]
@@ -235,6 +243,7 @@ class House:
         self.floors = [self.z_floor + k * lift for k in range(self.full)]
         self.z_loft = self.z_floor + self.full * lift
         self.knee = F.between(*rng(W["kneeMm"]), "body", "knee") if self.loft else 0.0
+        self.z_belt = self.z_loft + W["belt"]["overFloorMm"] * MM if "belt" in W else None
         self.z_top = self.z_loft + self.knee
         cs = W["casing"]
         self.cw = cs["widthMm"] * MM
@@ -249,20 +258,24 @@ class House:
         self.vov = vg["overhangMm"] * MM
         self.bt = vg["thickMm"] * MM * self.push["bargeThick"]
         self.bw = vg["boardMm"] * MM
+        self.roofing = W.get("roofing", "clay-pantile")
+        sl = self.M[self.roofing]["laid"] if self.roofing == "roof-slate" else None
+        self.barge_up = sl["verge"]["bargeAboveMm"] * MM if sl else 0.0
         self.y_foot = -self.ov - self.ft - 0.05
         self.z_foot = self.z_top - self.st - 0.01 + self.fh + 0.004
-        self.z_ridge = self.zp(self.d / 2.0)
-        self.frame = Frame(W, F, self.w, self.d, self.z_floor, self.z_top, self.z_ridge)
-        self.walls = [Wall(0, (0.0, 0.0), 0.0, self.w, "eave"), Wall(1, (self.w, 0.0), math.pi / 2, self.d, "gable"),
-                      Wall(2, (self.w, self.d), math.pi, self.w, "eave"), Wall(3, (0.0, self.d), 3 * math.pi / 2, self.d, "gable")]
+        self.z_ridge = self.zp(self.span / 2.0)
+        self.frame = Frame(W, F, self.w, self.d, self.z_floor, self.z_top, self.z_ridge, not self.gable_front)
+        k0, k1 = ("gable", "eave") if self.gable_front else ("eave", "gable")
+        self.walls = [Wall(0, (0.0, 0.0), 0.0, self.w, k0), Wall(1, (self.w, 0.0), math.pi / 2, self.d, k1),
+                      Wall(2, (self.w, self.d), math.pi, self.w, k0), Wall(3, (0.0, self.d), 3 * math.pi / 2, self.d, k1)]
         self.version_of = {}
         self.courses = {}
         self.lean_to = None
 
     # ---- heights of the roof
     def zp(self, y):
-        """The tiles' plane over a point `y` back from the front wall (symmetric about the ridge)."""
-        yy = min(y, self.d - y)
+        """The tiles' plane over a point `y` across the roof from one eave (symmetric about the ridge)."""
+        yy = min(y, self.span - y)
         return self.z_foot + (yy - self.y_foot) * self.t
 
     def z_rake(self, a):
@@ -336,6 +349,9 @@ class House:
                  "made": made if kind != "door" else F.built, "eraOf": era_of if kind != "door" else F.built,
                  "boarded": bd is not None and (bd["params"].get("scope") == "all" or wall.i == 0)}
             out.append(o)
+        if self.gable_front:
+            self.openings = out
+            return self.plan_gable_front(add)
         # the front: bays across it
         wall = self.walls[0]
         edge = F.between(*rng(op["front"]["edgeMm"]), "open", "front", "edge")
@@ -379,6 +395,81 @@ class House:
             x = e + (wall.L - 2 * e - ww) * (k / (nb - 1) if nb > 1 else 0.5)
             add(wall, "window", x, self.floors[0] + win["sillOverFloorMm"] * MM, ww, win["hMm"] * MM)
         self.openings = out
+
+    def plan_gable_front(self, add):
+        """A gable-fronted house's openings (the working's openings.gableFront): the front's ground floor in bays; its
+        loft a pair of windows about the middle with a smaller one outside each where the rake leaves room, and a small
+        one in the gable's peak where it fits; the back gable the same pair over two windows below; on each side
+        (eave) wall windows in bays, and the door on one of them (the seed's) near the front, up its steps."""
+        W, F = self.W, self.F
+        op, gf = W["openings"], W["openings"]["gableFront"]
+        win, loft = op["window"], op["loft"]
+        ww, wh = win["wMm"] * MM, win["hMm"] * MM
+        lw, lh = loft["wMm"] * MM, loft["hMm"] * MM
+        head = self.head_h + self.cap_t + 0.05
+
+        def bays(wall, n, edge, z, w, h, skip=()):
+            span = wall.L - 2 * edge - w
+            for k in range(n):
+                if k in skip:
+                    continue
+                add(wall, "window", edge + (span * k / (n - 1) if n > 1 else span / 2.0), z, w, h)
+
+        def loft_row(wall):
+            z = self.z_loft + loft["sillOverFloorMm"] * MM
+            c = wall.L / 2.0
+            g = gf["pairGapMm"] * MM
+            # the pair, as tall as the rake allows over their outer edges
+            room = self.z_rake(c - g / 2.0 - ww) - head - z
+            if room < 0.6:
+                return
+            for s_ in (-1, 1):
+                x = c + s_ * g / 2.0 - (ww if s_ < 0 else 0.0)
+                add(wall, "loft", x, z, ww, min(wh, room))
+            # a smaller one outside each, where it fits under the rake at its own sill height
+            if gf.get("outer"):
+                for s_ in (-1, 1):
+                    x_in = c + s_ * (g / 2.0 + ww + gf["outerGapMm"] * MM)
+                    x = x_in if s_ > 0 else x_in - lw
+                    edge = x if s_ < 0 else x + lw
+                    h = min(lh, self.z_rake(edge) - head - z)
+                    if h >= 0.55:
+                        add(wall, "loft", x, z, lw, h)
+            # the peak's small window
+            pk = gf.get("peak")
+            if pk:
+                pw, ph = pk["wMm"] * MM, pk["hMm"] * MM
+                zp_ = z + wh + head + pk["overMm"] * MM
+                if self.z_rake(c - pw / 2.0) - head >= zp_ + ph:
+                    add(wall, "loft", c - pw / 2.0, zp_, pw, ph)
+        z_win = self.floors[0] + win["sillOverFloorMm"] * MM
+        front = self.walls[0]
+        edge = F.between(*rng(gf["frontEdgeMm"]), "open", "front", "edge")
+        n = 1 + max(0, round((front.L - 2 * edge - ww) / (gf["bayMm"] * MM)))
+        bays(front, n, edge, z_win, ww, wh)
+        if self.loft:
+            loft_row(front)
+        back = self.walls[2]
+        bays(back, gf["backWindows"], F.between(*rng(gf["backEdgeMm"]), "open", "back", "edge"), z_win, ww, wh)
+        if self.loft:
+            loft_row(back)
+        # the sides: the door on one, near the front, the windows in bays behind it
+        door_side = 1 if F.u("open", "door", "side") < 0.5 else 3
+        dr = op["door"]
+        dw = dr["wMm"] * MM
+        dh = (win["sillOverFloorMm"] + win["hMm"]) * MM if dr.get("headWithWindows") else dr["hMm"] * MM
+        for wall in (self.walls[1], self.walls[3]):
+            # wall 1 runs from the front, wall 3 towards it
+            at_front = (lambda a, w: a) if wall.i == 1 else (lambda a, w: wall.L - a - w)
+            e0 = gf["sideFrontMm"] * MM
+            if wall.i == door_side:
+                add(wall, "door", at_front(e0, dw), self.floors[0], dw, dh)
+                e0 += dw + gf["sideGapMm"] * MM
+            m = gf["sideWindows"]
+            room = wall.L - e0 - gf["sideBackMm"] * MM - ww
+            for k in range(m):
+                a = e0 + (room * k / (m - 1) if m > 1 else room / 2.0)
+                add(wall, "window", at_front(a, ww), z_win, ww, wh)
 
     def covered_by_lean_to(self, o):
         lt = self.lean_to
@@ -595,6 +686,48 @@ class House:
                           Z, OUT, h, proud + self.step, c, nseg=max(1, round((sb - sa) / 0.75)),
                           groups=("bottom", "front", "top"), caps=(wall.kind == "eave" or k > 0, wall.kind == "eave" or k < len(spans) - 1))
 
+    def belt(self):
+        """A water board across each gable at its loft floor (the working's belt), the gable's cladding above it
+        standing out over it as the storey's own skirt."""
+        bt = self.W.get("belt")
+        if not bt or not self.loft:
+            return
+        h, proud = bt["heightMm"] * MM, bt["proudMm"] * MM
+        z = self.z_belt
+        for wall in self.walls:
+            if wall.kind != "gable":
+                continue
+            self.trim(f"belt/w{wall.i}", wall, Vector((0.0, -self.step, z - h)), Vector((wall.L, 0, 0)), Z, OUT, h,
+                      proud + self.step, self.ch["drip"], nseg=max(1, round(wall.L / 0.75)), groups=("bottom", "front", "top"),
+                      caps=(False, False))
+            dn = bt.get("dentil")
+            if dn:
+                self.dentils(wall, z - h, dn)
+
+    def dentils(self, wall, z_top, dn):
+        """A dentil band under the belt: a board along the gable and the blocks cut on it, as many as fit between the
+        corner boards at the working's pitch, centred."""
+        bh, bp = dn["boardMm"][0] * MM, dn["boardMm"][1] * MM
+        tw, th, gap, tp = dn["toothMm"][0] * MM, dn["toothMm"][1] * MM, dn["gapMm"] * MM, dn["proudMm"] * MM
+        a0, a1 = self.cb[0], wall.L - self.cb[0]
+        y0 = -self.step
+        self.trim(f"belt/w{wall.i}/dentil", wall, Vector((a0, y0, z_top - bh)), Vector((a1 - a0, 0, 0)), Z, OUT, bh, bp,
+                  0.0, nseg=max(1, round((a1 - a0) / 0.75)), groups=("bottom", "front", "top"), caps=(True, True)).no_city = True
+        n = int((a1 - a0 - gap) / (tw + gap))
+        x = a0 + (a1 - a0 - (n * tw + (n - 1) * gap)) / 2.0
+        zt = z_top - (bh - th) / 2.0
+        pc = self.make(f"belt/w{wall.i}/teeth", "trims", ("near",), wall)
+        key = self.charts(f"h{self.F.id}/belt/w{wall.i}/teeth", (a1 - a0) + 0.1, th + 2 * tp + 0.1)
+        yb, yf = y0 - bp, y0 - bp - tp
+        for k in range(n):
+            xa, xb = x + k * (tw + gap), x + k * (tw + gap) + tw
+            P_ = [Vector((xa, yb, zt - th)), Vector((xb, yb, zt - th)), Vector((xb, yf, zt - th)), Vector((xa, yf, zt - th)),
+                  Vector((xa, yf, zt)), Vector((xb, yf, zt))]
+            for q in ([P_[3], P_[2], P_[5], P_[4]], [P_[0], P_[1], P_[2], P_[3]],
+                      [P_[0], P_[3], P_[4], Vector((xa, yb, zt))], [P_[2], P_[1], Vector((xb, yb, zt)), P_[5]]):
+                uv = [(p.x - a0 + 0.05, p.z - zt + th + 0.05 + (yb - p.y)) for p in q]
+                pc.add("near", Face(q, uv, key, uv))
+
     # ---- an opening's surround: moulded casing legs, the head's frieze, cap and bed mould, the horned sill
     def surround(self, o, k):
         W = self.W
@@ -636,13 +769,19 @@ class House:
             pc = self.trim(f"{tag}/casing/bed", wall, Vector((x0 - cw - 0.01, y0 - p, zb - bm[1] * MM)),
                            Vector((capw - 0.04, 0, 0)), Z, OUT, bm[1] * MM, bm[0] * MM, self.ch["bedMould"],
                            caps=(True, True), chamfer_edges=(True, False), mode=mode, place=place)
+            pc.no_city = True
             self.rigid_lt(pc, o)
+        if hv.get("blocks"):
+            self.head_blocks(tag, wall, place, mode, x0, x1, cw, zb, y0 - p, hv["blocks"], o)
         feat = {"casing": [x0 - cw, x1 + cw, za, zb + self.cap_t], "versions": {"casing": cv["id"], "head": hv["id"], "sill": sv["id"]}}
         if o["kind"] != "door":
             horn = sv["hornMm"] * MM
             sp = cs["sillProudMm"] * MM * self.push["sillProud"]
             sx0, sx1 = x0 - cw - horn, x1 + cw + horn
             self.sill(tag, wall, place, mode, sx0, sx1 - sx0, za, sp, self.sill_t, o)
+            if sv.get("brackets"):
+                for side, xc in (("l", x0 - cw / 2.0), ("r", x1 + cw / 2.0)):
+                    self.bracket(f"{tag}/casing/bracket{side}", wall, place, mode, xc, za - self.sill_t, y0 - p, sv["brackets"], o)
             feat["sill"] = [sx0, sx1, za - self.sill_t, sp]
             # the sill's fall along its length, from the frame: water leaves it at its lower end
             if not o.get("leanTo"):
@@ -895,6 +1034,41 @@ class House:
                     caps=(True, True), nominal={"bottom": d, "front": t, "top": math.hypot(d, rise)})
         self.rigid_lt(pc, o)
 
+    def head_blocks(self, tag, wall, place, mode, x0, x1, cw, zb, y_face, bk, o):
+        """A block on each side board's top, under the cap."""
+        bw, bh, bp = bk["wMm"] * MM, bk["hMm"] * MM, bk["proudMm"] * MM
+        for side, xc in (("l", x0 - cw / 2.0), ("r", x1 + cw / 2.0)):
+            pc = self.trim(f"{tag}/casing/block{side}", wall, Vector((xc - bw / 2.0, y_face, zb - bh)), Vector((bw, 0, 0)), Z, OUT,
+                           bh, bp, self.ch["cap"], caps=(True, True), groups=("bottom", "front", "top"), mode=mode, place=place)
+            pc.no_city = True
+            self.rigid_lt(pc, o)
+
+    def bracket(self, pid, wall, place, mode, xc, ztop, y_face, bk, o):
+        """An ogee bracket under a sill, against the side board: its top under the sill, its face falling in an S
+        to its foot on the board."""
+        L, t, d, e = bk["lengthMm"] * MM, bk["thickMm"] * MM, bk["proudMm"] * MM, bk["headMm"] * MM
+        pc = self.make(pid, "trims", ("near", "street"), wall, mode, place)
+        pc.no_city = True
+        us = (0.0, 0.25, 0.5, 0.75, 1.0)
+        out = [(0.0, ztop), (d, ztop), (d, ztop - e)] + [(d * (1.0 - (3 * u * u - 2 * u ** 3)) + 0.004 * (u < 1), ztop - e - u * (L - e)) for u in us[1:]]
+        key = self.charts(f"h{self.F.id}/{pid}", 2 * d + 3 * t + 0.4, L + 0.06)
+        for lv in ("near", "street"):
+            pts = out if lv == "near" else [out[0], out[1], out[2], out[-1]]
+            sides = [[Vector((xc + sx * t / 2.0, y_face - q, z)) for (q, z) in pts] for sx in (-1, 1)]
+            for j, sd in enumerate(sides):
+                q = sd if j == 0 else sd[::-1]
+                uv = [((y_face - p_.y) + j * (d + 0.05) + 0.03, p_.z - ztop + L + 0.03) for p_ in q]
+                pc.add(lv, Face(q, uv, key, uv))
+            run = 0.0
+            for i in range(1, len(pts) - 1):
+                q = [sides[0][i], sides[0][i + 1], sides[1][i + 1], sides[1][i]]
+                seg = (sides[0][i + 1] - sides[0][i]).length
+                uv = [(2 * d + 0.13 + (0.0 if k in (0, 3) else 0.0) + (t if k >= 2 else 0.0), run + (seg if k in (1, 2) else 0.0) + 0.03)
+                      for k in range(4)]
+                pc.add(lv, Face(q, uv, key, uv))
+                run += seg
+        self.rigid_lt(pc, o)
+
     def sill(self, tag, wall, place, mode, x, length, ztop, proud, t, o):
         c = self.ch["sill"]
         pc = self.make(f"{tag}/casing/sill", "trims", ("near", "street"), wall, mode, place)
@@ -1004,6 +1178,8 @@ class House:
     # ---- the plinth: split fieldstone, rigid, a long corner stone bonding each corner, the runs between
     def plinth(self):
         pl = self.W["plinth"]
+        if pl["material"] == "render":
+            return self.plinth_render(pl)
         F = self.F
         zt = self.z_plinth
         y_face = -self.step - 0.012
@@ -1054,6 +1230,29 @@ class House:
                 pts = [Vector((0.0, yb, 0.0)), Vector((wall.L, yb, 0.0)), Vector((wall.L, yb, zt)), Vector((0.0, yb, zt))]
                 cuv = [(p.x + 0.3, p.z) for p in pts]
                 pc.add(lv, Face(pts, cuv, key, cuv, under=True))
+
+    def plinth_render(self, pl):
+        """A plinth of stone or brick under a coat of render: each wall's face out past the corner to meet the next,
+        its top arris worn round under the drip board."""
+        zt = self.z_plinth
+        y_face = -self.step - pl["proudMm"] * MM
+        e = -y_face
+        c = self.ch["plinth"]
+        for wall in self.walls:
+            key = self.charts(f"plinth/w{wall.i}", wall.L + 0.6, zt + 0.05)
+            self.city_plinth.append((wall, y_face, e, zt, key))
+            pc = self.make(f"plinth/w{wall.i}/render", "render", ("near", "street"), wall)
+            for lv in ("near", "street"):
+                cc = c if lv == "near" else 0.0
+                pts = [Vector((-e, y_face, 0.0)), Vector((wall.L + e, y_face, 0.0)), Vector((wall.L + e, y_face, zt - cc)),
+                       Vector((-e, y_face, zt - cc))]
+                cuv = [(p.x + 0.3, p.z) for p in pts]
+                pc.add(lv, Face(pts, cuv, key, cuv))
+                if cc:
+                    top = [Vector((-e + cc, y_face + cc, zt)), Vector((wall.L + e - cc, y_face + cc, zt))]
+                    q = [pts[3], pts[2], top[1], top[0]]
+                    cuv = [(p.x + 0.3, zt - cc + (p.y - y_face)) for p in q]
+                    pc.add(lv, Face(q, cuv, key, cuv, arris=True))
 
     def stone(self, sid, wall, a, b, zt, y_face, end=None):
         """A split stone between a and b along its wall: a pillowed face worn back at its arris, its sides into the
@@ -1258,42 +1457,105 @@ class House:
                     a0, a1 = -self.ov - self.ft, L / 2.0
                 else:
                     a0, a1 = L / 2.0, L + self.ov + self.ft
-                p0 = Vector((a0, -self.vov, self.zp_wall(a0) - 0.006))
-                p1 = Vector((a1, -self.vov, self.zp_wall(a1) - 0.006))
+                p0 = Vector((a0, -self.vov, self.zp_wall(a0) - 0.006 + self.barge_up))
+                p1 = Vector((a1, -self.vov, self.zp_wall(a1) - 0.006 + self.barge_up))
                 r = (p1 - p0)
                 rd = r.normalized()
-                P = (Vector((0, 0, -1)) - rd * rd.z).normalized()
+                P = (Vector((0, 0, -1)) + rd * rd.z).normalized()  # square to the rake, in the gable's plane
                 # plumb cuts at the foot and the apex
                 plumb = lambda p, q, P=P, rd=rd: -P.x * p / rd.x  # noqa: E731
                 self.trim(f"verge/w{wall.i}h{half}/barge", wall, p0, r, P, OUT, self.bw, self.bt, self.ch["barge"],
                           nseg=max(2, round(r.length / 0.8)), groups=("top", "front", "bottom"),
                           caps=(True, True), cut=(plumb, plumb))
+                # a moulding planted along the barge's lower edge (the working's mouldMm: its width and how proud)
+                vm = self.W["verge"].get("mouldMm")
+                if vm:
+                    mw, mt = vm[0] * MM, vm[1] * MM
+                    off = self.bw - mw
+                    cutm = lambda p, q, P=P, rd=rd, off=off: -P.x * (p + off) / rd.x  # noqa: E731
+                    self.trim(f"verge/w{wall.i}h{half}/mould", wall, p0 + P * off + OUT * self.bt, r, P, OUT, mw, mt,
+                              self.ch["bedMould"], nseg=max(2, round(r.length / 0.8)), groups=("top", "front", "bottom"),
+                              caps=(True, True), cut=(cutm, cutm))
+                # where the eave's box runs out under the barge's foot, a board closes its end from the eave's soffit
+                # up to the barge's lower edge, a little behind the barge's face
+                lo = self.z_top - self.st
+                af, aw = (a0, 0.0) if half == 0 else (a1, L)
+                bottom = lambda a: self.zp_wall(a) - 0.006 + self.barge_up - self.bw / math.cos(self.pitch)  # noqa: E731
+                if bottom(af) < lo + 0.3 or bottom(aw) > lo + 0.01:
+                    ye = -self.vov - self.bt + 0.012
+                    ze = [max(lo, bottom(af)), bottom(aw)]
+                    pc = self.make(f"verge/w{wall.i}h{half}/end", "trims", ("near", "street"), wall)
+                    key = self.charts(f"h{self.F.id}/verge/w{wall.i}h{half}/end", abs(aw - af) + 0.06, ze[1] - lo + 0.06)
+                    q = [Vector((af, ye, lo)), Vector((aw, ye, lo)), Vector((aw, ye, ze[1])), Vector((af, ye, ze[0]))]
+                    q = q if half == 1 else [q[1], q[0], q[3], q[2]]
+                    uv = [(abs(p.x - af) + 0.03, p.z - lo + 0.03) for p in q]
+                    for lv in ("near", "street"):
+                        pc.add(lv, Face(q, uv, key, uv))
                 # the soffit under the tiles from the gable's face out to the barge board
                 q0 = Vector((a0, 0.0, self.zp_wall(a0) - 0.07))
                 q1 = Vector((a1, 0.0, self.zp_wall(a1) - 0.07))
+                self.purlins(wall, half, bottom)
                 self.trim(f"verge/w{wall.i}h{half}/soffit", wall, q0, q1 - q0, OUT, Vector((0, 0, -1)), self.vov, 0.02, 0.0,
                           nseg=max(2, round((q1 - q0).length / 0.8)), groups=("back", "under", "front"), caps=(False, False),
                           chamfer_edges=(False, False))
             del a_foot
 
+    def purlins(self, wall, half, bottom):
+        """The purlins' ends where they run out through a gable to carry its verge (the working's verge.purlins: their
+        places as shares of the rake from the eave, the ridge's at the apex): each from the gable's face to the barge
+        under the soffit, showing below the barge's edge, its lower front corner cut away."""
+        pu = self.W["verge"].get("purlins")
+        if not pu:
+            return
+        L = wall.L
+        w, show, c = pu["widthMm"] * MM, pu["showMm"] * MM, pu["cutMm"] * MM
+        at = [s_ * L / 2.0 if half == 0 else L - s_ * L / 2.0 for s_ in pu["shares"]] + ([L / 2.0] if half == 0 else [])
+        y1 = -self.vov
+        for k, a in enumerate(at):
+            zb = bottom(a) - show
+            pc = self.make(f"verge/w{wall.i}h{half}/purlin{k}", "trims", ("near", "street"), wall)
+            pc.no_city = True
+            sides = []
+            for s_ in (a - w / 2.0, a + w / 2.0):
+                top = min(self.zp_wall(s_), self.zp_wall(a)) - 0.09
+                sides.append([Vector((s_, 0.0, top)), Vector((s_, y1, top)), Vector((s_, y1, zb + c)), Vector((s_, y1 + c, zb)),
+                              Vector((s_, 0.0, zb))])
+            key = self.charts(f"h{self.F.id}/verge/w{wall.i}h{half}/purlin{k}", 2 * (self.vov + 0.4) + 0.1, 0.8)
+            for lv in ("near", "street"):
+                if lv == "near":
+                    for j, side in enumerate(sides):
+                        q = side if j == 1 else side[::-1]
+                        uv = [(-p.y + 0.03 + j * (self.vov + 0.45), p.z - zb + 0.03) for p in q]
+                        pc.add(lv, Face(q, uv, key, uv))
+                # the end, its cut and the underside; the wall and the soffit hide the rest
+                for e0, e1 in ((1, 2), (2, 3), (3, 4)):
+                    q = [sides[0][e0], sides[1][e0], sides[1][e1], sides[0][e1]]
+                    if lv == "street" and e0 != 1:
+                        continue
+                    u0 = {1: 0.0, 2: 0.3, 3: 0.4}[e0]
+                    uv = [(p.x - a + w / 2.0 + 0.03, u0 + (0.0 if i < 2 else 0.25) + 0.03 + 0.4) for i, p in enumerate(q)]
+                    pc.add(lv, Face(q, uv, key, uv))
+
     def zp_wall(self, a):
         """The tiles' plane over a gable's point `a` along it (beyond its ends, the eave's overhang)."""
-        return self.z_foot + (min(a, self.d - a) - self.y_foot) * self.t
+        return self.z_foot + (min(a, self.span - a) - self.y_foot) * self.t
 
     # ---- the roof: pantiles course by course on each slope, the ridge, the chimney
     def roof(self):
+        if self.roofing == "roof-slate":
+            return self.roof_slate()
         tl = {**self.M["clay-pantile"]["laid"], **{k: v for k, v in self.W["pantile"].items() if k != "describes"}}
         F = self.F
         cover, course, roll = tl["coverMm"] * MM, tl["courseMm"] * MM, tl["rollMm"] * MM
         thick, lift, lap = tl["thickMm"] * MM, tl["liftMm"] * MM, tl["lapMm"] * MM / (tl["coverMm"] * MM)
         pan, rnd = tl["panAt"], tl["roundness"]
         x0 = -self.vov - self.bt - tl["verge"]["pastMm"] * MM
-        x1 = self.w - x0
+        x1 = self.run - x0
         span = x1 - x0
         n_cov = math.ceil(span / cover)
         cs, sn = math.cos(self.pitch), math.sin(self.pitch)
         up, nrm = Vector((0, cs, sn)), Vector((0, -sn, cs))
-        Ls = (self.d / 2.0 - self.y_foot) / cs
+        Ls = (self.span / 2.0 - self.y_foot) / cs
         n_courses = max(1, math.ceil((Ls - 0.06) / course))
         near_c = self.S["levels"]["near"]["tileCourses"]
 
@@ -1365,8 +1627,82 @@ class House:
                         xa, xb = x0 + cover * (pan + 0.5), min(x1, x0 + cover * (n_cov - 0.5 + pan))
                         pc = self.make(f"roof/w{wall.i}/c{ci:02d}/plane", mat, (lv,), wall)
                         self.course_plane(pc, lv, base, x0, xa, xb, roll, thick, lift, length, up, nrm, key)
+            self.sarking(wall, -self.vov, self.run + self.vov, base0, up, nrm, Ls, 0.03)
             self.features["roof"].append({"wall": wall.i, "x0": x0, "foot": [self.y_foot, self.z_foot], "pitch": math.degrees(self.pitch),
                                           "courses": n_courses, "course": course, "cover": cover, "pan": pan})
+        self.ridge(x0, x1)
+
+    def sarking(self, wall, x0, x1, base0, up, nrm, Ls, below):
+        """The roof's boarding under its covering, `below` under the covering's foot plane, verge to verge and eave to
+        ridge: seen only from under the verge, and closing the slope to the sun, whose shadow the courses' steps
+        alone let through in lines (the shadow's normal bias opens them). On the same segments as the covering, so
+        the frame bends them alike; a page of its own at a tenth of the density."""
+        Ls_ = Ls + 0.03
+        key = self.charts(f"roof/w{wall.i}/sarking", x1 - x0 + 0.1, Ls_ + 0.06, 0.1)
+        pc = self.make(f"roof/w{wall.i}/sarking", "trims", ("near", "street"), wall)
+        b = base0 - nrm * below
+        for lv, seg in (("near", 1.0), ("street", 2.0)):
+            nx, ns = max(1, round((x1 - x0) / seg)), max(1, round(Ls_ / seg))
+            for i in range(nx):
+                xa, xb = x0 + (x1 - x0) * i / nx, x0 + (x1 - x0) * (i + 1) / nx
+                for j in range(ns):
+                    sa, sb = Ls_ * j / ns, Ls_ * (j + 1) / ns
+                    # facing down, under the slope
+                    q = [b + Vector((xa, 0, 0)) + up * sa, b + Vector((xa, 0, 0)) + up * sb,
+                         b + Vector((xb, 0, 0)) + up * sb, b + Vector((xb, 0, 0)) + up * sa]
+                    uv = [(xa - x0 + 0.05, sa + 0.03), (xa - x0 + 0.05, sb + 0.03), (xb - x0 + 0.05, sb + 0.03),
+                          (xb - x0 + 0.05, sa + 0.03)]
+                    pc.add(lv, Face(q, uv, key, uv, under=True))
+
+    def roof_slate(self):
+        """Slates in courses on each slope (the pack's roof-slate, laid): each course's face from its butt, standing a
+        slate's thickness proud of the course below, to where the next course's butt covers it, and the butt between.
+        The slates stop against the barge boards, which stand above them; their joints are the page's. One plane a
+        slope from afar."""
+        sl = self.M["roof-slate"]["laid"]
+        course, lift = sl["courseMm"] * MM, sl["liftMm"] * MM
+        x0, x1 = -self.vov, self.run + self.vov
+        cs, sn = math.cos(self.pitch), math.sin(self.pitch)
+        up, nrm = Vector((0, cs, sn)), Vector((0, -sn, cs))
+        Ls = (self.span / 2.0 - self.y_foot) / cs
+        n = max(1, math.ceil((Ls - 0.02) / course))
+        for wall in self.walls:
+            if wall.kind != "eave":
+                continue
+            base0 = Vector((0, self.y_foot, self.z_foot))
+            key = self.charts(f"roof/w{wall.i}", x1 - x0 + 0.1, n * (course + lift) + 0.06)
+            pc = self.make(f"roof/w{wall.i}/slates", "slate", ("near", "street"), wall)
+            for lv, seg in (("near", 1.0), ("street", 2.0)):
+                xs = [x0 + (x1 - x0) * k / max(1, round((x1 - x0) / seg)) for k in range(max(1, round((x1 - x0) / seg)) + 1)]
+                for ci in range(n):
+                    foot = base0 + up * (course * ci)
+                    head = base0 + up * min(course * (ci + 1), Ls)
+                    v0 = ci * (course + lift) + 0.03
+                    for xa, xb in zip(xs, xs[1:]):
+                        X0, X1 = Vector((xa, 0, 0)), Vector((xb, 0, 0))
+                        # the butt, then the course's face up to the next butt
+                        q = [foot + X0, foot + X1, foot + X1 + nrm * lift, foot + X0 + nrm * lift]
+                        uv = [(xa - x0 + 0.05, v0), (xb - x0 + 0.05, v0), (xb - x0 + 0.05, v0 + lift), (xa - x0 + 0.05, v0 + lift)]
+                        pc.add(lv, Face(q, uv, key, uv))
+                        if ci == 0:
+                            # the eave course bedded down onto the fascia's top, so no gap opens under the slates
+                            fe = Vector((0, -self.ov - self.ft, self.z_foot - 0.004))
+                            q = [fe + X0, fe + X1, foot + X1, foot + X0]
+                            pc.add(lv, Face(q, uv, key, uv, under=True))
+                        q = [foot + X0 + nrm * lift, foot + X1 + nrm * lift, head + X1, head + X0]
+                        h = (head - foot).length
+                        uv = [(xa - x0 + 0.05, v0 + lift), (xb - x0 + 0.05, v0 + lift), (xb - x0 + 0.05, v0 + lift + h), (xa - x0 + 0.05, v0 + lift + h)]
+                        pc.add(lv, Face(q, uv, key, uv))
+            self.sarking(wall, x0, x1, base0, up, nrm, Ls, 0.025)
+            # from afar one plane up the slope
+            pc = self.make(f"roof/w{wall.i}/city", "slate", ("city",), wall)
+            foot, head = base0 + nrm * lift * 0.5, base0 + up * Ls
+            q = [foot + Vector((x0, 0, 0)), foot + Vector((x1, 0, 0)), head + Vector((x1, 0, 0)), head + Vector((x0, 0, 0))]
+            uv = [(0.05, 0.03), (x1 - x0 + 0.05, 0.03), (x1 - x0 + 0.05, n * (course + lift) + 0.03), (0.05, n * (course + lift) + 0.03)]
+            pc.add("city", Face(q, uv, key, uv))
+            self.features["roof"].append({"wall": wall.i, "x0": x0, "foot": [self.y_foot, self.z_foot], "pitch": math.degrees(self.pitch),
+                                          "courses": n, "course": course + lift, "cover": sl["widthMm"] * MM, "pan": 0.0,
+                                          "roofing": "roof-slate"})
         self.ridge(x0, x1)
 
     def tile_strip(self, pc, lv, prof, base, xa, cover, roll, thick, lift, length, up, nrm, yaw, dz, key, x0, under=False):
@@ -1416,13 +1752,13 @@ class House:
 
     def ridge(self, x0, x1):
         """Half-round ridge tiles along the ridge, each lapping the next; one strip at the street level."""
-        rd = self.M["clay-pantile"]["laid"]["ridge"]
-        r, tl, lp = rd["radiusMm"] * MM, rd["lengthMm"] * MM, rd["lapMm"] * MM
+        rd = self.M[self.roofing]["laid"]["ridge"]
+        r = rd["radiusMm"] * MM
         zr = self.z_ridge + self.W["ridge"]["seatMm"] * MM - r * 0.35
-        yr = self.d / 2.0
+        yr = self.span / 2.0
         span = x1 - x0
         key = self.charts("ridge/strip", span + 0.1, 2 * math.pi * r * 1.03 + 0.1)
-        place = Matrix.Identity(4)
+        place = self.body
 
         def planar(p):
             # one chart for both levels: along the ridge, and round the roll (its inside below its outside)
@@ -1432,11 +1768,18 @@ class House:
 
         def ring(k, rr):
             return [(rr * math.cos(math.pi * i / k), rr * math.sin(math.pi * i / k)) for i in range(k + 1)]
-        # street: one half-round along the whole ridge
-        pc = self.make("ridge/strip", "tiles", ("street",), None, "frame", place)
-        prof = [(p, q, "round", False) for p, q in ring(6, r)]
-        extrude(pc, "street", prof, Vector((x0, yr, zr)), Vector((span, 0, 0)), Vector((0, -1, 0)), Z, self.charts,
-                nseg=max(2, round(span / 1.0)), caps=(True, True), planar=planar)
+        # street: one half-round along the whole ridge; a slate roof's ridge a zinc roll at every level
+        whole = "lengthMm" not in rd
+        lvs = ("near", "street") if whole else ("street",)
+        pc = self.make("ridge/strip", "zinc" if whole else "tiles", lvs, None, "frame", place)
+        for lv in lvs:
+            prof = [(p, q, "round", False) for p, q in ring(8 if lv == "near" else 6, r)]
+            extrude(pc, lv, prof, Vector((x0, yr, zr)), Vector((span, 0, 0)), Vector((0, -1, 0)), Z, self.charts,
+                    nseg=max(2, round(span / 1.0)), caps=(True, True), planar=planar)
+        if whole:
+            self.chimney(zr + r)
+            return
+        tl, lp = rd["lengthMm"] * MM, rd["lapMm"] * MM
         n = math.ceil(span / (tl - lp))
         for i in range(n):
             xa = x0 + i * (tl - lp)
@@ -1454,12 +1797,12 @@ class House:
         F = self.F
         v = self.version("chimney", F.built)
         a = F.between(*rng(ch["sizeMm"]), "chimney", "size")
-        x = self.w * F.between(*ch["alongShare"], "chimney", "along")
-        y = self.d / 2.0
+        x = self.run * F.between(*ch["alongShare"], "chimney", "along")
+        y = self.span / 2.0
         top = self.z_ridge + F.between(*rng(ch["aboveRidgeMm"]), "chimney", "above")
         bottom = self.zp(y - a / 2.0 - 0.02) - 0.08
         c = self.ch["chimney"]
-        pc = self.make("chimney/stack", "render", ("near", "street"), None, "rigid", Matrix.Identity(4))
+        pc = self.make("chimney/stack", "render", ("near", "street"), None, "rigid", self.body)
         band, down = rng(v["bandMm"]), v["bandDownMm"] * MM
         for lv in ("near", "street"):
             cc = c if lv == "near" else 0.0
@@ -1486,15 +1829,16 @@ class House:
             for k in range(4):
                 pts = [i_[k], i_[(k + 1) % 4], i_[(k + 1) % 4] + dn, i_[k] + dn]
                 pc.add(lv, Face(pts, [cu(p) for p in pts], key, [cu(p) for p in pts], under=True))
-        pc.anchor, pc.along = Vector((x, y, self.z_ridge)), ALONG
-        self.features["chimney"] = [x, y, a, top]
+        pc.anchor, pc.along = self.body @ Vector((x, y, self.z_ridge)), self.body.to_3x3() @ ALONG
+        hx, hy, _ = self.body @ Vector((x, y, 0.0))
+        self.features["chimney"] = [hx, hy, a, top]
         # where the stack meets the tiles a zinc apron dressed round it, its upper edge a hand over the tiles' crests
         # on every side (rising with the roof to the ridge on the gable sides) and turned in onto the stack
-        fl = self.W["pantile"]
-        up = fl["rollMm"] * MM + 0.12
+        up = (self.W["pantile"]["rollMm"] if self.roofing == "clay-pantile" else self.M[self.roofing]["laid"]["liftMm"]) * MM + 0.12
         g = 0.015
         e = a / 2.0 + g
-        pz = self.make("chimney/apron", "zinc", ("near", "street"), None, "rigid", Matrix.Identity(4))
+        pz = self.make("chimney/apron", "zinc", ("near", "street"), None, "rigid", self.body)
+        pz.no_city = True
         crest = lambda yy: min(self.zp(yy) + up, z_crest + 0.06)  # noqa: E731
         ring_ = [(x - e, y - e), (x + e, y - e), (x + e, y + e), (x - e, y + e)]
         for lv in ("near", "street"):
@@ -1520,7 +1864,7 @@ class House:
                     s1 = abs(cut[i + 1][0] - ax) + abs(cut[i + 1][1] - ay)
                     uv = [(s0, 0.0), (s1, 0.0), (s1, g), (s0, g)]
                     pz.add(lv, Face(q, uv, key, uv))
-        pz.anchor, pz.along = Vector((x, y, self.z_ridge)), ALONG
+        pz.anchor, pz.along = pc.anchor, pc.along
 
     # ---- the extension: a lean-to on the back, rigid as a whole, out of plumb by the hand that built it
     def lean_to_plan(self):
@@ -1530,6 +1874,7 @@ class House:
         F, W = self.F, self.W
         lt = W["leanTo"]
         depth = F.between(*rng(lt["depthMm"]), "leanto", "depth")
+        assert not self.gable_front, "a lean-to is built only on an eave-fronted house"
         width = self.w * F.between(*lt["widthShare"], "leanto", "width")
         xl = (self.w - width) * F.u("leanto", "at")
         xr = xl + width
@@ -1663,6 +2008,8 @@ class House:
         for o in self.openings:
             if o["kind"] in ("window", "loft") and not o.get("leanTo"):
                 fixed += [o["z0"] - self.sill_t, o["z1"] + self.head_h + self.cap_t]
+        if self.z_belt is not None and self.loft:
+            fixed += [self.z_belt - W["belt"]["heightMm"] * MM, self.z_belt]
         self.course_table(0, self.z_drip1, self.z_ridge + 0.1, fixed, W["cladding"], "house")
         self.cladding([w for w in self.walls if w.kind == "eave"], 0, self.z_drip1, W["cladding"], self.opening_gaps,
                       z_end=self.z_top)
@@ -1670,6 +2017,7 @@ class House:
                       rake=lambda wall: self.z_rake)
         self.corner_boards()
         self.drip_boards()
+        self.belt()
         for k, o in enumerate(self.openings):
             self.surround(o, k)
             if o["boarded"]:
@@ -1712,7 +2060,7 @@ class House:
                 cuv = [(p.x - x0 + 0.05, max(0.0, (p - base).dot(up)) + 0.03) for p in q]
                 pc.add("city", Face(q, cuv, key, cuv))
         for (wall, y_face, e, zt, key) in self.city_plinth:
-            pc = self.make(f"plinth/w{wall.i}/city", "stone", ("city",), wall)
+            pc = self.make(f"plinth/w{wall.i}/city", self.W["plinth"].get("material", "stone"), ("city",), wall)
             pts = [Vector((-e, y_face, 0.0)), Vector((wall.L + e, y_face, 0.0)), Vector((wall.L + e, y_face, zt)), Vector((-e, y_face, zt))]
             cuv = [(p.x + 0.3, p.z) for p in pts]
             pc.add("city", Face(pts, cuv, key, cuv))
@@ -1929,7 +2277,7 @@ def main():
     F = Facts(a.get("fixture", S["fixture"]), hid, year)
     W = load(S["eras"][F.era])
     V = load(S["versions"])
-    mats = {m: load(f"{S['materials']}/{m}.json") for m in ("clay-pantile", "fieldstone", "pine", "glass")}
+    mats = {m: load(f"{S['materials']}/{m}.json") for m in ("clay-pantile", "roof-slate", "fieldstone", "pine", "glass")}
     paints = load(S["paints"])
     house = House(S, W, V, F, mats, paints)
     house.build()

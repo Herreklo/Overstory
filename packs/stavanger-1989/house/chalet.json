@@ -1,0 +1,342 @@
+{
+  "schemaVersion": 1,
+  "era": "chalet",
+  "describes": "How a sveitser (chalet) house of about 1865 to 1910 in Stavanger was built: a log or stud box bought half-made, its gable to the street on a high rendered plinth, a knee wall that makes the loft a full storey, a belt across the gable at the loft floor, deep overhangs at eave and verge, a slate roof, tall cross windows (docs/research/wooden-town-architecture.md, sveitserstil; ref 10, Normanns gate 27 in 1985, for the form). Values not in a source were judged by look against ref 10.",
+  "provenance": "authored",
+  "faces": "gable",
+  "roofing": "roof-slate",
+  "storeyMm": 2600,
+  "floorMm": 300,
+  "floorOverPlinthMm": 120,
+  "kneeMm": [
+    700,
+    1000
+  ],
+  "roofPitchDeg": [
+    42,
+    46
+  ],
+  "depthMm": [
+    6600,
+    7000
+  ],
+  "cladding": {
+    "kind": "single-rebate",
+    "exposureMm": [
+      140,
+      165
+    ],
+    "stepMm": 13,
+    "butChamferMm": 4,
+    "thickMm": 25,
+    "boardLengthMm": [
+      2600,
+      5200
+    ],
+    "segmentMm": 700
+  },
+  "corner": {
+    "widthMm": 150,
+    "proudMm": 22,
+    "thickMm": 32
+  },
+  "dripBoard": {
+    "heightMm": 130,
+    "proudMm": 36,
+    "slopeMm": 16
+  },
+  "casing": {
+    "widthMm": 122,
+    "proudMm": 25,
+    "headMm": 250,
+    "capMm": 30,
+    "capProudMm": 120,
+    "capSlopeDeg": 20,
+    "bedMouldMm": [
+      30,
+      22
+    ],
+    "sillMm": 50,
+    "sillProudMm": 95,
+    "hornMm": 30,
+    "capDripMm": [
+      10,
+      6
+    ],
+    "reveal": "the window or door frame stands back revealMm behind the casing's face",
+    "revealMm": 70
+  },
+  "belt": {
+    "describes": "A water board across the gable at the loft floor, overFloorMm above it, the loft's cladding standing out over it (ref 10).",
+    "heightMm": 140,
+    "proudMm": 40,
+    "overFloorMm": 250,
+    "dentil": {
+      "describes": "A dentil band under the belt (ref 10): a board, and blocks cut on it.",
+      "boardMm": [
+        150,
+        12
+      ],
+      "toothMm": [
+        60,
+        90
+      ],
+      "gapMm": 60,
+      "proudMm": 16
+    }
+  },
+  "openings": {
+    "describes": "Where a gable-fronted house's openings fall (gableFront): see house.py plan_gable_front. Windows tall, as the style's cross windows are.",
+    "window": {
+      "wMm": 880,
+      "hMm": 1450,
+      "sillOverFloorMm": 800
+    },
+    "loft": {
+      "wMm": 600,
+      "hMm": 1100,
+      "sillOverFloorMm": 800
+    },
+    "door": {
+      "wMm": 1000,
+      "hMm": 2100,
+      "overFloorMm": 0,
+      "headWithWindows": true
+    },
+    "gableFront": {
+      "frontEdgeMm": [
+        900,
+        1100
+      ],
+      "bayMm": 1700,
+      "backWindows": 2,
+      "backEdgeMm": [
+        1300,
+        1700
+      ],
+      "pairGapMm": 650,
+      "outer": true,
+      "outerGapMm": 600,
+      "peak": {
+        "wMm": 480,
+        "hMm": 760,
+        "overMm": 250
+      },
+      "sideFrontMm": 600,
+      "sideGapMm": 900,
+      "sideBackMm": 900,
+      "sideWindows": 1
+    }
+  },
+  "eaves": {
+    "overhangMm": 450,
+    "fasciaMm": 200,
+    "fasciaThickMm": 28,
+    "soffitThickMm": 20
+  },
+  "verge": {
+    "overhangMm": 450,
+    "boardMm": 240,
+    "thickMm": 34,
+    "mouldMm": [
+      70,
+      18
+    ],
+    "purlins": {
+      "describes": "Where the purlins run out through the gable to carry the verge, as shares of the rake from the eave (ref 10), and their ends' size.",
+      "shares": [
+        0.1,
+        0.42,
+        0.74
+      ],
+      "widthMm": 120,
+      "showMm": 110,
+      "cutMm": 70
+    }
+  },
+  "pantile": {
+    "describes": "The single-S pantile as laid here, over the pack's clay-pantile (laid): a wide shallow pan rising to a narrower roll, one wave per tile, each tile's roll lapping the next tile's pan edge. Cover width 220 mm, as the Danish normal-format S-tile (Højslev vingetegl, normalformat); the wave 50 mm, shallow, within the 45 to 69 mm of clay pantiles (Wienerberger and Sandtoft Old English Pantile data sheets). Sandnes Teglverk made the town's red tile from 1783 (wooden-town-architecture.md).",
+    "coverMm": 220,
+    "rollMm": 50,
+    "panAt": 0.35,
+    "roundness": 1.5,
+    "lapMm": 18
+  },
+  "ridge": {
+    "describes": "A zinc roll over the ridge, seated on the two slopes' top courses.",
+    "seatMm": 20
+  },
+  "rainwater": {
+    "describes": "Zinc half-round gutters on hooks and a downpipe at one end of each eave, fitted to the old houses by the 1890s (the pack's past: no record names it). Kept, they carry the roof's water to the shoe; neglected, a joint opens and drips onto the wall's foot, more the longer the house is let go.",
+    "fittedYear": 1890,
+    "gutterRadiusMm": 62,
+    "gutterThickMm": 4,
+    "beadMm": 10,
+    "hookMm": [
+      28,
+      6
+    ],
+    "hookEveryMm": 900,
+    "pipeRadiusMm": 38,
+    "offWallMm": 30,
+    "outletFromEndMm": 260,
+    "shoeMm": 160,
+    "clipMm": [
+      30,
+      4
+    ],
+    "clipEveryMm": 1600
+  },
+  "chimney": {
+    "describes": "One stack through the ridge, brick under cement render, a little off the middle (the seed's, claiming no history).",
+    "sizeMm": [
+      520,
+      560
+    ],
+    "aboveRidgeMm": [
+      650,
+      850
+    ],
+    "alongShare": [
+      0.42,
+      0.58
+    ],
+    "material": "render"
+  },
+  "plinth": {
+    "material": "render",
+    "heightMm": [
+      950,
+      1150
+    ],
+    "stoneMm": [
+      520,
+      1150
+    ],
+    "cornerStoneMm": [
+      700,
+      950
+    ],
+    "cornerReturnMm": [
+      380,
+      560
+    ],
+    "jointMm": [
+      10,
+      18
+    ],
+    "faceBulgeMm": [
+      3,
+      7
+    ],
+    "arrisMm": [
+      8,
+      14
+    ],
+    "setOutMm": [
+      -5,
+      7
+    ],
+    "depthMm": 180,
+    "jointBackMm": 30,
+    "proudMm": 40,
+    "describes": "A high plinth of stone under cement render, the sveitser house's (ref 10)."
+  },
+  "boarding": {
+    "sheetThickMm": 12,
+    "sheetsHigh": 2,
+    "setBackMm": [
+      2,
+      6
+    ],
+    "topGapMm": [
+      0,
+      30
+    ],
+    "sideGapMm": [
+      0,
+      8
+    ],
+    "battens": {
+      "count": 2,
+      "widthMm": [
+        70,
+        100
+      ],
+      "thickMm": 22,
+      "pastCasingMm": [
+        120,
+        320
+      ],
+      "outOfLevelDeg": [
+        2.0,
+        4.0
+      ],
+      "nailsPerEnd": 2,
+      "endCutDeg": [
+        20,
+        8
+      ]
+    },
+    "door": {
+      "battens": 3,
+      "diagonal": true
+    },
+    "describes": "How an empty house was boarded in the late 1980s, from photo 09: a sheet in each opening inside its casing, each set back by its own amount so their join steps; raw sawn battens nailed across onto the casing and the cladding, each out of level by the hand that nailed it, their ends sawn askew. A door takes three, the middle one on the diagonal, as at 09's door."
+  },
+  "push": {
+    "describes": "The style's push on true sizes (the street's shape language: deep reveals, thick trims, sills and caps that throw a shadow): factors on the working's sizes. The bends stay true.",
+    "trimProud": 1.6,
+    "capProud": 1.25,
+    "capThick": 1.4,
+    "sillProud": 1.3,
+    "sillThick": 1.35,
+    "bargeThick": 1.5,
+    "settle": 1.0
+  },
+  "chamferMm": {
+    "corner": 18,
+    "casing": 15,
+    "cap": 6,
+    "sill": 18,
+    "drip": 15,
+    "fascia": 16,
+    "barge": 18,
+    "soffit": 6,
+    "bedMould": 6,
+    "batten": 6,
+    "sheet": 2,
+    "capTop": 5,
+    "frame": 8,
+    "sash": 6,
+    "door": 8,
+    "chimney": 20,
+    "plinth": 15
+  },
+  "bends": {
+    "describes": "Old timber moves, and every bend has a cause. One corner settles on its stones and the frame goes down with it over settleReachMm; the wall plates sag between the gables and the ridge with them; the roof's thrust pushes the eave walls' heads out. Each grows with the frame's age to a most; which corner settles is the seed's, claiming no history. Sizes from house-asset-craft.md (Recipe: house 107); the sag halved on 29 October, since the references show straight eaves at that age and 100 mm read as a cartoon.",
+    "settleMmPerCentury": 25,
+    "settleMostMm": 40,
+    "sagMmPerCentury": 31,
+    "sagMostMm": 55,
+    "ridgeSagShare": 1.2,
+    "leanMmPerCentury": 16,
+    "leanMostMm": 25,
+    "settleReachMm": 3000,
+    "settleBendMm": 800,
+    "settleBendShare": 0.3
+  },
+  "steps": {
+    "describes": "Stone steps up to a door that stands over the ground: split slabs, as many risers as the height needs, each tread deeper by its going.",
+    "riserMm": [
+      165,
+      195
+    ],
+    "goingMm": 300,
+    "pastDoorMm": [
+      180,
+      260
+    ],
+    "thickMm": 70
+  }
+}

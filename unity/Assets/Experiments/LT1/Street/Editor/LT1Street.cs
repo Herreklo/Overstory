@@ -118,6 +118,12 @@ namespace Overstory.EditorTools
                 levels[level] = go;
             }
             Orient(root_, levels["near"]);
+            // the house's shadows cast two-sided (-streetShadowTwo 0 keeps them one-sided, for an A/B): one-sided, the
+            // sun's normal bias opens the joints between faces turned different ways, and the sun shows through them in
+            // lines on the ground (108, c02)
+            if (Arg("-streetShadowTwo") != "0")
+                foreach (var r in root_.GetComponentsInChildren<MeshRenderer>(true))
+                    r.shadowCastingMode = ShadowCastingMode.TwoSided;
             // the city level as one draw (-streetCityOne 0 keeps a material a piece, for an A/B)
             if (Arg("-streetCityOne") != "0")
                 levels["city"] = OneMesh(levels["city"], paint, gen);
@@ -312,7 +318,7 @@ namespace Overstory.EditorTools
                             if (!on)
                                 continue;
                             foreach (var r in t.GetComponentsInChildren<MeshRenderer>())
-                                r.shadowCastingMode = cast ? ShadowCastingMode.On : ShadowCastingMode.Off;
+                                r.shadowCastingMode = !cast ? ShadowCastingMode.Off : Arg("-streetShadowTwo") != "0" ? ShadowCastingMode.TwoSided : ShadowCastingMode.On;
                             Assign(t.gameObject, mats, "Pc", MatLevel(at));
                             foreach (var r in t.GetComponentsInChildren<MeshRenderer>())
                                 if (GeometryUtility.TestPlanesAABB(planes, r.bounds))

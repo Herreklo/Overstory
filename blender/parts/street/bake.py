@@ -69,7 +69,9 @@ def main():
             setattr(p, k, False)
     # every course's chart from the tiles' top surface under it: the planes from the bake level's tiles, the near
     # tiles' own charts from the near tiles (their charts overlap where they lap, so baking them directly darkens them)
-    transfers = [(p, src) for p, src in ((plane, "bake_tiles"), (target, "near_tiles")) if p is not None]
+    transfers = [(p, src) for p, src in ((plane, "bake_tiles"), (target, "near_tiles")) if p is not None and src in objs]
+    # the bake level's tiles cast with the near level; a house roofed in another way has none
+    casters = near + [objs[n] for n in ("bake_tiles",) if n in objs]
 
     maps = {
         "ao": (FB.emission(FB.ao_socket(0.6, False)), 64),
@@ -84,7 +86,7 @@ def main():
     for name, (build, samples) in maps.items():
         scene.cycles.samples = samples
         img = FB.image(name, size)
-        for o in near + [objs["bake_tiles"]]:
+        for o in casters:
             FB.material(o, img, build)
         FB.select(near, near[0])
         bpy.ops.object.bake(type="EMIT", margin=4, use_clear=False)
@@ -101,7 +103,7 @@ def main():
         FB.sky_world(scene)
         scene.cycles.samples = 256
         img = FB.image("sky", size)
-        for o in near + [objs["bake_tiles"]]:
+        for o in casters:
             FB.material(o, img, FB.white_diffuse)
         FB.select(near, near[0])
         bpy.ops.object.bake(type="DIFFUSE", pass_filter={"DIRECT", "INDIRECT"}, margin=4, use_clear=False)
@@ -121,10 +123,13 @@ def main():
     img = FB.image("street-normal", big)
     img.pixels.foreach_set([0.5, 0.5, 1.0, 0.0] * (big * big))
     flat = lambda nodes, links, obj: nodes.new("ShaderNodeBsdfDiffuse")  # noqa: E731
-    pairs = [([objs["near_tiles"], objs["bake_tiles"]], ["near_roof", "street_roof", "street_tiles"], 0.12)]
+    pairs = [(["near_tiles", "bake_tiles"], ["near_roof", "street_roof", "street_tiles"], 0.12)]
     if only != "roof":
-        pairs = [([objs["near_cladding"]], ["street_cladding"], 0.05), ([objs["near_stone"]], ["street_stone"], 0.05)] + pairs
+        pairs = [(["near_cladding"], ["street_cladding"], 0.05), (["near_stone"], ["street_stone"], 0.05)] + pairs
     for srcs, dsts, ray in pairs:
+        srcs = [objs[n] for n in srcs if n in objs]
+        if not srcs:
+            continue
         for s in srcs:
             FB.material(s, FB.image(f"unused-{s.name}", 8), flat)
         for dn in dsts:
