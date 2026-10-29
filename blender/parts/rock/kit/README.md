@@ -48,16 +48,26 @@ zonation are (`../README.md`).
   Crumbs a cut leaves are dropped. Grey check: Eevee, one neutral sun (az 330, el 35) and one raking (az 255, el 7),
   the lone views and a lee view 7 m off at bearing 215. Still wrong: the land flank keeps the hull's smooth round
   under the wet line (faceting it crumpled it, t07 x4); every face is an exact plane, so up close it reads as
-  low-poly crystal, not rock (t06-t09 alike). Next, t10 (coordinator, 29 Oct): the mid and small scale from a real
-  foliated bedrock scan (`rock_face_01`, downloaded and logged) carried onto our cut faces, the large form ours. First
-  a short read of how studios lay scan detail over a blocked-out form (Quixel and others' public breakdowns:
-  triplanar or face-projected scan height masked by face orientation, a detail normal against real displacement on
-  the high mesh, keeping the foliation's direction); then one rung-1 still from eye level beside t09 and refs 16 and
-  15, before Unity. The detail rides the faces and never rounds an arris or bends a plane (rocks are rigid; melted is
-  the known failure). After it: the land flank; the game mesh as a coarse hull cut on the same planes. Turf test C,
-  the toe line and the storm fixes queued.
+  low-poly crystal, not rock (t06-t09 alike). t10 (rung 1, not in Unity) laid `rock_face_01`'s relief on the cut
+  faces: the crystal is gone up close, but from 12 m the plates' grid is the patchwork, and the relief is one even
+  crinkle. The prototype (`wdetail2.py`, scan windows from `scanras.py` and `scanpatch.py`) is in the coordinator's
+  notes folder, `rock-t10-tools/`, until it holds. Next: a form change, to the coordinator. After it: the land
+  flank; the game mesh as a coarse hull cut on the same planes. Turf test C, the toe line and the storm fixes queued.
 
 ## Rounds
+
+- **t10** (`reviews/lt1/rock/t10/grey.jpg`, Blender grey; top row eye level: t10 neutral, t10 raking, t09 neutral,
+  t09 raking; bottom: t10 and t09 from 12 m, refs 16 and 15). Rung 1 only. The research: unique form plus a scan
+  detail layer in the rock's own frame (DICE's Battlefront rocks), box projection with one axis per planar face,
+  displacement inward along the face's flat normal on the high mesh (averaged normals round arrises), chips as
+  planar cuts, relief 1-3 cm. Built: each cut face re-gridded at 1.5 cm with its arrises exact, then pushed inward
+  by one continuous field of `rock_face_01` windows (0.8 m, true scale, high-passed at 8 cm) laid in the foliation's
+  frame; an arris takes its deepest face, so no arris rounds and no plane rises (depth p50 0.5 cm, p99 2.5 cm; 233
+  open edges left). A first version with a random window per face (d1) Øystein called "very patchworky - and not
+  very rocky". With the continuous field, eye level reads as stone, not crystal, and the arrises hold. But from
+  12 m the plates' grid of full-length straight grooves is still the patchwork, where ref 16's fractures are short,
+  staggered and dying out. The relief is one even crinkle everywhere, neither ref 16's foliation ridges nor ref
+  15's granular pitting. Not taken to Unity.
 
 - **t09** (`reviews/lt1/rock/t09/`; `grey.jpg` Blender grey, rows t09 neutral, t09 raking, t08 neutral, columns
   eye, 12 m, sea, lee, refs 16, 15, 48, 51; `sheet.jpg` columns t09 W high, t08 W high, t07 W high; rows eye, 12 m,
