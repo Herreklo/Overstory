@@ -678,14 +678,183 @@ class House:
                  [Vector((x1, yb, za)), Vector((x1, y_face, za)), Vector((x1, y_face, zb)), Vector((x1, yb, zb))],
                  [Vector((x0, y_face, zb)), Vector((x0, yb, zb)), Vector((x1, yb, zb)), Vector((x1, y_face, zb))],
                  [Vector((x0, yb, za)), Vector((x0, y_face, za)), Vector((x1, y_face, za)), Vector((x1, yb, za))]]
+        # a window open to the street shows its window in the frame's place; a door and a boarded window the plane
+        glazed = not o["boarded"] and o["kind"] != "door"
         for lv in ("near", "street"):
-            for q in quads:
+            for q in quads[1:] if glazed else quads:
                 pc.add(lv, Face(q, [cu(p) for p in q], key, [cu(p) for p in q]))
         # from afar the reveal's sides too shallow to see: the frame where it stands behind a boarding (the sheets close
         # the reveal), else flush with the casing's back, so no side opens a crack
         q = quads[0] if o["boarded"] else [Vector((p.x, y_face, p.z)) for p in quads[0]]
         pc.city = [Face(q, [cu(p) for p in quads[0]], key, [cu(p) for p in quads[0]])]
         self.rigid_lt(pc, o)
+        if glazed:
+            self.window(tag, wall, place, o, yb, key, cu)
+
+    # ---- the window: its version's frame, sashes, bars, putty or beads and panes, in the frame's place
+    def window(self, tag, wall, place, o, yb, key, cu):
+        """The window of the opening's making (versions.window), set in the reveal at its back. Its frame's outer edge
+        runs on behind the reveal's sides and the casing, so no crack opens between them; a post and a transom split
+        it; each sash stands in its frame's opening a joint's gap clear of it all round, set back from the frame's
+        face, the gap's floor closing it behind; a fixed light is glazed in the frame itself. Each light's glass lies
+        in its rebate, the putty sloping down to it from the wood's face (a bead's square edge instead, set in the
+        rebate). The street level keeps the frame, sashes and bars, the sashes tight in their openings and the glass
+        flush with their faces; the city level keeps the reveal's flush plane. Every wooden face is a trim on the
+        reveal's chart, so the page paints it as the opening's; the window is one rigid thing, moved and turned with
+        its wall but never bent. Its panes are glass: uv0 metres from the window's centre and foot, and their vertex
+        colour R its glass's kind (glass.json kinds, by the year it was made: the integer part of R x 4) with the
+        window's own seed (the room behind it, the fraction), G the pane's seed (its waves), B the window's width / 4 m
+        and A its height / 3 m."""
+        F = self.F
+        v = self.version("window", o["made"], o["eraOf"])
+        x0, x1, za, zb = o["a0"], o["a1"], o["z0"], o["z1"]
+        fw = v["frameMm"][0] * MM
+        sw, bw = v["sashMm"][0] * MM, v["barMm"][0] * MM
+        brail = sw * v["bottomRail"]
+        gap, back, reb = v["gapMm"] * MM, v["setBackMm"] * MM, v["rebateMm"] * MM
+        gz, gl = gap * 5.0, v["glazing"]
+        ext = 0.012
+        kinds = self.M["glass"]["kinds"]
+        names = [k for k in kinds if k != "describes"]
+        gk = next((k for k in names if kinds[k]["years"][0] <= o["made"] <= kinds[k]["years"][1]), names[-1])
+        o["window"], o["glass"] = v["id"], gk
+        cx = (x0 + x1) / 2.0
+        r_room = (names.index(gk) + 0.05 + 0.9 * F.u(tag, "room")) / 4.0
+        size = [(x1 - x0) / 4.0, (zb - za) / 3.0]
+        anchor, along = place @ Vector((cx, yb, (za + zb) / 2.0)), place.to_3x3() @ ALONG
+        near, street, both = ("near",), ("street",), ("near", "street")
+
+        def piece(name, mat):
+            pc = self.make(f"{tag}/window/{name}", mat, both, wall, "rigid", place)
+            pc.no_city = True
+            if o.get("leanTo"):
+                self.rigid_lt(pc, o)
+            else:
+                pc.anchor, pc.along = anchor, along
+            return pc
+
+        def front(pc, lvs, r, y):
+            """A member's face: its grain along its length."""
+            q = [Vector((r[0], y, r[1])), Vector((r[2], y, r[1])), Vector((r[2], y, r[3])), Vector((r[0], y, r[3]))]
+            up = r[3] - r[1] > r[2] - r[0]
+            for lv in lvs:
+                pc.add(lv, Face(q, [(p.z, p.x) if up else (p.x, p.z) for p in q], key, [cu(p) for p in q]))
+
+        def ring(pc, lvs, a, ya, b, yb_, out=False):
+            """Four faces from rectangle `a` at depth `ya` to `b` at `yb_`, each turned to the front and in toward the
+            rectangles' middle (out from it if `out`)."""
+            ca = [(a[0], a[1]), (a[2], a[1]), (a[2], a[3]), (a[0], a[3])]
+            cb = [(b[0], b[1]), (b[2], b[1]), (b[2], b[3]), (b[0], b[3])]
+            inward = (Vector((0, 0, 1)), Vector((-1, 0, 0)), Vector((0, 0, -1)), Vector((1, 0, 0)))
+            for k in range(4):
+                j = (k + 1) % 4
+                q = [Vector((ca[k][0], ya, ca[k][1])), Vector((ca[j][0], ya, ca[j][1])),
+                     Vector((cb[j][0], yb_, cb[j][1])), Vector((cb[k][0], yb_, cb[k][1]))]
+                if newell(q).length < 1e-10:
+                    continue
+                if newell(q).dot(inward[k] * (-1.0 if out else 1.0) + Vector((0, -0.3, 0))) < 0:
+                    q = q[::-1]
+                along_x = k % 2 == 0
+                for lv in lvs:
+                    pc.add(lv, Face(q, [((p.x if along_x else p.z), p.y) for p in q], key, [cu(p) for p in q]))
+
+        def glaze(wood, pkey, jobs):
+            """Each light's putty or bead and its glass. `jobs`: a level, its lights, the wood's face and whether the
+            glass lies in its rebate (else flush with the face, filling the light)."""
+            g = piece(f"glass/{pkey}", "glass")
+            for lv, lights, y, full in jobs:
+                for li, L in enumerate(lights):
+                    R, yg = L, y
+                    if full and gl["kind"] == "putty":
+                        R, yg = inset(L, gl["mm"][0] * MM), y + reb
+                        ring(wood, (lv,), L, y + 0.0005, R, yg)
+                    elif full:
+                        bwid, bh = gl["mm"][0] * MM, gl["mm"][1] * MM
+                        R, yg = inset(L, bwid), y + reb
+                        ring(wood, (lv,), L, y, L, yg - bh)
+                        ring(wood, (lv,), L, yg - bh, R, yg - bh)
+                        ring(wood, (lv,), R, yg - bh, R, yg)
+                    q = [Vector((R[0], yg, R[1])), Vector((R[2], yg, R[1])), Vector((R[2], yg, R[3])), Vector((R[0], yg, R[3]))]
+                    g.add(lv, Face(q, [(p.x - cx, p.z - za) for p in q], key, [cu(p) for p in q],
+                                   col=[r_room, F.u(tag, "pane", pkey, li)] + size))
+
+        # the frame: its sides the full height, the head and foot between them, the post between those, the transom
+        # either side of the post
+        fr = piece("frame", "trims")
+        I = (x0 + fw, za + fw, x1 - fw, zb - fw)
+        for r in ((x0 - ext, za - ext, I[0], zb + ext), (I[2], za - ext, x1 + ext, zb + ext),
+                  (I[0], za - ext, I[2], I[1]), (I[0], I[3], I[2], zb + ext)):
+            front(fr, both, r, yb)
+        sashes, tops = v["sashes"], v.get("topLights") or []
+        mw = fw if v.get("mullion") else 0.0
+        n = len(sashes)
+        span = I[2] - I[0] - (n - 1) * mw
+        cols, x = [], I[0]
+        for s in sashes:
+            cols.append((x, x + span * s["w"]))
+            x += span * s["w"] + mw
+        zt, tf = I[3], 0.0
+        if v.get("transom"):
+            tf = v["transom"]["faceMm"] * MM
+            zt = I[3] - v["transom"]["share"] * (I[3] - I[1] - tf) - tf
+            for a, b in cols:
+                front(fr, both, (a, zt, b, zt + tf), yb)
+        if mw > 0:
+            for k in range(1, n):
+                front(fr, both, (cols[k - 1][1], I[1], cols[k][0], I[3]), yb)
+        # the frame's openings: each a sash's (or a fixed light's), and the top lights' over the transom
+        cells = [((a, I[1], b, zt), s) for (a, b), s in zip(cols, sashes)]
+        if v.get("transom"):
+            cells += [((a, zt + tf, b, I[3]), s) for (a, b), s in zip(cols, tops)]
+        if not mw and n > 1:
+            # casements meeting without a post: one opening in the frame, the sashes a gap apart in it
+            low = [c for c in cells if c[0][3] <= zt + 1e-6]
+            holes = [((cols[0][0], I[1], cols[-1][1], zt), low)] + [(c[0], [c]) for c in cells if c not in low]
+        else:
+            holes = [(c[0], [c]) for c in cells]
+        y_s = yb + back
+        for hi, (hole, inside) in enumerate(holes):
+            if all(s.get("fixed") for _, s in inside):
+                for k, (cell, s) in enumerate(inside):
+                    lights, _ = sash_grid(cell, s, bw, v, cell[3] - cell[1])
+                    glaze(fr, f"{hi}.{k}", [("near", lights, yb, True), ("street", lights, yb, False)])
+                continue
+            ring(fr, near, hole, yb, hole, y_s + gz)
+            ring(fr, street, hole, yb, hole, y_s)
+            rects = []
+            for k, (cell, s) in enumerate(inside):
+                # a gap all round, half a gap each side where two sashes meet
+                g0 = gap if k == 0 else gap / 2.0
+                g1 = gap if k == len(inside) - 1 else gap / 2.0
+                rn = (cell[0] + g0, cell[1] + gap, cell[2] - g1, cell[3] - gap)
+                rects.append(rn)
+                sp = piece(f"sash{hi}.{k}", "trims")
+                jobs = []
+                for lv, R in (("near", rn), ("street", cell)):
+                    for r in ((R[0], R[1], R[0] + sw, R[3]), (R[2] - sw, R[1], R[2], R[3]),
+                              (R[0] + sw, R[1], R[2] - sw, R[1] + brail), (R[0] + sw, R[3] - sw, R[2] - sw, R[3])):
+                        front(sp, (lv,), r, y_s)
+                    inner = (R[0] + sw, R[1] + brail, R[2] - sw, R[3] - sw)
+                    lights, bars = sash_grid(inner, s, bw, v, cell[3] - cell[1] - sw - brail)
+                    for r in bars:
+                        front(sp, (lv,), r, y_s)
+                    jobs.append((lv, lights, y_s, lv == "near"))
+                # its outer edge down to the gap's floor: alone in its opening, sloping the gap's width out to the
+                # opening's edge, so the slot needs no floor
+                ring(sp, near, rn, y_s, hole if len(inside) == 1 else rn, y_s + gz, out=True)
+                glaze(sp, f"{hi}.{k}", jobs)
+            # the gap's floor: the frame's opening behind the sashes, where no sash covers it
+            if len(rects) == 1:
+                continue
+            xs = sorted({hole[0], hole[2]} | {r[0] for r in rects} | {r[2] for r in rects})
+            zs = sorted({hole[1], hole[3]} | {r[1] for r in rects} | {r[3] for r in rects})
+            for i in range(len(xs) - 1):
+                for j in range(len(zs) - 1):
+                    mx, mz = (xs[i] + xs[i + 1]) / 2.0, (zs[j] + zs[j + 1]) / 2.0
+                    if xs[i + 1] - xs[i] < 1e-6 or zs[j + 1] - zs[j] < 1e-6:
+                        continue
+                    if not any(r[0] < mx < r[2] and r[1] < mz < r[3] for r in rects):
+                        front(fr, near, (xs[i], zs[j], xs[i + 1], zs[j + 1]), y_s + gz)
 
     def steps(self, tag, wall, x0, x1, z_top):
         """Split stone steps up to a door: as many risers as its height needs, each slab one going deeper than the
@@ -1530,7 +1699,7 @@ class House:
         drop, narrow, never = set(C["dropGroups"]), C["dropNarrowerM"], set(C["neverGroups"])
         own = {"roof", "plinth"}
         for pc in list(self.pieces):
-            if "street" not in pc.levels or pc.kind in own:
+            if "street" not in pc.levels or pc.kind in own or getattr(pc, "no_city", False):
                 continue
             fs = getattr(pc, "city", None) or [f for f in merge_runs(pc.faces["street"]) if group_of(f.chart) not in never
                   and (group_of(f.chart) not in drop or width_of(f) >= narrow)
@@ -1553,6 +1722,30 @@ class House:
             pts = [Vector((-e, y_face, 0.0)), Vector((wall.L + e, y_face, 0.0)), Vector((wall.L + e, y_face, zt)), Vector((-e, y_face, zt))]
             cuv = [(p.x + 0.3, p.z) for p in pts]
             pc.add("city", Face(pts, cuv, key, cuv))
+
+
+def inset(r, d):
+    """A rectangle (x0, z0, x1, z1) shrunk by `d` all round."""
+    return (r[0] + d, r[1] + d, r[2] - d, r[3] - d)
+
+
+def sash_grid(inner, s, bw, v, h_nominal):
+    """A sash's lights and bars inside its stiles and rails: `cols` by `rows`, the rows fitted to the version's pane
+    height where it has one (paneHMm: a smaller opening, a loft's, takes fewer panes of the same glass), from the
+    sash's nominal height so every level counts the same. The upright bars run the full height, the cross bars
+    between them."""
+    nc = s.get("cols", 1)
+    nr = s.get("rows", 1)
+    if v.get("paneHMm"):
+        nr = max(1, round((h_nominal + bw) / (v["paneHMm"] * MM + bw)))
+    w, h = inner[2] - inner[0], inner[3] - inner[1]
+    lw, lh = (w - (nc - 1) * bw) / nc, (h - (nr - 1) * bw) / nr
+    lights = [(inner[0] + i * (lw + bw), inner[1] + j * (lh + bw), inner[0] + i * (lw + bw) + lw, inner[1] + j * (lh + bw) + lh)
+              for i in range(nc) for j in range(nr)]
+    bars = [(inner[0] + i * (lw + bw) - bw, inner[1], inner[0] + i * (lw + bw), inner[3]) for i in range(1, nc)]
+    bars += [(inner[0] + i * (lw + bw), inner[1] + j * (lh + bw) - bw, inner[0] + i * (lw + bw) + lw, inner[1] + j * (lh + bw))
+             for i in range(nc) for j in range(1, nr)]
+    return lights, bars
 
 
 def square(a, c):
@@ -1712,6 +1905,24 @@ def clip_top(poly, top):
 # ---------------------------------------------------------------- export
 
 
+def glass_digest(G):
+    """glass.json as the glass shader reads it: colours linear, the kinds in order (a pane's vertex colour R names
+    one by its index)."""
+    def lin(h):
+        return [((int(h[i:i + 2], 16) / 255.0 + 0.055) / 1.055) ** 2.4 if int(h[i:i + 2], 16) > 10 else int(h[i:i + 2], 16) / 255.0 / 12.92
+                for i in (0, 2, 4)]
+    r, c, d = G["room"], G["room"]["curtains"], G["daylight"]
+    kinds = [dict(k, name=n) for n, k in G["kinds"].items() if n != "describes"]
+    return {"gloss": G["gloss"], "lamp": lin(r["srgbLamp"]), "walls": lin(r["srgbWalls"]), "ceiling": lin(r["srgbCeiling"]),
+            "floor": lin(r["srgbFloor"]), "furniture": lin(r["srgbFurniture"]), "shade": lin(r["srgbShade"]),
+            "curtain": lin(c["srgb"]), "room": [r["lampPower"], r["lampSoftM2"], r["depthM"], r["halfWidthM"], r["sillM"],
+            r["heightM"], r["ambient"], r["lampDropM"], r["lampSwingM"], r["furnitureHeightM"], r["furnitureHalfLengthM"],
+            r["cornerReachM"], r["cornerLight"], r["shadeRadiusM"], r["shadeGlow"]],
+            "curtains": [c["share"], c["opacity"], c["depthM"], c["valanceShare"], c["foldsPerM"]],
+            "daylight": [d["window"], d["backWall"], d["ceiling"], d["curtains"]],
+            "kinds": [{"name": k["name"], "tiltDeg": k["tiltDeg"], "perM": k["perM"], "shape": k["shape"]} for k in kinds]}
+
+
 def main():
     argv = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else []
     a = {argv[i].lstrip("-"): argv[i + 1] for i in range(0, len(argv) - 1, 2)}
@@ -1722,7 +1933,7 @@ def main():
     os.makedirs(out, exist_ok=True)
     F = Facts(a.get("fixture", S["fixture"]), hid, year)
     W = load(S["eras"][F.era])
-    mats = {m: load(f"{S['materials']}/{m}.json") for m in ("clay-pantile", "fieldstone", "pine")}
+    mats = {m: load(f"{S['materials']}/{m}.json") for m in ("clay-pantile", "fieldstone", "pine", "glass")}
     paints = load(S["paints"])
     house = House(S, W, F, mats, paints)
     house.build()
@@ -1765,6 +1976,8 @@ def main():
     lap_reach = S["lapReach"]
 
     def colour(pc, f, world):
+        if f.col is not None:
+            return list(f.col)
         rgb = [1.0 if f.arris else 0.0, F.u(pc.id, "seed"), 1.0 if f.under else 0.0]
         board = re.search(r"/c(\d+)b\d+$", pc.id) if pc.kind == "clad" else None
         if board is None:
@@ -1824,6 +2037,7 @@ def main():
         "pieces": [{"i": pc.index, "id": pc.id, "mat": pc.mat, "kind": pc.kind, "mode": pc.mode, "wall": pc.wall, "group": pc.group}
                    for pc in house.pieces],
         "uv": {"uv0": "metres along the grain", "page": "UV1: the page"},
+        "glass": glass_digest(mats["glass"]),
         "colour": {"r": "arris (a chamfer face)", "g": "piece seed", "b": "under layer forced (mortar, a flue)",
                    "a": "near boards: distance below the next butt / lapReach"},
     }

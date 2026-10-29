@@ -123,3 +123,21 @@ Cost (`c04-timing.md`, `STREET_TIMING=50 render.sh 107 d15 street P overcast`; e
 
 - Flakes along the grain: at eye level the chips are blobby rectangles of a size. Failing paint flakes along the grain: long flakes at each board's lower edge and at the butts, the lifted edge catching the light, a hairline shadow under it (coordinator, after k01).
 - The leak side is a switch at 1 mm a metre (`paint.json` `level`): a sill near level flips its whole wear on a small change. A near-level sill should pool and leak at both ends, its share easing from one end to the other as it tilts.
+
+## w04: the window family (29 October)
+
+- Holds: windows are built from the facts by one function (`house.py` `window`). It builds a frame in the reveal, casements or fixed lights by the pack's version, bars from the pane height, putty or beads, and the glass. Each version is data in `classical.json` `versions.window`: six-pane (1828), cross (krysspost, 1901) and one-light (1965, the husmor window: one sealed pane held by beads, no post). Glass takes its kind from the year it was glazed (`glass.json` `kinds`: crown, cylinder, drawn, float), and each kind bends its reflection its own way. Behind the glass a room is drawn by interior mapping (`OS_Glass.shader`), lit by day as a share of the light on the window's face, with sheer side curtains. The pieces are rigid, so the sag moves a window whole and never bends it. The city level keeps the reveal's flush plane.
+- In 1985, 107 has one-light windows on the front (replaced 1965) and six-pane windows on the gables. The cross is 107 with its replacement moved to 1901, as a check of the version only (a fixture in the scratchpad, not the town's).
+- Stills, each beside its reference at eye level (columns: reference, colour overcast, colour low sun, clay overcast):
+  - `w04-cross.jpg`: ref 05.
+  - `w04-six.jpg`: refs 07 and 02.
+  - `w04-one.jpg`: refs 10 and 04.
+- Holds: the structure matches each reference. The cross has its post, transom, two top lights and two casements with one bar each. The six-pane has two casements of three panes. The one-light has one plain sash with a wide bottom rail. The glass sits darker than the wall by the references' margin: L* 54–56 against a wall of 77 in clay overcast, against ref 05's 72 and 91. The sheers read as cloth.
+- Bad: the glass reflects almost nothing, so the panes read as openings into a dark room. Refs 04 and 10 show the glass's reflection doing most of the work: the opposite street, a bright sky in one pane and dark in the next. The shader reflects the scene's trilight. Its sky is about 1.3 times the wall's light, where a real overcast sky is about 3 times, and there is no street opposite to reflect. This is for the street's light: a sky and the far side of the street for the glass to reflect. A brighter mirror here would be a painted glow.
+- Bad, small: at eye level the gap between sash and frame (3 mm, 15 mm deep) reads as a hard black line. In the references it is a hairline.
+- Age sheet (`w04-age.jpg`, as `age-sheet.jpg`: 107 in 1985 with its paint 2, 8 and 20 years old, then 1989; the rows are the street stop in colour under low sun, the same in clay overcast, and 12 m in colour overcast): the blank panels are gone. Each window reads as a window from the street stop and 12 m, and its paint ages with the wall's. 1989 is unchanged (every opening boarded).
+
+Cost (`w04tw`, `STREET_TIMING=50 render.sh 107 w04tw street P overcast`, with 107 as of 1985 glazed; editor, batch mode, offscreen):
+- Triangles, one house: near 24,540 one-light, 24,744 six-pane, 24,888 cross (budget 25k); street 6,229 / 6,337 / 6,433 (8k); city 643 (800).
+- Glass adds one material and one draw at near and street level, and no texture: it reads the page's occlusion. The city level is still one draw.
+- Row of 50: street stop 3.6 ms, raised 4.0, along 4.7 (1989's boarded row: 3.7, 4.1, 4.8). Textures unchanged: 21.3 MB a house at full; 80–97 MB streamed.

@@ -14,10 +14,11 @@ MM = 0.001
 
 
 class Face:
-    __slots__ = ("p", "uv0", "chart", "cuv", "arris", "under")
+    __slots__ = ("p", "uv0", "chart", "cuv", "arris", "under", "col")
 
-    def __init__(self, p, uv0, chart, cuv, arris=False, under=False):
+    def __init__(self, p, uv0, chart, cuv, arris=False, under=False, col=None):
         self.p, self.uv0, self.chart, self.cuv, self.arris, self.under = p, uv0, chart, cuv, arris, under
+        self.col = col  # a face's own vertex colour (a pane's glass), in place of the piece's
 
 
 class Piece:

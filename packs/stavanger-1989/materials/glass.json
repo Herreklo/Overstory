@@ -6,7 +6,7 @@
   "provenance": "authored",
   "notes": {
     "room": "A room of the period behind every lit window (inf., to check against the survey photos when they come): papered walls in warm light tones, a white ceiling, a lacquered pine floor, a dark sofa or sideboard against the back wall, one incandescent lamp (about 2700 K) in a fabric shade hung half a metre under a ceiling of 2.4 m, the sill 0.8 m over the floor; white sheer side curtains and a valance just behind the glass. Its light makes the pane's depth: brighter and creamier near the lamp, deeper amber at the floor, the corners and the furniture. lampPower, lampSoftM2 (how close to the lamp its light stops rising), the corners' light and the shade's glow were judged by look. Where the furniture stands and where the lamp hangs are each window's seed, claiming nothing.",
-    "daylight": "An unlit room by day, as a share of the light on the window's face: about a third of it just inside the glass, a twentieth at a back wall 3.6 m in (a small window's daylight factor), the ceiling half the walls'; sheer white curtains at the glass return about half the light that reaches them. Judged by look (round 3).",
+    "daylight": "An unlit room by day, as a share of the light on the window's face: about a seventh of it just inside the glass, a fiftieth at a back wall 3.6 m in (daylight factors of a small window's room); the ceiling half the walls'; sheer white curtains at the glass return about half the light that reaches them. Lowered from 0.35 and 0.05 on 29 October, when the panes of the window part read lit from inside beside ref 10.",
     "wave": "Drawn and cylinder glass before float glass (1960s) is never flat: its waves tilt it by about half a degree, a few waves a metre, enough to bend a straight edge in what it reflects (round 3, judged by look).",
     "curtains": "share is of the hole's half width: the frame and the sash's stiles take its outer quarter or so, so at 0.3 the side curtains hung behind the frame; at 0.5 each shows on the glass at its side (round 3)."
   },
@@ -42,8 +42,8 @@
     }
   },
   "daylight": {
-    "window": 0.35,
-    "backWall": 0.05,
+    "window": 0.15,
+    "backWall": 0.02,
     "ceiling": 0.5,
     "curtains": 0.55
   },
@@ -53,5 +53,56 @@
       4,
       9
     ]
+  },
+  "kinds": {
+    "describes": "The glass of a pane by the year it was glazed (fronts-windows-and-signs.md section 1): crown to about 1840, blown cylinder to 1928, machine-drawn sheet to the late 1960s, float after. Each bends what it reflects its own way: crown in rings about the disc's centre, cylinder in long waves with no pattern, drawn in waves one way only, float not at all. tiltDeg is the waves' largest tilt; perM the waves a metre, least and most.",
+    "crown": {
+      "years": [
+        1740,
+        1840
+      ],
+      "tiltDeg": 0.9,
+      "perM": [
+        6,
+        12
+      ],
+      "shape": "rings"
+    },
+    "cylinder": {
+      "years": [
+        1840,
+        1928
+      ],
+      "tiltDeg": 0.6,
+      "perM": [
+        3,
+        8
+      ],
+      "shape": "waves"
+    },
+    "drawn": {
+      "years": [
+        1928,
+        1970
+      ],
+      "tiltDeg": 0.3,
+      "perM": [
+        9,
+        16
+      ],
+      "shape": "one-way"
+    },
+    "float": {
+      "years": [
+        1966,
+        2100
+      ],
+      "tiltDeg": 0.0,
+      "perM": [
+        1,
+        1
+      ],
+      "shape": "flat"
+    }
   }
 }

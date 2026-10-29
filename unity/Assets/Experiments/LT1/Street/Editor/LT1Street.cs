@@ -37,7 +37,9 @@ namespace Overstory.EditorTools
         [Serializable] class Lap { public float reach, step; }
         [Serializable] class Plot { public float w, d; }
         [Serializable] class Page { public int size; public float pxPerM; }
-        [Serializable] class House { public int house; public float[] size; public Lap lap; public float planeShadow, seenWithinM, cityFromM; public Plot plot; public Page page; }
+        [Serializable] class GlassKind { public string name, shape; public float tiltDeg; public float[] perM; }
+        [Serializable] class Glass { public float gloss; public float[] walls, ceiling, floor, furniture, curtain, room, curtains, daylight; public GlassKind[] kinds; }
+        [Serializable] class House { public int house; public float[] size; public Lap lap; public float planeShadow, seenWithinM, cityFromM; public Plot plot; public Page page; public Glass glass; }
 
         struct View { public string name, level; public Vector3 pos, target; public float fov; public bool floor; }
 
@@ -547,6 +549,51 @@ namespace Overstory.EditorTools
                 string key = $"{way}-{level}-{m.name}";
                 AssetDatabase.CreateAsset(mat, $"{gen}/mat-{key}.mat");
                 outp[key] = mat;
+            }
+            // the windows' glass (OS_Glass): the room behind it and its kinds' waves from glass.json, by way of house.json;
+            // way P's room in the clay's greys (each colour's luminance), way Pc's in its colours
+            var g = house.glass;
+            if (g != null && g.walls != null)
+            {
+                var glassShader = Shader.Find("Overstory/Glass");
+                foreach (var way in new[] { "P", "Pc" })
+                foreach (var level in new[] { "near", "street" })
+                {
+                    Vector4 C(float[] c, float a)
+                    {
+                        if (way == "P")
+                        {
+                            float y = 0.2126f * c[0] + 0.7152f * c[1] + 0.0722f * c[2];
+                            return new Vector4(y, y, y, a);
+                        }
+                        return new Vector4(c[0], c[1], c[2], a);
+                    }
+                    var r = g.room;
+                    var mat = new Material(glassShader);
+                    mat.SetTexture("_Geo", tex("geo"));
+                    mat.SetFloat("_Gloss", g.gloss);
+                    // room: lampPower, lampSoftM2, depthM, halfWidthM, sillM, heightM, ambient, lampDropM, lampSwingM,
+                    // furnitureHeightM, furnitureHalfLengthM, cornerReachM, cornerLight, shadeRadiusM, shadeGlow
+                    mat.SetVector("_RoomWall", C(g.walls, r[2]));
+                    mat.SetVector("_RoomCeiling", C(g.ceiling, r[3]));
+                    mat.SetVector("_RoomFloor", C(g.floor, r[4]));
+                    mat.SetVector("_RoomShape", new Vector4(r[5], r[11], r[12], 0));
+                    mat.SetVector("_RoomFurniture", C(g.furniture, r[9]));
+                    mat.SetVector("_RoomFurniture2", new Vector4(r[10], 0, 0, 0));
+                    // curtains: share, opacity, depthM, valanceShare, foldsPerM
+                    mat.SetVector("_Curtain", C(g.curtain, g.curtains[0]));
+                    mat.SetVector("_CurtainB", new Vector4(g.curtains[1], g.curtains[2], g.curtains[3], g.curtains[4]));
+                    mat.SetVector("_GlassDay", new Vector4(g.daylight[0], g.daylight[1], g.daylight[2], g.daylight[3]));
+                    var shapes = new[] { "rings", "waves", "one-way", "flat" };
+                    for (int k = 0; k < 4 && k < g.kinds.Length; k++)
+                    {
+                        var kd = g.kinds[k];
+                        mat.SetVector($"_Kind{k}", new Vector4(kd.tiltDeg * Mathf.Deg2Rad, kd.perM[0], kd.perM[1], Array.IndexOf(shapes, kd.shape)));
+                    }
+                    string key = $"{way}-{level}-glass";
+                    AssetDatabase.CreateAsset(mat, $"{gen}/mat-{key}.mat");
+                    outp[key] = mat;
+                }
             }
             // a far house's one material: the street level's shared values, and each material's own from a table, a row
             // a material in paint.json's order, which the merged city mesh's faces name in their uv2.x (OneMesh)
