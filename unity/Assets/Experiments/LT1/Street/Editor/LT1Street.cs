@@ -38,7 +38,7 @@ namespace Overstory.EditorTools
         [Serializable] class Plot { public float x, w, d; }
         [Serializable] class Page { public int size; public float pxPerM; }
         [Serializable] class GlassKind { public string name, shape; public float tiltDeg; public float[] perM; }
-        [Serializable] class Glass { public float gloss, share; public float[] walls, ceiling, floor, furniture, curtain, room, curtains, daylight, fromAfar; public GlassKind[] kinds; }
+        [Serializable] class Glass { public float gloss, share; public float[] walls, ceiling, floor, furniture, curtain, room, curtains, daylight, fromAfar, flash; public GlassKind[] kinds; }
         [Serializable] class House { public int house; public float[] size; public Lap lap; public float planeShadow, seenWithinM, cityFromM; public Plot plot; public Page page; public Glass glass; }
 
         struct View { public string name, level; public Vector3 pos, target; public float fov; public bool floor; }
@@ -780,6 +780,10 @@ namespace Overstory.EditorTools
                     // what the panes face, from the street (paint.json light.reflect)
                     if (p.reflect != null && p.reflect.Length == 4)
                         mat.SetVector("_Opposite", new Vector4(p.reflect[0], p.reflect[1], p.reflect[2], p.reflect[3]));
+                    // the sky's flash: depth, rise, soft, cap (glass.json flash; a house.json from before it has none:
+                    // the whole pane mirrors the sky)
+                    if (g.flash != null && g.flash.Length == 4)
+                        mat.SetVector("_Flash", new Vector4(g.flash[0], g.flash[1], g.flash[2], g.flash[3]));
                     var shapes = new[] { "rings", "waves", "one-way", "flat" };
                     for (int k = 0; k < 4 && k < g.kinds.Length; k++)
                     {

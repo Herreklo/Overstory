@@ -2565,6 +2565,7 @@ def glass_digest(G, sheers=True, share=1.0):
             "curtains": [c["share"], c["opacity"] if sheers else 0.0, c["depthM"], c["valanceShare"], c["foldsPerM"]],
             "daylight": [d["transmit"], d["bounce"], d["curtains"]], "share": round(share, 3),
             "fromAfar": [G["fromAfar"][k] for k in ("stilePx", "blendPx", "crossPx")],
+            "flash": [G["flash"][k] for k in ("depth", "rise", "soft", "cap")],
             "kinds": [{"name": k["name"], "tiltDeg": k["tiltDeg"], "perM": k["perM"], "shape": k["shape"]} for k in kinds]}
 
 

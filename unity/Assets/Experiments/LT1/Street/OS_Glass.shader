@@ -1,6 +1,6 @@
 // A window's glass (blender/parts/street/house.py, window): the room behind it by day, seen through the pane (interior
 // mapping) and lit by the light on the window's face, and the street's light it reflects, bent by the waves of its
-// kind of glass. The pane gives its window's frame: uv0 metres from the window's centre and foot; vertex colour R the
+// kind of glass, the sky over the far shore only as a flash down from the opening's head. The pane gives its window's frame: uv0 metres from the window's centre and foot; vertex colour R the
 // glass's kind (its integer part x 4) and the window's seed (the fraction: where the room's furniture stands), G the
 // pane's seed (its waves), B the window's width / 4 m, A its height / 3 m. UV1 reads the house's page for the frame's
 // and reveal's occlusion. Every size and colour is the pack's (glass.json), passed by LT1Street. With _OS_MARK it draws
@@ -27,6 +27,7 @@ Shader "Overstory/Glass"
         _Kind2 ("Glass kind 2", Vector) = (0, 1, 1, 3)
         _Kind3 ("Glass kind 3", Vector) = (0, 1, 1, 3)
         _Mark ("From afar (glass.json fromAfar): x the sash's sightline (px) under which the mark shows, y the fade either side (px), z the cross's width (px)", Vector) = (4, 0.6, 1.5, 0)
+        _Flash ("The sky's flash (glass.json flash): x its band's most depth (a share of the opening's height, 0 the whole pane's sky), y the rise over the skyline (sin) at which it is reached, z its lower edge's softness, w its cap (a share of the light on the face)", Vector) = (0, 0.08, 0.04, 0.45)
         [HideInInspector] _SrcBlend ("", Float) = 1
         [HideInInspector] _DstBlend ("", Float) = 0
         [HideInInspector] _ZWrite ("", Float) = 1
@@ -41,7 +42,7 @@ Shader "Overstory/Glass"
         float4 _RoomWall, _RoomCeiling, _RoomFloor, _RoomShape, _RoomFurniture, _RoomFurniture2;
         float4 _Curtain, _CurtainB, _GlassDay, _Opposite;
         float4 _Kind0, _Kind1, _Kind2, _Kind3;
-        float4 _Mark;
+        float4 _Mark, _Flash;
     CBUFFER_END
     ENDHLSL
 
@@ -130,13 +131,18 @@ Shader "Overstory/Glass"
             // the horizon's sky, stepped a block at a time (seeded texture, claiming nothing), and under the horizon the
             // water, mirroring the sky at z, easing into the ground, with every edge kept sharp as a mirror keeps it; with
             // _Opposite's defaults, the trilight alone
+            float Rise(float3 r)
+            {
+                float block = floor(atan2(r.x, r.z) * 40.0);
+                return _Opposite.x * (0.55 + 0.45 * frac(sin(block * 12.9898) * 43758.5453));
+            }
+
             half3 Reflected(float3 r)
             {
                 half3 sky = SampleSH(float3(0.0, 1.0, 0.0));
                 half3 eq = SampleSH(normalize(float3(r.x, 0.0, r.z) + float3(1e-4, 0.0, 0.0)));
                 half3 ground = SampleSH(float3(0.0, -1.0, 0.0));
-                float block = floor(atan2(r.x, r.z) * 40.0);
-                float rise = _Opposite.x * (0.55 + 0.45 * frac(sin(block * 12.9898) * 43758.5453));
+                float rise = Rise(r);
                 half3 above = r.y < rise ? eq * (half)_Opposite.y : lerp(eq, sky, (half)smoothstep(0.0, 0.6, r.y));
                 return r.y >= 0.0 ? above : lerp(eq * (half)_Opposite.z, ground, (half)smoothstep(0.0, 0.25, -r.y));
             }
@@ -264,7 +270,20 @@ Shader "Overstory/Glass"
                 // a pane reflects at both its faces: 2R / (1 + R) for single glazing (_Opposite.w surfaces)
                 half3 fr = EnvironmentBRDFSpecular(brdf, Pow4(1.0h - nv));
                 fr = fr * (half)_Opposite.w / (1.0h + ((half)_Opposite.w - 1.0h) * fr);
-                half3 envS = Reflected(reflect(d, nw)) * fr;
+                float3 rv = reflect(d, nw);
+                half3 envS = Reflected(rv) * fr;
+                // the sky's flash (_Flash): where the pane mirrors sky over the far shore, the sky shows only in a band
+                // down from the opening's head, the deeper the higher the reflection rises over the skyline, its lower
+                // edge soft above that line, never brighter than _Flash.w of the light on the face; below it the pane
+                // mirrors the far shore. The mark from afar shares the opening's frame, so it draws the same band
+                float over = rv.y - Rise(rv);
+                if (_Flash.x > 0.0 && over > 0.0)
+                {
+                    float depth = _Flash.x * saturate(over / _Flash.y);
+                    half band = (half)smoothstep(0.0, _Flash.z, depth - (1.0 - i.uv.y / hh));
+                    half3 shore = SampleSH(normalize(float3(rv.x, 0.0, rv.z) + float3(1e-4, 0.0, 0.0))) * (half)_Opposite.y * fr;
+                    envS = lerp(shore, min(envS, (half)_Flash.w * shN), band);
+                }
                 half aoD = 1.0h, aoI = 1.0h;
             #if defined(_SCREEN_SPACE_OCCLUSION)
                 AmbientOcclusionFactor so = GetScreenSpaceAmbientOcclusion(GetNormalizedScreenSpaceUV(i.positionCS));

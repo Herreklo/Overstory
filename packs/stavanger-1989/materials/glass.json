@@ -52,6 +52,13 @@
     "blendPx": 0.6,
     "crossPx": 1.5
   },
+  "flash": {
+    "describes": "The sky's flash (VD: the glass a dark eye): where a pane mirrors sky over the far shore (paint.json light.reflect), the sky shows only in a band down from the opening's head, as a reflected skyline does in a pane seen from below. The band is the deeper the higher the reflection rises over the skyline, reaching its full `depth` of the opening's height `rise` (sin) over it, so it steps with the shore's blocks and slides as the eye moves. Its lower edge is soft over `soft` of the height, above the line. Below it the pane mirrors the far shore. Its strength is the glass's own Fresnel, from the view angle, and never more than `cap` of the light on the window's face. The mark from afar draws the same band, so the hand-over keeps it (OS_Glass _Flash). In place of the whole pane's sky, which left 108's upper floor a flat light grey at the street stop (r05: L36.5 to 40.7 beside a main floor of 18 to 20).",
+    "depth": 0.3,
+    "rise": 0.08,
+    "soft": 0.04,
+    "cap": 0.45
+  },
   "wave": {
     "tiltDeg": 0.6,
     "perM": [
