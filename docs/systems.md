@@ -9,7 +9,7 @@ State: **built** (in use, reviewed), **in progress**, **designed** (a design pag
 - **SY1** Systems act on everything, materials give identity, kinds are generated from facts; each built once, no instance by hand. Evidence: the opening. Reopens: none named.
 - **SY2** Engine: people, money, ventures, plans, works, homes, feet. Pack: land, eras, rules, species, climate. Ours: how a fact looks; derived facts until the engine has them. Evidence: Who decides. Reopens: none named.
 - **SY3** A kind joins with research, parts on a quick sheet, its material, the shared systems, facts, tiers, one foreign-pack part, a variety sheet, a strict review, Øystein; done per the plan (disputed: "birch done"). Evidence: How a new thing joins. Reopens: none named.
-- **SY4** Subject and craft first; a gap blocks building. Gaps, due before: weather, step 9; sound, scenes. Management screens: once the first game is chosen or the greybox needs them. Evidence: Research coverage. Reopens: none named.
+- **SY4** Subject and craft first; a gap blocks building. Gaps, due before: weather, step 9. Management screens: once the first game is chosen or the greybox needs them. Evidence: Research coverage. Reopens: none named.
 - **D2.1, D2.2** Non-fact choices come from world seed, stable id and purpose; each debt moves at its own step, paint at port step 4; the Variety stairs stale until rebuilt. Evidence: Seeds. Reopens: none named.
 
 ## Who decides (SY2)
@@ -118,7 +118,7 @@ Every system, material and kind is studied twice before it is built (SY4; `CLAUD
 | Management and data interfaces: tables, boards, calendars, inboxes, ledgers (a manager game's desk) | `interface-and-inspection.md` (reading the world only) | **gap**, studied once the first game is chosen or the greybox needs it |
 | Playtesting: the programme, tools and what is worth trying | `docs/foundations.md` (Cold readers) | `playtesting.md` (Fable review after the reset; Blizzard, Insomniac, Riot and Sawyer's reactivity testing unread: the search budget ran out) |
 | Play craft: feel, focus, guidance, transitions, narrow streets | `living-world.md` | `play-craft.md` (Øystein: "extremely clever... master craftsmanship, finesse"; GDC Vault was down: the slides to read after the reset) |
-| Sound and music | `scenes-and-sound.md` (thin) | **gap**, before scenes |
+| Sound and music | `scenes-and-sound.md` (thin), `sound-and-music.md` (the harbour town by ear 1870 to 2020 as a timetable of bells, sirens, the cannery and the news hour, and history as a sound that stops; 29 October; 1989's stud share, its bell rules and the England boat's hours still open) | `sound-and-music.md` (studios start from silence, one sound reads one fact, overheard talk is a clue; Unity's audio with Steam Audio and our own scheduler hashing place and clock, no FMOD or Wwise; a free pipeline from CC0 sources and our own patches; three first tests and whose facts; Steam Audio's cost on the M4 unmeasured: its Gaps) |
 | Interface and reading the world | `interface.md` (thin) | `interface-and-inspection.md` (hover, inspect, the why-probe, the journal; what every part carries for picking) |
 
 ## How a new thing joins
