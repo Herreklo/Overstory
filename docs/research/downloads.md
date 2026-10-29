@@ -224,3 +224,9 @@ What the research has downloaded under the standing OK (Øystein, 22 October): p
 | 29 October | `camera/rdr2-atmosphere-artr2019.pptx` | https://advances.realtimerendering.com/s2019/slides_public_release.pptx | 238 MB | Camera and composition: RDR2's skies and fog map |
 | 29 October | `camera/hillaire-egsr2020-sky-atmosphere.pdf` | https://sebh.github.io/publications/egsr2020.pdf | 36 MB | Camera and composition: the sky's cost |
 | 29 October | `camera/patry-advances2021-index.html` | https://advances.realtimerendering.com/s2021/jpatry_advances2021/ | 1.0 MB | Camera and composition: Tsushima's haze and tone |
+| 29 October | `animals-subject/alerstam2007-flight-speeds-plosbiol.pdf` | https://journals.plos.org/plosbiology/article/file?id=10.1371/journal.pbio.0050197&type=printable | 0.3 MB | Animals (`animals.md`): birds' flight speeds |
+| 29 October | `animals-subject/alerstam2007-protocolS1.pdf` | https://journals.plos.org/plosbiology/article/file?type=supplementary&id=10.1371/journal.pbio.0050197.sd001 | 0.2 MB | Animals (`animals.md`): speeds by species |
+| 29 October | `animals-subject/urbpop-stavanger-2013-2014.pdf` | https://museumstavanger.no/uploads/sm/Urbpop_Stavanger_2013-2014.pdf | 1.4 MB | Animals (`animals.md`): Stavanger's town gulls |
+| 29 October | `animals-subject/buer-gamalnorsk-sau-heilaars-utedrift.pdf` | https://www.statsforvalteren.no/contentassets/3af8281a063044bc8a6cc8d1e48fb58c/gamalnorsk-sau---sau-pa-heilaars-utedrift---hilde-buer.pdf | 10.1 MB | Animals (`animals.md`): old Norwegian sheep |
+| 29 October | `behaviour-gaps/dl/sa52.pdf` | https://www.ssb.no/emner/00/02/20/sa52/sa52.pdf | 1.3 MB | Behaviour on screen: Norway's daily rhythm 1971–2000 by time of day |
+| 29 October | `behaviour-gaps/dl/sos_076.pdf` | https://www.ssb.no/histstat/sos/sos_076.pdf | 16.5 MB | Behaviour on screen: the day 1970–90 (*Døgnet rundt*), Norway against Finland |
