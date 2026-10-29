@@ -14,6 +14,7 @@ Can the town be affected by its people and its environment over the years, and l
 - **Clay first, colour last (Øystein, 28 October).** Every kind is made in clay, each material at its own lightness in grey with real relief and gloss. Colour goes on everything in one pass once a clay ensemble holds from all four views (two houses, a tree, ground with rock, the quay with water).
 - **The style stays** (`reviews/lt1/art-direction/README.md`, painterly realism in Stålenhag's line, stylised hard).
 - **The paused elements,** each at a pushed point and none judged: trees `5074681`, growth `5041e3e`, rock and ground `b56d316`. With the corner gone, rock, ground and growth have no Unity scene until the clay ensemble hosts them.
+- **People, a first look early (Øystein, 29 October: "i tend to agree"):** after the 2 November reset, one person in grey clay in 1989 clothes beside 107, from the four views with one walk on the steps, judged beside the best house. Step 5 itself stays where the plan has it.
 
 ## Held until the direction is set
 
