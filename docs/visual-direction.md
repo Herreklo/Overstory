@@ -47,7 +47,7 @@ The town is made of areas, each with its own grain: what stands there, how close
 - Space between the houses is designed, not left over: lanes, alleys, gaps between neighbours, and small level places where lanes meet, even on the steepest ground. That is where light falls and people stop (Cullen's here and there).
 - Nature is in every frame, not decoration around the town: bedrock, heath, moss, grass in the joints, self-seeded trees.
 - Nature has a history, like a building, and changes with the years. Trees grow from their planting or seeding year; heath left ungrazed goes to juniper and birch; an empty yard grows over within a few summers; a busy step wears smooth while its quiet edge grows moss; lichen size shows how long stone has been bare (`docs/research/nature.md`). The same rule as for buildings holds: what reads as history must be a fact with a date.
-- Rock is built in deliberate planes (Another World); ground cover in clusters with edges, never noise.
+- Rock is built in deliberate planes (the rock-family sheet, `docs/references/stone/study/58`); ground cover in clusters with edges, never noise.
 
 ## Light and colour
 
@@ -116,7 +116,7 @@ One style, its rules shared by every element; each element learned from its own 
 | Element | Lead | Support |
 | --- | --- | --- |
 | Trees | Firewatch | Kazuo Oga (Ghibli backgrounds), Stålenhag |
-| Rocks and cliffs | Another World | Firewatch, Norwegian coast photographs |
+| Rocks and cliffs | The rock-family sheet (`docs/references/stone/study/58`; Øystein, 30 October: "i want this to be our main inspo for rocks") | Firewatch, Another World, Hertervig, Norwegian coast photographs |
 | Water | Kawase Hasui | Firewatch, Stålenhag |
 | Sky | Firewatch | Sohlberg, Astrup |
 | Roads and paths | Stålenhag | Disco Elysium |
