@@ -9,7 +9,7 @@ high-poly bake) near-normal.png.
 
 A rock is bare stone standing in the turf, its page its own (kit.json `skin`), not the house plinth's: a calm base of
 its material's value under one broad, soft variation; the turf's damp a little darker over its foot, with no wet band
-(no eave splashes a rock); the contact shade (finish.json `contact`); its cavities dark by the cavity bake; a crack or
+(no eave splashes a rock), and its weathered top a little paler; the contact shade (finish.json `contact`); its cavities dark by the cavity bake; a crack or
 two drawn as a painter draws them, a dark line with a lighter lip along a joint's trace across a whole face, never
 ending inside one; the lichen as its material's stain, a few colonies set on its biggest up- and sea-facing old faces,
 clear of their edges; and the ground's junction dark (`junction.ground`). Values per plane are the light's, never the
@@ -114,12 +114,14 @@ def main():
             sn = np.maximum(sn, field(sd, Li["soft"]))
     sn = np.where(rock & (up > Li["under"]), sn, 0.0)
 
-    # the values: the broad variation, the turf's damp over the foot, the contact shade, the cavities dark, the drawn
-    # crack, then the ground's junction dark from what is there
+    # the values: the broad variation, the turf's damp over the foot, the weathered top paler, the contact shade, the
+    # cavities dark, the drawn crack, then the ground's junction dark from what is there
     dl = np.zeros(pg.shape)
     Br, Fo, Cv = Sk["broad"], Sk["foot"], Sk["cavity"]
     dl += np.where(rock, Br["L"] * (2.0 * FL.fbm3(pg.p, key(meta, "p-broad"), Br["cellM"], Br["octaves"]) - 1.0), 0.0)
     dl -= np.where(rock, Fo["L"] * (1.0 - FL.smoothstep(0.0, Fo["m"], pg.z)), 0.0)
+    Tp = Sk["top"]
+    dl += np.where(rock, Tp["L"] * FL.smoothstep(Tp["up"][0], Tp["up"][1], up), 0.0)
     C = Q["contact"]
     own = np.ones(pg.shape)
     for name, m in mats.items():

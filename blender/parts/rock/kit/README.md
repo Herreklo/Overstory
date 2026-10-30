@@ -115,7 +115,8 @@ stylised rock (`study/` 21, 22, 26, 27; Totoro 09 and 16), and our own house in 
   (the page: calm base, broad variation, cavities, one drawn crack, lichen colonies) fails its three tries on the
   lichen and the crack (Rounds, r05). Then stage 3 again (hard plane edges, Unity's grey beside s2) passes, and stage
   4 simple (calm base, broad variation, cavities; no lichen, no crack) holds on try 3 in a side low sun
-  (`TIP_SUN=-10`). Waits for the coordinator's word before stage 5.
+  (`TIP_SUN=-10`), then its calibration (gneiss L 46 in the stone's blue-grey, a paler top, a damper foot). Waits for
+  the coordinator's word before stage 5.
 - **State (30 Oct, r03):** the outcrop as a few rigid masses, ref 57's LOW ROCKY OUTCROP the only bar (the
   coordinator's brief: step 1 the masses alone beside 57's boulders, step 2 arranged into the outcrop, step 3 the
   outcrop beside 57's; one change a try, at most three a step). `mass.py` (kit.json `mass`): each mass a convex
@@ -161,6 +162,17 @@ stylised rock (`study/` 21, 22, 26, 27; Totoro 09 and 16), and our own house in 
 
 ## Rounds
 
+- **r05** stage 4 simple, calibration (the coordinator: lit planes as bright as white paint, cream as sandstone, the
+  shade near black, the broad variation unseen; `reviews/lt1/rock/r05/s4-calib-board.jpg`: top Pc, try 3 then this;
+  middle the boulder at full size, Pc then P, each try 3 then this; bottom s3's Unity grey, s1-b3's front, 17, 21). One
+  change: gneiss L 46 (was 52), its colour the stone's own [3, 250] (107's plinth is gathered gneiss; the warmth is the
+  light's), `skin.top` +4 on faces looking up (bleached, rain-washed), `skin.foot` −7 over 0.5 m (was −5 over 0.25).
+  Measured in the P still (sRGB): the lit face 162 against the white front's 174–211 (was 180, as bright); down the lit
+  face 164 to 141 (was 184 to 176); the top plane lost 5% to the sides' 23%. The shade side, why near black: the page's
+  occlusion is about 1 (median 1.0; no ground in the bake), its dL about 0 above the foot; at equal albedo 107's own
+  plinth stone (L 51.9) is darker in shade (30) than the rock (39, now 33), and the white gable gets the same share of
+  its albedo in shade as the rock (0.12 against 0.10). It is the tip light's sun-to-sky ratio on a mid-grey stone, not
+  the page; lifting it is the scene light's, house and rock together. Holds as a calibration.
 - **r05** stage 4 simple, the bare stone's page (the coordinator: lichen and the crack come back later, one decision
   each, once the bare stone holds; `reviews/lt1/rock/r05/s4-simple-board.jpg`: top Pc and P in the low sun with 107;
   middle the boulder at full size, s3's Unity grey front, s1-b3's front; bottom 17 and 21). kit.json `skin.lichen.faces`
