@@ -9,6 +9,7 @@
 # and draws them together on their plots from the row's views (the <house> argument is then ignored; stills row-*);
 # STREET_GROUNDSKY=0 leaves the ground open to the sky at the houses' feet (an A/B of the ground's own sky);
 # STREET_WALK=<n> also draws n frames walking from the eye view back to the street stop (stills *-walkNNN-*, for a clip);
+# STREET_TOWNLIGHT=0 leaves every house under the open rig, without the town's light (an A/B of OS_TownLight);
 # run it under tools/unity_lock.py
 set -e
 cd "$(dirname $0)/../../../.."
@@ -27,5 +28,5 @@ else
 fi
 /Applications/Unity/Hub/Editor/6000.6.6f1/Unity.app/Contents/MacOS/Unity -batchmode -quit -projectPath $PWD/unity \
   -executeMethod Overstory.EditorTools.LT1Street.Run -streetHouse $h ${H:+-streetHouses $H} -streetRound $2 -streetViews ${3:-eye,street} \
-  -streetWays ${4:-P,Pc} -streetLights ${5:-overcast,lowsun} ${6:+-streetPlaneShadow $6} ${7:+-streetRoofFlatUp $7} ${STREET_TIMING:+-streetTiming $STREET_TIMING} ${STREET_COMPRESS:+-streetCompress $STREET_COMPRESS} ${STREET_LEVEL:+-streetLevel $STREET_LEVEL} ${STREET_CITYONE:+-streetCityOne $STREET_CITYONE} ${STREET_FARSHADOW:+-streetFarShadow $STREET_FARSHADOW} ${STREET_SRPB:+-streetSrpBatcher $STREET_SRPB} ${STREET_SHADOWTWO:+-streetShadowTwo $STREET_SHADOWTWO} ${STREET_GROUNDSKY:+-streetGroundSky $STREET_GROUNDSKY} ${STREET_WALK:+-streetWalk $STREET_WALK} -logFile $L
+  -streetWays ${4:-P,Pc} -streetLights ${5:-overcast,lowsun} ${6:+-streetPlaneShadow $6} ${7:+-streetRoofFlatUp $7} ${STREET_TIMING:+-streetTiming $STREET_TIMING} ${STREET_COMPRESS:+-streetCompress $STREET_COMPRESS} ${STREET_LEVEL:+-streetLevel $STREET_LEVEL} ${STREET_CITYONE:+-streetCityOne $STREET_CITYONE} ${STREET_FARSHADOW:+-streetFarShadow $STREET_FARSHADOW} ${STREET_SRPB:+-streetSrpBatcher $STREET_SRPB} ${STREET_SHADOWTWO:+-streetShadowTwo $STREET_SHADOWTWO} ${STREET_GROUNDSKY:+-streetGroundSky $STREET_GROUNDSKY} ${STREET_WALK:+-streetWalk $STREET_WALK} ${STREET_TOWNLIGHT:+-streetTownLight $STREET_TOWNLIGHT} -logFile $L
 grep -n "LT1Street\]\|error CS\|Exception" $L | tail -40

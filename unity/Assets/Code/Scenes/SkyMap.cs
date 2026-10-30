@@ -1,3 +1,4 @@
+using System.Linq;
 using UnityEngine;
 using UnityEngine.Rendering;
 
@@ -7,7 +8,9 @@ namespace Overstory.Scenes
     /// The town seen from straight above, as a map of its height: from it every point works out how much of its sky
     /// the town leaves open, so lanes, yards and the feet of walls darken and roofs and quays stay open
     /// (StreetLooks.hlsl, OS_TownSky). Nothing is baked: the map is drawn again whenever the town changes, at any
-    /// size of town, which per-part bakes (blender/generators/bake.py) cannot see across.
+    /// size of town, which per-part bakes (blender/generators/bake.py) cannot see across. Given the town's facts (what each
+    /// surface is made of, `albedo`) and the sun, it also works out what hides the sky round each point and how the sun
+    /// lights it, so a face takes that light in place of the sky it loses (TownSky.hlsl, OS_TownLight).
     /// </summary>
     [ExecuteAlways]
     public class SkyMap : MonoBehaviour
@@ -29,8 +32,22 @@ namespace Overstory.Scenes
         public int horizonResolution = 1024;
         public int horizonLevels = 6;
         public float horizonTop = 40f;
+        [Tooltip("Towards the sun (world), its light (linear colour times intensity) and how dark its shadow is (the light's " +
+                 "shadow strength): what the town's walls give back depends on which of them the sun reaches. Set them and " +
+                 "call Relight when the sun or the ambient light changes.")]
+        public Vector3 sun = Vector3.up;
+        public Color sunLight = Color.white;
+        public float sunShadow = 1f;
+        /// <summary>
+        /// What each renderer is made of, from the town's facts (linear albedo): its house's wall paint, and its own
+        /// surface's with whose it is in the alpha (its house's number over 255, 1 to 254 and unique among neighbours
+        /// within 60 m; 0 for the ground and anything of no house). Without it there is no town light (OS_TownLight).
+        /// </summary>
+        [System.NonSerialized]
+        public System.Func<Renderer, (Color wall, Color top)> albedo;
 
-        RenderTexture map, horizon0, horizon1, ground;
+        RenderTexture map, horizon0, horizon1, ground, wallAlbedo, topAlbedo;
+        RenderTexture[] bounce, slices;
         Material heightMaterial, horizonMaterial;
 
         public bool Built => map != null && map.IsCreated();
@@ -41,7 +58,8 @@ namespace Overstory.Scenes
         {
             Shader.SetGlobalFloat("_OS_SkyMapOn", 0f);
             Shader.SetGlobalVector("_OS_HorizonInfo", Vector4.zero);
-            foreach (var rt in new[] { map, horizon0, horizon1, ground })
+            Shader.SetGlobalVector("_OS_BounceInfo", Vector4.zero);
+            foreach (var rt in new[] { map, horizon0, horizon1, ground, wallAlbedo, topAlbedo }.Concat(bounce ?? new RenderTexture[0]).Concat(slices ?? new RenderTexture[0]))
                 if (rt != null)
                 {
                     rt.Release();
@@ -51,7 +69,8 @@ namespace Overstory.Scenes
                 DestroyImmediate(heightMaterial);
             if (horizonMaterial != null)
                 DestroyImmediate(horizonMaterial);
-            map = horizon0 = horizon1 = ground = null;
+            map = horizon0 = horizon1 = ground = wallAlbedo = topAlbedo = null;
+            bounce = slices = null;
             heightMaterial = horizonMaterial = null;
         }
 
@@ -96,6 +115,7 @@ namespace Overstory.Scenes
             cmd.SetRenderTarget(map);
             cmd.ClearRenderTarget(true, true, new Color(-1000f, 0, 0, 0));
             cmd.SetGlobalMatrix("_OS_HeightVP", vp);
+            var drawn = new System.Collections.Generic.List<(MeshRenderer r, int sub)>();
             foreach (var r in town.GetComponentsInChildren<MeshRenderer>())
             {
                 if (r.gameObject.name.StartsWith("water") || !r.enabled)
@@ -104,12 +124,127 @@ namespace Overstory.Scenes
                 if (mf == null || mf.sharedMesh == null)
                     continue;
                 for (int i = 0; i < mf.sharedMesh.subMeshCount; i++)
+                {
                     cmd.DrawRenderer(r, heightMaterial, i, 0);
+                    drawn.Add((r, i));
+                }
+            }
+            // what each surface is made of, seen from above as the height is (its own depth, so the top surface wins)
+            if (albedo != null)
+            {
+                wallAlbedo = Remake(wallAlbedo, "town wall albedo", 24);
+                topAlbedo = Remake(topAlbedo, "town top albedo", 0);
+                cmd.SetRenderTarget(new RenderTargetIdentifier[] { wallAlbedo, topAlbedo }, wallAlbedo.depthBuffer);
+                cmd.ClearRenderTarget(true, true, Color.clear);
+                foreach (var (r, i) in drawn)
+                {
+                    var (w, t) = albedo(r);
+                    cmd.SetGlobalVector("_OS_DrawWall", (Vector4)w);
+                    cmd.SetGlobalVector("_OS_DrawTop", (Vector4)t);
+                    cmd.DrawRenderer(r, heightMaterial, i, 1);
+                }
             }
             DrawHorizon(cmd);
+            if (albedo != null)
+                DrawBounce(cmd);
             Graphics.ExecuteCommandBuffer(cmd);
             cmd.Release();
             Bind();
+        }
+
+        RenderTexture Remake(RenderTexture rt, string name, int depth)
+        {
+            if (rt != null && rt.width == resolution)
+                return rt;
+            if (rt != null)
+            {
+                rt.Release();
+                DestroyImmediate(rt);
+            }
+            rt = new RenderTexture(resolution, resolution, depth, RenderTextureFormat.ARGB32, RenderTextureReadWrite.Linear)
+            {
+                name = name, filterMode = FilterMode.Point, wrapMode = TextureWrapMode.Clamp, hideFlags = HideFlags.DontSave,
+            };
+            rt.Create();
+            return rt;
+        }
+
+        /// <summary>The town's walls' light worked out again for the sun as it stands (its height and facts unchanged).</summary>
+        public void Relight()
+        {
+            if (!Built || albedo == null || wallAlbedo == null)
+                return;
+            var cmd = new CommandBuffer { name = "town bounce" };
+            cmd.SetGlobalTexture("_OS_SkyMap", map);
+            cmd.SetGlobalVector("_OS_SkyMapRect", MapRect());
+            cmd.SetGlobalVector("_OS_HorizonInfo", Info());
+            DrawBounce(cmd);
+            Graphics.ExecuteCommandBuffer(cmd);
+            cmd.Release();
+            Bind();
+        }
+
+        static readonly string[] BounceNames = { "_OS_TownLight0", "_OS_TownLight1", "_OS_TownLight2", "_OS_TownLight3" };
+
+        /// <summary>
+        /// At every texel and height of the horizon map, what the rest of the town round the texel's own house changes in
+        /// the ambient light (the trilight) on a face there, worked out for the sun and the ambient as they stand and kept
+        /// for a wall as a mean and a cosine and sine of the way it faces, and for a face looking up and one looking down
+        /// (TownHorizon.shader, Bounce).
+        /// </summary>
+        void DrawBounce(CommandBuffer cmd)
+        {
+            if (horizonMaterial == null || ground == null)
+                return;
+            int n = horizonResolution;
+            if (bounce == null || bounce[0].width != n || bounce[0].volumeDepth != horizonLevels)
+            {
+                foreach (var rt in (bounce ?? new RenderTexture[0]).Concat(slices ?? new RenderTexture[0]))
+                    if (rt != null)
+                    {
+                        rt.Release();
+                        DestroyImmediate(rt);
+                    }
+                RenderTexture Make(string name, int levels, int depth)
+                {
+                    var rt = new RenderTexture(n, n, depth, RenderTextureFormat.ARGBHalf, RenderTextureReadWrite.Linear)
+                    {
+                        name = name, filterMode = FilterMode.Bilinear, wrapMode = TextureWrapMode.Clamp, hideFlags = HideFlags.DontSave,
+                    };
+                    if (levels > 1)
+                    {
+                        rt.dimension = TextureDimension.Tex3D;
+                        rt.volumeDepth = levels;
+                    }
+                    rt.Create();
+                    return rt;
+                }
+                bounce = BounceNames.Select(b => Make("town " + b.Substring(4), horizonLevels, 0)).ToArray();
+                // one height at a time, drawn flat and copied into its slice: Metal draws nothing into several slices
+                // of 3D targets at once
+                slices = BounceNames.Select((b, i) => Make("town " + b.Substring(4) + " slice", 1, i == 0 ? 16 : 0)).ToArray();
+            }
+            cmd.SetGlobalTexture("_OS_TownWall", wallAlbedo);
+            cmd.SetGlobalTexture("_OS_TownTop", topAlbedo);
+            var s = sun.sqrMagnitude > 0f ? sun.normalized : Vector3.up;
+            cmd.SetGlobalVector("_OS_BounceSun", new Vector4(s.x, s.y, s.z, sunShadow));
+            cmd.SetGlobalVector("_OS_BounceLight", (Vector4)sunLight);
+            // the trilight as the rig sets it, and its ambient on a wall (as SampleSH gives it, the same all round)
+            var wall = new Color[1];
+            RenderSettings.ambientProbe.Evaluate(new[] { Vector3.right }, wall);
+            cmd.SetGlobalVector("_OS_BounceSky", (Vector4)RenderSettings.ambientSkyColor.linear);
+            cmd.SetGlobalVector("_OS_BounceHorizon", (Vector4)RenderSettings.ambientEquatorColor.linear);
+            cmd.SetGlobalVector("_OS_BounceGround", (Vector4)RenderSettings.ambientGroundColor.linear);
+            cmd.SetGlobalVector("_OS_BounceWall", (Vector4)wall[0]);
+            var targets = slices.Select(t => (RenderTargetIdentifier)t).ToArray();
+            for (int level = 0; level < horizonLevels; level++)
+            {
+                cmd.SetRenderTarget(targets, slices[0].depthBuffer);
+                cmd.SetGlobalVector("_OS_HorizonBuild", new Vector4(level, 0f, 0f, 0f));
+                cmd.DrawProcedural(Matrix4x4.identity, horizonMaterial, 2, MeshTopology.Triangles, 3);
+                for (int i = 0; i < slices.Length; i++)
+                    cmd.CopyTexture(slices[i], 0, 0, bounce[i], level, 0);
+            }
         }
 
         /// <summary>
@@ -185,6 +320,11 @@ namespace Overstory.Scenes
                 Shader.SetGlobalTexture("_OS_Horizon1", horizon1);
             }
             Shader.SetGlobalVector("_OS_HorizonInfo", Info());
+            bool lit = albedo != null && bounce != null && bounce[0].IsCreated();
+            if (lit)
+                for (int i = 0; i < bounce.Length; i++)
+                    Shader.SetGlobalTexture(BounceNames[i], bounce[i]);
+            Shader.SetGlobalVector("_OS_BounceInfo", new Vector4(lit ? 1f : 0f, 0f, 0f, 0f));
         }
 
         /// <summary>

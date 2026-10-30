@@ -7,6 +7,7 @@ using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
+using Overstory.Scenes;
 
 namespace Overstory.EditorTools
 {
@@ -42,7 +43,8 @@ namespace Overstory.EditorTools
         [Serializable] class Page { public int size; public float pxPerM; }
         [Serializable] class GlassKind { public string name, shape; public float tiltDeg; public float[] perM; }
         [Serializable] class Glass { public float gloss, share; public float[] walls, ceiling, floor, furniture, curtain, room, curtains, daylight, fromAfar, flash, board; public GlassKind[] kinds; }
-        [Serializable] class House { public int house; public float[] size; public Lap lap; public float planeShadow, seenWithinM, cityFromM; public Plot plot; public Page page; public Glass glass; }
+        [Serializable] class Piece { public string mat, kind; }
+        [Serializable] class House { public int house; public float[] size; public Lap lap; public float planeShadow, seenWithinM, cityFromM; public Plot plot; public Page page; public Glass glass; public Piece[] pieces; }
 
         struct View { public string name, level; public Vector3 pos, target; public float fov; public bool floor; }
 
@@ -127,6 +129,10 @@ namespace Overstory.EditorTools
             // toward each wall, as a wall does under its eave (marks.py geo, R); -streetGroundSky 0 leaves it open, for an A/B
             if (Arg("-streetGroundSky") != "0")
                 GroundSky(ground, gm, built, gen);
+            // the town round each house (Overstory.Scenes.SkyMap): the sky its neighbours hide taken away, and their light
+            // put in its place from each house's paint (OS_TownLight); -streetTownLight 0 leaves every house under the
+            // open rig, as before
+            var townSky = Arg("-streetTownLight") != "0" ? TownSky(built.Select(b => b.root).Append(ground), rowW, rowD) : null;
 
             var sunGo = new GameObject("Sun");
             var sun = sunGo.AddComponent<Light>();
@@ -224,6 +230,8 @@ namespace Overstory.EditorTools
                         adjust.postExposure.Override(own != null ? own.exposure : light.exposure);
                         foreach (var b in built)
                             Assign(b.levels[lv[b]], b.mats, way, MatLevel(lv[b]));
+                        if (townSky != null)
+                            Relight(townSky, built, sun, l, way, gm);
                         string file = Path.Combine(outDir, $"{id}-{view.name}-{light.name}-{way}.png");
                         Capture(cam, file);
                         Debug.Log($"[LT1Street] {file}");
@@ -232,7 +240,7 @@ namespace Overstory.EditorTools
                 skyGo.SetActive(false);
                 Shader.SetGlobalVector("_OS_StageSky", Vector4.zero);
                 if (Arg("-streetTiming") != null && !row)
-                    Timing(int.Parse(Arg("-streetTiming")), root_, mats, cam, sun, gm, adjust, house, paint, outDir, sunOff);
+                    Timing(int.Parse(Arg("-streetTiming")), root_, mats, cam, sun, gm, adjust, house, paint, outDir, sunOff, townSky);
                 SrpBatcher(mats.Values.First().shader);
             }
             finally
@@ -436,7 +444,7 @@ namespace Overstory.EditorTools
         /// measured. The editor's own work is in the numbers: an offscreen frame, not the player's.
         /// </summary>
         static void Timing(int n, GameObject house0, Dictionary<string, Material> mats, Camera cam, Light sun, Material gm,
-                           ColorAdjustments adjust, House house, Paint paint, string outDir, float sunOff)
+                           ColorAdjustments adjust, House house, Paint paint, string outDir, float sunOff, SkyMap townSky)
         {
             const int Batches = 6, PerBatch = 6;
             float plot = house.plot != null && house.plot.w > 0 ? house.plot.w / 1000f : house.size[0] + 1f;
@@ -448,11 +456,23 @@ namespace Overstory.EditorTools
             var houses = new List<GameObject> { house0 };
             for (int k = 1; k < n; k++)
             {
-                var c = UnityEngine.Object.Instantiate(house0);
+                var c = UnityEngine.Object.Instantiate(house0, house0.transform.parent);
                 c.transform.position = house0.transform.position + new Vector3(k * plot, 0, 0);
                 houses.Add(c);
             }
             float w = house.size[0], d = house.size[1];
+            // the town's light over the whole row, each arm timed: the map off (the frame as before) and on (its cost)
+            var arms = townSky != null ? new[] { "off", "on" } : new[] { "off" };
+            double relightMs = 0, buildMs = 0;
+            if (townSky != null)
+            {
+                float rowW = (n - 1) * plot + w;
+                var mid = house0.transform.position + ToUnity(new Vector3(rowW / 2, d / 2, 0));
+                townSky.centre = new Vector2(mid.x, mid.z);
+                townSky.size = 128f * Mathf.Max(1, Mathf.CeilToInt((rowW + 120f) / 128f));
+                townSky.resolution = Mathf.RoundToInt(townSky.size * 2f);
+                townSky.horizonResolution = Mathf.RoundToInt(townSky.size);
+            }
             // near3, the worst near view: three houses drawn near at once (a lane or a corner, where three stand
             // within reach), at eye level 5 m off the middle one of the first three, looking wide across all three
             var views = new[]
@@ -474,6 +494,37 @@ namespace Overstory.EditorTools
             rt.Create();
             var probe = new RenderTexture(1, 1, 0, RenderTextureFormat.ARGB32);
             probe.Create();
+            if (townSky != null)
+            {
+                // the map drawn and its walls' light worked out, each timed to the GPU's end (a readback queued after it)
+                var asBuilt = houses.Select(h => new Built { house = house, paint = paint, root = h }).ToList();
+                townSky.albedo = r => TownAlbedo(r, asBuilt, "Pc", gm);
+                townSky.sun = -sun.transform.forward;
+                townSky.sunShadow = l_.shadow;
+                var buildRuns = new List<double>();
+                var relightRuns = new List<double>();
+                for (int k = 0; k <= 5; k++)
+                {
+                    var clock = System.Diagnostics.Stopwatch.StartNew();
+                    townSky.Build();
+                    Graphics.Blit(Texture2D.blackTexture, probe);
+                    AsyncGPUReadback.Request(probe).WaitForCompletion();
+                    double built_ = clock.Elapsed.TotalMilliseconds;
+                    clock.Restart();
+                    townSky.Relight();
+                    Graphics.Blit(Texture2D.blackTexture, probe);
+                    AsyncGPUReadback.Request(probe).WaitForCompletion();
+                    if (k > 0)
+                    {
+                        buildRuns.Add(built_);
+                        relightRuns.Add(clock.Elapsed.TotalMilliseconds);
+                    }
+                }
+                buildRuns.Sort();
+                relightRuns.Sort();
+                buildMs = buildRuns[buildRuns.Count / 2];
+                relightMs = relightRuns[relightRuns.Count / 2];
+            }
             var rows = new List<string>();
             var streamed = new List<string>();
             // a house's own page (every texture but the strokes, which every house shares), bytes from a mip down
@@ -555,30 +606,40 @@ namespace Overstory.EditorTools
                         bytes += pageTex.Sum(t => From(t, mip));
                     }
                     streamed.Add($"| {name} | {(bytes + shared) / 1048576.0:F0} | {string.Join(" / ", mips)} | {(long)houses.Count * pageFull / 1048576.0 + shared / 1048576.0:F0} |");
-                    cam.targetTexture = rt;
-                    // the renderer's own count of the last frame (its profiler counters; "-" where the editor keeps none)
-                    var rec = new[] { "Draw Calls Count", "Batches Count", "SetPass Calls Count", "Shadow Casters Count" }
-                        .Select(c => Unity.Profiling.ProfilerRecorder.StartNew(Unity.Profiling.ProfilerCategory.Render, c)).ToArray();
-                    var ms = new List<double>();
-                    for (int b = 0; b <= Batches; b++)
+                    foreach (var arm in arms)
                     {
-                        var clock = System.Diagnostics.Stopwatch.StartNew();
-                        for (int k = 0; k < PerBatch; k++)
-                            LT1Render.Render(cam, rt);
-                        Graphics.Blit(rt, probe);
-                        AsyncGPUReadback.Request(probe).WaitForCompletion();
-                        if (b > 0)
-                            ms.Add(clock.Elapsed.TotalMilliseconds / PerBatch);
+                        if (townSky != null)
+                        {
+                            townSky.Bind();
+                            if (arm == "off")
+                                Shader.SetGlobalFloat("_OS_SkyMapOn", 0f);
+                        }
+                        cam.targetTexture = rt;
+                        // the renderer's own count of the last frame (its profiler counters; "-" where the editor keeps none)
+                        var rec = new[] { "Draw Calls Count", "Batches Count", "SetPass Calls Count", "Shadow Casters Count" }
+                            .Select(c => Unity.Profiling.ProfilerRecorder.StartNew(Unity.Profiling.ProfilerCategory.Render, c)).ToArray();
+                        var ms = new List<double>();
+                        for (int b = 0; b <= Batches; b++)
+                        {
+                            var clock = System.Diagnostics.Stopwatch.StartNew();
+                            for (int k = 0; k < PerBatch; k++)
+                                LT1Render.Render(cam, rt);
+                            Graphics.Blit(rt, probe);
+                            AsyncGPUReadback.Request(probe).WaitForCompletion();
+                            if (b > 0)
+                                ms.Add(clock.Elapsed.TotalMilliseconds / PerBatch);
+                        }
+                        string stats = string.Join(" / ", rec.Select(r => r.Valid && r.LastValue > 0 ? r.LastValue.ToString() : "-"));
+                        foreach (var r in rec)
+                            r.Dispose();
+                        cam.targetTexture = null;
+                        ms.Sort();
+                        double median = ms[ms.Count / 2];
+                        string label = arms.Length > 1 ? $"{name} ({arm})" : name;
+                        rows.Add($"| {label} | {n} | {nearN} | {cityN} | {dropped} | {tris:N0} | {subs} | {stats} | {median:F1} | {string.Join(" ", ms.Select(x => x.ToString("F1")))} |");
+                        Debug.Log($"[LT1Street] timing {label}: {median:F2} ms, {nearN} near and {cityN} city of {n}, {tris} triangles and {subs} draws in view");
+                        Capture(cam, Path.Combine(outDir, arms.Length > 1 ? $"timing-{name}-{arm}.png" : $"timing-{name}.png"));
                     }
-                    string stats = string.Join(" / ", rec.Select(r => r.Valid && r.LastValue > 0 ? r.LastValue.ToString() : "-"));
-                    foreach (var r in rec)
-                        r.Dispose();
-                    cam.targetTexture = null;
-                    ms.Sort();
-                    double median = ms[ms.Count / 2];
-                    rows.Add($"| {name} | {n} | {nearN} | {cityN} | {dropped} | {tris:N0} | {subs} | {stats} | {median:F1} | {string.Join(" ", ms.Select(x => x.ToString("F1")))} |");
-                    Debug.Log($"[LT1Street] timing {name}: {median:F2} ms, {nearN} near and {cityN} city of {n}, {tris} triangles and {subs} draws in view");
-                    Capture(cam, Path.Combine(outDir, $"timing-{name}.png"));
                 }
             }
             finally
@@ -605,6 +666,10 @@ namespace Overstory.EditorTools
                           $"one 4096 shadow cascade, screen-space occlusion; median of {Batches} batches of {PerBatch}). A row of {n} copies of house {house.house} " +
                           $"on {plot:F1} m plots, near level within {within:F0} m, city level from {(cityFrom < float.MaxValue ? cityFrom.ToString("F0") + " m" : "nowhere")}. Not the player's frame.").AppendLine();
             md.AppendLine($"City level {(Arg("-streetCityOne") == "0" ? "a material a piece" : "one mesh, one material")}; far shadows {(drop ? "dropped beyond the shadow distance and the shadow's reach" : "cast by every house")}.").AppendLine();
+            if (townSky != null)
+                md.AppendLine($"The town's light (SkyMap, {townSky.size:F0} m at {townSky.resolution}, horizon {townSky.horizonResolution} x {townSky.horizonLevels}): each view off and on " +
+                              $"(OS_TownLight: one 2D and four 3D taps a pixel). " +
+                              $"Drawing the map {buildMs:F1} ms, working out its walls' light again for a new sun {relightMs:F1} ms (median of five, to the GPU's end).").AppendLine();
             md.AppendLine("| View | Houses | Near | City | Casting none | Triangles in view | Draws in view (counted) | Renderer: draw calls / batches / set-pass / shadow casters | ms a frame | Batches |");
             md.AppendLine("| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |");
             foreach (var r in rows)
@@ -1033,6 +1098,67 @@ namespace Overstory.EditorTools
             RenderSettings.ambientEquatorColor = Lin(l.equator, c?.equator);
             RenderSettings.ambientGroundColor = Lin(l.ground, c?.ground);
             DynamicGI.UpdateEnvironment();
+        }
+
+        /// <summary>
+        /// The town's sky map over the stage's houses and ground (Overstory.Scenes.SkyMap), at the heart's texels (half a
+        /// metre for the height, a metre for the horizon and what hides it), reaching well past the 56 m its march looks.
+        /// </summary>
+        static SkyMap TownSky(IEnumerable<GameObject> parts, float w, float d)
+        {
+            var town = new GameObject("Town");
+            foreach (var p in parts)
+                p.transform.SetParent(town.transform, true);
+            var sky = town.AddComponent<SkyMap>();
+            sky.town = town.transform;
+            var c = ToUnity(new Vector3(w / 2, d / 2, 0));
+            sky.centre = new Vector2(c.x, c.z);
+            sky.size = 128f * Mathf.Max(1, Mathf.CeilToInt((w + 120f) / 128f));
+            sky.resolution = Mathf.RoundToInt(sky.size * 2f);
+            sky.horizonResolution = Mathf.RoundToInt(sky.size);
+            // its heights finer low down than the town's, for a row of two and three storeys: 0.5, 2, 4.4 and 7.8 m
+            sky.horizonLevels = 8;
+            sky.horizonTop = 24f;
+            return sky;
+        }
+
+        /// <summary>The town's map drawn again for what stands and how it is lit now: the levels shown, the way's albedo, the sun.</summary>
+        static void Relight(SkyMap sky, List<Built> built, Light sun, Lighting l, string way, Material gm)
+        {
+            sky.albedo = r => TownAlbedo(r, built, way, gm);
+            sky.sun = -sun.transform.forward;
+            sky.sunLight = sun.color.linear * sun.intensity;
+            sky.sunShadow = l.shadow;
+            sky.Build();
+        }
+
+        /// <summary>
+        /// What a renderer of the stage is made of, from its house's paint (linear, as OS_Finish draws it in this way): its
+        /// house's wall paint (the cladding's pieces' material), and its own material's with the house's number in the
+        /// alpha (its place in the row, over 255); the ground its own colour, of no house.
+        /// </summary>
+        static (Color wall, Color top) TownAlbedo(Renderer r, List<Built> built, string way, Material gm)
+        {
+            var b = built.FirstOrDefault(x => r.transform.IsChildOf(x.root.transform));
+            if (b == null)
+            {
+                var g = gm.GetColor("_BaseColor").linear;
+                g.a = 0f;
+                return (g, g);
+            }
+            string wall = b.house.pieces?.Where(x => x.kind == "clad").GroupBy(x => x.mat).OrderByDescending(x => x.Count()).FirstOrDefault()?.Key ?? "cladding";
+            string name = r.gameObject.name, kind = name.Substring(name.IndexOf('_') + 1);
+            var top = PaintAlbedo(b.paint, kind, wall, way);
+            top.a = (built.IndexOf(b) % 254 + 1) / 255f;
+            return (PaintAlbedo(b.paint, wall, wall, way), top);
+        }
+
+        static Color PaintAlbedo(Paint p, string kind, string wall, string way)
+        {
+            var m = p.mats.FirstOrDefault(x => x.name == kind) ?? p.mats.First(x => x.name == wall);
+            float y = LToY(m.L);
+            var t = way == "Pc" ? p.colour?.mats?.FirstOrDefault(x => x.name == m.name)?.tint : null;
+            return t != null && t.Length == 3 ? new Color(y * t[0], y * t[1], y * t[2]) : new Color(y, y, y);
         }
 
         /// The sky a light draws (its row's `drawn`): "cie-overcast" is the CIE overcast sky, (1 + 2 sin e) / 3 of its

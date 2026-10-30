@@ -15,60 +15,8 @@ float4 _OS_SunSideAmb;  // what the horizon on the sun's side gives a wall facin
 float4 _OS_TownBounce;  // what the town's walls and ground give back, in place of the sky they hide
 float4 _OS_SunBounce;   // the sun's light bounced up from lit ground (linear), for faces that see the ground
 
-// The town's sky map (Overstory.Scenes.SkyMap) is declared with the air, in StreetSurface.hlsl
-
-// How much of a face's open sky the town leaves open, 0 to 1: the horizon the town makes round it, found in eight
-// directions out to about 60 m, each weighted by how much the face looks that way. A lane's floor at the foot of
-// two walls keeps a strip of sky; a wall's foot in a yard keeps less; a roof or the open quay keeps it all. The
-// horizon is read from the town's horizon map, worked out once from its sky map (TownHorizon.shader): the four
-// texels round the point, each at the point's own height over that texel's ground.
-half OS_TownSky(float3 positionWS, half3 n)
-{
-#if defined(OS_L5_TOWNSKY)
-    return 1.0h;    // (L5's arm, the harness's bare-townsky: the term skipped, the value with no sky map)
-#else
-    if (_OS_SkyMapOn < 0.5 || _OS_HorizonInfo.w < 0.5)
-        return 1.0h;
-    float3 o = positionWS + n * 0.6; // off the face, so a wall does not hide itself
-    float2 uv = (o.xz - _OS_SkyMapRect.xy) * _OS_SkyMapRect.z;
-    if (any(uv < 0.0) || any(uv > 1.0))
-        return 1.0h;
-    float res = _OS_HorizonInfo.x, levels = _OS_HorizonInfo.y;
-    float2 f = uv * res - 0.5;
-    float2 i0 = floor(f), b = f - i0;
-    half4 a0 = 0.0h, a1 = 0.0h;
-    [unroll]
-    for (int c = 0; c < 4; c++)
-    {
-        float2 corner = float2(c & 1, c >> 1);
-        float2 cuv = (clamp(i0 + corner, 0.0, res - 1.0) + 0.5) / res;
-        float g = SAMPLE_TEXTURE2D_LOD(_OS_HorizonGround, sampler_OS_HorizonGround, cuv, 0).r;
-        float t = sqrt(saturate((o.y - g) / _OS_HorizonInfo.z));
-        float3 uvw = float3(cuv, (t * (levels - 1.0) + 0.5) / levels);
-        half w = (half)(lerp(1.0 - b.x, b.x, corner.x) * lerp(1.0 - b.y, b.y, corner.y));
-        a0 += w * (half4)SAMPLE_TEXTURE3D_LOD(_OS_Horizon0, sampler_OS_HorizonGround, uvw, 0);
-        a1 += w * (half4)SAMPLE_TEXTURE3D_LOD(_OS_Horizon1, sampler_OS_HorizonGround, uvw, 0);
-    }
-    half angle[8] = { a0.x, a0.y, a0.z, a0.w, a1.x, a1.y, a1.z, a1.w };
-    half up = abs(n.y);
-    float2 nh = n.xz / max(length(n.xz), 1e-4);
-    half open = 0.0h, full = 0.0h;
-    [unroll]
-    for (int k = 0; k < 8; k++)
-    {
-        float a = (k + 0.5) * 0.785398;
-        float2 dir = float2(cos(a), sin(a));
-        half w = saturate(up + (1.0h - up) * dot(dir, nh));
-        float alpha = angle[k] * HALF_PI;
-        // the sky left over the town's horizon: cos^2 for a face looking up, the vertical case for a wall
-        half flat = (half)(cos(alpha) * cos(alpha));
-        half wall = (half)(1.0 - (2.0 * alpha + sin(2.0 * alpha)) / PI);
-        open += w * lerp(wall, flat, up);
-        full += w;
-    }
-    return full > 1e-3 ? open / full : 1.0h;
-#endif
-}
+// The town's sky map and OS_TownSky, how much sky the town leaves a face, are in TownSky.hlsl (with the air, in
+// StreetSurface.hlsl)
 
 float _OS_ShadowChroma; // look D: how strongly shade takes the sky's colour (1 as the light gives it)
 

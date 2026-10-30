@@ -213,19 +213,9 @@ half OS_CloudCover(float c, float extraSoft)
     return (half)smoothstep(1.0 - _OS_Clouds.x - soft, 1.0 - _OS_Clouds.x + soft, c);
 }
 
-// The town's sky map (Overstory.Scenes.SkyMap): its height from above. The shade uses it for the sky each point
-// sees (StreetLooks.hlsl, OS_TownSky); the fog for where land is under it.
-TEXTURE2D(_OS_SkyMap);
-SAMPLER(sampler_OS_SkyMap);
-float4 _OS_SkyMapRect;  // xy the map's corner (world x, z), z 1 / its size, w 1 when v reads from the top
-float _OS_SkyMapOn;
-// and the horizon worked out from it once (TownHorizon.shader): each texel's ground, and the horizon's angle in eight
-// directions at heights over it
-TEXTURE2D(_OS_HorizonGround);
-SAMPLER(sampler_OS_HorizonGround);
-TEXTURE3D(_OS_Horizon0);
-TEXTURE3D(_OS_Horizon1);
-float4 _OS_HorizonInfo;  // x texels a side, y height levels, z the top level (m over the ground), w on
+// The town's sky map and the horizon worked out from it (Overstory.Scenes.SkyMap): the shade uses it for the sky each
+// point sees (OS_TownSky); the fog for where land is under it.
+#include "TownSky.hlsl"
 
 // The town's glow (Overstory.Scenes.TownLights): its lamps and lit shops summed and spread on a map from above,
 // so fog over lit streets glows from below

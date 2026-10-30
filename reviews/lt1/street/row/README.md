@@ -107,3 +107,23 @@ These renders carry r03's toe (`packs/stavanger-1989/light/grade.json`). It is s
     STREET_ROW="107:cache/street/gen/107h:cache/street/bake/107z4/out-r09 108:cache/street/gen/108g:cache/street/bake/108v/out-r09 109:cache/street/gen/109g:cache/street/bake/109u/out-r09" python3 tools/unity_lock.py run -- bash blender/parts/street/run/render.sh row r09 eye,street,raised,high P,Pc overcast,lowsun
     STREET_GEN=cache/street/gen/108g STREET_PAINT=cache/street/bake/108v/out-r09 python3 tools/unity_lock.py run -- bash blender/parts/street/run/render.sh 108 r09h eye,street,raised,high P,Pc overcast,lowsun
     STREET_WALK=120 STREET_GEN=cache/street/gen/108g STREET_PAINT=cache/street/bake/108v/out-r09 python3 tools/unity_lock.py run -- bash blender/parts/street/run/render.sh 108 r09w eye,street Pc overcast
+
+## r12: the town's light on the finished houses
+
+- Good: in low sun, the shaded sides now take the light their lit neighbours throw.
+  - 109's side facing 108 rises ×2.0 at the stop: 4.5 to 8.8 at the front, 4.7 to 10.6 at the back.
+  - It reads at the stop (`r12-crop-side-lowsun.jpg`) and from 12 m.
+  - 108's west side rises ×2.0 (27.7 to 46.0, 56.3 at the top).
+  - Light and shadow stay two families: 108's side is 56 against its front's 87, and 109's side 12 against its front's 39.
+- In overcast the gaps darken ×0.93–0.97, close to the estimate (×0.89–0.94). The fronts move under 0.4 L.
+- The lit faces move under 1 L. The largest change is the shaded roofs at the stop, 8.6 to 9.5.
+- How: `OS_TownSky` (TownHorizon pass 2) marches the height map toward the sun where a ray meets another house's wall. That wall's paint comes from the sky map's new wall-albedo channel. Its lit share and the sky are worked out once for each sun into four 3D maps. `OS_Finish` adds `OS_TownLight` behind `_OS_SkyMapOn`, so a face takes albedo × light in place of the sky its neighbours hide. A house's own walls are left to its bake.
+- The p3 corner is byte-identical with the map off (16 of 16 stills).
+- Cost, 50 houses at 1440p:
+  - each view +0.1–0.2 ms (street 4.6 to 4.7, raised 4.7 to 4.9, along 5.3 to 5.5; near3 within noise);
+  - drawing the 640 m map 59 ms, and working out the light again for a new sun 12 ms (both once, not every frame);
+  - 32 B per texel and level: 17 MB on this stage, 105 MB on the 640 m map.
+
+Sheets:
+- `r12-lowsun.jpg` and `r12-overcast.jpg`: rows street Pc, 12 m Pc, street P, 12 m P; columns r11 | r12.
+- `r12-crop-side-lowsun.jpg` and `r12-crop-side-overcast.jpg`: 109's side and 108's corner at the stop, r11 | r12.

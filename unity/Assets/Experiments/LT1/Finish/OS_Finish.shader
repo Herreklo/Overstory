@@ -146,6 +146,7 @@ Shader "Overstory/Finish"
             #pragma multi_compile_fog
             #pragma multi_compile_instancing
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
+            #include "Assets/Shaders/TownSky.hlsl"
 
             TEXTURE2D(_Tile); SAMPLER(sampler_Tile);
             TEXTURE2D(_TileN); SAMPLER(sampler_TileN);
@@ -490,6 +491,10 @@ Shader "Overstory/Finish"
             #endif
                 d.fogCoord = i.fog;
                 d.bakedGI = SampleSH(nWS);
+                // the town round the face, where there is a town map: the sky its neighbours hide taken away and their
+                // light put in its place (TownSky.hlsl); with none, the rig's ambient alone
+                UNITY_BRANCH if (_OS_SkyMapOn > 0.5)
+                    d.bakedGI += OS_TownLight(i.positionWS, nWS);
                 d.normalizedScreenSpaceUV = GetNormalizedScreenSpaceUV(i.positionCS);
                 d.shadowMask = half4(1, 1, 1, 1);
 
