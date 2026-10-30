@@ -77,6 +77,17 @@ zonation are (`../README.md`).
   on the ice's edges. The lee's three blocks become distinct: each its own size and tilt, a dark seam between them,
   big low and small high. A long low stoss tail must read from the eye view. Then the ground: the land lowered 2.2 m
   is a flat plain, so no turf meets a flank yet.
+- **State (30 Oct, r03):** the outcrop as a few rigid masses, ref 57's LOW ROCKY OUTCROP the only bar (the
+  coordinator's brief: step 1 the masses alone beside 57's boulders, step 2 arranged into the outcrop, step 3 the
+  outcrop beside 57's; one change a try, at most three a step). `mass.py` (kit.json `mass`): each mass a convex
+  polytope on the record's joint sets with the wear rule's arris and corner facets, every face bulged a little by its
+  kind, then split along the record's joints, foliation and sheeting into rigid blocks parted by seams of the
+  record's tight width; each block settles by a small seeded turn and is rounded on its own (rolling-ball rounds by
+  kind, capped at the record's `capShare` of the block's least width). Run: `Blender -b --factory-startup -P
+  blender/parts/rock/kit/mass.py -- --step 1 --out cache/rock/kit/renders/r03/<r>`. Step 1 failed its three tries
+  (Rounds, r03), the third closest. Next: more, smaller blocks (57's jagged boulder has about ten, our lee three, and
+  its front shows none), seams uneven in width, and the tertiary surface in the bake and paint, never the mesh; then
+  step 2.
 - **State (30 Oct, r02):** the rock as designed signed-distance bodies, silhouette first (the coordinator's brief:
   step 1 the silhouette, step 2 the body, each looked at before the next, at most three tries each). `body.py`
   (kit.json `body`): a smooth back from a long section, a plan and a cross power each side; blocks parted along the
@@ -110,6 +121,21 @@ zonation are (`../README.md`).
   15 m hero (inferred; no studio figure).
 
 ## Rounds
+
+- **r03** (Blender grey; `reviews/lt1/rock/r03/s1-try1.jpg` to `s1-try3.jpg`: the top row is ref 57's ROUNDED
+  BOULDER, JAGGED BOULDER and a crop of its outcrop's slabs; below, the crown, stoss and lee from their front and back,
+  57's view and a low warm sun; full size in `cache/rock/kit/renders/r03/s1h`, `s1i`, `s1j`).
+  - Before the tries, scars cut into the faces failed three ways in quick looks (`s1e`–`s1g`): dense crisp flakes read
+    as crazy paving, broad shallow ones as dents, edge chips as round bites. Taken out; the small scale goes to the
+    bake and paint.
+  - Try 1, every face bulged by its kind: still softened low-poly solids beside 57; the bulge barely shows.
+  - Try 2, the masses split into blocks along the record's joints: the first that is the right kind of thing, but
+    the seams are cut lines through one continuous surface, and thin sheets under full worn rounds read as cushions.
+  - Try 3, each block its own rigid piece (a small seeded settle; rounds capped at the record's `capShare` of the
+    block's least width): the stoss's upper slab sits on the lower with a dark opening, as 57's slabs do, and the
+    lee's top block steps out over its foot. It does not stand on 57 yet: too few, too big blocks (crown 5, stoss 4,
+    lee 3), the crown's front still a clean faceted dome, seams of even width, and no tertiary surface.
+  - Measures (try 3): 0 spikes on all three (least share 0.145 to 0.181 against 0.09); flat share 0.77 to 0.85.
 
 - **r02** (Blender grey; `reviews/lt1/rock/r02/s1-silhouettes.jpg` and `s1-drawing.jpg` for step 1, `s2-grey.jpg` for
   step 2: rows g0, g1, g2 neutral, g2 raking; columns eye, 12 m, sea, lee, water; then refs 16, 57, 48, 51 and r01's
