@@ -81,6 +81,23 @@ def corners(planes):
     return out
 
 
+def lean(X):
+    """An erratic's lean (`tilt` [toward, degrees]): the rigid turn tipping its top toward bearing `toward`, about its
+    middle at the turf (`sinkM` up its frame), as the ground it settled in explains; (rotation, pivot)."""
+    t = X.get("tilt")
+    if not t:
+        return np.eye(3), np.zeros(3)
+    b, a = math.radians(t[0]), math.radians(t[1]); k = np.cross([0.0, 0.0, 1.0], [math.sin(b), math.cos(b), 0.0])
+    K_ = np.array([[0, -k[2], k[1]], [k[2], 0, -k[0]], [-k[1], k[0], 0]])
+    return np.eye(3) + math.sin(a) * K_ + (1 - math.cos(a)) * K_ @ K_, np.array([0.0, 0.0, X.get("sinkM", M["judge"]["sinkM"])])
+
+
+def turned(n, d, X):
+    """The plane n.p = d turned with its mass (`lean`): (normal, offset)."""
+    R_, c = lean(X); m = R_ @ n
+    return m, float(d - n @ c + m @ c)
+
+
 def skewed(st, lo, hi, k):
     """A size between lo and hi, skewed toward lo by the integer power k: a few big, many small."""
     return lo + (hi - lo) * st.random() ** int(k)
@@ -93,12 +110,12 @@ class Mass:
         self.X, self.id = X, X["id"]; self.C = {**M, **(over or {})}; self.R = self.C["round"]
         self.faces = []  # (normal, offset, kind, key, warp): tops, sides, chips, wear, base; cut by falling radius
         for i, (f, s, p, kind) in enumerate(X["tops"]):
-            n = unit(f, s); self.faces.append((n, float(n @ p), kind, f"top/{i}", None))
+            n = unit(f, s); self.faces.append((*turned(n, float(n @ p), X), kind, f"top/{i}", None))
         for i, (f, s, dist, kind) in enumerate(X["sides"]):
             n = unit(f, s); b = math.radians(f)
-            self.faces.append((n, float(n @ [dist * math.sin(b), dist * math.cos(b), 0.0]), kind, f"side/{i}", None))
+            self.faces.append((*turned(n, float(n @ [dist * math.sin(b), dist * math.cos(b), 0.0]), X), kind, f"side/{i}", None))
         for i, (f, s, p, kind) in enumerate(X.get("chips", [])):
-            n = unit(f, s); self.faces.append((n, float(n @ p), kind, f"chip/{i}", None))
+            n = unit(f, s); self.faces.append((*turned(n, float(n @ p), X), kind, f"chip/{i}", None))
         base = (np.array([0.0, 0.0, -1.0]), 0.0, "base", "base", None)
         self.faces += (self.wear(self.faces + [base]) if wear else []) + [base]
         cs = corners([(f[0], f[1]) for f in self.faces])
@@ -421,10 +438,11 @@ def step1():
 
 
 def designed(X):
-    """A mass's designed planes alone (its tops, sides and base), before the wear rule, the bulge and the rounds."""
-    out = [(unit(f, sl), float(unit(f, sl) @ p)) for f, sl, p, kind in X["tops"]]
+    """A mass's designed planes alone (its tops, sides and base, turned by its lean), before the wear rule, the bulge
+    and the rounds."""
+    out = [turned(unit(f, sl), float(unit(f, sl) @ p), X) for f, sl, p, kind in X["tops"]]
     for f, sl, dist, kind in X["sides"]:
-        b = math.radians(f); n = unit(f, sl); out.append((n, float(n @ [dist * math.sin(b), dist * math.cos(b), 0.0])))
+        b = math.radians(f); n = unit(f, sl); out.append(turned(n, float(n @ [dist * math.sin(b), dist * math.cos(b), 0.0]), X))
     return out + [(np.array([0.0, 0.0, -1.0]), 0.0)]
 
 

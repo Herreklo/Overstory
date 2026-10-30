@@ -8,7 +8,8 @@ D=unity/Assets/Experiments/LT1/Nature/HolmTip/Generated; L=cache/rock/kit/unity-
 H=$(python3 -c "import json;print(json.load(open('blender/parts/rock/kit/kit.json'))['beside']['house'])")
 P=$(python3 -c "import json;print(' '.join(p['part'] for p in json.load(open('blender/parts/rock/kit/kit.json'))['beside']['parts']))")
 install() { mkdir -p $D/$1; cp $2/house-near.fbx $2/house-street.fbx $2/house-city.fbx $2/house.json $D/$1/;
-  if [ -f $2/judge.json ]; then cp $2/judge.json $D/$1/; fi; cp $3/*.png $3/paint.json $D/$1/; }
+  if [ -f $2/judge.json ]; then cp $2/judge.json $D/$1/; fi; if [ -f $2/foot.fbx ]; then cp $2/foot.fbx $2/foot.json $D/$1/; fi
+  cp $3/*.png $3/paint.json $D/$1/; }
 install $H $(python3 -c "import json;b=json.load(open('blender/parts/rock/kit/kit.json'))['beside'];print(b['gen'],b['paint'])")
 for p in $P; do install $p cache/rock/kit/gen/$p cache/rock/kit/bake/$p/out; done
 [ -n "$TIP_GREY" ] && { mkdir -p $D/tip; cp cache/rock/kit/gen/tip/tip.fbx cache/rock/kit/gen/tip/tip.json $D/tip/;

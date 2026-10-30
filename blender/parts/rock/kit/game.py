@@ -40,8 +40,9 @@ def evaluated(ob, name):
 def plane_normals(o, planes, flat):
     """A baked level's normals by its designed planes: a face within `flat` degrees of the plane its normal is nearest
     is that plane's, the rest are the chamfers' turn; every edge between two planes, or between a plane and a chamfer,
-    is hard, so each plane shades flat as one and the chamfers alone make the turn (the plain corner-angle average
-    within each)."""
+    is hard, and a plane's faces take its own normal, so each plane shades flat as one (no fan where the decimated
+    faces lie a little off it, which the bake would have to cancel) and the chamfers alone make the turn (the plain
+    corner-angle average within each)."""
     me = o.data
     if "custom_normal" in me.attributes:
         me.attributes.remove(me.attributes["custom_normal"])
@@ -58,6 +59,10 @@ def plane_normals(o, planes, flat):
     sharp = (lo != hi) & (hi > -2)
     at = me.attributes.get("sharp_edge") or me.attributes.new("sharp_edge", "BOOLEAN", "EDGE")
     at.data.foreach_set("value", sharp)
+    if "sharp_face" in me.attributes:
+        me.attributes.remove(me.attributes["sharp_face"])
+    LN = np.zeros((len(me.loops), 3)); on = fk >= 0; LN[on] = PN[fk[on]]
+    me.normals_split_custom_set(LN.tolist())
     me.update()
     return int(sharp.sum()), float((key >= 0).mean())
 

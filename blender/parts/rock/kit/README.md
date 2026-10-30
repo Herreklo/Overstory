@@ -115,8 +115,12 @@ stylised rock (`study/` 21, 22, 26, 27; Totoro 09 and 16), and our own house in 
   (the page: calm base, broad variation, cavities, one drawn crack, lichen colonies) fails its three tries on the
   lichen and the crack (Rounds, r05). Then stage 3 again (hard plane edges, Unity's grey beside s2) passes, and stage
   4 simple (calm base, broad variation, cavities; no lichen, no crack) holds on try 3 in a side low sun
-  (`TIP_SUN=-10`), then its calibration (gneiss L 46 in the stone's blue-grey, a paler top, a damper foot). Waits for
-  the coordinator's word before stage 5.
+  (`TIP_SUN=-10`), then its calibration (gneiss L 46 in the stone's blue-grey, a paler top, a damper foot). Then the
+  cleanup and stage 5 (Rounds, r05 stage 5): the levels shade by their exact planes, the chamfers are fixed bisector
+  planes per arris (`sculpt.py` `chamfers`, a check refuses an arris under `sculpt.leastArrisM`), chips planar; the
+  mass sunk `sinkM` and leaned by `tilt` (`mass.py` `lean`, a rigid turn about its foot); `foot.py -- --mass boulder`
+  (kit.json `foot`) writes `foot.fbx`, the grass and till stones at the turf line, drawn by `Nature/RockFoot.shader`;
+  kit.json `beside.high` adds the 12 m view (`render.sh <round> eye,high`). Waits for the coordinator's word.
 - **State (30 Oct, r03):** the outcrop as a few rigid masses, ref 57's LOW ROCKY OUTCROP the only bar (the
   coordinator's brief: step 1 the masses alone beside 57's boulders, step 2 arranged into the outcrop, step 3 the
   outcrop beside 57's; one change a try, at most three a step). `mass.py` (kit.json `mass`): each mass a convex
@@ -162,6 +166,29 @@ stylised rock (`study/` 21, 22, 26, 27; Totoro 09 and 16), and our own house in 
 
 ## Rounds
 
+- **r05** cleanup and stage 5, the foot (the coordinator: fix the fans, the pinched cuts and the notch, then sink and
+  tilt the boulder with grass and a few stones at its foot, nature studies 02 and 09 and Hertervig 17;
+  `reviews/lt1/rock/r05/s5-board.jpg`: top try 3 eye Pc, eye P, 12 m Pc; second try 2 eye Pc, try 2 12 m Pc, s4-calib
+  eye Pc; third the lit faces before and after (s4-calib, try 3; P), the back's top-left before and after (s2-4b,
+  s5-3); bottom 17, 21, 02, 09; all low sun at `TIP_SUN=-10`).
+  - Cleanup, holds: the fans were the levels' smooth normals between the planes' own; `game.py` now gives each plane
+    face its exact plane normal as a custom split normal (inside a chart the near normal's spread is 0.003, 8-bit
+    noise). The pinch and the beads along the apex came from chamfers cut against the running form's gradient; each
+    arris now gets one fixed bisector plane (convex, so no slits), and an arris under 0.12 m is refused (least 0.133).
+    The notch was a sphere-bounded chip; chips are planar and one that would bite past its reach is dropped.
+  - Sink and tilt, holds: sunk 0.22 m of 1.36 (16%), leaned 4° toward bearing 18 (the north end, the heavier, sunk
+    deeper in the soft till); `game.py` re-cuts at the turf, so the foot's damp band starts at the turf line.
+  - The foot, fails its three tries. Try 1: 88 tufts at the cap, the species' 1 cm blades, hairline straw on bare
+    floor; from 12 m a wreath. Try 2: blades 3× wide (the street's GrowthTuft keeps a least width on screen; this
+    mesh has to carry it), up to 280 tufts, a blade that would enter the stone left out so a tuft banks against it,
+    the reach varied by bearing: up close a mass that hides the foot unevenly (the best so far), but the stones are
+    lost in it and from 12 m it is an oval patch on dirt. Try 3: stones at the turf line where it breaks, stray tufts
+    past the band, some of the root's green kept everywhere: the stones show but read as pale broken concrete (a
+    22-point hull is too many facets), and the strays read as a sparse steppe. Under all three: the stand-in floor is
+    bare brown, so any foot reads as a patch; Hertervig's boulders stand in a continuous dry heath of the same straw.
+    Next: try 2's band, a third of try 3's strays, stones of 8–10 points and darker; the turf beyond is the tip's
+    ground, not the foot's. Cost: the foot 16,628 tris in one mesh at every level (the boulder 809); as placements
+    of the growth's instanced tufts (GrowthDraw) it would cost a draw and its levels.
 - **r05** stage 4 simple, calibration (the coordinator: lit planes as bright as white paint, cream as sandstone, the
   shade near black, the broad variation unseen; `reviews/lt1/rock/r05/s4-calib-board.jpg`: top Pc, try 3 then this;
   middle the boulder at full size, Pc then P, each try 3 then this; bottom s3's Unity grey, s1-b3's front, 17, 21). One

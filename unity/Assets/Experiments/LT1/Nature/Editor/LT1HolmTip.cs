@@ -36,10 +36,10 @@ namespace Overstory.EditorTools
         [Serializable] class TipMat { public string name; public float L; public float smooth; public string normal, ao; }
         [Serializable] class TipView { public string name, level; public float[] pos, target; public float fov; }
         [Serializable] class TipMats { public TipMat[] mats; public TipView[] views; public float sunOff; }
-        [Serializable] class Beside { public string house; public Placed[] parts; public Eye eye; }
+        [Serializable] class Beside { public string house; public Placed[] parts; public Eye eye, high; }
         [Serializable] class Kit { public Beside beside; }
 
-        class Build { public string name, gen; public object house, paint; public Dictionary<string, Material> mats; public GameObject root; public Dictionary<string, GameObject> levels = new Dictionary<string, GameObject>(); }
+        class Build { public string name, gen; public object house, paint; public Dictionary<string, Material> mats; public GameObject root, foot; public Dictionary<string, GameObject> levels = new Dictionary<string, GameObject>(); }
 
         struct View { public string name, level; public Vector3 pos, target; public float fov; }
 
@@ -100,6 +100,22 @@ namespace Overstory.EditorTools
                     if (go.GetComponent<MeshRenderer>() != null)
                         go.name = $"{level}_{Get<string>(Get<Array>(b.paint, "mats").GetValue(0), "name")}";
                     b.levels[level] = go;
+                }
+                // a part's foot (foot.py): its grass and the small stones beside it, one mesh in vertex colour at the
+                // part's origin, the same at every level
+                if (AssetImporter.GetAtPath($"{b.gen}/foot.fbx") is ModelImporter fi)
+                {
+                    fi.materialImportMode = ModelImporterMaterialImportMode.None;
+                    fi.importNormals = ModelImporterNormals.Import;
+                    fi.importTangents = ModelImporterTangents.None;
+                    fi.importCameras = false;
+                    fi.importLights = false;
+                    fi.animationType = ModelImporterAnimationType.None;
+                    fi.meshCompression = ModelImporterMeshCompression.Off;
+                    fi.globalScale = 1;
+                    fi.SaveAndReimport();
+                    b.foot = (GameObject)PrefabUtility.InstantiatePrefab(AssetDatabase.LoadAssetAtPath<GameObject>($"{b.gen}/foot.fbx"));
+                    b.foot.transform.SetParent(b.root.transform, false);
                 }
             }
             // the house as the street orients it; each part the same way round (their FBX axes are the same), at its place
@@ -218,6 +234,8 @@ namespace Overstory.EditorTools
             AssetDatabase.SaveAssets();
             if (Arg("-tipJudge") == "1")
             {
+                foreach (var b in builds.Where(b => b.foot != null))
+                    b.foot.SetActive(false);  // stage 2's grey judges the part alone
                 Judge(builds, B, only, ways, outDir, gm, sun, cam, profile, adjust);
                 return;
             }
@@ -229,6 +247,20 @@ namespace Overstory.EditorTools
                     views.Add(new View { name = "street", level = Get<string>(v, "level"), pos = Get<Vector3>(v, "pos"), target = Get<Vector3>(v, "target"), fov = Get<float>(v, "fov") });
             var eyePos = V(B.parts[0].at) + V(B.eye.from);
             views.Insert(0, new View { name = "eye", level = "near", pos = eyePos, target = eyePos + V(B.eye.look), fov = B.eye.fov });
+            // the raised view of the first part (kit.json beside.high), at its near level
+            if (B.high?.from?.Length == 3)
+            {
+                var highPos = V(B.parts[0].at) + V(B.high.from);
+                views.Add(new View { name = "high", level = "near", pos = highPos, target = highPos + V(B.high.look), fov = B.high.fov });
+            }
+            // a foot's material a way: P its value alone, Pc its colour (RockFoot.shader)
+            var footMats = ways.ToDictionary(w => w, w =>
+            {
+                var m = new Material(Shader.Find("Overstory/RockFoot"));
+                m.SetFloat("_Grey", w == "Pc" ? 0 : 1);
+                AssetDatabase.CreateAsset(m, $"{Dir}/Generated/mat-foot-{w}.mat");
+                return m;
+            });
             // the target frame's own views of the tip (kit.json tip.views, in 107's frame by tip.py)
             foreach (var v in tipRec?.views ?? new TipView[0])
                 views.Add(new View { name = v.name, level = v.level, pos = V(v.pos), target = V(v.target), fov = v.fov });
@@ -273,6 +305,9 @@ namespace Overstory.EditorTools
                             adjust.postExposure.Override(own != null ? Get<float>(own, "exposure") : Get<float>(light, "exposure"));
                             foreach (var b in builds)
                                 Call("Assign", b.levels[view.level], b.mats, way, (string)Call("MatLevel", view.level));
+                            foreach (var b in builds.Where(b => b.foot != null))
+                                foreach (var r in b.foot.GetComponentsInChildren<MeshRenderer>(true))
+                                    r.sharedMaterial = footMats[way];
                             foreach (var with in grey ? new[] { false } : new[] { true, false })
                             {
                                 foreach (var r in rocks)
