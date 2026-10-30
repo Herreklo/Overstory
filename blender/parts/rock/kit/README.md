@@ -102,7 +102,11 @@ stylised rock (`study/` 21, 22, 26, 27; Totoro 09 and 16), and our own house in 
   `mass.py -- --step block --out cache/rock/kit/renders/r04/<r> --masses boulder` (kit.json `mass.masses` `boulder`:
   21 designed planes, sunk `sinkM`). Holds on try 3 (Rounds, r04). Stage 2: `sculpt.py -- --out <dir>` (kit.json
   `sculpt`; the mass's own `structure`; `split` false keeps an erratic whole) writes `cache/rock/kit/gen/<id>/high.blend`
-  (`high_<id>`, about 1.6M tris at 5 mm). Holds on try 3. Next: stage 3, the bake onto a light game mesh.
+  (`high_<id>`, about 1.6M tris at 5 mm). Holds on try 3. Stage 3: `game.py -- --mass boulder` (kit.json `game`: the
+  form without its fine marks, cut under the turf and decimated to street.json's budgets by surface; charts on the
+  designed planes; `high_rock` beside the levels in `house.blend`), then `bake.py -- --gen cache/rock/kit/gen/boulder
+  --cache cache/rock/kit/bake/boulder` (selected-to-active from the high-poly: occlusion, cavity, sky and each level's
+  own tangent normal). Holds on try 2. Next: stage 4, the painted finish (`paint.py`).
 - **State (30 Oct, r03):** the outcrop as a few rigid masses, ref 57's LOW ROCKY OUTCROP the only bar (the
   coordinator's brief: step 1 the masses alone beside 57's boulders, step 2 arranged into the outcrop, step 3 the
   outcrop beside 57's; one change a try, at most three a step). `mass.py` (kit.json `mass`): each mass a convex
@@ -167,6 +171,16 @@ stylised rock (`study/` 21, 22, 26, 27; Totoro 09 and 16), and our own house in 
     as planar facets knocked off sharp corners; grain halved. Holds: the fresh break crisp with a chipped corner and a
     crack, worn faces quiet, 0 spikes (least share 0.257). The cracks are slim at the judging distance: stage 4 says
     whether the paint draws them from the cavity bake, and they widen there if not.
+- **r04** stage 3, the boulder's game mesh and bake (Blender grey; `reviews/lt1/rock/r04/s3-try1.jpg`: high-poly, near
+  with its normal, street with its, near without; `s3-try2.jpg`: high-poly, try 1's near, try 2's near). Near 903
+  triangles, street 288, city 27 for 9.9 m², the house's density; page 1024 at 128 px/m; the levels lie within 7 mm
+  of the form, so the rays never miss.
+  - Try 1: planes, rounds, chips, ridges and grain carry over; a streak along a round at the back's lower corner,
+    where the house's face-area-weighted normals crowd the round's whole turn into a few small triangles, steeper
+    than the page's texels can correct.
+  - Try 2, the levels' normals the plain corner-angle average (`hardDeg` for a hard edge): the streak is gone and the
+    corner's facet reads as on the high-poly. Holds. The frost crack is a hairline on the levels: its dark is
+    occlusion, which the normal cannot carry, so stage 4's paint must draw it from the cavity bake.
 - **r03** (Blender grey; `reviews/lt1/rock/r03/s1-try1.jpg` to `s1-try3.jpg`: the top row is ref 57's ROUNDED
   BOULDER, JAGGED BOULDER and a crop of its outcrop's slabs; below, the crown, stoss and lee from their front and back,
   57's view and a low warm sun; full size in `cache/rock/kit/renders/r03/s1h`, `s1i`, `s1j`).

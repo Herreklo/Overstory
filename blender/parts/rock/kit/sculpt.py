@@ -114,9 +114,14 @@ class Sculpt:
         return out
 
     # ------------------------------------------------------------ the field
-    def field(self, P):
-        """The sculpted form's signed distance at P (negative in the rock)."""
+    def field(self, P, fine=True):
+        """The sculpted form's signed distance at P (negative in the rock); not fine, the form a game mesh follows: its
+        rounds and chips, without the grain, ridges and cracks the bake carries."""
         d, g = self.ms.form(P)
+        if not fine:
+            for c in self.chips:
+                d = smax(d, np.minimum(P @ c["u"] - c["o"], c["rho"] - np.linalg.norm(P - c["q"], axis=1)), c["soft"])
+            return d
         for nz, L, a in self.grain:
             d = d - a * nz(P / L)
         Rg = S["ridge"]; s = (P @ self.nf) / Rg["bandM"]
@@ -143,10 +148,10 @@ class Sculpt:
         return d
 
     # ------------------------------------------------------------ meshing
-    def mesh(self, mat, vs):
+    def mesh(self, mat, vs, fine=True, name=None):
         """The surface by openvdb at vs; each level evaluated only where the coarser one says the surface may be (its
         lookup error at most 1.2 times half a cell's diagonal), the coarsest everywhere."""
-        lo, hi = self.ms.lo, self.ms.hi; hs = S["levels"] + [vs]; bg = 2 * vs
+        lo, hi = self.ms.lo, self.ms.hi; hs = [h for h in S["levels"] if h > 2 * vs] + [vs]; bg = 2 * vs
         E = [1.2 * 0.87 * h for h in hs]; prev = None
         for L, h in enumerate(hs):
             n = (np.ceil((hi - lo) / h).astype(int) + 1); last = L == len(hs) - 1
@@ -162,11 +167,11 @@ class Sculpt:
                 P = np.stack([np.repeat(X_[..., None], len(k), 2), np.repeat(Y_[..., None], len(k), 2),
                               np.broadcast_to(lo[2] + k * h, sh)], -1).reshape(-1, 3)
                 if prev is None:
-                    a = self.field(P); ev += len(P)
+                    a = self.field(P, fine); ev += len(P)
                 else:
                     ph, PA = prev; i = np.clip(np.rint((P - lo) / ph).astype(int), 0, np.array(PA.shape) - 1)
                     c = PA[i[:, 0], i[:, 1], i[:, 2]]; a = np.where(c < 0, -1.0, 1.0) * (bg if last else 1.0)
-                    m = np.abs(c) < band; a[m] = self.field(P[m]); ev += int(m.sum())
+                    m = np.abs(c) < band; a[m] = self.field(P[m], fine); ev += int(m.sum())
                 if last:
                     grid.copyFromArray(np.clip(a, -bg, bg).astype(np.float32).reshape(sh), ijk=(0, 0, k0), tolerance=0)
                 else:
@@ -180,12 +185,12 @@ class Sculpt:
         a, b, c = V[F[:, 0]], V[F[:, 1]], V[F[:, 2]]
         if np.einsum("ij,ij->i", a, np.cross(b, c)).sum() < 0:  # outward
             F = F[:, ::-1]
-        me = bpy.data.meshes.new(f"high_{self.id}")
+        name = name or f"high_{self.id}"; me = bpy.data.meshes.new(name)
         me.vertices.add(len(V)); me.vertices.foreach_set("co", V.astype(np.float32).ravel())
         me.loops.add(3 * len(F)); me.loops.foreach_set("vertex_index", F.astype(np.int32).ravel())
         me.polygons.add(len(F)); me.polygons.foreach_set("loop_start", np.arange(0, 3 * len(F), 3, dtype=np.int32))
         me.update(); me.validate(); me.shade_smooth(); me.materials.append(mat)
-        ob = bpy.data.objects.new(f"high_{self.id}", me); bpy.context.scene.collection.objects.link(ob)
+        ob = bpy.data.objects.new(name, me); bpy.context.scene.collection.objects.link(ob)
         return ob
 
     def spikes(self):
