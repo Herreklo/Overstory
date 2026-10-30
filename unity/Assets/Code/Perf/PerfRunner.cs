@@ -19,69 +19,38 @@ namespace Overstory.Perf
     /// The performance harness): runs in a built player, never the editor, holds each judging view in each light for a
     /// fixed number of frames, and records per frame the CPU and GPU frame time (FrameTimingManager), the draw calls,
     /// SetPass calls, triangles, vertices and shadow casters (ProfilerRecorder; a release player has no batch count), and
-    /// memory. Writes a CSV of
-    /// every frame, a JSON summary per segment (median, 95th and 99th percentile, worst) and a short markdown table,
-    /// keeps one screenshot per segment, then quits.
+    /// memory. Writes a CSV of every frame, a JSON summary per segment (median, 95th and 99th percentile, worst) and a
+    /// short markdown table, keeps one screenshot per segment, then quits.
     ///
-    /// The plan (views, lights, the birches to hide for the A/B segments) is set by LT1Perf.Build when it composes the
-    /// scene. Command line: -perf-out &lt;dir&gt; (required; without it the runner does nothing), -perf-frames N (a segment's
+    /// The scene is the street as its own test stages it (LT1Perf.Compose: Street.unity copied, its houses, views and
+    /// lights), and the plan is set there: the views (each house's level and the shadowed distance fitted to it) and each
+    /// light as the editor applied it at each view (the sun, the trilight, the background, the sky, its reflection, the
+    /// ground, the exposure, and what the town's sky map reads of each renderer). Here a segment only puts those back
+    /// and draws the town's sky map again; it decides nothing. The pipeline is the street test's: the renderer's
+    /// screen-space occlusion alone, one 4096 shadow cascade.
+    ///
+    /// Command line: -perf-out &lt;dir&gt; (required; without it the runner does nothing), -perf-frames N (a segment's
     /// frames per round), -perf-warmup N, -perf-rounds N, -perf-settle N, -perf-only &lt;name,...&gt; (segments whose names
-    /// start so), -perf-label &lt;text&gt;. Every segment is measured once per round, the rounds one after another, after the
-    /// first segment has been drawn for a while to let the machine settle; screenshots are taken after all measuring.
-    /// The world's clock is the light's own (StreetStage: _OS_Time from the rig), so every segment draws a still world.
+    /// start so), -perf-label &lt;text&gt;, -perf-views &lt;name,...&gt; (only those views). Every segment is measured once per
+    /// round, the rounds one after another, after the first segment has been drawn for a while to let the machine
+    /// settle; screenshots are taken after all measuring (-perf-shots some: every configuration at the first view only,
+    /// and 'all' at every view). -perf-offscreen-scale 0.5 draws the offscreen frames at half the width and height, to
+    /// tell the pixels' cost from the vertices'.
     ///
     /// The pass study (docs/measuring.md, The pass budget): -perf-passes &lt;config,...&gt; measures each segment once per
-    /// configuration of the pipeline's passes ('all'; '-&lt;pass&gt;', every pass but that one; '-fullscreen', the four
-    /// full-screen passes off; 'bare', every pass off), and -perf-scenes empty,corner adds the scene with every renderer
-    /// hidden but the air's motes, so the sky, the lights and post are drawn alone (-perf-empty-views, the views it is
-    /// measured from). -perf-views &lt;name,...&gt; keeps only those views; -perf-shots some keeps a screenshot of every
-    /// configuration at the first view only, and of 'all' at every view. 'flat' is 'bare' with every renderer drawn
-    /// in an unlit material. -perf-offscreen-scale 0.5 draws the offscreen
-    /// frames at half the width and height, to tell the pixels' cost from the vertices'.
-    ///
-    /// Two arms leave every pass on and set a shader keyword everywhere (step 3, history pages): 'history-off'
-    /// (OS_HISTORY_OFF, every history layer its material's quiet mean, no page read) and 'haze-off' (OS_HAZE_OFF, the
-    /// air's OS_Atmosphere skipped).
-    ///
-    /// L5's arms (1c, who owns the materials' shaders' cost; reviews/lt1/light/l5-report.md), each off in the game:
-    /// 'flat-&lt;family&gt;' is 'bare' with only that family's materials drawn in the unlit material (a family is the
-    /// Overstory shader's name in lower case, 'water' for the street shader's harbour, 'other' for any other shader), so
-    /// bare less flat-&lt;family&gt; is that family's own cost; 'bare-&lt;term&gt;' is 'bare' with one term of the street
-    /// and stone shaders skipped through its OS_L5_&lt;TERM&gt; keyword (townsky, clouds, lamps, brush, refl, growth,
-    /// rosettes, near; 'bare-haze' sets OS_HAZE_OFF), and 'all-&lt;term&gt;' the same with every pass on ('all-shadow': the
-    /// shadow map drawn but not sampled). A skipped term returns the value it has when it is absent, never a cheaper
-    /// stand-in. The player logs its families' renderers and triangles once ([PerfRunner] family).
-    /// -perf-scenes quad-rgba8,quad-bc7 adds the history quad (LT1History): every renderer
-    /// hidden but the motes and a full-screen grid of 4,096 pieces reading three synthetic pages through
-    /// Shaders/History.hlsl, RGBA8 or BC7, measured from the empty scene's views in 'all' and 'history-off' only.
-    /// Options may follow the format (R2b, the page sample's cost: quad-bc7-half, quad-rgba8-two, quad-bc7-tile4): 'half'
-    /// draws that scene's offscreen frames at half the width and height (a quarter of the pixels, every vertex), 'two'
-    /// reads P0 and H1 only (the quad's OS_QUAD_TWO_PAGES), 'tile&lt;k&gt;' draws the quad whose charts' UVs span k times
-    /// their texels (historyQuadTiled), so the pages are sampled minified, trilinear, with their mips. R2c (why a
-    /// minified page costs) adds the sampling arms, at most one a scene (quad-bc7-tri-tile8, quad-bc7-two-nearmip):
-    /// 'nearmip', 'tri', 'lod', 'grad', 'direct', 'tex2d', 'alu', 'quiet' and 'noisy' set the quad's local keyword of that arm
-    /// (QuadArms; HistoryQuad.shader's header says what each does).
+    /// configuration ('all'; '-&lt;pass&gt;', every pass but that one, '-a+b' every pass but those; 'bare', every pass
+    /// off; 'flat', bare with every renderer in an unlit material), the passes being PassNames. -perf-scenes empty,street
+    /// adds the scene with every renderer hidden, so the sky, the lights and post are drawn alone (-perf-empty-views, the
+    /// views it is measured from).
     ///
     /// The scale test (docs/research/scale-test.md): -district &lt;dir&gt; loads the district's chunk cache (DistrictLoader),
     /// times it and the rebuild benchmarks (DistrictBench) into the summary, and -perf-scenes district-near,district-l0,
-    /// district-shells measures it from its own views (district.json; -perf-district-views keeps some) in each arm, with
-    /// the corner hidden and the district in its real colours.
-    ///
-    /// The walk's whole scene (LT1g, W3; reviews/lt1/playable/walk/w3-report.md): a build holds one composed scene, named
-    /// by 'composed': 'corner' (LT1Perf.Build: the gully's frames' staging) or 'playable' (LT1Perf.BuildPlayable: the
-    /// walk's corner inside the clay town, LT1Play.ComposeOpen, with the runner placed in it). -perf-scenes names it to
-    /// draw it whole ('corner' or 'playable', the default being the build's own; its segments keep their plain names);
-    /// asking for the other one is an error and measures nothing. A configuration may turn several passes off together:
-    /// '-beams+shadows' is every pass on but those two (W3's split of low sun's cost).
-    ///
-    /// The beams' A/B (W5; reviews/lt1/playable/walk/w5-report.md): 'beams-full' leaves every pass on and draws the sun's
-    /// beams as they were before W5 (SunBeamsFeature.fullSize: the full-size pass), so A and B are measured in one build;
-    /// 'beams-copy' and 'beams-nocomposite' set SunBeamsFeature.arm (how the beams meet the frame). The fog lights' A/B:
-    /// 'foglights-full' draws the lamps' halos as they were before the light's third round (FogLightsFeature.fullSize:
-    /// every lit lamp at every full-size pixel).
+    /// district-shells measures it from its own views (district.json; -perf-district-views keeps some) in each light,
+    /// with the street hidden.
     /// </summary>
     public class PerfRunner : MonoBehaviour
     {
+        /// <summary>A view, in street metres (x along, y back, z up), with each house's level and its shadowed distance.</summary>
         [System.Serializable]
         public class View
         {
@@ -89,24 +58,58 @@ namespace Overstory.Perf
             public Vector3 position;
             public Vector3 target;
             public float fov;
+            [Tooltip("Each house's level from this view (near, street or city), in the order of houses.")]
+            public string[] levels;
+            [Tooltip("The shadowed distance fitted to the view (0: the runner's own).")]
+            public float shadowDistance;
         }
 
+        /// <summary>A house's levels: the objects and their names (near, street, city).</summary>
         [System.Serializable]
-        public class Moment
+        public class House
         {
-            public string name;
-            public LightRig rig;
+            public string id;
+            public GameObject[] levels;
+            public string[] names;
         }
 
-        public StreetStage stage;
-        [Tooltip("The scene this build holds, drawn whole: 'corner' (LT1Perf.Build) or 'playable' (LT1Perf.BuildPlayable).")]
-        public string composed = "corner";
+        /// <summary>A light as the editor applied it at a view: everything a segment puts back.</summary>
+        [System.Serializable]
+        public class Lit
+        {
+            public string light, view;
+            public Quaternion sunRotation;
+            public Color sunColour;
+            public float sunIntensity, sunShadow;
+            public Color ambientSky, ambientEquator, ambientGround;
+            [Tooltip("The ambient probe's 27 coefficients (red, green, blue, nine each).")]
+            public float[] probe;
+            public Color background;
+            public bool skyOn;
+            public Vector4 zenith;
+            public Cubemap reflection;
+            public Color ground;
+            public float exposure;
+            [Tooltip("What the town's sky map reads of each of townRenderers: its house's wall and its own top (linear).")]
+            public Color[] wall, top;
+        }
+
+        [Header("The street (LT1Perf.Compose)")]
+        public Camera view;
+        public Light sun;
+        public Volume volume;
+        public GameObject sky;
+        public Material skyMaterial, groundMaterial;
+        [Tooltip("The town's sky map (null when the street was drawn without the town's light).")]
+        public SkyMap town;
+        public Renderer[] townRenderers;
+        public House[] houses;
         public View[] views;
-        public Moment[] moments;
-        [Tooltip("The birches in the corner: drawn in every segment but the A/B ones, where they are hidden.")]
-        public GameObject[] birches;
-        [Tooltip("The moments (lights) in which every view is measured a second time without the birches (A/B).")]
-        public string[] withoutBirchesIn;
+        public Lit[] lit;
+        [Tooltip("The houses, as the street's test built them.")]
+        public string houseIds;
+
+        [Header("Timing")]
         [Tooltip("Frames drawn before each segment's measured frames are kept.")]
         public int warmUp = 30;
         [Tooltip("Frames measured per segment in each round.")]
@@ -117,105 +120,44 @@ namespace Overstory.Perf
         public int settle = 600;
         [Tooltip("Offscreen: batches of back-to-back renders per segment and round (after one that only primes), and renders a batch.")]
         public int offscreenBatches = 6, offscreenPerBatch = 6;
-        public float near = 0.1f, far = 9000f, shadowDistance = 120f;
+        [Tooltip("The shadowed distance for a view that names none (the district's), and the far plane there.")]
+        public float shadowDistance = 120f, districtFar = 9000f;
         [Tooltip("Shaders the scene's components find by name at runtime (SkyMap), held here so the build keeps them.")]
         public Shader[] keep;
-        [Tooltip("Renderers whose bounds the editor set by hand (a leaf card is drawn out from its pivot in the shader), " +
-                 "with those bounds: a scene keeps no renderer's own bounds, so they are set again here.")]
-        public Renderer[] boundsOf;
-        public Bounds[] bounds;
 
         [Header("The pass study")]
-        [Tooltip("The renderer whose features the pass study turns off one at a time (PC_Renderer).")]
+        [Tooltip("The renderer whose features the street's pipeline sets and the pass study turns off (PC_Renderer).")]
         public UniversalRendererData rendererData;
-        [Tooltip("An unlit material: the 'flat' configuration draws the bare corner with it, to tell the shading's cost from the rasterising's.")]
+        [Tooltip("An unlit material: the 'flat' configuration draws the bare street with it, to tell the shading's cost from the rasterising's.")]
         public Material flat;
         [Tooltip("The views the empty scene is measured from: nothing is in it but the sky, so one or two will do.")]
         public string[] emptyViews = { "street", "high" };
-
-        [Header("The history quad (step 3)")]
-        [Tooltip("The full-screen grid of pieces reading the history pages (LT1History.AddQuad): drawn only in the quad scenes.")]
-        public MeshRenderer historyQuad;
-        [Tooltip("The quad's pages, RGBA8 and BC7: the quad scene binds its own.")]
-        public HistoryPages pagesRGBA8, pagesBC7;
-        [Tooltip("The quad's minified meshes (LT1History.QuadMesh(k)), each chart's UVs spanning k times its texels, k in historyQuadTiles: a scene quad-<format>-tile<k> draws its own.")]
-        public Mesh[] historyQuadTiled;
-        public int[] historyQuadTiles;
 
         [Header("The scale test")]
         [Tooltip("The district's loader: given -district <dir>, it loads the chunk cache there before anything is measured.")]
         public DistrictLoader district;
 
         /// <summary>
-        /// The passes the study turns off, by name: the sky (the camera clears to a colour instead), the sun's shadow map,
-        /// the renderer's screen-space and full-screen features, post-processing (grade, bloom, grain, vignette, dither),
-        /// MSAA 4x, the air's motes, and the opaque and depth textures the pipeline copies after the opaque scene.
+        /// The passes the study turns off, by name: the sky the light draws (the camera's flat background stays), the
+        /// sun's shadow map, the renderer's screen-space occlusion, post-processing (the tonemapper, the exposure and the
+        /// grade), MSAA, the town's light (the sky map's walls and horizon, _OS_SkyMapOn), and the opaque and depth
+        /// textures the pipeline copies after the opaque scene.
         /// </summary>
-        static readonly string[] PassNames = { "sky", "shadows", "ssao", "ssr", "beams", "foglights", "keyblock", "palette", "post", "msaa", "motes", "opaquetex", "depthtex" };
-        static readonly Dictionary<string, string> FeatureOf = new Dictionary<string, string>
-        {
-            ["ssao"] = "ScreenSpaceAmbientOcclusion", ["ssr"] = "ScreenSpaceReflection", ["beams"] = "SunBeams",
-            ["foglights"] = "FogLights", ["keyblock"] = "KeyBlock", ["palette"] = "Palette",
-        };
-        static readonly string[] FullScreen = { "beams", "foglights", "keyblock", "palette" };
+        public static readonly string[] PassNames = { "sky", "shadows", "ssao", "post", "msaa", "townlight", "opaquetex", "depthtex" };
 
-        /// <summary>R2c's sampling arms: a quad scene's option and the quad's local keyword it sets.</summary>
-        static readonly (string option, string keyword)[] QuadArms =
-        {
-            ("nearmip", "OS_QUAD_NEARMIP"), ("tri", "OS_QUAD_TRI"), ("lod", "OS_QUAD_LOD"), ("grad", "OS_QUAD_GRAD"),
-            ("direct", "OS_QUAD_DIRECT"), ("tex2d", "OS_QUAD_TEX2D"), ("alu", "OS_QUAD_ALU"), ("quiet", "OS_QUAD_QUIET"),
-            ("noisy", "OS_QUAD_NOISY"),
-        };
+        static bool IsOcclusion(ScriptableRendererFeature f) => f.name.Contains("AmbientOcclusion");
 
-        /// <summary>Whether a quad scene (quad-&lt;format&gt;[-option...]) has the option.</summary>
-        static bool QuadOption(string scene, string option) =>
-            scene.StartsWith("quad-") && scene.Split('-').Skip(2).Contains(option);
-
-        /// <summary>A quad scene's tiling (its 'tile&lt;k&gt;' option), 1 without one.</summary>
-        static int QuadTile(string scene)
-        {
-            if (scene.StartsWith("quad-"))
-                foreach (var o in scene.Split('-').Skip(2))
-                    if (o.StartsWith("tile") && int.TryParse(o.Substring(4), NumberStyles.Integer, CultureInfo.InvariantCulture, out int k))
-                        return k;
-            return 1;
-        }
-
-        /// <summary>Whether a configuration turns a pass off ('-a+b' turns off each it names; 'fullscreen' names the four).</summary>
+        /// <summary>Whether a configuration turns a pass off ('-a+b' turns off each it names).</summary>
         static bool Off(string config, string pass) =>
-            config == "bare" || config == "flat" || config.StartsWith("flat-") || config.StartsWith("bare-")
-            || (config.StartsWith("-") && config.Substring(1).Split('+')
-                .Any(p => p == pass || (p == "fullscreen" && System.Array.IndexOf(FullScreen, pass) >= 0)));
+            config == "bare" || config == "flat"
+            || (config.StartsWith("-") && config.Substring(1).Split('+').Contains(pass));
 
-        /// <summary>L5's terms: each skipped by its keyword OS_L5_&lt;TERM&gt; in the street and stone shaders.</summary>
-        static readonly string[] L5Terms = { "townsky", "clouds", "lamps", "brush", "shadow", "refl", "growth", "rosettes", "near" };
-
-        /// <summary>The term an L5 arm skips ('bare-near', 'all-shadow'), null for any other configuration.</summary>
-        static string L5Term(string config)
-        {
-            foreach (var prefix in new[] { "bare-", "all-" })
-                if (config.StartsWith(prefix) && System.Array.IndexOf(L5Terms, config.Substring(prefix.Length)) >= 0)
-                    return config.Substring(prefix.Length);
-            return null;
-        }
-
-        /// <summary>A material's family for L5's flat arms: its Overstory shader's name in lower case ('water' for the
-        /// street shader's harbour), 'other' for any other shader.</summary>
-        static string FamilyOf(Material m)
-        {
-            if (m == null || m.shader == null)
-                return "none";
-            string name = m.shader.name;
-            string f = name.StartsWith("Overstory/") ? name.Substring("Overstory/".Length).ToLowerInvariant() : "other";
-            return f == "street" && m.IsKeywordEnabled("_OS_WATER") ? "water" : f;
-        }
+        static Vector3 ToUnity(Vector3 s) => new Vector3(s.x, s.z, s.y);
 
         struct Seg
         {
-            public string name, scene, passes;
+            public string name, scene, passes, light;
             public View view;
-            public Moment light;
-            public bool birchesOn;
         }
 
         // the counters, by their names in the profiler (ProfilerRecorder; render ones are per frame)
@@ -244,9 +186,21 @@ namespace Overstory.Perf
         {
             QualitySettings.vSyncCount = 0;
             Application.targetFrameRate = -1;
-            for (int i = 0; boundsOf != null && i < boundsOf.Length; i++)
-                if (boundsOf[i] != null)
-                    boundsOf[i].localBounds = bounds[i];
+        }
+
+        /// <summary>A light as applied at a view, or at the light's first view for a view the street has not (the district's).</summary>
+        Lit LitFor(string light, string viewName) =>
+            lit.FirstOrDefault(l => l.light == light && l.view == viewName) ?? lit.First(l => l.light == light);
+
+        static SphericalHarmonicsL2 Probe(float[] c)
+        {
+            var sh = new SphericalHarmonicsL2();
+            if (c == null || c.Length != 27)
+                return sh;
+            for (int ch = 0; ch < 3; ch++)
+                for (int k = 0; k < 9; k++)
+                    sh[ch, k] = c[ch * 9 + k];
+            return sh;
         }
 
         IEnumerator Start()
@@ -259,22 +213,24 @@ namespace Overstory.Perf
             int nWarm = int.Parse(Arg("-perf-warmup", warmUp.ToString()), CultureInfo.InvariantCulture);
             string only = Arg("-perf-only", null);
             string label = Arg("-perf-label", "");
-
-            // the town's shared globals, as the editor's frames set them (LT1Stone.Stage)
-            GrowthPack.Apply();
-            WaterPack.Apply();
-            Shader.SetGlobalFloat("_OS_NearForce", 0f);
             var urp = (UniversalRenderPipelineAsset)GraphicsSettings.currentRenderPipeline;
-            urp.shadowDistance = shadowDistance;
+            if (!volume.sharedProfile.TryGet(out ColorAdjustments adjust))
+                Debug.LogError("[PerfRunner] the street's volume has no colour adjustments: the exposure is left as it is");
+            float streetFar = view.farClipPlane;
+            var shadows0 = sun.shadows;
 
             // the scale test's district, loaded and timed before anything is drawn, and the rebuild benchmarks on its
-            // largest chunk
+            // largest chunk; its street shader reads the town's growth and water (the street itself reads neither)
             string districtDir = Arg("-district", null);
             DistrictLoader.Report loaded = null;
             DistrictBench.Report bench = null;
             var districtViews = new View[0];
             if (districtDir != null && district != null)
             {
+                GrowthPack.Apply();
+                WaterPack.Apply();
+                Shader.SetGlobalFloat("_OS_NearForce", 0f);
+                Shader.SetGlobalFloat("_OS_Clay", 0f);
                 loaded = district.Load(districtDir);
                 districtViews = district.views.Select(DistrictLoader.ToRunner).ToArray();
                 string largest = Directory.GetFiles(Path.Combine(districtDir, "chunks"), "c_*.bin").OrderByDescending(f => new FileInfo(f).Length).First();
@@ -282,76 +238,74 @@ namespace Overstory.Perf
                 yield return null;
             }
 
-            // the segments: each view in each light, per scene and configuration of the passes (the corner with every
-            // pass on alone unless asked), and the corner again without its birches in the A/B lights
+            // the segments: each view in each light, per scene and configuration of the passes (the street with every
+            // pass on alone unless asked)
             string[] configs = Arg("-perf-passes", "all").Split(',');
-            string[] sceneNames = Arg("-perf-scenes", composed).Split(',');
-            // (the composed scenes: a build holds one, and the other is never measured in its place)
-            foreach (var other in sceneNames.Where(n => (n == "corner" || n == "playable") && n != composed))
-                Debug.LogError($"[PerfRunner] this build holds the {composed} scene, not '{other}': its segments are left out " +
-                               $"(tools/perf.sh{(other == "playable" ? " playable" : "")} builds it)");
-            sceneNames = sceneNames.Where(n => !((n == "corner" || n == "playable") && n != composed)).ToArray();
+            foreach (var c in configs.Where(c => c.StartsWith("-")))
+                foreach (var p in c.Substring(1).Split('+').Where(p => System.Array.IndexOf(PassNames, p) < 0))
+                    Debug.LogError($"[PerfRunner] no pass '{p}' to turn off in '{c}' (the passes: {string.Join(", ", PassNames)})");
+            foreach (var c in configs.Where(c => c != "all" && c != "bare" && c != "flat" && !c.StartsWith("-")))
+                Debug.LogError($"[PerfRunner] no configuration '{c}': it is measured as 'all'");
+            string[] sceneNames = Arg("-perf-scenes", "street").Split(',');
             string[] keepViews = Arg("-perf-views", null)?.Split(',');
             string[] emptyAt = Arg("-perf-empty-views", string.Join(",", emptyViews)).Split(',');
             string[] districtAt = Arg("-perf-district-views", null)?.Split(',');
+            var lights = lit.Select(l => l.light).Distinct().ToArray();
             var segments = new List<Seg>();
-            foreach (var l in moments)
+            foreach (var l in lights)
                 foreach (var scene in sceneNames)
                     foreach (var config in configs)
                     {
-                        // (the motes are drawn only where the light has them)
-                        if (config == "-motes" && (l.rig == null || l.rig.motes <= 0f))
-                            continue;
-                        string prefix = scene == composed ? "" : scene + "-";
+                        string prefix = scene == "street" ? "" : scene + "-";
                         string suffix = config == "all" ? "" : "/" + config;
                         bool inDistrict = scene.StartsWith("district");
-                        bool quad = scene.StartsWith("quad-");
-                        if (quad && config != "all" && config != "history-off")
+                        if (inDistrict && district == null)
                             continue;
                         foreach (var v in inDistrict ? districtViews : views)
                         {
-                            if (scene == "empty" || quad ? System.Array.IndexOf(emptyAt, v.name) < 0
+                            if (scene == "empty" ? System.Array.IndexOf(emptyAt, v.name) < 0
                                 : inDistrict ? districtAt != null && System.Array.IndexOf(districtAt, v.name) < 0
                                 : keepViews != null && System.Array.IndexOf(keepViews, v.name) < 0)
                                 continue;
-                            segments.Add(new Seg { name = $"{prefix}{v.name}@{l.name}{suffix}", scene = scene, passes = config, view = v, light = l, birchesOn = true });
+                            segments.Add(new Seg { name = $"{prefix}{v.name}@{l}{suffix}", scene = scene, passes = config, view = v, light = l });
                         }
-                        if (scene == composed && config == "all" && withoutBirchesIn != null && System.Array.IndexOf(withoutBirchesIn, l.name) >= 0 && birches != null && birches.Length > 0)
-                            foreach (var v in views)
-                                if (keepViews == null || System.Array.IndexOf(keepViews, v.name) >= 0)
-                                    segments.Add(new Seg { name = $"{v.name}@{l.name}-nobirch", scene = scene, passes = config, view = v, light = l, birchesOn = false });
                     }
             if (only != null)
                 segments = segments.Where(s => only.Split(',').Any(o => s.name.StartsWith(o))).ToList();
             string shots = Arg("-perf-shots", "all");
 
-            // what the pass study turns off, as the scene has it, so each segment starts from the same pipeline
-            var camData = stage.view.GetUniversalAdditionalCameraData();
-            var clear0 = stage.view.clearFlags;
+            // the street's pipeline (its test's: the screen-space occlusion alone), and what the pass study turns off, as
+            // the scene has it, so each segment starts from the same pipeline
+            var features = rendererData != null
+                ? rendererData.rendererFeatures.Where(f => f != null).ToList()
+                : new List<ScriptableRendererFeature>();
+            var featuresWere = features.Select(f => f.isActive).ToList();
+            if (configs.Any(c => Off(c, "ssao")) && !features.Any(IsOcclusion))
+                Debug.LogWarning("[PerfRunner] no screen-space occlusion feature to turn off for 'ssao'");
+            var camData = view.GetUniversalAdditionalCameraData();
             bool post0 = camData.renderPostProcessing;
             var colour0 = camData.requiresColorOption;
             var depth0 = camData.requiresDepthOption;
             int msaa0 = urp.msaaSampleCount;
-            var features = rendererData != null
-                ? rendererData.rendererFeatures.Where(f => f != null).ToDictionary(f => f.name, f => (feature: f, on: f.isActive))
-                : new Dictionary<string, (ScriptableRendererFeature feature, bool on)>();
-            foreach (var pass in FeatureOf)
-                if (configs.Any(c => Off(c, pass.Key)) && !features.ContainsKey(pass.Value))
-                    Debug.LogWarning($"[PerfRunner] no renderer feature '{pass.Value}' to turn off for '{pass.Key}'");
-            var motes = stage.motes != null ? stage.motes.GetComponent<MeshRenderer>() : null;
-            // every renderer the corner draws but the motes, with whether it is drawn (the empty scene and the district
+            var skyR = sky != null ? sky.GetComponent<Renderer>() : null;
+            // every renderer the street draws but the sky, with whether it is drawn (the empty scene and the district
             // hide them all)
             var districts = district != null ? district.Renderers() : new HashSet<Renderer>();
-            var drawn = FindObjectsByType<Renderer>(FindObjectsInactive.Include, FindObjectsSortMode.None)
-                .Where(r => r != motes && r != historyQuad && !districts.Contains(r)).ToArray();
+            var drawn = FindObjectsByType<Renderer>(FindObjectsInactive.Include)
+                .Where(r => r != skyR && !districts.Contains(r)).ToArray();
             var drawnOn = drawn.Select(r => r.enabled).ToArray();
             var drawnWith = drawn.Select(r => r.sharedMaterials).ToArray();
+            // what the town's sky map reads of each renderer, per light and view
+            var albedo = lit.ToDictionary(l => l, l =>
+            {
+                var m = new Dictionary<Renderer, (Color wall, Color top)>();
+                for (int i = 0; townRenderers != null && i < townRenderers.Length; i++)
+                    if (townRenderers[i] != null && l.wall != null && i < l.wall.Length)
+                        m[townRenderers[i]] = (l.wall[i], l.top[i]);
+                return m;
+            });
             var targets = new Dictionary<(int, float), RenderTexture>();
-            // (-perf-offscreen-scale 0.5 draws the offscreen frames at half the width and height: a quarter of the
-            // pixels and every vertex, so what scales with it is the pixels' cost; a quad scene's 'half' option does
-            // the same for that scene alone)
             float offScale = float.Parse(Arg("-perf-offscreen-scale", "1"), CultureInfo.InvariantCulture);
-            float ScaleOf(Seg s) => offScale * (QuadOption(s.scene, "half") ? 0.5f : 1f);
             RenderTexture Target(int samples, float scale)
             {
                 if (!targets.TryGetValue((samples, scale), out var t))
@@ -363,93 +317,24 @@ namespace Overstory.Perf
                 }
                 return t;
             }
-            // the quad's own mesh and its two-page keyword (R2b: a scene's 'tile<k>' and 'two' options)
-            var quadFilter = historyQuad != null ? historyQuad.GetComponent<MeshFilter>() : null;
-            var quadMesh = quadFilter != null ? quadFilter.sharedMesh : null;
-            var twoPages = historyQuad != null ? new LocalKeyword(historyQuad.sharedMaterial.shader, "OS_QUAD_TWO_PAGES") : default;
-            // (R2c: a scene's sampling arm)
-            var arms = historyQuad != null
-                ? QuadArms.Select(a => (a.option, keyword: new LocalKeyword(historyQuad.sharedMaterial.shader, a.keyword))).ToArray()
-                : new (string option, LocalKeyword keyword)[0];
-            foreach (var scene in sceneNames.Where(s => s.StartsWith("quad-")))
-            {
-                int k = QuadTile(scene);
-                if (k != 1 && (historyQuadTiles == null || System.Array.IndexOf(historyQuadTiles, k) < 0))
-                    Debug.LogError($"[PerfRunner] no quad tiled x{k} for '{scene}': it draws the untiled quad");
-                if (arms.Count(a => QuadOption(scene, a.option)) > 1)
-                    Debug.LogError($"[PerfRunner] '{scene}' names more than one sampling arm");
-                foreach (var a in arms)
-                    if (QuadOption(scene, a.option) && !a.keyword.isValid)
-                        Debug.LogError($"[PerfRunner] the quad has no keyword for '{a.option}'");
-            }
-
-            if (configs.Contains("foglights-full") && !(features.TryGetValue("FogLights", out var flf) && flf.feature is FogLightsFeature))
-                Debug.LogError("[PerfRunner] the 'foglights-full' arm needs the FogLights feature (FogLightsFeature)");
-            if (configs.Any(c => c.StartsWith("beams-")) && !(features.TryGetValue("SunBeams", out var sbf) && sbf.feature is SunBeamsFeature))
-                Debug.LogError("[PerfRunner] the 'beams-' arms need the SunBeams feature (SunBeamsFeature)");
-
-            // the arms that set a keyword for every shader (Shaders/History.hlsl; StreetSurface.hlsl's OS_Atmosphere;
-            // made here: Unity allows no keyword in a MonoBehaviour's initializers)
-            var historyOff = GlobalKeyword.Create("OS_HISTORY_OFF");
-            var hazeOff = GlobalKeyword.Create("OS_HAZE_OFF");
-            var l5 = L5Terms.ToDictionary(t => t, t => GlobalKeyword.Create("OS_L5_" + t.ToUpperInvariant()));
-            foreach (var c in configs.Where(c => (c.StartsWith("bare-") && c != "bare-haze" || c.StartsWith("all-")) && L5Term(c) == null))
-                Debug.LogError($"[PerfRunner] no L5 term for '{c}'");
-            Debug.Log($"[PerfRunner] the stage's look: {stage.look}");
-            if (configs.Any(c => L5Term(c) != null) && stage.look != "P")
-                Debug.LogWarning("[PerfRunner] L5's lamps, brush, shadow and refl arms are in look P only, and the stage's look is not P");
-            // (the families the flat arms name, with their renderers and triangles, once)
-            foreach (var g in drawn.Where(r => r != null && r.enabled)
-                         .SelectMany(r => r.sharedMaterials.Select((m, k) => (m, k, r)))
-                         .GroupBy(x => FamilyOf(x.m)).OrderBy(g => g.Key))
-            {
-                long tris = g.Sum(x => x.r.TryGetComponent<MeshFilter>(out var mf) && mf.sharedMesh != null && x.k < mf.sharedMesh.subMeshCount
-                    ? (long)mf.sharedMesh.GetIndexCount(x.k) / 3 : 0);
-                var roots = g.GroupBy(x => x.r.transform.root.name).OrderByDescending(r => r.Count()).Take(6)
-                    .Select(r => $"{r.Key} {r.Count()}");
-                Debug.Log($"[PerfRunner] family {g.Key}: {g.Select(x => x.r).Distinct().Count()} renderers, {g.Count()} material slots, " +
-                          $"{tris} triangles; shaders {string.Join(", ", g.Select(x => x.m != null ? x.m.shader.name : "none").Distinct())}; " +
-                          $"roots {string.Join(", ", roots)}");
-            }
-            foreach (var c in configs.Where(c => c.StartsWith("flat-")))
-                if (!drawn.Any(r => r != null && r.sharedMaterials.Any(m => FamilyOf(m) == c.Substring("flat-".Length))))
-                    Debug.LogError($"[PerfRunner] no material of the family '{c.Substring("flat-".Length)}' for '{c}'");
 
             void SetPasses(string config)
             {
-                foreach (var pass in FeatureOf)
-                    if (features.TryGetValue(pass.Value, out var f))
-                        f.feature.SetActive(f.on && !Off(config, pass.Key));
-                stage.view.clearFlags = Off(config, "sky") ? CameraClearFlags.SolidColor : clear0;
-                if (Off(config, "shadows") && stage.sun != null)
-                    stage.sun.shadows = LightShadows.None;     // (the stage sets them soft again on the next Apply)
+                for (int i = 0; i < features.Count; i++)
+                    features[i].SetActive(IsOcclusion(features[i]) && !Off(config, "ssao"));
+                if (sky != null && Off(config, "sky"))
+                    sky.SetActive(false);                       // (the next segment's light sets it again)
+                if (Off(config, "shadows"))
+                    sun.shadows = LightShadows.None;           // (as is)
                 camData.renderPostProcessing = post0 && !Off(config, "post");
                 urp.msaaSampleCount = Off(config, "msaa") ? 1 : msaa0;
-                if (motes != null && Off(config, "motes"))
-                    motes.enabled = false;                       // (the stage's motes set it from the rig on Apply)
+                if (Off(config, "townlight"))
+                    Shader.SetGlobalFloat("_OS_SkyMapOn", 0f); // (the next segment's map binds it again)
                 camData.requiresColorOption = Off(config, "opaquetex") ? CameraOverrideOption.Off : colour0;
                 camData.requiresDepthOption = Off(config, "depthtex") ? CameraOverrideOption.Off : depth0;
-                Shader.SetKeyword(historyOff, config == "history-off");
-                Shader.SetKeyword(hazeOff, config == "haze-off" || config == "bare-haze");
-                foreach (var t in l5)
-                    Shader.SetKeyword(t.Value, L5Term(config) == t.Key);
-                if (features.TryGetValue("SunBeams", out var beams) && beams.feature is SunBeamsFeature sb)
-                {
-                    sb.fullSize = config == "beams-full";
-                    sb.arm = config.StartsWith("beams-") && config != "beams-full" ? config.Substring("beams-".Length) : "";
-                }
-                if (features.TryGetValue("FogLights", out var fog) && fog.feature is FogLightsFeature fl)
-                {
-                    fl.fullSize = config == "foglights-full";
-                    TownLights.cullToView = !fl.fullSize; // (as it was: every lamp at every pixel)
-                }
-                // the bank's volume (HazeVolumeFeature); the 'march' arm marches it at every pixel instead, as before
-                if (features.TryGetValue("HazeVolume", out var haze))
-                    haze.feature.SetActive(haze.on && config != "march");
             }
 
             var recorders = Counters.Select(c => ProfilerRecorder.StartNew(c.category, c.counter, 1)).ToArray();
-            var shot = ScriptableObject.CreateInstance<CameraShot>();
             var timing = new FrameTiming[1];
             var csv = new StringBuilder("round,segment,frame,cpu_ms,cpu_main_ms,cpu_render_ms,gpu_ms," + string.Join(",", Counters.Select(c => c.column)) + "\n");
             var wallClock = System.Diagnostics.Stopwatch.StartNew();
@@ -458,47 +343,66 @@ namespace Overstory.Perf
 
             void Show(Seg seg)
             {
-                foreach (var b in birches ?? new GameObject[0])
-                    if (b != null)
-                        b.SetActive(seg.birchesOn);
+                var v = seg.view;
+                bool street = seg.scene == "street";
+                var lt = LitFor(seg.light, v.name);
+                // each house at its level from this view
+                if (v.levels != null)
+                    for (int i = 0; i < houses.Length && i < v.levels.Length; i++)
+                        for (int k = 0; k < houses[i].levels.Length; k++)
+                            if (houses[i].levels[k] != null)
+                                houses[i].levels[k].SetActive(houses[i].names[k] == v.levels[i]);
                 for (int i = 0; i < drawn.Length; i++)
                     if (drawn[i] != null)
                     {
-                        drawn[i].enabled = drawnOn[i] && seg.scene == composed;
+                        drawn[i].enabled = drawnOn[i] && street;
                         drawn[i].sharedMaterials = seg.passes == "flat" && flat != null
-                            ? drawnWith[i].Select(_ => flat).ToArray()
-                            : seg.passes.StartsWith("flat-") && flat != null
-                            ? drawnWith[i].Select(m => FamilyOf(m) == seg.passes.Substring("flat-".Length) ? flat : m).ToArray()
-                            : drawnWith[i];
+                            ? drawnWith[i].Select(_ => flat).ToArray() : drawnWith[i];
                     }
-                stage.rig = seg.light.rig;
-                shot.position = seg.view.position;
-                shot.target = seg.view.target;
-                shot.verticalFov = seg.view.fov;
-                shot.near = near;
-                shot.far = far;
-                stage.shot = shot;
-                stage.Apply();
-                if (district != null)
-                    district.Show(seg.scene.StartsWith("district-") ? seg.scene.Substring("district-".Length) : "", StreetSpace.ToUnity(seg.view.position));
-                if (seg.scene.StartsWith("district"))
-                    Shader.SetGlobalFloat("_OS_Clay", 0f);      // (the district in its colours; the stage sets clay on Apply)
-                if (historyQuad != null)
+                view.transform.SetPositionAndRotation(ToUnity(v.position), Quaternion.LookRotation(ToUnity(v.target - v.position), Vector3.up));
+                view.fieldOfView = v.fov;
+                view.farClipPlane = seg.scene.StartsWith("district") ? districtFar : streetFar;
+                urp.shadowCascadeCount = 1;
+                urp.mainLightShadowmapResolution = 4096;
+                urp.shadowDistance = v.shadowDistance > 0 ? v.shadowDistance : shadowDistance;
+                // the light as the editor applied it at this view
+                sun.transform.rotation = lt.sunRotation;
+                sun.intensity = lt.sunIntensity;
+                sun.color = lt.sunColour;
+                sun.shadowStrength = lt.sunShadow;
+                sun.shadows = shadows0;
+                RenderSettings.ambientMode = AmbientMode.Trilight;
+                RenderSettings.ambientSkyColor = lt.ambientSky;
+                RenderSettings.ambientEquatorColor = lt.ambientEquator;
+                RenderSettings.ambientGroundColor = lt.ambientGround;
+                RenderSettings.ambientProbe = Probe(lt.probe);
+                RenderSettings.defaultReflectionMode = DefaultReflectionMode.Custom;
+                RenderSettings.customReflectionTexture = lt.reflection;
+                view.backgroundColor = lt.background;
+                if (sky != null)
                 {
-                    historyQuad.enabled = seg.scene.StartsWith("quad-");
-                    var pages = seg.scene.StartsWith("quad-bc7") ? pagesBC7 : pagesRGBA8;
-                    if (historyQuad.enabled && pages != null)
-                        pages.Bind();
-                    if (historyQuad.enabled)
-                    {
-                        int at = historyQuadTiles != null ? System.Array.IndexOf(historyQuadTiles, QuadTile(seg.scene)) : -1;
-                        if (quadFilter != null)
-                            quadFilter.sharedMesh = at >= 0 && historyQuadTiled[at] != null ? historyQuadTiled[at] : quadMesh;
-                        historyQuad.sharedMaterial.SetKeyword(twoPages, QuadOption(seg.scene, "two"));
-                        foreach (var a in arms)
-                            historyQuad.sharedMaterial.SetKeyword(a.keyword, QuadOption(seg.scene, a.option));
-                    }
+                    sky.SetActive(lt.skyOn);
+                    sky.transform.position = view.transform.position;
                 }
+                if (skyMaterial != null)
+                    skyMaterial.SetVector("_SkyZenith", lt.zenith);
+                Shader.SetGlobalVector("_OS_StageSky", lt.skyOn ? lt.zenith : Vector4.zero);
+                if (groundMaterial != null)
+                    groundMaterial.SetColor("_BaseColor", lt.ground);
+                if (adjust != null)
+                    adjust.postExposure.Override(lt.exposure);
+                // the town's map drawn again for what stands and how it is lit now
+                if (town != null)
+                {
+                    var a = albedo[lt];
+                    town.albedo = r => a.TryGetValue(r, out var x) ? x : (Color.black, Color.black);
+                    town.sun = -sun.transform.forward;
+                    town.sunLight = sun.color.linear * sun.intensity;
+                    town.sunShadow = lt.sunShadow;
+                    town.Build();
+                }
+                if (district != null)
+                    district.Show(seg.scene.StartsWith("district-") ? seg.scene.Substring("district-".Length) : "", ToUnity(v.position));
                 SetPasses(seg.passes);
             }
 
@@ -561,7 +465,7 @@ namespace Overstory.Perf
                     // free of the display's cadence (macOS presents on the screen's refresh even with vsync off, so a
                     // presented frame's period comes in whole refresh ticks, 6.9 ms at 144 Hz); the target has the
                     // samples the pipeline draws with
-                    var target = Target(stage.view.allowMSAA ? Mathf.Max(1, urp.msaaSampleCount) : 1, ScaleOf(seg));
+                    var target = Target(view.allowMSAA ? Mathf.Max(1, urp.msaaSampleCount) : 1, offScale);
                     var thisRound = new List<double>(offscreenBatches);
                     for (int b = 0; b <= offscreenBatches; b++)
                     {
@@ -569,13 +473,13 @@ namespace Overstory.Perf
                         for (int k = 0; k < offscreenPerBatch; k++)
                         {
                             var request = new RenderPipeline.StandardRequest { destination = target };
-                            if (RenderPipeline.SupportsRenderRequest(stage.view, request))
-                                RenderPipeline.SubmitRenderRequest(stage.view, request);
+                            if (RenderPipeline.SupportsRenderRequest(view, request))
+                                RenderPipeline.SubmitRenderRequest(view, request);
                             else
                             {
-                                stage.view.targetTexture = target;
-                                stage.view.Render();
-                                stage.view.targetTexture = null;
+                                view.targetTexture = target;
+                                view.Render();
+                                view.targetTexture = null;
                             }
                         }
                         Graphics.Blit(target, probe);
@@ -596,12 +500,12 @@ namespace Overstory.Perf
             {
                 var s = new Segment
                 {
-                    name = seg.name, view = seg.view.name, light = seg.light.name, scene = seg.scene, passes = seg.passes,
-                    birches = seg.birchesOn, frames = cpu[seg.name].Count,
+                    name = seg.name, view = seg.view.name, light = seg.light, scene = seg.scene, passes = seg.passes,
+                    frames = cpu[seg.name].Count,
                     cpu_ms = Stats(cpu[seg.name]), cpu_main_ms = Stats(main[seg.name]), cpu_render_ms = Stats(render[seg.name]),
                     gpu_ms = Stats(gpu[seg.name]), round_medians_ms = roundMedians[seg.name].ToArray(),
                     offscreen_ms = Stats(offscreen[seg.name]), round_offscreen_ms = roundOffscreen[seg.name].ToArray(),
-                    offscreen_scale = ScaleOf(seg),
+                    offscreen_scale = offScale,
                 };
                 s.counters = Counters.Select((c, i) => new Counter
                 {
@@ -632,29 +536,22 @@ namespace Overstory.Perf
             foreach (var t in targets.Values)
                 t.Release();
             probe.Release();
-            foreach (var b in birches ?? new GameObject[0])
-                if (b != null)
-                    b.SetActive(true);
             // the pipeline as it was (the renderer's features are an asset, shared with any later run in this process)
             SetPasses("all");
-            if (historyQuad != null)
-            {
-                historyQuad.enabled = false;
-                if (quadFilter != null)
-                    quadFilter.sharedMesh = quadMesh;
-                historyQuad.sharedMaterial.SetKeyword(twoPages, false);
-                foreach (var a in arms)
-                    historyQuad.sharedMaterial.SetKeyword(a.keyword, false);
-            }
+            for (int i = 0; i < features.Count; i++)
+                features[i].SetActive(featuresWere[i]);
             for (int i = 0; i < drawn.Length; i++)
                 if (drawn[i] != null)
+                {
                     drawn[i].enabled = drawnOn[i];
+                    drawn[i].sharedMaterials = drawnWith[i];
+                }
 
             if (loaded != null)
                 loaded.footprintEnd = DistrictLoader.Footprint();     // after every segment has drawn it
             var run = new Run
             {
-                label = label, scene = composed,
+                label = label, scene = "street", houses = houseIds,
                 started = System.DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture),
                 seconds = measured,
                 unity = Application.unityVersion,
@@ -695,7 +592,7 @@ namespace Overstory.Perf
         static string Table(Run run)
         {
             var sb = new StringBuilder();
-            sb.Append($"# Frame time: {(run.scene == "playable" ? "the walk's corner in the town" : "the corner")}{(run.label != "" ? ", " + run.label : "")}\n\n");
+            sb.Append($"# Frame time: the street (house{(run.houses != null && run.houses.Contains(",") ? "s" : "")} {run.houses}){(run.label != "" ? ", " + run.label : "")}\n\n");
             sb.Append($"{run.started}, {run.gpu} ({run.api}), {run.screen} {run.fullscreen}, MSAA {run.msaa}x, render scale {run.renderScale}, ");
             sb.Append($"quality {run.quality}, vsync {run.vsync}; {run.rounds} rounds of {run.framesPerSegment} frames a segment, each after ");
             sb.Append($"{run.warmUp} warm-up, after {run.settle} frames to settle; {run.seconds:F0} s measuring.\n\n");
@@ -747,14 +644,13 @@ namespace Overstory.Perf
         public class Segment
         {
             public string name, view, light, scene, passes;
-            public bool birches;
             public int frames;
             public Stat cpu_ms, cpu_main_ms, cpu_render_ms, gpu_ms;
             public double[] round_medians_ms;
             public Stat offscreen_ms;
             [Tooltip("Each round's median offscreen time (its batches'), for the spread between rounds.")]
             public double[] round_offscreen_ms;
-            [Tooltip("The offscreen frames' size against the screen's (the run's -perf-offscreen-scale, halved by a quad scene's 'half').")]
+            [Tooltip("The offscreen frames' size against the screen's (the run's -perf-offscreen-scale).")]
             public float offscreen_scale;
             public Counter[] counters;
 
@@ -771,8 +667,10 @@ namespace Overstory.Perf
         public class Run
         {
             public string label, started, unity, device, gpu, api, screen, fullscreen, quality;
-            [Tooltip("The composed scene the build holds: corner or playable.")]
+            [Tooltip("The scene the build holds: the street.")]
             public string scene;
+            [Tooltip("The street's houses, as its test built them.")]
+            public string houses;
             public double seconds;
             public int msaa, vsync, warmUp, framesPerSegment, rounds, settle;
             public float renderScale, offscreenScale;

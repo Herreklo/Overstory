@@ -13,8 +13,8 @@ namespace Overstory.Scenes
     /// which TownLights culls for each camera; it draws nothing while no lamp in view is lit or the halos are off.
     ///
     /// <see cref="fullSize"/> draws the old pass instead (FogLightsFull.shader: every lit lamp at every full-size pixel,
-    /// after a copy of the frame, through URP's full-screen pass): the A arm of the harness's A/B (PerfRunner's
-    /// 'foglights-full'), off in the game.
+    /// after a copy of the frame, through URP's full-screen pass): the A arm of the walked corner's harness A/B
+    /// ('foglights-full', retired with the corner on 30 October), off in the game.
     /// </summary>
     public class FogLightsFeature : ScriptableRendererFeature
     {

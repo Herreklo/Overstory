@@ -17,7 +17,8 @@ namespace Overstory.Scenes
     ///
     /// <see cref="fullSize"/> draws the old pass instead (SunBeams.shader: 40 steps a pixel at full size, URP's soft
     /// shadow filter at every step, after a copy of the frame), exactly as URP's full-screen feature drew it: the A arm
-    /// of the harness's A/B (PerfRunner's 'beams-full'), off in the game. It costs the player nothing while off.
+    /// of the walked corner's harness A/B ('beams-full', retired with the corner on 30 October), off in the game. It
+    /// costs the player nothing while off.
     /// </summary>
     public class SunBeamsFeature : ScriptableRendererFeature
     {
@@ -28,8 +29,8 @@ namespace Overstory.Scenes
         [Tooltip("The old pass's material (M_SunBeams, Overstory/SunBeams).")]
         public Material fullMaterial;
 
-        /// <summary>The harness's arms for how the beams meet the frame (PerfRunner, 'beams-&lt;arm&gt;'): "" adds them onto
-        /// the frame by blending; "copy" copies the frame and writes it whole with the beams added; "nocomposite" marches
+        /// <summary>The walked corner's harness arms for how the beams meet the frame ('beams-&lt;arm&gt;', retired): ""
+        /// adds them onto the frame by blending; "copy" copies the frame and writes it whole with the beams added; "nocomposite" marches
         /// and blurs but never composites (the march's own cost). Never saved.</summary>
         [System.NonSerialized] public string arm = "";
 

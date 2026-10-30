@@ -29,28 +29,15 @@ reviews/golden/current/
 reviews/golden/compare/
 unity/Assets/Experiments/LT1/Perf/
 unity/Assets/Experiments/LT1/Perf.meta
-# the history quad's synthetic pages and scene (step 3, LT1History: rebuilt, their hashes in reviews/lt1/history/r2-pages.json)
-unity/Assets/Experiments/LT1/History/Generated/
-unity/Assets/Experiments/LT1/History/Generated.meta
-# R2a's stones (port step 2b: blender/parts/stone/slate/stones.py, rebuilt; their mesh hashes in stones.manifest.json)
-unity/Assets/Experiments/LT1/R2a/Generated/
-unity/Assets/Experiments/LT1/R2a/Generated.meta
 reviews/perf/**/frames.csv
 reviews/perf/**/*.png
 reviews/perf/**/player.log
-reviews/motion/current/
 
 # The Unity lock and its holder's record (tools/unity_lock.py)
 /.locks/
 
 # Local Python tools (FLIP, ffmpeg via imageio-ffmpeg)
 .venv/
-# The walk's composed scene (LT1Play.Compose: rebuilt from the heart, the stone and the houses' record) and the houses'
-# FBX at 1989 (export_time.py --out Assets/Art/Buildings/playable: rebuilt; their record and mesh hashes are kept)
-unity/Assets/Experiments/LT1/Playable/Generated/
-unity/Assets/Experiments/LT1/Playable/Generated.meta
-unity/Assets/Art/Buildings/playable/**/*.fbx
-unity/Assets/Art/Buildings/playable/**/*.fbx.meta
 # The finishing test (blender/parts/finish): the corner's FBX, pages, tileables and materials, and its scene, rebuilt
 # by the Blender scripts and LT1Finish; the CC0 scans it reads (logged in docs/research/downloads.md) stay local
 unity/Assets/Experiments/LT1/Finish/Generated/

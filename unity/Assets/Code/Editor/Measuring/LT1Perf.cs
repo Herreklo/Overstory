@@ -10,81 +10,55 @@ using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
 using Overstory.Perf;
-using Overstory.Scenes;
-using Overstory.World;
 using Path = System.IO.Path;
 
 namespace Overstory.EditorTools
 {
     /// <summary>
     /// The frame-time harness (docs/measuring.md; docs/research/performance-at-scale.md, The performance harness, and What
-    /// we should do, 1): composes today's corner as the gully's frames stage it (LT1Stone.Stage: the heart in clay, the
-    /// stair and its cheek walls in stone), with the corner's birch in C's yard, into a generated scene with a PerfRunner;
+    /// we should do, 1): composes the street as its own test stages it (StreetStaging: Street.unity as the last
+    /// LT1Street.Run left it, its houses, its judging views and its two lights) into a generated scene with a PerfRunner;
     /// builds a macOS player of it with frame timing stats on; and runs it full screen at 2560 by 1440 on the reference
-    /// machine, as many times as asked. Each run writes reviews/perf/&lt;date&gt;/run-&lt;n&gt;/ (summary.json, summary.md;
-    /// frames.csv and a screenshot per segment are kept out of git), and the runs are compared with each other in
-    /// reviews/perf/&lt;date&gt;/runs.md.
+    /// machine, as many times as asked. Each run writes reviews/perf/&lt;date&gt;/street/run-&lt;n&gt;/ (summary.json,
+    /// summary.md; frames.csv and a screenshot per segment are kept out of git), and the runs are compared with each
+    /// other in runs.md beside them.
     ///
     ///     Unity -batchmode -quit -projectPath unity -executeMethod Overstory.EditorTools.LT1Perf.Build
-    ///         [-runs 2] [-norun] [-out reviews/perf/2026-10-26] [-perf-frames 150] [-perf-warmup 30] [-perf-rounds 2]
-    ///         [-perf-settle 600] [-perf-only street,high] [-perf-passes all,-sky,...,bare,history-off,haze-off]
-    ///         [-perf-scenes empty,corner,quad-rgba8,quad-bc7,quad-bc7-half,quad-bc7-two,quad-bc7-tile4,quad-bc7-tile8,
-    ///                       quad-bc7-tri-tile8 (R2c's arms: nearmip, tri, lod, grad, direct, tex2d, alu, quiet, noisy)]
-    ///         [-perf-views street,high] [-perf-empty-views street] [-perf-shots all|some]
+    ///         [-runs 2] [-norun] [-out reviews/perf/2026-10-30/street] [-views eye,street,raised,high]
+    ///         [-perf-frames 150] [-perf-warmup 30] [-perf-rounds 2] [-perf-settle 600] [-perf-only street,high]
+    ///         [-perf-passes all,-sky,-shadows,-ssao,-post,-msaa,-townlight,-opaquetex,-depthtex,bare,flat]
+    ///         [-perf-scenes empty,street] [-perf-views street,high] [-perf-empty-views street] [-perf-shots all|some]
     ///         [-district /abs/path/to/district] [-perf-district-views street,city]
     ///
-    /// The player is run from the logged-in session (rendering needs the GPU and the screen); the Unity editor must not be
-    /// open on unity/. Player settings changed for the build (frame timing stats, full screen at 2560 by 1440, running in
-    /// the background) are put back afterwards. The generated scene and the player are not kept in git.
-    ///
-    /// The walk's whole scene (LT1g, W3; reviews/lt1/playable/walk/w3-report.md): BuildPlayable composes the corner as the
-    /// walk's player shows it (LT1Play.ComposeOpen: the clay town, the five houses at 1989, no tree until 1e unless
-    /// -tree card or clay (LT1Play.TreeDefault, proposal Q16: the gate's baseline has no tree), the lamps as the
-    /// facts have them), places the runner in it with the walk's nine views (the five judging views and LT1g's four),
-    /// leaves out the play's own behaviours but PlayCorner (the frame-time overlay's label and its own frame-timing capture
-    /// would be in the numbers), and builds and runs it as Build does, into reviews/perf/&lt;date&gt;/playable/ by default.
-    /// Every option above applies; its scene is 'playable' (-perf-scenes empty,playable).
-    ///
-    ///     tools/perf.sh playable [-runs 2] [-perf-passes all,-beams,-shadows,-beams+shadows,bare,flat] [-tree none|clay|card]
-    ///         [-perf-ab 1300-drizzle,1600-low-sun]   (the lights in which every view is measured again without the tree)
+    /// The street is whatever its test last built (blender/parts/street/run/render.sh: one house, or a row with
+    /// -streetHouses); its views are the test's own for that (StreetStaging; -views at compose time keeps some), in way
+    /// Pc (the colour), each house at the level its distance takes. The player is run from the logged-in session
+    /// (rendering needs the GPU and the screen); the Unity editor must not be open on unity/. Player settings changed for
+    /// the build (frame timing stats, full screen at 2560 by 1440, running in the background) are put back afterwards.
+    /// The generated scene, its copies of the sky's and ground's materials and the volume's profile, and the player are
+    /// not kept in git; nothing of the street's own is written.
     /// </summary>
     public static class LT1Perf
     {
-        const string Generated = "Assets/Experiments/LT1/Perf/Generated";
-        const string ScenePath = Generated + "/LT1_PerfCorner.unity";
+        const string Generated = StreetStaging.Own;
+        const string ScenePath = Generated + "/LT1_PerfStreet.unity";
         const string App = "Builds/Perf/OverstoryPerf.app";     // in unity/, not kept in git
-        const string PlayableScenePath = Generated + "/LT1_PerfPlayable.unity";
-        const string PlayableApp = "Builds/Perf/OverstoryPerfPlayable.app";
-        /// <summary>The root PlantBirch plants the corner's birch under.</summary>
-        public const string BirchRoot = "Trees (the corner's birch)";
-
-        /// <summary>
-        /// The corner's birch (docs/experiments.md, LT1, the reset: self-seeded in C's yard around 1950, about 14 m,
-        /// leaning over the wall into the lane): the judged downy birch at 60 (seed 1), a little older and taller than the
-        /// fact's, so its cost is an upper bound. Street metres, in C's yard beside the lower flight.
-        /// </summary>
-        static readonly Vector2 BirchAt = new Vector2(44.5f, 28.0f);
-
-        /// <summary>The judging views measured (LT1Stone.Views by name), and the birch's own: its crown filling the frame.</summary>
-        static readonly string[] ViewNames = { "eye-foot", "eye-on", "street", "into12", "high" };
 
         public static void Build() =>
-            BuildAndRun(() => Compose(), ScenePath, App, $"reviews/perf/{System.DateTime.Now:yyyy-MM-dd}");
-
-        /// <summary>The walk's whole scene measured (W3): ComposePlayable, then built and run as Build's corner.</summary>
-        public static void BuildPlayable() =>
-            BuildAndRun(() => ComposePlayable(), PlayableScenePath, PlayableApp, $"reviews/perf/{System.DateTime.Now:yyyy-MM-dd}/playable");
+            BuildAndRun(() => Compose(), ScenePath, App, $"reviews/perf/{System.DateTime.Now:yyyy-MM-dd}/street");
 
         /// <summary>
-        /// The walk's scene timed and drawn offscreen in the editor, with no window on the screen: the playable scene as
-        /// BuildPlayable last composed it (or composed again with -compose), each light and view drawn as the player draws
-        /// it (PlayerFrame: 2560 by 1440, the game's MSAA), the arms in turn, a batch of six each a round, six rounds after one
-        /// that primes, the median kept; the arms: 'all'; 'march' (HazeVolumeFeature off: the bank marched at every pixel, as before); '-Name' (the renderer
-        /// feature of that name off). The editor's own work is in the numbers, so they serve an A/B between the arms of one
-        /// run; tools/perf.sh gives the frame. With -stills, each arm's frame of each view is kept (VIEW-LIGHT-ARM.png).
+        /// The street timed and drawn offscreen in the editor, with no window on the screen: staged as its test stages it
+        /// (StreetStaging), each light and view drawn as the player draws it (PlayerFrame: 2560 by 1440, the game's MSAA),
+        /// the arms in turn, a batch of six each a round, six rounds after one that primes, the median kept. An arm is
+        /// what it turns off, joined by '+': 'all' (nothing); '-Name' (the renderer feature of that name; the street's
+        /// pipeline has the screen-space occlusion alone); 'shadows'; 'hard' (the sun's shadows hard); 'sky' (the drawn
+        /// sky); 'post'; 'opaquetex'; 'msaa'; 'Name.path=value' sets a serialized field of that renderer feature. The
+        /// editor's own work is in the numbers, so they serve an A/B between the arms of one run; tools/perf.sh gives the
+        /// frame. With -stills, each arm's frame of each view is kept (VIEW-LIGHT-ARM.png).
         ///
         ///     Unity -batchmode -quit -projectPath unity -executeMethod Overstory.EditorTools.LT1Perf.Offscreen
-        ///         [-lights 1750-blue-hour,...] [-views eye-on,street] [-arms all,march] [-stills dir] [-out file.md] [-compose]
+        ///         [-lights overcast,lowsun] [-views eye,street] [-arms all,shadows] [-stills dir] [-out file.md]
         /// </summary>
         public static void Offscreen()
         {
@@ -92,137 +66,125 @@ namespace Overstory.EditorTools
             const int perBatch = 6;
             string repo = Path.GetFullPath(Path.Combine(Application.dataPath, "..", ".."));
             var urp = (UniversalRenderPipelineAsset)GraphicsSettings.currentRenderPipeline;
-            float reach = urp.shadowDistance;
-            bool async = ShaderUtil.allowAsyncCompilation;
-            ShaderUtil.allowAsyncCompilation = false;
-            var data = AssetDatabase.LoadAssetAtPath<UniversalRendererData>("Assets/Settings/PC_Renderer.asset");
-            var features = data.rendererFeatures.Where(f => f != null).ToList();
-            var on0 = features.Select(f => f.isActive).ToList();
-            var lights = Cli.Arg("-lights", "1750-blue-hour").Split(',');
-            var views = Cli.Arg("-views", "eye-on,street").Split(',');
-            var arms = Cli.Arg("-arms", "all,march").Split(',');
+            var arms = Cli.Arg("-arms", "all").Split(',');
             string stills = Cli.Arg("-stills", null);
             string outFile = Cli.Arg("-out", "");
             var rows = new List<string>();
-            try
+            using (StreetStaging.Pipeline())
             {
-                if (Cli.Flag("-compose") || !File.Exists(Path.Combine(Application.dataPath, "..", PlayableScenePath)))
-                    ComposePlayable();
-                else
-                    EditorSceneManager.OpenScene(PlayableScenePath, OpenSceneMode.Single);
-                var corner = Object.FindAnyObjectByType<Overstory.Play.PlayCorner>()
-                             ?? throw new MissingReferenceException("[LT1Perf] no PlayCorner in the playable scene");
-                corner.Begin();
-                foreach (var light in lights)
+                var s = StreetStaging.Open();
+                var data = AssetDatabase.LoadAssetAtPath<UniversalRendererData>("Assets/Settings/PC_Renderer.asset");
+                var features = data.rendererFeatures.Where(f => f != null).ToList();
+                var on0 = features.Select(f => f.isActive).ToList();     // (the street's pipeline: the occlusion alone)
+                var cam = s.cam;
+                var camData = cam.GetUniversalAdditionalCameraData();
+                var sun = s.sun;
+                var set0 = new Dictionary<(ScriptableRendererFeature f, string path), string>();
+                try
                 {
-                    int m = System.Array.FindIndex(corner.moments, x => x.name == light);
-                    if (m < 0)
-                        throw new System.ArgumentException($"no light {light}");
-                    corner.SetLight(m);
-                    foreach (var viewName in views)
-                    {
-                        int v = System.Array.FindIndex(corner.views, x => x.name == viewName);
-                        if (v < 0)
-                            throw new System.ArgumentException($"no view {viewName}");
-                        corner.SetView(v);
-                        Debug.Log($"[LT1Perf] beams weight {viewName}@{light}: {SunBeamsFeature.Weight(corner.stage.view):F5}");
-                        var cells = new List<string>();
-                        var cam = corner.stage.view;
-                        var camData = cam.GetUniversalAdditionalCameraData();
-                        var sun = corner.stage.sun;
-                        var (clear0, post0, colour0, msaa0) = (cam.clearFlags, camData.renderPostProcessing, camData.requiresColorOption, urp.msaaSampleCount);
-                        var shadows0 = sun != null ? sun.shadows : LightShadows.None;
-                        // an arm is what it turns off, joined by '+'; 'hard' gives the sun hard shadows; 'Name.path=value'
-                        // sets a serialized field of that renderer feature (e.g. ScreenSpaceAmbientOcclusion.m_Settings.Downsample=1)
-                        var set0 = new Dictionary<(ScriptableRendererFeature f, string path), string>();
-                        void Set(ScriptableRendererFeature f, string path, string value)
+                    foreach (var light in s.lightNames.Where(l => Cli.Wanted("-lights", l)))
+                        foreach (var stop in s.stops)
                         {
-                            var so = new SerializedObject(f);
-                            var prop = so.FindProperty(path) ?? throw new System.ArgumentException($"no {path} in {f.name}");
-                            string was = prop.propertyType switch
+                            s.Apply(light, stop);
+                            var cells = new List<string>();
+                            var (post0, colour0, msaa0) = (camData.renderPostProcessing, camData.requiresColorOption, urp.msaaSampleCount);
+                            var shadows0 = sun.shadows;
+                            bool sky0 = s.sky.activeSelf;
+                            void Set(ScriptableRendererFeature f, string path, string value)
                             {
-                                SerializedPropertyType.Float => prop.floatValue.ToString(CultureInfo.InvariantCulture),
-                                SerializedPropertyType.Boolean => prop.boolValue ? "1" : "0",
-                                SerializedPropertyType.Enum => prop.intValue.ToString(),
-                                _ => prop.intValue.ToString(),
-                            };
-                            if (!set0.ContainsKey((f, path)))
-                                set0[(f, path)] = was;
-                            if (prop.propertyType == SerializedPropertyType.Float)
-                                prop.floatValue = float.Parse(value, CultureInfo.InvariantCulture);
-                            else if (prop.propertyType == SerializedPropertyType.Boolean)
-                                prop.boolValue = value == "1";
-                            else
-                                prop.intValue = int.Parse(value);
-                            so.ApplyModifiedPropertiesWithoutUndo();
-                            f.Create();
-                        }
-                        void Arm(string arm)
-                        {
-                            var off = arm.Split('+');
-                            foreach (var kv in set0.ToList())
-                                Set(kv.Key.f, kv.Key.path, kv.Value);
-                            foreach (var item in off.Where(o => o.Contains('=')))
-                            {
-                                int dot = item.IndexOf('.'), eq = item.IndexOf('=');
-                                var f = features.First(x => x.name == item.Substring(0, dot));
-                                Set(f, item.Substring(dot + 1, eq - dot - 1), item.Substring(eq + 1));
+                                var so = new SerializedObject(f);
+                                var prop = so.FindProperty(path) ?? throw new System.ArgumentException($"no {path} in {f.name}");
+                                string was = prop.propertyType switch
+                                {
+                                    SerializedPropertyType.Float => prop.floatValue.ToString(CultureInfo.InvariantCulture),
+                                    SerializedPropertyType.Boolean => prop.boolValue ? "1" : "0",
+                                    _ => prop.intValue.ToString(),
+                                };
+                                if (!set0.ContainsKey((f, path)))
+                                    set0[(f, path)] = was;
+                                if (prop.propertyType == SerializedPropertyType.Float)
+                                    prop.floatValue = float.Parse(value, CultureInfo.InvariantCulture);
+                                else if (prop.propertyType == SerializedPropertyType.Boolean)
+                                    prop.boolValue = value == "1";
+                                else
+                                    prop.intValue = int.Parse(value);
+                                so.ApplyModifiedPropertiesWithoutUndo();
+                                f.Create();
                             }
-                            for (int i = 0; i < features.Count; i++)
-                                features[i].SetActive(on0[i] && !off.Contains("-" + features[i].name) && !(off.Contains("march") && features[i] is HazeVolumeFeature));
-                            if (sun != null)
+                            void Arm(string arm)
+                            {
+                                var off = arm.Split('+');
+                                foreach (var kv in set0.ToList())
+                                    Set(kv.Key.f, kv.Key.path, kv.Value);
+                                foreach (var item in off.Where(o => o.Contains('=')))
+                                {
+                                    int dot = item.IndexOf('.'), eq = item.IndexOf('=');
+                                    var f = features.First(x => x.name == item.Substring(0, dot));
+                                    Set(f, item.Substring(dot + 1, eq - dot - 1), item.Substring(eq + 1));
+                                }
+                                for (int i = 0; i < features.Count; i++)
+                                    features[i].SetActive(on0[i] && !off.Contains("-" + features[i].name));
                                 sun.shadows = off.Contains("shadows") ? LightShadows.None : off.Contains("hard") ? LightShadows.Hard : shadows0;
-                            cam.clearFlags = off.Contains("sky") ? CameraClearFlags.SolidColor : clear0;
-                            camData.renderPostProcessing = post0 && !off.Contains("post");
-                            camData.requiresColorOption = off.Contains("opaquetex") ? CameraOverrideOption.Off : colour0;
-                            urp.msaaSampleCount = off.Contains("msaa") ? 1 : msaa0;
-                        }
-                        // each arm's still from its own warmed frame; then the arms timed in turn, a batch each a round,
-                        // so whatever else the machine does falls on every arm alike
-                        foreach (var arm in arms)
-                        {
-                            Arm(arm);
-                            using var still = new PlayerFrame(corner.stage.view);
-                            still.Render(LT1Time.WarmUp + 1);
-                            if (stills != null)
-                                still.Save(Path.Combine(repo, stills, $"{viewName}-{light}-{arm}.png"));
-                            still.Wait();
-                        }
-                        var ms = arms.ToDictionary(a => a, a => new List<double>());
-                        for (int b = 0; b <= batches; b++)
+                                s.sky.SetActive(sky0 && !off.Contains("sky"));
+                                camData.renderPostProcessing = post0 && !off.Contains("post");
+                                camData.requiresColorOption = off.Contains("opaquetex") ? CameraOverrideOption.Off : colour0;
+                                urp.msaaSampleCount = off.Contains("msaa") ? 1 : msaa0;
+                            }
+                            // each arm's still from its own warmed frame; then the arms timed in turn, a batch each a
+                            // round, so whatever else the machine does falls on every arm alike
                             foreach (var arm in arms)
                             {
                                 Arm(arm);
-                                using var frame = new PlayerFrame(cam); // (the arm's own sample count)
-                                frame.Render(2); // (the arm's first frames prime it)
-                                frame.Wait();
-                                var clock = System.Diagnostics.Stopwatch.StartNew();
-                                frame.Render(perBatch);
-                                frame.Wait();
-                                if (b > 0) // (the first round only primes)
-                                    ms[arm].Add(clock.Elapsed.TotalMilliseconds / perBatch);
+                                using var still = new PlayerFrame(cam);
+                                still.Render(LT1Golden.WarmUp + 1);
+                                if (stills != null)
+                                    still.Save(Path.Combine(repo, stills, $"{stop.name}-{light}-{arm}.png"));
+                                still.Wait();
                             }
-                        Arm("all");
-                        foreach (var arm in arms)
-                        {
-                            var t = ms[arm];
-                            t.Sort();
-                            cells.Add($"{t[t.Count / 2]:F1}");
-                            Debug.Log($"[LT1Perf] offscreen {viewName}@{light} {arm}: {t[t.Count / 2]:F2} ms (batches {string.Join(" ", t.Select(x => x.ToString("F1")))})");
+                            var ms = arms.ToDictionary(a => a, a => new List<double>());
+                            for (int b = 0; b <= batches; b++)
+                                foreach (var arm in arms)
+                                {
+                                    Arm(arm);
+                                    using var frame = new PlayerFrame(cam); // (the arm's own sample count)
+                                    frame.Render(2); // (the arm's first frames prime it)
+                                    frame.Wait();
+                                    var clock = System.Diagnostics.Stopwatch.StartNew();
+                                    frame.Render(perBatch);
+                                    frame.Wait();
+                                    if (b > 0) // (the first round only primes)
+                                        ms[arm].Add(clock.Elapsed.TotalMilliseconds / perBatch);
+                                }
+                            Arm("all");
+                            foreach (var arm in arms)
+                            {
+                                var t = ms[arm];
+                                t.Sort();
+                                cells.Add($"{t[t.Count / 2]:F1}");
+                                Debug.Log($"[LT1Perf] offscreen {stop.name}@{light} {arm}: {t[t.Count / 2]:F2} ms (batches {string.Join(" ", t.Select(x => x.ToString("F1")))})");
+                            }
+                            rows.Add($"| {stop.name}@{light} | {string.Join(" | ", cells)} |");
                         }
-                        rows.Add($"| {viewName}@{light} | {string.Join(" | ", cells)} |");
+                }
+                finally
+                {
+                    foreach (var kv in set0.ToList())
+                    {
+                        var so = new SerializedObject(kv.Key.f);
+                        var prop = so.FindProperty(kv.Key.path);
+                        if (prop.propertyType == SerializedPropertyType.Float)
+                            prop.floatValue = float.Parse(kv.Value, CultureInfo.InvariantCulture);
+                        else if (prop.propertyType == SerializedPropertyType.Boolean)
+                            prop.boolValue = kv.Value == "1";
+                        else
+                            prop.intValue = int.Parse(kv.Value);
+                        so.ApplyModifiedPropertiesWithoutUndo();
+                        kv.Key.f.Create();
                     }
                 }
             }
-            finally
-            {
-                for (int i = 0; i < features.Count; i++)
-                    features[i].SetActive(on0[i]);
-                urp.shadowDistance = reach;
-                ShaderUtil.allowAsyncCompilation = async;
-            }
             var md = new StringBuilder();
-            md.AppendLine($"Milliseconds a frame, offscreen in the editor (LT1Perf.Offscreen; {SystemInfo.graphicsDeviceName}, " +
+            md.AppendLine($"Milliseconds a frame, offscreen in the editor (LT1Perf.Offscreen, the street; {SystemInfo.graphicsDeviceName}, " +
                           $"{PlayerFrame.Width}x{PlayerFrame.Height}, the game's MSAA, median of {batches} batches of {perBatch}).").AppendLine();
             md.AppendLine($"| View and light | {string.Join(" | ", arms)} |");
             md.AppendLine($"| --- |{string.Concat(Enumerable.Repeat(" --- |", arms.Length))}");
@@ -239,10 +201,7 @@ namespace Overstory.EditorTools
 
         static void BuildAndRun(System.Action compose, string scenePath, string appPath, string defaultOut)
         {
-            var urp = (UniversalRenderPipelineAsset)GraphicsSettings.currentRenderPipeline;
-            float reach = urp.shadowDistance;
             compose();
-            urp.shadowDistance = reach;
             string app = Path.GetFullPath(Path.Combine(Application.dataPath, "..", appPath));
             if (!BuildPlayer(app, scenePath))
                 throw new System.Exception("[LT1Perf] the player did not build");
@@ -264,140 +223,106 @@ namespace Overstory.EditorTools
                 CompareRuns(done, Path.Combine(outDir, "runs.md"));
         }
 
-        /// <summary>The corner staged, the birch planted, the runner added; saved as the generated scene (the perf
-        /// corner's own unless another path is given).</summary>
+        /// <summary>
+        /// The street staged as its test stages it and the plan of every light at every view recorded into a runner, so
+        /// the player puts each back as the editor applied it (PerfRunner.Lit): the sun, the trilight and its probe, the
+        /// background, the drawn sky and its reflection, the ground, the exposure, and what the town's sky map reads of
+        /// each renderer. The houses wear way Pc (the colour). Saved as the generated scene, with its own copies of the
+        /// sky's and ground's materials, the volume's profile and a reflection cube per light; the street's scene and
+        /// assets stay as they are on disk.
+        /// </summary>
         internal static void Compose(string scenePath = ScenePath)
         {
-            var (stage, go) = LT1Stone.Stage(false);
-            var (_, birch, ground, h) = PlantBirch();
-
-            var views = LT1Stone.Views.Where(v => System.Array.IndexOf(ViewNames, v.name) >= 0)
-                .Select(v => new PerfRunner.View { name = v.name, position = v.pos, target = v.target, fov = v.fov }).ToList();
-            // the birch's crown filling the frame, from 12 m up beside the lane (as the trees' into12 sheet)
-            views.Add(new PerfRunner.View
+            StreetStaging.Folder(Generated);
+            using (StreetStaging.Pipeline())
             {
-                name = "birch12", position = new Vector3(BirchAt.x + 13f, BirchAt.y - 9f, ground + 12f),
-                target = new Vector3(BirchAt.x, BirchAt.y, ground + h * 0.62f), fov = 46.4f,
-            });
-            var runner = AddRunner(stage, birch, views.ToArray(), "corner");
-            // the scale test's district (loaded only when the player is given -district <dir>), drawn with the street's material
-            runner.district = new GameObject("District (the scale test)").AddComponent<DistrictLoader>();
-            runner.district.material = AssetDatabase.LoadAssetAtPath<Material>("Assets/Art/Materials/M_Street.mat");
-            // the history quad (step 3: LT1History), drawn only in the quad scenes, each binding its own pages
-            (runner.historyQuad, runner.pagesRGBA8, runner.pagesBC7) = LT1History.AddQuad(stage.view);
-            runner.historyQuad.enabled = false;
-            // and its minified meshes (R2b: the scenes quad-<format>-tile4 and -tile8)
-            runner.historyQuadTiles = new[] { 4, 8 };
-            runner.historyQuadTiled = runner.historyQuadTiles.Select(k => LT1History.QuadMesh(k)).ToArray();
+                var s = StreetStaging.Open();
+                // the copies StreetStaging made, kept as the generated scene's own assets
+                AssetDatabase.CreateAsset(s.skyMat, Generated + "/sky.mat");
+                AssetDatabase.CreateAsset(s.groundMat, Generated + "/ground.mat");
+                var profile = s.volume.sharedProfile;
+                AssetDatabase.CreateAsset(profile, Generated + "/volume.asset");
+                foreach (var c in profile.components)
+                    AssetDatabase.AddObjectToAsset(c, profile);
+                AssetDatabase.SaveAssetIfDirty(profile);
+                s.AssignAll("Pc");
 
-            Save(scenePath);
-            Debug.Log($"[LT1Perf] composed {scenePath}: {runner.views.Length} views, {runner.moments.Length} lights");
-        }
+                var townRenderers = s.town != null && s.town.town != null
+                    ? s.town.town.GetComponentsInChildren<Renderer>(true) : new Renderer[0];
+                var cubes = s.lightNames.ToDictionary(l => l, l => new Cubemap(32, TextureFormat.RGBAHalf, true) { name = $"reflection-{l}" });
+                var lit = new List<PerfRunner.Lit>();
+                foreach (var light in s.lightNames)
+                    foreach (var stop in s.stops)
+                    {
+                        s.Apply(light, stop, "Pc", cubes[light]);
+                        var probe = RenderSettings.ambientProbe;
+                        var coefficients = new float[27];
+                        for (int ch = 0; ch < 3; ch++)
+                            for (int k = 0; k < 9; k++)
+                                coefficients[ch * 9 + k] = probe[ch, k];
+                        var albedo = townRenderers.Select(r => s.Albedo(r, "Pc")).ToArray();
+                        lit.Add(new PerfRunner.Lit
+                        {
+                            light = light, view = stop.name,
+                            sunRotation = s.sun.transform.rotation, sunColour = s.sun.color, sunIntensity = s.sun.intensity, sunShadow = s.sun.shadowStrength,
+                            ambientSky = RenderSettings.ambientSkyColor, ambientEquator = RenderSettings.ambientEquatorColor,
+                            ambientGround = RenderSettings.ambientGroundColor, probe = coefficients,
+                            background = s.cam.backgroundColor, skyOn = s.sky.activeSelf, zenith = s.skyMat.GetVector("_SkyZenith"),
+                            reflection = cubes[light], ground = s.groundMat.GetColor("_BaseColor"), exposure = s.adjust.postExposure.value,
+                            wall = albedo.Select(a => a.wall).ToArray(), top = albedo.Select(a => a.top).ToArray(),
+                        });
+                    }
+                foreach (var kv in cubes)
+                    AssetDatabase.CreateAsset(kv.Value, $"{Generated}/{kv.Value.name}.cubemap");
 
-        /// <summary>
-        /// The runner placed in the open scene: the stage, its views, the three judging lights, the birch with its leaf
-        /// bounds and its A/B in low sun, the shaders found by name, the pass study's renderer and flat material.
-        /// </summary>
-        static PerfRunner AddRunner(StreetStage stage, GameObject birch, PerfRunner.View[] views, string composed)
-        {
-            var runner = new GameObject("Perf runner").AddComponent<PerfRunner>();
-            runner.stage = stage;
-            runner.composed = composed;
-            runner.views = views;
-            runner.moments = LT1Stone.Moments.Select(m => new PerfRunner.Moment
-            {
-                name = m, rig = AssetDatabase.LoadAssetAtPath<LightRig>($"Assets/Experiments/LT1/Heart/Light/Heart_{m}.asset"),
-            }).ToArray();
-            // (no tree in the walk's corner until 1e: no A/B then)
-            runner.birches = birch == null ? new GameObject[0] : new[] { birch };
-            var leaves = birch == null ? new MeshRenderer[0] : birch.GetComponentsInChildren<MeshRenderer>();
-            runner.boundsOf = leaves;
-            runner.bounds = leaves.Select(r => r.localBounds).ToArray();
-            // (-perf-ab <light,...>: the lights the A/B measures without the tree; low sun unless asked)
-            runner.withoutBirchesIn = Cli.Arg("-perf-ab", "1600-low-sun").Split(',');
-            runner.keep = new[] { Shader.Find("Hidden/Overstory/TownHeight"), Shader.Find("Hidden/Overstory/SkyMapProbe") }
-                .Where(s => s != null).ToArray();
-            runner.rendererData = AssetDatabase.LoadAssetAtPath<UniversalRendererData>("Assets/Settings/PC_Renderer.asset");
-            runner.flat = new Material(Shader.Find("Universal Render Pipeline/Unlit")) { name = "Flat (the pass study)" };
-            return runner;
+                var runner = new GameObject("Perf runner").AddComponent<PerfRunner>();
+                runner.view = s.cam;
+                runner.sun = s.sun;
+                runner.volume = s.volume;
+                runner.sky = s.sky;
+                runner.skyMaterial = s.skyMat;
+                runner.groundMaterial = s.groundMat;
+                runner.town = s.town;
+                runner.townRenderers = townRenderers;
+                runner.houseIds = string.Join(",", s.ids);
+                runner.houses = s.roots.Select((r, i) => new PerfRunner.House
+                {
+                    id = s.ids[i], levels = s.levels[i].Values.ToArray(), names = s.levels[i].Keys.ToArray(),
+                }).ToArray();
+                runner.views = s.stops.Select(v => new PerfRunner.View
+                {
+                    name = v.name, position = v.pos, target = v.target, fov = v.fov, levels = v.levels, shadowDistance = v.shadowDistance,
+                }).ToArray();
+                runner.lit = lit.ToArray();
+                runner.keep = new[] { "Hidden/Overstory/TownHeight", "Hidden/Overstory/TownHorizon", "Hidden/Overstory/SkyMapProbe" }
+                    .Select(Shader.Find).Where(x => x != null).ToArray();
+                runner.rendererData = AssetDatabase.LoadAssetAtPath<UniversalRendererData>("Assets/Settings/PC_Renderer.asset");
+                runner.flat = new Material(Shader.Find("Universal Render Pipeline/Unlit")) { name = "Flat (the pass study)" };
+                AssetDatabase.CreateAsset(runner.flat, Generated + "/flat.mat");
+                // the scale test's district (loaded only when the player is given -district <dir>), drawn with the street's material
+                runner.district = new GameObject("District (the scale test)").AddComponent<DistrictLoader>();
+                runner.district.material = AssetDatabase.LoadAssetAtPath<Material>("Assets/Art/Materials/M_Street.mat");
+
+                Save(scenePath);
+                Debug.Log($"[LT1Perf] composed {scenePath}: the street (house{(s.row ? "s" : "")} {runner.houseIds}), " +
+                          $"views {string.Join(", ", runner.views.Select(v => v.name))}, lights {string.Join(", ", s.lightNames)}, " +
+                          $"{townRenderers.Length} renderers in the town's map");
+            }
+            // the copy opened in place of the street's scene, so nothing later can save the street's
+            EditorSceneManager.OpenScene(scenePath, OpenSceneMode.Single);
         }
 
         /// <summary>The open scene saved as a generated scene (a copy: the scene it was opened from stays as it is on disk).</summary>
         static void Save(string scenePath)
         {
-            Directory.CreateDirectory(Path.Combine(Application.dataPath, "..", Path.GetDirectoryName(scenePath)));
-            AssetDatabase.Refresh();
             var scene = EditorSceneManager.GetActiveScene();
             if (!EditorSceneManager.SaveScene(scene, scenePath, true))
                 throw new System.Exception($"[LT1Perf] could not save {scenePath}");
         }
 
         /// <summary>
-        /// The walk's corner as its player shows it (LT1Play.ComposeOpen), with the runner placed in it (W3; the
-        /// pre-mortem's "W3 places the runner": the harness's scenes are setups inside one build, so the walk's scene is
-        /// a build of its own). The play's own behaviours are left out but PlayCorner, which sets the town's globals at the
-        /// start as the player does: the frame-time overlay (its label's draw and its own FrameTimingManager capture would
-        /// be in the numbers) and whatever later stages add to steer the camera, which the runner holds instead. The views
-        /// are the player's own, in its order: the five judging views, then LT1g's four (LT1Play.CaseViews).
-        /// </summary>
-        internal static void ComposePlayable(string scenePath = PlayableScenePath)
-        {
-            var (stage, corner) = LT1Play.ComposeOpen();
-            var left = new List<string>();
-            foreach (var mb in Object.FindObjectsByType<MonoBehaviour>(FindObjectsInactive.Include, FindObjectsSortMode.None))
-                if (mb != null && mb.GetType().Namespace == typeof(Overstory.Play.PlayCorner).Namespace && !(mb is Overstory.Play.PlayCorner))
-                {
-                    left.Add(mb.GetType().Name);
-                    Object.DestroyImmediate(mb);
-                }
-            // the corner's tree, if the switch planted one (LT1Play.TreeKind)
-            var trees = GameObject.Find(BirchRoot);
-            var birch = trees == null || trees.transform.childCount == 0 ? null : trees.transform.GetChild(0).gameObject;
-            if ((birch == null) != (LT1Play.TreeKind == "none"))
-                throw new MissingReferenceException($"[LT1Perf] the walk's corner {(birch == null ? "has no tree" : "has a tree")}, but -tree is {LT1Play.TreeKind}");
-            var views = corner.views.Select(v => new PerfRunner.View { name = v.name, position = v.position, target = v.target, fov = v.fov }).ToArray();
-            var runner = AddRunner(stage, birch, views, "playable");
-            Save(scenePath);
-            Debug.Log($"[LT1Perf] composed {scenePath}: the walk's corner, {runner.views.Length} views ({string.Join(", ", views.Select(v => v.name))}), " +
-                      $"{runner.moments.Length} lights; left out: {(left.Count == 0 ? "nothing" : string.Join(", ", left))}");
-        }
-
-        /// <summary>The corner's birch planted in the open scene (in memory): its root, the tree, its ground and height.</summary>
-        internal static (GameObject root, GameObject birch, float ground, float height) PlantBirch()
-        {
-            var root = new GameObject(BirchRoot);
-            float ground = GroundAt(BirchAt);
-            var birch = LT1Trees.Place(root.transform, "birch", 1, 60, new Vector3(BirchAt.x, BirchAt.y, ground), 0f);
-            float top = birch.GetComponentsInChildren<MeshRenderer>().Max(r => r.bounds.max.y);
-            float h = top - StreetSpace.ToUnity(new Vector3(BirchAt.x, BirchAt.y, ground)).y;
-            Debug.Log($"[LT1Perf] the corner's birch at {BirchAt} on ground {ground:F2} m, {h:F1} m tall");
-            return (root, birch, ground, h);
-        }
-
-        /// <summary>The clay ground's height (street metres) under a point, by a ray against the ground's own meshes.</summary>
-        static float GroundAt(Vector2 p)
-        {
-            var added = new List<MeshCollider>();
-            try
-            {
-                foreach (var mf in Object.FindObjectsByType<MeshFilter>(FindObjectsSortMode.None))
-                    if (mf.gameObject.name.StartsWith("ground") && mf.GetComponent<Collider>() == null)
-                        added.Add(mf.gameObject.AddComponent<MeshCollider>());
-                Physics.SyncTransforms();
-                if (!Physics.Raycast(StreetSpace.ToUnity(p.x, p.y, 400f), Vector3.down, out var hit, 800f))
-                    throw new System.Exception($"[LT1Perf] no ground under {p}");
-                return hit.point.y;
-            }
-            finally
-            {
-                foreach (var c in added)
-                    Object.DestroyImmediate(c);
-            }
-        }
-
-        /// <summary>
-        /// A macOS player of one scene (the perf corner's unless another is given), with frame timing stats on, full
-        /// screen at 2560 by 1440 and running in the background; those settings are put back afterwards. True when it built.
+        /// A macOS player of one scene, with frame timing stats on, full screen at 2560 by 1440 and running in the
+        /// background; those settings are put back afterwards. True when it built.
         /// </summary>
         internal static bool BuildPlayer(string app, string scenePath = ScenePath)
         {

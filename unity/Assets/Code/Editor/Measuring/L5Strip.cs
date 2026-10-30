@@ -8,11 +8,11 @@ namespace Overstory.EditorTools
 {
     /// <summary>
     /// L5's term arms (1c; reviews/lt1/light/l5-report.md) as few variants as they need. The street and stone shaders
-    /// declare one set of OS_L5_&lt;TERM&gt; keywords, each skipping one term for the harness (PerfRunner: 'bare-&lt;term&gt;',
-    /// 'all-shadow'). Compiled for every combination they would multiply the shaders' variants by ten, about two seconds
-    /// of the M4 each, so a build keeps a term's variants only when its own -perf-passes names that term, and then only
-    /// in look P with the history and the air on, the only ones the harness draws them in. No game or walk build carries
-    /// them; the variants with no OS_L5 keyword are never touched.
+    /// declare one set of OS_L5_&lt;TERM&gt; keywords, each skipping one term for the walked corner's harness ('bare-&lt;term&gt;',
+    /// 'all-shadow'; retired with the corner on 30 October, so the street's runner names none). Compiled for every
+    /// combination they would multiply the shaders' variants by ten, about two seconds of the M4 each, so a build keeps a
+    /// term's variants only when its own -perf-passes names that term, and then only in look P with the history and the
+    /// air on. No build carries them today; the variants with no OS_L5 keyword are never touched.
     /// </summary>
     class L5Strip : IPreprocessShaders
     {

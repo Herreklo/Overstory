@@ -425,6 +425,11 @@ def stair_ids():
     want += [(s, "slot") for T in plan["steps"].values() for s in T["slabs"]]
     want += [(key, "fill") for key in life["fills"]] + [(pid, "piece") for pid in geo["pieces"]]
     want += [(p["fill"], "fill") for p in geo["pieces"].values()]
+    if not os.path.exists(STAIR_SIDECAR):
+        # the gully's export into Unity was retired with the walked corner (30 October): the goldens' ids alone
+        bad = [(text, level, REC.classify(g, text)) for text, level in want if REC.classify(g, text) != level]
+        check(not bad, "%d of %d stair ids are not of their level, e.g. %s" % (len(bad), len(want), bad[:3]))
+        return
     with open(STAIR_SIDECAR) as fh:
         side = json.load(fh)
     for j in side["joints"]:
