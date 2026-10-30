@@ -159,6 +159,17 @@ stylised rock (`study/` 21, 22, 26, 27; Totoro 09 and 16), and our own house in 
 
 ## Rounds
 
+- **r05** stage 3 again, the game mesh in Unity's grey (the coordinator: the planes went soft in Unity;
+  `reviews/lt1/rock/r05/s3-unity-grey.jpg`, rows front, back, side, near; columns Blender's s2 grey, Unity with the
+  bake's normal, Unity bare). `game.py`'s levels shade by their designed planes (kit.json `game.flatDeg`: a face within
+  12° of its plane is that plane's, the rest the chamfers' turn; every edge between them hard: 430 on the near level,
+  half its faces the planes'). `LT1HolmTip -tipJudge 1` (`TIP_JUDGE=1 run/render.sh <round> front,back,side,near N,M
+  lowsun`) draws each part alone in stage 2's clay, sun, sky and views (game.py's `judge.json`), the house away and
+  the grade off. Holds: with its bake the near level matches the high-poly in every view, crisp faces, each its own
+  value under the low sun; bare, the hard planes hold but the chamfers' turn smears on the back. The first run's
+  marks were URP Lit reading the normal on UV0 (metres) where the page is UV1; the judge gives its mesh the page's UV.
+  With its bake the levels' own normals hardly show (hardDeg 10 for 50 moved 0.5% of the tip's pixels), so the soft
+  planes in the tip's stills come from their view and light or the page, not the mesh.
 - **r05** stage 4 again, the boulder's page (Unity, the eye view beside 107, P and Pc in low sun and overcast;
   `reviews/lt1/rock/r05/s4-try1.jpg` to `s4-try3.jpg`, `s4-try3-near.jpg` at full size, `s4-try3-board.jpg`: beside
   s1-b3, 21, 17 and 15). `paint.py` rewritten on the designed faces (kit.json `skin`): a calm base (gneiss L 44) under

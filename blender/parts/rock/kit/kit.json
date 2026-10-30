@@ -349,8 +349,8 @@
     "views": {"front": [0, 2.3], "back": [145, 2.3], "side": [-80, 2.3], "near": [30, 1.15]}
   },
   "game": {
-    "describes": "Stage 3, the game mesh (game.py): the sculpt's form without its fine marks meshed at `voxelM`, cut `underM` under the turf, decimated to `fill` of each level's budget (street.json's by surface); the high-poly's arris (Col R) its smooth form's mean curvature between `arris` (1/m), by differences `curveM` apart; the bake's cage and reach a level (`rays`, metres); the levels' normals the plain corner-angle average, hard over `hardDeg`.",
-    "voxelM": 0.015, "underM": 0.05, "fill": 0.95, "arris": [8.0, 30.0], "curveM": 0.02, "hardDeg": 50,
+    "describes": "Stage 3, the game mesh (game.py): the sculpt's form without its fine marks meshed at `voxelM`, cut `underM` under the turf, decimated to `fill` of each level's budget (street.json's by surface); the high-poly's arris (Col R) its smooth form's mean curvature between `arris` (1/m), by differences `curveM` apart; the bake's cage and reach a level (`rays`, metres); the levels' normals by the designed planes (a face within `flatDeg` of its plane is that plane's, the rest the chamfers' turn; every edge between two planes or a plane and a chamfer hard, so each plane shades flat and the chamfers alone turn).",
+    "voxelM": 0.015, "underM": 0.05, "fill": 0.95, "arris": [8.0, 30.0], "curveM": 0.02, "flatDeg": 12,
     "rays": {"near": [0.04, 0.2], "street": [0.08, 0.3]}
   }
 }

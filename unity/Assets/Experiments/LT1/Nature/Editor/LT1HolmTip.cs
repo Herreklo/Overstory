@@ -216,6 +216,11 @@ namespace Overstory.EditorTools
             RenderSettings.fog = false;
             EditorSceneManager.SaveScene(scene, "Assets/Experiments/LT1/Nature/HolmTip.unity");
             AssetDatabase.SaveAssets();
+            if (Arg("-tipJudge") == "1")
+            {
+                Judge(builds, B, only, ways, outDir, gm, sun, cam, profile, adjust);
+                return;
+            }
 
             // the street's street stop as it is; its eye view taken back to the first part (kit.json beside.eye)
             var views = new List<View>();
@@ -305,6 +310,100 @@ namespace Overstory.EditorTools
                 long page = tex.Where(t => !t.name.StartsWith("paint-")).Sum(Bytes), shared = tex.Where(t => t.name.StartsWith("paint-")).Sum(Bytes);
                 Debug.Log($"[LT1HolmTip] cost {b.name}: {tris}; {Get<Array>(b.paint, "mats").Length} materials; page {page / 1048576.0:F1} MB " +
                           $"({string.Join(", ", tex.Where(t => !t.name.StartsWith("paint-")).Select(t => $"{t.name} {t.width} {t.graphicsFormat}"))}), strokes {shared / 1048576.0:F1} MB");
+            }
+        }
+
+        [Serializable] class JudgeView { public string name; public float[] pos, target, toSun; public float fov; }
+        [Serializable] class JudgeRec { public JudgeView[] views; public float rock, rough, skyE, sunE; public float[] ground, sky, sunRGB; }
+
+        /// <summary>
+        /// -tipJudge 1: each part alone in stage 2's grey (game.py's judge.json: sculpt.py's clay, sun, sky and views in
+        /// the levels' frame), its near level as the game draws it, with its baked normal (way N) or bare (way M), the
+        /// house away and the style's grade off: the game mesh's planes judged beside the high-poly's stills in the same
+        /// light. Writes judge-&lt;part&gt;-&lt;view&gt;-&lt;way&gt;.png.
+        /// </summary>
+        static void Judge(List<Build> builds, Beside B, string[] only, string[] ways, string outDir, Material gm, Light sun,
+                          Camera cam, VolumeProfile profile, ColorAdjustments adjust)
+        {
+            builds[0].root.SetActive(false);
+            foreach (var c in profile.components)
+                c.active = c is Tonemapping || c is ColorAdjustments;
+            adjust.postExposure.Override(0f);
+            var rd = AssetDatabase.LoadAssetAtPath<ScriptableRendererData>("Assets/Settings/PC_Renderer.asset");
+            var was = rd.rendererFeatures.ToDictionary(f => f, f => f.isActive);
+            var urp = (UniversalRenderPipelineAsset)GraphicsSettings.currentRenderPipeline;
+            var urpWas = (urp.shadowDistance, urp.shadowCascadeCount, urp.mainLightShadowmapResolution);
+            try
+            {
+                foreach (var f in rd.rendererFeatures)
+                    f.SetActive(f.name.Contains("AmbientOcclusion"));
+                (urp.shadowDistance, urp.shadowCascadeCount, urp.mainLightShadowmapResolution) = (30f, 1, 4096);
+                for (int k = 1; k < builds.Count; k++)
+                {
+                    var b = builds[k];
+                    var J = JsonUtility.FromJson<JudgeRec>(File.ReadAllText(Path.Combine(b.gen, "judge.json")));
+                    var at = V(B.parts[k - 1].at);
+                    foreach (var o in builds.Skip(1))
+                        o.root.SetActive(o == b);
+                    foreach (var kv in b.levels)
+                        kv.Value.SetActive(kv.Key == "near");
+                    // URP's Lit reads its normal on UV0 (metres in the plane); the page is UV1, the same charts moved and
+                    // scaled (never turned), so the imported tangents hold on it
+                    foreach (var mf in b.levels["near"].GetComponentsInChildren<MeshFilter>(true))
+                    {
+                        var m = UnityEngine.Object.Instantiate(mf.sharedMesh);
+                        var page = new List<Vector2>();
+                        m.GetUVs(1, page);
+                        m.SetUVs(0, page);
+                        mf.sharedMesh = m;
+                    }
+                    var mats = ways.ToDictionary(w => w, w =>
+                    {
+                        var m = new Material(Shader.Find("Universal Render Pipeline/Lit"));
+                        m.SetColor("_BaseColor", new Color(J.rock, J.rock, J.rock).gamma);
+                        m.SetFloat("_Smoothness", 1f - J.rough);
+                        if (w == "N")
+                        {
+                            m.SetTexture("_BumpMap", AssetDatabase.LoadAssetAtPath<Texture2D>($"{b.gen}/near-normal.png"));
+                            m.EnableKeyword("_NORMALMAP");
+                        }
+                        AssetDatabase.CreateAsset(m, $"{Dir}/Generated/judge-{b.name}-{w}.mat");
+                        return m;
+                    });
+                    // Cycles' sun is irradiance and its sky radiance; URP's Lambert carries no 1/π, its ambient is radiance
+                    gm.SetColor("_BaseColor", new Color(J.ground[0], J.ground[1], J.ground[2]).gamma);
+                    sun.color = new Color(J.sunRGB[0], J.sunRGB[1], J.sunRGB[2]).gamma;
+                    sun.intensity = J.sunE / Mathf.PI;
+                    sun.shadowStrength = 1f;
+                    var sky = new Color(J.sky[0] * J.skyE, J.sky[1] * J.skyE, J.sky[2] * J.skyE);
+                    RenderSettings.ambientMode = AmbientMode.Trilight;
+                    RenderSettings.ambientSkyColor = sky.gamma;
+                    RenderSettings.ambientEquatorColor = sky.gamma;
+                    cam.backgroundColor = sky.gamma;
+                    foreach (var v in J.views.Where(v => only.Contains(v.name)))
+                    {
+                        var lit = J.sunE / Mathf.PI * v.toSun[2];
+                        RenderSettings.ambientGroundColor = new Color(J.ground[0] * (lit + sky.r), J.ground[1] * (lit + sky.g), J.ground[2] * (lit + sky.b)).gamma;
+                        DynamicGI.UpdateEnvironment();
+                        sun.transform.rotation = Quaternion.LookRotation(-ToUnity(V(v.toSun)), Vector3.up);
+                        cam.transform.SetPositionAndRotation(ToUnity(at + V(v.pos)), Quaternion.LookRotation(ToUnity(V(v.target) - V(v.pos)), Vector3.up));
+                        cam.fieldOfView = v.fov;
+                        foreach (var w in ways)
+                        {
+                            foreach (var r in b.levels["near"].GetComponentsInChildren<MeshRenderer>(true))
+                                r.sharedMaterials = r.sharedMaterials.Select(_ => mats[w]).ToArray();
+                            string file = Path.Combine(outDir, $"judge-{b.name}-{v.name}-{w}.png");
+                            Call("Capture", cam, file);
+                            Debug.Log($"[LT1HolmTip] {file}");
+                        }
+                    }
+                }
+            }
+            finally
+            {
+                foreach (var kv in was)
+                    kv.Key.SetActive(kv.Value);
+                (urp.shadowDistance, urp.shadowCascadeCount, urp.mainLightShadowmapResolution) = urpWas;
             }
         }
 

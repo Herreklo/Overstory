@@ -10,7 +10,8 @@ normal is nearest, projected onto that plane, so a convex mass's chart is one-to
 The city level is laid on the near and street levels' charts as it falls, held inside them.
 
 Writes, as part.py does: house-near.fbx, house-street.fbx, house-city.fbx (`<level>_<material>`, the mass's `material`),
-house.json, and house.blend with the high-poly beside the levels as `high_<material>` (sculpt.py's `<gen>/high.blend`, moved to the turf), carrying what
+house.json, judge.json (stage 2's grey views and light in the levels' frame, for the levels' grey in Unity) and
+house.blend with the high-poly beside the levels as `high_<material>` (sculpt.py's `<gen>/high.blend`, moved to the turf), carrying what
 the bake reads from it: `rest`, `piece` and `Col` (R its arris: the smooth form's mean curvature between `arris`, so the
 page's edges are drawn where the form turns; G the part's seed).
 """
@@ -36,14 +37,29 @@ def evaluated(ob, name):
     return me
 
 
-def even_normals(o, hard):
-    """A baked level's normals: the plain corner-angle average, so a round's turn spreads over its width and the page
-    corrects it smoothly (the house's face-area weighting, made for unbaked chamfers, crowds the turn into the few small
-    triangles of a round, steeper than the page's texels can carry); a turn over `hard` degrees stays a hard edge."""
+def plane_normals(o, planes, flat):
+    """A baked level's normals by its designed planes: a face within `flat` degrees of the plane its normal is nearest
+    is that plane's, the rest are the chamfers' turn; every edge between two planes, or between a plane and a chamfer,
+    is hard, so each plane shades flat as one and the chamfers alone make the turn (the plain corner-angle average
+    within each)."""
     me = o.data
     if "custom_normal" in me.attributes:
         me.attributes.remove(me.attributes["custom_normal"])
-    me.set_sharp_from_angle(angle=np.radians(hard)); me.update()
+    PN = np.array([list(n) for n, key, kind in planes])
+    FN = np.empty(len(me.polygons) * 3); me.polygons.foreach_get("normal", FN); FN = FN.reshape(-1, 3)
+    near = FN @ PN.T; key = near.argmax(1)
+    key = np.where(near.max(1) >= np.cos(np.radians(flat)), key, -1)
+    ls = np.empty(len(me.polygons), int); lt = np.empty(len(me.polygons), int)
+    me.polygons.foreach_get("loop_start", ls); me.polygons.foreach_get("loop_total", lt)
+    le = np.empty(len(me.loops), int); me.loops.foreach_get("edge_index", le)
+    fk = np.empty(len(me.loops), int); fk[np.repeat(ls, lt) + np.concatenate([np.arange(t) for t in lt])] = np.repeat(key, lt)
+    lo = np.full(len(me.edges), 1 << 30); hi = np.full(len(me.edges), -2)
+    np.minimum.at(lo, le, fk); np.maximum.at(hi, le, fk)
+    sharp = (lo != hi) & (hi > -2)
+    at = me.attributes.get("sharp_edge") or me.attributes.new("sharp_edge", "BOOLEAN", "EDGE")
+    at.data.foreach_set("value", sharp)
+    me.update()
+    return int(sharp.sum()), float((key >= 0).mean())
 
 
 def arris(sc, V, lo, hi, h):
@@ -57,6 +73,21 @@ def arris(sc, V, lo, hi, h):
             lap += sc.form(P + e)[0] + sc.form(P - e)[0]
         out[i:i + 100000] = np.clip((0.5 * lap / (h * h) - lo) / (hi - lo), 0.0, 1.0)
     return out
+
+
+def judge(sc, X, sink):
+    """Stage 2's grey stills (sculpt.py's, by mass.py `judge_scene` and `aim`) in the levels' frame, for the game mesh's
+    grey in Unity beside them (LT1HolmTip -tipJudge): each view's camera, target and lens, its sun, the clay, ground and
+    sky."""
+    J = MS.M["judge"]; ms = sc.ms; c = (ms.lo + ms.hi) / 2; c[2] = 0.42 * ms.H - sink
+    size = float(max(ms.hi[0] - ms.lo[0], ms.hi[1] - ms.lo[1])); views = []
+    for name, (off, fit) in MS.K["sculpt"]["views"].items():
+        b, e = np.radians(X["front"] + off), np.radians(J["elev"])
+        sb, se = np.radians(X["front"] + off + J["sunRel"]), np.radians(J["sunEl"])
+        pos = c + fit * size * np.array([np.sin(b) * np.cos(e), np.cos(b) * np.cos(e), np.sin(e)])
+        views.append({"name": name, "pos": pos.tolist(), "target": c.tolist(), "fov": J["fov"],
+                      "toSun": [np.sin(sb) * np.cos(se), np.cos(sb) * np.cos(se), np.sin(se)]})
+    return {"views": views, **{k: J[k] for k in ("rock", "rough", "ground", "sky", "skyE", "sunE", "sunRGB")}}
 
 
 def main():
@@ -120,7 +151,7 @@ def main():
     rects, fill, px, size = charts.fit(P)
     pc = PT.Piece(0, f"rock/{pid}"); seed = HS.unit(HS.h(K["world"], pid, "seed"))
 
-    objs, counts = {}, {}
+    objs, counts, hard = {}, {}, {}
     for lv, faces in levels.items():
         fl = []
         for key, pts, area, whole in faces:
@@ -131,11 +162,12 @@ def main():
             fl.append((pc, G.Face(pts, cuv, key, cuv)))
         o = G.to_object(f"{lv}_{mname}", fl, lambda _pc: Matrix.Identity(4), lambda _pc, w: w, rects, size,
                         lambda _pc, f, w: [0.0, seed, 0.0, 1.0])
-        even_normals(o, GM["hardDeg"]); objs[lv] = o; counts[lv] = G.tris_of(o)
+        hard[lv] = plane_normals(o, planes, GM["flatDeg"]); objs[lv] = o; counts[lv] = G.tris_of(o)
     for me in meshes.values():
         bpy.data.meshes.remove(me)
     over = [lv for lv in budgets if counts[lv] > budgets[lv][1]]
-    print(f"[game] {pid}: triangles {counts}; budgets {budgets} for {surface:.1f} m²; page {size} px at {px} px/m, filled {fill:.2f}")
+    print(f"[game] {pid}: triangles {counts}; budgets {budgets} for {surface:.1f} m²; page {size} px at {px} px/m, filled {fill:.2f}; "
+          f"hard edges and the planes' share of faces {hard}")
     if over:
         raise SystemExit(f"[game] over budget: {', '.join(f'{lv} {counts[lv]} > {budgets[lv][1]}' for lv in over)}")
 
@@ -178,6 +210,7 @@ def main():
         "colour": {"r": "arris (on the high-poly: its form's curvature)", "g": "part seed", "b": "under (none)", "a": "1: no lap"},
     }
     json.dump(meta, open(os.path.join(out, "house.json"), "w"), indent=1)
+    json.dump(judge(sc, X, sink), open(os.path.join(out, "judge.json"), "w"), indent=1)
     print(f"[game] wrote {out}")
 
 
