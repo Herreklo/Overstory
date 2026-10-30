@@ -77,6 +77,18 @@ zonation are (`../README.md`).
   on the ice's edges. The lee's three blocks become distinct: each its own size and tilt, a dark seam between them,
   big low and small high. A long low stoss tail must read from the eye view. Then the ground: the land lowered 2.2 m
   is a flat plain, so no turf meets a flank yet.
+- **State (30 Oct, r02):** the rock as designed signed-distance bodies, silhouette first (the coordinator's brief:
+  step 1 the silhouette, step 2 the body, each looked at before the next, at most three tries each). `body.py`
+  (kit.json `body`): a smooth back from a long section, a plan and a cross power each side; blocks parted along the
+  record's joints (real gaps, `gapM`), each cut by planes and plucked, every cut a rolling-ball round by its kind
+  (ice-worn wide, plucked and joints tight). A splinter check (`spike`, after Øystein's 30 Oct direction: no sharp
+  pointy things) runs before meshing. Run: `Blender -b --factory-startup -P blender/parts/rock/kit/body.py -- --step
+  1|2 --out cache/rock/kit/renders/r02/<r>`. Step 1 holds; step 2 failed its three tries (Rounds, r02), so steps 3
+  (the ground by ref 57) and 4 (the Unity frame) were not started. Kept: step 1's outline, the blocks' layout (stoss
+  and main parted by Jback, the lee split by Jlee and plucked big low, small high), the spike measure, the narrow-band
+  mesher and the near level. Next: a second, medium scale of form at rung 1 (the round varying along each arris by
+  exposure, as data; a few low sheeting steps across the back; a broad swell or two on the crown), or back to r01 r8's
+  faceted making with step 1's outline.
 - **Craft** (a short look, 30 Oct; sources in the session's craft note): Firewatch's rocks were a handful of "rock
   words", each a strong silhouette from every side with flat planes and abstracted inner detail, sunk into the ground;
   edge highlights and a soft occlusion bake carried the rest (Jane Ng, GDC 2015). Big, medium and small: one mass
@@ -88,6 +100,32 @@ zonation are (`../README.md`).
   15 m hero (inferred; no studio figure).
 
 ## Rounds
+
+- **r02** (Blender grey; `reviews/lt1/rock/r02/s1-silhouettes.jpg` and `s1-drawing.jpg` for step 1, `s2-grey.jpg` for
+  step 2: rows g0, g1, g2 neutral, g2 raking; columns eye, 12 m, sea, lee, water; then refs 16, 57, 48, 51 and r01's
+  grey; full size in `cache/rock/kit/renders/r02/s3` and `g0`–`g2`).
+  - Step 1, the silhouette, holds on try 3. One whaleback from the sea and in the water frame, one long bullet from
+    12 m (the 12 m lens widened to 52 degrees, `view12`, as 30 degrees cut the block). Crest 2.90 at 75% along, 11.67 m
+    along and 8.15 m across at the sea. Weak: the plan is a regular capsule at 1.43:1 (aimed at 1.7), the lee's steps are
+    even, and the slabs' corners leave small spurs.
+  - Step 2, the body, fails in three tries.
+    - g0 is a loaf: one full-width lee plane across a smooth, even back is a bread end, and the three slabs read as
+      boxes leaned against it.
+    - g1 is a slipper: a J3 riser facing the land leaves a long sloped toe, and the steep lee is gone.
+    - g2 is a rounded box with cushions, a sofa: a crown on sea-rounded walls is a loaf's section. g2 has two blocks
+      parted by Jback, the lee split by Jlee and plucked big low, small high. Its measures: 0 spikes (least share 0.152
+      against 0.09), 14.95k tris on 172.8 m² at the near level, 10.82 m along and 7.19 m across at the sea, and the lee
+      toe 2.9 m down the ice. It does not keep step 1's outline: 0.6 m narrower on the sea side and 0.9 m shorter at
+      the stoss.
+  - The splinter check first flagged a sliver in the Jlee gap. The notch's sides were written as [315, 84] and
+    [135, 84], which are mirror planes, not the joint's two parallel faces, so they crossed in the gap. Joint sides are
+    now named ("Jlee", "~Jlee").
+  - Why it fails: perfect planes on a smooth analytic back, joined by rounds of one radius, make CAD primitives
+    (loaf, cushion, sofa) whatever the arrangement. In refs 48, 16 and 57, three things read as rock and are missing
+    here: faces planar only in the large, with sheeting and foliation steps across the back; arrises whose round
+    changes along their length by exposure (crisp, broken back, sea-worn), never one fillet; a back of broad swells,
+    never one surface of even curvature.
+  - The grey check is low in contrast (rock 0.32 on ground 0.27, as r01's), so the form reads weaker than it is.
 
 - **r01** (`reviews/lt1/rock/r01/grey.jpg`, Blender grey, r8; rows: neutral, raking, t09, the t13 study; columns eye,
   12 m, sea, lee; then refs 16, 57, 48, 51; every round in `cache/rock/kit/renders/r01/r1`–`r8`). The restart: t13 was
