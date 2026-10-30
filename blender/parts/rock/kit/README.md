@@ -155,6 +155,21 @@ make rock).
   rosettes (the material's stain: `stainDL` -3, tint [4, 115]) on the top's weather side, a few merging pairwise,
   nothing wider than 12 cm. The page is dithered by one 8-bit step (its gentle gradients banded). Try 2 held but for the
   runs; try 3 changes only them (Rounds, r07). Stage 9 (one drawn crack) goes to a fresh session.
+- **State (30 Oct, r08 stage 9, the crack):** `paint.py` draws one crack as 58 draws its big boulder's (kit.json
+  `skin.crack`, `use` 1). It is the frost joint's trace (dip 86 toward 245) down side/5, the biggest side facing the
+  front (bearing 153), at a seeded offset clear of the scars. It starts as a 6 cm tip on the shoulder above (top/6),
+  crosses their arris and fades out at 77% of side/5 (39 of 50 cm). Along it, measured from the planes exactly:
+  - the mouth on the arris is the widest and darkest part (2.2 cm, 28 L), easing over 2 cm to the line;
+  - the line is 1 cm and 22 L, narrowing to half, with a turn of up to 12° every 6–16 cm (never 1.5 cm off the trace);
+  - it breaks up below 55% and fades over its last 30%;
+  - an 8 mm lip, 8 L paler, runs on one side over the upper half;
+  - one branch, 6–10 cm long at 25–40°.
+  It is drawn on those two faces only. The page is 128 px/m, so the line is a texel or so; its edge is softened over
+  2.5 mm (4 mm read as a pencil stroke). Its own stream (`st("crack")`) and keys (`p-crack-break`) leave every
+  other mark as it was. `probe/faces.py` in the coordinator's notes folder (`rock-r08`) maps each designed face into each
+  view. **The street stop sees the boulder from bearing 222**, almost face-on to the fresh face, which is the frost
+  joint's own plane. Every frost-joint trace is on a face 70° or more off its view, so from there the crack is a
+  hairline at most.
 - **Hand-over for stages 7 and 8 (30 Oct, end of r06):**
   - **The ground is a stand-in.** The grass and heath element will make the real one; keep it as it is unless the
     boulder needs it changed. It is the tip's one community (`packs/stavanger-1989/growth.json` habitat `tipTurf`:
@@ -182,7 +197,7 @@ make rock).
     then `TIP_SUN=-10 python3 tools/unity_lock.py run -- bash blender/parts/rock/kit/run/render.sh <round>
     eye,back,street,high,iso P,Pc overcast,lowsun` (about 12 minutes, so run it in the background; `back` is kit.json
     `beside.back`, the far side at eye level, where the fresh face is).
-  - **Where stage 9 starts (one drawn crack).** The coordinator's brief: one drawn crack following a joint, a thin
+  - **Where stage 9 starts (one drawn crack).** Drawn in r08 (State, r08 stage 9); what follows is the brief it began from. The coordinator's brief: one drawn crack following a joint, a thin
     dark line with a slight light lip, never a seam or a knife slit; ref 58's cracks (the big boulder's, running from
     the top over the shoulder) are the bar, Hertervig's (17) the drawing. The rule exists and is off: kit.json
     `skin.crack` (`faces` 0; set 1 or 2) in `paint.py` (the block after the cavities): the `set` joint's trace (the
@@ -257,6 +272,23 @@ make rock).
   15 m hero (inferred; no studio figure).
 
 ## Rounds
+
+- **r08** stage 9, the crack (the coordinator: one thin dark line with a slight light lip along the frost joint across a
+  face; it ends where the planes change or fades out, stays out of the scars, reads from the street stop as a crack and
+  never as a seam, slit or painted line, and is quiet or gone at 12 m and iso; one crack with at most one short branch;
+  `TIP_SUN=-10`). `reviews/lt1/rock/r08/s9-try1-board.jpg`:
+  - top: rows low sun Pc, low sun P, overcast Pc, overcast P; columns 58, 59, 17 and 21, then the eye, the street stop,
+    12 m, iso and the far side;
+  - close-ups, three a row: the eye in overcast P (s8 try 3, try 1, 58's boulders); the eye in low sun Pc (s8 try 3,
+    try 1, the crack at 2× in low sun P); the street stop in low sun Pc at 1:1, then at 3× in overcast P and low sun Pc;
+    12 m in overcast P and iso in low sun Pc and overcast P, at 1:1; the far side (s8 try 3 overcast P, try 1 overcast P,
+    try 1 low sun Pc).
+  - Looks before the board (`r08-s9a` to `r08-s9c`, the eye only): a 3 cm mouth easing over 5 cm read as a dark
+    leaf-shaped gash, its line breaking up from halfway; narrower, with a 2 cm ease, it reads as a crack but as a
+    soft pencil stroke, the lip unseen at 6 L; a crisper edge and the lip at 8 L draw it.
+  - Try 1 (`r08-s9d`): at the eye a crack from the shoulder arris down side/5, its lip faint on the upper half. From the
+    street stop it is a hairline (the face is 71° off its view). It is quiet at 12 m and iso, and unseen from the far
+    side (82° off).
 
 - **r07** stage 8, the page (the coordinator: about three values as 58 paints them, the top lightest with a fine
   stipple of grain and lichen, sides mid, under-planes very dark; a neutral to slightly warm stone, its overcast top
