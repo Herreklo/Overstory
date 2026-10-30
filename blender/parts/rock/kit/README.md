@@ -155,7 +155,7 @@ make rock).
   rosettes (the material's stain: `stainDL` -3, tint [4, 115]) on the top's weather side, a few merging pairwise,
   nothing wider than 12 cm. The page is dithered by one 8-bit step (its gentle gradients banded). Try 2 held but for the
   runs; try 3 changes only them (Rounds, r07). Stage 9 (one drawn crack) goes to a fresh session.
-- **State (30 Oct, r08 stage 9, the crack, try 2):** `paint.py` draws one crack as 58 draws its big boulder's
+- **State (30 Oct, r08 stage 9, the crack, try 2; then stages 10 and 11, below):** `paint.py` draws one crack as 58 draws its big boulder's
   (kit.json `skin.crack`, `use` 1). It is the frost joint's trace (dip 86 toward 245) down side/5, the biggest side
   facing the front (bearing 153), at a seeded offset clear of the scars. It starts as a 2 cm notch on the shoulder above
   (top/6), crosses their arris and ends at 79% of side/5 (40 of 50 cm). Along it, measured from the planes exactly:
@@ -217,7 +217,135 @@ make rock).
     needs only `paint.py` then `render.sh` (`eye,back` about 4 minutes; all five views about 12). The boulder is drawn
     in the street's OS_Finish through `LT1Street`; changes to that shader need the coordinator's approval. The till
     stones are vertex colour in `Nature/RockFoot.shader`, outside the page.
-  - **Stage 8's page, as it stands (keep it):** the values and colour (`colour.gneiss`, `skin.top`, `skin.under`), the
+  - **Why stages 10 and 11 (30 Oct).** The page was accepted against its previous try, not beside 58, and the
+    coordinator found it fails there. Beside 58's large boulder:
+    - our faces are nearly blank, one flat value each;
+    - the top's dabs read as pits;
+    - the lichen and runs hardly register past eye level;
+    - old faces, the fresh face and the breaks wear one smooth skin;
+    - every arris and silhouette segment is ruler-straight, since every face is a true plane;
+    - the three triangular bites on the top's edge read as stamped cut-outs: one size and shape, each alone on a
+      straight edge.
+
+    Øystein, 30 Oct:
+    - "remember to thing about how a rock looks after it breaks. a "break" mark looks different to something that has
+      been filed down over years";
+    - "also look at the sloping (not stright lines) on some of the edges. like in and out";
+    - "Lets really really nail this rock thing".
+
+    The edges' line comes first, because the page bakes onto the final form.
+  - **Where stage 10 starts (the edges' line by age: geometry).**
+    1. **The target first.** Paint over our own boulder render (`r08-s9f`), at eye level and from the street stop, in
+       58's manner:
+       - the edges going in and out;
+       - fresh breaks against worn faces;
+       - the graded faces and the speckled top;
+       - the crack.
+
+       The coordinator judges the paintover before any building, and stages 10 and 11 are judged beside it and 58.
+       Claude paints it in code (VD5). `rock-r08/probe/faces.py` in the coordinator's notes folder projects each
+       designed face and arris into each view, and that places the strokes. A paintover may change forms and surfaces,
+       never a fact. The first code target (LT1, `docs/experiments.md`) read as Minecraft because it painted forms onto
+       boxes. Here the forms exist and only the edges and the skin change, so paint them as 58 does: in value shapes,
+       not texture.
+    2. **What 58 does** (the coordinator, on a crop of the sheet):
+       - On the large boulder, the border between the light top and the front face jogs in and out. The top bites into
+         the side and the side cuts back into the top in small steps, with a notch where the crack meets the edge. The
+         long silhouette segments bow gently outward.
+       - On the small boulder, the lower edge breaks out into a stepped ledge.
+       - On the slanted rock, long thin dark notches entering along the layers serrate the lit top's edges.
+       - It works at two scales: whole edges bow gently, and along breaks the line jogs in steps that follow the layers
+         or joints.
+    3. **Build it** in `sculpt.py` (kit.json `sculpt`) by rules from the mass's record (see the way of shaping, below),
+       never keyed to this boulder's face ids or bearings:
+       - The faces are slightly convex, so arrises and the silhouette bow. `mass.py`'s `bulge` already domes each face
+         by its kind; `Sculpt.form` keeps every plane flat. Carry the bulge into the high-poly, more on worn faces than
+         on the pluck.
+       - Old edges wander softly (a seeded, low offset of each plane along its arris) and stay rounded (the rounds
+         now: 2–4 cm).
+       - Breaks jog in and out in steps along the foliation (dip 35 toward 300) and the frost joint (dip 86 toward
+         245). Each break is a few planar steps whose risers lie on those planes, sized from few big to many small
+         (skewed), never stamped alike. They replace `breaks.fresh`'s equal bites and the foot's.
+       - The crack's mouth gets a small notch at the arris, on the crack's own trace. Move the trace's choice (now in
+         `paint.py`'s crack block) to where both `sculpt.py` and `paint.py` read it.
+       - It stays rigid, with no spikes or slivers (`Sculpt.spikes`, body.py's measure).
+    4. **The board:** the silhouette and arris lines in grey (P, overcast, plus one grey light) at all five views,
+       beside 58's crop, s8 try 3 (`r07-s8j`, `r07-s8h`) and the paintover.
+
+    After a sculpt change, rerun the chain in stage 7's order (above), `bake.py` and `paint.py` included.
+  - **Where stage 11 starts (the page by age),** only after stage 10's board passes.
+    - **Age from the record.** Every surface region carries its exposure age from the record:
+      - the old faces date from when the boulder came to rest;
+      - the frost spall dates from its own fact;
+      - the fresh (pluck) face dates from the frost's fact.
+
+      A break that is not a fact is old and weathers like the faces around it. Today that is the foot break
+      (`breaks.foot`). Only a dated break may look fresh, since anything that reads as history must be a fact.
+
+      The record holds no years yet. `mass.masses.boulder` has `spall` (bearing 125, "a few winters ago") and `says`
+      ("frost broke one fresh face off"), as text, and the fixture has nothing on the boulder. So the first step is to
+      record the ages as dated facts in the mass's record: what, where by its structure, and how many years ago. Agree
+      the form with the coordinator (`docs/facts-contract.md`: whose fact it is). Then `bake.py` writes each texel's
+      age beside `ident`, and `paint.py` and the normal read it.
+    - **One age value drives everything,** as upkeep drives wear in the town:
+      - edge: fresh is crisp, with a few small chips along the arris; old is rounded, 2–4 cm;
+      - grain: fresh is rough and granular, stepped along the foliation, with small scoops, in the near level's normal
+        (from the high-poly); old is smooth with a broad undulation;
+      - value and colour: fresh is paler and cleaner; old carries a greyer patina;
+      - cover: fresh has none; old has speckle, lichen, runs and a dark foot.
+    - **Against 58's large boulder:**
+      - each face graded in value, lighter at its top and darker and cooler toward the foot;
+      - a fine granular speckle on the top, never dots that read as pits (today's dabs, 1.2–3 cm across, do read as
+        pits);
+      - soft brushy streaks down the sides along the runs;
+      - a drybrush light on the arrises;
+      - Firewatch's "smooth surfaces interrupted by jagged edges and detailed divots" (21), where the jagged edges are
+        the fresh breaks; 58's medium and layered rocks show crisp fresh breaks beside worn tops.
+    - **Craft first, briefly:** how fresh fractures in gneiss look against weathered surfaces (colour, grain, lichen
+      coming back over the years), and how stylised studios paint the two.
+    - **The crack** sits on an old face, so it is old, and its age read is settled here. Keep r08 try 2's line. Draw
+      every thin mark the way it is drawn: each texel the mean of its footprint (`skin.crack.samples`), or the mark
+      stair-steps and breaks into dots. Take the crack lip's key light (`skin.crack.lip.light`) from the pack's light,
+      not kit.json, once the pack carries it.
+    - **The test:** a cold reader shown the board says which surface broke recently and which is old, and is right.
+    - **The board:** all five views in both lights, beside 58, s8 try 3 and the paintover.
+  - **After the strict review: the way of shaping** (Øystein, 30 Oct: "should not shape be easier when we have a "way
+    of shaping"?"; "Lets really really nail this rock thing"). The boulder's planes in kit.json (`tops`, `sides`) are
+    laid by eye. That makes them the proof of what good looks like, not the method.
+
+    Every edge jog, bow, fresh or old difference and page mark comes from the mass's record through general rules in
+    `sculpt.py` and `paint.py`, with their values in kit.json. The record gives:
+    - its planes and kinds;
+    - its structure (foliation, joints);
+    - its dated facts (the spall);
+    - its weather side.
+
+    Nothing is keyed to this boulder's face ids or bearings.
+
+    The way:
+    1. The rock's structure gives its planes: the joint sets and foliation, with their orientation and spacing.
+    2. A block is what those planes cut out.
+    3. Its history moves it (rounded if transported), breaks it (frost along a joint, a dated spall) and wears it by
+       exposure age.
+    4. The ground meets it.
+
+    The same steps make a pebble, a boulder, layered slabs, a slanted group all at one dip, a stacked outcrop or a
+    bluff. Only the facts change: scale, geology, history. `mass.py`'s `fracture` and `wear` already do part of this.
+    What is missing is the outer form from facts instead of hand-laid `tops` and `sides`.
+
+    The design principles go into the rule, never left to luck:
+    - few big planes;
+    - sizes from few big to many small, never on a grid;
+    - no spikes;
+    - simple shape, detail in the faces.
+
+    The test:
+    1. The rule shapes the boulder from its facts alone.
+    2. That boulder is judged beside the hand-designed one, which is the floor, and must match it before hand-laying
+       stops.
+    3. The rule then shapes 4–5 other rocks from data alone, with no code change, judged as a family beside 58. A rock
+       that needs code means the rule was not general.
+  - **Stage 8's page, as it stands (keep it until stage 11):** the values and colour (`colour.gneiss`, `skin.top`, `skin.under`), the
     dabs, the rosettes, the runs and the breaks' lip are accepted or in their last try; change none of them for the
     crack. The page is 8-bit (`finishlib.write`): `dl` is dithered by one step before writing (`p-dither`), or gentle
     gradients band. The lichen is the material's stain with a negative `stainDL` (paler); OS_Finish lowers L by
@@ -310,6 +438,9 @@ make rock).
     Try 2 is one continuous line from a 2 cm notch to 79% of the face, smooth at 3×. Its lip shows on the light-far side
     in both lights, and the branch reads at the eye. It is as quiet as try 1 at 12 m and iso, and a line there, not dashes.
     A look at the eye first (`r08-s9e`, lip 10 L, kinks 10°) showed the lip too faint at 1:1.
+  - Then the plan changed (the coordinator, 30 Oct). There is no final board: beside 58 the page fails (Hand-over, why
+    stages 10 and 11), and the hand-over now covers stage 10 (the edges' line by age), stage 11 (the page by age) and
+    the way of shaping that follows the strict review.
 
 - **r07** stage 8, the page (the coordinator: about three values as 58 paints them, the top lightest with a fine
   stipple of grain and lichen, sides mid, under-planes very dark; a neutral to slightly warm stone, its overcast top
