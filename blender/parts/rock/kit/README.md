@@ -155,18 +155,26 @@ make rock).
   rosettes (the material's stain: `stainDL` -3, tint [4, 115]) on the top's weather side, a few merging pairwise,
   nothing wider than 12 cm. The page is dithered by one 8-bit step (its gentle gradients banded). Try 2 held but for the
   runs; try 3 changes only them (Rounds, r07). Stage 9 (one drawn crack) goes to a fresh session.
-- **State (30 Oct, r08 stage 9, the crack):** `paint.py` draws one crack as 58 draws its big boulder's (kit.json
-  `skin.crack`, `use` 1). It is the frost joint's trace (dip 86 toward 245) down side/5, the biggest side facing the
-  front (bearing 153), at a seeded offset clear of the scars. It starts as a 6 cm tip on the shoulder above (top/6),
-  crosses their arris and fades out at 77% of side/5 (39 of 50 cm). Along it, measured from the planes exactly:
-  - the mouth on the arris is the widest and darkest part (2.2 cm, 28 L), easing over 2 cm to the line;
-  - the line is 1 cm and 22 L, narrowing to half, with a turn of up to 12° every 6–16 cm (never 1.5 cm off the trace);
-  - it breaks up below 55% and fades over its last 30%;
-  - an 8 mm lip, 8 L paler, runs on one side over the upper half;
-  - one branch, 6–10 cm long at 25–40°.
-  It is drawn on those two faces only. The page is 128 px/m, so the line is a texel or so; its edge is softened over
-  2.5 mm (4 mm read as a pencil stroke). Its own stream (`st("crack")`) and keys (`p-crack-break`) leave every
-  other mark as it was. `probe/faces.py` in the coordinator's notes folder (`rock-r08`) maps each designed face into each
+- **State (30 Oct, r08 stage 9, the crack, try 2):** `paint.py` draws one crack as 58 draws its big boulder's
+  (kit.json `skin.crack`, `use` 1). It is the frost joint's trace (dip 86 toward 245) down side/5, the biggest side
+  facing the front (bearing 153), at a seeded offset clear of the scars. It starts as a 2 cm notch on the shoulder above
+  (top/6), crosses their arris and ends at 79% of side/5 (40 of 50 cm). Along it, measured from the planes exactly:
+  - the mouth on the arris is the widest and darkest part (2 cm, 28 L), easing over 2.5 cm to the line;
+  - one continuous line, 1.1 cm and 22 L, tapering to 55% of its width and 70% of its value, with a turn of up to 14°
+    every 6–14 cm (never 1.6 cm off the trace);
+  - it breaks up and fades only in its last fifth;
+  - a 7 mm lip, 14 L paler, on the side away from the key light (`lip.light`, bearing 200 at 30°, as both the street's
+    suns stand), where 58 draws its lit far wall, over 85% of it;
+  - one branch, 8–12 cm long at 30–45°, 0.8 of the line's width and 0.95 of its value.
+  It is drawn on those two faces only. The page is 128 px/m, so the line is about a texel and a half. Each texel is the
+  mean of 5×5 points over its footprint (a texel square in its face's plane), so the stroke is smooth when magnified
+  and keeps its weight down the mips. Try 1's hard edge, softened over 2.5 mm, was stair-stepped. Its own stream
+  (`st("crack")`) and keys (`p-crack-break`) leave every other mark as it was.
+  **The far side's dotted line** along the lower right arris is not the rock. The tufts cast no shadows
+  (`GrowthTufts.cs`), and the dots stand in the same place in overcast and low sun. They are grass blades thinner than a
+  pixel, in front of the lower face, aliasing into dots as the blades against the ground do. A fix would be in the
+  tufts' shader, outside the rock's paths.
+  `probe/faces.py` in the coordinator's notes folder (`rock-r08`) maps each designed face into each
   view. **The street stop sees the boulder from bearing 222**, almost face-on to the fresh face, which is the frost
   joint's own plane. Every frost-joint trace is on a face 70° or more off its view, so from there the crack is a
   hairline at most.
@@ -289,6 +297,19 @@ make rock).
   - Try 1 (`r08-s9d`): at the eye a crack from the shoulder arris down side/5, its lip faint on the upper half. From the
     street stop it is a hairline (the face is 71° off its view). It is quiet at 12 m and iso, and unseen from the far
     side (82° off).
+  - Try 1 not accepted (the coordinator): it read as a short scratch, dark over only the top 40%, the tail too faint,
+    the stroke stair-stepped and the lip only at the top. Keep side/5 and the street stop's hairline; redraw the line.
+  - Try 2 (`r08-s9f`), `reviews/lt1/rock/r08/s9-try2-board.jpg`. The top is as try 1's. The close-ups, three a row:
+    - the eye in overcast P, then in low sun Pc, at 1:1;
+    - the crack at 3× in low sun P, then overcast P;
+    - each of those as s8 try 3, try 1 and try 2;
+    - then 58's boulders, the street stop at 3× and at 1:1 (low sun Pc);
+    - 12 m and iso at 1:1;
+    - the far side in overcast P and low sun Pc, and its lower right arris at 3×.
+
+    Try 2 is one continuous line from a 2 cm notch to 79% of the face, smooth at 3×. Its lip shows on the light-far side
+    in both lights, and the branch reads at the eye. It is as quiet as try 1 at 12 m and iso, and a line there, not dashes.
+    A look at the eye first (`r08-s9e`, lip 10 L, kinks 10°) showed the lip too faint at 1:1.
 
 - **r07** stage 8, the page (the coordinator: about three values as 58 paints them, the top lightest with a fine
   stipple of grain and lichen, sides mid, under-planes very dark; a neutral to slightly warm stone, its overcast top

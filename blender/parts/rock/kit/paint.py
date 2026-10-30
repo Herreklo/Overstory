@@ -15,8 +15,9 @@ the top's soft painted dabs in loose drifts, thickest toward the weather and fad
 weathering runs shed down the old sides from the top's edges; the contact shade (finish.json `contact`); its cavities
 dark by the cavity bake; its breaks (sculpt.py's) a little paler, clean of lichen and dabs, their outline and the
 fresh face's crisp arrises caught in a thin light lip where the stone is open; one crack drawn as 58 draws its big
-boulder's, a joint's trace from a short tip over an arris and down a side, widest at its mouth on the arris, then a
-thin dark line with a faint lip that breaks up and fades out before the face ends, with one short branch; the lichen as
+boulder's, a joint's trace from a short notch over an arris and down a side, widest at its mouth on the arris, then one
+continuous thin dark line with a narrow pale lip on the side away from the light, tapering, breaking up and fading out
+in its last fifth, with one short branch, each texel its footprint's mean so the stroke is smooth; the lichen as
 its material's stain, a population of small pale rosettes on the top's weather side, a few merging; and the ground's
 junction dark (`junction.ground`). No peel and no lap, and its runs are in the page's value, not the street's washes.
 Its value and hue are its material's (the part's own, kit.json `materials` and `colour`).
@@ -194,14 +195,16 @@ def main():
 
     # the crack (`crack`), as 58 draws its big boulder's: the `set` joint's trace down the biggest side facing the
     # mass's front (facing it at least `front`), at a seeded offset of up to `offset` of the face's span from its middle
-    # and clear of the scars; from a short tip on the face above (`tipM`, at most `tipShare` of that face's span along
+    # and clear of the scars; from a short notch on the face above (`tipM`, at most `tipShare` of that face's span along
     # the trace) over their arris and down the side, gone at `reach` of the side's span. Widest and darkest at its mouth
-    # on the arris, where the frost opened it (`mouth`: width, L), easing over `mouthM` to a thin line (`line`: width, L)
-    # that narrows to `tail` of it, fades over its last `fade` and breaks up below `broken`[0] of its length (kept where
-    # a noise over `breakM` passes from [1] to [2]); straight runs with small kinks (`kink`: a turn of up to `deg` every
-    # `stepM`, never `mostM` off the trace); a light lip `lip` wide on one side over its upper `lip` reach; one short
-    # branch at most (`branch`: the chance, where along it, its turn, length and its width and L shares). Drawn on those
-    # two faces only and `clearM` out of the scars, so it ends where the planes change or fades out first
+    # on the arris, where the frost opened it (`mouth`: width, L), easing over `mouthM` to one continuous line (`line`:
+    # width, L) that tapers to `tail` of them (width, L) and breaks up and fades only over its last `fade` (from
+    # `broken`[0] of its length, kept where a noise over `breakM` passes from [1] to [2]); straight runs with small kinks
+    # (`kink`: a turn of up to `deg` every `stepM`, never `mostM` off the trace); a pale lip `lip`.w wide (`lip`.L) on the
+    # side away from the key light (`lip`.light: bearing, elevation), where 58 draws its lit far wall, over `lip`.reach
+    # of it; one short branch at most (`branch`: the chance, where along it, its turn, length and its width and L
+    # shares). Drawn on those two faces only and `clearM` out of the scars, each texel the mean of `samples` squared
+    # points over its footprint, so the stroke is smooth at any size and holds its weight down the mips
     Cr = Sk["crack"]; ncr = 0
     jn = next(j for j in X["structure"]["joints"] if j["name"] == Cr["set"]); nj = MS_unit(jn["dipToward"], jn["dip"])
     front = MS_unit(X["front"])
@@ -219,18 +222,18 @@ def main():
         up_ = rock & (np.abs(sj) < 0.02) & (face != A) & (np.linalg.norm(pg.p - hd, axis=-1) < 0.08)
         U = int(np.bincount(face[up_]).argmax()) if up_.any() else -1
         U = U if U >= 0 and N[U][2] > N[A][2] else -1
+        mU = rock & (face == U) if U >= 0 else np.zeros(pg.shape, bool); zt = float(pg.z[band].max())
 
         def trace(i, away):  # the joint's trace on face i, a unit vector pointing away from face `away`
             t_ = np.cross(nj, N[i]); t_ /= np.linalg.norm(t_)
             return t_ if t_ @ N[away] < 0 else -t_
-        # along the crack: metres from the mouth on the arris, down A positive and up U negative, by the planes exactly
-        s = np.full(pg.shape, -1e9)
-        if U >= 0:
-            s[mA] = (D[U] - pg.p[mA] @ N[U]) / -(trace(A, U) @ N[U])
-            mU = rock & (face == U); s[mU] = -(D[A] - pg.p[mU] @ N[A]) / -(trace(U, A) @ N[A])
-            spanU = float(np.max(-s[mU & (np.abs(sj) < 0.02)], initial=0.0))
-        else:
-            s[mA] = float(pg.z[band].max()) - pg.z[mA]; spanU = 0.0
+
+        def along(q, onA):  # metres from the mouth on the arris, down A positive and up U negative, by the planes exactly
+            if U < 0:
+                return zt - q[..., 2]
+            return np.where(onA, (D[U] - q @ N[U]) / -(trace(A, U) @ N[U]), -(D[A] - q @ N[A]) / -(trace(U, A) @ N[A]))
+        s = np.where(mA | mU, along(pg.p, mA), -1e9)
+        spanU = float(np.max(-s[mU & (np.abs(sj) < 0.02)], initial=0.0))
         tip = min(rc.uniform(*Cr["tipM"]), Cr["tipShare"] * spanU)
         spanA = float(np.max(s[mA & (np.abs(sj) < 0.02)])); length = rc.uniform(*Cr["reach"]) * spanA
         # its kinks: straight runs, each turned a little, about the trace
@@ -238,33 +241,44 @@ def main():
         while ks[-1] < length:
             st_ = rc.uniform(*Kk["stepM"])
             ks.append(ks[-1] + st_); kv.append(float(np.clip(kv[-1] + st_ * np.tan(np.radians(rc.uniform(-Kk["deg"], Kk["deg"]))), -Kk["mostM"], Kk["mostM"])))
-        d = sj - np.interp(s, ks, kv)
-        on = clear_ & (mA | ((face == U) if U >= 0 else False)) & (s > -tip) & (s < length)
-        u = np.clip(s / max(length, 1e-6), 0.0, 1.0)
-        (wm, Lm), (wl, Ll), soft = Cr["mouth"], Cr["line"], Cr["soft"]
-        ease = np.exp(-np.abs(s) / Cr["mouthM"])
-        hw = np.where(s < 0, wm / 2 * np.clip(1.0 + s / max(tip, 1e-6), 0.0, 1.0) ** 0.7,
-                      (wl / 2 + (wm - wl) / 2 * ease) * (1.0 - (1.0 - Cr["tail"]) * u))
-        Bn = Cr["broken"]
-        kept = np.where(u < Bn[0], 1.0, FL.smoothstep(Bn[1], Bn[2], FL.noise2(np.clip(s, 0.0, None) / Cr["breakM"], np.zeros(pg.shape), key(meta, "p-crack-break"))))
-        dark = (Ll + (Lm - Ll) * ease) * (1.0 - FL.smoothstep(1.0 - Cr["fade"], 1.0, u)) * kept
-        line = field(hw - np.abs(d), soft) * (hw > 0)
-        side = 1.0 if rc.random() < 0.5 else -1.0; lw, lL, lr = Cr["lip"]
-        lipc = field(lw / 2 - np.abs(side * d - hw - lw / 2), soft) * (1.0 - FL.smoothstep(lr * 0.6, lr, u)) * (s >= 0) * kept
+        (wm, Lm), (wl, Ll), (tw, tL), Bn, Lp, Bb = Cr["mouth"], Cr["line"], Cr["tail"], Cr["broken"], Cr["lip"], Cr["branch"]
+        # the lip on the side away from the key light, its light across A
+        sun = MS_unit(Lp["light"][0], 90.0 - Lp["light"][1]); side = -1.0 if (sun - (sun @ N[A]) * N[A]) @ nj > 0 else 1.0
         # the branch: leaving the line partway down, turned off it toward one side, narrowing to a point
-        Bb = Cr["branch"]; nb = 0
-        if rc.random() < Bb["share"]:
+        nb = int(rc.random() < Bb["share"])
+        if nb:
             sb = rc.uniform(*Bb["at"]) * length; vb = float(np.interp(sb, ks, kv)); th = np.radians(rc.uniform(*Bb["deg"]))
             lb = rc.uniform(*Bb["lenM"]); sg = 1.0 if rc.random() < 0.5 else -1.0
-            ru, rv = s - sb, sj - vb; a_ = np.clip(ru * np.cos(th) + rv * sg * np.sin(th), 0.0, lb)
-            db = np.hypot(ru - a_ * np.cos(th), rv - a_ * sg * np.sin(th)); hb = Bb["width"] * wl / 2 * np.sqrt(1.0 - a_ / lb)
-            bl = field(hb - db, soft) * (hb > 0) * mA
-            dark = np.where(bl > line, Ll * Bb["L"] * (1.0 - FL.smoothstep(0.5, 1.0, a_ / lb)), dark); line = np.maximum(line, bl); nb = 1
-        crack = np.where(on, line * dark, 0.0)
-        dl += -crack + np.where(on & (line < 0.5), lL * lipc, 0.0)
-        ncr = int((crack > 2).sum())
+        kb = key(meta, "p-crack-break")
+
+        def ink(q, onA):  # the crack's value at points q on face A (onA) or U: the line dark, its lip pale, the branch
+            sj_ = q @ nj - x; s_ = along(q, onA); d_ = sj_ - np.interp(s_, ks, kv); u_ = np.clip(s_ / length, 0.0, 1.0)
+            ease = np.exp(-np.abs(s_) / Cr["mouthM"])
+            hw = np.where(s_ < 0, wm / 2 * np.clip(1.0 + s_ / max(tip, 1e-6), 0.0, 1.0) ** 0.7,
+                          (wl / 2 + (wm - wl) / 2 * ease) * (1.0 - (1.0 - tw) * u_))
+            kept = np.where(u_ < Bn[0], 1.0, FL.smoothstep(Bn[1], Bn[2], FL.noise2(np.clip(s_, 0.0, None) / Cr["breakM"], np.zeros(s_.shape), kb)))
+            dark = (np.where(s_ < 0, Lm, (Ll + (Lm - Ll) * ease) * (1.0 - (1.0 - tL) * u_))
+                    * (1.0 - FL.smoothstep(1.0 - Cr["fade"], 1.0, u_)) * kept)
+            inl = (np.abs(d_) < hw) & (s_ > -tip) & (s_ < length)
+            lip = (side * d_ >= hw) & (side * d_ < hw + Lp["w"]) & (s_ > 0) & (s_ < length)
+            v = np.where(inl, -dark, np.where(lip, Lp["L"] * (1.0 - FL.smoothstep(Lp["reach"] - 0.15, Lp["reach"], u_)) * kept, 0.0))
+            if nb:
+                ru, rv = s_ - sb, sj_ - vb; a_ = np.clip(ru * np.cos(th) + rv * sg * np.sin(th), 0.0, lb)
+                db = np.hypot(ru - a_ * np.cos(th), rv - a_ * sg * np.sin(th)); hb = Bb["width"] * wl / 2 * np.sqrt(1.0 - a_ / lb)
+                v = np.where(onA & (db < hb), np.minimum(v, -Ll * Bb["L"] * (1.0 - FL.smoothstep(0.5, 1.0, a_ / lb))), v)
+            return v
+        # each texel near it the mean of its footprint's points, a texel square in its own face's plane
+        near = clear_ & (mA | mU) & (np.abs(sj) < Kk["mostM"] + wm + (Bb["lenM"][1] if nb else 0.0)) & (s > -tip - wm) & (s < length + wm)
+        q0, onA = pg.p[near], mA[near]
+        e1 = np.where(onA[:, None], trace(A, U if U >= 0 else A), trace(U, A) if U >= 0 else 0.0)
+        e2 = np.cross(np.where(onA[:, None], N[A], N[U] if U >= 0 else N[A]), e1)
+        n_, tx = Cr["samples"], 1.0 / meta["page"]["pxPerM"]; o = ((np.arange(n_) + 0.5) / n_ - 0.5) * tx
+        val = np.mean([ink(q0 + oa * e1 + ob * e2, onA) for oa in o for ob in o], axis=0)
+        crack = np.zeros(pg.shape); crack[near] = val
+        dl += crack
+        ncr = int((crack < -2).sum())
         print(f"[paint] crack: {keys[A]} from {keys[U] if U >= 0 else '-'}, offset {x:.3f}, tip {tip:.3f} of {spanU:.3f}, "
-              f"length {length:.3f} of {spanA:.3f}, {len(ks) - 1} runs, branch {nb}, {ncr} texels")
+              f"length {length:.3f} of {spanA:.3f}, {len(ks) - 1} runs, lip side {side:+.0f}, branch {nb}, {ncr} texels")
 
     # the three values as 58 paints them, the light's first: the top a little paler again for its speckle's ground, the
     # under-planes darker (`under`: no rain washes them, the turf's damp and splash reach them)
