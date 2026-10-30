@@ -59,12 +59,53 @@ zonation are (`../README.md`).
   record's 205, its crest at the record's back, its skirt trimmed and its open rim sunk under the low water; t09 only as
   the red outline. Run: `Blender -b --factory-startup -P blender/parts/rock/kit/scan.py -- --glb <scan> --out
   cache/rock/kit/renders/t13/<r> --subject scan|t09` (t09 also writes the masks), then `outline.py -- <dir> scan
-  <views> neutral,raking`. Rung 1 holds in Blender grey (Rounds); next t14, the ground contact, then the Unity port.
-  Credit wherever credits are listed: "Llyn Idwal by megalitharchive, licensed under Creative Commons Attribution".
+  <views> neutral,raking`. A study of a real roche moutonnée's proportions; never in the game (Øystein, 30 Oct:
+  nothing downloaded is placed). `scan.py` stays as the study tool; nothing in the kit's build path calls it. t14 was
+  not started. Credit wherever credits are listed: "Llyn Idwal by megalitharchive, licensed under Creative Commons
+  Attribution".
+- **State (30 Oct, r01):** the rock designed as a sculptor would, the houses' way (Øystein, 30 Oct: "It has to look
+  truly ours"; a stylised world). `design.py` (kit.json `design`; no scan): the record's facts are constraints (crest
+  2.9 m over t09's, the ice's 205, t09's seaward waterline, 107 on its stand), not the generator. The back is section
+  lines out from the crest, each segment one plane; the record's sets give the steep planes (J1 the flank walls at the
+  foot, J2 and J3 the plucked risers, foliation the sea flank's steps); J1 and J2 are real gaps; the lee is three
+  blocks; every piece is a convex intersection of its planes (booleans for the stepped pieces), its arrises a bevel
+  weighted by the planes' kinds (ice widest, joints and risers crisp). Ground, turf, tufts and stones as t14's trial,
+  the soil read by each face's facing (the record reads the bands by the outcrop's side, which leaves this whole block
+  in the storm wash: flagged to the coordinator). Run: `Blender -b --factory-startup -P blender/parts/rock/kit/design.py
+  -- --out cache/rock/kit/renders/r01/<r>`. Rung 1 does not hold yet (Rounds, r01). Next: keep r8's making (planes and
+  a weighted bevel, 4k tris) and redraw. The back gets fewer, bigger facets whose rounds show, with the bevel unclamped
+  on the ice's edges. The lee's three blocks become distinct: each its own size and tilt, a dark seam between them,
+  big low and small high. A long low stoss tail must read from the eye view. Then the ground: the land lowered 2.2 m
+  is a flat plain, so no turf meets a flank yet.
+- **Craft** (a short look, 30 Oct; sources in the session's craft note): Firewatch's rocks were a handful of "rock
+  words", each a strong silhouette from every side with flat planes and abstracted inner detail, sunk into the ground;
+  edge highlights and a soft occlusion bake carried the rest (Jane Ng, GDC 2015). Big, medium and small: one mass
+  carries the silhouette, with a few secondary forms and wide resting areas; the tertiary detail goes in paint and
+  normals only. Breaks are cut in the same direction but on a different plane, so the block reads broken and shifted;
+  chips come last, only where wear acts. Value comes from baked curvature and occlusion (light edges, dark joints),
+  growth from N·up times cavity, and the ground's colour at the base. Never use Voronoi faceting (crystal), smoothing
+  all over (potato), tri-planar noise as detail or evenly spread chips. Budget: about 4–10k triangles at LOD0 for a
+  15 m hero (inferred; no studio figure).
 
 ## Rounds
 
-- **t13** (`reviews/lt1/rock/t13/grey.jpg`, Blender grey; rows: neutral with t09's outline red, raking, t09 from the
+- **r01** (`reviews/lt1/rock/r01/grey.jpg`, Blender grey, r8; rows: neutral, raking, t09, the t13 study; columns eye,
+  12 m, sea, lee; then refs 16, 57, 48, 51; every round in `cache/rock/kit/renders/r01/r1`–`r8`). The restart: t13 was
+  stopped before it was built on, by Øystein's direction (30 Oct: nothing downloaded is placed; the form designed, not
+  simulated). Rung 1 does not hold. r1–r2, section rings in every direction with a bevel: an igloo, a geodesic dome
+  (radial facets have no logic); the bevel threw stray vertices until the boolean's slivers were cleaned. r3, planes on
+  the record's sets: rounded boxes, a table top, a J1 wall the length of the sea side, the lee three loaves in a row.
+  r4, tilted and asymmetric planes, crisp: a low-poly gem, and the lee concentric terraces, because its blocks took the
+  back's lowered flanks. r5–r7, each piece's planes joined by a smooth max on a voxel remesh: soap, cushions, then
+  dough. It rounds by value, so planes meeting at a gentle angle melt across metres and no flat survives, and the
+  voxels serrate the crisp edges. r8, section-line facets (a faceted barrel, not a ridge or a table) with the weighted
+  bevel, the lee crisp: the first that reads as rock, but a generic low-poly boulder, not yet ours. The bevel clamps
+  on short edges, so the arrises are nearly crisp; from the eye view there is no long stoss; the lee's blocks merge
+  into one faceted face; the ground is a flat plain round it, its turf far off. 4.2k tris, crest 2.90, 11.4 m along
+  and 8.7 m across at the sea, its seaward waterline 4.05 m out (t09's).
+
+- **t13** (a study of a real roche moutonnée's proportions; never in the game (Øystein, 30 Oct: nothing downloaded is
+  placed). `reviews/lt1/rock/t13/grey.jpg`, Blender grey; rows: neutral with t09's outline red, raking, t09 from the
   same cameras; columns eye, 12 m, sea, lee, the water frame with 107; then refs 16, 57, 48, 51). Rung 1 holds, with
   faults. One whole scan, rigid, scale 0.602: crest 2.90 m (exact), length along the ice 14.9 m at t09's foot (-0.8 m;
   "about 14", +7%) and 9.0 m at the sea (the whaleback's hull 9.5). Ice exact (205); the scan's main plane family

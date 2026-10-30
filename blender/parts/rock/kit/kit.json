@@ -187,5 +187,67 @@
     "landViews": ["water"],
     "fov12": 40,
     "landRGB": [0.16, 0.16, 0.16]
+  },
+  "design": {
+    "describes": "r01 (design.py): the shore block designed as a sculptor would, the houses' way (Øystein, 30 October: 'It has to look truly ours'; a stylised world, nothing downloaded in it). The record's facts constrain it (the crest at shore.lone.back over `crestAt`, t09's; the ice's way, fixture rock.ice; the seaward waterline t09's; 107 where it stands); they do not generate it. The ice's back is drawn as section lines (`sections`: for each facing, a bearing, the profile out from the crest as [metres out, height] points, each segment one plane of kind `ice`, named section.index; `*` in a piece is all of them, `*s` one section's), long and gentle up the stoss, arched across; the other planes are drawn by eye, each [facing bearing, slope from level, through [out along the ice, out landward, height] from the crest, kind], the steep ones on the record's sets (fixture rock: J1 the flanks' walls, J2 and J3 the plucked lee's risers, foliation the sea flank's steps). A piece of the `back` is the planes it lists, the rock where each is below; `J<` is the near side of joint J (kind `joint`, its fifth value the gap) and `J>` the far side, so a joint is a real gap; `~p` the far side of p, 4 cm into it, so blocks meet. A piece with `steps` is cut by the foliation's planes (`face`, `slope`, through each `at`), the rock beyond each standing `dropM` lower on the `drops` planes only: broad soft-edged ridges running diagonally down the sea flank. `lee`: the plucked lee in a few big blocks, each its tread, its riser (named by the block's id for the next), its `sides` and the back's planes it lists, `p@dz` lowered dz, its arrises `soft` times the back's. Arrises softened by `bevel`: an edge's width `widthM` times the geometric mean of its two faces' weights by kind (the ice's planes worn most, the foliation's steps less, the joints and plucked risers crispest; a lee block's `soft` scales them), none at the foot (`footM`); the whole moved up or down so its crest is `crestM`, the record's. `stones`: a few loose blocks at the foot by eye ([out along the ice, out landward], size m), each a convex hull of `stonePoints` seeded points, its edges softened `stoneBevel` of its size. The ground: the record's landform lowered `lowerM` within `lowerNearM` of the crest, back by `lowerFarM` (the outcrop round the block is not built: a stand-in for its frame). Soil and turf from the record's shore bands (tip.grey bands: storm top MHWS + surgeM + runupM e, soil soilM over it) read by each face's own facing (fixture sea.exposure between its four sides): the record reads them by the outcrop's side, which puts this block's whole height in the storm wash. The turf a mat `turfM` thick, its edge rolled over in a quarter round `lipM` wide, the till under its edge a cut bank `bankSteep` times its slope for `bankM`. Tufts are the pack's (tufts.py, unchanged): a fringe along the lip, the heath habitat on the mat within `heathWithinM`, and in the joints' gaps and along the foot of each lee riser above the soil line. Views: t09's lone views (`fov12` for 12 m), the lee view `lee` [bearing, out, up] from the 12 m view's target, the tip's water frame.",
+    "crestAt": [-15.91, 23.91],
+    "footM": -0.8,
+    "sections": {
+      "stoss": [25, [[0, 2.9], [2.2, 2.78], [6.0, 1.85], [9.0, 0.4], [10.5, -0.88]]],
+      "landStoss": [70, [[0, 2.9], [1.8, 2.75], [3.8, 1.95], [5.4, 0.6], [6.0, -0.5]]],
+      "land": [115, [[0, 2.9], [1.4, 2.8], [2.8, 2.25], [4.0, 1.2], [4.9, -0.3]]],
+      "landLee": [160, [[0, 2.9], [1.3, 2.75], [2.8, 1.95], [3.8, 0.6], [4.4, -0.6]]],
+      "seaLee": [250, [[0, 2.9], [1.2, 2.78], [2.6, 2.0], [3.5, 0.5], [4.0, -0.8]]],
+      "sea": [295, [[0, 2.9], [1.3, 2.82], [2.6, 2.3], [3.7, 1.2], [4.4, -0.2], [4.6, -0.89]]],
+      "seaStoss": [340, [[0, 2.9], [1.6, 2.78], [3.4, 2.0], [4.9, 0.6], [5.5, -0.6]]]
+    },
+    "planes": {
+      "seaWall": [315, 84, [0, -4.0, 0.4], "joint"],
+      "landWall": [135, 84, [0, 4.2, 0.8], "joint"],
+      "lip": [225, 80, [0.8, 0, 2.6], "pluck"],
+      "lipLand": [172, 86, [0.5, 2.0, 2.4], "pluck"],
+      "J1": [135, 84, [0, 0.6, 2.0], "joint", 0.16],
+      "J2": [45, 80, [-4.8, 0, 1.5], "joint", 0.14]
+    },
+    "back": [
+      {"id": "stoss", "planes": ["*", "J2>"], "steps": true},
+      {"id": "sea", "planes": ["*", "seaWall", "lip", "J2<", "J1<"], "steps": true},
+      {"id": "land", "planes": ["*", "landWall", "lip", "lipLand", "J2<", "J1>"]}
+    ],
+    "steps": {
+      "face": 250,
+      "slope": 68,
+      "drops": ["sea", "seaStoss", "seaLee", "seaWall"],
+      "list": [{"at": [-0.8, -1.8, 2.5], "dropM": 0.25}, {"at": [-3.4, -2.6, 1.8], "dropM": 0.3}, {"at": [-6.2, -2.9, 1.0], "dropM": 0.28}]
+    },
+    "lee": [
+      {"id": "L1", "planes": ["~lip", "*sea@0.5", "*seaLee@0.5", "*land@0.5", "*landLee@0.5"], "tread": [200, 12, [1.5, -0.2, 2.2], "step"], "riser": [225, 76, [2.4, 0, 1.55], "pluck"], "sides": [[172, 84, [1.6, 1.8, 1.6], "pluck"]], "soft": 0.3},
+      {"id": "L2", "planes": ["~L1", "*sea@0.9", "*seaLee@0.9"], "tread": [215, 16, [3.0, -0.8, 1.35], "step"], "riser": [235, 70, [3.7, -0.5, 0.7], "pluck"], "sides": [[135, 84, [3.0, 0.9, 1.0], "joint"], [250, 68, [3.4, -2.4, 0.8], "step"]], "soft": 0.3},
+      {"id": "L3", "planes": ["~L1", "*land@1.4", "*landLee@1.4"], "tread": [195, 14, [3.6, 1.8, 0.9], "step"], "riser": [205, 66, [4.6, 1.8, 0.2], "pluck"], "sides": [[315, 84, [4.2, 1.1, 0.5], "joint"], [135, 84, [4.2, 3.1, 0.5], "joint"]], "soft": 0.3}
+    ],
+    "bevel": {"widthM": 0.7, "segments": 4, "weights": {"ice": 1.0, "step": 0.5, "joint": 0.2, "pluck": 0.12}},
+    "crestM": 2.9,
+    "stones": {
+      "list": [[[5.6, -1.2], 0.42], [[5.2, 0.9], 0.28], [[6.1, 1.6], 0.2], [[4.6, -2.9], 0.34], [[-2.0, -4.4], 0.5], [[0.6, -4.3], 0.3], [[-5.5, -3.9], 0.26], [[3.4, 3.9], 0.24]],
+      "stonePoints": 14,
+      "stoneBevel": 0.22,
+      "sink": 0.3
+    },
+    "lowerM": 2.2,
+    "lowerNearM": 12,
+    "lowerFarM": 30,
+    "turfM": 0.16,
+    "lipM": 0.32,
+    "bankSteep": 3.0,
+    "bankM": 0.6,
+    "cellM": 0.08,
+    "nearHalfM": 17,
+    "farCellM": 0.5,
+    "heathWithinM": 16,
+    "fringe": {"species": "heathGrass", "stepM": 0.22, "leanOut": [20, 45]},
+    "joint": {"species": {"heathGrass": 3, "heather": 1}, "stepM": 0.45, "share": 0.7},
+    "fov12": 30,
+    "leeView": [215, 7.5, 3.0],
+    "rgb": {"rock": 0.32, "turf": 0.2, "till": 0.27, "grass": 0.24}
   }
 }
