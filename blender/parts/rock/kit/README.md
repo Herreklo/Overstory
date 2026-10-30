@@ -110,7 +110,10 @@ stylised rock (`study/` 21, 22, 26, 27; Totoro 09 and 16), and our own house in 
   `gneiss`), then `run/render.sh <round>` (stage 5's Unity view beside 107). Fails its three tries (Rounds, r04).
   Next (r05, the coordinator's verdict: s1-b3 the best stage, stage 2 made it a cushion under a sheet): stage 2
   again with every plane flat, two-size chamfers by the weather, V-groove cracks on the joints, planar chips; each
-  stage judged by the coordinator beside s1-b3 and the board before the next.
+  stage judged by the coordinator beside s1-b3 and the board before the next. r05: stage 2 passes (the coordinator:
+  the planes and chamfers; the geometric cracks taken out, kit.json `sculpt.crack.count` 0), stage 3 holds, stage 4
+  (the page: calm base, broad variation, cavities, one drawn crack, lichen colonies) fails its three tries on the
+  lichen and the crack (Rounds, r05). Waits for the coordinator's word before stage 5.
 - **State (30 Oct, r03):** the outcrop as a few rigid masses, ref 57's LOW ROCKY OUTCROP the only bar (the
   coordinator's brief: step 1 the masses alone beside 57's boulders, step 2 arranged into the outcrop, step 3 the
   outcrop beside 57's; one change a try, at most three a step). `mass.py` (kit.json `mass`): each mass a convex
@@ -156,6 +159,28 @@ stylised rock (`study/` 21, 22, 26, 27; Totoro 09 and 16), and our own house in 
 
 ## Rounds
 
+- **r05** stage 4 again, the boulder's page (Unity, the eye view beside 107, P and Pc in low sun and overcast;
+  `reviews/lt1/rock/r05/s4-try1.jpg` to `s4-try3.jpg`, `s4-try3-near.jpg` at full size, `s4-try3-board.jpg`: beside
+  s1-b3, 21, 17 and 15). `paint.py` rewritten on the designed faces (kit.json `skin`): a calm base (gneiss L 44) under
+  one broad soft variation (±3), the foot's damp, contact and cavities darker; one crack drawn as Hertervig's, the frost
+  joint's trace across the biggest front face and onto the next face up, a dark line with a lighter lip, ending where
+  the planes change; lichen as the stain (stainDL 9, a dark crust as 15's) in colonies on the three biggest old faces
+  looking up or to the sea.
+  - Try 1: the crack draws as a level rail across the front (the joint's normal took 90 − dip for its slope); the
+    lichen is one blob with satellites and reads as a spill.
+  - Try 2, the joint's slope its dip, each colony 25–50 round spots skewed small, thickest at its middle: the crack
+    crosses the front face top to turf and reads as a seam on a cushion, even in width, its lit lip a welt; the top
+    colony, seen grazing from the eye, reads as scribbles; the broad variation barely shows; the base is calm and the
+    planes take their values from the light.
+  - Try 3, 9–16 spots of 2.5–7.5 cm radius: the colony reads as paw prints, a few equal rounds in a row; the crack is
+    unchanged. Hard level normals (`game.hardDeg` 10 for 50) were tried beside it and changed nothing in Unity (0.5%
+    of pixels, all lichen: the bake carries the planes), so it stays 50. Fails. Holds: the base, the light's planes,
+    no camouflage. Next: a colony as 15's, many spots of strongly skewed size merging into one irregular blot that
+    frays into small dots at its rim, over a faint wash, hugging the face's upper edge rather than its middle; the
+    crack shorter and straighter along a plane change, darkest at its middle and tapering to its ends, its lip fainter.
+- **r05** stage 3, the bake (Blender grey: high-poly, near and street with their normals, near without): holds on try
+  1 with stage 2's form, the cracks taken out (kit.json `sculpt.crack.count` 0, the coordinator's word: no geometric
+  cracks on this boulder; one or two drawn in the page instead). Near 871, street 279, city 27 triangles for 9.6 m².
 - **r05** stage 2 again, the boulder's high-poly as flat planes (Blender grey; `reviews/lt1/rock/r05/s2-try1.jpg` to
   `s2-try3.jpg`: front, back, side, near; `s2-try3-board.jpg`: beside s1-b3, 21, 17 and 15). `sculpt.py`'s own form:
   the designed planes cut in turn, each arris a flat chamfer (kit.json `sculpt.chamfer`: 0.1 m where its bisector
