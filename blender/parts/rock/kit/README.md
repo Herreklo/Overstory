@@ -256,6 +256,29 @@ make rock).
        - On the slanted rock, long thin dark notches entering along the layers serrate the lit top's edges.
        - It works at two scales: whole edges bow gently, and along breaks the line jogs in steps that follow the layers
          or joints.
+    **The target (r09, try 3, `reviews/lt1/rock/r09/s10-target-board-try3.jpg`, with try 2 and 58 beside it).** Painted
+    in code over the `r08-s9f` stills by `review/paintover.py` (passes from `review/passes.py` at 3x supersampling in a
+    window round the boulder, `review/geom.py` writes the sculpt's planes; run with `--ss 3 --box x0,y0,x1,y1`). The
+    language Øystein asked for ("not smudges ... how crisp") and the numbers that read at eye level, which the geometry
+    and page must reach:
+      - planes flat and crisp: each face one value from our light, meeting its neighbour in a hard edge; old arrises
+        0.5–1 cm, a pale lip of about 6 mm on the lit side only, broken in runs, none on the silhouette;
+      - long edges bowed out by 3.5–4% of their length (worn 0.04, facet 0.035, pluck 0.012 of the arris);
+      - old top/side borders walk in and out in steps of 1.2–3.5 cm, 15–50 cm long, risers on the foliation;
+      - breaks (spall, the fresh ones, the foot) step 5–15 cm deep in few big stages 10–40 cm long, with a few small
+        steps of 2–4 cm beside them; the band they cut lies on the face turned to the eye, paler than both faces;
+        a fresh arris gets a few small chips; the old geometry's equal triangular bites are gone;
+      - the crack's notch 16 x 7.5 cm on the top/side border, on the crack's own trace;
+      - the fresh face paler and neutral (never greener), finer and more contrasty grain than the top's; its
+        foliation as soft, uneven, broken bands and one long and one short step, not quite parallel, broken and
+        fading mid-face, dark only where the riser turns from the light; from the street stop a hint of banding and
+        one step at most;
+      - no foot ledge (the grass hides it).
+    Still short in the painting: the breaks' bands read a little as flat grey patches (they want the fresh grain and
+    a darker riser at each step end in the geometry's own light). The colour (58's use: warm lit, mauve in shade,
+    plum only in the occlusion) is the light's and the material's in the build, never a value-to-hue ramp in the
+    albedo; the painter's ramp shows the goal only.
+
     3. **Build it** in `sculpt.py` (kit.json `sculpt`) by rules from the mass's record (see the way of shaping, below),
        never keyed to this boulder's face ids or bearings:
        - The faces are slightly convex, so arrises and the silhouette bow. `mass.py`'s `bulge` already domes each face
