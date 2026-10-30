@@ -224,32 +224,47 @@ def main():
     dl -= np.where(rock, Un["L"] * FL.smoothstep(Un["up"][0], Un["up"][1], -up), 0.0)
     dl += dab
 
-    # the weathering runs (`runs`), 58's: the water the top sheds runs down the old sides and leaves soft streaks a
-    # little darker, each from the side's upper edge down, tapering to a point (finish paint.py's `run`, the street's
-    # own, measured around the stone instead of along a wall): `perM` runs a metre of a side's width (at least one),
-    # each `widthM` wide and faded to half at `lenM` (never past the face's height), wandering `wanderM`, at most `L`
-    # darker; on faces looking up less than `up`[1] (full under `up`[0]) and not under past `under`, never on the
-    # fresh face or in a scar
+    # the weathering runs (`runs`), 58's brushwork: the water the top sheds runs down the old sides in many narrow,
+    # broken streaks a little darker, never one broad band. Where it sheds (`perM` places a metre of a side's width, at
+    # least one) a few gather (`streaks`, within `spreadM` of the place, at least `gapM` apart), with gaps between
+    # the places; each starts `startM` under the side's upper edge, under the top's lip, fading in over `headM` (a cut
+    # head or break made a short piece a dark square), `widthM` wide, faded to half
+    # at `lenM` (never past the face's height), broken along its length (`broken`: kept where a noise over `breakM`
+    # passes from [0] to [1]), wandering `wanderM` (finish paint.py's `run`, the street's own, measured around the
+    # stone instead of along a wall), at most `L` darker; on faces looking up less than `up`[1] (full under `up`[0]) and
+    # not under past `under`, never on the fresh face or in a scar
     Ru = Sk["runs"]; rr = st("runs"); o = pg.p[rock].mean(0)
     th = np.arctan2(pg.p[..., 1] - o[1], pg.p[..., 0] - o[0]); Rm = float(np.median(np.hypot(*(pg.p[rock][:, :2] - o[:2]).T)))
     wrap = lambda a: (a + np.pi) % (2.0 * np.pi) - np.pi  # noqa: E731
     sidew = (1.0 - FL.smoothstep(Ru["up"][0], Ru["up"][1], up)) * (1.0 - FL.smoothstep(Ru["under"][0], Ru["under"][1], -up))
-    runs = np.zeros(pg.shape); nr = 0
+    runs = np.zeros(pg.shape); nr = 0; zero_ = np.zeros(pg.shape)
     for i in range(len(N)):
         m = rock & (face == i)
         if i in fresh or not (-Ru["under"][1] < N[i][2] < Ru["up"][1]) or not m.any():
             continue
         t0 = float(np.arctan2(np.sin(th[m]).mean(), np.cos(th[m]).mean())); along = wrap(th - t0) * Rm
-        lo, hi = np.percentile(along[m], [3, 97])
-        for n_ in range(max(1, int(round((hi - lo) * Ru["perM"] * rr.uniform(0.6, 1.4))))):
-            w = rr.uniform(*Ru["widthM"]); x0 = rr.uniform(lo + 0.6 * w, hi - 0.6 * w) if hi - lo > 1.2 * w else (lo + hi) / 2
-            head = m & (np.abs(along - x0) < w / 2)
-            if not head.any():
-                continue
-            z0 = float(pg.z[head].max()); length = min(rr.uniform(*Ru["lenM"]), 0.5 * (z0 - float(pg.z[m].min())))
-            g_ = types.SimpleNamespace(z=pg.z, along=along, shape=pg.shape)
-            runs = np.maximum(runs, FP.run(g_, key(meta, "p-runs", i, n_), x0, z0, length, w / 2, Ru["wanderM"], rock & (scar < 0)))
-            nr += 1
+        lo, hi = np.percentile(along[m], [3, 97]); zlo = float(pg.z[m].min())
+        g_ = types.SimpleNamespace(z=pg.z, along=along, shape=pg.shape)
+        for c_ in range(max(1, int(round((hi - lo) * Ru["perM"] * rr.uniform(0.6, 1.4))))):
+            cx = rr.uniform(lo + Ru["spreadM"], hi - Ru["spreadM"]) if hi - lo > 2 * Ru["spreadM"] else (lo + hi) / 2
+            xs = []
+            for n_ in range(rr.randint(*Ru["streaks"])):
+                w = rr.uniform(*Ru["widthM"])
+                for _ in range(20):
+                    x0 = cx + Ru["spreadM"] * rr.uniform(-1.0, 1.0)
+                    if all(abs(x0 - xk) >= (w + wk) / 2 + Ru["gapM"] for xk, wk in xs):
+                        break
+                else:
+                    continue
+                head = m & (np.abs(along - x0) < w / 2)
+                if not head.any():
+                    continue
+                xs.append((x0, w)); k_ = key(meta, "p-runs", i, c_, n_)
+                z0 = float(pg.z[head].max()) - rr.uniform(*Ru["startM"]); length = min(rr.uniform(*Ru["lenM"]), 0.5 * (z0 - zlo))
+                brk = (FL.smoothstep(Ru["broken"][0], Ru["broken"][1], FL.noise2(np.clip(z0 - pg.z, 0.0, None) / Ru["breakM"], zero_, HS.h(k_, "b")))
+                       * FL.smoothstep(0.0, Ru["headM"], z0 - pg.z))
+                runs = np.maximum(runs, brk * FP.run(g_, k_, x0, z0, length, w / 2, Ru["wanderM"], rock & (scar < 0)))
+                nr += 1
     dl -= Ru["L"] * runs * sidew
 
     # the breaks (`breaks`): the scar a little paler, the weathered skin knocked off it, and its outline caught by the

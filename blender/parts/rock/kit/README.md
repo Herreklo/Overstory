@@ -146,13 +146,15 @@ make rock).
   top sits 15 L under 107's lit boards. Weathering holds 58's three values: the top 7 L paler (`skin.top`), the
   under-planes 7 darker (`skin.under`), the sides between. The top's stipple (`skin.dabs`) is soft painted dabs, 2–6 cm,
   irregular and overlapping at ±2.5 L, one at most to each 4 cm cell of a seeded lattice, densest on the top and toward
-  the weather and fading down over the shoulders. Weathering runs (`skin.runs`) shed down the old sides from the top's
-  edges, broad and soft, through the street's own `run` (finish paint.py) measured around the stone. The breaks
+  the weather and fading down over the shoulders. Weathering runs (`skin.runs`) shed down the old sides from under the
+  top's lips as many narrow, broken streaks, 2–4 cm wide, at most 5 L, a few together where the water sheds and gaps
+  elsewhere, through the street's own `run` (finish paint.py) measured around the stone; they barely read at eye level,
+  as 58's brushwork. The breaks
   (`skin.breaks`, from `Sculpt(...).breaks`' planes) are 3 L paler, clean of dabs and lichen, with a 9 mm lit lip times
   the occlusion, as are the fresh face's arrises. The lichen (`skin.lichen`) is a population of small pale grey-green
   rosettes (the material's stain: `stainDL` -3, tint [4, 115]) on the top's weather side, a few merging pairwise,
-  nothing wider than 12 cm. The page is dithered by one 8-bit step (its gentle gradients banded). Try 2 waits for the
-  coordinator's word (Rounds, r07); stage 9 (one drawn crack) follows.
+  nothing wider than 12 cm. The page is dithered by one 8-bit step (its gentle gradients banded). Try 2 held but for the
+  runs; try 3 changes only them (Rounds, r07). Stage 9 (one drawn crack) goes to a fresh session.
 - **Hand-over for stages 7 and 8 (30 Oct, end of r06):**
   - **The ground is a stand-in.** The grass and heath element will make the real one; keep it as it is unless the
     boulder needs it changed. It is the tip's one community (`packs/stavanger-1989/growth.json` habitat `tipTurf`:
@@ -180,13 +182,28 @@ make rock).
     then `TIP_SUN=-10 python3 tools/unity_lock.py run -- bash blender/parts/rock/kit/run/render.sh <round>
     eye,back,street,high,iso P,Pc overcast,lowsun` (about 12 minutes, so run it in the background; `back` is kit.json
     `beside.back`, the far side at eye level, where the fresh face is).
-  - **Where stage 9 starts (one drawn crack).** `paint.py` with kit.json `skin.crack` (`faces` 0 now: set it to 1 or 2)
-    and `materials.gneiss`, `colour.gneiss`. A page-only change needs only `paint.py` then `render.sh` (eye and back
-    about 4 minutes). The crack follows the boulder's `frost` joint (`mass.masses` `boulder` `structure.joints`): a
-    thin dark line with a slight light lip, never a seam or knife slit. Keep it out of the scars (`scar` in paint.py).
-    The boulder is drawn in the street's OS_Finish through `LT1Street`; changes to that shader need the coordinator's
-    approval. The till stones are vertex colour in `Nature/RockFoot.shader`, outside the page. A board of seven rows
-    at full size crashes `sheet.py` (memory): shrink the stills to 1280 wide first.
+  - **Where stage 9 starts (one drawn crack).** The coordinator's brief: one drawn crack following a joint, a thin
+    dark line with a slight light lip, never a seam or a knife slit; ref 58's cracks (the big boulder's, running from
+    the top over the shoulder) are the bar, Hertervig's (17) the drawing. The rule exists and is off: kit.json
+    `skin.crack` (`faces` 0; set 1 or 2) in `paint.py` (the block after the cavities): the `set` joint's trace (the
+    boulder's `frost` joint, `mass.masses` `boulder` `structure.joints`: dip 86 toward 245) across the biggest side
+    facing the front (`front`), at a seeded offset, carried onto the face its upper end runs into, drawn on those
+    faces only so it ends where the planes change; `widthM`, `lipM`, `L`, `lipL` and `wander` set the line. Untested
+    on the boulder since r05: check it ends at plane changes rather than mid-face, stays out of the scars (mask it by
+    `scar < 0`, as the dabs and lichen are), and reads from the street stop without becoming a slit. A page-only change
+    needs only `paint.py` then `render.sh` (`eye,back` about 4 minutes; all five views about 12). The boulder is drawn
+    in the street's OS_Finish through `LT1Street`; changes to that shader need the coordinator's approval. The till
+    stones are vertex colour in `Nature/RockFoot.shader`, outside the page.
+  - **Stage 8's page, as it stands (keep it):** the values and colour (`colour.gneiss`, `skin.top`, `skin.under`), the
+    dabs, the rosettes, the runs and the breaks' lip are accepted or in their last try; change none of them for the
+    crack. The page is 8-bit (`finishlib.write`): `dl` is dithered by one step before writing (`p-dither`), or gentle
+    gradients band. The lichen is the material's stain with a negative `stainDL` (paler); OS_Finish lowers L by
+    `_StainDL`, so a negative value lightens. Every mark is keyed by `key(meta, "p-…")`; a new mark takes its own key so
+    the others do not move. `HS.Stream` draws are ordered: drawing more in one stream (`st("lichen")`, `st("runs")`)
+    reshuffles everything after it in that stream.
+  - **Board tools:** a board of seven rows at full size crashes `sheet.py` (memory: it holds float64 tiles): shrink
+    the stills to 1280 wide first (`sips -Z 1280`). Close-ups are `sips -c 620 1150 --cropOffset 790 670` (eye) and
+    `-c 560 900 --cropOffset 860 900` (far side); the 12 m close-up `-c 560 840 --cropOffset 400 860`.
   - **Boards:** ref 58 first, then 59, 17 and 21 (`docs/references/stone/study/58-rock-family-concept-sheet.webp`,
     `study/59-stylised-sculpted-rocks.png`, `17-hertervig-boulders-1856.jpg`, `study/21-firewatch-rock-formations.jpg`);
     stills shrunk with `sips`, laid out by `blender/parts/rock/sheet.py -- OUT.png 5 IMG...`, the board at 2560 wide.
@@ -248,7 +265,7 @@ make rock).
   rows low sun Pc, low sun P, overcast Pc, overcast P across eye, far side, street stop, 12 m and iso, right column
   58, 59, 17, 21; bottom try 1 beside try 2: the eye close-ups in low sun Pc and overcast Pc, the 12 m close-ups in
   overcast, the far side in overcast, then try 2's far side in low sun, both eye close-ups in overcast P, and try 2's
-  12 m close-up in low sun; `TIP_SUN=-10`). Try 2 waits for the coordinator's word.
+  12 m close-up in low sun; `TIP_SUN=-10`). Try 3 (the runs only) waits for the coordinator's word.
   - Looks before the board (`r07-s8a` to `r07-s8d`): a coarse dense speckle on every face read as terrazzo; the
     pigment at C 2.5 made the stone sandy tan in low sun (C 13–19); fixed by a 1 cm clustered stipple on the top
     only and the pigment at C 1.2. Lichen as clusters of round spots read as polka dots, then merged; two crusts side
@@ -264,7 +281,14 @@ make rock).
     faint contour banding was the 8-bit page (0.63 L a step) on the broad variation; a seeded one-step dither ends
     it. Lichen as 29 rosettes 2–8 cm across, 4 merged pairs. Runs at 4–6 L were not seen; at 10 L, 10 cm and more
     wide and half faded at 30–50 cm they read as soft streaks. Low sun: 107's lit boards L 82–85, the stone's lit
-    top 68 and its lit face 66.
+    top 68 and its lit face 66. The coordinator: the stipple, the lichen and the low sun hold; the runs fail (one
+    broad dark band on the front read as a smear or a shadow stripe).
+  - Try 3 (`r07-s8i`, `r07-s8j`, `s8-try3-board.jpg`: try 2 beside try 3, columns try 2 P, try 3 P, try 2 Pc, try 3
+    Pc; rows the eye in overcast, the eye in low sun, the far side in overcast P and low sun Pc; ref 58 last): only the
+    runs, as many narrow broken streaks, 2–4 cm wide, 5 L, 3–6 together where the water sheds, at least 12 mm apart,
+    starting 1–3 cm under the top's lip, of uneven length, broken over 9 cm. A cut head and short breaks made one piece
+    a dark square on the far side (`r07-s8i`); the head fades in over 3 cm and the pieces run longer (`r07-s8j`). 20
+    streaks; they barely read at eye level, as asked.
 
 - **r07** stage 7, the edges (the coordinator: shape simple, most edges broad and soft from transport, a few chipped
   breaks of varied width as 59's where a break makes sense, one fresh corner and the foot; Firewatch's jag as accent
