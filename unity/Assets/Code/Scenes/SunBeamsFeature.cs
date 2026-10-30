@@ -100,7 +100,7 @@ namespace Overstory.Scenes
             }
             if (material == null)
                 return;
-            // the stage's beams (StreetStage: strength 0 in every light without shafts, and no sun after sunset)
+            // the stage's beams (strength 0 in every light without shafts, and no sun after sunset)
             var beams = Shader.GetGlobalVector(BeamsPass.SunBeamsId);
             var sun = Shader.GetGlobalVector(BeamsPass.SunColId);
             if (beams.x <= 0f || sun.x + sun.y + sun.z <= 0.001f)

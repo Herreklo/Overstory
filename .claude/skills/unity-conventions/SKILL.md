@@ -15,10 +15,10 @@ The architecture behind these conventions is `docs/building-blocks.md`; it holds
 
 ## Using Unity
 
-Several sessions and agents share `unity/` on one Mac, and Unity opens a project only once. Every command that runs Unity on `unity/`, or writes into it, goes through `tools/unity_lock.py`, which runs them one at a time. It waits while another job holds the lock or a Unity outside it has the project open (Øystein's editor too), and prints who every 30 s. `tools/perf.sh` and `tools/golden.sh` take it themselves in timing mode (`--timing`: they also wait for any Blender batch process or player of ours, and write the machine's background load as `machine.json` beside their results), `tools/motion.sh` plainly, and the Blender exports for their install step only. Wait on the lock, never on a `pgrep -f` pattern, which matches the waiting shell itself.
+Several sessions and agents share `unity/` on one Mac, and Unity opens a project only once. Every command that runs Unity on `unity/`, or writes into it, goes through `tools/unity_lock.py`, which runs them one at a time. It waits while another job holds the lock or a Unity outside it has the project open (Øystein's editor too), and prints who every 30 s. `tools/perf.sh` and `tools/golden.sh` take it themselves in timing mode (`--timing`: they also wait for any Blender batch process or player of ours, and write the machine's background load as `machine.json` beside their results), and the Blender exports for their install step only. Wait on the lock, never on a `pgrep -f` pattern, which matches the waiting shell itself.
 
-    UNITY_LOCK_OWNER="gully port" zsh tools/perf.sh -perf-only street
-    python3 tools/unity_lock.py run --owner "gully port" --purpose "the hash vectors" -- \
+    UNITY_LOCK_OWNER="the street" zsh tools/perf.sh -norun
+    python3 tools/unity_lock.py run --owner "the street" --purpose "the hash vectors" -- \
         /Applications/Unity/Hub/Editor/6000.6.6f1/Unity.app/Contents/MacOS/Unity -batchmode -quit \
         -projectPath $PWD/unity -executeMethod Overstory.EditorTools.HashVectors.Check -logFile -
 

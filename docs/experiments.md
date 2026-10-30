@@ -14,6 +14,12 @@ Results that surprised us or might be new, newest first. Each says what the evid
 
 ---
 
+## LT1: the walked corner and the first street retired (30 October)
+
+**Decided by Øystein (30 October):** "yes" to retiring the walked corner, with the frame-rate and golden checks pointed at the street in the same step. Gone from the tree, and kept in git history before `f7b8b52`: the gully's stairs and stone, the heart, the playable walk (1g), the time study, the light record, the Unity side of the stone and the trees with the birch FBX, their tools and reviews (`reviews/lt1/port-handover.md` among them), and the first street of 19 and 20 October (`LT1.unity`, the harbour row, the kit, its lights, views and builders). The paused kinds keep their Blender side and the stone's hash manifests. The harness now stages the street as its own test does (`StreetStaging`: `Street.unity` at its judging views in overcast and low sun): `tools/golden.sh` renders it and says when there is no baseline, which only Øystein accepts, and `tools/perf.sh -norun` composes and builds its player (house 109 today); no timed run yet.
+
+---
+
 ## LT1, port step 2b: the gully's stone redrawn (22 October)
 
 **Status:** craft studied, design and "done" written, pre-mortem held and answered. Paused on 22 October for the week's usage, with R1 and R2a's face patches at a first version, neither passed, and each report naming its next round (`r1/report.md`, `r2a/patches.md`). The local photographs moved every wall top to whole courses: no raked copings, kneelers or knee stones. R0 waits for the Unity lock (`reviews/lt1/port/2b/design.md`, `premortem.md`). The pre-mortem changed the surface model to shared face patches, added a shading A/B on today's mesh (R0b), a look-dev rung on three stones (R2a), an eye-level target and an L1 that casts the shadows, cut the drawn marks to three, fixed the batter, and re-sized the build from 2.5 to 4 Opus-days.

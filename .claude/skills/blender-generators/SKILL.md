@@ -15,7 +15,7 @@ Parts are Python generators, not hand-modelled `.blend` files: a part is its cod
 - **A stone is rigid** (BB3 in `docs/building-blocks.md`). A fitted course chooses and cuts its stones, then places each by moving and turning it. Never bend, shear or stretch a rigid piece's mesh to make it fit: no per-vertex height from a curve, no `z += x * k`. Only parts that really flex deform, from their rest position.
 - The generator chooses, fits and places them, and invents no geometry outside a judged part or function.
 - Each family has a definition (`schemas/part.schema.json`): `made_as`, era, sizes, fits, pivot, sockets, removal mark, levels, roles, lifecycle.
-- A part joins the corner once it holds beside its reference (make, look, fix: the `game-lab-workflow` skill) and its budgets pass. Øystein judges it at the milestone, after one strict review.
+- A part joins the street once it holds beside its reference (make, look, fix: the `game-lab-workflow` skill) and its budgets pass. Øystein judges it at the milestone, after one strict review.
 - **Repetition:** libraries only for what was mass-produced (bricks, roof tiles, factory windows and doors, catalogue houses, setts), each varied by placement, wear and history. Everything made by hand for one place is its own.
 
 ## Kinds and stages
@@ -23,7 +23,7 @@ Parts are Python generators, not hand-modelled `.blend` files: a part is its cod
 A kind is data in `kinds/<kind>.json` at the repo root (`schemas/kind.schema.json`), run by one runner through seven stages, each with a hashed output: facts, plan, life, geometry, bake, export and cache, checks.
 - Facts come from fixture records, never from code: no `FLIGHTS` dicts, no hard-coded `YEAR`.
 - Python is the source until a kind is ported to C#, then the frozen parity reference. Golden fixtures per stage: `fixtures/golden/<kind>/<stage>.json`.
-- Today `stone.py` and `wall.py` are one monolith each; the gully port's step 2 splits them into `kinds/stair.json` and `kinds/wall.json`.
+- Today `stone.py` and `wall.py` are one monolith each; the gully port that was to split them into `kinds/stair.json` and `kinds/wall.json` was retired on 30 October.
 
 ## Seeds
 

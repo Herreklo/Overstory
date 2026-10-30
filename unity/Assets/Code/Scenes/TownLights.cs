@@ -16,6 +16,9 @@ namespace Overstory.Scenes
     [ExecuteAlways]
     public class TownLights : MonoBehaviour
     {
+        /// <summary>Street metres (x along, y back, z up) to Unity's (y up).</summary>
+        static Vector3 ToUnity(float x, float y, float z) => new Vector3(x, z, y);
+
         [Tooltip("lights.json: { lamps: [ { x, y, z, kind } ] } in street metres.")]
         public TextAsset source;
 
@@ -74,7 +77,7 @@ namespace Overstory.Scenes
             {
                 var go = new GameObject($"lamp ({l.kind})") { hideFlags = HideFlags.DontSave };
                 go.transform.SetParent(transform, false);
-                go.transform.position = StreetSpace.ToUnity(l.x, l.y, l.z);
+                go.transform.position = ToUnity(l.x, l.y, l.z);
                 var light = go.AddComponent<Light>();
                 light.type = LightType.Point;
                 if (l.kind == "shop")
@@ -83,7 +86,7 @@ namespace Overstory.Scenes
                     light.type = LightType.Spot;
                     light.spotAngle = 120f;
                     light.innerSpotAngle = 60f;
-                    var out_ = StreetSpace.ToUnity(l.dx, l.dy, 0f).normalized;
+                    var out_ = ToUnity(l.dx, l.dy, 0f).normalized;
                     go.transform.rotation = Quaternion.LookRotation((out_ - Vector3.up * 0.9f).normalized, Vector3.up);
                 }
                 light.shadows = LightShadows.None;

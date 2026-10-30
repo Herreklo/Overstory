@@ -6,7 +6,7 @@ The order of the work and the current week's plan in detail. `NOW.md` holds the 
 
 - **PL1** Steps 1–10: stone, buildings, ground, years, people, city, nature, interiors, weather, region. Evidence: The order. Reopens: a proposal.
 - **P2** Done: holds its range (variety, levels, three lights, 1-spp motion, town count, budget), walked in 1g, at the bar, Øystein accepts. Else its rung: number, grey form, sheet, levels, motion, count, three lights, accepted; never "close". Evidence: plan review. Reopens: unnameable ranges.
-- **P1, P9, P3, P7** Milestones: walked in 1g, timed whole. The first walk is the baseline, clay counting as scope; an unscoped rise stops the step; hold or fall until under 16.7 ms at every judging view in three lights. 1.5× a box forces a re-plan; no dates past the next milestone, re-estimated at the stone or 13 November. Evidence: the same. Reopens: walk over 1.5×, 16.6% noise, re-plans from boxes.
+- **P1, P9, P3, P7** Milestones: walked in 1g, timed whole (1g was retired on 30 October; the frame-rate check now runs on the street). The first walk is the baseline, clay counting as scope; an unscoped rise stops the step; hold or fall until under 16.7 ms at every judging view in three lights. 1.5× a box forces a re-plan; no dates past the next milestone, re-estimated at the stone or 13 November. Evidence: the same. Reopens: walk over 1.5×, 16.6% noise, re-plans from boxes.
 - **P8** Port steps 4 and 5: done when a House A front, a birch chunk and a 64 m land chunk with water validate unbuilt; formats change only where a record fails, no field without one. Evidence: `foundation-needs.md`. Reopens: none named.
 - **PL2–4** 1g's time: stroke by stroke, the toggle as baseline, the photograph close only. Evidence: 1g. Reopens: more readers.
 
@@ -50,7 +50,7 @@ The play, the brief's phase 2, is the milestone after the walk. It is boxed and 
 - One stair with its walls is about 816,000 triangles.
 - The repository is 2.2 GB of git history. Unity holds 407 MB of art, 373 MB of it in 222 FBX files, 272 MB of that stone.
 
-**Frame time today** (the walk's whole scene, 22 October, W7; `reviews/perf/2026-10-22/playable/w7/`; `docs/measuring.md`, The walk's whole scene). This is the frame-rate gate's baseline. It has no tree (the card birch is out of the walk until 1e rebuilds it) and low sun's beams at a quarter of the pixels (W5). The walk's corner in the clay town, over the five judging views and LT1g's four, presents a frame in:
+**Frame time on 22 October** (the walk's whole scene, retired with the walked corner on 30 October; W7; `reviews/perf/2026-10-22/playable/w7/`; `docs/measuring.md`, The walk's whole scene). It was the frame-rate gate's baseline; the check now runs on the street, which has not been timed yet. It has no tree (the card birch is out of the walk until 1e rebuilds it) and low sun's beams at a quarter of the pixels (W5). The walk's corner in the clay town, over the five judging views and LT1g's four, presents a frame in:
 - 21 to 33 ms in drizzle (24 to 39 offscreen);
 - 22 to 36 ms in low sun (25 to 42 offscreen);
 - 17 to 29 ms at the blue hour (19 to 33 offscreen).
@@ -60,7 +60,7 @@ That is 27 to 60 fps against the 60 fps target; only the blue hour at the Anchor
 
 At today's rate a thousand stairs would take about 19 hours to generate and 16 GB of FBX. The architecture must change how they are made, not tune them.
 
-**The gully's port:** its steps and estimates are in `docs/research/building-blocks-decisions.md` §13, and what is done and what is left in `reviews/lt1/port-handover.md`.
+**The gully's port:** its steps and estimates are in `docs/research/building-blocks-decisions.md` §13. The port was retired with the walked corner on 30 October; its handover (`reviews/lt1/port-handover.md`) is in git history before `f7b8b52`.
 
 **What the architecture decides** is written once, in `docs/building-blocks.md`: the stages, the contracts, ids, what every part carries, levels, budgets and what changes in existing work.
 Its reasons are in `docs/research/building-blocks-decisions.md`, and its open numbers in its table "Open until measured".
@@ -116,7 +116,7 @@ Until then, its state is written as the rung it has reached, with what still wai
 
 For example, the gully is done only with the Variety stairs rebuilt, and the birches only over their ages and sites, with levels and wind at town scale. `docs/systems.md`'s "How a new thing joins" lists what a kind brings; this says when it is done.
 
-**The standing frame and the frame-rate gate** (the plan review, P1 and P9). Every milestone ends in the playable corner (1g), walked. The harness runs the whole scene at the judging views in three lights, under the Unity lock's `--timing`, and the milestone's strict review judges the result.
+**The standing frame and the frame-rate gate** (the plan review, P1 and P9). The playable corner (1g) was retired on 30 October; the frame-rate and golden checks now run on the street (`tools/perf.sh`, `tools/golden.sh`), with no baseline yet. Every milestone ended in the playable corner (1g), walked. The harness runs the whole scene at the judging views in three lights, under the Unity lock's `--timing`, and the milestone's strict review judges the result.
 - The walk's first run is the baseline. The clay town counts as scope, not as a regression.
 - The baseline (22 October, W7, no tree, the beams at a quarter of the pixels; `reviews/perf/2026-10-22/playable/w7/`): offscreen 24 to 39 ms in drizzle, 25 to 42 ms in low sun, 19 to 33 ms at the blue hour. Its three biggest costs, with their owners (`w7/passes/passes.md`):
   - the materials' shaders, 6 to 12 ms in every light (12 at the foot of the steps, where the gully's stone fills the frame; 6 at the Anchor's door). L5 names its owners (`reviews/lt1/light/l5-report.md`): two terms every street and stone pixel pays, the town's sky (`OS_TownSky`, 2.4 to 3.0 ms) and the clouds' shadow (`OS_CloudLight`, 2.1 to 2.5 ms), together 4.5 to 5.4 ms in every view and light (1c: L8 and the beams' cloud map), and the stone's growth layer, 4.6 to 4.7 ms at the foot and 1.0 to 1.6 ms in the street and window views (2b's redraw of the stone; else the port's step 4); the rest is under 0.6 ms a term;
@@ -172,6 +172,7 @@ The steps keep their numbers, since other docs cite them (PL1). Step 1 is reopen
 
      Agent players find confusion, dead stretches and broken loops; they can't feel fun, so Øystein and his testers have the final word. Later, agent players play the greybox first.
    - 1g, a playable greybox of the corner (Øystein: "testing gameplay and ideas before everything looks finished"):
+     - retired on 30 October with the walked corner (Øystein); its walk and scene are in git history before `f7b8b52`;
      - the free camera;
      - blockout people, driven by the real engine run when it arrives (`docs/engine-requests.md`, request 36), else by authored fixtures;
      - hover and inspect as placeholders;
@@ -273,7 +274,7 @@ A world for many games has no end: new towns, eras and packs are open-ended cont
   - *Species:* spruce, then beech, rowan and sycamore. Tower Wood as a beech park wood of about 1900 is a proposal for Øystein.
   - *For later (Øystein):* trees vary in build, from massive trunks to long and skinny; grow them open and crowded, and widen the genotype's range. Trees take the push dial (`stronger`); what it means for a tree is found in a look test.
   - *Measured crown spreads:* downy 42 at 12 m, 44 at the street and 19 from the city camera; silver 55, 46 and 29.
-  - Look values live in `LT1Trees.Materials`.
+  - Look values lived in `LT1Trees.Materials`, retired with the trees' Unity side on 30 October (git history before `f7b8b52`).
   - *The camera favours side views* (Øystein): its tilt is flatter near the ground.
 - **Light:** the morning and the drizzle fail the value test; they are retuned in step 1c on the sky model. The four debts are in `docs/foundations.md`.
 - **Clay:**
@@ -298,10 +299,8 @@ A world for many games has no end: new towns, eras and packs are open-ended cont
   - a tree: `blender/generators/tree.py -- birch SEED AGE [quality] unity`;
   - the street: `blender/tools/export_street.py`.
 - **Unity batch methods:**
-  - the heart: `LT1Heart.Scene`, `.Frames`, `.LightFrames`, `.NightFrames`, `.StyleFrames`, `.TargetPasses`;
-  - the stone: `LT1Stone.Frames [-paint] [-detail painted|real] [-history|-albedo|-normals]`, `LT1Stone.Variety`;
-  - the trees: `LT1Trees.Frames`, `.Seasons`, `.Variety`, `.Pruned`, `.Character`;
-  - the street: `LT1Setup.Project`, `LT1Setup.Scene`, `LT1Render.Checkpoint`, `LT1Render.Clay`.
+  - the street: `LT1Street.Run`; the finish: `LT1Finish.Run`; nature: `LT1Nature.Run`, `LT1HolmTip.Run`;
+  - the measuring: `LT1Golden.Views` (`tools/golden.sh`), `LT1Perf.Build` (`tools/perf.sh`).
 
-  `blender/tools/light_sheet.py [night]` makes the light sheets.
-- **Full-size frames are not in git;** rebuild them with these methods. Never commit `LT1_Heart.unity` or the heart's review frames. Run `git checkout unity/Assets/Art/Materials/M_Sky.mat` after Unity runs.
+  The heart's, the stone's, the trees' and the first street's methods were retired on 30 October (git history before `f7b8b52`).
+- **Full-size frames are not in git;** rebuild them with these methods. Run `git checkout unity/Assets/Art/Materials/M_Sky.mat` after Unity runs.

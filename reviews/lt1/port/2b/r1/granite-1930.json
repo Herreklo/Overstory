@@ -1,0 +1,58 @@
+{
+  "schemaVersion": 2,
+  "describes": "A test record for design.md 7b (changed by data alone): a walling table in the pack's shape (packs/stavanger-1989/walling.json) with two workings no wall in the gully has, a mortared granite wall of the 1930s and its 1961 cement rebuild. tools/r1_elevations.py merges them into a copy of the pack's table, sets the gully's facts to name them (`applies`), and lays and checks the same walls with the same functions and no code edit. Its numbers are a plausible coursed granite's, for the check alone; they are not researched and enter no pack.",
+  "applies": {
+    "walls": "mortared-granite-1930",
+    "rebuilt": "cement-relaid-granite-1961"
+  },
+  "workings": {
+    "mortared-granite-1930": {
+      "material": "granite",
+      "mortar": "cement-lime",
+      "built": 1930,
+      "courseMm": [140, 340],
+      "riseOneMm": 340,
+      "foundationMm": [200, 340],
+      "stoneMm": [300, 1200],
+      "drawnPerHeight": [[2, 1], [4, 1]],
+      "shortMm": 200,
+      "copeThickMm": [120, 160],
+      "copeNominalMm": 140,
+      "copeLengthMm": [500, 1200],
+      "copeLeastMm": 300,
+      "topstoneMm": [300, 500],
+      "headTieMm": [300, 450],
+      "headRunnerMm": [600, 1000],
+      "throughMm": [300, 450],
+      "throughFirstMm": [500, 900],
+      "throughEveryMm": [1200, 1600],
+      "jointMm": [10, 15],
+      "batterPerHeight": [1, 12],
+      "topThickMm": 450,
+      "copeOverMm": 100,
+      "copeProudMm": [40, 60]
+    },
+    "cement-relaid-granite-1961": {
+      "material": "granite",
+      "mortar": "cement",
+      "built": 1961,
+      "stock": "reclaimed",
+      "edgeStonesMm": [[600, 900], [300, 420]],
+      "jointMm": [10, 15],
+      "batterPerHeight": [1, 12],
+      "topThickMm": 450,
+      "copeOverMm": 100,
+      "copeProudMm": [40, 60]
+    }
+  },
+  "provenance": "authored",
+  "notes": {
+    "mortared-granite-1930": "Squared granite in level courses, bedded in mortar: deeper courses than the split slate (every rise of the gully one course), longer stones (300 to 1200 mm, drawn 2 to 4 times their height), thicker and longer slab copes, through stones about every 1.4 m (a mortared wall needs fewer ties than a dry one). Values chosen for the check, not from a source.",
+    "cement-relaid-granite-1961": "The facts' 1961 rebuild of fl-0/r, had the wall been granite: its own stones relaid in cement, its edges long and short in alternate courses, the short no shorter than the working's least stone. Relaid on the wall's own line: its joints, batter, top and copings' overhang are the 1930 work's.",
+    "jointMm": "A mortared granite wall's joints, about 10 to 15 mm (R1's report, reviews/lt1/port/2b/r1/report.md, joint widths).",
+    "batterPerHeight": "One in twelve: a test value (a mortared coursed wall stands nearer plumb than a dry one), not researched.",
+    "topThickMm": "450 mm: a test value, not researched.",
+    "copeOverMm": "100 mm over both faces together: a test value, not researched.",
+    "copeProudMm": "40 to 60 mm proud of the face: a test value, not researched (its back the rest of copeOverMm)."
+  }
+}

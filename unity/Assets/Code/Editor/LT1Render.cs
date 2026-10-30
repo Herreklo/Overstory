@@ -1,92 +1,18 @@
 using System.IO;
-using UnityEditor;
-using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.Rendering;
-using UnityEngine.Rendering.Universal;
-using Overstory.Scenes;
 
 namespace Overstory.EditorTools
 {
     /// <summary>
-    /// Renders LT1's stills from the command line into reviews/lt1:
-    ///
-    ///     Unity -batchmode -quit -projectPath unity -executeMethod Overstory.EditorTools.LT1Render.Checkpoint
-    ///
-    /// Each still is rendered at twice its size and averaged down (a 2 x 2 box), after a few warm-up
-    /// frames so screen-space reflections have their history. A greyscale copy goes beside each one,
-    /// for the value check: every frame must read without colour.
+    /// The editor's still renders shared by the tests (LT1Finish, LT1Street, LT1Nature, PlayerFrame): Render draws a
+    /// camera through the pipeline into a target; Still renders at twice its size and averages down (a 2 x 2 box), after
+    /// a few warm-up frames, with a greyscale copy beside it for the value check; Raw is one linear sample a pixel, for
+    /// painting over. The first street's own stills (Checkpoint, Looks, Clay) were retired with it on 30 October.
     /// </summary>
     public static class LT1Render
     {
-        const string ScenePath = "Assets/Experiments/LT1/LT1.unity";
         const int Width = 1920, Height = 1080, Super = 2, WarmUp = 8;
-
-        /// <summary>The checkpoint: the street under look A in grey drizzle, from both cameras.</summary>
-        public static void Checkpoint()
-        {
-            string dir = Path.GetFullPath(Path.Combine(Application.dataPath, "..", "..", "reviews", "lt1", "checkpoint"));
-            Directory.CreateDirectory(dir);
-            EditorSceneManager.OpenScene(ScenePath, OpenSceneMode.Single);
-            var stage = Object.FindAnyObjectByType<StreetStage>();
-            var rig = AssetDatabase.LoadAssetAtPath<LightRig>("Assets/Experiments/LT1/Light/LT1_Drizzle.asset");
-            foreach (var (shot, name) in new[] { ("LT1_StreetLevel", "street"), ("LT1_Neighbourhood", "neighbourhood") })
-            {
-                stage.rig = rig;
-                stage.shot = AssetDatabase.LoadAssetAtPath<CameraShot>($"Assets/Experiments/LT1/Views/{shot}.asset");
-                stage.Apply();
-                string file = Path.Combine(dir, $"lt1-A-drizzle-{name}.png");
-                Still(stage.view, file);
-                Debug.Log($"[LT1Render] {file}");
-            }
-        }
-
-        /// <summary>
-        /// The look sketch: looks A and B on the oblique city view, at blue hour and in grey drizzle, each
-        /// in colour, in greyscale and at one-eighth size (value and silhouette), as the research's first
-        /// look test asks (docs/research/colour-and-shading.md).
-        /// </summary>
-        public static void Looks()
-        {
-            string dir = Path.GetFullPath(Path.Combine(Application.dataPath, "..", "..", "reviews", "lt1", "looks"));
-            Directory.CreateDirectory(dir);
-            EditorSceneManager.OpenScene(ScenePath, OpenSceneMode.Single);
-            var stage = Object.FindAnyObjectByType<StreetStage>();
-            stage.clay = false;
-            foreach (var shot in new[] { "Quay", "Roofs" })
-            foreach (var light in new[] { "SummerEvening", "BlueHour", "Drizzle" })
-            {
-                stage.shot = AssetDatabase.LoadAssetAtPath<CameraShot>($"Assets/Experiments/LT1/Views/LT1_City_{shot}.asset");
-                stage.rig = AssetDatabase.LoadAssetAtPath<LightRig>($"Assets/Experiments/LT1/Light/LT1_{light}.asset");
-                foreach (var look in new[] { "P" })
-                {
-                    stage.look = look;
-                    stage.Apply();
-                    string file = Path.Combine(dir, $"lt1-{shot.ToLowerInvariant()}-{light.ToLowerInvariant()}-{look}.png");
-                    Still(stage.view, file, grey: true, eighth: true);
-                    Debug.Log($"[LT1Render] {file}");
-                }
-            }
-        }
-
-        /// <summary>The clay pass: the hero slice in grey from the city view's middle stop and its variants.</summary>
-        public static void Clay()
-        {
-            string dir = Path.GetFullPath(Path.Combine(Application.dataPath, "..", "..", "reviews", "lt1", "clay"));
-            Directory.CreateDirectory(dir);
-            EditorSceneManager.OpenScene(ScenePath, OpenSceneMode.Single);
-            var stage = Object.FindAnyObjectByType<StreetStage>();
-            stage.rig = AssetDatabase.LoadAssetAtPath<LightRig>("Assets/Experiments/LT1/Light/LT1_Clay.asset");
-            stage.clay = true;
-            foreach (var (name, _, _) in LT1Setup.CityShots)
-            {
-                stage.shot = AssetDatabase.LoadAssetAtPath<CameraShot>($"Assets/Experiments/LT1/Views/LT1_City_{name}.asset");
-                stage.Apply();
-                string file = Path.Combine(dir, $"lt1-clay-{name.ToLowerInvariant()}.png");
-                Still(stage.view, file, grey: false);
-                Debug.Log($"[LT1Render] {file}");
-            }
-        }
 
         /// <summary>
         /// A raw pass for painting over a frame: one sample a pixel, no supersampling (an edge between two materials
