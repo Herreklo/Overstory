@@ -88,7 +88,17 @@ zonation are (`../README.md`).
   and main parted by Jback, the lee split by Jlee and plucked big low, small high), the spike measure, the narrow-band
   mesher and the near level. Next: a second, medium scale of form at rung 1 (the round varying along each arris by
   exposure, as data; a few low sheeting steps across the back; a broad swell or two on the crown), or back to r01 r8's
-  faceted making with step 1's outline.
+  faceted making with step 1's outline. The coordinator's asks for step 2, which arrived after the three tries: from
+  12 m a faceted block, not a torpedo (one long, nearly straight flank along a joint set, the lee end squared off
+  unevenly); lee steps uneven in rise and depth, never three equal treads; a shallow shoulder or saddle in the back's
+  skyline from the sea where a cross joint runs over it (t13 has one); judged on s1's four-column sheet.
+  - **Step 3 inputs** (the coordinator, 30 Oct): the ground at the foot is a planned place, never scatter, by the
+    record's exposure and `docs/nature.md`'s communities (thrift and salt grass on the shore, heath and turf above the
+    wash band, grass in the joints); the summer flowers placed as form in clay (thrift cushions in the lee joints, a
+    flowered turf edge), their colour in the colour pass. Beside ref 57 on the step 3 sheet: `docs/references/nature/
+    study/` 09 (stones sunk in grass), 02 (grass along a step's edge), 03 (stone in shade by sunlit grass), 07 (grass
+    as a few big lit tufts), 15 (stones in meadow grass by a path; AI-made, composition only) and 16 (stones in roots
+    and moss): how rock and growth meet and their masses, never the drawing style.
 - **Craft** (a short look, 30 Oct; sources in the session's craft note): Firewatch's rocks were a handful of "rock
   words", each a strong silhouette from every side with flat planes and abstracted inner detail, sunk into the ground;
   edge highlights and a soft occlusion bake carried the rest (Jane Ng, GDC 2015). Big, medium and small: one mass
