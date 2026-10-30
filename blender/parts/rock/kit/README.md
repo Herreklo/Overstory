@@ -10,6 +10,9 @@ zonation are (`../README.md`).
 Judged beside a board, never one sheet (the coordinator, after Øystein: ref 57 is one quick idea among these): our
 coast's rock (`docs/references/stone/` 15, 16, 49, 50, 52, `study/` 56), the painters (48, 17, 51, 19), the best
 stylised rock (`study/` 21, 22, 26, 27; Totoro 09 and 16), and our own house in the painted finish in the same light.
+The lead for the family and its painting is `study/58`, the rock-family sheet (Øystein, 30 October: "at least very good
+references for us to use"); 59 for edges, and Firewatch's recipe (`docs/research/land-rock-and-water.md`, How studios
+make rock).
 
 - **Form, from the real rock and Nielsen's svaberg (15, 16, 49, 50, 48):** a few big planes, each from a cause: joint
   faces flat and near vertical with a crisp, slightly broken edge (15), the ice-worn back broad and gently swelling
