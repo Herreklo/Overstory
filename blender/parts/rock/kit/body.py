@@ -7,7 +7,7 @@ then cut by planes and plucked (convex pieces taken out); the joints are real ga
 of its kind's radius, so its width on each face is r tan(angle / 2) and planes meeting gently keep their flats. Meshed
 by openvdb in a narrow band round a coarse grid.
 
-    Blender -b --factory-startup -P body.py -- --out DIR [--step 1|2] [--fine M]
+    Blender -b --factory-startup -P body.py -- --out DIR [--step 1|2] [--fine M] [--views a,b] [--lights a,b]
 
 Step 1 renders flat silhouettes of r02, t09 (W.blend's W-high) and the t13 study (its scan.blend, measured and drawn
 only, never built on) from the same cameras (the lone views and tip.views' water frame, with 107), and draws the long
@@ -24,8 +24,9 @@ from mathutils import Matrix, Vector
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.abspath(os.path.join(HERE, "..", "..", "..", ".."))
-sys.path[:0] = [HERE, os.path.dirname(HERE)]
+sys.path[:0] = [HERE, os.path.dirname(HERE), os.path.join(ROOT, "blender", "resolver")]
 import blockin as BI  # noqa: E402
+import hashing as HS  # noqa: E402
 import outcrop  # noqa: E402
 
 
@@ -82,7 +83,18 @@ def height(s, t):
     w = np.where(sea, pchip(HS_, HSEA, s), pchip(HS_, HLAND, s))
     p = np.where(sea, B["cross"]["sea"], B["cross"]["land"])
     u = np.abs(t) / w
-    return foot + (top - foot) * (1 - u ** p)
+    return foot + (top - foot) * (1 - u ** p) + swells(s, t + pchip(B["crestLine"]["s"], B["crestLine"]["t"], s))
+
+
+def swells(s, t):
+    """The back's broad swells (`swells`): each a smooth rise (or, below 0, a hollow) of `h` metres at `at`, an
+    ellipse of `radii` [along, across] turned `turn` degrees from the ice's way, falling to nothing at its rim."""
+    out = 0.0
+    for w in B.get("swells", []):
+        a = math.radians(w["turn"]); ds, dt = s - w["at"][0], t - w["at"][1]
+        q = ((ds * math.cos(a) + dt * math.sin(a)) / w["radii"][0]) ** 2 + ((dt * math.cos(a) - ds * math.sin(a)) / w["radii"][1]) ** 2
+        out = out + w["h"] * np.where(q < 1, (1 - q) ** 2, 0.0)
+    return out
 
 
 def back(s, t, z):
@@ -110,32 +122,151 @@ def plane(spec, off=0.0, flip=False):
 
 def cut(d, g, n, dn, r):
     """The body (d, g) cut by the half-space n.p <= dn with its arris rounded by a rolling ball of radius r: the exact
-    distance to the wedge both eroded by r, less r. The wedge's angle is read from the body's gradient here."""
+    distance to the wedge both eroded by r, less r. The wedge's angle is read from the body's gradient here. n (and r)
+    may be one for all points or one a point."""
+    n = np.broadcast_to(n, g.shape)
     a1, b1 = d + r, dn + r
-    c = np.clip(np.einsum("ij,j->i", g, n), -0.9999, 0.9999); s2 = 1 - c * c
+    c = np.clip(np.einsum("ij,ij->i", g, n), -0.9999, 0.9999); s2 = 1 - c * c
     inside = (a1 <= 0) & (b1 <= 0)
     r1 = (a1 > 0) & (b1 - a1 * c <= 0)
     r2 = ~r1 & (b1 > 0) & (a1 - b1 * c <= 0)
     corner = ~(inside | r1 | r2)
-    D = np.where(a1 >= b1, a1, b1); G = np.where((a1 >= b1)[:, None], g, n[None, :])
+    D = np.where(a1 >= b1, a1, b1); G = np.where((a1 >= b1)[:, None], g, n)
     D = np.where(r1, a1, D); G = np.where(r1[:, None], g, G)
-    D = np.where(r2, b1, D); G = np.where(r2[:, None], n[None, :], G)
+    D = np.where(r2, b1, D); G = np.where(r2[:, None], n, G)
     q = np.sqrt(np.maximum(a1 * a1 + b1 * b1 - 2 * a1 * b1 * c, 0) / s2)
-    gc = ((a1 - b1 * c) / s2)[:, None] * g + ((b1 - a1 * c) / s2)[:, None] * n[None, :]
+    gc = ((a1 - b1 * c) / s2)[:, None] * g + ((b1 - a1 * c) / s2)[:, None] * n
     gc /= np.maximum(np.linalg.norm(gc, axis=1), 1e-9)[:, None]
     D = np.where(corner, q, D); G = np.where(corner[:, None], gc, G)
     return D - r, G
 
 
+def joined(dA, gA, dB, gB, r):
+    """The union of two bodies, its concave corner filled by a ball of radius r (the cut of their complements)."""
+    d, g = cut(-dA, -gA, -gB, -dB, r)
+    return -d, -g
+
+
 FOOT = (np.array([0.0, 0.0, -1.0]), -B["footM"], "base")
+
+
+def smooth(a, b, x):
+    q = np.clip((x - a) / (b - a), 0, 1)
+    return q * q * (3 - 2 * q)
+
+
+def warp(P, n, p0, kind, key):
+    """A face's gentle warp, so it is flat only in the large (`warp`): a seeded bulge, out or in, of up to its kind's
+    `M` metres over `L`, and a seeded twist, on the face's own axes from its point; and the warp's gradient. Seeded by
+    the face's stable key, so a joint's two sides warp alike and its gap stays even."""
+    A = B["warp"]["M"].get(kind, 0.0); L = B["warp"]["L"]
+    if not A:
+        return 0.0, 0.0
+    st = HS.Stream("lt1-holm-tip", "body", "warp", key)
+    c0, c1, u0, v0 = st.uniform(-1, 1) * A, st.uniform(-0.6, 0.6) * A, st.uniform(-0.5, 0.5) * L, st.uniform(-0.5, 0.5) * L
+    a = np.cross(n, [0.0, 0.0, 1.0] if abs(n[2]) < 0.9 else [1.0, 0.0, 0.0]); a /= np.linalg.norm(a); b = np.cross(n, a)
+
+    def w(Q):
+        u, v = (Q - p0) @ a, (Q - p0) @ b
+        q = ((u - u0) / L) ** 2 + ((v - v0) / L) ** 2
+        return c0 * np.where(q < 1, (1 - q) ** 2, 0.0) + c1 * np.tanh(u / L) * np.tanh(v / L)
+
+    e = 0.01
+    du = (w(P + e * a) - w(P - e * a)) / (2 * e); dv = (w(P + e * b) - w(P - e * b)) / (2 * e)
+    return w(P), du[:, None] * a + dv[:, None] * b
+
+
+def side(P, spec, key, gap=0.0, far=False):
+    """A face at P as (signed distance, the rock behind it; its gradient; its kind), warped; `far` the rock beyond it
+    across `gap` (a joint's far side), `gap` halved on each side."""
+    n, dn, kind = plane(spec); w, gw = warp(P, n, np.asarray(spec[2], float), kind, key)
+    v = P @ n - dn - w; G = np.broadcast_to(n, P.shape) - gw
+    G = G / np.linalg.norm(G, axis=1)[:, None]
+    return (gap / 2 - v, -G, kind) if far else (v + gap / 2, G, kind)
+
+
+def face(P, x, gap, key):
+    """A rock face: a plane, or a joint's side by name (`J` its near side, `~J` its far side, across the gap)."""
+    if isinstance(x, list):
+        return side(P, x, key)
+    j = x.lstrip("~")
+    return side(P, B["joints"][j], j, gap, x.startswith("~"))
+
+
+def joint(P, x, gap):
+    """A joint as a real gap `gap` wide: its two faces, and with `fromS` its end, the gap only down-ice of it."""
+    j = x if isinstance(x, str) else x["joint"]
+    faces = [side(P, B["joints"][j], j, gap), side(P, B["joints"][j], j, gap, True)]
+    if isinstance(x, dict):
+        faces.append((P[:, 0] - x["fromS"], np.broadcast_to([1.0, 0.0, 0.0], P.shape), faces[0][2]))
+    return faces
+
+
+BANDS = K["tip"]["grey"]["bands"]
+
+
+def worn(P, g, G, kind):
+    """The arris's round and chamfer here, by what wore it (`wear`). The ice rounds arrises facing up-ice and up; the
+    sea rounds them in its storm wash, by the record's exposure on the side they face (the storm top MHWS + surgeM +
+    runupM e, the tip's shore bands), each kind taking its `share` of both (a fresh break wears less than a worn
+    face); the kind's own round is the least. Where that leaves it crisp, a shallow chamfer
+    of its kind's width, varied along the arris (non-semantic: seeded waves)."""
+    X = B["wear"]; m = g + G; m = m / np.maximum(np.linalg.norm(m, axis=1), 1e-6)[:, None]
+    ui = np.asarray(X["ice"]["from"], float); ice = smooth(*X["ice"]["share"], m @ (ui / np.linalg.norm(ui)))
+    tc = pchip(B["crestLine"]["s"], B["crestLine"]["t"], P[:, 0])
+    pos = np.stack([X["sea"]["alongShare"] * P[:, 0], P[:, 1] - tc], 1)
+    f = m[:, :2] + X["sea"]["posW"] * pos / np.maximum(np.linalg.norm(pos, axis=1), 1e-6)[:, None]
+    b = np.degrees(np.arctan2(f[:, 0] * E[0] + f[:, 1] * W[0], f[:, 0] * E[1] + f[:, 1] * W[1])) % 360
+    x = FIX["sea"]["exposure"]; e = np.interp(b, [0, 90, 180, 270, 360], [x["north"], x["east"], x["south"], x["west"], x["north"]])
+    top = FIX["sea"]["springRange"] / 2 + BANDS["surgeM"] + BANDS["runupM"] * e
+    sea = e * (1 - smooth(top - X["sea"]["fadeM"], top, P[:, 2]))
+    r = np.maximum(R[kind], X["share"].get(kind, 1.0) * np.maximum(X["ice"]["r"] * ice, X["sea"]["r"] * sea))
+    C = X["chamfer"]; wM = C["M"].get(kind, 0.0)
+    if not wM:
+        return r, 0.0
+    st = HS.Stream("lt1-holm-tip", "body", "chamfer"); wave = 0.0
+    for _ in range(3):
+        a = st.uniform(0, 2 * math.pi); z = st.uniform(-0.4, 0.4)
+        k = np.array([math.cos(a), math.sin(a), z]) / math.sqrt(1 + z * z)
+        wave = wave + np.sin(2 * math.pi * (P @ k) / st.uniform(*C["waveM"]) + st.uniform(0, 2 * math.pi)) / 3
+    vary = C["least"] + (1 - C["least"]) * (0.5 + 0.5 * wave)
+    return r, wM * (1 - smooth(*C["below"], r)) * vary
+
+
+def edge(d, g, P, f):
+    """The body (d, g) cut by face f (value, gradient, kind), its arris worn (`worn`): a rolling-ball round, and where
+    the round is crisp a shallow chamfer, the chamfer's own arrises the kind's round."""
+    v, G, kind = f
+    r, w = worn(P, g, G, kind)
+    D, Gd = cut(d, g, G, v, r)
+    if not np.any(np.asarray(w) > 0):
+        return D, Gd
+    sg = g + G; ls = np.maximum(np.linalg.norm(sg, axis=1), 0.3); m = sg / ls[:, None]
+    sharp = np.maximum(d, v); Gs = np.where((d >= v)[:, None], g, G)
+    C, Gc = cut(sharp, Gs, m, (d + v) / ls + w * np.sqrt(np.clip(1 - ls * ls / 4, 0, 1)), R[kind])
+    k = C > D
+    return np.where(k, C, D), np.where(k[:, None], Gc, Gd)
+
+
+def sheet(d, g, P, X):
+    """A sheeting step on the back (`sheets`): beyond its riser (`edge`, a plane, worn by its place) one sheet is gone,
+    the back lowered `thickM` along its own normal, its tread meeting the riser in the `tread` round. The step dies
+    out: across `reachM` [full, none] beyond the riser, and along it by `along` [none, full, full, none], metres along
+    the riser's strike from its point (its level normal turned a quarter, s toward t)."""
+    f = side(P, X["edge"], "sheet/" + X["id"]); n = plane(X["edge"])[0]
+    k = np.array([-n[1], n[0], 0.0]); k /= np.linalg.norm(k); u = (P - np.asarray(X["edge"][2], float)) @ k
+    a0, a1, b1, b0 = X["along"]
+    h = X["thickM"] * smooth(a0, a1, u) * (1 - smooth(b1, b0, u)) * (1 - smooth(*X["reachM"], f[0]))
+    dA, gA = edge(d, g, P, f)
+    return joined(dA, gA, d + h, g, R["tread"])
 
 
 def removed(d, g, P, faces):
     """The body (d, g) less a convex region: the rock where it is behind any one of the region's faces (each a rock
-    face, its normal into the region), each face's arris its kind's round; the corners inside the region stay crisp."""
+    face, its normal into the region), each arris worn; the corners inside the region stay crisp."""
     out = None
-    for n, dn, kind in faces:
-        di, gi = cut(d, g, n, P @ n - dn, R[kind])
+    for f in faces:
+        di, gi = edge(d, g, P, f)
         if out is None:
             out = [di, gi]
         else:
@@ -143,39 +274,35 @@ def removed(d, g, P, faces):
     return out[0], out[1]
 
 
-def face(x, gap):
-    """A rock face: a plane, or a joint's side by name (`J` its near side, `~J` its far side, across the gap)."""
-    if isinstance(x, list):
-        return plane(x)
-    n, dn, kind = plane(B["joints"][x.lstrip("~")])
-    return (-n, -dn - gap / 2, kind) if x.startswith("~") else (n, dn - gap / 2, kind)
-
-
-def joint(x, gap):
-    """A joint as a real gap `gap` wide: its two faces, and with `fromS` its end, the gap only down-ice of it."""
-    j = x if isinstance(x, str) else x["joint"]
-    n, dn, kind = plane(B["joints"][j])
-    faces = [(n, dn - gap / 2, kind), (-n, -dn - gap / 2, kind)]
-    if isinstance(x, dict):
-        faces.append((np.array([1.0, 0.0, 0.0]), x["fromS"], kind))
-    return faces
+def crack(d, P, X):
+    """A joint of the record's sets as a weathered crack (`cracks`): a V groove `openM` wide at the surface and `deepM`
+    deep on the joint's plane (a named joint's, warped as it is, or its own), dying out along its strike by `along`
+    [none, full, full, none] (as a sheet's); the rock either side is left as it is."""
+    spec = B["joints"][X["joint"]] if "joint" in X else X["plane"]
+    v = side(P, spec, X.get("joint", "crack/" + X["id"]))[0]; n = plane(spec)[0]
+    k = np.array([-n[1], n[0], 0.0]); k /= np.linalg.norm(k); u = (P - np.asarray(spec[2], float)) @ k
+    a0, a1, b1, b0 = X["along"]; f = np.maximum(smooth(a0, a1, u) * (1 - smooth(b1, b0, u)), 1e-3)
+    return np.maximum(d, X["openM"] / 2 * f * (1 + d / (X["deepM"] * f)) - np.abs(v))
 
 
 def block(P, X):
-    """One rigid block of the back: the smooth back on its `side` of a joint (across half the gap), cut by its `cuts`,
-    parted by the joints in its `split` and plucked: each of `pluck` a joint-bounded region taken out, its faces the
-    rock left (a riser, a tread, a side on a joint)."""
+    """One rigid block of the back: the back's broad facets (`facets`) and sheeting steps (`sheets`), then the block's
+    `side` of a joint (across half the gap), its `cuts`, the joints in its `split`, and its `pluck`: each a
+    joint-bounded region taken out, its faces the rock left (a riser, a tread, a side on a joint)."""
     d, g = back(P[:, 0], P[:, 1], P[:, 2])
+    for i, F in enumerate(B.get("facets", [])):
+        d, g = edge(d, g, P, side(P, F, f"facet/{i}"))
+    for Y in B.get("sheets", []):
+        d, g = sheet(d, g, P, Y)
     if "side" in X:
         (j, sign), gap = X["side"], B["gapM"]
-        n, dn, kind = plane(B["joints"][j])
-        d, g = cut(d, g, n, P @ n - dn + gap / 2, R[kind]) if sign > 0 else cut(d, g, -n, dn - P @ n + gap / 2, R[kind])
-    for n, dn, kind in [plane(x) for x in X.get("cuts", [])]:
-        d, g = cut(d, g, n, P @ n - dn, R[kind])
+        d, g = edge(d, g, P, side(P, B["joints"][j], j, gap, sign < 0))
+    for i, x in enumerate(X.get("cuts", [])):
+        d, g = edge(d, g, P, side(P, x, f"{X['id']}/cut/{i}"))
     for x in X.get("split", []):
-        d, g = removed(d, g, P, joint(x, B["gapM"]))
+        d, g = removed(d, g, P, joint(P, x, B["gapM"]))
     for Y in X.get("pluck", []):
-        d, g = removed(d, g, P, [face(f, B["gapM"]) for f in Y["faces"]])
+        d, g = removed(d, g, P, [face(P, f, B["gapM"], f"{X['id']}/{Y['id']}/{i}") for i, f in enumerate(Y["faces"])])
     return d, g
 
 
@@ -188,13 +315,15 @@ BOUNDS = {}
 
 
 def sdf(P):
-    """The union of the bodies, each evaluated only within its bounds (`fit_bounds`), and the foot."""
+    """The union of the bodies, each evaluated only within its bounds (`fit_bounds`), its cracks, and the foot."""
     d = np.ones(len(P))
     for name, f in bodies():
         lo, hi = BOUNDS.get(name, (None, None))
         m = np.ones(len(P), bool) if lo is None else np.all((P >= lo) & (P <= hi), 1)
         if m.any():
             d[m] = np.minimum(d[m], f(P[m])[0])
+    for X in B.get("cracks", []):
+        d = crack(d, P, X)
     return np.maximum(d, P @ FOOT[0] - FOOT[1])
 
 
@@ -308,11 +437,6 @@ def append(blend, name, mat):
     ob = dst.objects[0]; bpy.context.scene.collection.objects.link(ob)
     ob.data.materials.clear(); ob.data.materials.append(mat)
     return ob
-
-
-def smooth(a, b, x):
-    q = np.clip((x - a) / (b - a), 0, 1)
-    return q * q * (3 - 2 * q)
 
 
 def lowered(X, Y):
@@ -491,9 +615,14 @@ def shoot(V, tag):
     bg = wo.node_tree.nodes["Background"]; bg.inputs[0].default_value = (0.8, 0.8, 0.8, 1); bg.inputs[1].default_value = 0.6
     sun = bpy.data.objects.new("sun", bpy.data.lights.new("sun", "SUN")); sc.collection.objects.link(sun); sun.data.angle = math.radians(3)
     cam = bpy.data.objects.new("cam", bpy.data.cameras.new("cam")); sc.collection.objects.link(cam); sc.camera = cam
+    only = arg("--views"); lights = arg("--lights", "neutral,raking").split(",")
     for n, v in V.items():
+        if only and n not in only.split(","):
+            continue
         camera(cam, v)
         for light, (az, el, en) in {"neutral": (330, 35, 3.0), "raking": (255, 7, 4.5)}.items():
+            if light not in lights:
+                continue
             az, el = math.radians(az), math.radians(el)
             dv = Vector((math.sin(az) * math.cos(el), math.cos(az) * math.cos(el), math.sin(el)))
             sun.rotation_euler = (-dv).to_track_quat("-Z", "Y").to_euler(); sun.data.energy = en
