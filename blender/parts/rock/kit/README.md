@@ -5,6 +5,25 @@ with care, assembled by a generator from `fixtures/lt1-holm-tip.json`, with hous
 finish, light and cameras. The first lane's meshes are not used; its exposure rule, `WEAR` table, foliation and
 zonation are (`../README.md`).
 
+## What our rock takes from the board (30 Oct)
+
+Judged beside a board, never one sheet (the coordinator, after Øystein: ref 57 is one quick idea among these): our
+coast's rock (`docs/references/stone/` 15, 16, 49, 50, 52, `study/` 56), the painters (48, 17, 51, 19), the best
+stylised rock (`study/` 21, 22, 26, 27; Totoro 09 and 16), and our own house in the painted finish in the same light.
+
+- **Form, from the real rock and Nielsen's svaberg (15, 16, 49, 50, 48):** a few big planes, each from a cause: joint
+  faces flat and near vertical with a crisp, slightly broken edge (15), the ice-worn back broad and gently swelling
+  (16, 48), dark joints parting it into blocks. A boulder (56, 17, 19) is a block whose transport rounded it: a broad
+  top, steep sides tucked in at the turf, one or two fresher breaks.
+- **Simplification, from Firewatch, Stålenhag and the painters (21, 22, 26, 17):** big planes of light and shade, each
+  nearly one value; detail held to the edges, the cracks and the foot; the rest of a face quiet. The sculpt carries
+  the forms, and the bake and paint carry them to a light game mesh, never noise.
+- **Edges by exposure:** broad where ice, sea or transport wore them, tight and a little chipped on joints and fresh
+  breaks, smooth at the sea foot: one rule from the record's causes, as the art direction's "a few faceted planes and
+  cracks, drawn big".
+- **Finish, from our houses:** the painted finish (P), up-facing planes lightest, edges drawn by curvature, cracks
+  dark, contact shade where it meets the turf; lichen as flat crusts, never mounds.
+
 ## Hand-over (kept current at each commit)
 
 - **Where:** parts and generator here (`blender/parts/rock/kit/`), the scene `unity/Assets/Experiments/LT1/Nature/HolmTip.unity`
@@ -77,6 +96,11 @@ zonation are (`../README.md`).
   on the ice's edges. The lee's three blocks become distinct: each its own size and tilt, a dark seam between them,
   big low and small high. A long low stoss tail must read from the eye view. Then the ground: the land lowered 2.2 m
   is a flat plain, so no turf meets a flank yet.
+- **State (30 Oct, r04):** the studio pipeline (the coordinator, after Øystein: "SO many games have done this before"):
+  1 blockout of big planes, 2 high-poly sculpt by script, 3 bake onto a light game mesh, 4 the painted finish, 5 Unity
+  beside a house; one boulder of 2–3 m end to end first, then the outcrop cut from one mass along its joints. Stage 1:
+  `mass.py -- --step block --out cache/rock/kit/renders/r04/<r> --masses boulder` (kit.json `mass.masses` `boulder`:
+  21 designed planes, sunk `sinkM`). Holds on try 3 (Rounds, r04). Next: stage 2.
 - **State (30 Oct, r03):** the outcrop as a few rigid masses, ref 57's LOW ROCKY OUTCROP the only bar (the
   coordinator's brief: step 1 the masses alone beside 57's boulders, step 2 arranged into the outcrop, step 3 the
   outcrop beside 57's; one change a try, at most three a step). `mass.py` (kit.json `mass`): each mass a convex
@@ -122,6 +146,14 @@ zonation are (`../README.md`).
 
 ## Rounds
 
+- **r04** stage 1, the boulder's blockout (Blender grey; `reviews/lt1/rock/r04/s1-b2.jpg`, `s1-b3.jpg`: front, back
+  and side, then board crops 26, 17, 19, 21).
+  - Try 1: sides from the joint sets' bearings; a crate.
+  - Try 2: tops and sides designed from the boulder's story (a broad top with a high north end, one fresh break): the
+    planes hold, but its sides lean in from the foot, so it is widest at the turf and grows out of the ground.
+  - Try 3, the girth raised (sides 76–86°, tucks 122–128° under them): it sits on the ground, its girth 0.45 m up over a
+    shaded undercut, as 26 and 19; 21 big planes, each nearly one value, as 17 and 21. Holds as a blockout; the
+    girth's crisp straight edge is stage 2's to roll.
 - **r03** (Blender grey; `reviews/lt1/rock/r03/s1-try1.jpg` to `s1-try3.jpg`: the top row is ref 57's ROUNDED
   BOULDER, JAGGED BOULDER and a crop of its outcrop's slabs; below, the crown, stoss and lee from their front and back,
   57's view and a low warm sun; full size in `cache/rock/kit/renders/r03/s1h`, `s1i`, `s1j`).

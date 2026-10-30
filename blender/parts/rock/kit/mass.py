@@ -15,6 +15,7 @@ measures its flat share (`flat`) and splinters (`spike`) into `mass.json`.
 """
 import json, math, os, sys
 
+import bmesh
 import bpy
 import numpy as np
 import openvdb as vdb
@@ -385,7 +386,7 @@ def judge_scene():
 
 def aim(sun, cam, ms, bearing):
     """The camera at `bearing` from the mass's middle, `elev` up, `fit` times its size off; the sun `sunRel` from it."""
-    J = M["judge"]; c = (ms.lo + ms.hi) / 2; c[2] = 0.42 * ms.H - J["sinkM"]
+    J = M["judge"]; c = (ms.lo + ms.hi) / 2; c[2] = 0.42 * ms.H - ms.X.get("sinkM", J["sinkM"])
     size = float(max(ms.hi[0] - ms.lo[0], ms.hi[1] - ms.lo[1]))
     b, e = math.radians(bearing), math.radians(J["elev"])
     pos = Vector(c) + J["fit"] * size * Vector((math.sin(b) * math.cos(e), math.cos(b) * math.cos(e), math.sin(e)))
@@ -403,7 +404,7 @@ def step1():
     for X in M["masses"]:
         if only and X["id"] not in only.split(","):
             continue
-        ms = Mass(X); ob = ms.mesh(rock, vs); ob.location.z = -J["sinkM"]
+        ms = Mass(X); ob = ms.mesh(rock, vs); ob.location.z = -X.get("sinkM", J["sinkM"])
         info[ms.id] = {"heightM": round(ms.H, 2), "planes": len(ms.faces), "blocks": len(ms.blocks), "capM": [round(b[4], 2) for b in ms.blocks], "tris": len(ob.data.polygons), **ms.flat_share(ob), **ms.spikes()}
         print("[mass]", ms.id, json.dumps(info[ms.id]))
         for o in bpy.data.objects:
@@ -411,17 +412,54 @@ def step1():
                 o.hide_render = True
         ob.hide_render = False
         for v in views:
-            aim(sun, cam, ms, X["front"] + (J["back"] if v == "back" else 0))
+            aim(sun, cam, ms, X["front"] + J["views"][v])
             bpy.context.scene.render.filepath = os.path.join(OUT, f"{ms.id}-{v}.png"); bpy.ops.render.render(write_still=True)
     json.dump(info, open(os.path.join(OUT, "mass.json"), "w"), indent=1)
     bpy.ops.wm.save_as_mainfile(filepath=os.path.join(OUT, "masses.blend"))
+
+
+def designed(X):
+    """A mass's designed planes alone (its tops, sides and base), before the wear rule, the bulge and the rounds."""
+    out = [(unit(f, sl), float(unit(f, sl) @ p)) for f, sl, p, kind in X["tops"]]
+    for f, sl, dist, kind in X["sides"]:
+        b = math.radians(f); n = unit(f, sl); out.append((n, float(n @ [dist * math.sin(b), dist * math.cos(b), 0.0])))
+    return out + [(np.array([0.0, 0.0, -1.0]), 0.0)]
+
+
+def step_block():
+    """Stage 1, the blockout: each mass's designed planes only, flat, judged for its silhouette and big planes."""
+    J = M["judge"]; rock = clay("rock", [J["rock"]] * 3, J["rough"]); sun, cam = judge_scene()
+    only = arg("--masses"); views = arg("--views", "front,back,side").split(","); info = {}
+    for X in M["masses"]:
+        if only and X["id"] not in only.split(","):
+            continue
+        ms = Mass(X); C = corners(designed(X))
+        bm = bmesh.new()
+        for p, _ in C:
+            bm.verts.new(p)
+        bmesh.ops.convex_hull(bm, input=bm.verts)
+        me = bpy.data.meshes.new(X["id"]); bm.to_mesh(me); bm.free(); me.materials.append(rock)
+        ob = bpy.data.objects.new(X["id"], me); bpy.context.scene.collection.objects.link(ob); ob.location.z = -X.get("sinkM", J["sinkM"])
+        V = np.array([p for p, _ in C]); info[X["id"]] = {"planes": len(designed(X)), "faces": len(me.polygons), "sizeM": [round(float(x), 2) for x in V.max(0) - V.min(0)]}
+        print("[block]", X["id"], json.dumps(info[X["id"]]))
+        for o in bpy.data.objects:
+            if o.type == "MESH" and o.name not in ("ground", X["id"]):
+                o.hide_render = True
+        for v in views:
+            aim(sun, cam, ms, X["front"] + J["views"][v])
+            bpy.context.scene.render.filepath = os.path.join(OUT, f"{X['id']}-{v}.png"); bpy.ops.render.render(write_still=True)
+        ob.hide_render = True
+    json.dump(info, open(os.path.join(OUT, "block.json"), "w"), indent=1)
 
 
 def main():
     os.makedirs(OUT, exist_ok=True)
     for o in list(bpy.data.objects):
         bpy.data.objects.remove(o)
-    if arg("--step", "1") == "1":
+    step = arg("--step", "1")
+    if step == "block":
+        step_block()
+    elif step == "1":
         step1()
 
 
