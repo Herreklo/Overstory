@@ -2,7 +2,7 @@
 
     Blender -b --factory-startup -P blender/parts/rock/kit/game.py -- --mass boulder [--out cache/rock/kit/gen/boulder]
 
-The mass's sculpted form (sculpt.py, its rounds and chips, without the grain, ridges and cracks the bake carries) is
+The mass's sculpted form (sculpt.py, its chamfers and chips, without the cracks the bake carries) is
 meshed at `voxelM`, cut `underM` below the turf (the mass sinks `sinkM`; the turf is the levels' z = 0) and decimated to
 each level's budget (`fill` of street.json's ceiling, by the mass's surface: a square metre of rock costs what one of
 house does). Every level's faces sit on the same charts: a face's chart is the designed plane (the blockout's) its
@@ -51,10 +51,10 @@ def arris(sc, V, lo, hi, h):
     between lo and hi a metre."""
     out = np.empty(len(V))
     for i in range(0, len(V), 100000):
-        P = V[i:i + 100000]; lap = -6.0 * sc.ms.form(P)[0]
+        P = V[i:i + 100000]; lap = -6.0 * sc.form(P)[0]
         for ax in range(3):
             e = np.zeros(3); e[ax] = h
-            lap += sc.ms.form(P + e)[0] + sc.ms.form(P - e)[0]
+            lap += sc.form(P + e)[0] + sc.form(P - e)[0]
         out[i:i + 100000] = np.clip((0.5 * lap / (h * h) - lo) / (hi - lo), 0.0, 1.0)
     return out
 

@@ -1,10 +1,9 @@
 """Stage 2, the high-poly sculpt (kit.json `sculpt`): a mass's designed planes (the blockout's, `mass.py --step block`)
-as one signed-distance form, each arris a rolling-ball round by its faces' kind and its exposure (mass.py's chain, with
-the sculpt's own table and no wear rule), then carved at restraint: cracks along the mass's own planes of weakness,
-flake scars (shallow scoops) at its fresh edges and a few exposed ones, faint ridges where its foliation weathers out,
-and a little grain. Meshed by openvdb at `voxelM`, evaluated only in bands refined from coarser levels; checked for
-splinters (mass.py's measure); shot in grey from the blockout's views and saved for the bake as `high_<id>` in
-`<gen>/high.blend`.
+as one signed-distance form, every plane kept flat, each arris a crisp flat chamfer sized by the weather it faces; then
+a few cracks cut as clean V-grooves on the mass's own joint planes, and a few corners chipped off by planar cuts. No
+grain, no bulge, nothing smoothed over a face. Meshed by openvdb at `voxelM`, evaluated only in bands refined from
+coarser levels; checked for splinters (mass.py's measure); shot in grey from the blockout's views and saved for the
+bake as `high_<id>` in `<gen>/high.blend`.
 
     Blender -b --factory-startup -P sculpt.py -- --out DIR [--gen DIR] [--masses boulder] [--views front,near] [--voxel M]
 """
@@ -48,24 +47,53 @@ def skewed(st, lo, hi, k):
     return MS.skewed(st, lo, hi, k)
 
 
+def chamfer(d, g, n, v, e, k):
+    """The body (d, g) cut by a face (v, n), their arris chamfered: a flat face on the arris's bisector cutting each face
+    back e metres square to the arris (0 leaves it sharp; so does a turn past 120 degrees), its creases crisp to k.
+    (signed distance, gradient, where the new face or its chamfer is outermost)."""
+    n = np.broadcast_to(n, g.shape)
+    c = np.clip(np.einsum("ij,ij->i", g, n), -1.0, 1.0); m = np.sqrt(np.maximum(2.0 + 2.0 * c, 1e-9))
+    ch = np.where((c > -0.5) & (e > 0), (d + v) / m + e * np.sqrt((1.0 - c) / 2.0), -1e3)
+    D = smax(smax(d, v, k), ch, k)
+    new, top = v > d, ch >= np.maximum(d, v)
+    G = np.where(new[:, None], n, g); G = np.where(top[:, None], (g + n) / m[:, None], G)
+    return D, G, new | top
+
+
 class Sculpt:
     def __init__(self, X):
         self.X, self.id = X, X["id"]
-        self.ms = MS.Mass(X, over={"round": S["round"], "vary": S["vary"]}, wear=False)
+        self.ms = MS.Mass(X, over={"bulge": {**MS.M["bulge"], "share": {}}}, wear=False)  # the designed planes, flat
         T = X["structure"]; self.sets = [("foliation", MS.unit(T["foliation"]["dipToward"], T["foliation"]["dip"]))] + \
             [(j["name"], MS.unit(j["dipToward"], j["dip"])) for j in T["joints"]]
         self.nf = self.sets[0][1]
-        self.grain = [(Noise("lt1-holm-tip", "sculpt", "grain", self.id, i), L, a) for i, (L, a) in enumerate(S["grain"])]
-        self.band = Noise("lt1-holm-tip", "sculpt", "band", self.id); self.fade = Noise("lt1-holm-tip", "sculpt", "fade", self.id)
-        self.fresh = [f[0] for f in self.ms.faces if f[2] in S["fresh"]]
+        w = S["chamfer"]["weather"]; self.weather = MS.unit(w[0], 90 - w[1])
         self.cracks, self.chips = self.place_cracks(), self.place_chips()
 
     # ------------------------------------------------------------ placing
+    def form(self, P):
+        """The designed planes cut in turn at P, each arris chamfered (`chamfer`): `big` where its bisector faces the
+        weather (toward `weather`, over `at`), `small` where it is sheltered, `fresh` where a fresh face meets (a fresh
+        face's chamfers stay fresh); the base's left sharp. (signed distance, gradient)."""
+        Ch = S["chamfer"]; fs = self.ms.faces; fresh = set(S["fresh"])
+        d = P @ fs[0][0] - fs[0][1]; g = np.tile(fs[0][0], (len(P), 1)); fr = np.full(len(P), fs[0][2] in fresh)
+        for n, off, kind, key, _ in fs[1:]:
+            v = P @ n - off
+            if kind == "base":
+                e = np.zeros(len(P))
+            else:
+                b = g + n; b /= np.maximum(np.linalg.norm(b, axis=1), 1e-9)[:, None]
+                t = np.clip((b @ self.weather - Ch["at"][0]) / (Ch["at"][1] - Ch["at"][0]), 0.0, 1.0)
+                e = np.where(fr | (kind in fresh), Ch["fresh"], Ch["small"] + (Ch["big"] - Ch["small"]) * t * t * (3 - 2 * t))
+            d, g, out = chamfer(d, g, n, v, e, Ch["soft"])
+            fr = np.where(out, fr | (kind in fresh), fr)
+        return d, g
+
     def surface(self, a, b):
-        """The form's surface between a (outside) and b (inside), by bisection on the rounded form."""
+        """The form's surface between a (outside) and b (inside), by bisection on the chamfered form."""
         for _ in range(30):
             m = (a + b) / 2
-            if self.ms.form(m[None])[0][0] > 0:
+            if self.form(m[None])[0][0] > 0:
                 a = m
             else:
                 b = m
@@ -74,15 +102,18 @@ class Sculpt:
     def place_cracks(self):
         """Cracks on the mass's own planes of weakness (`crack`): per set a seeded count, each on a plane at a seeded
         offset through the body, reaching `reachM` (skewed: a few long, more short) round a point where the plane meets
-        the surface on its upper side; `widthM` open at the surface, closing to nothing `depthM` in."""
+        the surface `fromUpDeg` down from its top toward the mass's front; a clean V `widthM` open at the surface and
+        `depthM` deep, both closing toward the reach's end."""
         C = S["crack"]; st = HS.Stream("lt1-holm-tip", "sculpt", "crack", self.id); out = []
         V = np.array([p for p, _ in MS.corners([(f[0], f[1]) for f in self.ms.faces])]); mid = V.mean(0); mid[2] = 0.55 * self.ms.H
+        front = MS.unit(self.X["front"], 90)
         for name, n in self.sets:
             for _ in range(st.randint(*C["count"][name])):
                 t = V @ n; x = st.uniform(t.min() + C["marginM"], t.max() - C["marginM"])
                 p0 = mid - (mid @ n - x) * n
                 up = np.array([0.0, 0.0, 1.0]) - n[2] * n; up /= np.linalg.norm(up); side = np.cross(n, up)
-                a = math.radians(st.uniform(-C["spreadDeg"], C["spreadDeg"])); u = math.cos(a) * up + math.sin(a) * side
+                a = math.radians(st.uniform(*C["fromUpDeg"])); side = side if side @ front >= 0 else -side
+                u = math.cos(a) * up + math.sin(a) * side
                 c = self.surface(p0 + 3.0 * u, p0)
                 out.append(dict(n=n, x=x, c=c, rho=skewed(st, *C["reachM"], C["skew"]), w=st.uniform(*C["widthM"]),
                                 k=st.uniform(*C["depthM"]), wander=Noise("lt1-holm-tip", "sculpt", "wander", self.id, len(out)), set=name))
@@ -91,9 +122,9 @@ class Sculpt:
     def place_chips(self):
         """Chips (`chip`): a corner knocked off where it stands out (its faces turn from each other by `minDeg` or more),
         by its kind's `share` (fresh: a plucked face meets there; worn: weathered faces only, above `above` of the
-        height): a planar facet across it, facing the corner's mean normal turned by up to `jitterDeg`, sunk `depthM`
-        (skewed small) past the rounded surface; crisp at a fresh corner, softened at a worn one; held within `reach`
-        times its depth of the corner so it never shaves a face."""
+        height), at most `most`: a planar facet across it, facing the corner's mean normal turned by up to `jitterDeg`,
+        sunk `depthM` (skewed small) past the chamfered surface, its creases crisp to `soft`; held within `reach` times
+        its depth of the corner so it never shaves a face."""
         C = S["chip"]; st = HS.Stream("lt1-holm-tip", "sculpt", "chip", self.id); fs = self.ms.faces
         sink = self.X.get("sinkM", 0.0); out = []
         for p, s in MS.corners([(f[0], f[1]) for f in fs]):
@@ -104,7 +135,7 @@ class Sculpt:
             if min(math.degrees(math.acos(np.clip(a @ b, -1, 1))) for ai, a in enumerate(N) for b in N[ai + 1:]) < C["minDeg"]:
                 continue
             kind = "fresh" if {fs[k][2] for k in s} & set(S["fresh"]) else "worn"; K = C[kind]
-            if (kind == "worn" and p[2] < K["above"] * self.ms.H) or st.random() >= K["share"]:
+            if (kind == "worn" and p[2] < K["above"] * self.ms.H) or st.random() >= K["share"] or len(out) >= C["most"]:
                 continue
             u = sum(N); u /= np.linalg.norm(u)
             v = np.array([st.normal(), st.normal(), st.normal()]); v -= (v @ u) * u
@@ -116,34 +147,24 @@ class Sculpt:
     # ------------------------------------------------------------ the field
     def field(self, P, fine=True):
         """The sculpted form's signed distance at P (negative in the rock); not fine, the form a game mesh follows: its
-        rounds and chips, without the grain, ridges and cracks the bake carries."""
-        d, g = self.ms.form(P)
-        if not fine:
-            for c in self.chips:
-                d = smax(d, np.minimum(P @ c["u"] - c["o"], c["rho"] - np.linalg.norm(P - c["q"], axis=1)), c["soft"])
-            return d
-        for nz, L, a in self.grain:
-            d = d - a * nz(P / L)
-        Rg = S["ridge"]; s = (P @ self.nf) / Rg["bandM"]
-        hard = np.maximum(self.band(np.stack([s, np.zeros_like(s), np.zeros_like(s)], 1)), 0.0)  # the harder bands stand proud
-        w = np.clip(0.5 + 0.9 * self.fade(P / Rg["fadeM"]), 0, 1) * np.clip(Rg["up"][0] + Rg["up"][1] * g[:, 2], 0, 1)
-        for n in self.fresh:  # a fresh break has not weathered its bands out yet
-            w = w * (1 - np.clip((g @ n - 0.9) / 0.07, 0, 1))
-        d = d - Rg["ampM"] * hard * w
+        chamfers and chips, without the cracks the bake carries."""
+        d, g = self.form(P)
         for c in self.chips:
             d = smax(d, np.minimum(P @ c["u"] - c["o"], c["rho"] - np.linalg.norm(P - c["q"], axis=1)), c["soft"])
-        Ck = S["crack"]
+        if not fine:
+            return d
+        Ck = S["crack"]; L, amp = Ck["wander"]
         for c in self.cracks:
-            # the trace wanders in two octaves and varies in width; its width is held on the surface whatever the plane's
-            # angle to it (the slot narrows by the angle's sine; a meeting shallower than `steep` shows none); toward its
-            # reach's end it shallows out rather than thinning to beads; its lips weathered open by `flare`
+            # a clean V whose trace is the joint's plane on the surface, wandering a little, cut square into the
+            # surface (its offset read where the surface normal through P meets the surface, so both walls stand alike
+            # whatever the plane's angle); its width held on the surface (the slot narrows by the angle's sine), its
+            # depth fading out where the plane meets the surface shallower than `steep` (the V opens to nothing,
+            # never thins to a slit); width and depth closing together toward the reach's end
             q = P - c["c"]; r = np.linalg.norm(q - np.outer(q @ c["n"], c["n"]), axis=1); tp = np.clip(1 - (r / c["rho"]) ** 2, 0, 1)
-            s = P @ c["n"] - c["x"] + sum(a * c["wander"](P / L + 17.0 * o) for o, (L, a) in enumerate(Ck["wander"]))
+            s = P @ c["n"] - c["x"] - d * (g @ c["n"]) + amp * c["wander"](P / L)
             sn = np.linalg.norm(np.cross(g, c["n"]), axis=1)
-            on = sn * np.clip((sn - Ck["steep"][0]) / (Ck["steep"][1] - Ck["steep"][0]), 0, 1) * (tp > 0)
-            half = 0.5 * c["w"] * (1 + Ck["vary"] * c["wander"](P / Ck["varyL"] + 41.0)) * (0.5 + 0.5 * tp) * on
-            half = half * np.clip(1 + d / np.maximum(c["k"] * tp ** 2, 1e-6), 0, 1) + \
-                Ck["flare"][0] * tp * on * np.clip(1 + d / Ck["flare"][1], 0, 1)
+            deep = c["k"] * tp * np.clip((sn - Ck["steep"][0]) / (Ck["steep"][1] - Ck["steep"][0]), 0, 1)
+            half = 0.5 * c["w"] * tp * sn * np.clip(1 + d / np.maximum(deep, 1e-6), 0, 1)
             d = smax(d, half - np.abs(s) - 0.0005, Ck["soft"])
         return d
 

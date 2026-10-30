@@ -108,8 +108,9 @@ stylised rock (`study/` 21, 22, 26, 27; Totoro 09 and 16), and our own house in 
   --cache cache/rock/kit/bake/boulder` (selected-to-active from the high-poly: occlusion, cavity, sky and each level's
   own tangent normal). Holds on try 2. Stage 4: `paint.py` (kit.json `skin`, the rock's own page; its material
   `gneiss`), then `run/render.sh <round>` (stage 5's Unity view beside 107). Fails its three tries (Rounds, r04).
-  Next: the form's rounds tightened (stage 2, so planes meet in drawn arrises, as 17 and 21), the lichen as
-  rosettes and crusts on the old tops in value more than hue, the cracks drawn wider; then stage 4 again.
+  Next (r05, the coordinator's verdict: s1-b3 the best stage, stage 2 made it a cushion under a sheet): stage 2
+  again with every plane flat, two-size chamfers by the weather, V-groove cracks on the joints, planar chips; each
+  stage judged by the coordinator beside s1-b3 and the board before the next.
 - **State (30 Oct, r03):** the outcrop as a few rigid masses, ref 57's LOW ROCKY OUTCROP the only bar (the
   coordinator's brief: step 1 the masses alone beside 57's boulders, step 2 arranged into the outcrop, step 3 the
   outcrop beside 57's; one change a try, at most three a step). `mass.py` (kit.json `mass`): each mass a convex
@@ -155,6 +156,18 @@ stylised rock (`study/` 21, 22, 26, 27; Totoro 09 and 16), and our own house in 
 
 ## Rounds
 
+- **r05** stage 2 again, the boulder's high-poly as flat planes (Blender grey; `reviews/lt1/rock/r05/s2-try1.jpg` to
+  `s2-try3.jpg`: front, back, side, near; `s2-try3-board.jpg`: beside s1-b3, 21, 17 and 15). `sculpt.py`'s own form:
+  the designed planes cut in turn, each arris a flat chamfer (kit.json `sculpt.chamfer`: 0.1 m where its bisector
+  faces the tip's sea and wind at 295, 0.022 m sheltered, 0.006 m at the fresh face); no bulge, grain or ridges.
+  - Try 1: the planes stay flat and the chamfers draw every edge, wide on the weather side, as 21; but two parallel
+    frost cracks run from the top to the turf and slice it like a loaf, and the foliation crack beads into a zipper.
+  - Try 2, one frost crack, shorter reaches, the V's depth (not its width) fading where its plane meets shallow:
+    the frost crack reads, a clean V from the top shoulder tapering down the front; the top's cracks still terrace.
+  - Try 3, the V cut square into the surface (both walls alike whatever the joint's angle): the frost crack holds;
+    the foliation's two run along the top-front crease (its strike near the boulder's long edge), so they read as
+    a beaded edge and meet the frost crack in an X at the front shoulder; the frost crack zigzags over the pluck
+    corner's small chamfers. 0 spikes (least share 0.254), 1.5M tris.
 - **r04** stage 1, the boulder's blockout (Blender grey; `reviews/lt1/rock/r04/s1-b2.jpg`, `s1-b3.jpg`: front, back
   and side, then board crops 26, 17, 19, 21).
   - Try 1: sides from the joint sets' bearings; a crate.
