@@ -38,7 +38,7 @@ namespace Overstory.EditorTools
         [Serializable] class TipMat { public string name; public float L; public float smooth; public string normal, ao; }
         [Serializable] class TipView { public string name, level; public float[] pos, target; public float fov; }
         [Serializable] class TipMats { public TipMat[] mats; public TipView[] views; public float sunOff; }
-        [Serializable] class Beside { public string house; public Placed[] parts; public Eye eye, high, iso; }
+        [Serializable] class Beside { public string house; public Placed[] parts; public Eye eye, back, high, iso; }
         [Serializable] class Kit { public Beside beside; }
 
         [Serializable] class GKind { public string species; public int variant; public string[] levels; public float radius, hue; public float[] @base, tip, damp, seed; public int first, count; }
@@ -265,6 +265,12 @@ namespace Overstory.EditorTools
                     views.Add(new View { name = "street", level = Get<string>(v, "level"), pos = Get<Vector3>(v, "pos"), target = Get<Vector3>(v, "target"), fov = Get<float>(v, "fov") });
             var eyePos = V(B.parts[0].at) + V(B.eye.from);
             views.Insert(0, new View { name = "eye", level = "near", pos = eyePos, target = eyePos + V(B.eye.look), fov = B.eye.fov });
+            // the first part's far side at eye level (kit.json beside.back), where its fresh face is
+            if (B.back?.from?.Length == 3)
+            {
+                var backPos = V(B.parts[0].at) + V(B.back.from);
+                views.Add(new View { name = "back", level = "near", pos = backPos, target = backPos + V(B.back.look), fov = B.back.fov });
+            }
             // the raised view of the first part (kit.json beside.high), at its near level
             if (B.high?.from?.Length == 3)
             {

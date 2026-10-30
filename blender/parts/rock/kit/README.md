@@ -129,15 +129,17 @@ make rock).
   which `render.sh` installs and LT1HolmTip draws through the growth's own GrowthTufts in the street ground's place.
   Fails its three tries on the heather patches and the till stones; try 4, aimed only at what failed, holds on its
   four asks (Rounds, r06). Stages 7 and 8 go to a fresh session (next bullet).
-- **State (30 Oct, r07 stage 7, the edges):** `sculpt.py`'s worn arrises are rounds cut in flat facets (kit.json
-  `sculpt.chamfer`: `small` 0.035 in shelter to `big` 0.09 toward the weather, each facet turning at most `facetDeg`,
-  the width tapering end to end by `taper`), a fresh arris one crisp 12 mm facet; `Sculpt.place_breaks` knocks a few
-  flakes off arrises as planar cuts (kit.json `sculpt.breaks`): the top corner the mass's record says frost spalled
-  (`mass.masses` `boulder` `spall`, bearing 125), two or three along the fresh face's arrises, two at the foot in view
-  of the front; each a floor that runs out to the surface `lenM` along and a step sloped `stepDeg` toward the light at
-  the other end (a two-step break reads as a slot, so `steps` is 0). Breaks are concave, so they are in the high-poly
-  alone and the bake carries them. Chips are off (`chip` shares 0). Holds on try 2 (Rounds, r07), waiting for the
-  coordinator's word; stage 8 (the page) and 9 (one drawn crack) follow.
+- **State (30 Oct, r07 stage 7, the edges):** `sculpt.py`'s worn arrises are true rounds, a cylinder tangent to both
+  faces (kit.json `sculpt.chamfer`: setback `small` 0.02 m in shelter to `big` 0.04 toward the weather, tapering end to
+  end by `taper`), a fresh arris one crisp 12 mm facet. `game.py` shades each level smooth across the rounds: a face on a
+  designed plane takes the plane's exact normal, a face on a round the form's own gradient, and edges are hard only
+  between two planes. `Sculpt.place_breaks` knocks a few flakes off arrises as planar cuts (kit.json `sculpt.breaks`,
+  59's notches): the top corner the mass's record says frost spalled (`mass.masses` `boulder` `spall`, bearing 125),
+  two or three along the fresh face's arrises, and one on the front's level foot arris (a place's `steepest` and
+  `floorUp`). Each is a floor biting `biteM` [upper, lower] into the arris's two faces, so it faces the sky, and a
+  step 25–35° off square at its upper end (a square step is grazed by the bake's rays into a beaded line). Breaks are
+  concave, so they are in the high-poly alone and the bake carries them. Chips are off (`chip` shares 0). Try 3, the
+  last, waits for the coordinator's word (Rounds, r07); stage 8 (the page) and 9 (one drawn crack) follow.
 - **Hand-over for stages 7 and 8 (30 Oct, end of r06):**
   - **The ground is a stand-in.** The grass and heath element will make the real one; keep it as it is unless the
     boulder needs it changed. It is the tip's one community (`packs/stavanger-1989/growth.json` habitat `tipTurf`:
@@ -163,7 +165,8 @@ make rock).
     `gen/boulder/high.blend`; refuses a pinch under `leastArrisM`), `game.py -- --mass boulder`, `bake.py` and
     `paint.py` (each `-- --gen cache/rock/kit/gen/boulder --cache cache/rock/kit/bake/boulder`), `foot.py`, `ground.py`,
     then `TIP_SUN=-10 python3 tools/unity_lock.py run -- bash blender/parts/rock/kit/run/render.sh <round>
-    eye,street,high,iso P,Pc overcast,lowsun` (about 10 minutes, so run it in the background).
+    eye,back,street,high,iso P,Pc overcast,lowsun` (about 12 minutes, so run it in the background; `back` is kit.json
+    `beside.back`, the far side at eye level, where the fresh face is).
   - **Where stage 8 starts (the page).** `paint.py` with kit.json `skin` (`broad`, `foot`, `top`, `cavity`, and the
     `crack` and `lichen` rules, both at `faces` 0 now) and `materials.gneiss`, `colour.gneiss`. The boulder is drawn in
     the street's OS_Finish through `LT1Street`; changes to that shader need the coordinator's approval. The till stones
@@ -224,9 +227,10 @@ make rock).
 
 - **r07** stage 7, the edges (the coordinator: shape simple, most edges broad and soft from transport, a few chipped
   breaks of varied width as 59's where a break makes sense, one fresh corner and the foot; Firewatch's jag as accent
-  only; never splinters; `reviews/lt1/rock/r07/s7-try2-board.jpg`: rows low sun Pc, low sun P, overcast Pc, overcast P
-  across eye, street stop, 12 m and iso, right column 58's boulders, 59, 17, 21; bottom r06 try 4's eye (low sun Pc),
-  try 2's eye low sun Pc, P and overcast P, and the fresh face in Blender's grey; `TIP_SUN=-10`). Holds on try 2.
+  only; never splinters; `reviews/lt1/rock/r07/s7-try3-board.jpg`: rows low sun Pc, low sun P, overcast Pc, overcast
+  P across eye, the far side at eye level, street stop, 12 m and iso, right column 58's boulders, 59, 17, 21; bottom
+  the eye close-up low sun Pc of s6, try 3 and try 2, overcast P of s6 and try 3, and try 3's fresh face close-up in
+  overcast P; `TIP_SUN=-10`). Try 2's board is `s7-try2-board.jpg`. Try 3 waits for the coordinator's word.
   - Try 1 (`r07-s7a`, no board): the rounds 0.05–0.12 m in three facets; breaks a floor tilted the wrong way, so a
     one-step break deepened without end and cut a striped wedge across the front (the bake's rays could not reach
     it). Apart from the bug, the broad rounds made it a cushion in overcast and soft from 12 m beside r06's crisp
@@ -235,7 +239,16 @@ make rock).
     light; breaks 16–45 cm long and 1–4 cm deep, one step each. The frost-spalled corner reads as a lit broken facet
     with a crisp step; the foot chip as a long shallow scallop ending in a step; edges vary from soft on the weather
     side to crisp at the fresh face; from 12 m and iso still planar, as 58. spikeVoxels 0, game near 815 / street 260
-    / city 25 tris. The edge's light lip is stage 8's (the page).
+    / city 25 tris. The edge's light lip is stage 8's (the page). The coordinator: drifted softer than s6, toward a
+    pebble or soap, and the character can't be seen; four asks for try 3 (tighter rounds, smooth shading, breaks
+    that read from the street stop, judge the fresh face).
+  - Try 3 (`r07-s7c`, then `r07-s7d` on the board): the rounds true and tangent, 2–4 cm, shaded smooth by the form's
+    gradient between exact plane normals, so planes meet as a change of value and the overcast cushion is gone.
+    Breaks bite set widths into each face (a depth and a lean made one floor nearly parallel to its face, a 40 cm
+    sliver); the foot's on the front's level arris only (on a steep one it read as a dark slot); steps 25–35° off
+    square (`r07-s7c`'s square steps baked as beaded lines on the fresh face). From the street stop the fresh face's
+    top edge reads as two clean steps; at eye level the front shows the spalled corner and the foot notch, and the
+    fresh face's notches in silhouette. spikeVoxels 0, game near 824 / street 263 / city 26 tris.
 
 - **r06** stage 6, the ground (the coordinator: continuous dry summer turf and heath out to the frame's edge, the
   growth's instanced tufts, a bank at the foot denser and taller in the lee and the shed, 3–6 darker till stones half

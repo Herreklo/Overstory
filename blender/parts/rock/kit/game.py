@@ -2,7 +2,7 @@
 
     Blender -b --factory-startup -P blender/parts/rock/kit/game.py -- --mass boulder [--out cache/rock/kit/gen/boulder]
 
-The mass's sculpted form (sculpt.py, its chamfers and chips, without the cracks the bake carries) is
+The mass's sculpted form (sculpt.py, its rounds and chamfers, without the cracks and breaks the bake carries) is
 meshed at `voxelM`, cut `underM` below the turf (the mass sinks `sinkM`; the turf is the levels' z = 0) and decimated to
 each level's budget (`fill` of street.json's ceiling, by the mass's surface: a square metre of rock costs what one of
 house does). Every level's faces sit on the same charts: a face's chart is the designed plane (the blockout's) its
@@ -37,12 +37,12 @@ def evaluated(ob, name):
     return me
 
 
-def plane_normals(o, planes, flat):
+def plane_normals(o, planes, flat, grad):
     """A baked level's normals by its designed planes: a face within `flat` degrees of the plane its normal is nearest
-    is that plane's, the rest are the chamfers' turn; every edge between two planes, or between a plane and a chamfer,
-    is hard, and a plane's faces take its own normal, so each plane shades flat as one (no fan where the decimated
-    faces lie a little off it, which the bake would have to cancel) and the chamfers alone make the turn (the plain
-    corner-angle average within each)."""
+    is that plane's and takes its exact normal, so each plane shades flat as one (no fan where the decimated faces lie
+    a little off it, which the bake would have to cancel); the rest are the rounds', each corner taking the sculpted
+    form's own normal there (`grad`), so a round blends from one plane's normal to the other's as the high-poly's does.
+    Only an edge between two planes is hard."""
     me = o.data
     if "custom_normal" in me.attributes:
         me.attributes.remove(me.attributes["custom_normal"])
@@ -53,18 +53,32 @@ def plane_normals(o, planes, flat):
     ls = np.empty(len(me.polygons), int); lt = np.empty(len(me.polygons), int)
     me.polygons.foreach_get("loop_start", ls); me.polygons.foreach_get("loop_total", lt)
     le = np.empty(len(me.loops), int); me.loops.foreach_get("edge_index", le)
+    lv = np.empty(len(me.loops), int); me.loops.foreach_get("vertex_index", lv)
     fk = np.empty(len(me.loops), int); fk[np.repeat(ls, lt) + np.concatenate([np.arange(t) for t in lt])] = np.repeat(key, lt)
     lo = np.full(len(me.edges), 1 << 30); hi = np.full(len(me.edges), -2)
     np.minimum.at(lo, le, fk); np.maximum.at(hi, le, fk)
-    sharp = (lo != hi) & (hi > -2)
+    sharp = (lo != hi) & (lo >= 0)
     at = me.attributes.get("sharp_edge") or me.attributes.new("sharp_edge", "BOOLEAN", "EDGE")
     at.data.foreach_set("value", sharp)
     if "sharp_face" in me.attributes:
         me.attributes.remove(me.attributes["sharp_face"])
-    LN = np.zeros((len(me.loops), 3)); on = fk >= 0; LN[on] = PN[fk[on]]
+    V = np.empty(len(me.vertices) * 3); me.vertices.foreach_get("co", V); V = V.reshape(-1, 3)
+    LN = np.zeros((len(me.loops), 3)); on = fk >= 0; LN[on] = PN[fk[on]]; LN[~on] = grad(V)[lv[~on]]
     me.normals_split_custom_set(LN.tolist())
     me.update()
     return int(sharp.sum()), float((key >= 0).mean())
+
+
+def form_normal(sc, sink, h=0.002):
+    """The sculpted form's outward normal at points in the levels' frame (moved down `sink`), by central differences h
+    apart."""
+    def grad(V):
+        P = V + np.array([0.0, 0.0, sink]); g = np.zeros_like(P)
+        for ax in range(3):
+            e = np.zeros(3); e[ax] = h
+            g[:, ax] = sc.form(P + e)[0] - sc.form(P - e)[0]
+        return g / np.maximum(np.linalg.norm(g, axis=1, keepdims=True), 1e-12)
+    return grad
 
 
 def arris(sc, V, lo, hi, h):
@@ -167,7 +181,7 @@ def main():
             fl.append((pc, G.Face(pts, cuv, key, cuv)))
         o = G.to_object(f"{lv}_{mname}", fl, lambda _pc: Matrix.Identity(4), lambda _pc, w: w, rects, size,
                         lambda _pc, f, w: [0.0, seed, 0.0, 1.0])
-        hard[lv] = plane_normals(o, planes, GM["flatDeg"]); objs[lv] = o; counts[lv] = G.tris_of(o)
+        hard[lv] = plane_normals(o, planes, GM["flatDeg"], form_normal(sc, sink)); objs[lv] = o; counts[lv] = G.tris_of(o)
     for me in meshes.values():
         bpy.data.meshes.remove(me)
     over = [lv for lv in budgets if counts[lv] > budgets[lv][1]]
