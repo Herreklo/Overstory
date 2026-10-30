@@ -138,8 +138,19 @@ make rock).
   two or three along the fresh face's arrises, and one on the front's level foot arris (a place's `steepest` and
   `floorUp`). Each is a floor biting `biteM` [upper, lower] into the arris's two faces, so it faces the sky, and a
   step 25–35° off square at its upper end (a square step is grazed by the bake's rays into a beaded line). Breaks are
-  concave, so they are in the high-poly alone and the bake carries them. Chips are off (`chip` shares 0). Try 3, the
-  last, waits for the coordinator's word (Rounds, r07); stage 8 (the page) and 9 (one drawn crack) follow.
+  concave, so they are in the high-poly alone and the bake carries them. Chips are off (`chip` shares 0). Try 3 holds
+  (the coordinator, Rounds r07).
+- **State (30 Oct, r07 stage 8, the page):** `paint.py` paints the gneiss as ref 58 paints its boulders. The stone is
+  a neutral grey a shade warm (kit.json `colour.gneiss` `paint` [1.2, 70]): in overcast its top sits at L 70 against
+  107's white at 85, with no blue (the shade's coolness is the sky's), and in low sun its warmth is the light's (lit
+  planes C 18 h 83, as 107's lit paint). Weathering holds 58's three values: the top 7 L paler (`skin.top`), the
+  under-planes 7 darker (`skin.under`), the sides between. The top's fine stipple (`skin.speckle`) is the grain's dark
+  and light flecks, about 1 cm cells, gathered in loose drifts, on up-facing planes only. The breaks (`skin.breaks`,
+  read from `Sculpt(...).breaks`' own planes) are 3 L paler, clean of speckle and lichen, with a 9 mm lit lip times the
+  occlusion; the fresh face's arrises carry the same lip. The lichen (`skin.lichen`) is one colony on each of the two
+  biggest up- or sea-facing old faces: spots merging into one flat crust, stretched one way (`stretch`), its margin
+  lobed, the top's speckle thickening around it (`speckle.lichen`). Try 1 waits for the coordinator's word (Rounds,
+  r07); stage 9 (one drawn crack) follows.
 - **Hand-over for stages 7 and 8 (30 Oct, end of r06):**
   - **The ground is a stand-in.** The grass and heath element will make the real one; keep it as it is unless the
     boulder needs it changed. It is the tip's one community (`packs/stavanger-1989/growth.json` habitat `tipTurf`:
@@ -167,10 +178,13 @@ make rock).
     then `TIP_SUN=-10 python3 tools/unity_lock.py run -- bash blender/parts/rock/kit/run/render.sh <round>
     eye,back,street,high,iso P,Pc overcast,lowsun` (about 12 minutes, so run it in the background; `back` is kit.json
     `beside.back`, the far side at eye level, where the fresh face is).
-  - **Where stage 8 starts (the page).** `paint.py` with kit.json `skin` (`broad`, `foot`, `top`, `cavity`, and the
-    `crack` and `lichen` rules, both at `faces` 0 now) and `materials.gneiss`, `colour.gneiss`. The boulder is drawn in
-    the street's OS_Finish through `LT1Street`; changes to that shader need the coordinator's approval. The till stones
-    are vertex colour in `Nature/RockFoot.shader`, outside the page.
+  - **Where stage 9 starts (one drawn crack).** `paint.py` with kit.json `skin.crack` (`faces` 0 now: set it to 1 or 2)
+    and `materials.gneiss`, `colour.gneiss`. A page-only change needs only `paint.py` then `render.sh` (eye and back
+    about 4 minutes). The crack follows the boulder's `frost` joint (`mass.masses` `boulder` `structure.joints`): a
+    thin dark line with a slight light lip, never a seam or knife slit. Keep it out of the scars (`scar` in paint.py).
+    The boulder is drawn in the street's OS_Finish through `LT1Street`; changes to that shader need the coordinator's
+    approval. The till stones are vertex colour in `Nature/RockFoot.shader`, outside the page. A board of seven rows
+    at full size crashes `sheet.py` (memory): shrink the stills to 1280 wide first.
   - **Boards:** ref 58 first, then 59, 17 and 21 (`docs/references/stone/study/58-rock-family-concept-sheet.webp`,
     `study/59-stylised-sculpted-rocks.png`, `17-hertervig-boulders-1856.jpg`, `study/21-firewatch-rock-formations.jpg`);
     stills shrunk with `sips`, laid out by `blender/parts/rock/sheet.py -- OUT.png 5 IMG...`, the board at 2560 wide.
@@ -225,12 +239,28 @@ make rock).
 
 ## Rounds
 
+- **r07** stage 8, the page (the coordinator: about three values as 58 paints them, the top lightest with a fine
+  stipple of grain and lichen, sides mid, under-planes very dark; a neutral to slightly warm stone, its overcast top
+  clearly below 107's white, no icy blue; a subtle edge highlight along the breaks times the occlusion; lichen last,
+  the speckle thickening into a few flat crusts with crisp, irregular edges; `reviews/lt1/rock/r07/s8-try1-board.jpg`:
+  rows low sun Pc, low sun P, overcast Pc, overcast P across eye, far side, street stop, 12 m and iso, right column
+  58, 59, 17, 21; bottom the eye close-ups of s7-try3 and s8 in low sun Pc and overcast Pc, s8's far side in both
+  lights, then s7-try3 and s8 in overcast P, s8's 12 m close-up in both lights and its far side in overcast P;
+  `TIP_SUN=-10`). Try 1 waits for the coordinator's word.
+  - Looks before the board (`r07-s8a` to `r07-s8d`): a coarse dense speckle on every face read as terrazzo; the
+    pigment at C 2.5 made the stone sandy tan in low sun (C 13–19); fixed by a 1 cm clustered stipple on the top
+    only and the pigment at C 1.2. Lichen as clusters of round spots read as polka dots, then merged; two crusts side
+    by side on the top read from 12 m as a pair of eyes (`r07-s8d`), so one colony a face, stretched (`r07-s8e`).
+  - Try 1 (`r07-s8e`): overcast top L 70 C 2 h 73, sides 62 and 54, under-planes 20, 107's gable 85; low sun lit
+    planes C 18 h 83 (107's lit paint C 17 h 85). Lichen 2.1 % of the texels in two colonies (top/0, side/6); scars
+    0.75 %, lip 1.7 %.
+
 - **r07** stage 7, the edges (the coordinator: shape simple, most edges broad and soft from transport, a few chipped
   breaks of varied width as 59's where a break makes sense, one fresh corner and the foot; Firewatch's jag as accent
   only; never splinters; `reviews/lt1/rock/r07/s7-try3-board.jpg`: rows low sun Pc, low sun P, overcast Pc, overcast
   P across eye, the far side at eye level, street stop, 12 m and iso, right column 58's boulders, 59, 17, 21; bottom
   the eye close-up low sun Pc of s6, try 3 and try 2, overcast P of s6 and try 3, and try 3's fresh face close-up in
-  overcast P; `TIP_SUN=-10`). Try 2's board is `s7-try2-board.jpg`. Try 3 waits for the coordinator's word.
+  overcast P; `TIP_SUN=-10`). Try 2's board is `s7-try2-board.jpg`. Try 3 holds (the coordinator).
   - Try 1 (`r07-s7a`, no board): the rounds 0.05–0.12 m in three facets; breaks a floor tilted the wrong way, so a
     one-step break deepened without end and cut a striped wedge across the front (the bake's rays could not reach
     it). Apart from the bug, the broad rounds made it a cushion in overcast and soft from 12 m beside r06's crisp
