@@ -1,0 +1,345 @@
+{
+ "what": "the machine's background load around a timing run (tools/unity_lock.py --timing): the busiest processes by ps's %CPU (of one core), before the run and sampled during it, the run's own processes apart",
+ "owner": "unnamed (from zsh < claude < disclaimer < Claude)",
+ "purpose": "the frame-time harness: tools/perf.sh playable -runs 1 -out reviews/perf/2026-10-26/playable/light-r2-passes -perf-frames 60 -perf-warmup 20 -perf-rounds 2 -perf-passes all,haze-off,-foglights,-sky,-fullscreen,bare -perf-scenes playable -perf-views street,eye-foot -perf-shots some",
+ "command": [
+  "zsh",
+  "/Users/oystein/code/Overstory/tools/perf.sh",
+  "playable",
+  "-runs",
+  "1",
+  "-out",
+  "reviews/perf/2026-10-26/playable/light-r2-passes",
+  "-perf-frames",
+  "60",
+  "-perf-warmup",
+  "20",
+  "-perf-rounds",
+  "2",
+  "-perf-passes",
+  "all,haze-off,-foglights,-sky,-fullscreen,bare",
+  "-perf-scenes",
+  "playable",
+  "-perf-views",
+  "street,eye-foot",
+  "-perf-shots",
+  "some"
+ ],
+ "started": "2026-10-26T23:12:11+01:00",
+ "ended": "2026-10-26T23:16:31+01:00",
+ "seconds": 260,
+ "exit": 0,
+ "cpus": 10,
+ "memory_gb": 24.0,
+ "open": [
+  "Blender, interactive"
+ ],
+ "before": {
+  "load": [
+   1.55,
+   4.66,
+   7.12
+  ],
+  "top": [
+   {
+    "name": "WindowServer",
+    "pid": 4171,
+    "cpu": 28.9,
+    "mem": 0.3
+   },
+   {
+    "name": "Claude Helper (Renderer)",
+    "pid": 90158,
+    "cpu": 15.1,
+    "mem": 3.9
+   },
+   {
+    "name": "Creative Cloud UI Helper (Renderer)",
+    "pid": 41696,
+    "cpu": 7.4,
+    "mem": 1.1
+   },
+   {
+    "name": "mds_stores",
+    "pid": 4319,
+    "cpu": 6.9,
+    "mem": 0.4
+   },
+   {
+    "name": "Claude Helper",
+    "pid": 90145,
+    "cpu": 5.4,
+    "mem": 0.3
+   },
+   {
+    "name": "mdworker_shared",
+    "pid": 59648,
+    "cpu": 4.8,
+    "mem": 0.1
+   },
+   {
+    "name": "mdworker_shared",
+    "pid": 59649,
+    "cpu": 3.6,
+    "mem": 0.1
+   },
+   {
+    "name": "Claude Helper",
+    "pid": 90165,
+    "cpu": 3.4,
+    "mem": 0.4
+   },
+   {
+    "name": "Claude",
+    "pid": 90137,
+    "cpu": 2.8,
+    "mem": 1.4
+   },
+   {
+    "name": "mds",
+    "pid": 4129,
+    "cpu": 2.3,
+    "mem": 0.2
+   },
+   {
+    "name": "mdworker_shared",
+    "pid": 59646,
+    "cpu": 1.6,
+    "mem": 0.1
+   },
+   {
+    "name": "Blender",
+    "pid": 58659,
+    "cpu": 1.5,
+    "mem": 0.4
+   }
+  ],
+  "spotlight": [
+   {
+    "name": "mds_stores",
+    "pid": 4319,
+    "cpu": 6.9,
+    "mem": 0.4
+   },
+   {
+    "name": "mdworker_shared",
+    "pid": 59648,
+    "cpu": 4.8,
+    "mem": 0.1
+   },
+   {
+    "name": "mdworker_shared",
+    "pid": 59649,
+    "cpu": 3.6,
+    "mem": 0.1
+   },
+   {
+    "name": "mds",
+    "pid": 4129,
+    "cpu": 2.3,
+    "mem": 0.2
+   },
+   {
+    "name": "mdworker_shared",
+    "pid": 59646,
+    "cpu": 1.6,
+    "mem": 0.1
+   },
+   {
+    "name": "mdworker_shared",
+    "pid": 59613,
+    "cpu": 1.2,
+    "mem": 0.1
+   },
+   {
+    "name": "mdworker_shared",
+    "pid": 59644,
+    "cpu": 1.0,
+    "mem": 0.1
+   },
+   {
+    "name": "mdworker_shared",
+    "pid": 59641,
+    "cpu": 0.8,
+    "mem": 0.1
+   },
+   {
+    "name": "mdworker_shared",
+    "pid": 59654,
+    "cpu": 0.8,
+    "mem": 0.1
+   },
+   {
+    "name": "mdworker_shared",
+    "pid": 59652,
+    "cpu": 0.3,
+    "mem": 0.1
+   },
+   {
+    "name": "mdworker_shared",
+    "pid": 59653,
+    "cpu": 0.3,
+    "mem": 0.1
+   },
+   {
+    "name": "mdworker_shared",
+    "pid": 59650,
+    "cpu": 0.2,
+    "mem": 0.1
+   },
+   {
+    "name": "mdworker_shared",
+    "pid": 59651,
+    "cpu": 0.2,
+    "mem": 0.1
+   },
+   {
+    "name": "mdworker_shared",
+    "pid": 59640,
+    "cpu": 0.1,
+    "mem": 0.1
+   },
+   {
+    "name": "mdworker_shared",
+    "pid": 59642,
+    "cpu": 0.1,
+    "mem": 0.1
+   },
+   {
+    "name": "mdworker_shared",
+    "pid": 59643,
+    "cpu": 0.1,
+    "mem": 0.1
+   },
+   {
+    "name": "mdworker_shared",
+    "pid": 59645,
+    "cpu": 0.1,
+    "mem": 0.1
+   },
+   {
+    "name": "mdworker_shared",
+    "pid": 59647,
+    "cpu": 0.1,
+    "mem": 0.1
+   }
+  ],
+  "spotlight_cpu": 24.5
+ },
+ "during": {
+  "samples": 8,
+  "every_s": 30.0,
+  "load": {
+   "min": 1.59,
+   "mean": 1.86,
+   "max": 2.14
+  },
+  "top": [
+   {
+    "name": "Creative Cloud UI Helper (Renderer)",
+    "pid": 41696,
+    "cpu_mean": 6.5,
+    "cpu_max": 7.2
+   },
+   {
+    "name": "WindowServer",
+    "pid": 4171,
+    "cpu_mean": 4.7,
+    "cpu_max": 8.3
+   },
+   {
+    "name": "coreaudiod",
+    "pid": 4186,
+    "cpu_mean": 3.9,
+    "cpu_max": 4.2
+   },
+   {
+    "name": "mdworker_shared",
+    "pid": 59783,
+    "cpu_mean": 1.8,
+    "cpu_max": 14.6
+   },
+   {
+    "name": "mdworker_shared",
+    "pid": 59784,
+    "cpu_mean": 1.8,
+    "cpu_max": 14.6
+   },
+   {
+    "name": "mdworker_shared",
+    "pid": 59785,
+    "cpu_mean": 1.7,
+    "cpu_max": 13.8
+   },
+   {
+    "name": "claude",
+    "pid": 20429,
+    "cpu_mean": 1.2,
+    "cpu_max": 7.3
+   },
+   {
+    "name": "claude",
+    "pid": 45515,
+    "cpu_mean": 1.0,
+    "cpu_max": 6.7
+   },
+   {
+    "name": "claude",
+    "pid": 46380,
+    "cpu_mean": 0.6,
+    "cpu_max": 3.0
+   },
+   {
+    "name": "Creative Cloud UI Helper (GPU)",
+    "pid": 29862,
+    "cpu_mean": 0.6,
+    "cpu_max": 0.7
+   },
+   {
+    "name": "mdworker_shared",
+    "pid": 59782,
+    "cpu_mean": 0.5,
+    "cpu_max": 3.9
+   },
+   {
+    "name": "claude",
+    "pid": 56443,
+    "cpu_mean": 0.5,
+    "cpu_max": 1.0
+   }
+  ],
+  "spotlight_cpu_mean": 7.2,
+  "run": [
+   {
+    "name": "Overstory",
+    "pid": 59725,
+    "cpu_mean": 38.3,
+    "cpu_max": 100.6
+   },
+   {
+    "name": "UnityPackageManager",
+    "pid": 59695,
+    "cpu_mean": 0.9,
+    "cpu_max": 7.4
+   },
+   {
+    "name": "Unity.DataStore",
+    "pid": 59696,
+    "cpu_mean": 0.6,
+    "cpu_max": 0.8
+   },
+   {
+    "name": "Unity.Licensing.Client",
+    "pid": 59694,
+    "cpu_mean": 0.4,
+    "cpu_max": 2.8
+   },
+   {
+    "name": "dotnet",
+    "pid": 59698,
+    "cpu_mean": 0.2,
+    "cpu_max": 0.9
+   }
+  ]
+ }
+}

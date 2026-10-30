@@ -1,0 +1,235 @@
+{
+ "what": "the machine's background load around a timing run (tools/unity_lock.py --timing): the busiest processes by ps's %CPU (of one core), before the run and sampled during it, the run's own processes apart",
+ "owner": "unnamed (from zsh < claude < disclaimer < Claude)",
+ "purpose": "the frame-time harness: tools/perf.sh playable -runs 1 -out reviews/perf/2026-10-26/playable/light-r2",
+ "command": [
+  "zsh",
+  "/Users/oystein/code/Overstory/tools/perf.sh",
+  "playable",
+  "-runs",
+  "1",
+  "-out",
+  "reviews/perf/2026-10-26/playable/light-r2"
+ ],
+ "started": "2026-10-26T22:46:16+01:00",
+ "ended": "2026-10-26T23:01:21+01:00",
+ "seconds": 904,
+ "exit": 0,
+ "cpus": 10,
+ "memory_gb": 24.0,
+ "open": [
+  "Blender, interactive"
+ ],
+ "before": {
+  "load": [
+   3.34,
+   3.21,
+   3.01
+  ],
+  "top": [
+   {
+    "name": "mediaanalysisd",
+    "pid": 73988,
+    "cpu": 65.2,
+    "mem": 0.5
+   },
+   {
+    "name": "mediaanalysisd-access",
+    "pid": 73999,
+    "cpu": 37.0,
+    "mem": 1.3
+   },
+   {
+    "name": "mds_stores",
+    "pid": 4319,
+    "cpu": 21.5,
+    "mem": 0.7
+   },
+   {
+    "name": "claude",
+    "pid": 52259,
+    "cpu": 13.7,
+    "mem": 2.0
+   },
+   {
+    "name": "Claude Helper (Renderer)",
+    "pid": 90158,
+    "cpu": 6.6,
+    "mem": 2.0
+   },
+   {
+    "name": "Creative Cloud UI Helper (Renderer)",
+    "pid": 41696,
+    "cpu": 5.3,
+    "mem": 1.2
+   },
+   {
+    "name": "claude",
+    "pid": 20429,
+    "cpu": 4.0,
+    "mem": 0.8
+   },
+   {
+    "name": "Blender",
+    "pid": 58659,
+    "cpu": 1.4,
+    "mem": 0.3
+   },
+   {
+    "name": "Claude",
+    "pid": 90137,
+    "cpu": 1.3,
+    "mem": 1.3
+   },
+   {
+    "name": "zsh",
+    "pid": 55794,
+    "cpu": 1.2,
+    "mem": 0.0
+   },
+   {
+    "name": "mds",
+    "pid": 4129,
+    "cpu": 0.7,
+    "mem": 0.1
+   },
+   {
+    "name": "aned",
+    "pid": 4261,
+    "cpu": 0.7,
+    "mem": 0.0
+   }
+  ],
+  "spotlight": [
+   {
+    "name": "mds_stores",
+    "pid": 4319,
+    "cpu": 21.5,
+    "mem": 0.7
+   },
+   {
+    "name": "mds",
+    "pid": 4129,
+    "cpu": 0.7,
+    "mem": 0.1
+   }
+  ],
+  "spotlight_cpu": 22.2
+ },
+ "during": {
+  "samples": 29,
+  "every_s": 30.0,
+  "load": {
+   "min": 2.87,
+   "mean": 11.03,
+   "max": 18.58
+  },
+  "top": [
+   {
+    "name": "mediaanalysisd",
+    "pid": 73988,
+    "cpu_mean": 19.3,
+    "cpu_max": 83.4
+   },
+   {
+    "name": "WindowServer",
+    "pid": 4171,
+    "cpu_mean": 9.6,
+    "cpu_max": 37.0
+   },
+   {
+    "name": "node",
+    "pid": 57836,
+    "cpu_mean": 7.6,
+    "cpu_max": 134.8
+   },
+   {
+    "name": "node",
+    "pid": 57752,
+    "cpu_mean": 7.2,
+    "cpu_max": 109.3
+   },
+   {
+    "name": "node",
+    "pid": 57837,
+    "cpu_mean": 7.1,
+    "cpu_max": 114.2
+   },
+   {
+    "name": "node",
+    "pid": 57549,
+    "cpu_mean": 6.9,
+    "cpu_max": 101.9
+   },
+   {
+    "name": "node",
+    "pid": 57638,
+    "cpu_mean": 6.9,
+    "cpu_max": 110.8
+   },
+   {
+    "name": "node",
+    "pid": 57225,
+    "cpu_mean": 6.5,
+    "cpu_max": 103.4
+   },
+   {
+    "name": "node",
+    "pid": 57521,
+    "cpu_mean": 6.5,
+    "cpu_max": 99.8
+   },
+   {
+    "name": "node",
+    "pid": 57304,
+    "cpu_mean": 6.5,
+    "cpu_max": 98.7
+   },
+   {
+    "name": "node",
+    "pid": 57388,
+    "cpu_mean": 6.3,
+    "cpu_max": 92.5
+   },
+   {
+    "name": "node",
+    "pid": 57360,
+    "cpu_mean": 6.3,
+    "cpu_max": 91.6
+   }
+  ],
+  "spotlight_cpu_mean": 6.0,
+  "run": [
+   {
+    "name": "UnityShaderCompiler",
+    "pid": 55841,
+    "cpu_mean": 47.7,
+    "cpu_max": 97.2
+   },
+   {
+    "name": "UnityShaderCompiler",
+    "pid": 55878,
+    "cpu_mean": 47.6,
+    "cpu_max": 96.2
+   },
+   {
+    "name": "UnityShaderCompiler",
+    "pid": 55882,
+    "cpu_mean": 47.3,
+    "cpu_max": 95.1
+   },
+   {
+    "name": "UnityShaderCompiler",
+    "pid": 55877,
+    "cpu_mean": 47.3,
+    "cpu_max": 96.0
+   },
+   {
+    "name": "UnityShaderCompiler",
+    "pid": 55911,
+    "cpu_mean": 47.2,
+    "cpu_max": 95.9
+   }
+  ]
+ }
+}
