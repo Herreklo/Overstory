@@ -113,7 +113,9 @@ stylised rock (`study/` 21, 22, 26, 27; Totoro 09 and 16), and our own house in 
   stage judged by the coordinator beside s1-b3 and the board before the next. r05: stage 2 passes (the coordinator:
   the planes and chamfers; the geometric cracks taken out, kit.json `sculpt.crack.count` 0), stage 3 holds, stage 4
   (the page: calm base, broad variation, cavities, one drawn crack, lichen colonies) fails its three tries on the
-  lichen and the crack (Rounds, r05). Waits for the coordinator's word before stage 5.
+  lichen and the crack (Rounds, r05). Then stage 3 again (hard plane edges, Unity's grey beside s2) passes, and stage
+  4 simple (calm base, broad variation, cavities; no lichen, no crack) holds on try 3 in a side low sun
+  (`TIP_SUN=-10`). Waits for the coordinator's word before stage 5.
 - **State (30 Oct, r03):** the outcrop as a few rigid masses, ref 57's LOW ROCKY OUTCROP the only bar (the
   coordinator's brief: step 1 the masses alone beside 57's boulders, step 2 arranged into the outcrop, step 3 the
   outcrop beside 57's; one change a try, at most three a step). `mass.py` (kit.json `mass`): each mass a convex
@@ -159,6 +161,19 @@ stylised rock (`study/` 21, 22, 26, 27; Totoro 09 and 16), and our own house in 
 
 ## Rounds
 
+- **r05** stage 4 simple, the bare stone's page (the coordinator: lichen and the crack come back later, one decision
+  each, once the bare stone holds; `reviews/lt1/rock/r05/s4-simple-board.jpg`: top Pc and P in the low sun with 107;
+  middle the boulder at full size, s3's Unity grey front, s1-b3's front; bottom 17 and 21). kit.json `skin.lichen.faces`
+  and `skin.crack.faces` 0 (none drawn), `skin.broad` ±5 over 1 m cells in two octaves; cavities and the foot darker as
+  before. The tip's own low sun (`sunOff` 45, bearing 135) stands behind the eye (`beside.eye` from bearing 125), so
+  it lights every plane alike and flattened them in every earlier tip still; `TIP_SUN=-10` (`render.sh`, LT1HolmTip
+  `-tipSunOff`) puts it at bearing 190, 65° off the eye's line as s2's judge, still on 107's front.
+  - Try 1 (gneiss L 44, paint and under [3, 240]): the planes read; the stone is olive, its shade side near black.
+  - Try 2 (L 52, [3, 70]): lighter, tan.
+  - Try 3 (L 52, [2, 70]): a pale warm grey as 17's lit boulders; the broad variation calm, barely seen at the eye;
+    holds. The shade side stays near black: the scene light's answer (107's plinth in shade is as dark), not the
+    page's. Faint triangle fans show inside the lit planes (the levels' normals, not snapped to their plane): a
+    follow-up, with the coordinator's two tidies (the pinched cuts at the back's top-left, the notch on the top edge).
 - **r05** stage 3 again, the game mesh in Unity's grey (the coordinator: the planes went soft in Unity;
   `reviews/lt1/rock/r05/s3-unity-grey.jpg`, rows front, back, side, near; columns Blender's s2 grey, Unity with the
   bake's normal, Unity bare). `game.py`'s levels shade by their designed planes (kit.json `game.flatDeg`: a face within

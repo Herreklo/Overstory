@@ -134,7 +134,7 @@ def main():
     jn = next(j for j in X["structure"]["joints"] if j["name"] == Cr["set"]); nj = MS_unit(jn["dipToward"], jn["dip"])
     front = MS_unit(X["front"])
     sides = [i for i in range(len(N)) if N[i] @ front >= Cr["front"] and abs(N[i][2]) <= 0.6]
-    if sides:
+    if sides and Cr["faces"]:
         A = max(sides, key=count); PA = pg.p[face == A]; t = PA @ nj; rc = st("crack")
         x = float(np.median(t)) + Cr["offset"] * float(np.ptp(t)) * rc.uniform(-1.0, 1.0); side = 1.0 if rc.random() < 0.5 else -1.0
         L_, amp = Cr["wander"]
