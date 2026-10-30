@@ -4,12 +4,15 @@
     Blender -b --factory-startup -P blender/parts/rock/kit/paint.py -- --gen cache/rock/kit/gen/slab-block --cache cache/rock/kit/bake/slab-block
 
 Reads house.json (part.py) and the bakes (bake.py), and writes into <cache>/out what way P reads, as the street's:
-hist-p.png, hist-p2.png, paint-stroke.png, paint.json, geo.png, street-normal.png.
+hist-p.png, hist-p2.png, paint-stroke.png, paint.json, geo.png, street-normal.png, and for a sculpted part (bake.py's
+high-poly bake) near-normal.png.
 
-A rock is bare stone standing in the ground, so it takes what the house's stone plinth takes and nothing a paint
-takes: darker toward the ground (`plinth`), its foot's wet margin with no splash (no eave sheds onto it; `wet`),
-the contact shade (`contact`), and the ground's junction dark (`junction.ground`).
-No peel, no washes, no lap. Its value is kit.json's material (p3's stone at the phyllite's L*), its hue kit.json's.
+A rock is bare stone standing in the turf, its page its own (kit.json `skin`), not the house plinth's: the turf's damp
+a little darker over its foot, with no wet band (no eave splashes a rock); the contact shade (finish.json `contact`); its
+cracks dark by the cavity bake; its rounds lighter by their arris; the lichen as its material's stain, patches on its
+old faces, more on a top than a side, none under its girth nor on a fresh break; and the ground's junction dark
+(`junction.ground`). No peel, no washes, no lap. Its value and hue are its material's (the part's own, kit.json
+`materials` and `colour`).
 """
 
 import copy
@@ -43,11 +46,6 @@ SP = module(os.path.join(STREET, "paint.py"), "street_paint")  # its digest and 
 key, field = MK.key, FP.field
 
 
-def wave2(pg, k, cell):
-    """The corner's seeded low wave, -1..1, of `cell` metres, over the ground plan: a rock has no wall to run along."""
-    return 2.0 * FL.noise2(pg.x / cell, pg.y / cell, k) - 1.0
-
-
 def main():
     a = MK.args()
     gen, cache = os.path.abspath(a["gen"]), os.path.abspath(a["cache"])
@@ -63,28 +61,43 @@ def main():
     pad = meta["page"]["padPx"]
     T = Q["tongue"]
 
-    mats = {k: dict(Q["materials"][v["like"]], **{f: x for f, x in v.items() if f not in ("like", "describes")})
-            for k, v in K["materials"].items() if k != "describes"}
+    mats = {k: dict(Q["materials"][K["materials"][k]["like"]],
+                    **{f: x for f, x in K["materials"][k].items() if f not in ("like", "describes", "_")})
+            for k in bake["mats"]}
     rock = np.zeros(pg.shape, bool)
     for k in mats:
         rock |= pg.m[k]
-    top = float(pg.z[pg.cov].max())
+    Sk = K["skin"]
 
-    # the stain: the foot's wet margin, its top a wavering found edge; no eave sheds onto a rock, so no splash swells it
-    Wt = Q["wet"]
-    wet_top = Wt["top"] + Wt["wobble"]["amp"] * wave2(pg, key(meta, "p-wet", 0), Wt["wobble"]["cell"])
-    sn = np.where(rock, field(wet_top - pg.z, Wt["soft"]), 0.0)
+    # the face each texel lies on: the designed plane its normal is nearest; a fresh break has had no time for lichen
+    faces = [(np.array(f["n"]), f["wear"]) for f in meta.get("faces", {}).values() if "n" in f]
+    fresh = np.zeros(pg.shape, bool)
+    if faces:
+        near = np.argmax(np.stack([pg.n @ n for n, _ in faces], -1), -1)
+        fresh = rock & np.isin(near, [i for i, (_, w) in enumerate(faces) if w in K["sculpt"]["fresh"]])
 
-    # the values: darker toward the ground, the contact shade, then the ground's junction dark from what is there
+    # the stain: the lichen, seeded patches covering a share of each face by how far up it looks
+    Li = Sk["lichen"]
+    up = pg.n[..., 2]
+    share = Li["share"][0] + (Li["share"][1] - Li["share"][0]) * FL.smoothstep(Li["up"][0], Li["up"][1], up)
+    share = np.where((up < Li["under"]) | fresh, 0.0, share)
+    big = FL.fbm3(pg.p, key(meta, "p-lichen", 0), Li["cellM"][0], Li["octaves"])
+    spots = FL.fbm3(pg.p, key(meta, "p-lichen", 1), Li["cellM"][1], Li["octaves"])
+    pat = FL.equalise((1.0 - Li["mix"]) * big + Li["mix"] * spots, rock)
+    sn = np.where(rock, field(pat - (1.0 - share), Li["soft"]), 0.0)
+
+    # the values: the turf's damp over the foot, the contact shade, the cracks dark, the rounds light, then the
+    # ground's junction dark from what is there
     dl = np.zeros(pg.shape)
-    dl -= np.where(rock, Q["plinth"]["L"] * (1.0 - np.clip(pg.z / top, 0.0, 1.0)), 0.0)
-    dl += np.where(rock & pg.up, Q["up"]["L"], 0.0)
+    Fo, Cr, Ar = Sk["foot"], Sk["crack"], Sk["arris"]
+    dl -= np.where(rock, Fo["L"] * (1.0 - FL.smoothstep(0.0, Fo["m"], pg.z)), 0.0)
     C = Q["contact"]
     own = np.ones(pg.shape)
     for name, m in mats.items():
         own = np.where(pg.m[name], m.get("contact", 1.0), own)
-    dl -= own * (C["L"] * FL.smoothstep(C["ao"][0], C["ao"][1], 1.0 - pg.ao)
-                 + C["cavL"] * FL.smoothstep(C["cav"][0], C["cav"][1], np.clip(1.0 - pg.cav, 0.0, 1.0)))
+    dl -= own * C["L"] * FL.smoothstep(C["ao"][0], C["ao"][1], 1.0 - pg.ao)
+    dl -= np.where(rock, Cr["L"] * FL.smoothstep(Cr["cav"][0], Cr["cav"][1], np.clip(1.0 - pg.cav, 0.0, 1.0)), 0.0)
+    dl += np.where(rock, Ar["L"] * FL.smoothstep(Ar["at"][0], Ar["at"][1], pg.arris), 0.0)
     base = np.zeros(pg.shape)
     for name, m in mats.items():
         base = np.where(pg.m[name], m["L"] - m.get("stainDL", 0.0) * (sn > 0.5), base)
@@ -99,6 +112,9 @@ def main():
     FL.write(os.path.join(out, "paint-stroke.png"), FP.strokes(Q, meta))
     FL.write(os.path.join(out, "geo.png"), SM.geo(pg, P, meta))
     FL.write(os.path.join(out, "street-normal.png"), SM.street_normal(pg, meta))
+    if bake.get("high"):  # a sculpted part: the near level's own normal from the high-poly, beside the street level's
+        nn = FL.read(os.path.join(cache, "near-normal.exr"))
+        FL.write(os.path.join(out, "near-normal.png"), FL.dilate(nn[..., :3], nn[..., 3] > 0.5, pad + 2))
 
     # the digest, as the street's; its colours kit.json's, laid on the clay's values
     Qc = copy.deepcopy(Q)
@@ -127,7 +143,7 @@ def main():
     }
     json.dump(digest, open(os.path.join(out, "paint.json"), "w"), indent=1)
     c = pg.cov & rock
-    print(f"[paint] {meta['part']}: stained {float((sn[c] > 0.5).mean()):.3f}; "
+    print(f"[paint] {meta['part']}: lichen {float((sn[c] > 0.5).mean()):.3f} (fresh {float(fresh[c].mean()):.3f}); "
           f"dL {np.percentile(dl[c], [1, 5, 50, 95]).round(1)}, beyond {rng}: {float((np.abs(dl[c]) > rng).mean()):.4f}; wrote {out}")
 
 

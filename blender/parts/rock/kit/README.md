@@ -106,7 +106,10 @@ stylised rock (`study/` 21, 22, 26, 27; Totoro 09 and 16), and our own house in 
   form without its fine marks, cut under the turf and decimated to street.json's budgets by surface; charts on the
   designed planes; `high_rock` beside the levels in `house.blend`), then `bake.py -- --gen cache/rock/kit/gen/boulder
   --cache cache/rock/kit/bake/boulder` (selected-to-active from the high-poly: occlusion, cavity, sky and each level's
-  own tangent normal). Holds on try 2. Next: stage 4, the painted finish (`paint.py`).
+  own tangent normal). Holds on try 2. Stage 4: `paint.py` (kit.json `skin`, the rock's own page; its material
+  `gneiss`), then `run/render.sh <round>` (stage 5's Unity view beside 107). Fails its three tries (Rounds, r04).
+  Next: the form's rounds tightened (stage 2, so planes meet in drawn arrises, as 17 and 21), the lichen as
+  rosettes and crusts on the old tops in value more than hue, the cracks drawn wider; then stage 4 again.
 - **State (30 Oct, r03):** the outcrop as a few rigid masses, ref 57's LOW ROCKY OUTCROP the only bar (the
   coordinator's brief: step 1 the masses alone beside 57's boulders, step 2 arranged into the outcrop, step 3 the
   outcrop beside 57's; one change a try, at most three a step). `mass.py` (kit.json `mass`): each mass a convex
@@ -181,6 +184,18 @@ stylised rock (`study/` 21, 22, 26, 27; Totoro 09 and 16), and our own house in 
   - Try 2, the levels' normals the plain corner-angle average (`hardDeg` for a hard edge): the streak is gone and the
     corner's facet reads as on the high-poly. Holds. The frost crack is a hairline on the levels: its dark is
     occlusion, which the normal cannot carry, so stage 4's paint must draw it from the cavity bake.
+- **r04** stage 4, the boulder's painted finish (Unity, beside 107's new page at 9 m; `reviews/lt1/rock/r04/s4-try1.jpg`
+  to `s4-try3.jpg`: low sun and overcast, P and Pc; `s4-try3-board.jpg`: the eye view beside 26, 19, 17, 21 and 15).
+  Before the tries, 107's page was stale (`107z4/out-hull`), so its roof read broken beside the street's; now
+  `107z5/out-r09`.
+  - Try 1, the house plinth's recipe on the rock: a dark olive tarp (its strokes and wet band are a wall's, not a
+    rock's).
+  - Try 2, the rock's own page (`skin`: damp foot, contact, cracks by cavity, rounds lit by arris, lichen as the
+    stain on old faces): L 55 reads as plaster, every round piped light, the lichen flat blobs.
+  - Try 3, L 44, the arris only on sharp edges (`arris` 8–30 1/m), the lichen at two scales and quieter: the best
+    grey and the planes read, but it fails beside the board. The lichen is camouflage (tan decals of one value,
+    spread evenly, tied to no form), where 26 and 15 mottle in value and 17 crusts the tops; the wide rounds read
+    as a cushion where 17 and 21 meet planes in a drawn edge; the cracks do not show from the eye.
 - **r03** (Blender grey; `reviews/lt1/rock/r03/s1-try1.jpg` to `s1-try3.jpg`: the top row is ref 57's ROUNDED
   BOULDER, JAGGED BOULDER and a crop of its outcrop's slabs; below, the crown, stoss and lee from their front and back,
   57's view and a low warm sun; full size in `cache/rock/kit/renders/r03/s1h`, `s1i`, `s1j`).

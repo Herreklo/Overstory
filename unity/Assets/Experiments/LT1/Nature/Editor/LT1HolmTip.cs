@@ -74,6 +74,16 @@ namespace Overstory.EditorTools
                 b.house = Json(Path.Combine(b.gen, "house.json"), "House");
                 b.paint = Json(Path.Combine(b.gen, "paint.json"), "Paint");
                 b.mats = (Dictionary<string, Material>)Call("Materials", b.gen, b.paint, b.house);
+                // a sculpted part (bake.py's high-poly bake) wears its near level's own normal, as its street level
+                // wears the street's
+                var nearN = AssetDatabase.LoadAssetAtPath<Texture2D>($"{b.gen}/near-normal.png");
+                if (nearN != null)
+                    foreach (var kv in b.mats.Where(kv => kv.Key.Split('-')[1] == "near"))
+                    {
+                        kv.Value.SetTexture("_StreetN", nearN);
+                        kv.Value.SetFloat("_Street", 1);
+                        kv.Value.EnableKeyword("_OS_STREET");
+                    }
                 builds.Add(b);
             }
             var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);

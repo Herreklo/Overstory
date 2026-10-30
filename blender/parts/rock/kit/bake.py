@@ -7,7 +7,7 @@ normal, ident, sky; finish/bake.py's nodes, called as they are) from the near le
 level's rounds and folds baked onto the street level's faces in their tangent space, as the street level's cladding
 takes the near boards'. As the house's, no ground is in the bake: the foot's dark is the paint's junction rule.
 
-A sculpted mass's house.blend (game.py) holds its high-poly beside the levels as `high_rock`: then every map is the
+A sculpted mass's house.blend (game.py) holds its high-poly beside the levels as `high_<material>`: then every map is the
 high-poly's, baked onto the near and the street levels' faces on their one page (selected to active, the cage and
 reach house.json's `high.rays`), its occlusion its own (the levels take the bake, never shade it), and each level
 takes its own tangent-space normal from it: near-normal and street-normal.
@@ -50,7 +50,7 @@ def main():
     mats = sorted({n.split("_", 1)[1] for n in objs})
     FB.MATS[:] = mats
     near = [o for n, o in objs.items() if n.startswith("near_")]
-    if "high_rock" in objs:
+    if any(n.startswith("high_") for n in objs):
         return bake_high(scene, objs, meta, cache, size, mats)
     for o in objs.values():
         lay = o.data.uv_layers
@@ -133,8 +133,8 @@ def ao_own(distance, inside):
 
 
 def bake_high(scene, objs, meta, cache, size, mats):
-    high = objs["high_rock"]; rays = meta["high"]["rays"]
-    lv = {k: objs[f"{k}_rock"] for k in ("near", "street")}
+    high = next(o for n, o in objs.items() if n.startswith("high_")); rays = meta["high"]["rays"]
+    lv = {k: next(o for n, o in objs.items() if n.startswith(k + "_")) for k in ("near", "street")}
     for o in objs.values():
         o.hide_render = o.name.startswith("city_")
         if o is not high:

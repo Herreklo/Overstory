@@ -25,14 +25,20 @@
             "down": 0.62 },
   "materials": {
     "describes": "The rock in p3's painted finish: p3's stone (finish.json painted.materials.stone: its wet margin, gloss and brush) at the phyllite's value, its weathered skin between the grey-green and the graphite of docs/stone.md, darker than the house's dressed stone; its colour [C, h] the phyllite's grey-green, as the stone's is its blue-grey.",
-    "rock": { "like": "stone", "L": 38 }
+    "rock": { "like": "stone", "L": 38 },
+    "gneiss": { "like": "stone", "L": 44, "stainDL": 6, "stainSmooth": 0.05, "brushL": 0, "_": "an erratic's foreign gneiss (a mass's `material`): lighter than the phyllite, its stain the lichen's (paint.py `skin.lichen`), matte; no brush, its planes one value each" }
   },
-  "colour": { "rock": { "paint": [4, 165], "under": [3, 160], "stain": [4, 170] } },
+  "colour": { "rock": { "paint": [4, 165], "under": [3, 160], "stain": [4, 170] }, "gneiss": { "paint": [3, 240], "under": [3, 240], "stain": [6, 95] } },
+  "skin": {
+    "describes": "A rock's page (paint.py), its own and not the house plinth's: the turf's damp a little darker over the foot (`foot`: L* at the turf, gone `m` up; no wet band, since no eave splashes a rock); the contact shade (finish.json `contact`); its cracks dark by the cavity bake (`crack`: L* where the cavity falls between `cav`); its rounds lighter by their arris (`arris`); and the lichen as the material's stain: colonies of seeded noise `cellM[0]` across, each broken into spots `cellM[1]` across (`mix` of the field), covering `share` of a side and of a top (by the normal's up between `up`), none under `under` nor on a fresh face (kit.json `sculpt.fresh`, which has not stood long enough), its edge `soft` in the patches' rank.",
+    "foot": {"L": 5, "m": 0.25}, "crack": {"L": 16, "cav": [0.1, 0.35]}, "arris": {"L": 6, "at": [0.5, 1.0]},
+    "lichen": {"cellM": [0.45, 0.07], "mix": 0.45, "octaves": 3, "share": [0.1, 0.45], "up": [0.15, 0.75], "under": -0.15, "soft": 0.04}
+  },
   "beside": {
-    "describes": "A part judged alone beside the house (LT1HolmTip): the street's house as the street draws it (`gen` and `paint`: the build and page its Street scene holds), each part at `at` in the house's frame (x along its front, y back from it, z up), unturned; the street's street stop as it is, and its eye view the street's, standing off the first part as the street's stands off the house's middle, its height and lens unchanged (`eye`: `from` the first part, looking along `look`); the slab block is seen from its sea side as the water frame sees the tip's foreground (bearing 135, tilted down to keep its foot in view), so it stands behind 107's back, 107 beyond it for scale.",
-    "house": "107", "gen": "cache/street/gen/107h", "paint": "cache/street/bake/107z4/out-hull",
-    "parts": [ { "part": "slab-block", "at": [-6.4, 9.1, 0] } ],
-    "eye": { "from": [-3.4, 3.4, 1.6], "look": [3.67, -3.67, 0.2], "fov": 52 }
+    "describes": "A part judged alone beside the house (LT1HolmTip): the street's house as the street draws it (`gen` and `paint`: the build and page its Street scene holds), each part at `at` in the house's frame (x along its front, y back from it, z up), unturned; the street's street stop as it is, and its eye view the street's, standing off the first part as the street's stands off the house's middle, its height and lens unchanged (`eye`: `from` the first part, looking along `look`); the boulder is seen from its designed front (bearing 125, the mass's `front`), so it stands south-east of 107's front, 107 beyond it for scale.",
+    "house": "107", "gen": "cache/street/gen/107h", "paint": "cache/street/bake/107z5/out-r09",
+    "parts": [ { "part": "boulder", "at": [9.0, -3.0, 0] } ],
+    "eye": { "from": [3.93, -2.75, 1.6], "look": [-4.25, 2.98, 0.2], "fov": 52 }
   },
   "tip": {
     "describes": "The tip's grey-box for the target frame (tip.py, LT1HolmTip -tipGrey): blockin.py's masses from fixtures/lt1-holm-tip.json, with 107 standing where `stand` stands, drawn in grey from the street's street stop.",
@@ -314,7 +320,7 @@
     "spike": {"voxelM": 0.04, "ballM": 0.24, "least": 0.09},
     "judge": {"elev": 11, "fov": 22, "fit": 2.3, "sunRel": -65, "sunEl": 26, "sunRGB": [1.0, 0.8, 0.6], "sunE": 4.2, "sky": [0.3, 0.44, 0.75], "skyE": 0.6, "back": 145, "views": {"front": 0, "back": 145, "side": -80}, "sinkM": 0.06, "rock": 0.16, "ground": [0.17, 0.135, 0.1], "rough": 0.85, "px": [960, 640], "samples": 96},
     "masses": [
-      {"id": "boulder", "front": 125, "sinkM": 0.15, "split": false, "structure": {"_": "its own, not the bedrock's: a gneiss banded a few centimetres thick, and the joint set the frost broke its south-west face off along (the plucked face is one), opening again behind it", "foliation": {"dipToward": 300, "dip": 35}, "joints": [{"name": "frost", "dipToward": 245, "dip": 86}]}, "says": "an erratic of foreign gneiss from the moraine, about 2.7 by 1.9 m and 1.4 m out of the turf: transport rounded it into a broad top on steep sides that tuck in at the turf (board 17, 19, 26, 56), and frost broke one fresh face off its south-west side (crisp, board 15); its own foliation, not the bedrock's",
+      {"id": "boulder", "front": 125, "sinkM": 0.15, "split": false, "material": "gneiss", "structure": {"_": "its own, not the bedrock's: a gneiss banded a few centimetres thick, and the joint set the frost broke its south-west face off along (the plucked face is one), opening again behind it", "foliation": {"dipToward": 300, "dip": 35}, "joints": [{"name": "frost", "dipToward": 245, "dip": 86}]}, "says": "an erratic of foreign gneiss from the moraine, about 2.7 by 1.9 m and 1.4 m out of the turf: transport rounded it into a broad top on steep sides that tuck in at the turf (board 17, 19, 26, 56), and frost broke one fresh face off its south-west side (crisp, board 15); its own foliation, not the bedrock's",
        "tops": [[200, 12, [0.0, 0.3, 1.3], "facet"], [20, 40, [0.0, 1.1, 1.3], "facet"], [110, 32, [0.6, 0.0, 1.15], "facet"], [290, 28, [-0.6, 0.2, 1.2], "facet"], [200, 30, [0.0, -1.0, 0.95], "facet"], [65, 45, [0.6, 0.9, 1.0], "worn"], [155, 38, [0.6, -0.8, 0.8], "worn"], [335, 48, [-0.6, 0.9, 1.05], "worn"]],
        "sides": [[20, 80, 1.45, "worn"], [200, 76, 1.5, "worn"], [110, 82, 1.0, "worn"], [290, 80, 1.05, "worn"], [65, 66, 1.35, "worn"], [155, 62, 1.35, "worn"], [335, 68, 1.3, "worn"], [245, 86, 1.0, "pluck"], [20, 125, 0.92, "worn"], [110, 122, 0.54, "worn"], [200, 128, 0.88, "worn"], [290, 124, 0.54, "worn"]]},
       {"id": "crown", "front": 15, "says": "the high back, 57's crown: a broad low dome of planes, polished toward the ice's source, worn noses to the stoss and both flanks, the lee plucked on J2 and J3",
@@ -347,7 +353,7 @@
   },
   "game": {
     "describes": "Stage 3, the game mesh (game.py): the sculpt's form without its fine marks meshed at `voxelM`, cut `underM` under the turf, decimated to `fill` of each level's budget (street.json's by surface); the high-poly's arris (Col R) its smooth form's mean curvature between `arris` (1/m), by differences `curveM` apart; the bake's cage and reach a level (`rays`, metres); the levels' normals the plain corner-angle average, hard over `hardDeg`.",
-    "voxelM": 0.015, "underM": 0.05, "fill": 0.95, "arris": [1.0, 4.0], "curveM": 0.02, "hardDeg": 50,
+    "voxelM": 0.015, "underM": 0.05, "fill": 0.95, "arris": [8.0, 30.0], "curveM": 0.02, "hardDeg": 50,
     "rays": {"near": [0.04, 0.2], "street": [0.08, 0.3]}
   }
 }

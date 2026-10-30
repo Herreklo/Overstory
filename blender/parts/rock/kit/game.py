@@ -9,8 +9,8 @@ house does). Every level's faces sit on the same charts: a face's chart is the d
 normal is nearest, projected onto that plane, so a convex mass's chart is one-to-one; u along the foliation's trace.
 The city level is laid on the near and street levels' charts as it falls, held inside them.
 
-Writes, as part.py does: house-near.fbx, house-street.fbx, house-city.fbx (`<level>_rock`), house.json, and house.blend
-with the high-poly beside the levels as `high_rock` (sculpt.py's `<gen>/high.blend`, moved to the turf), carrying what
+Writes, as part.py does: house-near.fbx, house-street.fbx, house-city.fbx (`<level>_<material>`, the mass's `material`),
+house.json, and house.blend with the high-poly beside the levels as `high_<material>` (sculpt.py's `<gen>/high.blend`, moved to the turf), carrying what
 the bake reads from it: `rest`, `piece` and `Col` (R its arris: the smooth form's mean curvature between `arris`, so the
 page's edges are drawn where the form turns; G the part's seed).
 """
@@ -66,7 +66,7 @@ def main():
     for o in list(bpy.data.objects):
         bpy.data.objects.remove(o)
     sc = SC.Sculpt(X); sink = X.get("sinkM", MS.M["judge"]["sinkM"]); down = Matrix.Translation((0, 0, -sink))
-    mat = bpy.data.materials.new("rock")
+    mname = X.get("material", "rock"); mat = bpy.data.materials.new(mname)
 
     # the form, cut under the turf and moved down onto it
     form = sc.mesh(mat, GM["voxelM"], fine=False, name="form")
@@ -129,7 +129,7 @@ def main():
             lo, hi = span[key]
             cuv = [(min(max(proj(key, p)[0], lo[0]), hi[0]) - lo[0], min(max(proj(key, p)[1], lo[1]), hi[1]) - lo[1]) for p in pts]
             fl.append((pc, G.Face(pts, cuv, key, cuv)))
-        o = G.to_object(f"{lv}_rock", fl, lambda _pc: Matrix.Identity(4), lambda _pc, w: w, rects, size,
+        o = G.to_object(f"{lv}_{mname}", fl, lambda _pc: Matrix.Identity(4), lambda _pc, w: w, rects, size,
                         lambda _pc, f, w: [0.0, seed, 0.0, 1.0])
         even_normals(o, GM["hardDeg"]); objs[lv] = o; counts[lv] = G.tris_of(o)
     for me in meshes.values():
@@ -150,7 +150,7 @@ def main():
     # the high-poly beside the levels, on the turf, with what the bake reads from it
     with bpy.data.libraries.load(os.path.join(out, "high.blend")) as (src, dst):
         dst.objects = [f"high_{pid}"]
-    hi_ob = dst.objects[0]; bpy.context.scene.collection.objects.link(hi_ob); hi_ob.name = "high_rock"
+    hi_ob = dst.objects[0]; bpy.context.scene.collection.objects.link(hi_ob); hi_ob.name = f"high_{mname}"
     hm = hi_ob.data; Vh = np.empty(len(hm.vertices) * 3); hm.vertices.foreach_get("co", Vh); Vh = Vh.reshape(-1, 3)
     ar = arris(sc, Vh, *GM["arris"], GM["curveM"])
     hm.transform(down); Vh[:, 2] -= sink
@@ -173,7 +173,7 @@ def main():
         "lap": {"reach": S["lapReach"], "step": 0.0}, "planeShadow": 0.0,
         "seenWithinM": S["levels"]["near"]["seenWithinM"], "cityFromM": S["levels"]["city"]["seenFromM"],
         "plot": {"w": hi[0] - lo[0], "d": hi[1] - lo[1]},
-        "pieces": [{"i": 0, "id": pc.id, "mat": "rock", "kind": "rock", "mode": "rigid", "wall": -1, "group": 0}],
+        "pieces": [{"i": 0, "id": pc.id, "mat": mname, "kind": "rock", "mode": "rigid", "wall": -1, "group": 0}],
         "uv": {"uv0": "metres in the designed plane", "page": "UV1: the page"},
         "colour": {"r": "arris (on the high-poly: its form's curvature)", "g": "part seed", "b": "under (none)", "a": "1: no lap"},
     }
