@@ -261,8 +261,11 @@ make rock).
        - The faces are slightly convex, so arrises and the silhouette bow. `mass.py`'s `bulge` already domes each face
          by its kind; `Sculpt.form` keeps every plane flat. Carry the bulge into the high-poly, more on worn faces than
          on the pluck.
-       - Old edges wander softly (a seeded, low offset of each plane along its arris) and stay rounded (the rounds
-         now: 2–4 cm).
+       - Old edges wander softly (a seeded, low offset of each plane along its arris) and are rounded at only
+         0.5–1 cm (r09, Øystein: "how crisp"; the 2–4 cm rounds made the floor soft, 7–14 px at eye level). The lit
+         lip and the flat plane values are the page's (stage 11). Fresh breaks are sharper still: single facets with
+         small chips. Old against fresh is then line and surface: long, gently bowed, smooth lines with a lip, against
+         stepped, chipped, rough breaks.
        - Breaks jog in and out in steps along the foliation (dip 35 toward 300) and the frost joint (dip 86 toward
          245). Each break is a few planar steps whose risers lie on those planes, sized from few big to many small
          (skewed), never stamped alike. They replace `breaks.fresh`'s equal bites and the foot's.
@@ -288,7 +291,7 @@ make rock).
       the form with the coordinator (`docs/facts-contract.md`: whose fact it is). Then `bake.py` writes each texel's
       age beside `ident`, and `paint.py` and the normal read it.
     - **One age value drives everything,** as upkeep drives wear in the town:
-      - edge: fresh is crisp, with a few small chips along the arris; old is rounded, 2–4 cm;
+      - edge: fresh is crisp, single facets with a few small chips along the arris; old is rounded, 0.5–1 cm (r09);
       - grain: fresh is rough and granular, stepped along the foliation, with small scoops, in the near level's normal
         (from the high-poly); old is smooth with a broad undulation;
       - value and colour: fresh is paler and cleaner; old carries a greyer patina;
