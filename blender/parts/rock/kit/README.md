@@ -326,7 +326,15 @@ make rock).
     1. The rock's structure gives its planes: the joint sets and foliation, with their orientation and spacing.
     2. A block is what those planes cut out.
     3. Its history moves it (rounded if transported), breaks it (frost along a joint, a dated spall) and wears it by
-       exposure age.
+       exposure age. History takes human acts as well as nature's. Øystein (30 Oct): "or split by human - as a lead
+       for a murder mystery etc" (an idea, not a chosen game). A rock can be split, drilled, moved, built into a wall or
+       carved. Each act is a dated fact from the engine and leaves its own marks:
+       - plug and feathers: a row of half-round drill grooves down the face;
+       - older wedge splitting: chiselled slots;
+       - blasting: half-pipe drill traces on a rough face.
+
+       The same age rule weathers them: chips and rock dust at the foot after days, a clean pale face after years,
+       the lichen returning over decades. The format holds these acts from the start; build nothing for them now.
     4. The ground meets it.
 
     The same steps make a pebble, a boulder, layered slabs, a slanted group all at one dip, a stacked outcrop or a
