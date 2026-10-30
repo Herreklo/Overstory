@@ -129,6 +129,15 @@ make rock).
   which `render.sh` installs and LT1HolmTip draws through the growth's own GrowthTufts in the street ground's place.
   Fails its three tries on the heather patches and the till stones; try 4, aimed only at what failed, holds on its
   four asks (Rounds, r06). Stages 7 and 8 go to a fresh session (next bullet).
+- **State (30 Oct, r07 stage 7, the edges):** `sculpt.py`'s worn arrises are rounds cut in flat facets (kit.json
+  `sculpt.chamfer`: `small` 0.035 in shelter to `big` 0.09 toward the weather, each facet turning at most `facetDeg`,
+  the width tapering end to end by `taper`), a fresh arris one crisp 12 mm facet; `Sculpt.place_breaks` knocks a few
+  flakes off arrises as planar cuts (kit.json `sculpt.breaks`): the top corner the mass's record says frost spalled
+  (`mass.masses` `boulder` `spall`, bearing 125), two or three along the fresh face's arrises, two at the foot in view
+  of the front; each a floor that runs out to the surface `lenM` along and a step sloped `stepDeg` toward the light at
+  the other end (a two-step break reads as a slot, so `steps` is 0). Breaks are concave, so they are in the high-poly
+  alone and the bake carries them. Chips are off (`chip` shares 0). Holds on try 2 (Rounds, r07), waiting for the
+  coordinator's word; stage 8 (the page) and 9 (one drawn crack) follow.
 - **Hand-over for stages 7 and 8 (30 Oct, end of r06):**
   - **The ground is a stand-in.** The grass and heath element will make the real one; keep it as it is unless the
     boulder needs it changed. It is the tip's one community (`packs/stavanger-1989/growth.json` habitat `tipTurf`:
@@ -212,6 +221,21 @@ make rock).
   15 m hero (inferred; no studio figure).
 
 ## Rounds
+
+- **r07** stage 7, the edges (the coordinator: shape simple, most edges broad and soft from transport, a few chipped
+  breaks of varied width as 59's where a break makes sense, one fresh corner and the foot; Firewatch's jag as accent
+  only; never splinters; `reviews/lt1/rock/r07/s7-try2-board.jpg`: rows low sun Pc, low sun P, overcast Pc, overcast P
+  across eye, street stop, 12 m and iso, right column 58's boulders, 59, 17, 21; bottom r06 try 4's eye (low sun Pc),
+  try 2's eye low sun Pc, P and overcast P, and the fresh face in Blender's grey; `TIP_SUN=-10`). Holds on try 2.
+  - Try 1 (`r07-s7a`, no board): the rounds 0.05–0.12 m in three facets; breaks a floor tilted the wrong way, so a
+    one-step break deepened without end and cut a striped wedge across the front (the bake's rays could not reach
+    it). Apart from the bug, the broad rounds made it a cushion in overcast and soft from 12 m beside r06's crisp
+    bevels; 6 cm breaks read as nicks; a step in shade as a slit.
+  - Try 2 (`r07-s7b`): the floor runs out away from its step; rounds 0.035–0.09 m; steps sloped 45–65° toward the
+    light; breaks 16–45 cm long and 1–4 cm deep, one step each. The frost-spalled corner reads as a lit broken facet
+    with a crisp step; the foot chip as a long shallow scallop ending in a step; edges vary from soft on the weather
+    side to crisp at the fresh face; from 12 m and iso still planar, as 58. spikeVoxels 0, game near 815 / street 260
+    / city 25 tris. The edge's light lip is stage 8's (the page).
 
 - **r06** stage 6, the ground (the coordinator: continuous dry summer turf and heath out to the frame's edge, the
   growth's instanced tufts, a bank at the foot denser and taller in the lee and the shed, 3–6 darker till stones half

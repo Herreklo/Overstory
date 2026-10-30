@@ -57,24 +57,46 @@ class Sculpt:
         self.nf = self.sets[0][1]
         w = S["chamfer"]["weather"]; self.weather = MS.unit(w[0], 90 - w[1])
         self.cuts = [(f[0], f[1]) for f in self.ms.faces] + self.chamfers()
-        self.cracks, self.chips = self.place_cracks(), self.place_chips()
+        self.cracks, self.chips, self.breaks = self.place_cracks(), self.place_chips(), self.place_breaks()
 
     # ------------------------------------------------------------ placing
-    def chamfers(self):
-        """Each designed arris's chamfer (`chamfer`): a plane on the bisector of its two faces cutting each back e metres
-        square to the arris, e `big` where the bisector faces the weather (toward `weather`, over `at`), `small` where it
-        is sheltered, `fresh` where a fresh face meets; the base's arrises, and a turn past 120 degrees, left sharp. Fixed
-        planes, so the form stays convex: where arrises are short their chamfers simply meet. [(normal, offset)]"""
-        Ch = S["chamfer"]; fs = self.ms.faces; fresh = set(S["fresh"]); cs = MS.corners([(f[0], f[1]) for f in fs]); out = []
+    def edges(self):
+        """The designed arrises out of the base: [(i, j, end, end)], each pair of faces meeting along a line between two
+        corners, the base's arrises and a turn past 120 degrees left out."""
+        fs = self.ms.faces; cs = MS.corners([(f[0], f[1]) for f in fs]); out = []
         for i in range(len(fs)):
             for j in range(i + 1, len(fs)):
-                c = float(fs[i][0] @ fs[j][0])
-                if "base" in (fs[i][2], fs[j][2]) or c <= -0.5 or sum(i in s and j in s for p, s in cs) < 2:
+                ends = [p for p, s in cs if i in s and j in s]
+                if "base" in (fs[i][2], fs[j][2]) or float(fs[i][0] @ fs[j][0]) <= -0.5 or len(ends) < 2:
                     continue
-                m = math.sqrt(2.0 + 2.0 * c); b = (fs[i][0] + fs[j][0]) / m
-                t = float(np.clip((b @ self.weather - Ch["at"][0]) / (Ch["at"][1] - Ch["at"][0]), 0.0, 1.0))
-                e = Ch["fresh"] if {fs[i][2], fs[j][2]} & fresh else Ch["small"] + (Ch["big"] - Ch["small"]) * t * t * (3 - 2 * t)
-                out.append((b, (fs[i][1] + fs[j][1]) / m - e * math.sqrt((1.0 - c) / 2.0)))
+                out.append((i, j, ends[0], ends[-1]))
+        return out
+
+    def chamfers(self):
+        """Each designed arris worn back `w` metres into each face, square to the arris: `big` where its bisector faces
+        the weather (toward `weather`, over `at`), `small` where it is sheltered, `fresh` where a fresh face meets. A worn
+        arris is a round cut in flat facets, each turning at most `facetDeg` (at most `most`; a fresh one is one facet),
+        its width changing from one end to the other by a seeded share of `taper` (the transport wore it unevenly), so no
+        arris reads machined. Fixed planes, so the form stays convex: where arrises are short their facets simply meet.
+        [(normal, offset)]"""
+        Ch = S["chamfer"]; fs = self.ms.faces; fresh = set(S["fresh"]); st = HS.Stream("lt1-holm-tip", "sculpt", "taper", self.id)
+        out = []
+        for i, j, P0, P1 in self.edges():
+            nA, nB = fs[i][0], fs[j][0]; c = float(nA @ nB); th = math.acos(np.clip(c, -1.0, 1.0))
+            b = (nA + nB) / math.sqrt(2.0 + 2.0 * c); t = np.cross(nA, nB); t /= np.linalg.norm(t)
+            k = float(np.clip((b @ self.weather - Ch["at"][0]) / (Ch["at"][1] - Ch["at"][0]), 0.0, 1.0))
+            worn = not ({fs[i][2], fs[j][2]} & fresh)
+            w = Ch["small"] + (Ch["big"] - Ch["small"]) * k * k * (3 - 2 * k) if worn else Ch["fresh"]
+            n = int(np.clip(math.ceil(math.degrees(th) / Ch["facetDeg"]), 1, Ch["most"])) if worn else 1
+            a = st.uniform(*Ch["taper"]) * (1 if st.random() < 0.5 else -1)
+            # the round's radius at each end from the width seen on each face (the first facet's crease sits w back)
+            r = [wi / (math.tan(th / 2) - math.tan(th / (4 * n))) for wi in (w * (1 - a), w * (1 + a))]
+            C = [P - ri / math.cos(th / 2) * b for P, ri in ((P0, r[0]), (P1, r[1]))]
+            for q in range(n):
+                f = (q + 0.5) / n; m = (math.sin((1 - f) * th) * nA + math.sin(f * th) * nB) / math.sin(th)
+                T0, T1 = C[0] + r[0] * m, C[1] + r[1] * m
+                N = np.cross(T1 - T0, np.cross(t, m)); N = N / np.linalg.norm(N) * (1 if N @ m > 0 else -1)
+                out.append((N, float(N @ T0)))
         return out
 
     def form(self, P):
@@ -147,15 +169,87 @@ class Sculpt:
             out.append(dict(u=u, o=o, q=q, soft=K["soft"], kind=kind))
         return out
 
+    def place_breaks(self):
+        """Breaks (`breaks`, ref 59's chipped edges): a flake knocked off an arris, as planar cuts: a flat floor `depthM`
+        under the arris's surface, `lenM` long, ending in a step at one end (where the floor runs out to the surface at the
+        other) or, at `steps` of the time, at both; each step sloped `stepDeg` off square to the floor so it turns to the
+        light (a pocket in shade is a slit), leaning off square to the arris up to `wallDeg`; the floor turned toward one
+        face by up to `lean` of half the arris's turn, so each break bites its own width into each face. Only on arrises
+        turning `minDeg` or more (on a gentler one a flake would run wide across both faces). By place: `corner` the corner the
+        mass's record says frost spalled off (its `spall` [bearing, says]: the top corner nearest that bearing), broken off
+        whole: a floor across the corner (facing its faces' mean, turned up to `jitterDeg`) ending in a step `stepM` high
+        `atM` down its longest arris; `fresh` a few along the fresh face's other arrises (59's breaks, the jagged
+        accent); `foot` a few along the foot's arrises in view of the front (both ends within `bandM` over the turf), where
+        it was dragged and knocked. Never two within `gapM` on one arris; never past `along` of an arris from its ends.
+        [dict]"""
+        B = S["breaks"]; fs = self.ms.faces; fresh = set(S["fresh"]); st = HS.Stream("lt1-holm-tip", "sculpt", "break", self.id)
+        sink = self.X.get("sinkM", 0.0); front = MS.unit(self.X["front"], 90); out = []; taken = {}
+
+        def cut(i, j, P0, P1, s, toward, L, D, why, two):
+            nA, nB = fs[i][0], fs[j][0]; t = (P1 - P0) / np.linalg.norm(P1 - P0) * toward
+            b = (nA + nB) / np.linalg.norm(nA + nB); g = st.uniform(-B["lean"], B["lean"]) * math.acos(np.clip(nA @ nB, -1, 1)) / 2
+            side = np.cross(t, b); side /= np.linalg.norm(side); b = math.cos(g) * b + math.sin(g) * side
+            Pw = P0 + s * (P1 - P0); q = self.surface(Pw + 0.3 * b, Pw - 0.8 * b)
+            tilt = math.atan2(D, L) * (st.uniform(-0.3, 0.3) if two else 1.0)  # a run-out floor meets the surface L along
+            f = b * math.cos(tilt) - t * math.sin(tilt)  # rising toward +t, away from the step at q
+            walls = []
+            for end, at in ((1, q),) + (((-1, q + L * t),) if two else ()):
+                a = math.radians(st.uniform(*B["wallDeg"])) * (1 if st.random() < 0.5 else -1); k = math.radians(st.uniform(*B["stepDeg"]))
+                wn = end * (math.cos(a) * t + math.sin(a) * side); wn = math.cos(k) * wn + math.sin(k) * b; wn /= np.linalg.norm(wn)
+                walls.append((wn, float(wn @ at)))
+            out.append(dict(f=f, of=float(f @ (q - D * b)), walls=walls, soft=B["soft"], why=why, at=q.round(3).tolist(),
+                            lenM=round(L, 3), depthM=round(D, 3), steps=len(walls)))
+
+        def free(key, c, L, ln):
+            return all(abs(c - c2) * ln > (L + L2) / 2 + B["gapM"] for c2, L2 in taken.get(key, []))
+
+        E = [e for e in self.edges() if math.degrees(math.acos(np.clip(fs[e[0]][0] @ fs[e[1]][0], -1, 1))) >= B["minDeg"]]
+        fresh_e = [e for e in E if {fs[e[0]][2], fs[e[1]][2]} & fresh and min(e[2][2], e[3][2]) > sink + B["fresh"]["aboveM"]]
+        foot_e = [e for e in E if not {fs[e[0]][2], fs[e[1]][2]} & fresh and float((fs[e[0]][0] + fs[e[1]][0]) @ front) > 0
+                  and B["foot"]["bandM"][0] < min(e[2][2], e[3][2]) - sink and max(e[2][2], e[3][2]) - sink < B["foot"]["bandM"][1]]
+        # the corner the record says frost spalled off, broken off whole: its top corner nearest the bearing, on its
+        # longest arris
+        if B["corner"]["count"] and self.X.get("spall"):
+            tow = MS.unit(self.X["spall"][0], 90)
+            i, j, P0, P1 = max(([e[0], e[1], e[3 - k], e[2 + k]] for e in E for k in (0, 1)),
+                               key=lambda e: float(e[3] @ tow) + e[3][2] + 0.1 * float(np.linalg.norm(e[3] - e[2])))
+            Bc = B["corner"]; dr = (P0 - P1) / np.linalg.norm(P1 - P0)
+            on = [k for p, ks in MS.corners([(f[0], f[1]) for f in fs]) if np.linalg.norm(p - P1) < 1e-4 for k in ks if fs[k][2] != "base"]
+            u = sum(fs[k][0] for k in on); u /= np.linalg.norm(u)
+            v = np.array([st.normal(), st.normal(), st.normal()]); v -= (v @ u) * u
+            u = u + math.tan(math.radians(st.uniform(0, Bc["jitterDeg"]))) * v / max(np.linalg.norm(v), 1e-9); u /= np.linalg.norm(u)
+            nA, nB = fs[i][0], fs[j][0]; b = (nA + nB) / np.linalg.norm(nA + nB); side = np.cross(-dr, b); side /= np.linalg.norm(side)
+            Pw = P1 + dr * st.uniform(*Bc["atM"]); q = self.surface(Pw + 0.3 * b, Pw - 0.8 * b)
+            a = math.radians(st.uniform(*B["wallDeg"])) * (1 if st.random() < 0.5 else -1); k = math.radians(st.uniform(*B["stepDeg"]))
+            wn = math.cos(a) * -dr + math.sin(a) * side; wn = math.cos(k) * wn + math.sin(k) * b; wn /= np.linalg.norm(wn)
+            c = self.surface(P1 + 0.3 * u, P1 - 0.8 * u); o = float(u @ q) - st.uniform(*Bc["stepM"])
+            out.append(dict(f=u, of=o, walls=[(wn, float(wn @ q))], soft=B["soft"], why="corner", at=q.round(3).tolist(),
+                            lenM=round(float(np.linalg.norm(Pw - P1)), 3), depthM=round(float(u @ c) - o, 3), steps=1))
+        for why, pool in (("fresh", fresh_e), ("foot", foot_e)):
+            R = B[why]; want = st.randint(*R["count"]); tries = 0
+            while pool and sum(o["why"] == why for o in out) < want and tries < 40:
+                tries += 1; i, j, P0, P1 = pool[st.randint(0, len(pool) - 1)]; ln = float(np.linalg.norm(P1 - P0))
+                L = min(skewed(st, *R["lenM"], B["skew"]), 0.5 * ln); s = st.uniform(*B["along"]); toward = 1 if st.random() < 0.5 else -1
+                c = s + toward * L / (2 * ln)
+                if not (B["along"][0] <= s + toward * L / ln <= B["along"][1]) or not free((i, j), c, L, ln):
+                    continue
+                cut(i, j, P0, P1, s, toward, L, skewed(st, *R["depthM"], B["skew"]), why, st.random() < B["steps"]); taken.setdefault((i, j), []).append((c, L))
+        return out
+
     # ------------------------------------------------------------ the field
     def field(self, P, fine=True):
         """The sculpted form's signed distance at P (negative in the rock); not fine, the form a game mesh follows: its
-        chamfers and chips, without the cracks the bake carries."""
+        chamfers and chips, without the breaks and cracks the bake carries."""
         d, g = self.form(P)
         for c in self.chips:
             d = smax(d, P @ c["u"] - c["o"], c["soft"])
         if not fine:
             return d
+        for k in self.breaks:  # concave, so the high-poly's alone: the bake carries them onto the game mesh's planes
+            v = P @ k["f"] - k["of"]
+            for wn, ow in k["walls"]:
+                v = np.minimum(v, P @ wn - ow)
+            d = smax(d, v, k["soft"])
         Ck = S["crack"]; L, amp = Ck["wander"]
         for c in self.cracks:
             # a clean V whose trace is the joint's plane on the surface, wandering a little, cut square into the
@@ -248,7 +342,8 @@ def main():
             raise SystemExit(f"[sculpt] {sc.id}: a pinch, the arris {least[0][1]} is {least[0][0]} m (leastArrisM {S['leastArrisM']})")
         ob = sc.mesh(rock, vs); ob.location.z = -X.get("sinkM", J["sinkM"])
         info[sc.id] = {"tris": len(ob.data.polygons), "leastArris": least, "cracks": [[c["set"], round(c["rho"], 2), round(c["w"], 3)] for c in sc.cracks],
-                       "chips": {k: sum(c["kind"] == k for c in sc.chips) for k in ("fresh", "worn")}, **sc.spikes()}
+                       "chips": {k: sum(c["kind"] == k for c in sc.chips) for k in ("fresh", "worn")},
+                       "breaks": [{k: b[k] for k in ("why", "at", "lenM", "depthM", "steps")} for b in sc.breaks], **sc.spikes()}
         print("[sculpt]", sc.id, json.dumps(info[sc.id]), flush=True)
         for v in views:
             off, fit = S["views"][v]; J["fit"] = fit
