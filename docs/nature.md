@@ -64,7 +64,7 @@ A setting pack brings its species, its plant communities and their rules, how it
 
 ## Our style
 
-Painterly realism, as in the rest of the town: plants as structured masses with intent, not soft balls or a uniform carpet; detail where the story is (the garden left to go wild, the worn path) and calm elsewhere; colour in the shade and the light; far ground reading as the colour of what grows on it, so fields, heath and forest make a patchwork from the map.
+Painterly realism, as in the rest of the town: plants as structured masses with intent, not soft balls or a uniform carpet; detail where the story is (the garden left to go wild, the worn path) and calm elsewhere; colour in the shade and the light; far ground reading as the colour of what grows on it, so fields, heath and forest make a patchwork from the map. Øystein, 30 October: "Nature HAS to ba as engaging as city life - every part of this world has to feel crafted - lived in, logical, stunning"; its summer is "colors from flowers during summer in gardes, parks, in the wild. lush trees, green fields, mountains in the distance" (references: `docs/references/nature/`).
 
 ## Order of work
 
