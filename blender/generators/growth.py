@@ -379,10 +379,11 @@ def lin(hexrgb):
 
 def ground_map(key, box, px, name, rules=None, wind=0.0):
     """The ground under a community, top-down (its `ground`): the sward's colour, drier toward `dry` over a broad field
-    (`dryShare` of the ground the drier), the patches' where they stand (the same crisp field the tufts read), one
-    broad variation over varyM, the clumps' light and shade over clumpM (the turf's own tops and hollows, a painted mark
-    each) and a fine grain stretched along the wind's bearing (the turf lies with it) over grainM [across, along]:
-    linear RGB (px[1], px[0], 3), row 0 at box's y0."""
+    (`dryShare` of the ground the drier), the patches' where they stand if it has any (the same crisp field the tufts
+    read), one broad variation over varyM, the clumps' light and shade over clumpM (the turf's own tops and hollows, a
+    painted mark each) and a fine grain over grainM, each [across the wind, along it]: as good as round, since marks
+    stretched along one bearing read from afar as a mown lawn's stripes. Linear RGB (px[1], px[0], 3), row 0 at box's
+    y0."""
     H = (rules or pack())["tufts"]["habitats"][name]
     G = H["ground"]
     x0, y0, x1, y1 = box
@@ -397,14 +398,15 @@ def ground_map(key, box, px, name, rules=None, wind=0.0):
         cut = float(np.quantile(d, 1.0 - G["dryShare"]))
         t = np.clip((d - cut) / 0.12 + 0.5, 0.0, 1.0)[..., None]
         sward = sward * (1 - t) + lin(G["dry"]) * t
-    out = sward * (1 - m) + lin(G["patch"]) * m
+    out = sward * (1 - m) + lin(G["patch"]) * m if H.get("patch") else sward * np.ones_like(m)
     v = 0.65 * F(X, Y, G["varyM"]) + 0.35 * F(X - 11.3, Y + 7.1, G["varyM"] / 2.3)
     out = out * (1.0 + G["vary"] * 2.0 * (v - 0.5))[..., None]
     b = np.radians(wind)
     u, w = X * np.sin(b) + Y * np.cos(b), X * np.cos(b) - Y * np.sin(b)
     if "clumps" in G:
-        # a clump's mark is a short stroke laid with the wind (clumpM across, three times that along)
-        q = F(w / G["clumpM"] + 2.9, u / (3.0 * G["clumpM"]) - 8.3, 1.0)
+        # a clump's mark: a tussock's top or hollow, clumpM [across the wind, along it]
+        ca, cl = G["clumpM"]
+        q = F(w / ca + 2.9, u / cl - 8.3, 1.0)
         out = out * (1.0 + G["clumps"] * 2.0 * (np.clip((q - 0.5) * 1.8, -0.5, 0.5)))[..., None]
     a, l = G["grainM"]
     g = 0.6 * F(w / a, u / l, 1.0) + 0.4 * F(2 * w / a + 3.3, 2 * u / l - 5.9, 1.0)

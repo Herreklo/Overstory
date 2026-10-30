@@ -127,7 +127,47 @@ make rock).
   r06 stage 6, the ground: `$PY blender/parts/growth/tufts.py`, then `ground.py` (kit.json `ground`; the pack's
   growth.json habitat `tipTurf`) writes `cache/rock/kit/gen/ground` (the tufts as instances, the ground map Pc and P),
   which `render.sh` installs and LT1HolmTip draws through the growth's own GrowthTufts in the street ground's place.
-  Fails its three tries on the heather patches and the till stones (Rounds, r06). Waits for the coordinator's word.
+  Fails its three tries on the heather patches and the till stones; try 4, aimed only at what failed, holds on its
+  four asks (Rounds, r06). Stages 7 and 8 go to a fresh session (next bullet).
+- **Hand-over for stages 7 and 8 (30 Oct, end of r06):**
+  - **The ground is a stand-in.** The grass and heath element will make the real one; keep it as it is unless the
+    boulder needs it changed. It is the tip's one community (`packs/stavanger-1989/growth.json` habitat `tipTurf`:
+    turf with hair-grass through it, summer colours, no heather) over kit.json `ground.box`, built by `ground.py`:
+    seeded feet (`growth.place_community`), the bank at the foot (kit.json `ground.bank`: fuller where the stone sheds
+    and in its lee, off the till stones by `stoneClear`), `tufts.bin` with each tuft's matrix, rank, hue and damp, and
+    the ground map (`growth.ground_map`, Pc and P) damper where the stone sheds. `render.sh` copies
+    `cache/rock/kit/gen/ground` into `HolmTip/Generated/ground`; `LT1HolmTip.Ground()` draws the tufts through the
+    growth's own GrowthTufts (BatchRendererGroup) over a quad with the map. `GrowthTuft.shader`'s `_GT_SUN` path:
+    each tuft's root takes the map's colour under its foot (`_GT_GroundMap`, `_GT_GroundBox`), its normal pulled
+    `look.upNormal` toward up, so blades light as the ground; `_GT_Grey` 1 for P. Past 20 m every tuft is its last
+    level (`draw.to` [8, 20, 34]), so from the 12 m and iso views the map carries the look; keep its marks round
+    (clumpM and grainM [across, along] equal), since a stretch reads as a mown lawn's stripes. Rebuild after a change
+    to the stone's foot: `foot.py -- --mass boulder`, then `ground.py`, then `render.sh`.
+  - **Where stage 7 starts (the edges).** The boulder's form is `mass.py` (kit.json `mass.masses` `boulder`: its
+    designed planes and their kinds; a `pluck` face is fresh) then `sculpt.py` (kit.json `sculpt`): `Sculpt.chamfers`
+    gives every arris one flat bisector chamfer, `big` toward the weather, `small` in shelter, `fresh` where a fresh
+    face meets; `Sculpt.place_chips` knocks off corners by planar cuts (`chip`: `fresh` and `worn` shares and
+    depths, at most `most`, never one reaching past `reach` times its depth). Stage 7's chipped breaks of varied width
+    (59) go there, as more planar cuts by place (one fresh corner, the foot), never a jagged ring. `design.py` and
+    `carve.py` are r01's and the shore block's makings; nothing on the boulder's path calls them. After a sculpt
+    change, in order: `sculpt.py -- --out cache/rock/kit/renders/r07/<r> --masses boulder` (writes
+    `gen/boulder/high.blend`; refuses a pinch under `leastArrisM`), `game.py -- --mass boulder`, `bake.py` and
+    `paint.py` (each `-- --gen cache/rock/kit/gen/boulder --cache cache/rock/kit/bake/boulder`), `foot.py`, `ground.py`,
+    then `TIP_SUN=-10 python3 tools/unity_lock.py run -- bash blender/parts/rock/kit/run/render.sh <round>
+    eye,street,high,iso P,Pc overcast,lowsun` (about 10 minutes, so run it in the background).
+  - **Where stage 8 starts (the page).** `paint.py` with kit.json `skin` (`broad`, `foot`, `top`, `cavity`, and the
+    `crack` and `lichen` rules, both at `faces` 0 now) and `materials.gneiss`, `colour.gneiss`. The boulder is drawn in
+    the street's OS_Finish through `LT1Street`; changes to that shader need the coordinator's approval. The till stones
+    are vertex colour in `Nature/RockFoot.shader`, outside the page.
+  - **Boards:** ref 58 first, then 59, 17 and 21 (`docs/references/stone/study/58-rock-family-concept-sheet.webp`,
+    `study/59-stylised-sculpted-rocks.png`, `17-hertervig-boulders-1856.jpg`, `study/21-firewatch-rock-formations.jpg`);
+    stills shrunk with `sips`, laid out by `blender/parts/rock/sheet.py -- OUT.png 5 IMG...`, the board at 2560 wide.
+  - **Gotchas:** colours set on a material from C# go through `new Color(r, g, b).gamma` (the project is linear).
+    `LT1HolmTip.cs` holds an uncommitted grade line (`LT1Street.Grade(...)`, the coordinator's): commit the file without
+    it by staging a copy (`git hash-object -w` plus `git update-index --cacheinfo`) and committing from the index,
+    then check that HEAD lacks it and the working tree keeps it. Never commit `fixtures/lt1-*.json`,
+    `unity/Assets/Resources.meta` or `M_Sky.mat`. Blender's own Python (`/Applications/Blender.app/Contents/Resources/
+    5.2/python/bin/python3.13`) has numpy for quick checks outside Blender; the system one has none.
 - **State (30 Oct, r03):** the outcrop as a few rigid masses, ref 57's LOW ROCKY OUTCROP the only bar (the
   coordinator's brief: step 1 the masses alone beside 57's boulders, step 2 arranged into the outcrop, step 3 the
   outcrop beside 57's; one change a try, at most three a step). `mass.py` (kit.json `mass`): each mass a convex
@@ -177,7 +217,8 @@ make rock).
   growth's instanced tufts, a bank at the foot denser and taller in the lee and the shed, 3–6 darker till stones half
   sunk; `reviews/lt1/rock/r06/s6-board.jpg`: rows low sun Pc, low sun P, overcast Pc, overcast P across eye, street
   stop, 12 m and iso, try 3; right column s5 try 2 eye and 12 m, 17, 21; bottom 02, 09, the foot at eye level (low
-  sun Pc), a heather patch from the iso view, try 2's iso; `TIP_SUN=-10`). Fails its three tries.
+  sun Pc), a heather patch from the iso view, try 2's iso; `TIP_SUN=-10`). Fails its three tries; try 4 holds on its
+asks (`s6-try4-board.jpg`).
   - Try 1: the tip's community (growth.json `tipTurf`: turf, hair-grass, heather patches) as 37,180 instanced tufts
     over 80 by 80 m, the ground map under them. The ground read as ochre sand under sparse black hairs: the tufts
     darker than the ground they stand on, so each is a mark on it; the heather dark on dark, its patches soft stains
@@ -199,6 +240,22 @@ make rock).
     should be muted toward 17's heath.
   - Cost (eye level, try 3): 4,204 tufts and 59,105 triangles drawn of 48,662 placed in 12 kinds (budget 6,000 and
     60,000), one ground map of 2048² BC7 a way, the stones 452 triangles.
+  - Try 4 (the coordinator: one more try, aimed only at what failed; `s6-try4-board.jpg`: rows as try 3's, the right
+    column 58, 59, 17, 21; bottom try 3's eye (overcast), 12 m and iso, then this try's stones at eye level (overcast)
+    and from the iso view (low sun)). Holds on its four asks:
+    - The heather patches are gone: `tipTurf` has no `patch` (heather is the grass and heath element's).
+    - The stripes came from the map, not the tufts: the clump marks were strokes three times longer along the wind
+      (295°) and the grain ten times, and from 12 m they read as a mown lawn's stripes (in the map's 0.5–8 m band,
+      stripes along the wind carried 6.1 times the energy of those across it; the field's hash made no difference).
+      Both are now round (`clumpM` [0.35, 0.35], `grainM` [0.1, 0.1]; 1.0); the tufts' rank and hue were never banded.
+    - The till stones read as 58's fallen pieces: four, a little angular (9 points, chamfer 0.09), sunk half to 62%,
+      20 L* below the boulder in a soil-stained grey (`paint` [1, 80]: no blue), no top lift (`topL` 0), placed
+      clear of each other (rigid), the bank kept off them (`stoneClear` 1.25). One pass between: smaller and sunk
+      deeper (55–70%), they vanished in the bank.
+    - The turf is muted toward a summer heath (the sward C* 24 to 17, the turf's tips 36 to 25, hue a little warmer).
+    - Still to see: in overcast the bank's tall hair-grass makes a slightly darker ring round the foot from 12 m and
+      the iso view; the turf is still greener than 17's straw, as summer is.
+    - Cost (eye level): 4,092 tufts and 54,772 triangles drawn of 47,648 placed in 8 kinds; the stones 320 triangles.
 
 - **r05** cleanup and stage 5, the foot (the coordinator: fix the fans, the pinched cuts and the notch, then sink and
   tilt the boulder with grass and a few stones at its foot, nature studies 02 and 09 and Hertervig 17;

@@ -4,8 +4,9 @@ ground's (ground.py: the tip's community as the growth's instanced tufts, banked
 
 The turf line is the sculpted form's outline at the turf (sculpt.py's field without its fine marks, the form the game
 mesh follows), read on bearings round the mass; a stone lies where the turf line breaks (seeded stretches of it). Each
-stone a faceted hull of a few seeded points, chamfered as the boulder is, half sunk, a little darker than the boulder
-(`dL`), in the gneiss's greys with the skin's top and foot rules. Non-semantic texture, seeded from the mass.
+stone a faceted hull of a few seeded points, chamfered as the boulder is, sunk, darker than the boulder (`dL`), in its
+own greys (`paint`: the turf's soil stains a fallen piece, so never the boulder's blue), with the skin's foot rule and
+its own top rule (`topL`: none, so no top reads pale). Non-semantic texture, seeded from the mass.
 
 Writes foot.fbx (one object `foot`: vertex colour, sRGB, its albedo; normals the stones' faces) and foot.json (with
 each stone's middle and radius, `placed`, for ground.py) into the mass's gen.
@@ -78,16 +79,21 @@ def main():
 
     # the till stones
     St = F["stones"]; st = HS.Stream("lt1-holm-tip", "foot", "stones", pid); placed = []
-    gn = K["materials"][X["material"]]; gc = K["colour"][X["material"]]["paint"]
+    gn = K["materials"][X["material"]]; gc = St.get("paint", K["colour"][X["material"]]["paint"])
+    topL = St.get("topL", Sk["top"]["L"])
     for i in range(St["count"]):
-        # where the turf line shows, if one of a few tries finds it: a stone lies where the turf breaks
-        a = MS.skewed(st, *St["sizeM"], St["skew"]); b = st.uniform(0, 2 * math.pi)
+        # where the turf line shows, if one of a few tries finds it: a stone lies where the turf breaks, clear of the
+        # stones already lying (rigid: never one through another)
+        a = MS.skewed(st, *St["sizeM"], St["skew"])
         for _ in range(St["tries"]):
-            if bare(b):
+            b = st.uniform(0, 2 * math.pi); r = turf[at(b)] + 0.5 * a + MS.skewed(st, 0.0, St["withinM"], 2)
+            c = np.array([r * math.sin(b), r * math.cos(b), 0.0])
+            if bare(b) and all(np.hypot(*(c - q)[:2]) > 0.5 * a + rq for q, rq in placed):
                 break
-            b = st.uniform(0, 2 * math.pi)
-        r = turf[at(b)] + 0.5 * a + MS.skewed(st, 0.0, St["withinM"], 2)
-        c = np.array([r * math.sin(b), r * math.cos(b), 0.0]); ax = np.array([a / 2, a * st.uniform(0.6, 0.85) / 2, a * St["flat"] / 2])
+        else:
+            if any(np.hypot(*(c - q)[:2]) <= 0.5 * a + rq for q, rq in placed):
+                continue  # no room left that does not cut a stone already lying: one fewer
+        ax = np.array([a / 2, a * st.uniform(0.6, 0.85) / 2, a * St["flat"] / 2])
         pts = []
         for _ in range(St["points"]):
             v = np.array([st.normal(), st.normal(), st.normal()]); v /= np.linalg.norm(v); pts.append(v * ax * st.uniform(0.85, 1.0))
@@ -105,7 +111,7 @@ def main():
         top = h + dz
         for f in bm.faces:
             n = np.array(f.normal); z = float(np.mean([v.co.z for v in f.verts]))
-            L = L0 + Sk["top"]["L"] * FL.smoothstep(Sk["top"]["up"][0], Sk["top"]["up"][1], n[2]) - Sk["foot"]["L"] * (1 - FL.smoothstep(0.0, max(top, 1e-3), z))
+            L = L0 + topL * FL.smoothstep(Sk["top"]["up"][0], Sk["top"]["up"][1], n[2]) - Sk["foot"]["L"] * (1 - FL.smoothstep(0.0, max(top, 1e-3), z))
             k0 = len(V)
             for v in f.verts:
                 V.append(np.array(v.co)); N.append(n); C.append(ly(L) * tn)

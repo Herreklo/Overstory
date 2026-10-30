@@ -1,5 +1,5 @@
 """Stage 6, the ground (kit.json `ground`): the tip's one community (the pack's `community`, growth.json habitats:
-summer turf, hair-grass in tussocks through it, heather in patches) over the whole floor out to the
+summer turf, hair-grass in tussocks through it; heather is the grass and heath element's) over the whole floor out to the
 frame's edge, drawn as the growth's instanced tufts (unity/Assets/Code/Scenes/Growth, GrowthTufts), and the ground
 under it the community's own map (growth.ground_map), so where the tufts thin out with distance the ground carries
 the same colour on. Where it meets a part, the same community banks against the stone (`bank`): fuller and taller
@@ -210,7 +210,7 @@ def main():
             r, b, i = polar(pt, x, y)
             k &= r > pt["turf"][i] + G["clearM"]
             for s in pt["stones"]:
-                k &= np.hypot(x - pt["at"][0] - s[0], y - pt["at"][1] - s[1]) > s[2] * 0.85
+                k &= np.hypot(x - pt["at"][0] - s[0], y - pt["at"][1] - s[1]) > s[2] * G["stoneClear"]
         return k
 
     rows, _ = GR.place_community(key, box, G["community"], keep=lambda x, y: keep(x, y), rules=P)
