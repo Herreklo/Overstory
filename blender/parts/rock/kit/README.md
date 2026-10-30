@@ -142,15 +142,17 @@ make rock).
   (the coordinator, Rounds r07).
 - **State (30 Oct, r07 stage 8, the page):** `paint.py` paints the gneiss as ref 58 paints its boulders. The stone is
   a neutral grey a shade warm (kit.json `colour.gneiss` `paint` [1.2, 70]): in overcast its top sits at L 70 against
-  107's white at 85, with no blue (the shade's coolness is the sky's), and in low sun its warmth is the light's (lit
-  planes C 18 h 83, as 107's lit paint). Weathering holds 58's three values: the top 7 L paler (`skin.top`), the
-  under-planes 7 darker (`skin.under`), the sides between. The top's fine stipple (`skin.speckle`) is the grain's dark
-  and light flecks, about 1 cm cells, gathered in loose drifts, on up-facing planes only. The breaks (`skin.breaks`,
-  read from `Sculpt(...).breaks`' own planes) are 3 L paler, clean of speckle and lichen, with a 9 mm lit lip times the
-  occlusion; the fresh face's arrises carry the same lip. The lichen (`skin.lichen`) is one colony on each of the two
-  biggest up- or sea-facing old faces: spots merging into one flat crust, stretched one way (`stretch`), its margin
-  lobed, the top's speckle thickening around it (`speckle.lichen`). Try 1 waits for the coordinator's word (Rounds,
-  r07); stage 9 (one drawn crack) follows.
+  107's white at 85, with no blue (the shade's coolness is the sky's); in low sun its warmth is the light's and its lit
+  top sits 15 L under 107's lit boards. Weathering holds 58's three values: the top 7 L paler (`skin.top`), the
+  under-planes 7 darker (`skin.under`), the sides between. The top's stipple (`skin.dabs`) is soft painted dabs, 2–6 cm,
+  irregular and overlapping at ±2.5 L, one at most to each 4 cm cell of a seeded lattice, densest on the top and toward
+  the weather and fading down over the shoulders. Weathering runs (`skin.runs`) shed down the old sides from the top's
+  edges, broad and soft, through the street's own `run` (finish paint.py) measured around the stone. The breaks
+  (`skin.breaks`, from `Sculpt(...).breaks`' planes) are 3 L paler, clean of dabs and lichen, with a 9 mm lit lip times
+  the occlusion, as are the fresh face's arrises. The lichen (`skin.lichen`) is a population of small pale grey-green
+  rosettes (the material's stain: `stainDL` -3, tint [4, 115]) on the top's weather side, a few merging pairwise,
+  nothing wider than 12 cm. The page is dithered by one 8-bit step (its gentle gradients banded). Try 2 waits for the
+  coordinator's word (Rounds, r07); stage 9 (one drawn crack) follows.
 - **Hand-over for stages 7 and 8 (30 Oct, end of r06):**
   - **The ground is a stand-in.** The grass and heath element will make the real one; keep it as it is unless the
     boulder needs it changed. It is the tip's one community (`packs/stavanger-1989/growth.json` habitat `tipTurf`:
@@ -242,18 +244,27 @@ make rock).
 - **r07** stage 8, the page (the coordinator: about three values as 58 paints them, the top lightest with a fine
   stipple of grain and lichen, sides mid, under-planes very dark; a neutral to slightly warm stone, its overcast top
   clearly below 107's white, no icy blue; a subtle edge highlight along the breaks times the occlusion; lichen last,
-  the speckle thickening into a few flat crusts with crisp, irregular edges; `reviews/lt1/rock/r07/s8-try1-board.jpg`:
+  the speckle thickening into a few flat crusts with crisp, irregular edges; `reviews/lt1/rock/r07/s8-try2-board.jpg`:
   rows low sun Pc, low sun P, overcast Pc, overcast P across eye, far side, street stop, 12 m and iso, right column
-  58, 59, 17, 21; bottom the eye close-ups of s7-try3 and s8 in low sun Pc and overcast Pc, s8's far side in both
-  lights, then s7-try3 and s8 in overcast P, s8's 12 m close-up in both lights and its far side in overcast P;
-  `TIP_SUN=-10`). Try 1 waits for the coordinator's word.
+  58, 59, 17, 21; bottom try 1 beside try 2: the eye close-ups in low sun Pc and overcast Pc, the 12 m close-ups in
+  overcast, the far side in overcast, then try 2's far side in low sun, both eye close-ups in overcast P, and try 2's
+  12 m close-up in low sun; `TIP_SUN=-10`). Try 2 waits for the coordinator's word.
   - Looks before the board (`r07-s8a` to `r07-s8d`): a coarse dense speckle on every face read as terrazzo; the
     pigment at C 2.5 made the stone sandy tan in low sun (C 13–19); fixed by a 1 cm clustered stipple on the top
     only and the pigment at C 1.2. Lichen as clusters of round spots read as polka dots, then merged; two crusts side
     by side on the top read from 12 m as a pair of eyes (`r07-s8d`), so one colony a face, stretched (`r07-s8e`).
-  - Try 1 (`r07-s8e`): overcast top L 70 C 2 h 73, sides 62 and 54, under-planes 20, 107's gable 85; low sun lit
-    planes C 18 h 83 (107's lit paint C 17 h 85). Lichen 2.1 % of the texels in two colonies (top/0, side/6); scars
-    0.75 %, lip 1.7 %.
+  - Try 1 (`r07-s8e`, `s8-try1-board.jpg`): overcast top L 70 C 2 h 73, sides 62 and 54, under-planes 20, 107's
+    gable 85; low sun lit planes C 18 h 83 (107's lit paint C 17 h 85). Lichen 2.1 % of the texels in two colonies
+    (top/0, side/6); scars 0.75 %, lip 1.7 %. The coordinator: values and colour right; the 1 cm flecks read as
+    terrazzo, the lobed crust as a stain or paw print (the second single crust to fail, so a new model), the sides
+    plain; check the low sun top's value against 107's lit wall.
+  - Try 2 (`r07-s8f` to `r07-s8h`, `s8-try2-board.jpg`): the stipple as soft dabs on a seeded lattice (`skin.dabs`);
+    round 2–6 cm discs at ±3 L read as polka dots (`r07-s8f`), so their outline is broken by a noise warp, their
+    edge soft over 0.9 of the radius, more of them overlapping at ±2.5 L, and none below the shoulders. The top's
+    faint contour banding was the 8-bit page (0.63 L a step) on the broad variation; a seeded one-step dither ends
+    it. Lichen as 29 rosettes 2–8 cm across, 4 merged pairs. Runs at 4–6 L were not seen; at 10 L, 10 cm and more
+    wide and half faded at 30–50 cm they read as soft streaks. Low sun: 107's lit boards L 82–85, the stone's lit
+    top 68 and its lit face 66.
 
 - **r07** stage 7, the edges (the coordinator: shape simple, most edges broad and soft from transport, a few chipped
   breaks of varied width as 59's where a break makes sense, one fresh corner and the foot; Firewatch's jag as accent

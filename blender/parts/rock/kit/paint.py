@@ -11,13 +11,14 @@ A rock is bare stone standing in the turf, its page its own (kit.json `skin`), n
 58 paints its boulders: a calm base of its material's value under one broad, soft variation; the light's three values
 held by weathering, its top a little paler (rain-washed, bleached) and its under-planes darker (unwashed, the turf's
 damp and splash reach them), the turf's damp darker again over its foot, with no wet band (no eave splashes a rock);
-the top's fine stipple of the grain's flecks in loose drifts; the contact shade (finish.json `contact`); its cavities
-dark by the cavity bake; its breaks (sculpt.py's) a little paler, clean of lichen and speckle, their outline and the
+the top's soft painted dabs in loose drifts, thickest toward the weather and fading down over the shoulders; soft
+weathering runs shed down the old sides from the top's edges; the contact shade (finish.json `contact`); its cavities
+dark by the cavity bake; its breaks (sculpt.py's) a little paler, clean of lichen and dabs, their outline and the
 fresh face's crisp arrises caught in a thin light lip where the stone is open; a crack or two drawn as a painter draws
 them, a dark line with a lighter lip along a joint's trace across a whole face, never ending inside one; the lichen as
-its material's stain, a few lobed crusts set on its biggest up- and sea-facing old faces, clear of their edges, with
-its specks thickening toward each; and the ground's junction dark (`junction.ground`). No peel, no washes, no lap. Its
-value and hue are its material's (the part's own, kit.json `materials` and `colour`).
+its material's stain, a population of small pale rosettes on the top's weather side, a few merging; and the ground's
+junction dark (`junction.ground`). No peel and no lap, and its runs are in the page's value, not the street's washes.
+Its value and hue are its material's (the part's own, kit.json `materials` and `colour`).
 """
 
 import copy
@@ -25,6 +26,7 @@ import importlib.util
 import json
 import os
 import sys
+import types
 
 import numpy as np
 
@@ -86,9 +88,9 @@ def main():
     D = np.array([np.median((pg.p[(face == i) & (pg.n @ N[i] > 0.999)] @ N[i])) if ((face == i) & (pg.n @ N[i] > 0.999)).any()
                   else np.max(pg.p[face == i] @ N[i], initial=0.0) for i in range(len(N))])
 
-    def edge(i, Pf, turf=True):
+    def edge(i, Pf, turf=True, among=None):
         out = Pf[:, 2] / max(np.sqrt(1.0 - N[i][2] ** 2), 1e-3) if turf else np.full(len(Pf), np.inf)
-        for j in range(len(N)):
+        for j in (range(len(N)) if among is None else among):
             s2 = 1.0 - float(N[i] @ N[j]) ** 2
             if j != i and s2 > 1e-3:
                 out = np.minimum(out, (D[j] - Pf @ N[j]) / np.sqrt(s2))
@@ -96,30 +98,6 @@ def main():
 
     st = lambda *k: HS.Stream(meta["world"], "rock", meta["part"], "paint", *k)  # noqa: E731
     count = lambda i: int((face == i).sum())  # noqa: E731
-
-    # the lichen: colonies on the biggest old faces that look up or out to sea, each a cluster of round spots (a few
-    # big, many small) thickest at its middle, which is clear of the face's edges, merging into one crust there, spread
-    # further one way than the other (`stretch`), its margin lobed (`lobe`: [cell, amplitude] metres); none on a face
-    # looking down
-    Li = Sk["lichen"]; up = pg.n[..., 2]; sea = MS_unit(Li["seaToward"])
-    old = [i for i in range(len(N)) if wear[i] not in K["sculpt"]["fresh"] and (N[i][2] >= Li["up"] or N[i] @ sea >= Li["sea"])]
-    chosen = sorted(old, key=lambda i: -count(i) * max(N[i][2], N[i] @ sea))[:Li["faces"]]
-    sn = np.zeros(pg.shape); rs = st("lichen"); col = 0; cols = []
-    lobe = Li["lobe"][1] * (2.0 * FL.fbm3(pg.p, key(meta, "p-lichen-lobe"), Li["lobe"][0], 2) - 1.0)
-    for i in chosen:
-        Pf = pg.p[face == i]; dist = edge(i, Pf)
-        a = np.cross(N[i], [0.0, 0.0, 1.0] if abs(N[i][2]) < 0.9 else [1.0, 0.0, 0.0]); a /= np.linalg.norm(a); b = np.cross(N[i], a)
-        for _ in range(rs.randint(*Li["colonies"])):
-            R = rs.uniform(*Li["rM"]); ok = np.nonzero(dist >= Li["clearM"] + R)[0]
-            if not len(ok):
-                continue
-            c = Pf[ok[rs.randint(0, len(ok) - 1)]]; col += 1; cols.append((c, R)); sd = np.full(pg.shape, -1.0)
-            w = rs.uniform(0, np.pi); s = rs.uniform(*Li["stretch"]); u = np.cos(w) * a + np.sin(w) * b; v = np.cross(N[i], u)
-            for _ in range(rs.randint(*Li["spots"])):
-                t = rs.uniform(0, 2 * np.pi); q = c + R * rs.random() ** Li["fall"] * (np.cos(t) * s * u + np.sin(t) / s * v)
-                sd = np.maximum(sd, MS_skewed(rs, *Li["spotRM"], Li["skew"]) - np.linalg.norm(pg.p - q, axis=-1))
-            sn = np.maximum(sn, field(sd + lobe, Li["soft"]))
-    sn = np.where(rock & (up > Li["under"]), sn, 0.0)
 
     # the breaks as the high-poly cuts them (sculpt.py's planes, in the levels' frame): a texel's depth inside a
     # break's cut, positive within the scar, so the scar and its outline are known exactly
@@ -132,19 +110,71 @@ def main():
         scar = np.maximum(scar, d)
     scar = np.where(rock, scar, -1e9)
 
-    # the top's speckle (`speckle`), 58's stipple: the grain's dark and light flecks on the faces looking up, gathered
-    # in loose drifts (`cluster`: each share times k over cells `cellM`), and the lichen's specks, sparse over the top
-    # and thickening toward each colony until they close into its crust; none in a scar, nor on a face looking down
-    Sp = Sk["speckle"]; on = rock & (scar < 0); g = FL.smoothstep(Sp["up"][0], Sp["up"][1], up) * on
-    Cl = Sp["cluster"]; cl = Cl["k"][0] + (Cl["k"][1] - Cl["k"][0]) * FL.equalise(FL.fbm3(pg.p, key(meta, "p-speckle-cluster"), Cl["cellM"], 2), rock)
-    fleck = lambda k, cell, share: FL.smoothstep(1.0 - share * cl, 1.0 - share * cl * (1.0 - Sp["soft"]),  # noqa: E731
-                                                 FL.equalise(FL.fbm3(pg.p, key(meta, k), cell, 1), rock))
-    near = np.zeros(pg.shape)
-    for c, R in cols:
-        near = np.maximum(near, FL.smoothstep(Sp["lichen"]["reach"] * R, R, np.linalg.norm(pg.p - c, axis=-1)))
-    share = Sp["lichen"]["share"][0] + (Sp["lichen"]["share"][1] - Sp["lichen"]["share"][0]) * near
-    lf = FL.equalise(FL.fbm3(pg.p, key(meta, "p-speckle-lichen"), Sp["lichen"]["cellM"], 1), rock)
-    sn = np.where(on, np.maximum(sn, (lf > 1.0 - share * cl) * FL.smoothstep(Sp["up"][0], Sp["up"][1], up)), 0.0)
+    # the lichen (`lichen`), as it grows on coastal gneiss: a population of small round rosettes, `rM` across their
+    # radius (skewed small by `skew`), pale grey-green (the material's stain), `count` of them about a middle on the
+    # top's weather side (the mean of the up-facing texels' `weather` share furthest toward it) and thinning out over
+    # `spreadM` (a normal spread); each on an old face looking up at least `up`, at least `clearM` plus its radius in
+    # from where the stone turns steeper, never in a scar. Two either stand `gapM` apart or merge, overlapping at least
+    # `overlap` of their radii: at most `merge` pairs, never three, never a shape wider than `mostM`. Each margin lobed a
+    # little (`lobe`: [cell, amplitude] metres)
+    Li = Sk["lichen"]; up = pg.n[..., 2]; fresh = [i for i in range(len(N)) if wear[i] in K["sculpt"]["fresh"]]
+    wv = MS_unit(K["sculpt"]["chamfer"]["weather"][0]); s = pg.p @ wv
+    tops = [i for i in range(len(N)) if N[i][2] >= Li["up"] and i not in fresh]
+    clear = np.full(pg.shape, -1.0)
+    for i in tops:
+        m = rock & (face == i); clear[m] = edge(i, pg.p[m], among=[j for j in range(len(N)) if j not in tops])
+    ok = rock & (scar < 0) & (clear > 0); rs = st("lichen")
+    mid = pg.p[ok & (s >= np.quantile(s[ok], 1.0 - Li["weather"]))].mean(0)
+    Pc, Cc = pg.p[ok], clear[ok]
+    cdf = np.cumsum(np.exp(-0.5 * (np.linalg.norm(Pc - mid, axis=-1) / Li["spreadM"]) ** 2)); cdf /= cdf[-1]
+    ros, paired, n = [], set(), rs.randint(*Li["count"])
+    for _ in range(Li["tries"] * n):
+        if len(ros) >= n:
+            break
+        j = min(int(np.searchsorted(cdf, rs.random())), len(Pc) - 1); q, r = Pc[j], MS_skewed(rs, *Li["rM"], Li["skew"])
+        if Cc[j] < Li["clearM"] + r:
+            continue
+        near = [(k, float(np.linalg.norm(q - qk)), rk) for k, (qk, rk) in enumerate(ros) if np.linalg.norm(q - qk) < r + rk + Li["gapM"]]
+        if near:
+            k, d, rk = near[0]
+            if (len(near) > 1 or k in paired or len(paired) >= 2 * Li["merge"] or d > Li["overlap"] * (r + rk)
+                    or d + r + rk > Li["mostM"]):
+                continue
+            paired |= {k, len(ros)}
+        ros.append((q, r))
+    lobe = Li["lobe"][1] * (2.0 * FL.fbm3(pg.p, key(meta, "p-lichen-lobe"), Li["lobe"][0], 2) - 1.0)
+    sd = np.full(pg.shape, -1.0)
+    for q, r in ros:
+        sd = np.maximum(sd, r - np.linalg.norm(pg.p - q, axis=-1))
+    sn = np.where(rock & (scar < 0) & (up > Li["under"]), field(sd + lobe, Li["soft"]), 0.0)
+
+    # the top's stipple (`dabs`), 58's painted dabs, not a grain: on a seeded lattice of cells `cellM`, at most one
+    # soft dab in each, `rM` across its radius (skewed small by `skew`), its edge soft over `soft` of it and its outline
+    # broken by `warp` of its radius, lighter by `light`.L (a `light` share of them) or darker by `dark`.L, overlapping
+    # dabs adding up to `most` times that; a cell holds one with the chance `share` times its
+    # density (its texels' mean): full on the top and fading down over the shoulders (`up`), gathered in loose drifts
+    # (`drift`: k over cells `cellM`), thicker toward the weather (`weather`: 1 plus as much times a texel's place from
+    # the lee side, -1, to the weather side, 1); none in a scar, none on the fresh face (its skin is new)
+    Db, Dr = Sk["dabs"], Sk["dabs"]["drift"]
+    on = rock & (scar < 0) & ~np.isin(face, fresh)
+    sr = s[rock]; sw = np.clip(2.0 * (s - sr.min()) / max(float(np.ptp(sr)), 1e-6) - 1.0, -1.0, 1.0)
+    dens = (Db["share"] * FL.smoothstep(Db["up"][0], Db["up"][1], up) * (1.0 + Db["weather"] * sw)
+            * (Dr["k"][0] + (Dr["k"][1] - Dr["k"][0]) * FL.equalise(FL.fbm3(pg.p, key(meta, "p-dabs-drift"), Dr["cellM"], 2), rock)))
+    idx = np.nonzero(on); P0 = pg.p[idx]; cm = Db["cellM"]; kd = key(meta, "p-dabs")
+    code = lambda c: ((c[:, 0] + (1 << 20)) << 42) | ((c[:, 1] + (1 << 20)) << 21) | (c[:, 2] + (1 << 20))  # noqa: E731
+    base = np.floor(P0 / cm).astype(np.int64); uB, invB = np.unique(code(base), return_inverse=True)
+    dB = np.bincount(invB, dens[idx]) / np.bincount(invB)
+    val = np.zeros(len(P0)); wp = 1.0 + Db["warp"] * (2.0 * FL.fbm3(P0, key(meta, "p-dabs-warp"), Db["rM"][1], 2) - 1.0)
+    for off in np.array(np.meshgrid(*[(-1, 0, 1)] * 3)).T.reshape(-1, 3):
+        c = base + off; cc = code(c); uc, first, inv = np.unique(cc, return_index=True, return_inverse=True); cu = c[first]
+        h = lambda tag: FL.unit(kd, cu[:, 0], cu[:, 1], cu[:, 2], np.full(len(cu), tag))[inv]  # noqa: E731
+        at = np.minimum(np.searchsorted(uB, cc), len(uB) - 1); dc = np.where(uB[at] == cc, dB[at], 0.0)
+        ctr = (c + np.stack([h(0), h(1), h(2)], -1)) * cm
+        r = Db["rM"][0] + (Db["rM"][1] - Db["rM"][0]) * h(3) ** Db["skew"]
+        sign = np.where(h(5) < Db["light"]["share"], Db["light"]["L"], -Db["dark"]["L"])
+        val += (h(4) < dc) * sign * FL.smoothstep(r, r * (1.0 - Db["soft"]), wp * np.linalg.norm(P0 - ctr, axis=-1))
+    dab = np.zeros(pg.shape); dab[idx] = np.clip(val, -Db["most"] * Db["dark"]["L"], Db["most"] * Db["light"]["L"])
+
 
     # the values: the broad variation, the turf's damp over the foot, the weathered top paler, the contact shade, the
     # cavities dark, the drawn crack, then the ground's junction dark from what is there
@@ -192,8 +222,35 @@ def main():
     # under-planes darker (`under`: no rain washes them, the turf's damp and splash reach them)
     Un = Sk["under"]
     dl -= np.where(rock, Un["L"] * FL.smoothstep(Un["up"][0], Un["up"][1], -up), 0.0)
-    dl += g * (Sp["light"]["L"] * fleck("p-speckle-light", Sp["cellM"], Sp["light"]["share"])
-               - Sp["dark"]["L"] * fleck("p-speckle-dark", Sp["cellM"], Sp["dark"]["share"]))
+    dl += dab
+
+    # the weathering runs (`runs`), 58's: the water the top sheds runs down the old sides and leaves soft streaks a
+    # little darker, each from the side's upper edge down, tapering to a point (finish paint.py's `run`, the street's
+    # own, measured around the stone instead of along a wall): `perM` runs a metre of a side's width (at least one),
+    # each `widthM` wide and faded to half at `lenM` (never past the face's height), wandering `wanderM`, at most `L`
+    # darker; on faces looking up less than `up`[1] (full under `up`[0]) and not under past `under`, never on the
+    # fresh face or in a scar
+    Ru = Sk["runs"]; rr = st("runs"); o = pg.p[rock].mean(0)
+    th = np.arctan2(pg.p[..., 1] - o[1], pg.p[..., 0] - o[0]); Rm = float(np.median(np.hypot(*(pg.p[rock][:, :2] - o[:2]).T)))
+    wrap = lambda a: (a + np.pi) % (2.0 * np.pi) - np.pi  # noqa: E731
+    sidew = (1.0 - FL.smoothstep(Ru["up"][0], Ru["up"][1], up)) * (1.0 - FL.smoothstep(Ru["under"][0], Ru["under"][1], -up))
+    runs = np.zeros(pg.shape); nr = 0
+    for i in range(len(N)):
+        m = rock & (face == i)
+        if i in fresh or not (-Ru["under"][1] < N[i][2] < Ru["up"][1]) or not m.any():
+            continue
+        t0 = float(np.arctan2(np.sin(th[m]).mean(), np.cos(th[m]).mean())); along = wrap(th - t0) * Rm
+        lo, hi = np.percentile(along[m], [3, 97])
+        for n_ in range(max(1, int(round((hi - lo) * Ru["perM"] * rr.uniform(0.6, 1.4))))):
+            w = rr.uniform(*Ru["widthM"]); x0 = rr.uniform(lo + 0.6 * w, hi - 0.6 * w) if hi - lo > 1.2 * w else (lo + hi) / 2
+            head = m & (np.abs(along - x0) < w / 2)
+            if not head.any():
+                continue
+            z0 = float(pg.z[head].max()); length = min(rr.uniform(*Ru["lenM"]), 0.5 * (z0 - float(pg.z[m].min())))
+            g_ = types.SimpleNamespace(z=pg.z, along=along, shape=pg.shape)
+            runs = np.maximum(runs, FP.run(g_, key(meta, "p-runs", i, n_), x0, z0, length, w / 2, Ru["wanderM"], rock & (scar < 0)))
+            nr += 1
+    dl -= Ru["L"] * runs * sidew
 
     # the breaks (`breaks`): the scar a little paler, the weathered skin knocked off it, and its outline caught by the
     # light in a thin lip, as are the fresh face's crisp arrises; the lip only where the stone is open (the occlusion)
@@ -213,6 +270,8 @@ def main():
     SP.down(whole, dl, base, whole.get(rock), whole.z, Q["junction"]["ground"])
 
     rng = Q["dlRange"]
+    # the value dithered by one step of the 8-bit page, seeded, so its gentle gradients do not band
+    dl = dl + 2.0 * rng / 255.0 * (FL.unit(key(meta, "p-dither"), *np.indices(pg.shape)) - 0.5)
     zero = np.zeros(pg.shape)
     hist = np.stack([zero, 0.5 + np.clip(dl, -rng, rng) / (2.0 * rng), sn, zero], axis=-1)
     FL.write(os.path.join(out, "hist-p.png"), FL.dilate(np.where(pg.cov[..., None], hist, 0), pg.cov, pad + 2))
@@ -251,7 +310,8 @@ def main():
     }
     json.dump(digest, open(os.path.join(out, "paint.json"), "w"), indent=1)
     c = pg.cov & rock
-    print(f"[paint] {meta['part']}: lichen {float((sn[c] > 0.5).mean()):.3f} in {col} colonies on {[keys[i] for i in chosen]}; "
+    print(f"[paint] {meta['part']}: lichen {float((sn[c] > 0.5).mean()):.4f} in {len(ros)} rosettes ({len(paired) // 2} merged pairs); "
+          f"dabs {float((np.abs(dab[c]) > 0.5).mean()):.3f}; {nr} runs; "
           f"scars {float((scar[c] > 0).mean()):.4f}, lip {float((lip[c] > 0.5).mean()):.4f}; "
           f"dL {np.percentile(dl[c], [1, 5, 50, 95]).round(1)}, beyond {rng}: {float((np.abs(dl[c]) > rng).mean()):.4f}; wrote {out}")
 
