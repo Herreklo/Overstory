@@ -87,8 +87,10 @@ def skewed(st, lo, hi, k):
 
 
 class Mass:
-    def __init__(self, X):
-        self.X, self.id = X, X["id"]
+    def __init__(self, X, over=None, wear=True):
+        """A mass from its record X; `over` replaces kit.json `mass` sections (sculpt.py's own rounds and vary), and
+        wear False keeps the designed planes alone (the blockout's, stage 2)."""
+        self.X, self.id = X, X["id"]; self.C = {**M, **(over or {})}; self.R = self.C["round"]
         self.faces = []  # (normal, offset, kind, key, warp): tops, sides, chips, wear, base; cut by falling radius
         for i, (f, s, p, kind) in enumerate(X["tops"]):
             n = unit(f, s); self.faces.append((n, float(n @ p), kind, f"top/{i}", None))
@@ -98,16 +100,16 @@ class Mass:
         for i, (f, s, p, kind) in enumerate(X.get("chips", [])):
             n = unit(f, s); self.faces.append((n, float(n @ p), kind, f"chip/{i}", None))
         base = (np.array([0.0, 0.0, -1.0]), 0.0, "base", "base", None)
-        self.faces += self.wear(self.faces + [base]) + [base]
+        self.faces += (self.wear(self.faces + [base]) if wear else []) + [base]
         cs = corners([(f[0], f[1]) for f in self.faces])
         self.faces = [(n, d, kind, key, self.warp(key, kind, n, [p for p, s in cs if i in s])) for i, (n, d, kind, key, _) in enumerate(self.faces)]
         # an arris takes the smaller round of its two faces: cut in order of falling radius, so a fresher face's crisp
         # arris survives and no ball is forced into a facet too small for it
-        self.faces = self.faces[:1] + sorted(self.faces[1:], key=lambda f: -R[f[2]])
+        self.faces = self.faces[:1] + sorted(self.faces[1:], key=lambda f: -self.R[f[2]])
         V = np.array([p for p, _ in corners([(f[0], f[1]) for f in self.faces])])
         self.H = float(V[:, 2].max())
         self.lo, self.hi = V.min(0) - 0.15, V.max(0) + 0.15; self.lo[2] = -0.1
-        st = HS.Stream("lt1-holm-tip", "mass", "wave", self.id); V = M["vary"]
+        st = HS.Stream("lt1-holm-tip", "mass", "wave", self.id); V = self.C["vary"]
         self.waves = []
         for _ in range(3):
             a = st.uniform(0, 2 * math.pi); z = st.uniform(-0.5, 0.5)
@@ -125,16 +127,16 @@ class Mass:
         Fr = M["fracture"]; rk = REC["rock"]; fam = {f["name"]: f for f in REC["outcrop"]["families"]}
         tight = min(f["tightM"] for f in fam.values()); st = HS.Stream("lt1-holm-tip", "mass", "fracture", self.id)
         planes = [(f[0], f[1]) for f in self.faces]; V = np.array([p for p, _ in corners(planes)])
-        cands = []
-        for name, n, sp in [(j["name"], unit(j["dipToward"], j["dip"]), j["spacingM"]) for j in rk["joints"]] + \
-                [("foliation", unit(rk["foliation"]["dipToward"], rk["foliation"]["dip"]), rk["foliation"]["spacingM"])]:
+        cands, split = [], self.X.get("split", True)  # an erratic (split false) is one piece: its own structure cracks it
+        for name, n, sp in ([(j["name"], unit(j["dipToward"], j["dip"]), j["spacingM"]) for j in rk["joints"]] +
+                            [("foliation", unit(rk["foliation"]["dipToward"], rk["foliation"]["dip"]), rk["foliation"]["spacingM"])]) * split:
             t = V @ n; x = t.min() + st.random() * st.uniform(*sp)
             while x < t.max():
                 if st.random() < Fr["show"][name]:
                     cands.append((st.random(), name, n, x, fam.get(name, {}).get("tightM", tight)))
                 x += st.uniform(*sp)
         f0, s0 = self.X["tops"][0][:2]; n = unit(f0, s0); t = V @ n; x = t.max() - st.uniform(*rk["sheeting"]["spacingM"])
-        while x > t.min() + Fr["leastM"]:
+        while split and x > t.min() + Fr["leastM"]:
             if st.random() < Fr["show"]["sheeting"]:
                 cands.append((st.random(), "sheeting", n, x, tight))
             x -= st.uniform(*rk["sheeting"]["spacingM"])
@@ -161,7 +163,7 @@ class Mass:
             for j, (n, x, sd, w) in enumerate(rg):
                 k = Fr["widen"] if abs(n[2]) < 0.5 else 0.0; u = sd * n + 0.5 * k * ez; L = float(np.linalg.norm(u))
                 seams.append((u / L, (sd * x - w / 2) / L, "seam", f"block/{i}/seam/{j}", None))
-            fs = self.faces[:1] + sorted(self.faces[1:] + seams, key=lambda f: -R[f[2]])
+            fs = self.faces[:1] + sorted(self.faces[1:] + seams, key=lambda f: -self.R[f[2]])
             C = np.array([p for p, _ in corners([(f[0], f[1]) for f in fs])])
             least = min(float(np.ptp(C @ f[0])) for f in fs)
             rot, piv = np.eye(3), np.zeros(3)
@@ -220,7 +222,7 @@ class Mass:
         """A face's gentle outward bulge (`bulge`), seeded by the mass and the face: a dome over the face, its crown
         shifted off the face's middle by up to `shift` of its reach and standing `share` of the face's size (by its kind:
         worn and ice-shaped faces most, fresh fractures least), times `amp`; reaching `reach` times its size."""
-        B = M["bulge"]; sh = B["share"].get(kind, 0.0)
+        B = self.C["bulge"]; sh = B["share"].get(kind, 0.0)
         if sh <= 0 or len(vs) < 3:
             return None
         V = np.array(vs); p0 = V.mean(0); E = float(np.linalg.norm(V - p0, axis=1).max()); L = B["reach"] * E
@@ -251,13 +253,13 @@ class Mass:
     def chain(self, P, faces, cap):
         """The faces cut in turn at P, each arris rounded, never more than cap (the record's `capShare` of the block's
         least width) but for the `capExempt` kinds: (signed distance, gradient)."""
-        V = M["vary"]; ex = V["exposure"]; free = set(M["fracture"]["capExempt"])
+        V = self.C["vary"]; ex = V["exposure"]; free = set(self.C["fracture"]["capExempt"])
         h = np.clip(P[:, 2] / self.H, 0, 1); m = (ex[0] + (ex[1] - ex[0]) * h) * self.vary(P, V["wave"])
         mc = self.vary(P, V["chipWave"])
         d, g = self.value(P, faces[0])
         for f in faces[1:]:
             v, G = self.value(P, f); kind = f[2]
-            r = R[kind] * (mc if kind in ("chip", "base") else m)
+            r = self.R[kind] * (mc if kind in ("chip", "base") else m)
             d, g = cut(d, g, G, v, r if kind in free else np.minimum(r, cap))
         return d, g
 

@@ -100,7 +100,9 @@ stylised rock (`study/` 21, 22, 26, 27; Totoro 09 and 16), and our own house in 
   1 blockout of big planes, 2 high-poly sculpt by script, 3 bake onto a light game mesh, 4 the painted finish, 5 Unity
   beside a house; one boulder of 2–3 m end to end first, then the outcrop cut from one mass along its joints. Stage 1:
   `mass.py -- --step block --out cache/rock/kit/renders/r04/<r> --masses boulder` (kit.json `mass.masses` `boulder`:
-  21 designed planes, sunk `sinkM`). Holds on try 3 (Rounds, r04). Next: stage 2.
+  21 designed planes, sunk `sinkM`). Holds on try 3 (Rounds, r04). Stage 2: `sculpt.py -- --out <dir>` (kit.json
+  `sculpt`; the mass's own `structure`; `split` false keeps an erratic whole) writes `cache/rock/kit/gen/<id>/high.blend`
+  (`high_<id>`, about 1.6M tris at 5 mm). Holds on try 3. Next: stage 3, the bake onto a light game mesh.
 - **State (30 Oct, r03):** the outcrop as a few rigid masses, ref 57's LOW ROCKY OUTCROP the only bar (the
   coordinator's brief: step 1 the masses alone beside 57's boulders, step 2 arranged into the outcrop, step 3 the
   outcrop beside 57's; one change a try, at most three a step). `mass.py` (kit.json `mass`): each mass a convex
@@ -154,6 +156,17 @@ stylised rock (`study/` 21, 22, 26, 27; Totoro 09 and 16), and our own house in 
   - Try 3, the girth raised (sides 76–86°, tucks 122–128° under them): it sits on the ground, its girth 0.45 m up over a
     shaded undercut, as 26 and 19; 21 big planes, each nearly one value, as 17 and 21. Holds as a blockout; the
     girth's crisp straight edge is stage 2's to roll.
+- **r04** stage 2, the boulder's high-poly (Blender grey, 1440 wide; `reviews/lt1/rock/r04/s2-try1.jpg` to `s2-try3.jpg`:
+  front, back, side, near). Before the tries, r03's Mass as it was (wear rule, rounds to 0.9 m) melted the blockout to a
+  dome (`renders/r04/m0`), so the sculpt rounds the designed planes alone, on its own table.
+  - Try 1: planes and exposure rounds hold, the girth rolled; the cracks are knife cuts (straight, rails where the
+    plane meets the surface shallowly, beads at the ends) and the chips round craters.
+  - Try 2, the cutters reshaped (cracks wandering in two octaves, width held on the surface; chips as flat dishes on
+    sharp arrises): cracks still hairlines, chips still pits.
+  - Try 3, the marks redrawn: two cracks, wider, lips weathered open, none where the plane meets too shallow; chips
+    as planar facets knocked off sharp corners; grain halved. Holds: the fresh break crisp with a chipped corner and a
+    crack, worn faces quiet, 0 spikes (least share 0.257). The cracks are slim at the judging distance: stage 4 says
+    whether the paint draws them from the cavity bake, and they widen there if not.
 - **r03** (Blender grey; `reviews/lt1/rock/r03/s1-try1.jpg` to `s1-try3.jpg`: the top row is ref 57's ROUNDED
   BOULDER, JAGGED BOULDER and a crop of its outcrop's slabs; below, the crown, stoss and lee from their front and back,
   57's view and a low warm sun; full size in `cache/rock/kit/renders/r03/s1h`, `s1i`, `s1j`).
