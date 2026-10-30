@@ -58,3 +58,8 @@ unity/Assets/Experiments/LT1/Finish/Generated.meta
 unity/Assets/Experiments/LT1/Finish/Finish.unity
 unity/Assets/Experiments/LT1/Finish/Finish.unity.meta
 blender/parts/finish/scans/
+# The street's and the Holm tip's installed pages, rebuilt by their render.sh (D1.6)
+unity/Assets/Experiments/LT1/Street/Generated/
+unity/Assets/Experiments/LT1/Street/Generated.meta
+unity/Assets/Experiments/LT1/Nature/Generated/
+unity/Assets/Experiments/LT1/Nature/Generated.meta
