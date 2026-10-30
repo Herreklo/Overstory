@@ -170,5 +170,22 @@
         ]
       }
     }
+  },
+  "scan": {
+    "describes": "t13 (scan.py): the shore block as one whole scanned roche moutonnee, rigid. `source` the scan (downloaded data: read with --factory-startup only); levelled by the plane of its own open rim; `iceToward` the ice's bearing in that levelled frame (before the turn), read from its form: the abraded stoss faces 90-180 there (smooth, 31-36 degrees), the plucked lee 240-330 (roughness 2-7 times the stoss's, steepest 300-330), the crest at the lee end, the sharpest lee drop along 305-315; turned so it runs the fixture's ice (rock.ice.toward); scaled uniformly so its crest stands at shore.lone.back with its scanned ground `groundM` under the sea, its crest at `crestAt` (t09's, site metres) moved `landwardM` across the ice toward the land, so its seaward waterline lies on t09's (it is twice t09's width across the ice; the rest goes landward); its own pinholes of at most `holeSides` edges closed; its skirt trimmed: the rock is the heightfield's cells connected to the crest above `trimM` over the sea. `land`: the fixture's landform (outcrop.Landform smooth) over `landRegion` [x0, x1, y0, y1], `landBelowM` under it, drawn `landRGB` (linear) beyond `landClearM` of the crest in `landViews` only, as the frame's back and 107's ground (the outcrop round the block is not built); 107 shown there only. The views are t09's, the 12 m and lee ones moved landward with the scan, 12 m's lens `fov12` to hold it whole; t09 is drawn from the same cameras.",
+    "source": "~/code/overstory-sources/rock-scans-sketchfab/llyn-idwal/x/source/llyn idwal.glb",
+    "credit": "Llyn Idwal by megalitharchive, licensed under Creative Commons Attribution",
+    "iceToward": 310,
+    "groundM": 1.2,
+    "crestAt": [-15.91, 23.91],
+    "landwardM": 3.9,
+    "trimM": -1.0,
+    "holeSides": 8,
+    "landRegion": [-45, 15, -15, 45],
+    "landBelowM": 0.0,
+    "landClearM": 10,
+    "landViews": ["water"],
+    "fov12": 40,
+    "landRGB": [0.16, 0.16, 0.16]
   }
 }

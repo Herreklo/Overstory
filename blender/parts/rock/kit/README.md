@@ -53,8 +53,29 @@ zonation are (`../README.md`).
   crinkle. The prototype (`wdetail2.py`, scan windows from `scanras.py` and `scanpatch.py`) is in the coordinator's
   notes folder, `rock-t10-tools/`, until it holds. t11 (scan windows cut to t09's faces) and t12 (a few whole scans, sunk and overlapping over t09 as a core) both failed at rung 1 (Rounds); the method goes to Øystein. Prototypes in the coordinator's notes folder, `rock-t11/` (`kb.py`, `kb3.py`) and `rock-t12/` (`kf.py`, the fit). After the method is settled: the land
   flank; the game mesh as a coarse hull cut on the same planes. Turf test C, the toe line and the storm fixes queued.
+- **State (30 Oct, t13):** the method Øystein chose: one whole scan is the rock, rigid. `scan.py` places "Llyn Idwal"
+  (megalitharchive, a roche moutonnée; kit.json `scan`, its source path and credit there) by move, turn and one uniform
+  scale only: levelled on its rim's plane, its ice axis (read from its form, 310 in its own frame) turned onto the
+  record's 205, its crest at the record's back, its skirt trimmed and its open rim sunk under the low water; t09 only as
+  the red outline. Run: `Blender -b --factory-startup -P blender/parts/rock/kit/scan.py -- --glb <scan> --out
+  cache/rock/kit/renders/t13/<r> --subject scan|t09` (t09 also writes the masks), then `outline.py -- <dir> scan
+  <views> neutral,raking`. Rung 1 holds in Blender grey (Rounds); next t14, the ground contact, then the Unity port.
+  Credit wherever credits are listed: "Llyn Idwal by megalitharchive, licensed under Creative Commons Attribution".
 
 ## Rounds
+
+- **t13** (`reviews/lt1/rock/t13/grey.jpg`, Blender grey; rows: neutral with t09's outline red, raking, t09 from the
+  same cameras; columns eye, 12 m, sea, lee, the water frame with 107; then refs 16, 57, 48, 51). Rung 1 holds, with
+  faults. One whole scan, rigid, scale 0.602: crest 2.90 m (exact), length along the ice 14.9 m at t09's foot (-0.8 m;
+  "about 14", +7%) and 9.0 m at the sea (the whaleback's hull 9.5). Ice exact (205); the scan's main plane family
+  (its lee, dip 67) lands toward 213, 37° off the foliation's 250, dip right. 1.09 M tris; 150 skirt islands dropped,
+  78 pinhole edges filled, no core; every open edge under the sea (highest -0.24 m). From the sea one whaleback: a
+  long back to the crest, a steep stepped lee, layering ridges in the raking light, close to t09's outline (the lee end
+  a little beyond it, no long low stoss tail, the crest a little lumpy). From 12 m one mass, wandering joints, no grid,
+  patchwork or tiles. Up close rock, photogrammetry-soft, neither crystal nor melted. Bad: twice t09's width across
+  the ice (13.1 m at the sea against 6.6), so it sits 3.9 m landward to keep the seaward waterline, into what will be
+  land, and its plan from 12 m is a big angular kite, three times t09's; scanned grass spikes on the crest ridge; the
+  plucked lee a little lumpy and soft; the water frame's land is a crude stand-in (a dark band, no edge).
 
 - **t12** (`reviews/lt1/rock/t12/grey.jpg`, Blender grey; rows: neutral, raking, the core blue and every scan's back
   red, t09; columns eye, 12 m, sea, lee; then ref 16 and t05's coast_rocks_05). Rung 1 only, FAIL. Whole scans, rigid,
