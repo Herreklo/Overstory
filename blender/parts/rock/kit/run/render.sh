@@ -1,7 +1,8 @@
 # install the street's 107 (kit.json beside: gen, paint) and the kit's parts (kit.json beside) into HolmTip and render a round: render.sh <round> [views]
 # [ways] [lights]; TIP_GREY=1 also installs the tip's grey-box (tip.py) and draws it in place of the parts; TIP_JUDGE=1 draws each part
 # alone in stage 2's grey (its judge.json; views front,back,side,near, ways N with its baked normal, M without);
-# TIP_SUN=<degrees> turns the low sun (LT1HolmTip -tipSunOff); run it under tools/unity_lock.py
+# TIP_SUN=<degrees> turns the low sun (LT1HolmTip -tipSunOff); the tip's ground (ground.py) goes in when it is built;
+# run it under tools/unity_lock.py
 set -e
 cd "$(dirname $0)/../../../../.."
 D=unity/Assets/Experiments/LT1/Nature/HolmTip/Generated; L=cache/rock/kit/unity-$1.log
@@ -12,6 +13,8 @@ install() { mkdir -p $D/$1; cp $2/house-near.fbx $2/house-street.fbx $2/house-ci
   cp $3/*.png $3/paint.json $D/$1/; }
 install $H $(python3 -c "import json;b=json.load(open('blender/parts/rock/kit/kit.json'))['beside'];print(b['gen'],b['paint'])")
 for p in $P; do install $p cache/rock/kit/gen/$p cache/rock/kit/bake/$p/out; done
+# the tip's ground (ground.py), in the street's ground's place, if it is built
+if [ -f cache/rock/kit/gen/ground/ground.json ]; then mkdir -p $D/ground; cp cache/rock/kit/gen/ground/* $D/ground/; fi
 [ -n "$TIP_GREY" ] && { mkdir -p $D/tip; cp cache/rock/kit/gen/tip/tip.fbx cache/rock/kit/gen/tip/tip.json $D/tip/;
   cp cache/rock/kit/gen/tip/*.png $D/tip/ 2>/dev/null || true; }
 /Applications/Unity/Hub/Editor/6000.6.6f1/Unity.app/Contents/MacOS/Unity -batchmode -quit -projectPath $PWD/unity \

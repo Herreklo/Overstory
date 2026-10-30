@@ -122,8 +122,12 @@ make rock).
   cleanup and stage 5 (Rounds, r05 stage 5): the levels shade by their exact planes, the chamfers are fixed bisector
   planes per arris (`sculpt.py` `chamfers`, a check refuses an arris under `sculpt.leastArrisM`), chips planar; the
   mass sunk `sinkM` and leaned by `tilt` (`mass.py` `lean`, a rigid turn about its foot); `foot.py -- --mass boulder`
-  (kit.json `foot`) writes `foot.fbx`, the grass and till stones at the turf line, drawn by `Nature/RockFoot.shader`;
-  kit.json `beside.high` adds the 12 m view (`render.sh <round> eye,high`). Waits for the coordinator's word.
+  (kit.json `foot`) writes `foot.fbx`, the till stones at the turf line, drawn by `Nature/RockFoot.shader`;
+  kit.json `beside.high` adds the 12 m view and `beside.iso` the near-isometric (`render.sh <round> eye,street,high,iso`).
+  r06 stage 6, the ground: `$PY blender/parts/growth/tufts.py`, then `ground.py` (kit.json `ground`; the pack's
+  growth.json habitat `tipTurf`) writes `cache/rock/kit/gen/ground` (the tufts as instances, the ground map Pc and P),
+  which `render.sh` installs and LT1HolmTip draws through the growth's own GrowthTufts in the street ground's place.
+  Fails its three tries on the heather patches and the till stones (Rounds, r06). Waits for the coordinator's word.
 - **State (30 Oct, r03):** the outcrop as a few rigid masses, ref 57's LOW ROCKY OUTCROP the only bar (the
   coordinator's brief: step 1 the masses alone beside 57's boulders, step 2 arranged into the outcrop, step 3 the
   outcrop beside 57's; one change a try, at most three a step). `mass.py` (kit.json `mass`): each mass a convex
@@ -168,6 +172,33 @@ make rock).
   15 m hero (inferred; no studio figure).
 
 ## Rounds
+
+- **r06** stage 6, the ground (the coordinator: continuous dry summer turf and heath out to the frame's edge, the
+  growth's instanced tufts, a bank at the foot denser and taller in the lee and the shed, 3–6 darker till stones half
+  sunk; `reviews/lt1/rock/r06/s6-board.jpg`: rows low sun Pc, low sun P, overcast Pc, overcast P across eye, street
+  stop, 12 m and iso, try 3; right column s5 try 2 eye and 12 m, 17, 21; bottom 02, 09, the foot at eye level (low
+  sun Pc), a heather patch from the iso view, try 2's iso; `TIP_SUN=-10`). Fails its three tries.
+  - Try 1: the tip's community (growth.json `tipTurf`: turf, hair-grass, heather patches) as 37,180 instanced tufts
+    over 80 by 80 m, the ground map under them. The ground read as ochre sand under sparse black hairs: the tufts
+    darker than the ground they stand on, so each is a mark on it; the heather dark on dark, its patches soft stains
+    (the patch edge was set in the field's units, not metres); the bank 87 tufts, unseen.
+  - Try 2: each tuft's root takes the ground map's colour under its foot (GrowthTuft `_GT_GroundOn`, as Ghost of
+    Tsushima's blades take the terrain's), summer greens (sward `#4f5a33`), blades twice as wide and taller, the
+    patch edge crisp in metres, dry drifts and clump marks in the map. From the eye a continuous turf to the horizon;
+    but the blades lit by the clump's sideways dome went darker than the ground in the shade and the overcast (dark
+    stars from above), the drifts read as camouflage, the patches as stains.
+  - Try 3: the dome pulled 0.6 toward up (`look.upNormal`), heather patches small, ragged and full (every foot kept),
+    the clump marks strokes with the wind, the bank 430 tufts, the stones darker (dL −16) and rounder. Holds: the
+    turf is one continuous mass in all four views and both lights, rooted in its ground; up close the foot is the
+    best so far (the bank rises over the foot in the lee, unevenly, never a ring). Fails: from the street stop, 12 m
+    and the iso view the heather patches read as bare mud, a history the facts do not give. Past 20 m every tuft is
+    its last level (a few blades), so the patch's map colour (soil brown) carries it alone. The till stones read as
+    pale shards (lit flat tops at the turf).
+  - Next: the patch's map colour the heather mat's own as seen from afar (dark grey-olive, lumpy), not the soil under
+    it; the stones sunk deeper with only their rounded backs out, and no top lift. In overcast the turf goes lime; it
+    should be muted toward 17's heath.
+  - Cost (eye level, try 3): 4,204 tufts and 59,105 triangles drawn of 48,662 placed in 12 kinds (budget 6,000 and
+    60,000), one ground map of 2048² BC7 a way, the stones 452 triangles.
 
 - **r05** cleanup and stage 5, the foot (the coordinator: fix the fans, the pinched cuts and the notch, then sink and
   tilt the boulder with grass and a few stones at its foot, nature studies 02 and 09 and Hertervig 17;

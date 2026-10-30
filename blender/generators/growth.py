@@ -284,3 +284,128 @@ def place_tufts(where, ground, footprints, steps, heath_above, seed, rules=None,
             pick.append("heathGrass" if p[10] < grass else "heather")
     emit("heath", P, pick)
     return out, area
+
+
+# ---- a place's ground cover: one community over the whole ground (the rock kit's stage 6, the Holm tip) -------------
+
+class Field:
+    """A seeded value noise over the ground (m), 0 to 1, vectorised (a table of 4096 seeded values on an integer-hashed
+    lattice), so the tufts and the ground's map under them read one field."""
+
+    def __init__(self, *key):
+        import hashing as HS
+        S = HS.Stream(*key, "field")
+        self.t = np.array([S.random() for _ in range(4096)])
+
+    def __call__(self, x, y, scale):
+        gx, gy = np.asarray(x, float) / scale, np.asarray(y, float) / scale
+        ix, iy = np.floor(gx).astype(np.int64), np.floor(gy).astype(np.int64)
+        fx, fy = gx - ix, gy - iy
+        fx, fy = fx * fx * (3 - 2 * fx), fy * fy * (3 - 2 * fy)
+
+        def at(i, j):
+            return self.t[((i * 73856093) ^ (j * 19349663)) & 4095]
+        return (at(ix, iy) * (1 - fx) + at(ix + 1, iy) * fx) * (1 - fy) + (at(ix, iy + 1) * (1 - fx) + at(ix + 1, iy + 1) * fx) * fy
+
+
+def community_patch(key, x, y, hab):
+    """Where a community's patches stand (its `patch`: heather where the till is thinnest): 1 inside, 0 outside, the
+    edge crisp (softened over edgeM, in metres), never a smeared blend (land-rock-and-water.md, Texturing the ground):
+    a seeded field over cellM, two octaves and a ragged third (`rag`, over a seventh of the cell), cut at the share of
+    the ground the patches take; the field over its own slope is the distance to the edge."""
+    Pt = hab.get("patch")
+    if not Pt:
+        return np.zeros(np.shape(x))
+    F = Field(*key, "patch")
+    c, rg = Pt["cellM"], Pt.get("rag", 0.0)
+    n = lambda a, b: (0.72 * F(a, b, c) + 0.28 * F(a + 31.7, b - 17.3, c / 2.7)  # noqa: E731
+                      + rg * F(a - 7.9, b + 23.1, c / 7.0)) / (1.0 + rg)
+    g = np.mgrid[0:96, 0:96].reshape(2, -1) * (c * 0.37)
+    cut = float(np.quantile(n(g[0], g[1]), 1.0 - Pt["share"]))
+    x, y = np.asarray(x, float), np.asarray(y, float)
+    h = 0.01
+    v = n(x, y)
+    slope = np.hypot(n(x + h, y) - n(x - h, y), n(x, y + h) - n(x, y - h)) / (2 * h)
+    return np.clip(0.5 + (v - cut) / np.maximum(slope, 1e-6) / Pt["edgeM"], 0.0, 1.0)
+
+
+def place_community(key, box, name, keep=None, rules=None, variants=4):
+    """One community's tufts over a box (x0, y0, x1, y1, m): seeded feet on a jittered grid at its fullest density,
+    thinned into clusters (`clump`), each the sward's species by its `mix` (hair-grass in drifts through it) or, inside
+    a patch, the patch's (scaled by its `scale`: heather grazed low); keep(x, y) drops feet the place rules out (a
+    house, a rock). Returns rows as place_tufts' (species, variant, habitat, x, y, z, turn, scale, lean x, lean y,
+    rank, hue) and each foot's patch value."""
+    T = (rules or pack())["tufts"]
+    H = T["habitats"][name]
+    P = _cells((*key, "growth tuft", name), box, H["perSqm"])
+    if keep is not None:
+        P = P[keep(P[:, 0], P[:, 1])]
+    F = Field(*key, "clump", name)
+    c0, c1 = H["clump"]
+    # thinned into clusters, but a patch that grows as one mat (its `full`: heather) keeps every foot
+    full = community_patch(key, P[:, 0], P[:, 1], H) > 0.5 if H.get("patch", {}).get("full") else np.zeros(len(P), bool)
+    P = P[full | (P[:, 2] < (1.0 - c1) + c1 * np.clip((F(P[:, 0], P[:, 1], c0) - 0.3) / 0.4, 0.0, 1.0))]
+    patch = community_patch(key, P[:, 0], P[:, 1], H)
+    drift = Field(*key, "drift", name)(P[:, 0], P[:, 1], 2.4)
+
+    def pick(mix, u, boost=None):
+        names = list(mix)
+        w = np.array([mix[s] for s in names], float)
+        out = []
+        for k, x in enumerate(u):
+            ww = w.copy()
+            if boost is not None and "heathGrass" in names:
+                ww[names.index("heathGrass")] *= boost[k]
+            cw = np.cumsum(ww)
+            out.append(names[min(int(np.searchsorted(cw, x * cw[-1], side="right")), len(names) - 1)])
+        return out
+    sward = pick(H["mix"], P[:, 3], 0.4 + 1.6 * drift)
+    inpatch = pick(H["patch"]["mix"], P[:, 3]) if H.get("patch") else sward
+    rows = []
+    for k, p in enumerate(P):
+        sp = inpatch[k] if patch[k] > 0.5 else sward[k]
+        s = (0.85 + 0.3 * p[5]) * (H["patch"].get("scale", 1.0) if patch[k] > 0.5 and sp != "turf" else 1.0)
+        rows.append((sp, int(p[6] * variants) % variants, name, round(p[0], 3), round(p[1], 3), 0.0,
+                     round(2 * np.pi * p[4], 4), round(s, 3), round((p[7] - 0.5) * 0.16, 4),
+                     round((p[8] - 0.5) * 0.16, 4), round(p[9], 4), round(p[10], 4)))
+    return rows, patch
+
+
+def lin(hexrgb):
+    """sRGB hex as linear RGB."""
+    c = np.array([int(hexrgb[i:i + 2], 16) / 255.0 for i in (1, 3, 5)])
+    return np.where(c <= 0.04045, c / 12.92, ((c + 0.055) / 1.055) ** 2.4)
+
+
+def ground_map(key, box, px, name, rules=None, wind=0.0):
+    """The ground under a community, top-down (its `ground`): the sward's colour, drier toward `dry` over a broad field
+    (`dryShare` of the ground the drier), the patches' where they stand (the same crisp field the tufts read), one
+    broad variation over varyM, the clumps' light and shade over clumpM (the turf's own tops and hollows, a painted mark
+    each) and a fine grain stretched along the wind's bearing (the turf lies with it) over grainM [across, along]:
+    linear RGB (px[1], px[0], 3), row 0 at box's y0."""
+    H = (rules or pack())["tufts"]["habitats"][name]
+    G = H["ground"]
+    x0, y0, x1, y1 = box
+    xs = x0 + (np.arange(px[0]) + 0.5) * (x1 - x0) / px[0]
+    ys = y0 + (np.arange(px[1]) + 0.5) * (y1 - y0) / px[1]
+    X, Y = np.meshgrid(xs, ys)
+    m = community_patch(key, X, Y, H)[..., None]
+    F = Field(*key, "ground", name)
+    sward = lin(G["sward"])
+    if "dry" in G:
+        d = 0.7 * F(X + 40.1, Y - 3.7, G["varyM"] * 1.6) + 0.3 * F(X - 5.5, Y + 19.9, G["varyM"] / 1.7)
+        cut = float(np.quantile(d, 1.0 - G["dryShare"]))
+        t = np.clip((d - cut) / 0.12 + 0.5, 0.0, 1.0)[..., None]
+        sward = sward * (1 - t) + lin(G["dry"]) * t
+    out = sward * (1 - m) + lin(G["patch"]) * m
+    v = 0.65 * F(X, Y, G["varyM"]) + 0.35 * F(X - 11.3, Y + 7.1, G["varyM"] / 2.3)
+    out = out * (1.0 + G["vary"] * 2.0 * (v - 0.5))[..., None]
+    b = np.radians(wind)
+    u, w = X * np.sin(b) + Y * np.cos(b), X * np.cos(b) - Y * np.sin(b)
+    if "clumps" in G:
+        # a clump's mark is a short stroke laid with the wind (clumpM across, three times that along)
+        q = F(w / G["clumpM"] + 2.9, u / (3.0 * G["clumpM"]) - 8.3, 1.0)
+        out = out * (1.0 + G["clumps"] * 2.0 * (np.clip((q - 0.5) * 1.8, -0.5, 0.5)))[..., None]
+    a, l = G["grainM"]
+    g = 0.6 * F(w / a, u / l, 1.0) + 0.4 * F(2 * w / a + 3.3, 2 * u / l - 5.9, 1.0)
+    return out * (1.0 + G["grain"] * 2.0 * (g - 0.5))[..., None], m[..., 0]
