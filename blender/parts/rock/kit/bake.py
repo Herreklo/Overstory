@@ -151,8 +151,8 @@ def bake_high(scene, objs, meta, cache, size, mats):
 
     maps = {
         "ao": (FB.emission(ao_own(0.6, False)), 64),
-        "cavity": (FB.emission(ao_own(0.03, False)), 64),
-        "convex": (FB.emission(ao_own(0.03, True)), 64),
+        "cavity": (FB.emission(ao_own(0.03, False)), 256),  # a step's shallow floor is half open: fewer samples speckle it
+        "convex": (FB.emission(ao_own(0.03, True)), 256),
         "rest": (FB.emission(FB.rest_socket), 1),
         "normal": (FB.emission(FB.normal_socket), 1),
         "ident": (FB.emission(FB.ident_socket), 1),

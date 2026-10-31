@@ -111,7 +111,16 @@ def main():
         for wn, ow in b["walls"]:
             d = np.minimum(d, Pb @ wn - ow)
         scar = np.maximum(scar, np.where(np.linalg.norm(Pb - b["c"], axis=-1) < b["r"], d, -1e9))  # its sphere, as the sculpt's
-    scar = np.where(rock, scar, -1e9)
+    # a texel on a cut's own faces lies on its planes, to the bake's precision (`breaks.onM`): within it, so a cut's
+    # faces are wholly its scar and never speckle in and out of it
+    scar = np.where(rock, scar + Sk["breaks"]["onM"], -1e9)
+    old = np.full(pg.shape, -1e9)  # the old borders' steps the same way: weathered as the faces, but their edges as crisp
+    for b in sc_.borders:
+        d = Pb @ b["f"] - b["of"]
+        for wn, ow in b["walls"]:
+            d = np.minimum(d, Pb @ wn - ow)
+        old = np.maximum(old, np.where(np.linalg.norm(Pb - b["c"], axis=-1) < b["r"], d, -1e9))
+    old = np.where(rock, old + Sk["breaks"]["onM"], -1e9)
 
     # the lichen (`lichen`), as it grows on coastal gneiss: a population of small round rosettes, `rM` across their
     # radius (skewed small by `skew`), pale grey-green (the material's stain), `count` of them about a middle on the
@@ -321,10 +330,12 @@ def main():
     dl -= Ru["L"] * runs * sidew
 
     # the breaks (`breaks`): the scar a little paler, the weathered skin knocked off it, and its outline caught by the
-    # light in a thin lip, as are the fresh face's crisp arrises; the lip only where the stone is open (the occlusion)
+    # light in a thin lip, as are the fresh face's crisp arrises and the old borders' steps (their skin kept, as old as
+    # the faces round them); the lip only where the stone is open (the occlusion)
     Bk = Sk["breaks"]; open_ = FL.smoothstep(Bk["ao"][0], Bk["ao"][1], pg.ao)
     dl += np.where(scar > 0, Bk["L"], 0.0)
     lip = FL.smoothstep(-Bk["lipM"], -Bk["lipM"] / 3, scar) * (scar <= 0)
+    lip = np.maximum(lip, FL.smoothstep(-Bk["lipM"], -Bk["lipM"] / 3, old) * (old <= 0) * (scar <= 0))
     for i in range(len(N)):
         if wear[i] in K["sculpt"]["fresh"]:
             Pf = pg.p[face == i]; d = np.zeros(pg.shape); d[face == i] = edge(i, Pf, turf=False)

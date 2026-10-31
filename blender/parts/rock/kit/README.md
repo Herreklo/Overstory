@@ -330,8 +330,55 @@ make rock).
       - It read the whole stone as "cut or low-poly" for its dead-flat planes and straight edges. That is the form's
         style (58's planes), which the page and the bows carry.
     - **Weakness:** the chips read as small at eye level, quieter than the target's painted breaks.
-    - **Try 3, if asked:** bigger border chips, toward the target's 30–80 cm along the top/front border. Their floors
-      on the foliation where it crosses near the bisector, so a lit floor and a dark riser read from the street stop.
+  - **State (31 Oct, r11 stage 10, try 3, the border steps and the foot; awaiting the coordinator's word):** as try 2,
+    with two changes.
+    - **Border steps** (`breaks.border`, `chip(onto=True)`): each step is a chip whose ends sit on the form's own worn
+      arris (its rounds and wander), not the domed planes' sharp one, which stands up to a centimetre proud of it.
+      Measured from the sharp arris, a shallow step was all fillet and read as a dark pocket.
+      - The floor is laid `toward` 0.5–0.6 of the way from the upper face to the bisector, so it takes a middle value
+        between the faces. It tapers out at one end and ends in a riser on the structure at the other.
+      - 30–80 cm along, 5–9 cm into the lower face (`wideM`), crisp to `soft` 1.2 mm (the form's 4 mm rounded a 25°
+        crease over 2–3 cm). Its riser stands at the end whose riser faces the front (`riserFaces`, as the foot's).
+      - Only borders turning ≥40° (`minDeg`) carry one. A 24° border (top/6–side/5) can't carry a band: its two
+        faces take nearly the same value and the riser is a sliver.
+      - `paint.py` gives a step's upper edge a lit lip (`old` beside `scar`) and keeps its skin as old as the faces.
+    - **Foot** (`breaks.foot` `riserFaces: front`, `small: false`, `fit`, 25–45 cm): one floor and one riser, at the
+      end whose riser faces the front. Seen from the front, the riser is a short face in its own shade, not edge-on as a
+      lit sliver.
+    - **Apart from the notch:** marks keep off the crack's notch by half its width and `breaks.apartM` 10 cm
+      (`trace_clear()`), so two marks on one arris read as two.
+    - **A cut's own faces are its own** (`skin.breaks.onM` 1 mm): the page's rest point on a cut's face lies on the
+      cut's plane to the bake's precision, so `scar` and `old` sat at ≈ 0 there and flickered in and out of the cut.
+      That speckled the band like orange peel, ribbed the back strip and outlined it in white (`r11b`). Within 1 mm the
+      faces are wholly the cut's: the band is clean (`r11c`).
+    - **Seen:** at the eye, a band on top/2–side/2 (where the target painted it), tapering out, under a lit lip, with
+      a dark riser at its deep end. At the back, a band on top/3–side/3 and a riser on top/3–side/6.
+    - **Shortfalls:**
+      - top/2–side/2 turns both faces away from the street stop, so the eye's step can't jog the line there. The
+        street stop's jogs are the top/3–side/3 step's small dark notch and the fresh break's triangle, nearly as in
+        try 2.
+      - The eye band is subtle: its floor sits between the faces' values and its lip is faint. Its riser stands on the
+        frost set at 45° to the arris (no set crosses it squarer), so in low sun it reads as a long black blade seen
+        edge-on, with pale hairlines below it. The target's riser is a short tick.
+      - The foot's floor runs out beside the notch, 9 cm from it, so from the front it reads as a pale strip between two
+        dark ends (its riser and the notch's V), both stair-stepped.
+      - At 3× the back riser's edge, the foot's and the notch's edges stair-step on the 5 mm voxels.
+      - The 0.64 m back step (top/3–side/6) reads as a chamfer more than a step.
+    - **Checks:** spikes 0; the high-poly 1,504,520 tris; the game mesh 846 tris near.
+    - **The cold reader fails it** (fresh Fable, the grey eye and back crops only; try 2's reader was Opus, so the
+      counts don't compare). It reads seven marks as made:
+      - the eye riser as a kerf, its pale streaks as striations;
+      - the band's lower edge, stair-stepped on the voxels, as a row of drill points;
+      - the foot's riser and the notch's V as a slot and a saw kerf (both as in try 2);
+      - the crack's mouth with the spot beside it as a drilled hole with a wedge slot (as in try 2);
+      - the back step's square jog on the dark face as sawn or cast;
+      - the lit rim along the back's top arris as moulded.
+
+      Only the foliation step, the spall's notch, a small nick and the speckle read as nature. The long edges read as
+      clean lines with a few isolated nicks: "a dressed quarry block". The common cause is the chips themselves: two
+      planes give dead-straight, parallel-sided edges, where a break's outline wanders.
+    - **Look first:** `review/look.py` renders the high-poly in grey from the tip's own cameras and suns, windowed, in
+      a minute, before the bake and Unity.
   - **Where stage 11 starts (the page by age),** only after stage 10's board passes.
     - **Age from the record.** Every surface region carries its exposure age from the record:
       - the old faces date from when the boulder came to rest;
@@ -476,6 +523,16 @@ make rock).
 
 ## Rounds
 
+- **r11** stage 10 try 3, the border steps and the foot (the coordinator, on try 2: the long top/front step read as a
+  thin dark hairline, its floor taking the top's value; the foot chip's bright slivers read as noise). Board
+  `reviews/lt1/rock/r11/s10-try3-board.jpg`: columns try 2 (`r10t2`), try 3 (`r11c`), target try 3, floor (`r08-s9f`);
+  rows low sun P eye, eye 2×, back, back 3×, street stop 3×; overcast P eye 2× and back 3×, with 58's boulder beside
+  the target.
+  - Looks first (`review/look.py`): from the sharp arris the s3 step read as a pocket; `onto` and `soft` 1.2 mm made
+    it a band.
+  - `r11` baked at 64 cavity samples, `r11b` at 256: the band's lumps stayed. They were the cut faces' speckle in the
+    page; `onM` cleared them in `r11c`, which also keeps marks off the notch (`apartM`), fits the foot to its run and
+    narrows the border bands to 5–9 cm.
 - **r10** stage 10, the edges' line by age (Unity grey P, five views, eye and back also in low sun; boards
   `reviews/lt1/rock/r10/s10-try1-board.jpg`, `s10-try2-board.jpg`: try 2, try 1, target try 3, floor r08, 58).
   - Try 1 failed (the coordinator): box ledges read as machined recesses, slots and a hinge, many and small. Worse

@@ -204,6 +204,25 @@ class Sculpt:
         g = S["breaks"]["gapM"]
         return all(s1 + g <= a or s0 - g >= b for a, b in self.taken.get(key, []))
 
+    def runs(self, p, lo, hi):
+        """The free runs along arris p between metres lo and hi (clear of every mark by `gapM` and of the crack's trace),
+        longest first: [(s0, s1)]."""
+        g = S["breaks"]["gapM"]; cut = sorted((a - g, b + g) for a, b in self.taken.get((p["i"], p["j"]), []))
+        Tr = self.trace
+        if Tr is not None and Tr["A"] in (p["i"], p["j"]):  # the trace's crossing, `clearM` and more each side
+            a0, a1 = p["P0"] @ Tr["n"] - Tr["x"], (p["P0"] + p["ln"] * p["t"]) @ Tr["n"] - Tr["x"]
+            if a0 * a1 < 0:
+                x = a0 / (a0 - a1) * p["ln"]; c = self.trace_clear(p)
+                cut = sorted(cut + [(x - c, x + c)])
+        out, x = [], lo
+        for a, b in cut:
+            if a > x:
+                out.append((x, min(a, hi)))
+            x = max(x, b)
+        if x < hi:
+            out.append((x, hi))
+        return sorted([r for r in out if r[1] > r[0]], key=lambda r: r[0] - r[1])
+
     def take(self, p, s0, s1):
         self.taken.setdefault((p["i"], p["j"]), []).append((s0, s1))
 
@@ -228,14 +247,19 @@ class Sculpt:
         uU = np.cross(t, nU); uU *= -1 if uU @ nL > 0 else 1; uL = np.cross(t, nL); uL *= -1 if uL @ nU > 0 else 1
         return U, L, nU, nL, uU, uL
 
-    def chip(self, p, s0, s1, D, ratio, soft, why, small=None, st=None):
+    def chip(self, p, s0, s1, D, ratio, soft, why, small=None, st=None, onto=False):
         """A chip knocked off arris p, as rock breaks: a wedge of two planes. Its floor the fracture, one plane cutting
         the corner from nothing at share s0 (it runs out along the arris) to D down the lower face and ratio of D into
         the upper one at share s1; there one riser on the structure (riser(), at a slant), removing toward s0. small
         (`breaks.small`, with st): beyond the riser, at its share, a small chip running out the other way, so the deep
-        end steps down twice. [region]"""
+        end steps down twice. onto: its ends on the form's own worn arris (its round and wander) rather than the domed
+        planes' sharp one, which stands up to a centimetre proud of it: a shallow step measured from the stone. [region]"""
         Q0, Q1 = self.arris_at(p, s0), self.arris_at(p, s1); t = Q1 - Q0; t /= np.linalg.norm(t)
         U, L, nU, nL, uU, uL = self.faces_at(p, Q1, t)
+        if onto:
+            bi = (nU + nL) / np.linalg.norm(nU + nL)
+            for _ in range(4):
+                Q0, Q1 = Q0 - self.form(Q0[None])[0][0] * bi, Q1 - self.form(Q1[None])[0][0] * bi
         f = np.cross(Q1 + D * uL - Q0, Q1 + ratio * D * uU - Q0); f /= np.linalg.norm(f); f *= 1 if f @ (nU + nL) > 0 else -1
         m, name = self.riser(t); walls = [(-m, float(-m @ Q1))]
         Lm = float(np.linalg.norm(Q1 - Q0)); c = (Q0 + Q1) / 2
@@ -365,23 +389,67 @@ class Sculpt:
         return out
 
     def chip_on(self, p, R, st, soft, why, out):
-        """One chip (chip()) of place R's `lenM` and `depthM` (skewed) and `ratio` somewhere free along arris p, within
-        `along`, clear of the crack's trace, its stepped end at either end (seeded); appended to out. Whether placed."""
-        B = S["breaks"]; Lm = min(skewed(st, *R["lenM"], B["skew"]), (B["along"][1] - B["along"][0]) * p["ln"])
-        x0 = st.uniform(B["along"][0] * p["ln"], B["along"][1] * p["ln"] - Lm)
+        """One chip (chip()) of place R's `lenM` (skewed) somewhere free along arris p, within `along`, clear of the
+        crack's trace (within R's own `along` if it has one), its stepped end at either end (seeded); appended to out. Its floor at the stepped end: `depthM`
+        down the lower face (skewed) and `ratio` of that into the upper one; or, where R has `toward`, turned from the
+        upper face by that share of the arris's turn (floor()), `wideM` wide (skewed). The small chip beyond its riser
+        (`breaks.small`) unless R's `small` is false. R's `fit`: into the longest free run (runs()), shortened to fit it,
+        never under `lenM`'s least. Whether placed."""
+        B = S["breaks"]; al = R.get("along", B["along"]); Lm = min(skewed(st, *R["lenM"], B["skew"]), (al[1] - al[0]) * p["ln"])
+        if R.get("fit"):  # into the free runs: the longest that holds lenM's least, the step no longer than it
+            runs = self.runs(p, al[0] * p["ln"], al[1] * p["ln"])
+            if not runs or runs[0][1] - runs[0][0] < R["lenM"][0]:
+                return False
+            a0, a1 = runs[0]; Lm = min(Lm, a1 - a0); x0 = st.uniform(a0, a1 - Lm)
+        else:
+            x0 = st.uniform(al[0] * p["ln"], al[1] * p["ln"] - Lm)
         if not self.free((p["i"], p["j"]), x0, x0 + Lm) or not self.clear_of_trace(p, x0, x0 + Lm):
             return False
         a, b = x0 / p["ln"], (x0 + Lm) / p["ln"]; a, b = (a, b) if st.random() < 0.5 else (b, a)
-        out += self.chip(p, a, b, skewed(st, *R["depthM"], 1), st.uniform(*R["ratio"]), soft, why, B["small"], st)
+        if R.get("riserFaces") == "front":  # of the two ends, the one whose riser faces the mass's front
+            m = self.riser(p["t"] * (1 if b > a else -1))[0]
+            a, b = (a, b) if -m @ MS.unit(self.X["front"], 90) > 0 else (b, a)
+        if "toward" in R:
+            r, al = self.floor(p, b, R, st); band = skewed(st, *R["wideM"], B["skew"])
+            D = band / math.sqrt(1.0 + r * r - 2.0 * r * math.cos(al))
+        else:
+            D, r = skewed(st, *R["depthM"], 1), st.uniform(*R["ratio"])
+        out += self.chip(p, a, b, D, r, soft, why, B["small"] if R.get("small", True) else None, st, onto="toward" in R)
         self.take(p, x0, x0 + Lm); return True
 
+    def floor(self, p, s, R, st):
+        """A step's floor across arris p at share s, as a layer parts: near the bisector of the two faces, so it takes
+        its own value between theirs. Turned from the upper face by a seeded `toward` share of the arris's turn; where a
+        set of the structure crosses the arris within `onDeg` of that floor (the foliation first), on that set, held
+        `hold` of the turn off each face. (ratio for chip(): how far into the upper face against down the lower, the
+        faces' angle at the arris in radians)"""
+        Q = self.arris_at(p, s); e = 1e-3 / p["ln"]
+        t = self.arris_at(p, min(s + e, 1.0)) - self.arris_at(p, max(s - e, 0.0)); t /= np.linalg.norm(t)
+        U, L, nU, nL, uU, uL = self.faces_at(p, Q, t)
+        nU, nL = nU - (nU @ t) * t, nL - (nL @ t) * t; nU /= np.linalg.norm(nU); nL /= np.linalg.norm(nL)
+        turn = math.acos(float(np.clip(nU @ nL, -1, 1))); e2 = nL - (nL @ nU) * nU; e2 /= np.linalg.norm(e2)
+        th = st.uniform(*R["toward"]) * turn; f = math.cos(th) * nU + math.sin(th) * e2
+        for name, n in sorted(self.sets, key=lambda s_: s_[0] != "foliation"):
+            n = n if n @ (nU + nL) > 0 else -n
+            if math.degrees(math.acos(float(np.clip(n @ f, -1, 1)))) <= R["onDeg"]:
+                q = n - (n @ t) * t; th = float(np.clip(math.atan2(q @ e2, q @ nU), R["hold"] * turn, (1 - R["hold"]) * turn))
+                break
+        r = math.sin(turn - th) / math.sin(th); al = math.acos(float(np.clip(uU @ uL, -1, 1)))
+        return r, al
+
     def clear_of_trace(self, p, s0, s1):
-        """Whether metres s0..s1 along arris p stay `clearM` off the crack's trace on its face."""
+        """Whether metres s0..s1 along arris p stay clear of the crack's trace and its notch (trace_clear())."""
         Tr = self.trace
         if Tr is None or Tr["A"] not in (p["i"], p["j"]):
             return True
         a = (p["P0"] + s0 * p["t"]) @ Tr["n"] - Tr["x"]; b = (p["P0"] + s1 * p["t"]) @ Tr["n"] - Tr["x"]
-        return a * b > 0 and min(abs(a), abs(b)) > MS.K["skin"]["crack"]["clearM"] + 0.05
+        return a * b > 0 and min(abs(a), abs(b)) / max(abs(p["t"] @ Tr["n"]), 1e-3) > self.trace_clear(p)
+
+    def trace_clear(self, p):
+        """How far along arris p a mark keeps off the crack's trace: `clearM` and more on the face, and off its notch by
+        half the notch's width and `breaks.apartM`, so two marks on one arris read as two (metres along the arris)."""
+        return max((MS.K["skin"]["crack"]["clearM"] + 0.05) / max(abs(p["t"] @ self.trace["n"]), 1e-3),
+                   S["notch"]["alongM"] / 2 + S["breaks"]["apartM"])
 
     def place_nicks(self):
         """A fresh arris's small chips (`nick`): along it in runs `stepM` long (skewed), `share` of its free runs out of
