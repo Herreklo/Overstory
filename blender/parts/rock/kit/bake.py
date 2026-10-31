@@ -157,9 +157,16 @@ def bake_high(scene, objs, meta, cache, size, mats):
         "normal": (FB.emission(FB.normal_socket), 1),
         "ident": (FB.emission(FB.ident_socket), 1),
     }
+    cs = meta["page"]["cavitySuper"]
     for name, (build, samples) in maps.items():
-        scene.cycles.samples = samples; img = FB.image(name, size)
-        onto(img, build, "EMIT", ("near", "street"))
+        k = cs if name in ("cavity", "convex") else 1  # a crisp crease is thinner than a texel: supersampled, so its
+        scene.cycles.samples = samples; img = FB.image(name, size * k)  # line is a line, not a row of dots
+        onto(img, build, "EMIT", ("near", "street"), margin=4 * k)
+        if k > 1:
+            px = np.empty((size * k) ** 2 * 4, np.float32); img.pixels.foreach_get(px); px = px.reshape(size, k, size, k, 4)
+            small = FB.image(f"{name}-1x", size)
+            small.pixels.foreach_set(np.concatenate([px[..., :3].mean(axis=(1, 3)), px[..., 3:].max(axis=(1, 3))], -1).ravel())
+            img = small
         FB.save(img, os.path.join(cache, f"{name}.exr")); print(f"[bake] {name} (high)")
     FB.sky_world(scene); scene.cycles.samples = 256; img = FB.image("sky", size)
     onto(img, FB.white_diffuse, "DIFFUSE", ("near", "street"), pass_filter={"DIRECT", "INDIRECT"})

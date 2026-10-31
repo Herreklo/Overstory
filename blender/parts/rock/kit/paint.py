@@ -121,6 +121,12 @@ def main():
             d = np.minimum(d, Pb @ wn - ow)
         old = np.maximum(old, np.where(np.linalg.norm(Pb - b["c"], axis=-1) < b["r"], d, -1e9))
     old = np.where(rock, old + Sk["breaks"]["onM"], -1e9)
+    for b in sc_.faces_cut:  # a fresh face broken along its layers: its steps' floors and risers are the face's own
+        d = Pb @ b["f"] - b["of"]
+        for wn, ow in b["walls"]:
+            d = np.minimum(d, Pb @ wn - ow)
+        on_ = rock & (np.linalg.norm(Pb - b["c"], axis=-1) < b["r"]) & (d > -Sk["breaks"]["onM"])
+        face = np.where(on_, keys.index(sc_.ms.faces[b["face"]][3]), face)
 
     # the lichen (`lichen`), as it grows on coastal gneiss: a population of small round rosettes, `rM` across their
     # radius (skewed small by `skew`), pale grey-green (the material's stain), `count` of them about a middle on the
@@ -332,14 +338,17 @@ def main():
     # the breaks (`breaks`): the scar a little paler, the weathered skin knocked off it, and its outline caught by the
     # light in a thin lip, as are the fresh face's crisp arrises and the old borders' steps (their skin kept, as old as
     # the faces round them); the lip only where the stone is open (the occlusion)
-    Bk = Sk["breaks"]; open_ = FL.smoothstep(Bk["ao"][0], Bk["ao"][1], pg.ao)
-    dl += np.where(scar > 0, Bk["L"], 0.0)
-    lip = FL.smoothstep(-Bk["lipM"], -Bk["lipM"] / 3, scar) * (scar <= 0)
-    lip = np.maximum(lip, FL.smoothstep(-Bk["lipM"], -Bk["lipM"] / 3, old) * (old <= 0) * (scar <= 0))
+    # (each step at least a texel wide, `tx`: a crease thinner than a texel drawn as a line, not a staircase of dots)
+    Bk = Sk["breaks"]; open_ = FL.smoothstep(Bk["ao"][0], Bk["ao"][1], pg.ao); tx = 1.0 / meta["page"]["pxPerM"]
+    wide = lambda a, b: (min(a, b - tx), b)  # noqa: E731
+    inn = FL.smoothstep(-tx / 2, tx / 2, scar)
+    dl += Bk["L"] * inn
+    lip = FL.smoothstep(*wide(-Bk["lipM"], -Bk["lipM"] / 3), scar) * (1.0 - inn)
+    lip = np.maximum(lip, FL.smoothstep(*wide(-Bk["lipM"], -Bk["lipM"] / 3), old) * (1.0 - FL.smoothstep(-tx / 2, tx / 2, old)) * (1.0 - inn))
     for i in range(len(N)):
         if wear[i] in K["sculpt"]["fresh"]:
             Pf = pg.p[face == i]; d = np.zeros(pg.shape); d[face == i] = edge(i, Pf, turf=False)
-            lip = np.maximum(lip, np.where(face == i, 1.0 - FL.smoothstep(Bk["freshLipM"] / 3, Bk["freshLipM"], d), 0.0))
+            lip = np.maximum(lip, np.where(face == i, 1.0 - FL.smoothstep(*wide(Bk["freshLipM"] / 3, Bk["freshLipM"]), d), 0.0))
     dl += Bk["lipL"] * lip * open_
 
     base = np.zeros(pg.shape)

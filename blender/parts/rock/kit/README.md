@@ -379,6 +379,58 @@ make rock).
       planes give dead-straight, parallel-sided edges, where a break's outline wanders.
     - **Look first:** `review/look.py` renders the high-poly in grey from the tip's own cameras and suns, windowed, in
       a minute, before the bake and Unity.
+  - **State (31 Oct, r12, stage 10's last change: worn old edges, the ragged rule at the dated breaks; awaiting the
+    coordinator's word).** The coordinator stopped the chips on try 3's cold read. The boulder is an erratic rounded by
+    the ice, and a break no fact dates has weathered into the edge (58's large boulder has no small chips). The
+    jagged in-and-out lives on bedrock broken by frost along its layers: the outcrop's kind, the next one built.
+    - **Old edges are worn:** the nicks, the border steps, the foot chip and the fresh face's two chips are off in the
+      data (`count` 0, `share` 0). The bows stay, and so do the 0.5–1 cm rounds.
+    - **The ragged rule** (`ragged()`, `breaks.ragged`, the core tool for the outcrop, slabs and bluffs) breaks a
+      dated fracture's outline along its layers, in bites as 58's broken slabs, never across its face.
+      - **Where:** on `runs` of its border arrises (the spall 1, the plucked face 2–3), seeded among those the
+        foliation crosses at 60° or less from square (`crossLeast` 0.5), only their stretch 10 cm clear of the turf.
+      - **A run** is 1–2 bites (`bites`) with 3–5 facets in all (`facets`), each 6–20 cm along (`facetM`).
+      - **A bite** sinks the break's plane toward the arris by a depth that rises and falls along it, 1.2–3.5 cm at
+        its knots (`stepM`; a cut's at most 0.4 of its own depth). Each facet is one plane, so the facets meet in
+        creases and the outline zigzags where they run out on the old face. The depth's upper hull keeps the bite
+        convex. Its riser end is the deepest or 0.3–0.6 of the deepest (`fallShare`), so no facet runs as an even band.
+      - **Inward,** each facet rises to meet the break's plane 4–12 cm in at its deepest (`inM`). Its turn off the
+        plane stays within 20° and half the arris's own turn, so it runs out on the old face a little past the arris.
+      - **The riser:** a bite runs out at its first end and stops at its last on the foliation. The riser stands the
+        bite's depth there and runs out to nothing inward.
+      - **The two dated breaks:** the spall (top/front corner's right end, seen from the eye; a run on its top/2
+        border) and the plucked face (side/7, which the back view shows; runs on top/4, top/0 and side/11). The
+        plucked face's bites take the face's skin (`paint.py`). The spall faces away from the back camera.
+      - **Tried and dropped** (r12, r12b, r12c): slabs split across the whole fracture by the foliation read as
+        slits on the spall and planks on the plucked face; facets as strips between foliation risers read as a
+        ladder of piano keys.
+    - **Finer near the crisp marks** (`refine()`): the faces on a mark's own surface where it meets the form or two
+      of its planes meet, within 8 mm, are cut three times along each edge and laid back onto the field. A crease runs as a line at
+      1.25 mm, not a 5 mm staircase. The faces are laid back along each vertex's own normal, at most 2 mm a step
+      (`stepCapM`). A vertex whose move would turn a triangle over stays where the cut left it. A region's own
+      planes meet in a smooth minimum (its `soft`), so the floor and the riser meet in a round, not a fold
+      (r12e: 238 folded faces there drew the risers' valleys as rows of dots).
+    - **A crease thinner than a texel** (7.8 mm at the page's 128 px/m) is drawn as a line, never a staircase of dots:
+      - the cavity, convexity and both levels' normals bake 4× and are box-filtered down (`cavitySuper`,
+        `normalSuper`);
+      - paint's scar, lip and fresh-lip steps are each at least a texel wide (`tx`).
+
+      The risers stay on the foliation, so on the plucked face a 1.3 cm riser covers only 5 mm of the page, and on
+      the spall almost none.
+    - **Cold read of r12g (Fable, blind, grey eye and back crops): fails.**
+      - On the eye crop, the overcast notch beads into "drill points" and a stroke beside it reads as tool scrapes.
+        The spall reads as "a cut rebate", its rim "beveled".
+      - On the back, the plucked face's bites read as "a drill-point slot" (beaded riser), "a saw kerf" (straight
+        riser), and the floors with their lip as "a dressed chamfer band" with a "moulded" hairline. Its arris is "a
+        straight continuous line with … tool marks".
+    - **Shortfalls:**
+      - the valleys' voxel lumps bead every riser and the notch (Rounds, r12);
+      - at 1–3.5 cm the bites are below what the page and the eye resolve as broken: they read as small made
+        marks on a clean edge.
+      - Per the coordinator's rule, the notch goes into the page in stage 11.
+    - **The notch** is the crack's own opening only: 8 cm along the arris, 5.5 cm down, 3.5 cm back (was 16, 7.5
+      and 6).
+    - **Quiet lips:** `skin.breaks` `lipL` 2 (was 4), `lipM` 6 mm (was 9). A lit rim read as a moulded edge.
   - **Where stage 11 starts (the page by age),** only after stage 10's board passes.
     - **Age from the record.** Every surface region carries its exposure age from the record:
       - the old faces date from when the boulder came to rest;
@@ -522,6 +574,24 @@ make rock).
   15 m hero (inferred; no studio figure).
 
 ## Rounds
+
+- **r12** stage 10's last change: worn old edges, the ragged rule at the dated breaks. Board
+  `reviews/lt1/rock/r12/s10-final-board.jpg`: columns try 2 (`r10t2`), `r12g`, target try 3, floor (`r08-s9f`); rows
+  as r11's. The back 3× crop moved onto the plucked face's top/4 border (frame 1150,990–1480,1175).
+  - `r12b` split the fractures into slabs, and `r12c` made strips between risers: slits, planks, piano keys.
+  - `r12d` brought in bites, but its top/4 second facet ran as an even band (`fallShare` mended it).
+  - `r12e` drew the risers as rows of dots: refine folded 238 faces in the floor–riser valleys.
+  - `r12f` brought own-normal projection, the revert, the regions' smooth minimum and the cavity at 3×. The dots
+    joined into soft lines with a dot at each end.
+  - `r12g` brought normals and cavity at 4× and paint's steps at least a texel wide. The lines softened a little,
+    but the dots stayed.
+  - The cause, probed with rays along the top/4 valleys: the valley sits a steady 1.2 mm proud (its round). Every
+    7–10 mm a voxel lump fills it by a further 2.5–4.6 mm, so the cavity, and the value with it, rises and falls
+    along each riser.
+  - Two tries to lay the lumps back did not shift them (each still 2.5–4.6 mm): halving a folding move instead of
+    undoing it, and laying it onto the round along the field. Neither is kept.
+  - The fix is finer voxels local to the break, as the coordinator asked. That is stage 11's first job or this
+    stage's try 5.
 
 - **r11** stage 10 try 3, the border steps and the foot (the coordinator, on try 2: the long top/front step read as a
   thin dark hairline, its floor taking the top's value; the foot chip's bright slivers read as noise). Board
