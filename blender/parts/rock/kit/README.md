@@ -431,6 +431,55 @@ make rock).
     - **The notch** is the crack's own opening only: 8 cm along the arris, 5.5 cm down, 3.5 cm back (was 16, 7.5
       and 6).
     - **Quiet lips:** `skin.breaks` `lipL` 2 (was 4), `lipM` 6 mm (was 9). A lit rim read as a moulded edge.
+  - **Stage 10 closes with r12h (the coordinator, 31 Oct).** Geometry carries the big forms only (about 8 cm and
+    more, several texels, a plane at the street stop): the spall's scoop, the plucked face's plane, the bows, the old
+    rounds and the crack. The break detail goes into the page, as 58 draws its break steps with paint, not relief.
+    Anything 1–3.5 cm on a 7.8 mm page bakes into an even dark line 2–4 texels wide, and an even dark line reads as
+    a tool mark (four tries).
+    - The bites are off (`breaks.ragged.use` 0), and so is the notch (`notch.use` 0, now the page's).
+    - `ragged()` stays, for the outcrop's metre-scale steps.
+    - The fine local voxels run only if beads or smear streaks survive r12h.
+  - **Stage 11 hand-over (the coordinator's word, 31 Oct): the history form, the age bake, the page by age in 58's
+    language.**
+    - **The form (approved):** a `history` list in the mass's record (`mass.masses.<id>`, later the pack's place
+      record), in calendar years, so age = the scene's year − `year`. Each entry has `what`, `year`, `by`, `on` or
+      `at` (placed by the structure, never by coordinates), `label` and `says`. This boulder:
+
+      ```json
+      "history": [
+        {"what": "rest",  "year": -15000, "by": "ice",   "label": "authored", "says": "the ice left it on the moraine"},
+        {"what": "pluck", "year": 1950,   "by": "frost", "label": "authored", "on": {"joint": "frost", "face": 245},
+         "says": "frost broke the south-west face off along the frost joint"},
+        {"what": "spall", "year": 1985,   "by": "frost", "label": "authored", "at": {"bearing": 125, "corner": "top"},
+         "says": "frost spalled a flake off the south-east top corner"}
+      ]
+      ```
+
+      The old `spall` field and `says` fold into it. That gives one rock three ages (about 17,000 years, 39 and 4).
+      A 39-year face shows patina coming back and the first small lichens, not a fresh face.
+    - **A human act fits without changing the format:** `by: "person"`, `how` (wedge | plug-and-feather | blast),
+      and `event` (the engine's event id). Its label is the engine's, because a person's act is a canonical fact.
+      Build nothing for it now; only check that the fields sit cleanly.
+    - **One curve, one source:** a single curve in kit.json maps years to edge, grain, value and cover.
+      - `sculpt.py` reads it for each region's edge radius, and `paint.py` for the rest.
+      - `sculpt.py` tags each region with its entry: the spall's cut takes `spall`, the plucked face takes `pluck`,
+        and everything else takes `rest`.
+      - `bake.py` writes each texel's age beside `ident`, by the same depth test paint uses.
+    - **The page in 58's language:**
+      - a value per plane and crisp lit lips;
+      - the break steps and the notch drawn as 58 draws them: varied, never an even dark line;
+      - colour from the material and the light.
+
+      Draw every thin mark as the mean of its footprint, at least a texel wide (`tx` in paint.py).
+    - **Open from stage 10:** vertical smear streaks at the top of the mid (front) face where it meets the arris,
+      seen in overcast eye 2× (the cold reader's "chisel scratches"). Find whether they come from the page or the
+      normal before painting over them.
+    - **The test:** a cold reader (Fable) says which surface broke recently and is right, and nothing reads as made.
+      Firewatch's divots stay an A/B in case the low-poly read persists.
+    - **Still owed from the brief, after stage 11:** the tuft shader's least blade width in
+      `unity/Assets/Shaders/GrowthTuft.shader`. `_GT_LookB.w` (lines 52 and 99) is "a blade's least width (px of a
+      1440-line frame)". Blades narrower than a pixel take the least width, with their coverage faded to match. A/B it
+      on the rock's and the street's stills.
   - **Where stage 11 starts (the page by age),** only after stage 10's board passes.
     - **Age from the record.** Every surface region carries its exposure age from the record:
       - the old faces date from when the boulder came to rest;
@@ -592,6 +641,21 @@ make rock).
     undoing it, and laying it onto the round along the field. Neither is kept.
   - The fix is finer voxels local to the break, as the coordinator asked. That is stage 11's first job or this
     stage's try 5.
+  - `r12h`, stage 10's close (the coordinator: the break detail goes to the page): bites and notch off. Board
+    `reviews/lt1/rock/r12/s10-close-board.jpg`, columns try 2, `r12h`, target, floor, with 58 in the overcast rows.
+    - The plucked face's border is a clean, worn arris, with no slots, kerfs or chamfer band.
+    - The beads left are all in the page or the grass: the painted crack's line through the foot below its old
+      notch, the smear streaks at its top (the crack's mouth and the spot beside it, stage 11's), and grass blades
+      thinner than a pixel (the tuft shader's least width). No geometry beads, so no fine voxels.
+    - Cold read (fresh Opus, blind, grey eye and back crops): still made, and every remaining read is stage 11's:
+      - the painted crack's beaded line through the foot reads as "a drill line, or a screw or bolt" (the worst);
+      - the foot's straight top with an even lit lip reads as "a sawn bed with a plinth riser";
+      - the old round, even along the back arris, reads as "a machined chamfer or pencil-round" (the edge by age:
+        let the round's width wander);
+      - the spall's arc reads as moulded, its streaks as claw-chisel marks;
+      - the smear fan at the crack's top reads as "clay pinched and pulled down";
+      - the whole reads as "a cut block": flat faces, straight edges (the low-poly read; the page, then the divots
+        A/B).
 
 - **r11** stage 10 try 3, the border steps and the foot (the coordinator, on try 2: the long top/front step read as a
   thin dark hairline, its floor taking the top's value; the foot chip's bright slivers read as noise). Board
