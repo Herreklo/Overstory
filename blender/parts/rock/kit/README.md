@@ -299,6 +299,39 @@ make rock).
        beside 58's crop, s8 try 3 (`r07-s8j`, `r07-s8h`) and the paintover.
 
     After a sculpt change, rerun the chain in stage 7's order (above), `bake.py` and `paint.py` included.
+  - **State (31 Oct, r10 stage 10, try 2, built; awaiting the coordinator's word):** `sculpt.py` builds the edges' line
+    by age. Every mark is planar cuts in the high-poly, placed by general rules from the record (`kit.json` `sculpt`;
+    nothing keyed to face ids or bearings).
+    - **Bows:** `bow` domes each face by kind, through `mass.py` `bulge` with `power`. At the shares in `kit.json`,
+      arris bows run a median 1.7% of the arris, max 8.5%. Try 1's double share made a loaf, 10 cm taller, its top
+      planes merged.
+    - **Rounds and wander:** old rounds 0.5–1 cm (`chamfer`), fresh 0.3 cm; old arrises wander 1.6 cm (`wander`).
+    - **Breaks are chips, as rock breaks** (`chip()`): a wedge of two planes.
+      - The floor is a fracture plane cutting the corner. It runs out to nothing at one end and is `depthM` down the
+        lower face and `ratio` of that into the upper face at the other.
+      - That other end has one riser on the structure, at a slant (`breaks.riser`: cosine 0.3–0.85 to the arris).
+      - Beyond the riser, a small chip (`breaks.small`) steps the deep end down twice.
+      - Try 1's box ledges (floor, back wall, two square risers) read as machined slots and hinges, and failed.
+    - **Placement:** few and big.
+      - `corner`: one plane takes the true top corner nearest the record's `spall` bearing (three faces each turning
+        ≥35°, one a top). A kink on a border made a 39 cm slash.
+      - `fresh`: 1–2 chips on the fresh face's arrises.
+      - `foot`: one big chip off the foot arris, its floor falling to the turf.
+      - `border`: the old top/side borders' long steps, 35–80 cm along and 8–16 cm deep.
+      - `nick`: a few small chips on the fresh arrises.
+      - `notch`: a V of two planes across the arris on the crack's trace.
+      - `paint.py` reads the same regions, each bounded by its sphere.
+    - **Checks:**
+      - Spikes 0; game mesh 846 tris near.
+      - A cold reader (fresh Opus, the grey eye and back crops only) called every stage 10 mark a chip, spall or step,
+        none a cut, slot, box or inset.
+      - It read the painted crack's dashes as "drill or wedge marks". That is stage 11: the crack's page and its
+        mouth over the notch.
+      - It read the whole stone as "cut or low-poly" for its dead-flat planes and straight edges. That is the form's
+        style (58's planes), which the page and the bows carry.
+    - **Weakness:** the chips read as small at eye level, quieter than the target's painted breaks.
+    - **Try 3, if asked:** bigger border chips, toward the target's 30–80 cm along the top/front border. Their floors
+      on the foliation where it crosses near the bisector, so a lit floor and a dark riser read from the street stop.
   - **Where stage 11 starts (the page by age),** only after stage 10's board passes.
     - **Age from the record.** Every surface region carries its exposure age from the record:
       - the old faces date from when the boulder came to rest;
@@ -443,6 +476,12 @@ make rock).
 
 ## Rounds
 
+- **r10** stage 10, the edges' line by age (Unity grey P, five views, eye and back also in low sun; boards
+  `reviews/lt1/rock/r10/s10-try1-board.jpg`, `s10-try2-board.jpg`: try 2, try 1, target try 3, floor r08, 58).
+  - Try 1 failed (the coordinator): box ledges read as machined recesses, slots and a hinge, many and small. Worse
+    as a whole than the floor's stamped triangles.
+  - Try 2 builds the chips as two-plane wedges, few and big, with a V notch. The cold reader names them chips and
+    spalls. See the State above.
 - **r08** stage 9, the crack (the coordinator: one thin dark line with a slight light lip along the frost joint across a
   face; it ends where the planes change or fades out, stays out of the scars, reads from the street stop as a crack and
   never as a seam, slit or painted line, and is quiet or gone at 12 m and iso; one crack with at most one short branch;

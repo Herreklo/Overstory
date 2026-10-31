@@ -238,7 +238,8 @@ class Mass:
     def warp(self, key, kind, n, vs):
         """A face's gentle outward bulge (`bulge`), seeded by the mass and the face: a dome over the face, its crown
         shifted off the face's middle by up to `shift` of its reach and standing `share` of the face's size (by its kind:
-        worn and ice-shaped faces most, fresh fractures least), times `amp`; reaching `reach` times its size."""
+        worn and ice-shaped faces most, fresh fractures least), times `amp`; reaching `reach` times its size, falling to
+        it as one less the square of the distance's share, to the `power` (1 if not given)."""
         B = self.C["bulge"]; sh = B["share"].get(kind, 0.0)
         if sh <= 0 or len(vs) < 3:
             return None
@@ -247,9 +248,11 @@ class Mass:
         c0, u0, v0 = st.uniform(*B["amp"]) * sh * E, st.uniform(-1, 1) * B["shift"] * E, st.uniform(-1, 1) * B["shift"] * E
         a = np.cross(n, [0.0, 0.0, 1.0] if abs(n[2]) < 0.9 else [1.0, 0.0, 0.0]); a /= np.linalg.norm(a); b = np.cross(n, a)
 
+        pw = B.get("power", 1)  # 2: the dome eases to naught at its reach, no crease where it ends
+
         def w(Q):
             q = (((Q - p0) @ a - u0) / L) ** 2 + (((Q - p0) @ b - v0) / L) ** 2
-            return c0 * np.maximum(1 - q, 0.0)
+            return c0 * np.maximum(1 - q, 0.0) ** pw
         return (w, a, b)
 
     def value(self, P, f):

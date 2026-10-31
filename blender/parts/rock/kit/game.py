@@ -69,15 +69,11 @@ def plane_normals(o, planes, flat, grad):
     return int(sharp.sum()), float((key >= 0).mean())
 
 
-def form_normal(sc, sink, h=0.002):
-    """The sculpted form's outward normal at points in the levels' frame (moved down `sink`), by central differences h
-    apart."""
+def form_normal(sc, sink):
+    """The sculpted form's shading normal at points in the levels' frame (moved down `sink`): each face its own plane's,
+    blended across a round as the high-poly's is (sculpt.py `form`)."""
     def grad(V):
-        P = V + np.array([0.0, 0.0, sink]); g = np.zeros_like(P)
-        for ax in range(3):
-            e = np.zeros(3); e[ax] = h
-            g[:, ax] = sc.form(P + e)[0] - sc.form(P - e)[0]
-        return g / np.maximum(np.linalg.norm(g, axis=1, keepdims=True), 1e-12)
+        return sc.form(V + np.array([0.0, 0.0, sink]))[1]
     return grad
 
 

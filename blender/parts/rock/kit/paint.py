@@ -104,12 +104,13 @@ def main():
     # the breaks as the high-poly cuts them (sculpt.py's planes, in the levels' frame): a texel's depth inside a
     # break's cut, positive within the scar, so the scar and its outline are known exactly
     SC = module(os.path.join(HERE, "sculpt.py"), "rock_sculpt")
-    Pb = pg.p + np.array([0.0, 0.0, X.get("sinkM", SC.MS.M["judge"]["sinkM"])]); scar = np.full(pg.shape, -1e9)
-    for b in SC.Sculpt(X).breaks:
+    sink_ = X.get("sinkM", SC.MS.M["judge"]["sinkM"]); sc_ = SC.Sculpt(X)
+    Pb = pg.p + np.array([0.0, 0.0, sink_]); scar = np.full(pg.shape, -1e9)
+    for b in sc_.breaks + sc_.nicks:
         d = Pb @ b["f"] - b["of"]
         for wn, ow in b["walls"]:
             d = np.minimum(d, Pb @ wn - ow)
-        scar = np.maximum(scar, d)
+        scar = np.maximum(scar, np.where(np.linalg.norm(Pb - b["c"], axis=-1) < b["r"], d, -1e9))  # its sphere, as the sculpt's
     scar = np.where(rock, scar, -1e9)
 
     # the lichen (`lichen`), as it grows on coastal gneiss: a population of small round rosettes, `rM` across their
@@ -205,24 +206,14 @@ def main():
     # of it; one short branch at most (`branch`: the chance, where along it, its turn, length and its width and L
     # shares). Drawn on those two faces only and `clearM` out of the scars, each texel the mean of `samples` squared
     # points over its footprint, so the stroke is smooth at any size and holds its weight down the mips
-    Cr = Sk["crack"]; ncr = 0
-    jn = next(j for j in X["structure"]["joints"] if j["name"] == Cr["set"]); nj = MS_unit(jn["dipToward"], jn["dip"])
-    front = MS_unit(X["front"])
-    sides = [i for i in range(len(N)) if N[i] @ front >= Cr["front"] and abs(N[i][2]) <= 0.6]
-    if sides and Cr["use"]:
-        A = max(sides, key=count); mA = rock & (face == A); rc = st("crack"); tA_ = pg.p[mA] @ nj
+    Cr = Sk["crack"]; ncr = 0; Tr = sc_.trace
+    if Tr is not None and Cr["use"]:
+        # the trace sculpt.py chose, its mouth notched there: the side A, the face above U, the leaned joint and its
+        # offset in the levels' frame; sculpt.py drew the offset as this stream's first draw, so the rest follow it
+        A, U, nj = keys.index(Tr["keyA"]), keys.index(Tr["keyU"]), Tr["n"]; x = Tr["x"] - nj[2] * sink_
+        mA = rock & (face == A); mU = rock & (face == U); rc = st("crack"); rc.uniform(-1.0, 1.0)
         clear_ = rock & (scar < -Cr["clearM"])
-        for _ in range(20):  # the trace's offset, clear of the scars on its face
-            x = float(np.median(tA_)) + Cr["offset"] * float(np.ptp(tA_)) * rc.uniform(-1.0, 1.0)
-            sj = pg.p @ nj - x; band = mA & (np.abs(sj) < Cr["kink"]["mostM"] + Cr["mouth"][0])
-            if band.any() and clear_[band].all():
-                break
-        # the face above, where the trace leaves A at its top: the face most texels near the trace there belong to
-        hd = pg.p[band][np.argmax(pg.z[band])]
-        up_ = rock & (np.abs(sj) < 0.02) & (face != A) & (np.linalg.norm(pg.p - hd, axis=-1) < 0.08)
-        U = int(np.bincount(face[up_]).argmax()) if up_.any() else -1
-        U = U if U >= 0 and N[U][2] > N[A][2] else -1
-        mU = rock & (face == U) if U >= 0 else np.zeros(pg.shape, bool); zt = float(pg.z[band].max())
+        sj = pg.p @ nj - x; band = mA & (np.abs(sj) < Cr["kink"]["mostM"] + Cr["mouth"][0]); zt = float(pg.z[band].max())
 
         def trace(i, away):  # the joint's trace on face i, a unit vector pointing away from face `away`
             t_ = np.cross(nj, N[i]); t_ /= np.linalg.norm(t_)
